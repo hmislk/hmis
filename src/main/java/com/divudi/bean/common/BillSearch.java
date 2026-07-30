@@ -132,7 +132,10 @@ import com.divudi.bean.pharmacy.SaleReturnController;
 import com.divudi.bean.pharmacy.TransferIssueNativeSqlController;
 import com.divudi.bean.pharmacy.TransferReceiveNativeSqlController;
 import com.divudi.bean.pharmacy.InpatientDirectIssueNativeSqlController;
+import com.divudi.bean.pharmacy.RetailSaleForCashierNativeSqlController;
 import com.divudi.bean.pharmacy.RetailSaleNativeSqlController;
+import com.divudi.bean.pharmacy.PurchaseOrderNativeSqlController;
+import com.divudi.bean.pharmacy.GrnNativeSqlController;
 import static com.divudi.core.data.BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RECEIVE;
@@ -336,6 +339,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     InpatientDirectIssueNativeSqlController inpatientDirectIssueNativeSqlController;
     @Inject
     RetailSaleNativeSqlController retailSaleNativeSqlController;
+    @Inject
+    RetailSaleForCashierNativeSqlController retailSaleForCashierNativeSqlController;
+    @Inject
+    PurchaseOrderNativeSqlController purchaseOrderNativeSqlController;
+    @Inject
+    GrnNativeSqlController grnNativeSqlController;
     /**
      * Class Variables
      */
@@ -1025,6 +1034,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
+        bts.add(BillType.InwardAppointmentBill);
         bts.add(BillType.CollectingCentrePaymentReceiveBill);
         bts.add(BillType.PaymentBill);
         bts.add(BillType.PatientPaymentReceiveBill);
@@ -1080,6 +1090,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
+        bts.add(BillType.InwardAppointmentBill);
         bts.add(BillType.CollectingCentrePaymentReceiveBill);
         bts.add(BillType.PaymentBill);
         bts.add(BillType.PatientPaymentReceiveBill);
@@ -4786,12 +4797,26 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PHARMACY_RECEIVE:
                 return transferReceiveNativeSqlController.viewByBillId(BillId);
             case DIRECT_ISSUE_INWARD_MEDICINE:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                 return inpatientDirectIssueNativeSqlController.viewByBillId(BillId);
             case PHARMACY_RETAIL_SALE:
                 return retailSaleNativeSqlController.viewByBillId(BillId);
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                return retailSaleForCashierNativeSqlController.viewByBillId(BillId);
             case PHARMACY_TRANSFER_REQUEST_PRE:
             case PHARMACY_TRANSFER_REQUEST:
                 return pharmacyBillSearch.viewRequestByBillId(BillId);
+            case PHARMACY_ORDER:
+            case PHARMACY_ORDER_APPROVAL:
+                return purchaseOrderNativeSqlController.viewByBillId(BillId);
+            case PHARMACY_GRN:
+            case PHARMACY_GRN_PRE:
+            case PHARMACY_GRN_CANCELLED:
+            case PHARMACY_GRN_REFUND:
+            case PHARMACY_WHOLESALE_GRN_BILL:
+            case PHARMACY_WHOLESALE_GRN_BILL_CANCELLED:
+            case PHARMACY_WHOLESALE_GRN_BILL_REFUND:
+                return grnNativeSqlController.viewByBillId(BillId);
             default:
                 return navigateToViewBillByAtomicBillTypeByBillIdEntityBased(BillId);
         }
@@ -4982,6 +5007,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PHARMACY_RECEIVE:
                 return transferReceiveNativeSqlController.viewByBillId(bill.getId());
             case DIRECT_ISSUE_INWARD_MEDICINE:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                 return inpatientDirectIssueNativeSqlController.viewByBillId(bill.getId());
             case PHARMACY_RETAIL_SALE:
                 return retailSaleNativeSqlController.viewByBillId(bill.getId());
@@ -5076,12 +5102,15 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return navigateToViewChannelingProfessionalPaymentBill();
 
             case DIRECT_ISSUE_INWARD_MEDICINE:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                 return navigateToViewPharmacyDirectIssueForInpatientBill();
             case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
             case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                 return navigateToViewPharmacyDirectIssueReturnForInpatientBill();
 
             case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
 
             case PHARMACY_RETAIL_SALE_PRE:
@@ -5126,9 +5155,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return pharmacyBillSearch.navigateToViewPharmacyBill();
 
             case PHARMACY_ORDER:
+            case PHARMACY_ORDER_APPROVAL:
+                return purchaseOrderNativeSqlController.viewByBillId(bill.getId());
+
             case PHARMACY_ORDER_PRE:
             case PHARMACY_ORDER_CANCELLED:
-            case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintPo();
@@ -5359,11 +5390,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return navigateToViewChannelingProfessionalPaymentBill();
 
             case DIRECT_ISSUE_INWARD_MEDICINE:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                 return navigateToViewPharmacyDirectIssueForInpatientBill();
             case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                 return navigateToViewPharmacyDirectIssueReturnForInpatientBill();
 
             case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
+            case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
             case PHARMACY_RETAIL_SALE_PRE:
                 pharmacySaleForCashierController.setBillPreview(true);
@@ -5937,6 +5971,16 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
                 return billPackageController.navigateToManageOpdPackageBatchBill(bill);
 
+            case PHARMACY_GRN:
+            case PHARMACY_GRN_PRE:
+            case PHARMACY_GRN_CANCELLED:
+            case PHARMACY_GRN_REFUND:
+            case PHARMACY_WHOLESALE_GRN_BILL:
+            case PHARMACY_WHOLESALE_GRN_BILL_CANCELLED:
+            case PHARMACY_WHOLESALE_GRN_BILL_REFUND:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyGrn();
+
             case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
@@ -6011,6 +6055,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case FUND_SHIFT_SHORTAGE_BILL:
             case FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
+            case INWARD_SERVICE_BILL:
+            case INWARD_SERVICE_BATCH_BILL:
+                return navigateToInwardSearchService();
             //                opdBillController.setBill(bill);
 //                return opdBillController.navigateToViewPackageBatchBill();
 

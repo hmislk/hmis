@@ -477,12 +477,14 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                     
-                                                    <h:outputLabel value="Registered Type" class="mx-3"/>
-                                                    <h:outputLabel value=" : " class="mx-3"/>
-                                                    <p:badge 
-                                                        value="#{opdBillController.patient.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
-                                                        severity="#{opdBillController.patient.selfRegistered eq true ? 'warning' : 'success'}">
-                                                    </p:badge>
+                                                    <h:panelGroup rendered="#{not empty opdBillController.patient.registrationSource}">
+                                                        <h:outputLabel value="Registration Source" class="mx-3"/>
+                                                        <h:outputLabel value=" : " class="mx-3"/>
+                                                        <p:badge
+                                                            value="#{opdBillController.patient.registrationSource.label}"
+                                                            severity="info">
+                                                        </p:badge>
+                                                    </h:panelGroup>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
@@ -1407,7 +1409,7 @@
                                         </div>
 
                                         <div class="col-md-4" >
-                                            <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                            <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Mark Foreigner and Mark Local Buttons in Billing', true)}">
                                                 <p:commandButton 
                                                     value="Mark Foreigner" 
                                                     class="mx-2"

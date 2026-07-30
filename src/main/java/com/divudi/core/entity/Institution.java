@@ -83,6 +83,10 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String opdBillHeading;
     @Lob
     String cashierBillHeading;
+    @Lob
+    private String svgParentView;
+    @Lob
+    private String svgChildView;
     @Enumerated(EnumType.STRING)
     InstitutionType institutionType;
     @Enumerated(EnumType.STRING)
@@ -168,6 +172,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     //Inactive Status
     private boolean inactive;
+    private boolean defaultInstitution;
     @ManyToOne
     private Institution parentInstitution;
 
@@ -652,6 +657,14 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.inactive = inactive;
     }
 
+    public boolean isDefaultInstitution() {
+        return defaultInstitution;
+    }
+
+    public void setDefaultInstitution(boolean defaultInstitution) {
+        this.defaultInstitution = defaultInstitution;
+    }
+
     public String getTransAddress5() {
         return transAddress5;
     }
@@ -810,6 +823,22 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setAgentBalance(double agentBalance) {
         this.agentBalance = agentBalance;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
 }

@@ -82,10 +82,25 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     // <editor-fold defaultstate="collapsed" desc="Functions">
 
     /**
-     * Navigate to the Change Patient for Admission page
+     * Navigate to the Change Patient for Admission page with no pre-selected
+     * admission (user must search and pick one on the page).
      */
     public String navigateToChangeAdmissionPatient() {
         prepareForNew();
+        return "/inward/inward_change_patient?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the Change Patient page with the admission already loaded
+     * from the Admission Profile context. Skips the admission-search step so
+     * the user goes straight to selecting the new patient.
+     */
+    public String navigateToChangeAdmissionPatientFromProfile() {
+        prepareForNew();
+        current = admissionController.getCurrent();
+        if (current != null) {
+            loadAdmission();
+        }
         return "/inward/inward_change_patient?faces-redirect=true";
     }
 
@@ -190,47 +205,55 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     }
 
     /**
-     * Confirm and save the patient change
+     * Confirm and save the patient change, then navigate to the admission
+     * profile so the user can see the updated record immediately.
      */
-    public void confirmPatientChange() {
+    public String confirmPatientChange() {
         if (current == null || newPatient == null) {
             JsfUtil.addErrorMessage("Invalid operation");
-            return;
+            return "";
         }
 
         if (originalPatient.getId().equals(newPatient.getId())) {
             JsfUtil.addErrorMessage("Cannot change to the same patient");
-            return;
+            return "";
         }
 
         try {
-            // Create audit record BEFORE making the change
-            auditService.logAudit(
-                originalPatient,
-                newPatient,
-                sessionController.getLoggedUser(),
-                "Admission Patient Change",
+            // Update the admission's patient reference
+            current.setPatient(newPatient);
+            admissionFacade.edit(current);
+
+            // Record audit only after the change has successfully persisted
+            auditService.logEncounterAudit(
+                current,
                 "Patient changed for BHT: " + current.getBhtNo() +
                 " from " + originalPatient.getPerson().getName() +
                 " (ID: " + originalPatient.getId() + ")" +
                 " to " + newPatient.getPerson().getName() +
-                " (ID: " + newPatient.getId() + ")"
+                " (ID: " + newPatient.getId() + ")",
+                originalPatient,
+                newPatient,
+                sessionController.getLoggedUser(),
+                "Admission Patient Change",
+                current.getId()
             );
-
-            // Update the admission's patient reference
-            current.setPatient(newPatient);
-            admissionFacade.edit(current);
 
             JsfUtil.addSuccessMessage("Patient changed successfully. " +
                 "BHT: " + current.getBhtNo() +
                 " is now assigned to " + newPatient.getPerson().getName());
 
-            // Reset for next operation
+            // Explicitly sync admissionController before navigating — when this
+            // flow is launched from the search page (not the profile), current may
+            // differ from admissionController.current. (Issue #21275)
+            admissionController.setCurrent(current);
+            String destination = admissionController.navigateToAdmissionProfilePage();
             prepareForNew();
+            return destination;
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error changing patient: " + e.getMessage());
-            e.printStackTrace();
+            return "";
         }
     }
 

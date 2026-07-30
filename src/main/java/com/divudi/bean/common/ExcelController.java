@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
@@ -4379,6 +4381,112 @@ public class ExcelController {
 
     }
 
+    // Excel export: wht report/ ReportTemplateRow
+    public StreamedContent createExcelForShiftEndSummary(List<Bill> bills, Map<String, Object> filters, String fileName) throws IOException {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No bills to export.");
+            return null;
+        }
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        String reportName = "Shift End Summary Report";
+        String safeName = WorkbookUtil.createSafeSheetName(reportName);
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
+
+        // Create cell styles for headers
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(boldFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setBold(true);
+        normalFont.setFontHeightInPoints((short) 12);
+        centerStyle.setFont(normalFont);
+
+        CellStyle centerSmallStyle = workbook.createCellStyle();
+        centerSmallStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerSmallStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 10);
+        centerSmallStyle.setFont(smallFont);
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name
+        Row institutionRow = dataSheet.createRow(currentRow++);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(titleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+        // Row 1: Report Title
+        Row titleRow = dataSheet.createRow(currentRow++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(reportName);
+        titleCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 7));
+
+        // Row 2: Search Criteria
+        if (filters != null && !filters.isEmpty()) {
+            currentRow = addMetaDataToExcelSheet(workbook, dataSheet, currentRow, filters);
+        } else {
+            Row criteriaRow = dataSheet.createRow(currentRow++);
+            Cell criteriaCell = criteriaRow.createCell(0);
+            criteriaCell.setCellValue("Search Criteria: N/A");
+            criteriaCell.setCellStyle(centerSmallStyle);
+            dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 7));
+            currentRow++;
+        }
+        // Column headers
+        Row headerRow = dataSheet.createRow(currentRow++);
+        String[] headers = {"ID", "Institution", "Site", "Department", "Date", "Staff", "Starting Bill", "Ending Bill", "Short or Excess"};
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat());
+
+        for (Bill bill : bills) {
+            int colIndex = 0;
+            Row excelRow = dataSheet.createRow(currentRow++);
+            excelRow.createCell(colIndex++).setCellValue(bill.getId() != null ? String.valueOf(bill.getId()) : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getInstitution() != null && bill.getInstitution().getName() != null ? bill.getInstitution().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getDepartment() != null && bill.getDepartment().getSite() != null &&  bill.getDepartment().getSite().getName() != null ? bill.getDepartment().getSite().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getDepartment() != null && bill.getDepartment().getName() != null ? bill.getDepartment().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getCreatedAt() != null ? dateFormat.format(bill.getCreatedAt()) : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getReferenceBill() != null && bill.getReferenceBill().getBillTypeAtomic() != null ? bill.getReferenceBill().getBillTypeAtomic().toString() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getReferenceBill() != null && bill.getReferenceBill().getInsId() != null ? bill.getReferenceBill().getInsId() : "");
+            excelRow.createCell(colIndex++).setCellValue("");
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        excelSc = DefaultStreamedContent.builder()
+                .name((fileName != null && !fileName.isEmpty() ? fileName : "Shift_End_Summary_Report") + ".xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+
+        return excelSc;
+    }
+
     // Filter info to excel
     public int addMetaDataToExcelSheet(XSSFWorkbook wb, XSSFSheet sheet, int rowIndex, Map<String, Object> filters) {
         if (wb == null || sheet == null) {
@@ -4901,5 +5009,340 @@ public class ExcelController {
                 .build();
 
         return excelSc;
+    }
+
+    // Excel export: Channel Summary Collection Report
+    public StreamedContent createExcelForChannelSummaryCollectionReport(ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto, String fileName, Map<String, Object> filter) throws IOException {
+        if (wrapperDto == null) {
+            return null;
+        }
+
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        String safeName = WorkbookUtil.createSafeSheetName("Detailed View");
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
+
+        // Create cell styles for headers
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(boldFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setBold(true);
+        normalFont.setFontHeightInPoints((short) 12);
+        centerStyle.setFont(normalFont);
+
+        CellStyle centerSmallStyle = workbook.createCellStyle();
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 10);
+        smallFont.setBold(true);
+        centerSmallStyle.setFont(smallFont);
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name
+        Row institutionRow = dataSheet.createRow(currentRow);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(titleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 7));
+        currentRow++;
+
+        // Row 1: Report Title
+        Row titleRow = dataSheet.createRow(currentRow);
+        Cell titleCell = titleRow.createCell(0);
+        
+        titleCell.setCellValue("Summary Collection Report");
+        titleCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 7));
+        currentRow++;
+        // DateTime Formats
+        SimpleDateFormat longDate = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat());
+        SimpleDateFormat longDateTime = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        // Row 2: Search Criteria
+        org.apache.poi.ss.usermodel.Font metaFontBold = workbook.createFont();
+        metaFontBold.setBold(true);
+        CellStyle metaStyleBold = workbook.createCellStyle();
+        metaStyleBold.setFont(metaFontBold);
+
+        Row criteriaRow1 = dataSheet.createRow(currentRow++);
+        Cell userNLabel = criteriaRow1.createCell(0);
+        userNLabel.setCellValue("Cashier");
+        userNLabel.setCellStyle(metaStyleBold);
+        Cell userN = criteriaRow1.createCell(1);
+        userN.setCellValue(wrapperDto.getCashierUserName());
+
+        Cell shftStrtLabel = criteriaRow1.createCell(3);
+        shftStrtLabel.setCellValue("Shift Start At");
+        shftStrtLabel.setCellStyle(metaStyleBold);
+        Cell shftStrt = criteriaRow1.createCell(4);
+        shftStrt.setCellValue(wrapperDto.getShiftStartAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(wrapperDto.getShiftStartAt()) : "N/A");
+
+        Cell shftEndLabel = criteriaRow1.createCell(6);
+        shftEndLabel.setCellValue("Shift End At");
+        shftEndLabel.setCellStyle(metaStyleBold);
+        Cell shftEnd = criteriaRow1.createCell(7);
+        shftEnd.setCellValue(wrapperDto.getShiftEndAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(wrapperDto.getShiftEndAt()) : "N/A");
+
+        if (filter != null && !filter.isEmpty()) {
+            Row criteriaRow2 = dataSheet.createRow(currentRow++);
+            Cell ctgLabel = criteriaRow2.createCell(0);
+            ctgLabel.setCellValue("Category");
+            ctgLabel.setCellStyle(metaStyleBold);
+            Cell ctg = criteriaRow2.createCell(1);
+            ctg.setCellValue(filter.get("Category") != null ? filter.get("Category").toString() : "All");
+
+            Cell pmLabel = criteriaRow2.createCell(3);
+            pmLabel.setCellValue("Payment Method");
+            pmLabel.setCellStyle(metaStyleBold);
+            Cell pm = criteriaRow2.createCell(4);
+            pm.setCellValue(filter.get("Payment Method") != null ? filter.get("Payment Method").toString() : "All");
+        }
+
+        currentRow++;
+
+        if (wrapperDto.getIncomeDtos() != null && !wrapperDto.getIncomeDtos().isEmpty()) {
+            Row detailHeaderRow = dataSheet.createRow(currentRow++);
+            String[] detailHeaders = {"Serial No", "Bill Id", "Appointment Date", "Created Date", "Billed By", "Patient Name", "Payment Method", "Hospital Fee", "Doctor Fee", "Total Fee"};
+            for (int i = 0; i < detailHeaders.length; i++) {
+                detailHeaderRow.createCell(i).setCellValue(detailHeaders[i]);
+            }
+
+            int serial = 1;
+            for (ChannelReportController.ChannelIncomeDetailDto dto : wrapperDto.getIncomeDtos()) {
+                Row row = dataSheet.createRow(currentRow++);
+                int col = 0;
+                row.createCell(col++).setCellValue(serial++);
+                row.createCell(col++).setCellValue(dto.getBillId());
+                row.createCell(col++).setCellValue(dto.getAppoinmentDate() != null ? longDate.format(dto.getAppoinmentDate()) : "");
+                row.createCell(col++).setCellValue(dto.getBilledDate()     != null ? longDateTime.format(dto.getBilledDate()) : "");
+                row.createCell(col++).setCellValue(dto.getBilledBy()       != null ? dto.getBilledBy() : "");
+                row.createCell(col++).setCellValue(dto.getPatientName()    != null ? dto.getPatientName() : "");
+                row.createCell(col++).setCellValue(dto.getPaymentMethod()  != null ? dto.getPaymentMethod().toString() : "");
+                row.createCell(col++).setCellValue(dto.getHosFee());
+                row.createCell(col++).setCellValue(dto.getDoctorFee());
+                row.createCell(col++).setCellValue(dto.getTotalAppoinmentFee());
+            }
+
+            Row detailFooterRow = dataSheet.createRow(currentRow);
+            detailFooterRow.createCell(7).setCellValue(wrapperDto.getAllHosFeeTotal());
+            detailFooterRow.createCell(8).setCellValue(wrapperDto.getAllDoctorFeeTotal());
+            detailFooterRow.createCell(9).setCellValue(wrapperDto.getAllTotalAmount());
+        } else {
+            Row noDataRow = dataSheet.createRow(currentRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for Detailed View");
+        }
+
+            if (wrapperDto.getSummeryDtos() != null && !wrapperDto.getSummeryDtos().isEmpty()) {
+
+                XSSFSheet summarySheet = workbook.createSheet("Summary View");
+                int summaryRowIndex = 0;
+
+                // Row 0: Institution Name
+                Row institutionSRow = summarySheet.createRow(summaryRowIndex);
+                Cell institutionSCell = institutionSRow.createCell(0);
+                String institutionSName = sessionController.getInstitution() != null
+                        ? sessionController.getInstitution().getName()
+                        : "Institution";
+                institutionSCell.setCellValue(institutionSName);
+                institutionSCell.setCellStyle(titleStyle);
+                summarySheet.addMergedRegion(new CellRangeAddress(summaryRowIndex, summaryRowIndex, 0, 7));
+                summaryRowIndex++;
+
+                // Row 1: Report Title
+                Row titleSRow = summarySheet.createRow(summaryRowIndex);
+                Cell titleSCell = titleSRow.createCell(0);
+                titleSCell.setCellValue("Summary Collection Report");
+                titleSCell.setCellStyle(centerStyle);
+                summarySheet.addMergedRegion(new CellRangeAddress(summaryRowIndex, summaryRowIndex, 0, 7));
+                summaryRowIndex++;
+
+                // Header Row
+                Row dateSummaryHeader = summarySheet.createRow(summaryRowIndex++);
+                String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee", "Card Total", "Cash Total"};
+                for (int i = 0; i < headers.length; i++) {
+                    dateSummaryHeader.createCell(i).setCellValue(headers[i]);
+                }
+
+                // Data Rows
+                int serial = 1;
+                for (ChannelReportController.ChannelIncomeSummeryDto dto : wrapperDto.getSummeryDtos()) {
+                    Row row = summarySheet.createRow(summaryRowIndex++);
+                    int col = 0;
+                    row.createCell(col++).setCellValue(serial++);
+                    row.createCell(col++).setCellValue(dto.getAppoimentDate() != null ? longDate.format(dto.getAppoimentDate()) : "");
+                    row.createCell(col++).setCellValue(dto.getTotalActiveAppoinments());
+                    row.createCell(col++).setCellValue(dto.getTotalAmount());
+                    row.createCell(col++).setCellValue(dto.getTotalDocFee());
+                    row.createCell(col++).setCellValue(dto.getTotalHosFee());
+                    row.createCell(col++).setCellValue(dto.getCardTotal());
+                    row.createCell(col++).setCellValue(dto.getCashTotal());
+                }
+
+                Row dateSummaryFooter = summarySheet.createRow(summaryRowIndex++);
+                dateSummaryFooter.createCell(3).setCellValue(wrapperDto.getAllTotalAmount());
+                dateSummaryFooter.createCell(4).setCellValue(wrapperDto.getAllDoctorFeeTotal());
+                dateSummaryFooter.createCell(5).setCellValue(wrapperDto.getAllHosFeeTotal());
+                dateSummaryFooter.createCell(6).setCellValue(wrapperDto.getAllCardTotal());
+                dateSummaryFooter.createCell(7).setCellValue(wrapperDto.getAllCashTotal());
+
+                summaryRowIndex += 2;
+                
+                Map<String, Double> summaryData = new LinkedHashMap<>();
+                summaryData.put("Total Cash Collection",                wrapperDto.getAllCashTotal());
+                summaryData.put("Total Card Collection",                wrapperDto.getAllCardTotal());
+                summaryData.put("Total Credit Collection",              wrapperDto.getAllCreditTotal());
+                summaryData.put("Total Valid Appointments",             wrapperDto.getTotalValidAppoinments());
+                summaryData.put("Cancel and Refund Collection",         wrapperDto.getAllCancelTotal() + wrapperDto.getAllRefundTotal());
+                summaryData.put("Total Cancel Appointments",            wrapperDto.getAllCancelAppoinments());
+                summaryData.put("Total Refund Appointments",            wrapperDto.getAllRefundAppoinments());
+                summaryData.put("Total Cancel And Refund Appointments", wrapperDto.getAllCancelAppoinments() + wrapperDto.getAllRefundAppoinments());
+
+                for (Map.Entry<String, Double> entry : summaryData.entrySet()) {
+                    Row row = summarySheet.createRow(summaryRowIndex++);
+                    Cell label = row.createCell(0);
+                    label.setCellValue(entry.getKey());
+                    label.setCellStyle(centerSmallStyle);
+                    Cell data = row.createCell(1);
+                    data.setCellValue(entry.getValue());
+                    data.setCellStyle(centerSmallStyle);
+                }
+                
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        excelSc = DefaultStreamedContent.builder()
+                .name(((fileName != null && !fileName.isEmpty()) ? fileName : "Report") + ".xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+
+        return excelSc;
+    }
+
+    /**
+     * Inserts a report title row followed by one row per filter (label/value
+     * pair) above whatever the PrimeFaces {@code p:dataExporter} has already
+     * written to row 0, by shifting the existing rows down. Intended to be
+     * called from a report controller's {@code postProcessor} method
+     * (issue #17615).
+     *
+     * @param sheet the sheet the dataExporter already wrote the table into
+     * @param reportTitle the report name to show as the header title
+     * @param filterPairs ordered {label, value} pairs, e.g. {"Institution",
+     * "All Institutions"}; always pass every filter the report supports,
+     * using "All" / "No" for unset ones so the printed header is complete
+     * @param mergeCol the last column index (0-based) the header rows should
+     * span, e.g. the report's number of exported columns minus one
+     */
+    public void insertExcelReportHeader(Sheet sheet, String reportTitle, List<String[]> filterPairs, int mergeCol) {
+        if (sheet == null) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Workbook wb = sheet.getWorkbook();
+
+        org.apache.poi.ss.usermodel.Font titleFont = wb.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        CellStyle titleStyle = wb.createCellStyle();
+        titleStyle.setFont(titleFont);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        org.apache.poi.ss.usermodel.Font labelFont = wb.createFont();
+        labelFont.setBold(true);
+        CellStyle labelStyle = wb.createCellStyle();
+        labelStyle.setFont(labelFont);
+
+        CellStyle valueStyle = wb.createCellStyle();
+
+        int headerRows = 1 + (filterPairs != null ? filterPairs.size() : 0);
+        if (sheet.getLastRowNum() >= 0) {
+            sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
+        }
+
+        int rowIndex = 0;
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(reportTitle != null ? reportTitle : "");
+        titleCell.setCellStyle(titleStyle);
+        if (mergeCol > 0) {
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, mergeCol));
+        }
+
+        if (filterPairs != null) {
+            for (String[] pair : filterPairs) {
+                Row row = sheet.createRow(rowIndex);
+                Cell labelCell = row.createCell(0);
+                labelCell.setCellValue((pair[0] != null ? pair[0] : "") + ":");
+                labelCell.setCellStyle(labelStyle);
+                Cell valueCell = row.createCell(1);
+                valueCell.setCellValue(pair.length > 1 && pair[1] != null ? pair[1] : "All");
+                valueCell.setCellStyle(valueStyle);
+                if (mergeCol > 1) {
+                    sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 1, mergeCol));
+                }
+                rowIndex++;
+            }
+        }
+    }
+
+    /**
+     * Appends a "Printed by ... / Printed at ..." row after the last row
+     * currently on the sheet. Call this after {@link
+     * #insertExcelReportHeader} (or standalone) from a report controller's
+     * {@code postProcessor} method (issue #17615).
+     *
+     * @param sheet the sheet to append the footer row to
+     * @param mergeCol the last column index (0-based) the footer row may use;
+     * the "Printed at" cell is placed at column {@code min(4, mergeCol)}
+     */
+    public void appendExcelPrintedByFooter(Sheet sheet, int mergeCol) {
+        if (sheet == null) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Workbook wb = sheet.getWorkbook();
+        CellStyle footerStyle = wb.createCellStyle();
+        org.apache.poi.ss.usermodel.Font footerFont = wb.createFont();
+        footerFont.setFontHeightInPoints((short) 9);
+        footerStyle.setFont(footerFont);
+
+        String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+        String printedTime = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(new Date());
+
+        int rowIndex = sheet.getLastRowNum() + 2;
+        Row footerRow = sheet.createRow(rowIndex);
+
+        Cell printedByCell = footerRow.createCell(0);
+        printedByCell.setCellStyle(footerStyle);
+
+        int printedAtCol = Math.min(4, mergeCol);
+        if (printedAtCol == 0) {
+            printedByCell.setCellValue("Printed by: " + userName + "     Printed at: " + printedTime);
+            return;
+        }
+
+        printedByCell.setCellValue("Printed by: " + userName);
+        Cell printedAtCell = footerRow.createCell(printedAtCol);
+        printedAtCell.setCellValue("Printed at: " + printedTime);
+        printedAtCell.setCellStyle(footerStyle);
     }
 }

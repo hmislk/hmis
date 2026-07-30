@@ -79,6 +79,32 @@ public class ConfigOptionApplicationController implements Serializable {
         return optionFacade.findFirstByJpqlWithLock(jpql.toString(), params);
     }
 
+    private ConfigOption findActiveOption(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
+        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.retired=false AND o.optionKey=:key AND o.scope=:scope");
+        Map<String, Object> params = new HashMap<>();
+        params.put("key", key);
+        params.put("scope", scope);
+        if (institution != null) {
+            jpql.append(" AND o.institution = :institution");
+            params.put("institution", institution);
+        } else {
+            jpql.append(" AND o.institution IS NULL");
+        }
+        if (department != null) {
+            jpql.append(" AND o.department = :department");
+            params.put("department", department);
+        } else {
+            jpql.append(" AND o.department IS NULL");
+        }
+        if (webUser != null) {
+            jpql.append(" AND o.webUser = :webUser");
+            params.put("webUser", webUser);
+        } else {
+            jpql.append(" AND o.webUser IS NULL");
+        }
+        return optionFacade.findFirstByJpql(jpql.toString(), params);
+    }
+
     public ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
         ConfigOption option = optionFacade.createOptionIfNotExists(key, OptionScope.APPLICATION, null, null, null, type, value);
         if (!isLoadingApplicationOptions) {
@@ -110,6 +136,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadPharmacyCommonBillConfigurationDefaults();
             loadPharmacyAdjustmentReceiptConfigurationDefaults();
             loadPatientNameConfigurationDefaults();
+            loadPhnConfigurationDefaults();
             loadSecurityConfigurationDefaults();
             loadPharmacyAnalyticsConfigurationDefaults();
             loadReportMethodConfigurationDefaults();
@@ -119,6 +146,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadDatabaseVersionConfigurationDefaults();
             loadAiChatConfigurationDefaults();
             loadStockHistoryArchiveConfigurationDefaults();
+            loadSapIntegrationConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -195,6 +223,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
+        getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
 
         // Stock Upload Configuration
         getBooleanValueByKey("Allow Expired Items in Direct Purchase Stock Upload", false);
@@ -949,6 +978,20 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
     }
 
+    private void loadPhnConfigurationDefaults() {
+        // PHN Standard Version: V1 (NeGS sequential), V2 (NDHGS random), External (manual), None (disabled)
+        // Default: V2 for new deployments; existing deployments that used the old random method are V2-compatible
+        getShortTextValueByKey("PHN Standard Version", "V2");
+        // POI Scope: Global (one POI for all institutions) or PerInstitution (POI from Institution.pointOfIssueNo)
+        getShortTextValueByKey("PHN POI Number Scope", "Global");
+        // Global POI value — used when scope is Global (4 chars, alphanumeric for V2, numeric for V1)
+        getShortTextValueByKey("PHN POI Number", "");
+        // Auto-generate PHN on patient registration (true) or allow manual entry (false)
+        getBooleanValueByKey("PHN Auto-generate on Registration", true);
+        // Starting sequential number for V1 generation (applies per POI scope)
+        getIntegerValueByKey("PHN Sequential Start", 1);
+    }
+
     private void loadSecurityConfigurationDefaults() {
         getBooleanValueByKey("prevent_password_reuse", false);
         // Admin-triggered JPA L2 cache clear is disabled by default
@@ -1413,6 +1456,16 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    public void setLongValueByKey(String key, Long value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.LONG, "" + value);
+        }
+        option.setOptionValue("" + value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public List<String> getListOfCustomOptions(String optionName) {
         // Fetch the string that contains options separated by line breaks
         String listOfOptionSeperatedByLineBreaks = getLongTextValueByKey("Custom option values for " + optionName);
@@ -1453,6 +1506,150 @@ public class ConfigOptionApplicationController implements Serializable {
         option.setOptionValue(Boolean.toString(value));
         optionFacade.edit(option);
         loadApplicationOptions();
+    }
+
+    /**
+     * Retrieves a department-scoped boolean preference (OptionScope.DEPARTMENT).
+     * Falls back to the application-scoped value when department is null.
+     * Creates the department-scoped ConfigOption (with defaultValue) if absent.
+     *
+     * @param key the preference key (e.g. "Pharmacy - Allow Issue to Same Department")
+     * @param dept the department the preference is scoped to
+     * @param defaultValue the value to persist if the option does not exist yet
+     * @return the current boolean value of the department-scoped preference
+     */
+    public Boolean getBooleanValueByKeyForDepartment(String key, Department dept, boolean defaultValue) {
+        if (dept == null) {
+            return getBooleanValueByKey(key, defaultValue);
+        }
+        ConfigOption option = findActiveOption(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.BOOLEAN, Boolean.toString(defaultValue));
+        }
+        return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    /**
+     * Persists a department-scoped boolean preference (OptionScope.DEPARTMENT),
+     * creating the ConfigOption if it does not already exist. Falls back to the
+     * application-scoped setter when department is null.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param value the value to persist
+     */
+    public void setBooleanValueByKeyForDepartment(String key, Department dept, boolean value) {
+        if (dept == null) {
+            setBooleanValueByKey(key, value);
+            return;
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.BOOLEAN, Boolean.toString(value));
+        }
+        option.setValueType(OptionValueType.BOOLEAN);
+        option.setOptionValue(Boolean.toString(value));
+        optionFacade.edit(option);
+    }
+
+    /**
+     * Retrieves a department-scoped long-text preference (OptionScope.DEPARTMENT).
+     * Falls back to the application-scoped value when department is null.
+     * Creates the department-scoped ConfigOption (with defaultValue) if absent.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param defaultValue the value to persist if the option does not exist yet
+     * @return the current text value of the department-scoped preference
+     */
+    public String getLongTextValueByKeyForDepartment(String key, Department dept, String defaultValue) {
+        if (dept == null) {
+            return getLongTextValueByKey(key, defaultValue);
+        }
+        ConfigOption option = findActiveOption(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG_TEXT, defaultValue);
+        }
+        return option.getOptionValue();
+    }
+
+    /**
+     * Persists a department-scoped long-text preference (OptionScope.DEPARTMENT),
+     * creating the ConfigOption if it does not already exist. Falls back to the
+     * application-scoped setter when department is null.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param value the value to persist
+     */
+    public void setLongTextValueByKeyForDepartment(String key, Department dept, String value) {
+        String sanitized = Jsoup.clean(value, Safelist.basic());
+        if (dept == null) {
+            setLongTextValueByKey(key, value);
+            return;
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG_TEXT, sanitized);
+        }
+        option.setValueType(OptionValueType.LONG_TEXT);
+        option.setOptionValue(sanitized);
+        optionFacade.edit(option);
+    }
+
+    /**
+     * Retrieves a department-scoped long preference (OptionScope.DEPARTMENT).
+     * Falls back to the application-scoped value when department is null.
+     * Creates the department-scoped ConfigOption (with defaultValue) if absent.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param defaultValue the value to persist if the option does not exist yet
+     * @return the current long value of the department-scoped preference
+     */
+    public Long getLongValueByKeyForDepartment(String key, Department dept, Long defaultValue) {
+        if (dept == null) {
+            return getLongValueByKey(key, defaultValue);
+        }
+        ConfigOption option = findActiveOption(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null || option.getValueType() != OptionValueType.LONG) {
+            String dv = defaultValue != null ? "" + defaultValue : "0";
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG, dv);
+        }
+        try {
+            return Long.parseLong(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Persists a department-scoped long preference (OptionScope.DEPARTMENT),
+     * creating the ConfigOption if it does not already exist. Falls back to the
+     * application-scoped setter when department is null.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param value the value to persist
+     */
+    public void setLongValueByKeyForDepartment(String key, Department dept, Long value) {
+        if (dept == null) {
+            setLongValueByKey(key, value);
+            return;
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG, "" + value);
+        }
+        option.setValueType(OptionValueType.LONG);
+        option.setOptionValue("" + value);
+        optionFacade.edit(option);
     }
 
     public boolean isPreventPasswordReuse() {
@@ -1571,6 +1768,21 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public void listApplicationOptions() {
         options = getApplicationOptions();
+    }
+
+    private void loadSapIntegrationConfigurationDefaults() {
+        getBooleanValueByKey("SAP Integration - Enabled", false);
+        getShortTextValueByKey("SAP Integration - Base URL", "");
+        getShortTextValueByKey("SAP Integration - Token URL", "");
+        getShortTextValueByKey("SAP Integration - Client ID", "");
+        getShortTextValueByKey("SAP Integration - Client Secret", "");
+        getShortTextValueByKey("SAP Integration - Material Code Field", "code");
+        getShortTextValueByKey("SAP Integration - Inventory Last Sync", "");
+        getShortTextValueByKey("SAP Integration - Inventory Sync From Days", "7");
+        getShortTextValueByKey("SAP Integration - Company Code", "");
+        getShortTextValueByKey("SAP Integration - AR Account", "");
+        getShortTextValueByKey("SAP Integration - Revenue Account", "");
+        getShortTextValueByKey("SAP Integration - Currency", "LKR");
     }
 
 }

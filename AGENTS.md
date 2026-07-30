@@ -10,11 +10,6 @@
 ### Working Directory
 0. **🚨 NEVER USE WORKTREE ISOLATION**: Always work directly in the main project checkout directory.
 
-### User Control
-1. **🚨 NO AUTO-ACTIONS**: Do not commit, build, run, or push unless explicitly requested.
-2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before Git operations, Maven builds, or deployments.
-3. **🚨 NO AUTO-COMPILE**: Never run Maven compile unless explicitly requested.
-
 ### Code Integrity
 4. **🚨 NO MOCK DATA**: Never use mock bills, fake entities, or temporary business-logic workarounds.
 5. **🚨 DISCUSS UNCERTAINTIES**: Discuss with user when uncertain about implementation approach.
@@ -39,7 +34,6 @@ These guidelines apply to the entire repository.
 
 ## Build & Testing
 - **Detect Maven**: Prefer `./detect-maven.sh test` when tests are needed.
-- **Compile Guard**: Do not run Maven compile/build unless explicitly requested.
 - **When to Test**: Run tests for Java changes only when requested; JSF-only changes do not require tests.
 
 ## Persistence & Deployment Safeguards
@@ -73,7 +67,7 @@ These guidelines apply to the entire repository.
 - Privilege system: `developer_docs/security/privilege-system.md`
 - DTO guidelines: `developer_docs/dto/implementation-guidelines.md`
 - PR review workflow: `developer_docs/git/pr-review-workflow.md`
-- REST API dev guide: `developer_docs/api/rest-api-development-guide.md`
+- REST API dev guide: `developer_docs/api/building-apis/rest-api-development-guide.md`
 - Wiki publishing: `developer_docs/github/wiki-publishing.md`
 
 ---

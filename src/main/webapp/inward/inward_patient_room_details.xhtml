@@ -17,6 +17,47 @@
                 <h:form id="roomDetailsForm">
                     <p:messages id="pageMessages"/>
 
+                    <p:confirmDialog
+                        global="true"
+                        responsive="true"
+                        width="780"
+                        showEffect="fade"
+                        hideEffect="fade">
+                        <p:commandButton
+                            style="width: 150px;"
+                            value="Yes"
+                            type="button"
+                            styleClass="ui-confirmdialog-yes ui-button-danger"
+                            icon="fa fa-check"/>
+                        <p:commandButton
+                            style="width: 150px;"
+                            value="No"
+                            type="button"
+                            styleClass="ui-confirmdialog-no ui-button-secondary ui-button-outlined"
+                            icon="fa fa-times"/>
+                    </p:confirmDialog>
+
+                    <p:dialog id="dlgRoomOverlapConfirm" widgetVar="dlgRoomOverlapConfirm" header="&#9888; Room Time Overlap Warning"
+                              modal="true" resizable="false" closable="true" style="width:480px">
+                        <div style="padding:12px">
+                            <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                &#9888; WARNING: This room's time range overlaps another room period for this patient or bed.
+                            </p>
+                            <p style="color:#b71c1c;">
+                                <h:outputText value="#{bhtSummeryController.pendingOverlapDescription}"/>
+                            </p>
+                            <p>Are you sure you want to save this room with the overlapping time range?</p>
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <p:commandButton value="Cancel" icon="fa fa-times" class="ui-button-secondary"
+                                                 onclick="PF('dlgRoomOverlapConfirm').hide(); return false;"/>
+                                <p:commandButton value="Yes, Save Anyway" icon="fa fa-exclamation-triangle" class="ui-button-danger"
+                                                 update="@form"
+                                                 action="#{bhtSummeryController.confirmUpdatePatientRoomWithOverlap()}"
+                                                 oncomplete="PF('dlgRoomOverlapConfirm').hide();"/>
+                            </div>
+                        </div>
+                    </p:dialog>
+
                     <p:panel>
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -24,6 +65,8 @@
                                     <i class="fa-solid fa-bed fa-lg text-primary me-3"></i>
                                     <div>
                                         <h:outputText value="Patient Room Details" styleClass="text-primary fw-bold"/>
+                                        <p:tag styleClass="ms-2" value="Room Time Overlap Detected" icon="fa fa-exclamation-triangle" severity="danger"
+                                               rendered="#{bhtSummeryController.anyRoomOverlapping}"/>
                                         <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
                                             <small class="text-muted">
                                                 <h:outputText value="#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}"/>
@@ -96,6 +139,7 @@
                                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                                 <p:autoComplete
                                                     forceSelection="true"
+                                                    readonly="#{bhtSummeryController.patientEncounter.discharged}"
                                                     value="#{rm.roomFacilityCharge}"
                                                     completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                     var="rf"
@@ -106,11 +150,18 @@
                                                 <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
                                                     <p:badge value="Guardian" severity="success"/>
                                                 </h:panelGroup>
+                                                <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.TheatreRoom'}">
+                                                    <p:badge value="Theatre" severity="danger"/>
+                                                </h:panelGroup>
                                                 <h:panelGroup rendered="#{rm.discharged}">
                                                     <p:badge value="Left" severity="info"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{not rm.discharged}">
                                                     <p:badge value="Active" severity="warning"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{bhtSummeryController.hasOverlap(rm)}">
+                                                    <p:tag value="Overlap" icon="fa fa-exclamation-triangle" severity="danger"
+                                                           title="#{bhtSummeryController.getOverlapDescription(rm)}"/>
                                                 </h:panelGroup>
                                             </div>
                                         </p:column>
@@ -121,6 +172,7 @@
                                                 value="#{rm.admittedAt}"
                                                 showTime="true"
                                                 showButtonBar="true"
+                                                readonly="#{bhtSummeryController.patientEncounter.discharged}"
                                                 timeInput="true"
                                                 pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                         </p:column>
@@ -132,6 +184,7 @@
                                                 showTime="true"
                                                 showButtonBar="true"
                                                 timeInput="true"
+                                                readonly="#{bhtSummeryController.patientEncounter.discharged}"
                                                 pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                         </p:column>
 
@@ -170,6 +223,7 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
+
                                         <p:column headerText="Discount" style="width:80px; text-align:right; color:#c0392b;">
                                             <h:outputText value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -181,32 +235,75 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Actions" style="width:220px;">
+                                        <p:column headerText="Actions" style="width:240px;">
                                             <div class="d-flex gap-1 flex-wrap">
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    update="@form"
                                                     icon="fa fa-save"
                                                     title="Save Changes"
                                                     class="ui-button-info"
-                                                    action="#{bhtSummeryController.updatePatientRoom(rm)}"/>
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomRoomChange')}"
+                                                    action="#{bhtSummeryController.checkBeforeUpdatePatientRoom(rm)}">
+                                                </p:commandButton>
+
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    update="@form"
                                                     icon="fa fa-calculator"
                                                     title="Update Charges from Room Rates"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                                     class="ui-button-success"
-                                                    action="#{bhtSummeryController.updateChargesForRoom(rm)}"/>
+                                                    action="#{bhtSummeryController.updateChargesForRoom(rm)}">
+                                                </p:commandButton>
+
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    process="@this"
+                                                    update="@form"
                                                     icon="fa fa-check-square"
                                                     title="Discharge from Room"
+                                                    rendered="#{not rm.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomDischarge')}"
                                                     class="ui-button-warning"
-                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}"/>
+                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}">
+                                                    <p:confirm header="Confirm Discharge"
+                                                               message="Are you sure you want to discharge from this room?"
+                                                               icon="fa fa-exclamation-triangle"/>
+                                                </p:commandButton>
+
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    process="@this"
+                                                    update="@form"
                                                     icon="fa fa-times-circle"
                                                     title="Cancel Room Discharge"
+                                                    rendered="#{rm.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomDischarge')}"
                                                     class="ui-button-danger"
-                                                    action="#{roomChangeController.dischargeCancel(rm)}"/>
+                                                    action="#{roomChangeController.dischargeCancel(rm)}">
+                                                    <p:confirm header="Confirm Cancel Discharge"
+                                                               message="Are you sure you want to cancel this room discharge?"
+                                                               icon="fa fa-exclamation-triangle"/>
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-print"
+                                                    title="Print Discharge Receipt"
+                                                    rendered="#{rm.discharged}"
+                                                    class="ui-button-info"
+                                                    action="#{roomChangeController.navigateToRoomDischargeReceipt(rm)}">
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    process="@this"
+                                                    update="@form"
+                                                    icon="fa fa-trash"
+                                                    title="Remove Room"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomRoomChange')}"
+                                                    class="ui-button-danger mx-2"
+                                                    action="#{roomChangeController.removeRoom(rm)}">
+                                                    <p:confirm header="Confirm Room Removal"
+                                                               message="Remove this room from the patient's room list? This action cannot be undone."
+                                                               icon="fa fa-exclamation-triangle"/>
+                                                </p:commandButton>
                                             </div>
                                         </p:column>
 
@@ -249,6 +346,7 @@
                                                                     <th>Overshoot Limit</th>
                                                                     <th>Extra Slot?</th>
                                                                     <th class="text-primary">Billed Slots</th>
+                                                                    <th style="color:#0d6efd;">Matrix %</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -299,6 +397,13 @@
                                                                     <td class="text-primary fw-bold" style="font-size:1.05rem;">
                                                                         <h:outputText value="#{bhtSummeryController.getRoomDurationBreakdown(rm).billedSlots}"/>
                                                                     </td>
+                                                                    <td class="fw-semibold" style="color:#0d6efd;">
+                                                                        <h:outputText value="#{bhtSummeryController.getRoomMatrixPercent(rm)}" rendered="#{bhtSummeryController.getRoomMatrixPercent(rm) ne null}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                        <h:outputText value="%" rendered="#{bhtSummeryController.getRoomMatrixPercent(rm) ne null}"/>
+                                                                        <h:outputText value="—" rendered="#{bhtSummeryController.getRoomMatrixPercent(rm) eq null}" styleClass="text-muted"/>
+                                                                    </td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
@@ -320,6 +425,8 @@
                                                         <tr>
                                                             <th>Charge Type</th>
                                                             <th class="text-end">Rate / Slot</th>
+                                                            <th class="text-end">Slot Rate</th>
+                                                            <th class="text-end" style="color:#0d6efd;">Matrix Value</th>
                                                             <th class="text-end">Calculated</th>
                                                             <th class="text-end" style="color:#c0392b;">Discount</th>
                                                             <th class="text-end fw-bold">Net</th>
@@ -330,6 +437,12 @@
                                                             <td><i class="fa-solid fa-bed me-1 text-primary"/>Room</td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{rm.currentRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedRoomCharge - rm.marginRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedRoomCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
@@ -347,6 +460,12 @@
                                                                 <h:outputText value="#{rm.currentMaintananceCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMaintainCharge - rm.marginMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedMaintainCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end" style="color:#c0392b;">
@@ -360,6 +479,12 @@
                                                             <td><i class="fa-solid fa-user-doctor me-1 text-info"/>Medical Officer</td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{rm.currentMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMoCharge - rm.marginMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedMoCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
@@ -377,6 +502,12 @@
                                                                 <h:outputText value="#{rm.currentNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedNursingCharge - rm.marginNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedNursingCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end" style="color:#c0392b;">
@@ -390,6 +521,12 @@
                                                             <td><i class="fa-solid fa-sheet-plastic me-1 text-warning"/>Linen</td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{rm.currentLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedLinenCharge - rm.marginLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedLinenCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
@@ -407,6 +544,12 @@
                                                                 <h:outputText value="#{rm.currentAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedAdministrationCharge - rm.marginAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedAdministrationCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end" style="color:#c0392b;">
@@ -422,6 +565,12 @@
                                                                 <h:outputText value="#{rm.currentMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end">
+                                                                <h:outputText value="#{rm.calculatedMedicalCareCharge - rm.marginMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedMedicalCareCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                                                             </td>
                                                             <td class="text-end" style="color:#c0392b;">
@@ -435,6 +584,16 @@
                                                         <tr class="table-secondary fw-bold">
                                                             <td>Total</td>
                                                             <td></td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{(rm.calculatedRoomCharge - rm.marginRoomCharge) + (rm.calculatedMaintainCharge - rm.marginMaintainCharge) + (rm.calculatedMoCharge - rm.marginMoCharge) + (rm.calculatedNursingCharge - rm.marginNursingCharge) + (rm.calculatedLinenCharge - rm.marginLinenCharge) + (rm.calculatedAdministrationCharge - rm.marginAdministrationCharge) + (rm.calculatedMedicalCareCharge - rm.marginMedicalCareCharge)}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end" style="color:#0d6efd;">
+                                                                <h:outputText value="#{rm.marginRoomCharge + rm.marginMaintainCharge + rm.marginLinenCharge + rm.marginNursingCharge + rm.marginMoCharge + rm.marginAdministrationCharge + rm.marginMedicalCareCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{rm.calculatedRoomCharge + rm.calculatedMaintainCharge + rm.calculatedMoCharge + rm.calculatedNursingCharge + rm.calculatedLinenCharge + rm.calculatedAdministrationCharge + rm.calculatedMedicalCareCharge}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
@@ -453,6 +612,41 @@
                                                         </tr>
                                                     </tbody>
                                                 </table>
+
+                                                <!-- Timed Item Charges for this stay segment -->
+                                                <h:panelGroup rendered="#{not empty rm.timedItemCharges}" layout="block" styleClass="mt-3">
+                                                    <div class="fw-semibold mb-1" style="font-size:0.85rem;">
+                                                        <i class="fa-solid fa-clock me-1 text-info"/>Duration-based Timed Item Charges
+                                                    </div>
+                                                    <table class="table table-sm table-bordered mb-0" style="font-size:0.83rem;">
+                                                        <thead class="table-info">
+                                                            <tr>
+                                                                <th>Item</th>
+                                                                <th>Charge Category</th>
+                                                                <th class="text-end">Calculated</th>
+                                                                <th class="text-end" style="color:#c0392b;">Discount</th>
+                                                                <th class="text-end fw-bold">Net</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <ui:repeat value="#{rm.timedItemCharges}" var="tc">
+                                                                <tr>
+                                                                    <td><h:outputText value="#{tc.timedItem.name}"/></td>
+                                                                    <td><h:outputText value="#{tc.timedItem.inwardChargeType}"/></td>
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{tc.calculatedCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                    </td>
+                                                                    <td class="text-end" style="color:#c0392b;">
+                                                                        <h:outputText value="#{tc.discountCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                    </td>
+                                                                    <td class="text-end fw-semibold">
+                                                                        <h:outputText value="#{tc.calculatedCharge - tc.discountCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:repeat>
+                                                        </tbody>
+                                                    </table>
+                                                </h:panelGroup>
                                             </div>
                                         </p:rowExpansion>
 
@@ -464,17 +658,17 @@
                             <p:panel rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
                                 <f:facet name="header">
                                     <i class="fa-solid fa-bars-progress me-2 text-primary"/>
-                                    <h:outputText value="Room Stay Timeline"/>
+                                    <h:outputText value="Patient Room &amp; Theatre Timeline"/>
                                 </f:facet>
 
-                                <h:panelGroup rendered="#{empty bhtSummeryController.roomGanttBars}" layout="block">
+                                <h:panelGroup rendered="#{empty bhtSummeryController.unifiedGanttBars}" layout="block">
                                     <div class="text-center py-3 text-muted">
                                         <i class="fa-solid fa-info-circle me-2"/>
                                         Timeline data unavailable (no valid timestamps).
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{not empty bhtSummeryController.roomGanttBars}" layout="block"
+                                <h:panelGroup rendered="#{not empty bhtSummeryController.unifiedGanttBars}" layout="block"
                                               style="display:block; width:100%; overflow-x:auto; padding:12px 8px;">
 
                                     <!-- legend -->
@@ -491,10 +685,18 @@
                                             <h:panelGroup layout="block" style="width:16px; height:16px; border-radius:3px; background:linear-gradient(90deg,#6f42c1,#a56dff); flex-shrink:0;"/>
                                             <h:outputText value="Guardian"/>
                                         </h:panelGroup>
+                                        <h:panelGroup layout="block" style="display:flex; align-items:center; gap:6px;">
+                                            <h:panelGroup layout="block" style="width:16px; height:16px; border-radius:3px; background:linear-gradient(90deg,#fd7e14,#ffc107); flex-shrink:0;"/>
+                                            <h:outputText value="In Theatre"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" style="display:flex; align-items:center; gap:6px;">
+                                            <h:panelGroup layout="block" style="width:16px; height:16px; border-radius:3px; background:linear-gradient(90deg,#adb5bd,#ced4da); flex-shrink:0;"/>
+                                            <h:outputText value="Theatre (completed)"/>
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
-                                    <!-- one row per room -->
-                                    <ui:repeat value="#{bhtSummeryController.roomGanttBars}" var="bar">
+                                    <!-- one row per room / theatre visit -->
+                                    <ui:repeat value="#{bhtSummeryController.unifiedGanttBars}" var="bar">
                                         <h:panelGroup layout="block"
                                                       style="display:flex; align-items:center; margin-bottom:10px; min-height:38px;">
                                             <!-- label column -->

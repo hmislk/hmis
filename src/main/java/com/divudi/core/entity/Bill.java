@@ -116,6 +116,21 @@ public class Bill implements Serializable, RetirableEntity {
     private String comments;
     @Lob
     private String paymentMemo;
+    /**
+     * Serialised breakdown of a Multiple Payment Methods settlement, held as a JSON
+     * array of {@code {label, value, reference}} entries.
+     *
+     * Written where the components are entered but no {@link Payment} rows are created
+     * yet - notably the pharmacy Sale for Cashier pre-bill, where the cashier collects
+     * the money and writes the real Payment rows later against the settled bill. Without
+     * this the split exists only in session state, so a reprint of the pre-bill loses the
+     * breakdown that the slip handed to the customer showed (#22487).
+     *
+     * Print-only. It is never summed and must not be treated as evidence that money was
+     * received - persisted Payment rows remain the single source of truth for that.
+     */
+    @Lob
+    private String paymentBreakdown;
     @Lob
     private String indication;
     // Bank Detail
@@ -273,6 +288,7 @@ public class Bill implements Serializable, RetirableEntity {
     //Id's
     private String deptId;
     private String insId;
+    private Long voucherNo;
     private String catId;
     private String sessionId;
     @Deprecated
@@ -351,6 +367,11 @@ public class Bill implements Serializable, RetirableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
+
+    private Integer finalBillVersionSerial; // 1, 2, 3... for this admission's final-bill lineage; null for non-final-bill types
+    private boolean confirmedFinalBill;     // denormalized flag, true iff pe.finalBill == this bill
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill previousVersion;           // the bill this version was created from; null for the first version; display-only, not used in any query
 
     @Transient
     private double tmpReturnTotal;
@@ -518,6 +539,15 @@ public class Bill implements Serializable, RetirableEntity {
     private Family memberFamily;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+
+    // Collecting Centre repayment voucher values (recorded at settlement time so
+    // the CC payment voucher can be reprinted with the same figures later).
+    private double ccBalanceBeforeTransaction;
+    private double ccBalanceAfterTransaction;
+    private double ccTotalReceived;
+    private double ccTransactionAmount;
+    private double ccTotalCenterValue;
+    private double ccExcessAmount;
 
     public Bill() {
         if (status == null) {
@@ -1393,6 +1423,22 @@ public class Bill implements Serializable, RetirableEntity {
         this.billItems = billItems;
     }
 
+    /**
+     * Bill items excluding retired ones. Bill print templates should use
+     * this instead of getBillItems() directly, so a line item removed
+     * during draft editing (retired = true) doesn't still appear on the
+     * printed bill (issue #21856).
+     */
+    public List<BillItem> getActiveBillItems() {
+        List<BillItem> active = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if (!bi.isRetired()) {
+                active.add(bi);
+            }
+        }
+        return active;
+    }
+
     public Date getBillDate() {
         if (billDate == null) {
             billDate = createdAt;
@@ -1733,6 +1779,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.deptId = deptId;
     }
 
+    public Long getVoucherNo() {
+        return voucherNo;
+    }
+
+    public void setVoucherNo(Long voucherNo) {
+        this.voucherNo = voucherNo;
+    }
+
     public String getInsId() {
         return insId;
     }
@@ -1875,6 +1929,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPaymentMemo(String paymentMemo) {
         this.paymentMemo = paymentMemo;
+    }
+
+    public String getPaymentBreakdown() {
+        return paymentBreakdown;
+    }
+
+    public void setPaymentBreakdown(String paymentBreakdown) {
+        this.paymentBreakdown = paymentBreakdown;
     }
 
     public Bill getReferenceBill() {
@@ -2041,6 +2103,30 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setBackwardReferenceBill(Bill backwardReferenceBill) {
         this.backwardReferenceBill = backwardReferenceBill;
+    }
+
+    public Integer getFinalBillVersionSerial() {
+        return finalBillVersionSerial;
+    }
+
+    public void setFinalBillVersionSerial(Integer finalBillVersionSerial) {
+        this.finalBillVersionSerial = finalBillVersionSerial;
+    }
+
+    public boolean isConfirmedFinalBill() {
+        return confirmedFinalBill;
+    }
+
+    public void setConfirmedFinalBill(boolean confirmedFinalBill) {
+        this.confirmedFinalBill = confirmedFinalBill;
+    }
+
+    public Bill getPreviousVersion() {
+        return previousVersion;
+    }
+
+    public void setPreviousVersion(Bill previousVersion) {
+        this.previousVersion = previousVersion;
     }
 
     public List<Bill> getForwardReferenceBills() {
@@ -3065,6 +3151,16 @@ public class Bill implements Serializable, RetirableEntity {
         return billFinanceDetails;
     }
 
+    /**
+     * Null-check for billFinanceDetails that does NOT auto-vivify a new instance
+     * (unlike getBillFinanceDetails(), which lazily creates one on first call).
+     * Use this when the presence/absence of BillFinanceDetails is itself meaningful,
+     * e.g. as the fingerprint of "bill created before BFD population existed".
+     */
+    public boolean hasBillFinanceDetails() {
+        return billFinanceDetails != null;
+    }
+
     public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
         this.billFinanceDetails = billFinanceDetails;
         if (billFinanceDetails != null && billFinanceDetails.getBill() != this) {
@@ -3140,6 +3236,54 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public double getCcBalanceBeforeTransaction() {
+        return ccBalanceBeforeTransaction;
+    }
+
+    public void setCcBalanceBeforeTransaction(double ccBalanceBeforeTransaction) {
+        this.ccBalanceBeforeTransaction = ccBalanceBeforeTransaction;
+    }
+
+    public double getCcBalanceAfterTransaction() {
+        return ccBalanceAfterTransaction;
+    }
+
+    public void setCcBalanceAfterTransaction(double ccBalanceAfterTransaction) {
+        this.ccBalanceAfterTransaction = ccBalanceAfterTransaction;
+    }
+
+    public double getCcTotalReceived() {
+        return ccTotalReceived;
+    }
+
+    public void setCcTotalReceived(double ccTotalReceived) {
+        this.ccTotalReceived = ccTotalReceived;
+    }
+
+    public double getCcTransactionAmount() {
+        return ccTransactionAmount;
+    }
+
+    public void setCcTransactionAmount(double ccTransactionAmount) {
+        this.ccTransactionAmount = ccTransactionAmount;
+    }
+
+    public double getCcTotalCenterValue() {
+        return ccTotalCenterValue;
+    }
+
+    public void setCcTotalCenterValue(double ccTotalCenterValue) {
+        this.ccTotalCenterValue = ccTotalCenterValue;
+    }
+
+    public double getCcExcessAmount() {
+        return ccExcessAmount;
+    }
+
+    public void setCcExcessAmount(double ccExcessAmount) {
+        this.ccExcessAmount = ccExcessAmount;
     }
 
 }

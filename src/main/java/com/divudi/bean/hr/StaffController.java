@@ -24,6 +24,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.SalaryCycle;
 import com.divudi.core.entity.hr.StaffDesignation;
 import com.divudi.core.entity.hr.StaffEmployeeStatus;
 import com.divudi.core.entity.hr.StaffEmployment;
@@ -41,6 +42,9 @@ import com.divudi.core.facade.StaffEmploymentFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.StaffSalaryFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.AuditService;
+import com.divudi.service.PersonService;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -89,6 +93,10 @@ public class StaffController implements Serializable {
     private CommonReportItemFacade criFacade;
     @EJB
     FormItemValueFacade fivFacade;
+    @EJB
+    private PersonService personService;
+    @EJB
+    private AuditService auditService;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -121,6 +129,8 @@ public class StaffController implements Serializable {
     private Date tempRetireDate = null;
     private boolean removeResign = false;
     private Double eligibleWelfareLimit;
+
+    private Map<String, Object> initialPerson;
 
     public Double getEligibleWelfareLimit() {
         return eligibleWelfareLimit;
@@ -219,6 +229,9 @@ public class StaffController implements Serializable {
             currentPerson = new Person();
             current.setPerson(currentPerson);
         }
+        // Initialize initialPerson map for audit logging
+        initialPerson = new HashMap<>();
+        personService.personToAuditMap(getInitialPerson(), current.getPerson());
         return "/admin/staff/staff?faces-redirect=true";
     }
 
@@ -238,12 +251,30 @@ public class StaffController implements Serializable {
             JsfUtil.addErrorMessage("No Person");
             return;
         }
+
+        // Prepare editedPersonMap for audit logging
+        Map<String, Object> editedPerson = new HashMap<>();
+        personService.personToAuditMap(editedPerson, current.getPerson());
+
         if (current.getPerson().getId() != null) {
             personFacade.edit(current.getPerson());
+            
+            // Person edited, log the creation event
+            auditService.logAudit(initialPerson, editedPerson, sessionController.getLoggedUser(), "Person", "updatePerson", current.getPerson().getId());
+            
         } else {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(sessionController.getLoggedUser());
-            personFacade.edit(current.getPerson());
+            personFacade.createAndFlush(current.getPerson());
+
+            // Refresh the map now that the Person has been assigned an ID
+            personService.personToAuditMap(editedPerson, current.getPerson());
+
+            // Person created, log the creation event
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", current.getPerson().getId());
+
+            // For editing staff just created
+            initialPerson = new HashMap<>();
         }
         if (current.getId() != null) {
             ejbFacade.edit(current);
@@ -254,6 +285,8 @@ public class StaffController implements Serializable {
             ejbFacade.create(current);
             JsfUtil.addSuccessMessage("Saved");
         }
+        
+        initialPerson = editedPerson;
 
     }
 
@@ -500,7 +533,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
         sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
         hm.put("to", ssDate);
@@ -552,7 +585,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts"
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)"
                 + " and ss.dateLeft >:fd "
                 + " and ss.dateLeft < :to ";
         hm.put("to", staffSalaryController.getSalaryCycle().getSalaryToDate());
@@ -621,7 +654,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
 //        sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
 //        hm.put("to", ssDate );
@@ -665,12 +698,31 @@ public class StaffController implements Serializable {
     }
 
     public void fetchWorkDays(List<Staff> staffs) {
+        if (staffs == null || staffs.isEmpty()) {
+            return;
+        }
+        SalaryCycle cycle = staffSalaryController.getSalaryCycle();
+        if (cycle == null) {
+            JsfUtil.addErrorMessage("Please select a Salary Cycle before filling staff.");
+            return;
+        }
+        if (cycle.getDayOffPhFromDate() == null || cycle.getDayOffPhToDate() == null) {
+            JsfUtil.addErrorMessage("Salary Cycle dates are incomplete.");
+            return;
+        }
+        if (cycle.getSalaryFromDate() == null || cycle.getSalaryToDate() == null) {
+            JsfUtil.addErrorMessage("Salary From/To dates are incomplete.");
+            return;
+        }
         for (Staff s : staffs) {
-            if (staffSalaryController.getSalaryCycle() != null) {
-                s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
-                s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
-
-            }
+            s.setTransWorkedDays(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getDayOffPhFromDate(),
+                    cycle.getDayOffPhToDate()));
+            s.setTransWorkedDaysSalaryFromToDate(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getSalaryFromDate(),
+                    cycle.getSalaryToDate()));
         }
     }
 
@@ -932,21 +984,24 @@ public class StaffController implements Serializable {
     }
 
     public List<Staff> completeStaffWithoutDoctors(String query) {
-        List<Staff> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select p from Staff p where p.retired=false and "
-                    + "((p.person.name) like :q or "
-                    + " (p.code) like :q or "
-                    + " (p.staffCode) like :q ) and type(p) != Doctor"
-                    + " order by p.person.name";
-            HashMap hm = new HashMap();
-            hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, hm, 20);
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
         }
-        return suggestions;
+        // Split on whitespace and require every token to match (in any order) across
+        // name/code/staffCode, so a full name like "Dulmin Perera" matches reliably.
+        String[] tokens = query.trim().split("\\s+");
+        StringBuilder sql = new StringBuilder(
+                "select p from Staff p where p.retired=false and type(p) != Doctor");
+        HashMap hm = new HashMap();
+        for (int i = 0; i < tokens.length; i++) {
+            String paramName = "q" + i;
+            sql.append(" and ((p.person.name) like :").append(paramName)
+                    .append(" or (p.code) like :").append(paramName)
+                    .append(" or (p.staffCode) like :").append(paramName).append(")");
+            hm.put(paramName, "%" + tokens[i].toUpperCase() + "%");
+        }
+        sql.append(" order by p.person.name");
+        return getFacade().findByJpql(sql.toString(), hm, 20);
     }
 
     public String saveSignature() {
@@ -1222,7 +1277,7 @@ public class StaffController implements Serializable {
         formItems = null;
         tempRetireDate = null;
     }
-
+    
     public void saveSelected() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to save");
@@ -1279,19 +1334,33 @@ public class StaffController implements Serializable {
         current.getPerson().getFullName();
         current.getPerson().getNameWithInitials();
 
-        System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
-        System.out.println("current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
-
+        // Prepare editedPersonMap for audit logging
+        Map<String, Object> editedPerson = new HashMap<>();
+        personService.personToAuditMap(editedPerson, current.getPerson());
+        
         if (current.getPerson().getId() == null) {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().createAndFlush(current.getPerson());
+
+            // Refresh the map now that the Person has been assigned an ID
+            personService.personToAuditMap(editedPerson, current.getPerson());
+
+            // Person created, log the creation event
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", current.getPerson().getId());
             JsfUtil.addSuccessMessage("New Person Created");
+            
+            // For editing staff just created
+            initialPerson = new HashMap<>();
+            initialPerson = editedPerson;
         } else {
             getPersonFacade().editAndFlush(current.getPerson());
+            
+            // Person edited, log the creation event
+            auditService.logAudit(initialPerson, editedPerson, sessionController.getLoggedUser(), "Person", "updatePerson", current.getPerson().getId());
             JsfUtil.addSuccessMessage("Person Updated");
+            
+            initialPerson = editedPerson;
         }
 
         if (getCurrent().getId() != null) {
@@ -1308,8 +1377,6 @@ public class StaffController implements Serializable {
             getFacade().createAndFlush(current);
             JsfUtil.addSuccessMessage("New Staff Created");
         }
-
-        System.out.println(" current.getName() = " + current.getName());
 
         updateStaffEmployment();
 
@@ -1508,6 +1575,18 @@ public class StaffController implements Serializable {
         tempRetireDate = null;
         removeResign = false;
         listFormItems();
+        
+        initialPerson = new HashMap<>();
+        if (current.getPerson() != null) {
+            personService.personToAuditMap(initialPerson, current.getPerson());
+        }
+    }
+    
+    public void changeStaffWithoutDoctor() {
+        initialPerson = new HashMap<>();
+        if (current.getPerson() != null) {
+            personService.personToAuditMap(initialPerson, current.getPerson());
+        }
     }
 
     private StaffFacade getFacade() {
@@ -1731,6 +1810,14 @@ public class StaffController implements Serializable {
 
     public void setSignatureUrl(String signatureUrl) {
         this.signatureUrl = signatureUrl;
+    }
+
+    public Map<String, Object> getInitialPerson() {
+        return initialPerson;
+    }
+
+    public void setInitialPerson(Map<String, Object> initialPerson) {
+        this.initialPerson = initialPerson;
     }
 
     /**

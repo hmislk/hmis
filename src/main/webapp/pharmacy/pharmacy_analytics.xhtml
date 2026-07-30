@@ -174,13 +174,23 @@
                                                 action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
                                                 ajax="false"/>
 
-                                            <p:commandButton 
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}" 
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}"
                                                 class="w-100 ui-button-warning"
                                                 icon="fa fa-clock"
                                                 value="Expiring Stock"
                                                 action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true"
                                                 ajax="false" />
+
+                                            <p:commandButton
+                                                id="btnShortExpiryByAmpPeriod"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Short Expiry (by AMP Period)', true)}"
+                                                class="w-100 ui-button-warning"
+                                                icon="fa fa-hourglass-half"
+                                                value="Short Expiry (by AMP Period)"
+                                                action="#{reportsStock.navigateToShortExpiryByAmpPeriod()}"
+                                                ajax="false"
+                                                title="Stock items expiring within their AMP's configured short-expiry alert period" />
 
                                             <p:commandButton
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Staff Stock')}"
@@ -294,15 +304,35 @@
                                     </p:tab>
 
 
+                                    <p:tab title="Ordering" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Ordering Tab', true)}">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Ordering Requirement Report', true)}"
+                                                             value="Ordering Requirement Report"
+                                                             icon="fa fa-cart-plus"
+                                                             ajax="false"
+                                                             styleClass="w-100 ui-button-success"
+                                                             style="text-align: left"
+                                                             title="What to order and how much, from average monthly consumption"
+                                                             action="#{pharmacyOrderingAnalyticsController.navigateToOrderingRequirementReport()}" />
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Movement Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Movement Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report')}" 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report')}"
                                                              value="Movement Out by Sale, Issue, and Consumption with Current Stock Report"
                                                              icon="fa fa-file-medical"
                                                              ajax="false"
                                                              styleClass="w-100 ui-button-primary"
                                                              style="text-align: left"
                                                              action="#{pharmacySummaryReportController.navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Movement Timeline (Graphical)', true)}"
+                                                             value="Stock Movement Timeline (Graphical)"
+                                                             icon="fa fa-chart-line"
+                                                             ajax="false"
+                                                             styleClass="w-100 ui-button-success"
+                                                             style="text-align: left"
+                                                             action="#{pharmacyStockMovementAnalyticsController.navigateToStockMovementTimeline()}" />
                                         </div>
                                     </p:tab>
 
@@ -547,7 +577,7 @@
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Disposal Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Disposal Reports Tab')}">
+                                    <p:tab title="Consumption Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Disposal Reports Tab')}">
                                         <div class="d-grid gap-2">
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Unit Issue by bill')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Unit Issue by bill" 

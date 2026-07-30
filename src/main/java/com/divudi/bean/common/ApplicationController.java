@@ -25,6 +25,7 @@ import java.util.Random;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -43,6 +44,8 @@ public class ApplicationController {
     private UserPreferenceFacade userPreferenceFacade;
     @EJB
     private DatabaseMigrationService databaseMigrationService;
+    @Inject
+    private ConfigOptionApplicationController configOptionController;
 
     private UserPreference applicationPreference;
 
@@ -177,6 +180,14 @@ public class ApplicationController {
         this.storesExpiery = storesExpiery;
     }
 
+    /**
+     * Backward-compatible V1 (NeGS sequential) PHN generation.
+     * Format: POI(4) + sequential(10) + Luhn check digit = 15 chars.
+     * POI is taken from Institution.pointOfIssueNo for backward compatibility.
+     *
+     * @deprecated Use {@link #createNewPersonalHealthNumber(Institution)} which reads the configured strategy.
+     */
+    @Deprecated
     public String createNewPersonalHealthNumber(Institution ins, boolean old) {
         InstitutionLastPhn iln = null;
         for (InstitutionLastPhn p : getInsPhns()) {
@@ -192,42 +203,129 @@ public class ApplicationController {
             m.put("ins", ins);
             iln.institution = ins;
             iln.patientCount = patientFacade.countByJpql(j, m);
+            getInsPhns().add(iln);
         }
         iln.patientCount++;
         String poi = ins.getPointOfIssueNo();
-        String num = String.format("%05d", iln.patientCount);
+        String num = String.format("%010d", iln.patientCount);
         String checkDigit = calculateCheckDigit(poi + num);
         String phn = poi + num + checkDigit;
         return phn;
     }
 
+    /**
+     * Generates a PHN using the configured strategy (PHN Standard Version config key).
+     * <ul>
+     *   <li>V1 — NeGS: numeric POI(4) + 10-digit sequential + Luhn check = 15 chars</li>
+     *   <li>V2 — NDHGS: alphanumeric POI(4) + 10 random alphanumeric + Luhn check = 15 chars</li>
+     *   <li>None / unknown — returns null (PHN not generated automatically)</li>
+     * </ul>
+     * POI is resolved from config: scope "Global" uses "PHN POI Number" config key;
+     * scope "PerInstitution" falls back to Institution.pointOfIssueNo for backward compatibility.
+     */
     public String createNewPersonalHealthNumber(Institution ins) {
         if (ins == null) {
             return null;
         }
-        String alpha = "BCDFGHJKMPQRTVWXY";
-        String numeric = "23456789";
-        String alphanum = alpha + numeric;
-        Random random = new Random();
-        int length = 6;
-        String poi = ins.getPointOfIssueNo();
 
-        for (int attempt = 0; attempt < 5; attempt++) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < length; i++) {
-                int index = random.nextInt(alphanum.length());
-                char randomChar = alphanum.charAt(index);
-                sb.append(randomChar);
+        String version = "V2";
+        String scope = "Global";
+        String globalPoi = "";
+
+        if (configOptionController != null) {
+            String cfgVersion = configOptionController.getShortTextValueByKey("PHN Standard Version", "V2");
+            if (cfgVersion != null && !cfgVersion.isEmpty()) {
+                version = cfgVersion.trim().toUpperCase();
             }
-            String randomString = sb.toString();
-            String checkDigit = calculateCheckDigit(poi + randomString);
-            String phn = poi + randomString + checkDigit;
-
-            if (!thePhnNumberAlreadyExsists(phn)) {
-                return phn;
+            String cfgScope = configOptionController.getShortTextValueByKey("PHN POI Number Scope", "Global");
+            if (cfgScope != null && !cfgScope.isEmpty()) {
+                scope = cfgScope.trim();
+            }
+            String cfgPoi = configOptionController.getShortTextValueByKey("PHN POI Number", "");
+            if (cfgPoi != null) {
+                globalPoi = cfgPoi.trim();
             }
         }
-        return null;
+
+        if ("None".equalsIgnoreCase(version) || "External".equalsIgnoreCase(version)) {
+            return null;
+        }
+
+        // Resolve POI
+        String poi;
+        if ("PerInstitution".equalsIgnoreCase(scope)) {
+            poi = ins.getPointOfIssueNo();
+        } else {
+            // Global scope: use configured POI; fall back to institution POI for backward compatibility
+            poi = (!globalPoi.isEmpty()) ? globalPoi : ins.getPointOfIssueNo();
+        }
+
+        if (poi == null || poi.isEmpty()) {
+            return null;
+        }
+        // POI must be exactly 4 characters; V1 additionally requires all digits
+        if (poi.length() != 4) {
+            return null;
+        }
+        if ("V1".equals(version) && !poi.matches("\\d{4}")) {
+            return null;
+        }
+
+        if ("V1".equals(version)) {
+            // V1: sequential numeric — cache keyed by POI so global scope doesn't create
+            // per-institution sequences that collide when two institutions share the same POI
+            InstitutionLastPhn iln = null;
+            for (InstitutionLastPhn p : getInsPhns()) {
+                if (poi.equals(p.poi)) {
+                    iln = p;
+                }
+            }
+            if (iln == null) {
+                iln = new InstitutionLastPhn();
+                iln.institution = ins;
+                iln.poi = poi;
+                // Seed count from existing PHNs that start with this POI for accuracy
+                String j = "select count(p) from Patient p "
+                        + " where p.phn like :prefix ";
+                Map m = new HashMap();
+                m.put("prefix", poi + "%");
+                iln.patientCount = patientFacade.countByJpql(j, m);
+                getInsPhns().add(iln);
+            }
+            // Find a non-colliding sequential value
+            for (int attempt = 0; attempt < 10; attempt++) {
+                iln.patientCount++;
+                String num = String.format("%010d", iln.patientCount);
+                String checkDigit = calculateCheckDigit(poi + num);
+                String phn = poi + num + checkDigit;
+                if (!thePhnNumberAlreadyExsists(phn)) {
+                    return phn;
+                }
+            }
+            return null;
+        } else {
+            // V2 (default): random alphanumeric
+            String alpha = "BCDFGHJKMPQRTVWXY";
+            String numeric = "23456789";
+            String alphanum = alpha + numeric;
+            Random random = new Random();
+            int length = 10;
+
+            for (int attempt = 0; attempt < 5; attempt++) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < length; i++) {
+                    int index = random.nextInt(alphanum.length());
+                    sb.append(alphanum.charAt(index));
+                }
+                String randomString = sb.toString();
+                String checkDigit = calculateCheckDigit(poi + randomString);
+                String phn = poi + randomString + checkDigit;
+                if (!thePhnNumberAlreadyExsists(phn)) {
+                    return phn;
+                }
+            }
+            return null;
+        }
     }
 
     public boolean thePhnNumberAlreadyExsists(String phn) {
@@ -400,6 +498,7 @@ public class ApplicationController {
     class InstitutionLastPhn {
 
         Institution institution;
+        String poi;
         Long patientCount;
     }
 

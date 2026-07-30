@@ -54,14 +54,16 @@
                     </p:selectOneMenu>
 
                     <p:outputLabel for="ins" value="Institution" />
-                    <p:autoComplete class="w-100"
-                                    inputStyleClass="w-100" id="ins" value="#{mdInwardReportController.institution}"
-                                    completeMethod="#{institutionController.completeIns}"
-                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
-                        <p:column>
-                            #{ix.name}
-                        </p:column>
-                    </p:autoComplete>
+                    <p:selectOneMenu class="w-100" id="ins"
+                                     value="#{mdInwardReportController.institution}"
+                                     filter="true"
+                                     filterMatchMode="contains"
+                                     autoWidth="false">
+                        <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                        <f:selectItems value="#{institutionController.items}"
+                                       var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}" />
+                    </p:selectOneMenu>
 
                     <h:outputLabel for="siteMenu" value="Site"/>
                     <p:selectOneMenu class="w-100" id="siteMenu"
@@ -73,9 +75,16 @@
                     </p:selectOneMenu>
 
                     <p:outputLabel for="dept" value="Department" />
-                    <p:autoComplete class="w-100"
-                                    inputStyleClass="w-100"  id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
-                    </p:autoComplete>
+                    <p:selectOneMenu class="w-100" id="dept"
+                                     value="#{mdInwardReportController.dept}"
+                                     filter="true"
+                                     filterMatchMode="contains"
+                                     autoWidth="false">
+                        <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                        <f:selectItems value="#{departmentController.items}"
+                                       var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}" />
+                    </p:selectOneMenu>
                     <p:outputLabel for="ct" value="Category" />
                     <p:autoComplete value="#{mdInwardReportController.category}" id="ct"
                                     forceSelection="true"
@@ -140,7 +149,7 @@
                         value="Download Excel"
                         actionListener="#{mdInwardReportController.processInpatientServiceSummary}"
                         class="ui-button-success mx-2">
-                        <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="service_summary_report" />
                     </p:commandButton>
                     <p:commandButton
                         icon="fas fa-print"
@@ -153,7 +162,29 @@
             </p:panel>
 
             <p:panel id="reportPrint">
-                <p:dataTable id="tbl" value="#{mdInwardReportController.itemWithFees}" rowIndexVar="i" var="iwf" >
+                <style>
+                    @media screen {
+                        .printOnlyReport { display: none; }
+                    }
+                    @media print {
+                        @page { size: A4 landscape; }
+                        .noPrintButton { display: none !important; }
+                        .printOnlyReport { display: block; }
+                        .printOnlyReport table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 9pt;
+                        }
+                        .printOnlyReport th, .printOnlyReport td {
+                            border: 1px solid #000;
+                            padding: 2px 4px;
+                            text-align: left;
+                            overflow-wrap: anywhere;
+                        }
+                    }
+                </style>
+
+                <p:dataTable id="tbl" styleClass="noPrintButton" value="#{mdInwardReportController.itemWithFees}" rowIndexVar="i" var="iwf" >
                     <p:column headerText="No">
                         <h:outputLabel value="#{i+1}"/>
                     </p:column>
@@ -206,6 +237,67 @@
                         </f:facet>
                     </p:column>
                 </p:dataTable>
+
+                <h:panelGroup layout="block" id="printReport" styleClass="printOnlyReport">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><h:outputText value="No"/></th>
+                                <th><h:outputText value="Institution"/></th>
+                                <th><h:outputText value="Department"/></th>
+                                <th><h:outputText value="Parent Categoy"/></th>
+                                <th><h:outputText value="Categoy"/></th>
+                                <th><h:outputText value="Name"/></th>
+                                <th><h:outputText value="Count"/></th>
+                                <th><h:outputText value="Hospital Fee"/></th>
+                                <th><h:outputText value="Professional Fee"/></th>
+                                <th><h:outputText value="Total"/></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{mdInwardReportController.itemWithFees}" var="iwf" varStatus="i">
+                                <tr>
+                                    <td><h:outputText value="#{i.index+1}"/></td>
+                                    <td><h:outputText value="#{iwf.item.institution.name}"/></td>
+                                    <td><h:outputText value="#{iwf.item.department.name}"/></td>
+                                    <td><h:outputText value="#{iwf.item.category.parentCategory.name}"/></td>
+                                    <td><h:outputText value="#{iwf.item.category.name}"/></td>
+                                    <td><h:outputText value="#{iwf.item.name}"/></td>
+                                    <td><h:outputText value="#{iwf.count}"/></td>
+                                    <td style="text-align: right;"><h:outputText value="#{iwf.hospitalFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText></td>
+                                    <td style="text-align: right;"><h:outputText value="#{iwf.proFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText></td>
+                                    <td style="text-align: right;"><h:outputText value="#{iwf.hospitalFee+iwf.proFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText></td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7" style="text-align: right; font-weight: bold;"><h:outputText value="Total"/></td>
+                                <td style="text-align: right; font-weight: bold;">
+                                    <h:outputText value="#{mdInwardReportController.itemHospitalTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right; font-weight: bold;">
+                                    <h:outputText value="#{mdInwardReportController.itemProfessionalTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right; font-weight: bold;">
+                                    <h:outputText value="#{mdInwardReportController.itemHospitalTotal+mdInwardReportController.itemProfessionalTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </h:panelGroup>
             </p:panel>
 
         </h:form>

@@ -339,8 +339,15 @@ public class DataAdministrationController implements Serializable {
 
     // Wiki DDL version tracking
     private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
+    private static final String WIKI_DDL_RAW_URL = "https://raw.githubusercontent.com/wiki/hmislk/hmis/files/createDDL.sql";
     private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
     private String wikiDdlVersion;
+    // Full DDL fetched server-side from the wiki raw file. Deliberately NOT
+    // bound to any form input: the script is ~650 KB, which URL-encodes past
+    // Grizzly's max form POST size (GRIZZLY0205 "Post too large"), so it must
+    // never be rendered into a textarea that a full-form submit would echo back.
+    private String wikiFetchedDdl;
+    private String wikiFetchedDdlInfo;
 
     Date fromDate;
     Date toDate;
@@ -490,43 +497,6 @@ public class DataAdministrationController implements Serializable {
             billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
         } catch (Exception e) {
             billController.setOutput("Error updating PharmaceuticalItems: " + getExceptionMessage(e));
-            e.printStackTrace();
-        }
-    }
-
-    public void fillBillDepartmentTypeFromBillItems() {
-        billController.setOutput("");
-        try {
-            String jpql = "SELECT b FROM Bill b WHERE b.departmentType IS NULL AND b.retired = false";
-            List<Bill> bills = billFacade.findByJpql(jpql, new HashMap<>());
-            billController.setOutput("Found " + bills.size() + " bill(s) with null department type.\n");
-
-            int updated = 0;
-            int skipped = 0;
-            for (Bill bill : bills) {
-                Map<String, Object> params = new HashMap<>();
-                params.put("bill", bill);
-                String biJpql = "SELECT bi FROM BillItem bi WHERE bi.bill = :bill AND bi.retired = false ORDER BY bi.id ASC";
-                List<BillItem> items = billItemFacade.findByJpql(biJpql, params);
-                DepartmentType dt = null;
-                for (BillItem bi : items) {
-                    if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
-                        dt = bi.getItem().getDepartmentType();
-                        break;
-                    }
-                }
-                if (dt != null) {
-                    bill.setDepartmentType(dt);
-                    billFacade.edit(bill);
-                    updated++;
-                } else {
-                    skipped++;
-                }
-            }
-            billController.setOutput(billController.getOutput()
-                    + "Updated: " + updated + " bill(s). Skipped (no item dept type found): " + skipped + " bill(s).");
-        } catch (Exception e) {
-            billController.setOutput("Error: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -2350,7 +2320,8 @@ public class DataAdministrationController implements Serializable {
                 try (java.io.BufferedReader reader = new java.io.BufferedReader(
                         new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
                     String line;
-                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2})");
+                    // Wiki page writes the time as HH.MM (dot); accept both dot and colon
+                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}[.:]\\d{2})");
                     while ((line = reader.readLine()) != null) {
                         Matcher m = versionPattern.matcher(line);
                         if (m.find()) {
@@ -2367,6 +2338,102 @@ public class DataAdministrationController implements Serializable {
             }
         }
         return null;
+    }
+
+    /**
+     * Fetch the full DDL script server-side from the wiki's raw file URL into
+     * {@link #wikiFetchedDdl}. This exists because pasting the ~650 KB script
+     * into the DDL textarea makes the browser POST exceed the server's max
+     * form POST size (GRIZZLY0205 "Post too large") — the server downloading
+     * it directly involves no large browser POST at all.
+     */
+    public void loadDdlFromWiki() {
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+        wikiFetchedDdl = null;
+        wikiFetchedDdlInfo = null;
+        java.net.HttpURLConnection conn = null;
+        try {
+            java.net.URL url = new java.net.URL(WIKI_DDL_RAW_URL);
+            conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(60000);
+            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
+            int status = conn.getResponseCode();
+            if (status != 200) {
+                executionFeedback = "Could not download DDL from wiki (HTTP " + status + "). URL: " + WIKI_DDL_RAW_URL;
+                JsfUtil.addErrorMessage(executionFeedback);
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                char[] buffer = new char[8192];
+                int read;
+                while ((read = reader.read(buffer)) != -1) {
+                    sb.append(buffer, 0, read);
+                }
+            }
+            String ddl = sb.toString();
+            if (ddl.trim().isEmpty() || !ddl.toUpperCase().contains("CREATE TABLE")) {
+                executionFeedback = "Downloaded file from wiki contains no CREATE TABLE statements — not applying.";
+                JsfUtil.addErrorMessage(executionFeedback);
+                return;
+            }
+            wikiFetchedDdl = ddl;
+            int createCount = ddl.split("(?i)CREATE TABLE", -1).length - 1;
+            wikiFetchedDdlInfo = "Loaded from wiki: " + ddl.length() + " characters, "
+                    + createCount + " CREATE TABLE statements. Click 'Update Database' to apply.";
+            executionFeedback = wikiFetchedDdlInfo;
+            JsfUtil.addSuccessMessage(wikiFetchedDdlInfo);
+        } catch (Exception e) {
+            executionFeedback = "Failed to download DDL from wiki: " + getExceptionMessage(e)
+                    + " — if this server has no internet access, download " + WIKI_DDL_RAW_URL
+                    + " on another machine and apply it in smaller parts, or increase the server's max POST size.";
+            JsfUtil.addErrorMessage(executionFeedback);
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+    }
+
+    /**
+     * Single-click path for the reduced, unauthenticated "Add Missing Fields"
+     * page (mf.xhtml during pending migration): downloads the latest DDL from
+     * the wiki and applies it to both the main and audit databases, with no
+     * manual database-selection checkboxes or paste-a-snippet option — those
+     * remain available only in the full admin tool.
+     */
+    public void loadDdlFromWikiAndUpdateBothDatabases() {
+        allCreateStetements = "";
+        runOnMainDatabase = true;
+        runOnAuditDatabase = true;
+        loadDdlFromWiki();
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            // loadDdlFromWiki() already set executionFeedback with the specific
+            // download error — do not overwrite it with the generic "DDL content
+            // is empty" message from createTablesAndFieldsForAllCreateStatements().
+            return;
+        }
+        createTablesAndFieldsForAllCreateStatements();
+    }
+
+    /**
+     * The DDL to operate on: manually pasted content (Tab 1 textarea) wins;
+     * otherwise falls back to the script fetched server-side from the wiki.
+     */
+    private String getEffectiveDdl() {
+        if (allCreateStetements != null && !allCreateStetements.trim().isEmpty()) {
+            return allCreateStetements;
+        }
+        return wikiFetchedDdl;
+    }
+
+    public String getWikiFetchedDdlInfo() {
+        return wikiFetchedDdlInfo;
     }
 
     public void checkMissingFields() {
@@ -2428,7 +2495,14 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String getStoredDdlVersion() {
-        return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+        try {
+            return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+        } catch (Exception e) {
+            // Reading/creating this config option can fail on a database that is itself
+            // mid-migration (e.g. config_option.id not yet AUTO_INCREMENT) — this page
+            // exists to fix that exact situation, so it must not crash rendering because of it.
+            return null;
+        }
     }
 
     public String getWikiDdlVersion() {
@@ -2681,9 +2755,10 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Require DDL content — do not mark schema current if nothing to apply
-        boolean hasDdl = allCreateStetements != null && !allCreateStetements.trim().isEmpty();
+        String ddl = getEffectiveDdl();
+        boolean hasDdl = ddl != null && !ddl.trim().isEmpty();
         if (!hasDdl) {
-            executionFeedback = "DDL content is empty. Paste the full createDDL.jdbc contents into the 'DDL Content' field before clicking Update Database.";
+            executionFeedback = "DDL content is empty. Click 'Load Latest DDL from Wiki', or paste the createDDL.jdbc contents into the 'DDL Content' field, before clicking Update Database.";
             mainDatabaseExecutionFeedback = executionFeedback;
             auditDatabaseExecutionFeedback = executionFeedback;
             return;
@@ -2706,7 +2781,7 @@ public class DataAdministrationController implements Serializable {
         StringBuilder executionResults = new StringBuilder();
         executionResults.append("=== ").append(databaseName).append(" ===<br/>");
 
-        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        String[] rawParts = getEffectiveDdl().split("(?i)CREATE TABLE");
 
         for (String part : rawParts) {
             part = part.trim();
@@ -2835,8 +2910,9 @@ public class DataAdministrationController implements Serializable {
         mainDatabaseExecutionFeedback = "";
         auditDatabaseExecutionFeedback = "";
 
-        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
-            String msg = "DDL content is empty. Paste the full createDDL.jdbc contents into the 'DDL Content' field in Tab 1 first.";
+        String ddlForFix = getEffectiveDdl();
+        if (ddlForFix == null || ddlForFix.trim().isEmpty()) {
+            String msg = "DDL content is empty. In Tab 1, click 'Load Latest DDL from Wiki' or paste the createDDL.jdbc contents into the 'DDL Content' field first.";
             executionFeedback = msg;
             mainDatabaseExecutionFeedback = msg;
             auditDatabaseExecutionFeedback = msg;
@@ -2849,6 +2925,54 @@ public class DataAdministrationController implements Serializable {
         if (runOnAuditDatabase) {
             fixMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
         }
+    }
+
+    /**
+     * Fix any table whose BIGINT ID primary key is missing AUTO_INCREMENT.
+     * Available on the no-login mf.xhtml bootstrap page because this exact
+     * condition can block login itself: SessionController.recordLogin()
+     * inserts a Logins audit row on every login, and ConfigOptionApplicationController's
+     * @PostConstruct creates missing ConfigOption rows on nearly every page —
+     * both fail with MySQL error 1364 on a database missing AUTO_INCREMENT,
+     * which otherwise makes it impossible to log in and reach the normal
+     * authenticated admin tooling to fix it.
+     */
+    public void fixMissingAutoIncrement() {
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        if (runOnMainDatabase) {
+            mainDatabaseExecutionFeedback = fixAutoIncrementForMainDatabase();
+        }
+        if (runOnAuditDatabase) {
+            auditDatabaseExecutionFeedback = fixAutoIncrementForAuditDatabase();
+        }
+    }
+
+    private String fixAutoIncrementForMainDatabase() {
+        try {
+            List<String> altered = databaseMigrationFacade.applyAutoIncrementToAllEntityTables();
+            return formatAutoIncrementResult("Main Database", altered);
+        } catch (Exception e) {
+            return "=== Main Database ===\nERROR: " + getExceptionMessage(e);
+        }
+    }
+
+    private String fixAutoIncrementForAuditDatabase() {
+        try {
+            List<String> altered = auditDatabaseFacade.applyAutoIncrementToAllEntityTables();
+            return formatAutoIncrementResult("Audit Database", altered);
+        } catch (Exception e) {
+            return "=== Audit Database ===\nERROR: " + getExceptionMessage(e);
+        }
+    }
+
+    private String formatAutoIncrementResult(String databaseName, List<String> altered) {
+        if (altered.isEmpty()) {
+            return "=== " + databaseName + " ===\nNo tables needed fixing — AUTO_INCREMENT already present on every ID primary key.";
+        }
+        return "=== " + databaseName + " ===\nFixed AUTO_INCREMENT on: " + String.join(", ", altered);
     }
 
     private void fixMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -2936,11 +3060,12 @@ public class DataAdministrationController implements Serializable {
      * @return the CREATE TABLE statement string, or {@code null} if not found
      */
     private String findCreateStatementInDdl(String entityName) {
-        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
+        String ddl = getEffectiveDdl();
+        if (ddl == null || ddl.trim().isEmpty()) {
             return null;
         }
         String upperEntityName = entityName.toUpperCase();
-        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        String[] rawParts = ddl.split("(?i)CREATE TABLE");
         for (String part : rawParts) {
             String trimmedPart = part.trim();
             if (trimmedPart.toUpperCase().startsWith(upperEntityName + " ")
@@ -4520,6 +4645,7 @@ public class DataAdministrationController implements Serializable {
         // Target bill types for inpatient direct issues
         List<BillTypeAtomic> targetTypes = Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD

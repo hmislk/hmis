@@ -26,29 +26,27 @@
                                 <label class="form-label fw-bold text-secondary">
                                     <i class="fas fa-calendar-alt me-1"></i>From Date
                                 </label>
-                                <p:calendar 
-                                    class="w-100" 
-                                    inputStyleClass="form-control" 
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    navigator="false" 
+                                <p:datePicker
+                                    class="w-100"
+                                    id="fromDate"
+                                    value="#{searchController.fromDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    placeholder="Select start date">      
-                                </p:calendar>
+                                    placeholder="Select start date"
+                                    showTime="true"
+                                    showSeconds="false" />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary">
                                     <i class="fas fa-calendar-alt me-1"></i>To Date
                                 </label>
-                                <p:calendar 
-                                    class="w-100" 
-                                    inputStyleClass="form-control" 
-                                    id="toDate" 
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
+                                <p:datePicker
+                                    class="w-100"
+                                    id="toDate"
+                                    value="#{searchController.toDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    placeholder="Select end date">                                                                              
-                                </p:calendar>
+                                    placeholder="Select end date"
+                                    showTime="true"
+                                    showSeconds="false" />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary">

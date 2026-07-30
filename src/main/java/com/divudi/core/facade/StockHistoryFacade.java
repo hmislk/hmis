@@ -9,6 +9,8 @@ package com.divudi.core.facade;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.dto.StockHistoryDTO;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -36,6 +38,24 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
     }
 
     /**
+     * Finds the StockHistory row written at the time of a given stock movement
+     * (e.g. a stock-quantity adjustment), so its cost/purchase/retail rate
+     * snapshot - captured by PharmacyBean.addToStockHistory at that exact
+     * moment - can be used instead of the item batch's CURRENT rate, which may
+     * have since changed via a later rate adjustment.
+     */
+    public StockHistory findByPharmaceuticalBillItem(com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbItem) {
+        if (pbItem == null || pbItem.getId() == null) {
+            return null;
+        }
+        String jpql = "select sh from StockHistory sh where sh.pbItem=:pbItem order by sh.id desc";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("pbItem", pbItem);
+        List<StockHistory> results = findByJpql(jpql, params);
+        return (results == null || results.isEmpty()) ? null : results.get(0);
+    }
+
+    /**
      * Calculates the stock value at retail rate for a given date and department.
      * This method uses a simplified native SQL query for better performance.
      *
@@ -48,6 +68,48 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
      * @param departmentId The department ID for which to calculate stock value (can be null for all departments)
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
+    private String shUnionSrc(String columns) {
+        return "(SELECT " + columns + " FROM STOCKHISTORY UNION ALL SELECT " + columns + " FROM STOCKHISTORYARCHIVE)";
+    }
+
+    public double calculateStockValueAtRetailRateOptimized(Date date, Long departmentId, boolean includeArchived) {
+        if (!includeArchived) {
+            return calculateStockValueAtRetailRateOptimized(date, departmentId);
+        }
+        try {
+            // See calculateStockValueAtRetailRateOptimized(Date, Long) for why sh.RETAILRATE
+            // must be preferred over the item batch's current rate.
+            String src     = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED, RETAILRATE") + " sh";
+            String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.retail_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT sh.STOCKQTY, COALESCE(NULLIF(sh.RETAILRATE, 0), ib.RETAILSALERATE, 0.0) AS retail_rate " +
+                "    FROM " + src + " " +
+                "    INNER JOIN ( " +
+                "        SELECT DEPARTMENT_ID, ITEMBATCH_ID, MAX(ID) AS max_id " +
+                "        FROM " + srcSmall + " " +
+                "        WHERE RETIRED = 0 " +
+                "        AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+            Object result = query.getSingleResult();
+            return (result instanceof Number) ? ((Number) result).doubleValue() : 0.0;
+        } catch (Exception e) {
+            System.err.println("Error calculating retail rate (with archive) for date: " + date + " - " + e.getMessage());
+            return 0.0;
+        }
+    }
+
     public double calculateStockValueAtRetailRateOptimized(Date date, Long departmentId) {
         System.out.println("=== calculateStockValueAtRetailRateOptimized START ===");
         System.out.println("Input Date: " + date);
@@ -56,12 +118,20 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             // Use native SQL for better performance
             // This query finds the latest stock history record for each item batch before the given date
             // and calculates the total retail value
+            // Prefer the retail rate snapshot recorded on the StockHistory row itself
+            // (sh.RETAILRATE, written by PharmacyBean.addToStockHistory at the time of
+            // that stock movement) over the item batch's CURRENT retail rate. Without this,
+            // a mid-period PHARMACY_RETAIL_RATE_ADJUSTMENT is invisible to this calculation
+            // (both "opening" and "closing" would use the same current rate), which double-
+            // counts the adjustment bill's own delta when the F15 report reconciles
+            // Opening + Sales + Purchases + Transfers + Adjustments = Closing. This mirrors
+            // the already-correct pattern in calculateStockValueAtPurchaseRateOptimized.
             String sql =
                 "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.retail_rate), 0.0) AS total_value " +
                 "FROM ( " +
                 "    SELECT  " +
                 "        sh.STOCKQTY, " +
-                "        COALESCE(ib.RETAILSALERATE, 0.0) AS retail_rate " +
+                "        COALESCE(NULLIF(sh.RETAILRATE, 0), ib.RETAILSALERATE, 0.0) AS retail_rate " +
                 "    FROM STOCKHISTORY sh " +
                 "    INNER JOIN ( " +
                 "        SELECT  " +
@@ -190,6 +260,47 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
      * @param departmentId The department ID for which to calculate stock value (can be null for all departments)
      * @return The total stock value at cost rate, or 0.0 if calculation fails
      */
+    public double calculateStockValueAtCostRateOptimized(Date date, Long departmentId, boolean includeArchived) {
+        if (!includeArchived) {
+            return calculateStockValueAtCostRateOptimized(date, departmentId);
+        }
+        try {
+            // See calculateStockValueAtCostRateOptimized(Date, Long) for why sh.COSTRATE
+            // must be preferred over the item batch's current rate.
+            String src      = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED, COSTRATE") + " sh";
+            String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.cost_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT sh.STOCKQTY, " +
+                "        CASE WHEN sh.COSTRATE IS NOT NULL AND sh.COSTRATE != 0 THEN sh.COSTRATE " +
+                "             WHEN ib.COSTRATE IS NOT NULL AND ib.COSTRATE != 0 THEN ib.COSTRATE " +
+                "             WHEN ib.PURCAHSERATE IS NOT NULL AND ib.PURCAHSERATE != 0 THEN ib.PURCAHSERATE " +
+                "             ELSE 0.0 END AS cost_rate " +
+                "    FROM " + src + " " +
+                "    INNER JOIN ( " +
+                "        SELECT DEPARTMENT_ID, ITEMBATCH_ID, MAX(ID) AS max_id " +
+                "        FROM " + srcSmall + " " +
+                "        WHERE RETIRED = 0 AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+            Object result = query.getSingleResult();
+            return (result instanceof Number) ? ((Number) result).doubleValue() : 0.0;
+        } catch (Exception e) {
+            System.err.println("Error calculating cost rate (with archive) for date: " + date + " - " + e.getMessage());
+            return 0.0;
+        }
+    }
+
     public double calculateStockValueAtCostRateOptimized(Date date, Long departmentId) {
         System.out.println("=== calculateStockValueAtCostRateOptimized START ===");
         System.out.println("Input Date: " + date);
@@ -197,13 +308,16 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
         try {
             // Use native SQL for better performance
             // This query finds the latest stock history record for each item batch before the given date
-            // and calculates the total cost value using the cost rate fallback logic
+            // and calculates the total cost value using the cost rate fallback logic.
+            // Prefer sh.COSTRATE (the snapshot recorded at that stock movement) over the item
+            // batch's CURRENT cost rate - see calculateStockValueAtRetailRateOptimized for why.
             String sql =
                 "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.cost_rate), 0.0) AS total_value " +
                 "FROM ( " +
                 "    SELECT  " +
                 "        sh.STOCKQTY, " +
                 "        CASE " +
+                "            WHEN sh.COSTRATE IS NOT NULL AND sh.COSTRATE != 0 THEN sh.COSTRATE " +
                 "            WHEN ib.COSTRATE IS NOT NULL AND ib.COSTRATE != 0 THEN ib.COSTRATE " +
                 "            WHEN ib.PURCAHSERATE IS NOT NULL AND ib.PURCAHSERATE != 0 THEN ib.PURCAHSERATE " +
                 "            ELSE 0.0 " +
@@ -272,6 +386,41 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
      * @param departmentId The department ID (can be null for all departments)
      * @return The total stock value at purchase rate, or 0.0 if calculation fails
      */
+    public double calculateStockValueAtPurchaseRateOptimized(Date date, Long departmentId, boolean includeArchived) {
+        if (!includeArchived) {
+            return calculateStockValueAtPurchaseRateOptimized(date, departmentId);
+        }
+        try {
+            String src      = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED, PURCHASERATE") + " sh";
+            String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.purchase_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT sh.STOCKQTY, COALESCE(NULLIF(sh.PURCHASERATE, 0), ib.PURCAHSERATE, 0.0) AS purchase_rate " +
+                "    FROM " + src + " " +
+                "    INNER JOIN ( " +
+                "        SELECT DEPARTMENT_ID, ITEMBATCH_ID, MAX(ID) AS max_id " +
+                "        FROM " + srcSmall + " " +
+                "        WHERE RETIRED = 0 AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+            Object result = query.getSingleResult();
+            return (result instanceof Number) ? ((Number) result).doubleValue() : 0.0;
+        } catch (Exception e) {
+            System.err.println("Error calculating purchase rate (with archive) for date: " + date + " - " + e.getMessage());
+            return 0.0;
+        }
+    }
+
     public double calculateStockValueAtPurchaseRateOptimized(Date date, Long departmentId) {
         try {
             String sql =
@@ -318,6 +467,48 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
 
     public List<StockHistoryDTO> findStockHistoryDtos(Long itemId, Long departmentId, Long billId, Date fromDate, Date toDate,
             HistoryType historyType, int maxResults) {
+        return findStockHistoryDtos(itemId, departmentId, billId, fromDate, toDate, historyType, maxResults, false);
+    }
+
+    /**
+     * Stock history lookup with optional inclusion of archived rows.
+     *
+     * When {@code includeArchived} is true, the live {@code StockHistory} table
+     * and the {@code StockHistoryArchive} table are each queried with the same
+     * JPQL projection, then merged, ordered by id descending, and capped at
+     * {@code maxResults}. JPA has no UNION operator, so the two entities are
+     * queried separately and combined in memory rather than via native SQL
+     * (per the project's JPQL-first rule). {@code StockHistoryArchive} keeps the
+     * original {@code StockHistory} id, so ids stay unique and comparable across
+     * both tables, preserving the same id-descending ordering as the live-only
+     * query.
+     */
+    public List<StockHistoryDTO> findStockHistoryDtos(Long itemId, Long departmentId, Long billId, Date fromDate, Date toDate,
+            HistoryType historyType, int maxResults, boolean includeArchived) {
+        List<StockHistoryDTO> results = queryStockHistoryDtos("StockHistory", itemId, departmentId, billId,
+                fromDate, toDate, historyType, maxResults);
+
+        if (!includeArchived) {
+            return results;
+        }
+
+        List<StockHistoryDTO> archived = queryStockHistoryDtos("StockHistoryArchive", itemId, departmentId, billId,
+                fromDate, toDate, historyType, maxResults);
+
+        List<StockHistoryDTO> combined = new ArrayList<>(results.size() + archived.size());
+        combined.addAll(results);
+        combined.addAll(archived);
+        // Match the live-only ORDER BY sh.id DESC across the merged set.
+        combined.sort(Comparator.comparing(StockHistoryDTO::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        if (combined.size() > maxResults) {
+            return new ArrayList<>(combined.subList(0, maxResults));
+        }
+        return combined;
+    }
+
+    private List<StockHistoryDTO> queryStockHistoryDtos(String entityName, Long itemId, Long departmentId, Long billId,
+            Date fromDate, Date toDate, HistoryType historyType, int maxResults) {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.StockHistoryDTO(")
                 .append("sh.id, sh.createdAt, sh.stockAt, sh.historyType, ")
@@ -332,7 +523,7 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
                 .append("sh.institutionBatchStockValueAtSaleRate, sh.institutionBatchStockValueAtPurchaseRate, sh.institutionBatchStockValueAtCostRate, ")
                 .append("sh.totalBatchStockValueAtSaleRate, sh.totalBatchStockValueAtPurchaseRate, sh.totalBatchStockValueAtCostRate")
                 .append(") ")
-                .append("FROM StockHistory sh ")
+                .append("FROM ").append(entityName).append(" sh ")
                 .append("LEFT JOIN sh.item item ")
                 .append("LEFT JOIN sh.itemBatch ib ")
                 .append("LEFT JOIN sh.department dept ")

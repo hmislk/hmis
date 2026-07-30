@@ -166,6 +166,9 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsAdmission, "Admission"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsEditAdmission, "Edit Admission Details"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsInwardAppoinment, "Inward Appointment"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPatientDetailsFromAdmission, "Edit Patient Details From Admission"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPaymentDetails, "Edit Payment Details"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardManageAllergies, "Manage Allergies"), admissionsNode);
 
         TreeNode appointmentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Appointment"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAppointmentMenu, "Appointment Menu"), appointmentNode);
@@ -190,18 +193,54 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddOutSideCharges, "Add Outside Charges"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddProfessionalFee, "Add Professional Fee"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddTimedServices, "Add Timed Services"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAddChargesAfterNursingDischarge, "Add Charges After Nursing Discharge"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardHoldProfessionalPayments, "Hold Professional Payments"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPayProfessionalFeesWhileOnHold, "Pay Professional Fees While On Hold"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestApproval, "Approve Service/Item Requests"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestRejection, "Reject Service/Item Requests"), servicesItemsNode);
 
         TreeNode inwardBillingNode = new DefaultTreeNode(new PrivilegeHolder(null, "Billing"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBilling, "Billing Menu"), inwardBillingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBillingInterimBill, "Interim Bill"), inwardBillingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBillingInterimBillSearch, "Interim Bill Search"), inwardBillingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillReportEdit, "Edit Patient Name After Payment Finalized"), inwardBillingNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDoctorPaymentAccess, "Doctor Payment Access"), inwardBillingNode);
+
+        TreeNode dashboardPanelsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inpatient Dashboard Panels"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelAdmission, "Admission Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelBilling, "Billing Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelServices, "Services Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelRoomManagement, "Room Management Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelOperationTheatre, "Operation Theatre Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelClinicalData, "Clinical Data Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelPharmaceuticals, "Pharmaceuticals Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelDocuments, "Documents Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelReports, "Reports Panel"), dashboardPanelsNode);
+
+        TreeNode inwardSurgeryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Surgery"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryAdd, "Add Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryManage, "Manage Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidate, "Validate Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidationRevert, "Revert Surgery Validation"), inwardSurgeryNode);
+
+        TreeNode clinicalDataViewNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinical Data Access"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPatientHistoryView, "Patient History View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardClinicalNotesView, "Clinical Notes View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardWardMedicationsView, "Ward Medications View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDischargeMedicationsView, "Discharge Medications View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardInvestigationsView, "Investigations View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardImagesView, "Images View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDiagnosisCardView, "Diagnosis Card View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEventHistoryView, "Event History View"), clinicalDataViewNode);
 
         TreeNode inwardPharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyMenu, "Pharmacy Menu"), inwardPharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyIssueRequest, "Pharmacy Issue Request"), inwardPharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyIssueRequestSearch, "Pharmacy Issue Request Search"), inwardPharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyIssueRequestCancel, "Pharmacy Issue Request Cancel"), inwardPharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyReturnCancel, "Pharmacy Return Cancel"), inwardPharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyReturnSubmit, "Pharmacy Return Submit"), inwardPharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyBhtReceive, "Pharmacy BHT Receive"), inwardPharmacyNode);
 
         TreeNode searchNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearch, "Search Menu"), searchNode);
@@ -209,12 +248,39 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchProfessionalBill, "Search Professional Bill"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchFinalBill, "Search Final Bill"), searchNode);
 
+        TreeNode admissionSearchScopeNode = new DefaultTreeNode(new PrivilegeHolder(null, "Admission Search Scope"), searchNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute, "By Admitted Department - Any Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute, "By Admitted Department - Logged Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment, "By Admitted Department - Logged Department"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentAnyInstitute, "By Current Department - Any Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute, "By Current Department - Logged Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment, "By Current Department - Logged Department"), admissionSearchScopeNode);
+
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReport, "Inward Reports"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPostDischargeReports, "Inward Post-Discharge Reports"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdministration, "Administration"), inwardNode);
+
+        TreeNode inwardLaboratoryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Laboratory"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratory, "Laboratory Dashboard Menu"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratoryBarcodeGeneration, "Barcode Generation"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratorySampleManagement, "Sample Management"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratoryReportSearch, "Report Search"), inwardLaboratoryNode);
+
+        TreeNode inwardFormsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Forms"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFormTemplateAdmin, "Form Template Admin"), inwardFormsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFormFill, "Fill / Edit Forms"), inwardFormsNode);
 
         TreeNode inwardClinicalNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinical"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientClinicalAssessment, "Clinical Notes / Assessments"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientClinicalDischarge, "Clinical Discharge"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardNursingDischarge, "Nursing Discharge"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPhysicalDischarge, "Physical Discharge"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDocumentUpload, "Document Upload"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientLetter, "Generate Inpatient Letters"), inwardClinicalNode);
+
+        TreeNode inwardPackageNode = new DefaultTreeNode(new PrivilegeHolder(null, "Packages"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPackageAdministration, "Manage Inpatient Packages"), inwardPackageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPackageAdmission, "Package-Based Admission"), inwardPackageNode);
 
         TreeNode additionalPrivilegesNode = new DefaultTreeNode(new PrivilegeHolder(null, "Additional Privileges"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdditionalPrivilages, "Additional Privilege Menu"), additionalPrivilegesNode);
@@ -233,12 +299,20 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBillSettleWithoutCheck, "Inward Bill Settle Without Check"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchServiceBillUnrestrictedAccess, "Inward Bill Search Without Restriction"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSettleFinalBillUnrestricted, "Inward Final Bill Settle Without Restriction"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSettleFinalBill, "Inward Settle Final Bill"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillCreateVersion, "Inward Final Bill Create New Version"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillSetConfirmed, "Inward Final Bill Set As Confirmed"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSaveProvisionalFinalBill, "Inward Save Provisional Final Bill"), additionalPrivilegesNode);
 
         // Theatre Privileges
         TreeNode theatreNode = new DefaultTreeNode(new PrivilegeHolder(null, "Theatre"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Theatre, "Theatre Menu"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreAddSurgery, "Add Surgery"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreBilling, "Theatre Billing"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreSendPatient, "Send Patient to Theatre"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreAcceptPatient, "Accept Patient in Theatre"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreReturnPatient, "Return Patient to Ward"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.WardAcceptTheatreReturn, "Accept Patient Returning from Theatre"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterTransfer, "Theatre Transfer Menu Item"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterTransferRequest, "Theatre Transfer Request"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterTransferIssue, "Theatre Transfer Issue"), theatreNode);
@@ -357,6 +431,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Pharmacy, "Pharmacy Menu"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdministration, "Pharmacy Administration"), pharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemNameEdit, "Pharmacy Item Name Edit"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDonation, "Pharmacy Donation"), pharmacyNode);
 
         // Channelling Privileges
@@ -515,6 +590,9 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminItems, "Manage Items/Services"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminPrices, "Manage Fees/Prices/Packages"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminPatientRelationships, "Manage Patient Relationships"), adminNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminInactivePatients, "Manage Inactive Patients"), adminNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.MergePatients, "Merge Patients"), adminNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClientPortalCreateAccount, "Create Client Portal Account"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ManageCreditCompany, "Manage Credit Companies"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminFilterWithoutDepartment, "Filter Without Department"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchAll, "Search All"), adminNode);
@@ -669,6 +747,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode handoverAcceptAsCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsCashier, "Shift Handover Accept As A Cashier"), cashTransactionNode);
         TreeNode handoverAcceptAsMainCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsMainCashier, "Shift Handover Accept As Main Cashier"), cashTransactionNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SettleHandoverProofMissing, "Settle Handover Proof Missing"), cashTransactionNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.SettleNonCashPayments, "Settle Non-Cash Payments"), cashTransactionNode);
 
         TreeNode listToCashReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionListToCashRecieve, "List To Cash Receive"), cashTransactionNode);
 
@@ -719,8 +798,16 @@ public class UserPrivilageController implements Serializable {
         TreeNode disbursementFinalizeRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementFinalizeRequest, "Finalize Transfer Request"), disbursementNode);
         TreeNode PharmacyDisbursementApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequestApproval, "Pharmacy Disbursement Request Approval"), disbursementNode);
         TreeNode disbursementIssueForRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementIssurForRequest, "Issue for Request"), disbursementNode);
+        TreeNode issueForRequestSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyIssueForRequestSave, "Issue for Request Save"), disbursementNode);
+        TreeNode issueForRequestFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyIssueForRequestFinalize, "Issue for Request Finalize"), disbursementNode);
+        TreeNode issueForRequestApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyIssueForRequestApprove, "Issue for Request Approve"), disbursementNode);
         TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
         TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
+        TreeNode receiveSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveSave, "Receive Save"), disbursementNode);
+        TreeNode receiveFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveFinalize, "Receive Finalize"), disbursementNode);
+        TreeNode receiveApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveApprove, "Receive Approve"), disbursementNode);
+        TreeNode transferIssueCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferIssueCancel, "Transfer Issue Cancel"), disbursementNode);
+        TreeNode transferReceiveCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferReceiveCancel, "Transfer Receive Cancel"), disbursementNode);
         TreeNode TransferReciveApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.TransferReciveApproval, "Recieve Approval"), disbursementNode);
         TreeNode PharmacyDisbursementReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementReports, "Pharmacy Disbursement Reports"), disbursementNode);
         TreeNode PharmacyTransferViewRates = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferViewRates, "Pharmacy Transfer View Rates"), disbursementNode);
@@ -732,8 +819,11 @@ public class UserPrivilageController implements Serializable {
         TreeNode InpatientMedicationManagementNode = new DefaultTreeNode("Inpatient medication Management", pharmacyNode);
         TreeNode InpatientMedicationManagementMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientMedicationManagementMenue, "Procurement Menu"), InpatientMedicationManagementNode);
         TreeNode PharmacyDirectIssueToBht = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectIssueToBht, "Pharmacy Direct Issue To Bht"), InpatientMedicationManagementNode);
+        TreeNode PharmacyDischargeMedicineIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDischargeMedicineIssue, "Pharmacy Discharge Medicine Issue"), InpatientMedicationManagementNode);
         TreeNode PharmacyDirectIssueToTheaterCases = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectIssueToTheaterCases, "Pharmacy Direct Issue To Theater Cases"), InpatientMedicationManagementNode);
         TreeNode PharmacyBhtIssueRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyBhtIssueRequest, "Pharmacy Bht Issue Request"), InpatientMedicationManagementNode);
+        TreeNode PharmacyBhtRequestForceComplete = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyBhtRequestForceComplete, "Pharmacy Bht Request Force Complete"), InpatientMedicationManagementNode);
+        TreeNode PharmacyReturnFromWardForceComplete = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnFromWardForceComplete, "Pharmacy Return From Ward Force Complete"), InpatientMedicationManagementNode);
         TreeNode PharmacySearchInpatientDirectIssuesbyBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssuesbyBill, "Pharmacy Search Inpatient Direct Issues by Bill"), InpatientMedicationManagementNode);
         TreeNode PharmacySearchInpatientDirectIssuesbyItem = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssuesbyItem, "Pharmacy Search Inpatient Direct Issues by Item"), InpatientMedicationManagementNode);
         TreeNode PharmacySearchInpatientDirectIssueReturnsbyBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssueReturnsbyBill, "Pharmacy Search Inpatient Direct Issue Returns by Bill"), InpatientMedicationManagementNode);
@@ -747,11 +837,18 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyAutoOrderPModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderPModel, "Auto Order (P Model)"), ProcumentNode);
         TreeNode pharmacyAutoOrderQModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderQModal, "Auto Order (Q Model)"), ProcumentNode);
         TreeNode pharmacyDirectPurchase = new DefaultTreeNode(new PrivilegeHolder(Privileges.DirectPurchase, "Direct Purchase"), ProcumentNode);
+        TreeNode pharmacyDirectPurchaseSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectPurchaseSave, "Pharmacy Direct Purchase Save"), ProcumentNode);
+        TreeNode pharmacyDirectPurchaseFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectPurchaseFinalize, "Pharmacy Direct Purchase Finalize"), ProcumentNode);
+        TreeNode pharmacyDirectPurchaseApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectPurchaseApprove, "Pharmacy Direct Purchase Approve"), ProcumentNode);
         TreeNode pharmacyPurchaseOrderApprovel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PurchaseOrdersApprovel, "Purchase Orders Approvel"), ProcumentNode);
+        TreeNode pharmacyPurchaseOrderSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PurchaseOrderSave, "Purchase Order Save"), ProcumentNode);
+        TreeNode pharmacyPurchaseOrderFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PurchaseOrderFinalize, "Purchase Order Finalize"), ProcumentNode);
         TreeNode pharmacyGoodRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.GoodsRecipt, "Pharmacy Good Recipt"), ProcumentNode);
         TreeNode pharmacyGrnSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnSave, "Pharmacy GRN Save"), ProcumentNode);
         TreeNode pharmacyGrnFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnFinalize, "Pharmacy GRN Finalize"), ProcumentNode);
         TreeNode pharmacyGrnApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnApprove, "Pharmacy GRN Approve"), ProcumentNode);
+        TreeNode pharmacyGrnCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnCancel, "Pharmacy GRN Cancel"), ProcumentNode);
+        TreeNode pharmacyGrnReturnCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGrnReturnCancel, "Pharmacy GRN Return Cancel"), ProcumentNode);
         TreeNode pharmacyReturnReceviedGoods = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnReceviedGoods, "Pharmacy Return Recevied Goods"), ProcumentNode);
         TreeNode pharmacyCreateGrnReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.CreateGrnReturn, "Create GRN Return"), ProcumentNode);
         TreeNode pharmacyFinalizeGrnReturn = new DefaultTreeNode(new PrivilegeHolder(Privileges.FinalizeGrnReturn, "Finalize GRN Return"), ProcumentNode);
@@ -795,10 +892,16 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentCreateBatch, "Pharmacy Adjustment Create Batch"), PharmacyAdjustment);
         // Archive Old StockHistory Records (issue #20726)
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ArchiveOldStockHistory, "Archive Old StockHistory Records"), PharmacyAdjustment);
+        // Archive Old ItemBatch Records (issue #20724)
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ArchiveOldItemBatch, "Archive Old ItemBatch Records"), PharmacyAdjustment);
 
         TreeNode pharmacyDisposalNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy Disposal"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalMenue, "Pharmacy Disposal Menu"), pharmacyDisposalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalIssue, "Pharmacy Disposal Issue"), pharmacyDisposalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalIssueFinalize, "Pharmacy Disposal Issue Finalize"), pharmacyDisposalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalIssueApprove, "Pharmacy Disposal Issue Approve"), pharmacyDisposalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalIssueCancel, "Pharmacy Disposal Issue Cancel"), pharmacyDisposalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDiscardCategoryManage, "Pharmacy Discard Category Manage"), pharmacyDisposalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueBill, "Pharmacy Disposal Search Issue Bill"), pharmacyDisposalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueBillItems, "Pharmacy Disposal Search Issue Bill Items"), pharmacyDisposalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueReturnBill, "Pharmacy Disposal Search Issue Return Bill"), pharmacyDisposalNode);
@@ -870,11 +973,13 @@ public class UserPrivilageController implements Serializable {
 
         // Request Privileges
         TreeNode requestNode = new DefaultTreeNode(new PrivilegeHolder(null, "Request Manage"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.RequestManager, "Request Manager"), requestNode);
         TreeNode billCancelRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.BillCancelRequestApproval, "Bill Cancel Approval"), requestNode);
         TreeNode itemRefundRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.ItemRefundRequestApproval, "Item Refund Approval"), requestNode);
         TreeNode drawerAdjustmentRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentRequestApproval, "Drawer Adjustment Approval"), requestNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentDirect, "Drawer Adjustment Direct (No Approval)"), requestNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashCancellationApproval, "Petty-Cash Cancellation Approval"), requestNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyRetailSaleReturnApproval, "Pharmacy Retail Sale Return Approval"), requestNode);
 
         // Float Transfer Privileges
         TreeNode floatTransferNode = new DefaultTreeNode(new PrivilegeHolder(null, "Float Transfer"), allNode);
@@ -892,6 +997,17 @@ public class UserPrivilageController implements Serializable {
         TreeNode nurseNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Work Bench"), allNode);
         TreeNode nursingWorkBench = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBench, "Nursing Work Bench"), nurseNode);
         TreeNode showDrugCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowDrugCharges, "Show Drug Charges"), nurseNode);
+        TreeNode ShowServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowServiceCharges, "Show Service Charges"), nurseNode);
+        TreeNode ShowTimeServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowTimeServiceCharges, "Show Time Service Charges"), nurseNode);
+
+        TreeNode nursingWorkBenchPanelsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Workbench Panels"), nurseNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelEdit, "Edit Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelClinicalData, "Clinical Data Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelRoomManagement, "Room Management Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelService, "Service Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelOperationTheatre, "Operation Theatre Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelPharmaceuticals, "Pharmaceuticals Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelReports, "Reports Panel"), nursingWorkBenchPanelsNode);
 
         // Admin Privileges
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);

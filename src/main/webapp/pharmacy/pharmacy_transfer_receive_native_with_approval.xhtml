@@ -26,18 +26,32 @@
                             value="Back to Receive List">
                         </p:commandButton>
                         <p:commandButton
+                            id="btnCancelPendingReceive"
+                            value="Cancel"
+                            action="#{transferReceiveNativeSqlController.cancelPendingReceive(transferReceiveNativeSqlController.receivedBillId)}"
+                            class="ui-button-danger mx-1"
+                            icon="fas fa-times"
+                            ajax="false"
+                            style="float: right;"
+                            rendered="#{transferReceiveNativeSqlController.receivedBillId != null}"
+                            onclick="if(!confirm('Cancel this pending receive? This cannot be undone.')) return false;">
+                        </p:commandButton>
+                        <p:commandButton
                             value="Finalize"
                             action="#{transferReceiveNativeSqlController.finalizeRequest()}"
-                            class="ui-button-warning mx-1"
-                            icon="fas fa-check"
+                            styleClass="ui-button-stage-finalize mx-1"
+                            icon="fas fa-lock"
                             ajax="false"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyReceiveFinalize')}"
+                            onclick="return confirm('Are you sure you want to finalize this receive? This cannot be undone.');"
                             style="float: right;">
                         </p:commandButton>
                         <p:commandButton
                             value="Save"
                             action="#{transferReceiveNativeSqlController.saveRequest()}"
-                            class="ui-button-success mx-1"
+                            styleClass="ui-button-stage-save mx-1"
                             icon="fas fa-floppy-disk"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyReceiveSave')}"
                             ajax="false"
                             style="float: right;">
                         </p:commandButton>
@@ -98,15 +112,39 @@
                                     <p:ajax
                                         event="keyup"
                                         process="@this"
-                                        update=":#{p:resolveFirstComponentWithId('txtReceivingNetTotal',view).clientId}"
+                                        update="value :#{p:resolveFirstComponentWithId('gpReceivingNetTotal',view).clientId}"
                                         listener="#{transferReceiveNativeSqlController.onQuantityChangeForTransferReceive(item)}"/>
                                 </p:inputText>
+                            </p:column>
+
+                            <p:column headerText="Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" style="width:25px!important;">
+                                <h:outputText id="value" value="#{item.value}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>
 
                         </p:dataTable>
                     </p:panel>
 
                     <p:panelGrid columns="2" class="mt-2">
+                        <h:outputLabel value="Issued From" />
+                        <h:outputLabel value="#{transferReceiveNativeSqlController.issuedBill.fromDepartment.name}" />
+
+                        <h:outputLabel value="Issued To" />
+                        <h:outputLabel value="#{transferReceiveNativeSqlController.issuedBill.toDepartment.name}" />
+
+                        <h:outputLabel value="Issued Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
+                        <h:outputLabel value="#{transferReceiveNativeSqlController.issuedBill.absoluteNetTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+
+                        <h:outputLabel value="Receiving Value" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
+                        <h:panelGroup id="gpReceivingNetTotal">
+                            <h:outputLabel id="txtReceivingNetTotal" value="#{transferReceiveNativeSqlController.displayReceivedNetTotal}" rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
+
                         <h:outputLabel value="Comments" />
                         <p:inputTextarea class="w-100" rows="3" value="#{transferReceiveNativeSqlController.comments}" />
                     </p:panelGrid>

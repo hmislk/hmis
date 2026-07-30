@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -154,6 +154,7 @@
                                         id="txtQty"
                                         onfocus="this.select();"
                                         autocomplete="off"
+                                        disabled="#{bi.referanceBillItem == null}"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.quantity}" >
                                         <p:ajax
@@ -189,7 +190,7 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
-                                        disabled="#{not configOptionApplicationController.getBooleanValueByKey('Allow Editing the Purchase Rate during Goods Receipt', true)}"
+                                        disabled="#{not configOptionApplicationController.getBooleanValueByKey('Allow Editing the Purchase Rate during Goods Receipt', true) or bi.referanceBillItem == null}"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.lineGrossRate}"
                                         id="pRate" >
@@ -206,6 +207,7 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
+                                        disabled="#{bi.referanceBillItem == null}"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.lineDiscountRate}"
                                         id="dRate"
@@ -235,9 +237,27 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </p:column>
+                                <p:column
+                                    headerText="Wholesale Rate"
+                                    width="8em"
+                                    styleClass="text-end">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        id="wRate"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.wholesaleRate}"
+                                        onfocus="this.select()">
+                                        <f:ajax
+                                            event="blur"
+                                            execute="wRate"
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                            listener="#{grnCostingController.wholesaleRateChangedListner(bi)}"></f:ajax>
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </p:column>
 
-                                <p:column 
-                                    headerText="Line Net Total" 
+                                <p:column
+                                    headerText="Line Net Total"
                                     width="8em"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:panelGroup id="total">
@@ -299,11 +319,12 @@
                                     headerText="Actions"
                                     width="7em"
                                     styleClass="text-center #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
                                         update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
                                         icon="fas fa-plus"
                                         class="ui-button-warning mx-1"
+                                        disabled="#{bi.referanceBillItem == null}"
                                         action="#{grnCostingController.duplicateItem(bi)}"/>
                                     <p:commandButton
                                         id="btnRemoveItem"
@@ -318,6 +339,56 @@
                             </p:dataTable>
                         </div>
                     </div>
+
+                    <h:panelGroup
+                        layout="block"
+                        class="row"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Allow Free Items Not in Purchase Order', false)}">
+                        <div class="col-12">
+                            <p:panel header="Add Free Item (not in PO)" class="my-2">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-gift" />
+                                    <h:outputText class="mx-4" value="Add Free Item (not in PO)" />
+                                </f:facet>
+                                <div class="row w-100">
+                                    <div class="col-8">
+                                        <h:outputLabel
+                                            for="acFreeItem"
+                                            class="w-100 m-1"
+                                            value="Item"/><br/>
+                                        <p:autoComplete
+                                            id="acFreeItem"
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            value="#{grnCostingController.freeItemToAdd}"
+                                            forceSelection="true"
+                                            maxResults="50"
+                                            minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
+                                            <p:column headerText="Item" style="padding: 6px;">
+                                                <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Code" style="padding: 6px;">
+                                                <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="col-4">
+                                        <h:outputLabel
+                                            class="w-100 m-1"
+                                            value="&nbsp;"/><br/>
+                                        <p:commandButton
+                                            id="btnAddFreeItem"
+                                            value="Add Free Item"
+                                            icon="fas fa-gift"
+                                            title="Add a free item that is not on the purchase order"
+                                            class="ui-button-success w-100"
+                                            action="#{grnCostingController.addFreeItemNotInPo()}"
+                                            ajax="false"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </h:panelGroup>
 
                     <div class="row" >
                         <div class="col-9" >
@@ -338,7 +409,7 @@
                                                 inputStyleClass="w-100"
                                                 value="#{grnCostingController.currentExpense.item}"
                                                 forceSelection="true"
-                                                completeMethod="#{itemController.completeExpenseItem}"
+                                                minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeExpenseItem}"
                                                 var="ex"
                                                 itemLabel="#{ex.name}"
                                                 itemValue="#{ex}">
@@ -450,7 +521,8 @@
                                         class="ui-button-success mx-1"
                                         icon="pi pi-save"
                                         ajax="false"
-                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}">
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnSave')}">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Finalize"
@@ -459,7 +531,8 @@
                                         icon="fas fa-flag"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to finalize this GRN? This action cannot be undone.');"
-                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Approve"
@@ -468,7 +541,8 @@
                                         icon="fas fa-check"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to approve this GRN? This action cannot be undone.');"
-                                        rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
+                                        rendered="#{grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnApprove')}">
                                     </p:commandButton>
                                 </f:facet>
 

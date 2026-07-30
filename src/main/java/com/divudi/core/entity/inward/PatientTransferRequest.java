@@ -1,6 +1,9 @@
 package com.divudi.core.entity.inward;
 
+import com.divudi.core.data.inward.TheatreOccupancyStatus;
+import com.divudi.core.data.inward.TheatreTransferType;
 import com.divudi.core.data.inward.TransferRequestStatus;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -36,6 +39,14 @@ public class PatientTransferRequest implements Serializable {
     @ManyToOne
     private PatientRoom fromPatientRoom;
 
+    /**
+     * Set only on accepted SEND_TO_THEATRE requests — the concurrent
+     * TheatreRoom billing record created by acceptInTheatre(), closed by
+     * returnToWard(). Null on all other transfer types.
+     */
+    @ManyToOne
+    private PatientRoom theatreRoom;
+
     @ManyToOne
     private RoomFacilityCharge toRoomFacilityCharge;
 
@@ -61,6 +72,29 @@ public class PatientTransferRequest implements Serializable {
     private WebUser cancelledBy;
 
     private String notes;
+
+    // Theatre-specific fields — null on regular ward transfers
+    @Enumerated(EnumType.STRING)
+    private TheatreTransferType theatreTransferType;
+
+    // Only set on SEND_TO_THEATRE records; updated as patient progresses
+    @Enumerated(EnumType.STRING)
+    private TheatreOccupancyStatus theatreOccupancyStatus;
+
+    @ManyToOne
+    private Bill surgeryBill;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date procedureStartAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date procedureEndAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date inRecoveryAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date returnedToWardAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -92,6 +126,14 @@ public class PatientTransferRequest implements Serializable {
 
     public void setFromPatientRoom(PatientRoom fromPatientRoom) {
         this.fromPatientRoom = fromPatientRoom;
+    }
+
+    public PatientRoom getTheatreRoom() {
+        return theatreRoom;
+    }
+
+    public void setTheatreRoom(PatientRoom theatreRoom) {
+        this.theatreRoom = theatreRoom;
     }
 
     public RoomFacilityCharge getToRoomFacilityCharge() {
@@ -188,6 +230,62 @@ public class PatientTransferRequest implements Serializable {
 
     public void setRetired(boolean retired) {
         this.retired = retired;
+    }
+
+    public TheatreTransferType getTheatreTransferType() {
+        return theatreTransferType;
+    }
+
+    public void setTheatreTransferType(TheatreTransferType theatreTransferType) {
+        this.theatreTransferType = theatreTransferType;
+    }
+
+    public TheatreOccupancyStatus getTheatreOccupancyStatus() {
+        return theatreOccupancyStatus;
+    }
+
+    public void setTheatreOccupancyStatus(TheatreOccupancyStatus theatreOccupancyStatus) {
+        this.theatreOccupancyStatus = theatreOccupancyStatus;
+    }
+
+    public Bill getSurgeryBill() {
+        return surgeryBill;
+    }
+
+    public void setSurgeryBill(Bill surgeryBill) {
+        this.surgeryBill = surgeryBill;
+    }
+
+    public Date getProcedureStartAt() {
+        return procedureStartAt;
+    }
+
+    public void setProcedureStartAt(Date procedureStartAt) {
+        this.procedureStartAt = procedureStartAt;
+    }
+
+    public Date getProcedureEndAt() {
+        return procedureEndAt;
+    }
+
+    public void setProcedureEndAt(Date procedureEndAt) {
+        this.procedureEndAt = procedureEndAt;
+    }
+
+    public Date getInRecoveryAt() {
+        return inRecoveryAt;
+    }
+
+    public void setInRecoveryAt(Date inRecoveryAt) {
+        this.inRecoveryAt = inRecoveryAt;
+    }
+
+    public Date getReturnedToWardAt() {
+        return returnedToWardAt;
+    }
+
+    public void setReturnedToWardAt(Date returnedToWardAt) {
+        this.returnedToWardAt = returnedToWardAt;
     }
 
     @Override

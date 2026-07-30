@@ -155,6 +155,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     FinancialTransactionController financialTransactionController;
     @Inject
     SessionController sessionController;
+    @javax.ejb.EJB
+    private com.divudi.service.pharmacy.PharmacySubstituteService pharmacySubstituteService;
     @Inject
     SearchController searchController;
     @Inject
@@ -955,6 +957,61 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         calculateTotals();
     }
 
+    // ===================================================================
+    // On-demand substitute (alternative) medicines (issue #21697)
+    // ===================================================================
+    private BillItem itemForSubstitution;
+    private com.divudi.core.data.dto.StockDTO selectedSubstituteStock;
+    private List<com.divudi.core.data.dto.StockDTO> substituteStocks;
+
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+        if (pharmacySubstituteService.swapStockIntoBillItem(itemForSubstitution, selectedSubstituteStock)) {
+            calculateAllRates();
+            JsfUtil.addSuccessMessage("Stock replaced successfully.");
+        } else {
+            JsfUtil.addErrorMessage("Could not replace the stock — the selected substitute may no longer be available. Please try again.");
+        }
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
+    }
+
+    public com.divudi.core.data.dto.StockDTO getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(com.divudi.core.data.dto.StockDTO selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<com.divudi.core.data.dto.StockDTO> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<com.divudi.core.data.dto.StockDTO> substituteStocks) {
+        this.substituteStocks = substituteStocks;
+    }
+
     public void calculateRates(BillItem bi) {
         long calcRatesStart = System.currentTimeMillis();
 
@@ -1407,7 +1464,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1493,7 +1550,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 getBillItemFacade().create(newBil);
             }
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1501,7 +1558,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 }
 
                 newBil.setPrescription(tbi.getPrescription());
-                tbi.getPrescription().setPatient(patient);
+                if (patient != null && patient.getId() != null) {
+                    tbi.getPrescription().setPatient(patient);
+                }
                 tbi.getPrescription().setCreatedAt(new Date());
                 tbi.getPrescription().setCreater(sessionController.getWebUser());
                 tbi.getPrescription().setInstitution(sessionController.getInstitution());

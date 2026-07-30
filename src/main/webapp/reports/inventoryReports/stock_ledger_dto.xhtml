@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -196,7 +196,7 @@
                             <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.selectedAmpDto}"
-                                completeMethod="#{itemController.completeAmpItemDto}"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItemDto}"
                                 converter="ampDtoConverter"
                                 var="item"
                                 class="w-100"
@@ -276,6 +276,7 @@
                                     id="departmentTypeFilter"
                                     value="#{pharmacyReportController.selectedDepartmentTypes}"
                                     label="Select Department Types"
+                                    updateLabel="true"
                                     class="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
@@ -292,7 +293,13 @@
                             </h:panelGroup>
                         </h:panelGrid>
 
-                        <div class="d-flex align-items-center mt-5">
+                        <div class="d-flex align-items-center mt-3">
+                            <p:selectBooleanCheckbox id="includeArchived"
+                                                     value="#{pharmacyReportController.includeArchived}"/>
+                            <p:outputLabel for="includeArchived" value="Include Archived" class="mx-2"/>
+                        </div>
+
+                        <div class="d-flex align-items-center mt-3">
                             <p:commandButton
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"

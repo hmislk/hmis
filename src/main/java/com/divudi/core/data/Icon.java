@@ -170,7 +170,45 @@ public enum Icon {
     Search_Final_Bill_By_Discharge_Date("Search Final Bill by Discharge Date", INPATIENT_BILLING),
     Request_Medicines_From_Pharmacy("Request Medicines from Pharmacy", INPATIENT_SERVICES),
     View_Pharmacy_Requests("View Pharmacy Requests", INPATIENT_SERVICES),
-    Inward_Analytics("Inward Analytics", INPATIENT_ANALYTICS);
+    Inward_Analytics("Inward Analytics", INPATIENT_ANALYTICS),
+    Bed_Board("Bed Board", INPATIENT_ROOMS),
+    Patient_Lookup_Registration("Patient Lookup & Registration", INPATIENT_ADMISSIONS),
+    Initiate_Transfer("Initiate Transfer", INPATIENT_ROOMS),
+    Accept_Patients("Accept Patients", INPATIENT_ROOMS),
+    Accept_Returns_from_Ward("Accept Returns from Ward", INPATIENT_DIRECT_ISSUES),
+    Nursing_Work_Bench("Nursing WorkBench", INPATIENT_SERVICES);
+
+    private static final java.util.Set<IconGroup> INPATIENT_GROUPS = java.util.EnumSet.of(
+            IconGroup.INPATIENT_ADMISSIONS,
+            IconGroup.INPATIENT_ROOMS,
+            IconGroup.INPATIENT_SERVICES,
+            IconGroup.INPATIENT_BILLING,
+            IconGroup.INPATIENT_ANALYTICS,
+            IconGroup.INPATIENT_DIRECT_ISSUES
+    );
+
+    private static final java.util.Set<IconGroup> OPD_GROUPS = java.util.EnumSet.of(
+            IconGroup.PATIENT_MANAGEMENT,
+            IconGroup.OPD_BILLING,
+            IconGroup.PAYMENTS_AND_REFUNDS,
+            IconGroup.OPD_SUMMARIES,
+            IconGroup.CASHIER
+    );
+
+    private static final java.util.Set<IconGroup> CHANNELING_GROUPS = java.util.EnumSet.of(
+            IconGroup.DOCTOR_AND_CHANNEL
+    );
+
+    private static final java.util.Set<IconGroup> LAB_GROUPS = java.util.EnumSet.of(
+            IconGroup.LAB_AND_REPORTS
+    );
+
+    private static final java.util.Set<IconGroup> PHARMACY_GROUPS = java.util.EnumSet.of(
+            IconGroup.PHARMACY_SALES,
+            IconGroup.PHARMACY_RETURNS,
+            IconGroup.PHARMACY_STOCK,
+            IconGroup.PHARMACY_REPORTS
+    );
 
     private final String label;
     private final IconGroup iconGroup;
@@ -190,12 +228,19 @@ public enum Icon {
 
     /**
      * Returns the image filename for this icon.
-     * Icons from Patient_Deposit_Management onwards use .svg extension.
-     * Earlier icons use .png extension (legacy format).
-     *
-     * @return Image filename with extension (e.g., "Patient_Lookup.png" or "Patient_Deposit_Management.svg")
+     * Each module family has its own coloured SVG set; all others fall back to legacy PNG.
      */
     public String getImage() {
+        if (iconGroup == null) {
+            return this.name() + ".png";
+        }
+        if (INPATIENT_GROUPS.contains(iconGroup)
+                || OPD_GROUPS.contains(iconGroup)
+                || CHANNELING_GROUPS.contains(iconGroup)
+                || LAB_GROUPS.contains(iconGroup)
+                || PHARMACY_GROUPS.contains(iconGroup)) {
+            return this.name() + ".svg";
+        }
         if (this.ordinal() >= Patient_Deposit_Management.ordinal()) {
             return this.name() + ".svg";
         }

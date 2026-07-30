@@ -83,6 +83,35 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
         this.lobValue = lobValue;
     }
 
+    /**
+     * One "blank unit" that a rich-text editor (or plain typing) leaves
+     * behind for an empty line: an empty paragraph/div (optionally
+     * containing just a &lt;br&gt; or &amp;nbsp;), a bare &lt;br&gt;,
+     * &amp;nbsp;, a literal "\n" escape sequence, or real whitespace.
+     */
+    private static final String LOB_VALUE_BLANK_UNIT
+            = "(?:<p[^>]*>(?:\\s|&nbsp;|<br\\s*/?>)*</p>"
+            + "|<div[^>]*>(?:\\s|&nbsp;|<br\\s*/?>)*</div>"
+            + "|<br\\s*/?>"
+            + "|&nbsp;"
+            + "|\\\\n"
+            + "|\\s)";
+
+    /**
+     * lobValue with leading/trailing blank lines removed, so printed reports
+     * do not show empty gaps caused by blank lines (typed as literal "\n",
+     * real newline characters, or empty rich-text paragraphs/breaks) left
+     * over from data entry.
+     */
+    public String getLobValuePrintable() {
+        if (lobValue == null) {
+            return null;
+        }
+        String trimmed = lobValue.replaceAll("(?i)^(?:" + LOB_VALUE_BLANK_UNIT + ")+", "");
+        trimmed = trimmed.replaceAll("(?i)(?:" + LOB_VALUE_BLANK_UNIT + ")+$", "");
+        return trimmed;
+    }
+
     public byte[] getBaImage() {
         return baImage;
     }

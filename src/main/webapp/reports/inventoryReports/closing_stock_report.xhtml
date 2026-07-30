@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -70,6 +70,7 @@
                                     id="departmentTypeFilter"
                                     value="#{pharmacyReportController.selectedDepartmentTypes}"
                                     label="Select Department Types"
+                                    updateLabel="true"
                                     class="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
@@ -231,7 +232,7 @@
                             <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.selectedAmpDto}"
-                                completeMethod="#{itemController.completeAmpItemDto}"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItemDto}"
                                 converter="ampDtoConverter"
                                 var="item"
                                 class="w-100"
@@ -263,6 +264,14 @@
                             </h:panelGroup>
                             <p:selectBooleanCheckbox id="consignmentItem"
                                                      value="#{pharmacyReportController.consignmentItem}"
+                                                     itemLabel="Yes"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-archive mr-2"/>
+                                <p:outputLabel value="Include Archived" for="includeArchived" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectBooleanCheckbox id="includeArchived"
+                                                     value="#{pharmacyReportController.includeArchived}"
                                                      itemLabel="Yes"/>
                         </h:panelGrid>
 

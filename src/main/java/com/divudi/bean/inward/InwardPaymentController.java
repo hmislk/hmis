@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -92,6 +94,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -119,18 +123,45 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("Select BHT");
             return;
         }
+        
+        paymentListener();
+
+    }
+    
+    public void paymentListener(){
         due = getFinalBillDue();
         finalBillTotal = getFinalBillNetTotal();
         patient = current.getPatientEncounter().getPatient();
         paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
-
     }
 
-    /** Navigate to the inward patient co-payment collection page. */
+    /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
     public String navigateToInwardPatientCopayment() {
         makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
         return "/credit/inward_patient_copay_payment?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the inward deposit payment page, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToInwardDepositPayment() {
+        makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
     /** CC amount committed against this admission (sum of CC commitment bills created at finalization). */
@@ -163,6 +194,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter=:pe "
                 + " order by b.id desc";
         HashMap hm = new HashMap();
@@ -186,6 +218,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter=:pe "
                 + " order by b.id desc";
         HashMap hm = new HashMap();
@@ -583,6 +616,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             finalBillDeptId = pe.getFinalBill().getDeptId();
         }
 
+        boolean showInwardDepositComment = configOptionApplicationController.getBooleanValueByKey("Show Comment on Inward Deposit Bill", false);
+
         String output;
         output = template
                 .replace("{dept_id}", bill.getDeptId() != null ? String.valueOf(bill.getDeptId()) : "")
@@ -618,7 +653,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 .replace("{bill_date}", bill.getBillDate() != null ? formatDate(bill.getBillDate(), sessionController) : "")
                 .replace("{bill_time}", bill.getBillTime() != null ? formatTime(bill.getBillTime(), sessionController) : "")
                 .replace("{time_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
-                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "");
+                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "")
+                .replace("{comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "")
+                .replace("{bill_comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "");
 
         return output;
     }
@@ -748,6 +785,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     }
                     PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, sessionController.getDepartment());
                     paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                    paymentMethodData.getPatient_deposit().setTotalValue(0.0);
                 }
             }
         }
@@ -839,6 +877,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
+        getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
 
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());

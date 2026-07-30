@@ -52,6 +52,7 @@
                                         value="Approve"
                                         icon="fa fa-check"
                                         title="Approve this drawer adjustment request"
+                                        onclick="if (!confirm('Are you sure you want to approve this drawer adjustment?')) return false;"
                                         rendered="#{requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW'}"
                                         class="ui-button-success"
                                         action="#{requestController.approveDrawerAdjustmentRequest()}">
@@ -62,6 +63,7 @@
                                         value="Reject"
                                         icon="fa fa-times"
                                         title="Reject this drawer adjustment request"
+                                        onclick="if (!confirm('Are you sure you want to reject this drawer adjustment?')) return false;"
                                         rendered="#{requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW'}"
                                         class="ui-button-danger"
                                         action="#{requestController.rejectRequest()}">

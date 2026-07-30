@@ -77,3 +77,5 @@ When working on any UI/XHTML task, follow these rules and patterns.
 ## For complete reference
 
 Read [developer_docs/ui/comprehensive-ui-guidelines.md](../../developer_docs/ui/comprehensive-ui-guidelines.md) for the full UI handbook including responsive design, accessibility, datatables, dialogs, and more.
+
+For data-dense pages (large tables, many inputs, many buttons), also read [developer_docs/ui/data-dense-page-patterns.md](../../developer_docs/ui/data-dense-page-patterns.md) — sticky headers/action bars, keyboard-first entry (`p:defaultCommand`, `p:focus`), lazy loading, and busy indicators.

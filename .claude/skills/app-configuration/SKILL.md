@@ -49,6 +49,9 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Feature Key'
 - Printing profiles and templates
 - Per-department printer assignment
 
+### Pharmacy Procurement
+- Cross-department PO receiving (institution-wide, opt-in)
+
 For complete reference, read:
 - [Application Options](../../developer_docs/configuration/application-options.md)
 - [Bill Number Config](../../developer_docs/configuration/bill-number-config-options.md)

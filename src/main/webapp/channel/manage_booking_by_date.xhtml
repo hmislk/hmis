@@ -520,7 +520,7 @@
 
                                                 <p:outputLabel value="Citizenship" ></p:outputLabel>
                                                 <p:panel>
-                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Mark Foreigner and Mark Local Buttons in Billing', true)}">
                                                         <p:commandButton
                                                             value="Mark Foreigner"
                                                             class="mx-2 my-2"

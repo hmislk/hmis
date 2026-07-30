@@ -6,6 +6,7 @@
 package com.divudi.ws.institution;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.data.dto.bedboard.BedBoardSvgDTO;
 import com.divudi.core.data.dto.search.SiteDTO;
 import com.divudi.core.data.dto.site.SiteCreateRequestDTO;
 import com.divudi.core.data.dto.site.SiteResponseDTO;
@@ -252,6 +253,79 @@ public class SiteApi {
                 return errorResponse(e.getMessage(), 404);
             }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get the bed-board SVG drawings of a site (issue #21592)
+     * GET /api/sites/{id}/svg
+     */
+    @GET
+    @Path("/{id}/svg")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSiteSvg(@PathParam("id") Long id) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            if (id == null) {
+                return errorResponse("Site ID is required", 400);
+            }
+            BedBoardSvgDTO result = siteService.getSiteSvg(id);
+            return successResponse(result);
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("not found") || msg.contains("not a site"))) {
+                return errorResponse(msg, 404);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
+    /**
+     * Set the bed-board SVG drawings of a site (issue #21592).
+     * Only fields present in the body are changed; pass an empty string to clear
+     * a drawing. SVG is stored verbatim.
+     * PUT /api/sites/{id}/svg
+     * Body: { "svgParentView": "...", "svgChildView": "..." }
+     */
+    @PUT
+    @Path("/{id}/svg")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateSiteSvg(@PathParam("id") Long id, String requestBody) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            if (id == null) {
+                return errorResponse("Site ID is required", 400);
+            }
+            BedBoardSvgDTO request;
+            try {
+                request = gson.fromJson(requestBody, BedBoardSvgDTO.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (request == null) {
+                return errorResponse("Request body is required", 400);
+            }
+            // Reject a payload id that contradicts the path id (mirrors updateDepartment)
+            if (request.getId() != null && !request.getId().equals(id)) {
+                return errorResponse("Path id and payload id mismatch", 400);
+            }
+            BedBoardSvgDTO response = siteService.updateSiteSvg(id, request, user);
+            return successResponse(response);
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("not found") || msg.contains("not a site"))) {
+                return errorResponse(msg, 404);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
 

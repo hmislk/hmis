@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -51,6 +53,8 @@ public class InwardRefundController implements Serializable {
     PaymentService paymentService;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     private double paidAmount;
     double netTotal;
     private Bill current;
@@ -65,6 +69,22 @@ public class InwardRefundController implements Serializable {
         current = null;
         paidAmount = 0.0;
         printPreview = false;
+    }
+
+    /**
+     * Navigate to the inward deposit refund page, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToInwardDepositRefund() {
+        makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/inward/inward_bill_refund?faces-redirect=true";
     }
 
     public PaymentMethod[] getPaymentMethods() {
@@ -258,6 +278,7 @@ public class InwardRefundController implements Serializable {
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter=:pe"
                 + " order by b.id desc";
         HashMap hm = new HashMap();

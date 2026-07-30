@@ -27,12 +27,15 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -66,7 +69,8 @@ public class RoomChangeController implements Serializable {
     NotificationController notificationController;
     @Inject
     private InwardBeanController inwardBean;
-
+    @EJB
+    private AuditService auditService;
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -84,6 +88,7 @@ public class RoomChangeController implements Serializable {
 
     private List<PatientRoom> patientRoom;
     private PatientRoom currentPatientRoom;
+    private PatientRoom roomForReceipt;
     List<Admission> selectedItems;
     private Admission current;
     private List<Admission> items = null;
@@ -242,6 +247,9 @@ public class RoomChangeController implements Serializable {
         current.setRoomAdmitted(true);
         ejbFacade.edit(current);
 
+        recordRoomAuditEvent(getCurrentPatientRoom(), "Room Admitted", null);
+        notificationController.createNotification(getCurrentPatientRoom(), "Admit");
+
         JsfUtil.addSuccessMessage("Room admitted successfully");
 
     }
@@ -281,6 +289,8 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        Map<String, Object> beforeState = roomStateMap(pR);
+
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
@@ -294,6 +304,9 @@ public class RoomChangeController implements Serializable {
             getCurrent().setCurrentPatientRoom(pR.getPreviousRoom());
             getEjbFacade().edit(getCurrent());
         }
+
+        recordRoomAuditEvent(pR, "Room Removed", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void discharge(PatientRoom pR) {
@@ -301,6 +314,8 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Discharge Date");
             return;
         }
+
+        Map<String, Object> beforeState = roomStateMap(pR);
 
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
@@ -314,6 +329,9 @@ public class RoomChangeController implements Serializable {
             encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
             patientEncounterFacade.edit(encounter);
         }
+
+        recordRoomAuditEvent(pR, "Room Discharged", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
@@ -323,7 +341,7 @@ public class RoomChangeController implements Serializable {
         List<PatientRoom> rooms = bhtSummeryController.getPatientRooms();
         if (rooms != null) {
             if (rooms.size() > 1) {
-                int currentRoomIndex = rooms.indexOf(patientRoom);
+                int currentRoomIndex = rooms.indexOf(pR);
                 if (currentRoomIndex > 0) {
                     PatientRoom previousRoom = rooms.get(currentRoomIndex - 1);
 
@@ -337,6 +355,8 @@ public class RoomChangeController implements Serializable {
             }
         }
 
+        Map<String, Object> beforeState = roomStateMap(pR);
+
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
@@ -349,13 +369,93 @@ public class RoomChangeController implements Serializable {
             encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
             patientEncounterFacade.edit(encounter);
         }
+
+        // Record audit event
+        recordRoomAuditEvent(pR, "Room Discharged", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
+
+        JsfUtil.addSuccessMessage("Successfully Discharged from Room");
     }
 
     public void dischargeCancel(PatientRoom pR) {
+        if (pR == null) {
+            return;
+        }
+        // Capture state before cancel for audit
+        Map<String, Object> beforeState = roomStateMap(pR);
+
         pR.setDischarged(false);
         pR.setDischargedBy(null);
+        pR.setDischargedAt(null);
         getPatientRoomFacade().edit(pR);
 
+        // Record audit event
+        recordRoomAuditEvent(pR, "Room Discharge Cancelled", beforeState);
+        notificationController.createNotification(pR, "CancelDischarge");
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
+
+        JsfUtil.addSuccessMessage("Room Discharge Cancelled");
+    }
+
+    private Map<String, Object> roomStateMap(PatientRoom pr) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (pr == null) {
+            return m;
+        }
+        m.put("room", pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : null);
+        m.put("admittedAt", pr.getAdmittedAt());
+        m.put("discharged", pr.isDischarged());
+        m.put("dischargedAt", pr.getDischargedAt());
+        m.put("dischargedBy", pr.getDischargedBy() != null ? pr.getDischargedBy().getName() : null);
+        m.put("retired", pr.isRetired());
+        return m;
+    }
+
+    private void recordRoomAuditEvent(PatientRoom pr, String trigger, Map<String, Object> beforeState) {
+        try {
+            auditService.logEncounterAudit(
+                    pr.getPatientEncounter(), trigger,
+                    beforeState, roomStateMap(pr),
+                    sessionController.getLoggedUser(),
+                    pr.getClass().getSimpleName(), pr.getId(),
+                    sessionController.getInstitution() != null ? sessionController.getInstitution().getId() : null,
+                    sessionController.getDepartment() != null ? sessionController.getDepartment().getId() : null);
+        } catch (Exception e) {
+            // Audit failure should not block the user action, but leave a trace
+            e.printStackTrace();
+        }
+    }
+
+    public String navigateToRoomDischargeReceipt(PatientRoom pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No room selected");
+            return "";
+        }
+        this.roomForReceipt = pr;
+        return "/inward/inward_room_discharge_receipt?faces-redirect=true";
+    }
+
+    public PatientRoom getRoomForReceipt() {
+        return roomForReceipt;
+    }
+
+    public void setRoomForReceipt(PatientRoom roomForReceipt) {
+        this.roomForReceipt = roomForReceipt;
+    }
+
+    public void removeRoom(PatientRoom pR) {
+        if (pR == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        Map<String, Object> beforeState = roomStateMap(pR);
+        pR.setRetired(true);
+        pR.setRetiredAt(new Date());
+        pR.setRetirer(sessionController.getWebUser());
+        getPatientRoomFacade().edit(pR);
+        bhtSummeryController.setPatientRooms(null);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
+        recordRoomAuditEvent(pR, "Room Removed", beforeState);
     }
 
     public void removeGuardianRoom(PatientRoom pR) {
@@ -365,6 +465,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        Map<String, Object> beforeState = roomStateMap(pR);
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
@@ -377,6 +478,8 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(pR.getPreviousRoom());
         }
 
+        recordRoomAuditEvent(pR, "Guardian Room Removed", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void recreate() {
@@ -445,6 +548,10 @@ public class RoomChangeController implements Serializable {
         // Save consultant information
         saveConsultantInfo(newPatientRoom);
 
+        Map<String, Object> beforeState = roomStateMap(oldPatientRoom);
+        recordRoomAuditEvent(newPatientRoom, "Room Changed", beforeState);
+        notificationController.createNotification(newPatientRoom, "Change");
+
         if (newConsultant != null || newPrimeConsultant != null) {
             JsfUtil.addSuccessMessage("Room changed with consultant details");
         } else {
@@ -473,12 +580,16 @@ public class RoomChangeController implements Serializable {
             return;
         }
         getCurrent().setCurrentPatientRoom(newPatientRoom);
+        getCurrent().setRoomAdmitted(true);
         getEjbFacade().edit(getCurrent());
 
         // Save consultant information
         saveConsultantInfo(newPatientRoom);
 
-        JsfUtil.addSuccessMessage("Successfully Room Changed");
+        recordRoomAuditEvent(newPatientRoom, "Room Added", null);
+        notificationController.createNotification(newPatientRoom, "Admit");
+
+        JsfUtil.addSuccessMessage("Successfully Room Added");
 
         newRoomFacilityCharge = null;
         changeAt = null;
@@ -524,7 +635,35 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(oldGaurdianRoom);
         }
 
-        JsfUtil.addSuccessMessage("Successfully Room Changed");
+        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Changed", oldGaurdianRoom != null ? roomStateMap(oldGaurdianRoom) : null);
+        notificationController.createNotification(newGuardianRoom, "Change");
+
+        JsfUtil.addSuccessMessage("Successfully Guardian Room Changed");
+        newRoomFacilityCharge = null;
+        changeAt = null;
+        createGuardianRoom();
+    }
+
+    public void addNewGuardianRoom() {
+        if (getNewRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Please select a room facility");
+            return;
+        }
+
+        GuardianRoom newGuardianRoom = new GuardianRoom();
+        newGuardianRoom = (GuardianRoom) getInwardBean().savePatientRoom(
+                newGuardianRoom, getNewRoomFacilityCharge(), current, changeAt,
+                getSessionController().getLoggedUser());
+
+        if (newGuardianRoom == null) {
+            JsfUtil.addErrorMessage("Failed to add guardian room");
+            return;
+        }
+
+        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Added", null);
+        notificationController.createNotification(newGuardianRoom, "Admit");
+
+        JsfUtil.addSuccessMessage("Successfully Added Guardian Room");
         newRoomFacilityCharge = null;
         changeAt = null;
         createGuardianRoom();

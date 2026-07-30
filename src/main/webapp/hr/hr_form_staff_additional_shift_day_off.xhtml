@@ -48,9 +48,22 @@
             .redText { color: #c0392b !important; }
             .ui-panel .ui-panel-titlebar { padding: 0.5rem 0.75rem; }
             .ui-autocomplete, .ui-autocomplete-input { width: 100% !important; }
+            
+            .ui-toolbar-group-left .ui-button,
+
+            .ui-toolbar-group-right .ui-button {
+                display: inline-flex !important;
+                width: 110px !important;
+
+            }
+            
+            .ui-toolbar-group-left,
+            .ui-toolbar-group-right {
+                gap: 0.2rem !important;
+            }
         </style>
 
-        <h:form id="addFormDayOffFrm">
+        <h:form id="addFormFrm" onkeypress="if (event.key === 'Enter') { event.preventDefault(); return false; }">
 
             <p:panel header="Extra Shift Day Off / PH" styleClass="ui-fluid">
 
@@ -214,14 +227,16 @@
                                                      disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
                                                      action="#{staffAdditionalFormController.saveAdditionalFormShiftDayOff()}" />
                                     <span style="display:inline-block;width:0.5rem;" />
-                                    <p:commandButton ajax="false"
+                                    <p:commandButton id="btnClear"
+                                                     ajax="false"
                                                      value="Clear"
                                                      icon="pi pi-eraser"
                                                      styleClass="ui-button-secondary"
                                                      action="#{staffAdditionalFormController.clear}" />
                                 </p:toolbarGroup>
                                 <p:toolbarGroup align="right">
-                                    <p:commandButton ajax="false"
+                                    <p:commandButton id="btnDelete"
+                                                     ajax="false"
                                                      value="Delete"
                                                      icon="pi pi-trash"
                                                      styleClass="ui-button-danger"

@@ -19,6 +19,9 @@
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
 
                     <p:growl id="msg"  />
+                    <p:messages id="messages" showDetail="true" closable="true" redisplay="true" >
+                        <p:autoUpdate />
+                    </p:messages>
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between align-items-center">
@@ -49,11 +52,6 @@
                         </f:facet>
 
 
-                        <!--                        <div class="row" >
-                                                    <div class="col-md-12 text-center p-1" >
-                                                        <p:messages id="messages" ></p:messages>
-                                                    </div>
-                                                </div>-->
                         <div class="row" >
                             <div class="col-md-8" >
                                 <p:focus  context="txtQuickSearchPhoneNumber" ></p:focus>
@@ -470,12 +468,14 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
 
-                                                    <h:outputLabel value="Registered Type" class="mx-3"/>
-                                                    <h:outputLabel value=" : " class="mx-3"/>
-                                                    <p:badge 
-                                                        value="#{opdBillController.patient.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
-                                                        severity="#{opdBillController.patient.selfRegistered eq true ? 'warning' : 'success'}">
-                                                    </p:badge>
+                                                    <h:panelGroup rendered="#{not empty opdBillController.patient.registrationSource}">
+                                                        <h:outputLabel value="Registration Source" class="mx-3"/>
+                                                        <h:outputLabel value=" : " class="mx-3"/>
+                                                        <p:badge
+                                                            value="#{opdBillController.patient.registrationSource.label}"
+                                                            severity="info">
+                                                        </p:badge>
+                                                    </h:panelGroup>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
@@ -1467,7 +1467,7 @@
                                         </div>
 
                                         <div class="col-md-4" >
-                                            <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                            <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Mark Foreigner and Mark Local Buttons in Billing', true)}">
                                                 <p:commandButton 
                                                     value="Mark Foreigner" 
                                                     class="mx-2"

@@ -100,7 +100,8 @@ public class TransferReceiveNativeSqlService {
                 + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire, ib.purcahseRate, ib.retailsaleRate,"
                 + " ib.wholesaleRate, COALESCE(ib.costRate, 0) AS costRate,"
                 + " i.ID AS itemId, i.name AS itemName, COALESCE(i.code, '') AS itemCode,"
-                + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue"
+                + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue,"
+                + " i.departmentType AS departmentType"
                 + " FROM " + billItemTable() + " bi"
                 + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
                 + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
@@ -148,7 +149,8 @@ public class TransferReceiveNativeSqlService {
             // row[6]=pbi.staffStock_ID, row[7]=pbi.itemBatch_ID, row[8]=pbi.qty(units in stock),
             // row[9]=ib.batchNo, row[10]=COALESCE(ib.dateOfExpire,pbi.doe), row[11]=ib.purcahseRate,
             // row[12]=ib.retailsaleRate, row[13]=ib.wholesaleRate, row[14]=ib.costRate,
-            // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue
+            // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue,
+            // row[20]=i.departmentType
 
             long biId = ((Number) row[0]).longValue();
 
@@ -196,6 +198,7 @@ public class TransferReceiveNativeSqlService {
             dto.setAmpItemId(((Number) row[15]).longValue()); // may be refined by controller for Ampp items
             dto.setItemName(row[16] != null ? row[16].toString() : "");
             dto.setItemCode(row[17] != null ? row[17].toString() : "");
+            dto.setDepartmentType(row[20] != null ? row[20].toString() : null);
             dto.setBatchNo(row[9] != null ? row[9].toString() : "");
             dto.setDateOfExpire(toDate(row[10]));
             dto.setUnitsPerPack(unitsPerPack);
@@ -449,13 +452,24 @@ public class TransferReceiveNativeSqlService {
                 .setParameter(3, billId)
                 .executeUpdate();
 
-        // Step 8: Link backwardReferenceBill and forwardReferenceBills
+        // Step 8: Link backwardReferenceBill, referenceBill (both directions), and forwardReferenceBills
         if (bill.getBackwardReferenceBill() != null && bill.getBackwardReferenceBill().getId() != null) {
             long issuedBillId = bill.getBackwardReferenceBill().getId();
 
-            em.createNativeQuery("UPDATE " + billTable() + " SET backwardReferenceBill_ID=? WHERE ID=?")
+            // The Received column on pharmacy_transfer_issued_list joins on the receive
+            // bill's referenceBill_ID (see SearchController.fetchReceivedBillsForIssuedIds).
+            // The regular TransferReceiveController.settle path sets both sides — mirror
+            // that here so fast-receive bills also appear in the Received column.
+            em.createNativeQuery("UPDATE " + billTable()
+                    + " SET backwardReferenceBill_ID=?, referenceBill_ID=? WHERE ID=?")
                     .setParameter(1, issuedBillId)
-                    .setParameter(2, billId)
+                    .setParameter(2, issuedBillId)
+                    .setParameter(3, billId)
+                    .executeUpdate();
+
+            em.createNativeQuery("UPDATE " + billTable() + " SET referenceBill_ID=? WHERE ID=?")
+                    .setParameter(1, billId)
+                    .setParameter(2, issuedBillId)
                     .executeUpdate();
 
             // Insert into the Bill.forwardReferenceBills join table
@@ -477,6 +491,15 @@ public class TransferReceiveNativeSqlService {
                     (bill.getCreater() != null && bill.getCreater().getId() != null)
                             ? bill.getCreater().getId() : null);
         }
+
+        // The bill was persisted with billItems nulled because the items are inserted
+        // natively, so the in-memory entity claims it has none — and Bill.getBillItems()
+        // hands out an empty list rather than a lazy one. Anything that later merges this
+        // instance writes that empty collection into the shared cache, so every subsequent
+        // read of the bill shows a bill with no items. Issue #22511, same cause as #22506.
+        // Refreshing rebuilds the lazy collection from the rows just written, and also picks
+        // up the totals and reference links updated above.
+        em.refresh(bill);
 
         LOGGER.log(Level.INFO, "[TRNativeSettle] DONE items={0} ms={1}",
                 new Object[]{itemsToProcess.size(), System.currentTimeMillis() - t0});

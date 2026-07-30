@@ -2695,9 +2695,6 @@ public class PdfController {
                 case "channelIncomeScanning":
                     populateTableForChannelIncomeScanningReport(document, bundle);
                     break;
-                case "channelIncome":
-                    populateTableForChannelIncomeReport(document, bundle);
-                    break;
                 case "channelIncomeWithAgentBooking":
                     populateTableForIncomeWithAgentBookingReport(document, bundle);
                     break;
@@ -2943,6 +2940,110 @@ public class PdfController {
 
         document.add(table);
         return;
+    }
+
+    // PDF Export: Shift End Summary (shift_starts_and_ends)
+    public StreamedContent createPdfForShiftEndSummary(List<Bill> bills, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters, String fileName) throws IOException {
+        if (bills == null || bills.isEmpty()) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document;
+        if (pageSize != null) {
+            document = new Document(pdf, pageSize);
+        } else {
+            document = new Document(pdf);
+        }
+
+        if (withHeaderFooter) {
+            String institutionName = "";
+            if (sessionController != null && sessionController.getLoggedUser() != null
+                    && sessionController.getLoggedUser().getInstitution() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+
+            if (!institutionName.isEmpty()) {
+                Paragraph instPara = new Paragraph(institutionName)
+                        .setBold()
+                        .setFontSize(16)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(2);
+                document.add(instPara);
+            }
+
+            Paragraph titlePara = new Paragraph("Shift End Summary Report")
+                    .setBold()
+                    .setFontSize(14)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(2);
+            document.add(titlePara);
+
+            if (filters != null && !filters.isEmpty()) {
+                Table infoTable = createInfoTablePdfExport(filters);
+                document.add(infoTable);
+            }
+
+            SolidLine headerLine = new SolidLine(1.5f);
+            LineSeparator headerSeparator = new LineSeparator(headerLine);
+            headerSeparator.setStrokeColor(ColorConstants.BLACK);
+            document.add(headerSeparator);
+            document.add(new Paragraph("").setMarginBottom(5));
+        }
+
+        populateTableForShiftEndSummary(document, bills);
+
+        if (withHeaderFooter) {
+            addReportFooter(document);
+        }
+
+        document.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        return DefaultStreamedContent.builder()
+                .name((fileName != null && !fileName.isEmpty() ?fileName : "Shift End Summary") + ".pdf")
+                .contentType("application/pdf") 
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void populateTableForShiftEndSummary(Document document, List<Bill> bills) throws IOException {
+        if (bills == null || bills.isEmpty()) {
+            document.add(new Paragraph("No Data Available"));
+            return;
+        }
+        if (document == null) {
+            return;
+        }
+
+        Table table = new Table(new float[]{2.5f, 5f, 5f, 5f, 2f, 4.5f, 5f, 5f, 2f}).useAllAvailableWidth().setFixedLayout();
+        String[] headers = {"ID", "Institution", "Site", "Department", "Date", "Staff", "Starting Bill", "Ending Bill", "Short or Excess"};
+
+        for (String header : headers) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(8)
+                    .setBackgroundColor(new DeviceRgb(192, 192, 192));
+            table.addCell(headerCell);
+        }
+
+        for (Bill bill : bills) {
+            table.addCell(new Cell().add(new Paragraph(bill.getId() != null ? String.valueOf(bill.getId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getInstitution() != null && bill.getInstitution().getName() != null ? bill.getInstitution().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph((bill.getDepartment() != null && bill.getDepartment().getSite() != null && bill.getDepartment().getSite().getName() != null) ? bill.getDepartment().getSite().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getDepartment() != null && bill.getDepartment().getName() != null ? bill.getDepartment().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(bill.getCreatedAt()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getReferenceBill() != null && bill.getReferenceBill().getBillTypeAtomic() != null ? bill.getReferenceBill().getBillTypeAtomic().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getReferenceBill() != null && bill.getReferenceBill().getInsId() != null ? bill.getReferenceBill().getInsId() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+        }
+
+        document.add(table);
     }
 
     // Info Taable using filters
@@ -3318,183 +3419,6 @@ public class PdfController {
         // footers for PaymentMethod columns
         addPaymentMethodFooterDataChannelIncomeReports(table, bundle, pmFlags, fontSize);
     
-        document.add(table);
-
-        return;
-        
-    }
-
-    // PDF Export: Channel Income Report
-    private void populateTableForChannelIncomeReport(Document document, ReportTemplateRowBundle bundle) throws IOException {
-        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
-            document.add(new Paragraph("No Data Available"));
-            return;
-        }
-
-        Table table;
-        int fontSize = 8;
-
-        // PaymentsMethod Column boolean values
-        ChannelReportController.PaymentMethodFlags pmFlags = new ChannelReportController.PaymentMethodFlags();
-        pmFlags.setFlagsReportTemplateRowBundle(bundle);
-
-        boolean includeBTA          = false;
-        boolean includeDiscount     = false;
-
-        List<String> headers = new ArrayList<>(Arrays.asList("Serial", "Date", "Bill No"));
-        List<Float> colWidths = new ArrayList<>(Arrays.asList(2f, 3f, 5f));
-
-        if (webUserController.hasPrivilege("Developers")) {
-            includeBTA = true;
-            headers.add("Bill Type");
-            colWidths.add(5f);
-        }
-
-        headers.addAll(Arrays.asList("Bill Type", "Patient", "Cashier", "Payment Method", "Hospital Fee", "Staff Fee", "Gross Total"));
-        colWidths.addAll(Arrays.asList(5f, 4f, 4f, 3f, 3.5f, 3.5f, 3.5f));
-
-        if (configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false)) {
-            includeDiscount = true;
-            headers.addAll(Arrays.asList("Discount", "Net Total"));
-            colWidths.addAll(Arrays.asList(3.5f, 3.5f));
-        }
-
-        // Payment Method columns
-        addPaymentMethodHeadersChannelIncomeReports(headers, colWidths, pmFlags);
-
-        // Convert List<Float> to float[]
-        float[] widthsArray = new float[colWidths.size()];
-        for (int i = 0; i < colWidths.size(); i++) {
-            widthsArray[i] = colWidths.get(i);
-        }
-
-        // Create table using dynamic widths
-        table = new Table(widthsArray).useAllAvailableWidth().setFixedLayout();
-
-        if (table == null || headers == null) {
-            document.add(new Paragraph("Invalid table configuration"));
-            return;
-        }
-
-        if (colWidths.size() > 15) {
-            fontSize = 6;
-        }
-
-        for (String header : headers) {
-            Cell headerCell = new Cell()
-                    .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontSize(fontSize)
-                    .setBackgroundColor(new DeviceRgb(192, 192, 192));
-            table.addCell(headerCell);
-        }
-
-        int serialNo = 1;
-
-        for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
-
-            Bill b = r.getBill();
-
-            table.addCell(new Cell().add(new Paragraph(String.valueOf(serialNo++)).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize))); 
-            if (b != null) { 
-                table.addCell(new Cell().add(new Paragraph(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(b.getCreatedAt()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-
-                String billDept = b.getDeptId() != null ? b.getDeptId() : "";
-                if (b.isCancelled()) {
-                    billDept += "\nCancelled" + (b.getCancelledBill() != null && b.getCancelledBill().getDeptId() != null ? (" - " + b.getCancelledBill().getDeptId()) : "" );
-                }
-                if (b.isRefunded()) {
-                    billDept += "\nRefunded" + (b.getRefundedBill() != null && b.getRefundedBill().getDeptId() != null ? (" - " + b.getRefundedBill().getDeptId()) : "" );
-                }
-                if (b instanceof RefundBill) {
-                    billDept += "\nRefund Bill";
-                }
-                if (b.getBillTypeAtomic() != null && b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
-                    billDept += "\nCancel Bill";
-                }
-                table.addCell(new Cell().add(new Paragraph(billDept).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-
-                if (includeBTA) {
-                    table.addCell(new Cell().add(new Paragraph(b.getBillTypeAtomic() != null ? b.getBillTypeAtomic().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)).setKeepTogether(true));
-                }
-
-                String billType = "";
-                if (b.getBillTypeAtomic() != null) {
-                    if (b.getBillTypeAtomic() == BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION) {
-                        billType = "Dr Payment";
-                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN) {
-                        billType = "Dr Payment Return";
-                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL) {
-                        billType = "OB Agent Payment To Hospital";
-                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION) {
-                        billType = "OB Agent Cancel Payment To Hospital";
-                    } else {
-                        billType = "Channel Bill";
-                    }
-                }
-                table.addCell(new Cell().add(new Paragraph(billType).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-
-                String patientName = "";
-                if (b.getBillTypeAtomic() != null) {
-                    if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-                        patientName = (b.getReferenceBill() != null && b.getReferenceBill().getOnlineBooking() != null) ? b.getReferenceBill().getOnlineBooking().getPatientName() : "";
-                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
-                       patientName = (b.getBilledBill() != null && b.getBilledBill().getReferenceBill() != null && b.getBilledBill().getReferenceBill().getOnlineBooking() != null) ? b.getBilledBill().getReferenceBill().getOnlineBooking().getPatientName() : "";
-                    } else {
-                        patientName = (b.getPatient() != null && b.getPatient().getPerson() != null) ? b.getPatient().getPerson().getNameWithTitle() : "";
-                    }
-                }
-                table.addCell(new Cell().add(new Paragraph(patientName).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-
-                table.addCell(new Cell().add(new Paragraph(b.getCreater() != null && b.getCreater().getName() != null ? b.getCreater().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                table.addCell(new Cell().add(new Paragraph(b.getPaymentMethod() != null ? b.getPaymentMethod().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                
-                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getHospitalFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
-                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getStaffFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
-                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
-
-                if (includeDiscount) {
-                    table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getDiscount())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
-                    table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
-                }
-            } else if (includeBTA && includeDiscount){
-                for (int i = 0; i < 12; i++) {
-                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                }
-            } else if (includeBTA){
-                for (int i = 0; i < 10; i++) {
-                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                }
-            } else if (includeDiscount){
-                for (int i = 0; i < 11; i++) {
-                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                }
-            } else {
-                for (int i = 0; i < 9; i++) {
-                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                }
-            } 
-
-            // Columns for Payment Methods
-            addPaymentMethodDataChannelIncomeReports(table, r, pmFlags, fontSize);
-        } 
-
-        if (includeBTA) {
-            table.addCell(new Cell(1, 8).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-        } else {
-            table.addCell(new Cell(1, 7).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-        }
-        table.addCell(new Cell().add(new Paragraph(bundle.getHospitalTotal() != null ? String.format("%,.2f", bundle.getHospitalTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-        table.addCell(new Cell().add(new Paragraph(bundle.getStaffTotal() != null ? String.format("%,.2f", bundle.getStaffTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-        table.addCell(new Cell().add(new Paragraph(bundle.getGrossTotal() != null ? String.format("%,.2f", bundle.getGrossTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-
-        if (includeDiscount) {
-            table.addCell(new Cell().add(new Paragraph(bundle.getDiscount() != null ? String.format("%,.2f", bundle.getDiscount().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-            table.addCell(new Cell().add(new Paragraph(bundle.getTotal() != null ? String.format("%,.2f", bundle.getTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-        }
-        // footers for PaymentMethod columns
-        addPaymentMethodFooterDataChannelIncomeReports(table, bundle, pmFlags, fontSize);
-
         document.add(table);
 
         return;

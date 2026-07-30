@@ -72,6 +72,7 @@ public enum BillType {
     PharmacyBhtIssue,
     PharmacyBhtPre,
     InwardPharmacyRequest,
+    InwardServiceItemRequest,
     @Deprecated
     StoreBhtIssue,
     StoreBhtPre,
@@ -179,6 +180,7 @@ public enum BillType {
     ShiftExcess,
     HandoverProofMissing,
     HandoverProofMissingSettlement,
+    PaymentSettlementBill, // For settling non-cash payments (card/cheque/slip/eWallet) with bank or processor
     PaymentTransfer,
     @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
@@ -200,6 +202,8 @@ public enum BillType {
 
     public String getLabel() {
         switch (this) {
+            case PaymentSettlementBill:
+                return "Payment Settlement Bill";
             case OpdBill:
                 return "OPD Bill";
             case PaymentBill:

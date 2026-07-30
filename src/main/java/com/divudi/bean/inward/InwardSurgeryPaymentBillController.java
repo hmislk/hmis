@@ -3,6 +3,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
@@ -32,6 +33,7 @@ import com.divudi.core.facade.CancelledBillFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.io.Serializable;
@@ -92,6 +94,8 @@ public class InwardSurgeryPaymentBillController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    private WebUserController webUserController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -100,6 +104,8 @@ public class InwardSurgeryPaymentBillController implements Serializable {
     private Date toDate;
 
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
 
     private Staff currentSurgeon;
@@ -162,8 +168,9 @@ public class InwardSurgeryPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and (bf.feePaymentOnHold=false or bf.feePaymentOnHold is null) "
                 + " and bf.staff=:stf ";
-        
+
         sql += " order by bf.createdAt desc";
 
         h.put("fd", fromDate);
@@ -330,6 +337,22 @@ public class InwardSurgeryPaymentBillController implements Serializable {
     }
 
     private boolean errorCheck() {
+        if (getPayingSurgeryFees() != null) {
+            for (BillFee bf : getPayingSurgeryFees()) {
+                com.divudi.core.entity.PatientEncounter pe = bf.getPatienEncounter();
+                if (pe != null && Boolean.TRUE.equals(pe.getProfessionalPaymentsOnHold())
+                        && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
+                    JsfUtil.addErrorMessage("Cannot pay: professional payments are on hold for BHT " + pe.getBhtNo() + ".");
+                    return true;
+                }
+                if (bf.isFeePaymentOnHold()
+                        && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
+                    JsfUtil.addErrorMessage("Cannot pay: this professional payment is individually on hold"
+                            + (pe != null ? " (BHT " + pe.getBhtNo() + ")" : "") + ".");
+                    return true;
+                }
+            }
+        }
         if (currentSurgeon == null) {
             JsfUtil.addErrorMessage("Please select a Surgeon");
             return true;
@@ -626,6 +649,15 @@ public class InwardSurgeryPaymentBillController implements Serializable {
 
     public Bill getCurrent() {
         return current;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
     }
 
     public void setCurrent(Bill current) {

@@ -17,6 +17,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Add New Discount Entry" class="mt-2"/>
                                 <p:commandButton
+                                    id="btnAdd"
                                     value="Add"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
@@ -55,13 +56,12 @@
                                             class="w-100"
                                             value="#{inwardDiscountMatrixController.inwardChargeType}">
                                             <f:selectItem itemLabel="-- Select Charge Type --" itemValue="#{null}"/>
-                                            <f:selectItem itemLabel="Room Charges"         itemValue="#{enumController.getInaChargeType('RoomCharges')}"/>
-                                            <f:selectItem itemLabel="Linen Charges"        itemValue="#{enumController.getInaChargeType('LinenCharges')}"/>
-                                            <f:selectItem itemLabel="MO Charges"           itemValue="#{enumController.getInaChargeType('MOCharges')}"/>
-                                            <f:selectItem itemLabel="Nursing Charges"      itemValue="#{enumController.getInaChargeType('NursingCharges')}"/>
-                                            <f:selectItem itemLabel="Maintain Charges"     itemValue="#{enumController.getInaChargeType('MaintainCharges')}"/>
-                                            <f:selectItem itemLabel="Administration Fee"   itemValue="#{enumController.getInaChargeType('AdministrationCharge')}"/>
-                                            <f:selectItem itemLabel="Medical Care (ICU)"   itemValue="#{enumController.getInaChargeType('MedicalCareICU')}"/>
+                                            <f:selectItems
+                                                value="#{enumController.roomChargeType}"
+                                                var="rc"
+                                                itemValue="#{rc}"
+                                                itemLabel="#{rc.label}">
+                                            </f:selectItems>
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -99,12 +99,38 @@
 
                                 <div class="row mt-1">
                                     <div class="col-2">
+                                        <h:outputLabel value="Credit Company" class="mt-2"/>
+                                    </div>
+                                    <div class="col-10">
+                                        <p:autoComplete
+                                            value="#{inwardDiscountMatrixController.creditCompany}"
+                                            forceSelection="true"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="ins"
+                                            inputStyleClass="form-control"
+                                            class="w-100"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
+                                            placeholder="Leave blank to apply to all companies"
+                                            maxResults="20"
+                                            onkeydown="if (event.key === 'Enter') {
+                                                        event.preventDefault();
+                                                        return false;
+                                                    }">
+                                            <p:column headerText="Name">#{ins.name}</p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
                                         <h:outputLabel value="Discount %" class="mt-2"/>
                                     </div>
                                     <div class="col-4">
                                         <p:inputText
                                             class="w-100"
                                             autocomplete="off"
+                                            onfocus="this.select()"
                                             value="#{inwardDiscountMatrixController.discountPercent}"/>
                                     </div>
                                 </div>
@@ -118,6 +144,7 @@
                                 <h:outputLabel value="Room Charge Discount Matrix" class="mt-2"/>
                                 <div class="d-flex" style="float: right">
                                     <p:commandButton
+                                        id="btnFill"
                                         ajax="false"
                                         icon="fa fa-fill"
                                         class="ui-button-warning"
@@ -125,6 +152,7 @@
                                         action="#{inwardDiscountMatrixController.loadRoomCharges}">
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnExcel"
                                         class="ui-button-success mx-2"
                                         actionListener="#{inwardDiscountMatrixController.loadRoomCharges}"
                                         ajax="false"
@@ -136,6 +164,7 @@
                                             fileName="inward_discount_matrix_room_charges"/>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrint"
                                         class="ui-button-info"
                                         ajax="false"
                                         icon="fa fa-print"
@@ -178,16 +207,25 @@
                                     <h:outputText value="#{a.paymentMethod}"/>
                                 </p:column>
 
-                                <p:column headerText="Discount %" style="width: 8em;">
-                                    <h:inputText
-                                        autocomplete="off"
-                                        value="#{a.discountPercent}"
-                                        style="width: 5em;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                <p:column
+                                    headerText="Credit Company"
+                                    filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
                                 </p:column>
 
-                                <p:column headerText="Action" style="width: 10em;">
+                                <p:column headerText="Discount %" style="width: 8em;">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        value="#{a.discountPercent}"
+                                        onfocus="this.select()"
+                                        class="text-end w-100"
+                                        style="width: 5em;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </p:column>
+
+                                <p:column headerText="Action" style="width: 5em;">
                                     <div class="d-flex">
                                         <p:commandButton
                                             id="btnEdit"

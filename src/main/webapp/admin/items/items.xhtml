@@ -105,7 +105,7 @@
                                                 columns="2" 
                                                 class="w-100" 
                                                 columnClasses="w-25, w-75">
-                                                
+
                                                 <h:outputText id="lblName" value="Name" ></h:outputText>
                                                 <p:inputText 
                                                     autocomplete="off" 
@@ -140,7 +140,20 @@
                                                 </p:autoComplete>
 
                                                 <p:outputLabel for="ServiceCode" value="Item Code"/>
-                                                <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="w-100 m-1"/>
+                                                <h:panelGroup class="d-flex gap-2">
+                                                    <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="w-100 m-1"/>
+                                                    <p:commandButton 
+                                                        class="ui-button-warning m-1"
+                                                        update="ServiceCode"
+                                                        process="@this btnGenCode cmbIns cmbDep" 
+                                                        icon="fa fa-cog"
+                                                        title="Auto Generate Code"
+                                                        disabled="#{itemController.current.id ne null}"
+                                                        id="btnGenCode"         
+                                                        action="#{itemController.generateCode()}">
+                                                    </p:commandButton>
+                                                </h:panelGroup>
+
 
                                                 <h:outputText value="Financial Category" ></h:outputText>
                                                 <p:autoComplete 
@@ -188,7 +201,7 @@
                                         </p:tab>
                                         <p:tab title="Additional Details" >
                                             <h:panelGrid columns="2" >
-                                                
+
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.inactive}" itemLabel="Service Inactive"/>
                                                 <h:outputText value="" ></h:outputText>
@@ -212,7 +225,7 @@
                                                 <p:selectBooleanCheckbox value="#{itemController.current.printFeesForBills}" itemLabel="Print Separate Fees"/>
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.printSessionNumber}" itemLabel="Print Session Number"/>
-                                                
+
                                             </h:panelGrid>
                                             <hr/>
                                             <h:panelGrid columns="2" columnClasses="w-50, w-50" >
@@ -222,21 +235,27 @@
                                                 <h:outputText value="#{itemController.current.creater.webUserPerson.nameWithTitle}"/>
                                                 <h:outputText value="Created At"/>
                                                 <h:outputText value="#{itemController.current.createdAt}">
-                                                   <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
                                             </h:panelGrid>
-                                            
+
                                         </p:tab>
-                                        <p:tab rendered="false" title="Depricated" >
-                                            <h:outputText id="lblVatPercentage" value="VAT Percentage" ></h:outputText>
-                                            <p:inputText styleClass="longText pdInputText" autocomplete="off"   
-                                                         value="#{itemController.current.vatPercentage}"  class="form-control"></p:inputText>
+                                        <p:tab title="VAT" >
+                                            <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="w-25, w-75">
+                                                <p:outputLabel for="chkVatable" value="VATable"/>
+                                                <p:selectBooleanCheckbox id="chkVatable" value="#{itemController.current.vatable}" itemLabel="Charge VAT on this item">
+                                                    <p:ajax update="txtVatPercentage"/>
+                                                </p:selectBooleanCheckbox>
 
-
-                                            <h:outputText value="VATable" ></h:outputText>
-                                            <p:selectBooleanCheckbox  value="#{itemController.current.vatable}" >
-                                            </p:selectBooleanCheckbox>
-
+                                                <p:outputLabel for="txtVatPercentage" value="VAT Percentage"/>
+                                                <p:inputNumber id="txtVatPercentage"
+                                                               value="#{itemController.current.vatPercentage}"
+                                                               decimalPlaces="2"
+                                                               minValue="0"
+                                                               maxValue="100"
+                                                               disabled="#{not itemController.current.vatable}"
+                                                               class="w-100 m-1"/>
+                                            </p:panelGrid>
                                         </p:tab>
                                     </p:tabView>
                                 </h:panelGrid>

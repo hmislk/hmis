@@ -44,7 +44,10 @@ public class AuditEvent implements Serializable {
     private Long institutionId;
     private Long departmentId;
     private Long objectId;
-    
+    // Links the event to a PatientEncounter (BHT) regardless of which entity
+    // objectId points at, so all events for an admission can be queried together
+    private Long patientEncounterId;
+
     @Lob
     private String beforeJson;
     @Lob
@@ -97,8 +100,16 @@ public class AuditEvent implements Serializable {
     
     
     public void calculateDifference() {
-        if (beforeJson == null || afterJson == null) {
-            this.difference = "One or both JSON values are null.";
+        if (beforeJson == null && afterJson == null) {
+            this.difference = "No data recorded for this event.";
+            return;
+        }
+        if (beforeJson == null) {
+            this.difference = formatSingleSide("Created with", afterJson);
+            return;
+        }
+        if (afterJson == null) {
+            this.difference = formatSingleSide("Removed", beforeJson);
             return;
         }
         // If either value is not a JSON object (e.g. a plain toString() string
@@ -151,6 +162,38 @@ public class AuditEvent implements Serializable {
         StringBuilder sb = new StringBuilder();
         diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
         return sb.toString();
+    }
+
+    /**
+     * Formats a create ("Created with") or delete ("Removed") event where
+     * only one side of the JSON snapshot exists, listing the recorded
+     * field values instead of the generic null-JSON message.
+     */
+    private String formatSingleSide(String label, String json) {
+        if (!json.trim().startsWith("{")) {
+            return label + ": " + json;
+        }
+        try {
+            Gson gson = new Gson();
+            Type type = new TypeToken<Map<String, Object>>() {
+            }.getType();
+            Map<String, Object> map = gson.fromJson(json, type);
+            if (map == null || map.isEmpty()) {
+                return label + ": (no fields recorded)";
+            }
+            StringBuilder sb = new StringBuilder();
+            map.forEach((key, value) -> {
+                if (value != null) {
+                    sb.append(key).append(": ").append(value).append("\n");
+                }
+            });
+            if (sb.length() == 0) {
+                return label + ": (no fields recorded)";
+            }
+            return label + ":\n" + sb.toString();
+        } catch (Exception e) {
+            return label + ": " + json;
+        }
     }
 
     public String getDifference() {
@@ -286,6 +329,14 @@ public class AuditEvent implements Serializable {
 
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
+    }
+
+    public Long getPatientEncounterId() {
+        return patientEncounterId;
+    }
+
+    public void setPatientEncounterId(Long patientEncounterId) {
+        this.patientEncounterId = patientEncounterId;
     }
 
 }

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -299,7 +299,7 @@
                             <p:autoComplete value="#{pharmacyController.item}"
                                             inputStyleClass="w-100"
                                             class="w-100"
-                                            completeMethod="#{itemController.completeAmpItemAll}"
+                                            minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItemAll}"
                                             var="item" itemValue="#{item}" itemLabel="#{item.name}"
                                             forceSelection="true">
                                 <p:column headerText="Item">
@@ -345,6 +345,7 @@
                                     id="departmentTypeFilter"
                                     value="#{pharmacyController.selectedDepartmentTypes}"
                                     label="Select Department Types"
+                                    updateLabel="true"
                                     class="w-100"
                                     filter="true"
                                     filterMatchMode="contains"

@@ -336,6 +336,32 @@ public class PatientReportController implements Serializable {
 
     }
 
+    public String navigateToPrintPatientReportForInward(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/inward/inward_patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case INTERFACE:
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/inward/inward_patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/inward/inward_upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
+    }
+
     public String navigateToPrintPatientReportForCourier(PatientReport pr) {
         if (pr == null) {
             JsfUtil.addErrorMessage("No Select Patient Report");
@@ -1241,6 +1267,7 @@ public class PatientReportController implements Serializable {
     public void savePatientReportItemValues() {
         if (currentPatientReport != null && currentPatientReport.getPatientReportItemValues() != null) {
             for (PatientReportItemValue v : currentPatientReport.getPatientReportItemValues()) {
+                preserveMultipleSpacesInRichTextMemo(v);
                 pirivFacade.edit(v);
             }
         }
@@ -1253,6 +1280,39 @@ public class PatientReportController implements Serializable {
             System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
         
+    }
+
+    /**
+     * Rich-text memo results (entered through the Quill Text Editor, e.g. the
+     * microbiology memo box) are stored as HTML. Quill collapses runs of ASCII
+     * spaces down to a single space when it re-loads that HTML into the editor,
+     * so the extra spacing a user typed is lost on the next edit. To keep it,
+     * convert the 2nd and each subsequent space of every run into a
+     * non-breaking space (&nbsp;), which Quill preserves on reload. &nbsp;
+     * renders as an ordinary space in both the editor and the print view.
+     * <p>
+     * Only values that contain HTML tags are touched, so plain-textarea memos
+     * (e.g. the grouped antibiotic memo) are left exactly as entered. The
+     * conversion is idempotent because &nbsp; is not an ASCII space.
+     */
+    private void preserveMultipleSpacesInRichTextMemo(PatientReportItemValue v) {
+        if (v == null || v.getInvestigationItem() == null) {
+            return;
+        }
+        if (v.getInvestigationItem().getIxItemValueType() != InvestigationItemValueType.Memo) {
+            return;
+        }
+        String lob = v.getLobValue();
+        if (lob == null || lob.indexOf('<') < 0) {
+            return; // plain text (not from the Text Editor) - leave untouched
+        }
+        // Replace each space that immediately follows another space with a
+        // non-breaking space, preserving the run length while still allowing
+        // the line to wrap at the first (normal) space.
+        String preserved = lob.replaceAll("(?<= ) ", "&nbsp;");
+        if (!preserved.equals(lob)) {
+            v.setLobValue(preserved);
+        }
     }
 
     public void savePatientReport() {
@@ -2045,47 +2105,19 @@ public class PatientReportController implements Serializable {
             return;
         }
 
-        PatientReportGroup newlyAddedGroup = addPatientReportGroup();
+        // Persist the group first (so it gets a real id), then create a fresh
+        // antibiotic sensitivity list assigned to that group.
+        PatientReportGroup newlyAddedGroup = getPrBean()
+                .addAntibioticGroupWithValues(currentPatientReport, groupName, sessionController.getLoggedUser());
 
         if (newlyAddedGroup == null) {
+            JsfUtil.addErrorMessage("Could not add the antibiotic group");
             return;
         }
 
-        int groupCount = currentPatientReport.getPatientReportGroups().size();
-
-        if (groupCount == 1) {
-            for (PatientReportItemValue pvm : currentPatientReport.getPatientReportItemValues()) {
-                if (pvm.getInvestigationItem() != null
-                        && pvm.getInvestigationItem().getIxItemType() != null
-                        && pvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic) {
-                    pvm.setPatientReportGroup(newlyAddedGroup);
-                }
-            }
-        } else {
-            PatientReportGroup firstGroup = currentPatientReport.getPatientReportGroups().get(0);
-            // Step 1: Filter the base items first
-            List<PatientReportItemValue> baseAntibioticItems = new ArrayList<>();
-            for (PatientReportItemValue basePvm : currentPatientReport.getPatientReportItemValues()) {
-                if (basePvm.getInvestigationItem() != null
-                        && basePvm.getInvestigationItem().getIxItemType() != null
-                        && basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic
-                        && basePvm.getPatientReportGroup().equals(firstGroup)) {
-                    baseAntibioticItems.add(basePvm);
-                }
-            }
-
-            // Step 2: Safely clone and add
-            for (PatientReportItemValue basePvm : baseAntibioticItems) {
-                PatientReportItemValue clonedPvm = basePvm.clone();
-                clonedPvm.setStrValue(null);
-                clonedPvm.setLobValue(null);
-                clonedPvm.setDisplayValue(null);
-                clonedPvm.setPatientReportGroup(newlyAddedGroup);
-                currentPatientReport.getPatientReportItemValues().add(clonedPvm);
-            }
-        }
         savePatientReport();
         setGroupName(null);
+        JsfUtil.addSuccessMessage("Antibiotic group added");
     }
 
     public PatientReportGroup addPatientReportGroup() {
@@ -2670,6 +2702,22 @@ public class PatientReportController implements Serializable {
         laboratoryManagementController.addReportExportHistory(currentPatientReport.getId());
     }
 
+    public void printUnapprovedReport() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to print");
+            return;
+        }
+        laboratoryManagementController.addUnapprovedReportPrintHistory(currentPatientReport.getId());
+    }
+
+    public void exportUnapprovedReport() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to export");
+            return;
+        }
+        laboratoryManagementController.addUnapprovedReportExportHistory(currentPatientReport.getId());
+    }
+
     public void printPatientLabReport() {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
@@ -3075,12 +3123,16 @@ public class PatientReportController implements Serializable {
             }
             getFacade().create(r);
             r.setPatientInvestigation(pi);
-            getPrBean().addMicrobiologyReportItemValuesForReport(r);
-//            getEjbFacade().edit(r);
+            // Only create the non-antibiotic values (memos, etc.) on navigation.
+            // The antibiotic sensitivity list is added manually per group via "Add Group".
+            getPrBean().addMicrobiologyNonAntibioticReportItemValuesForReport(r);
+
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
-            setGroupName("Antibiotic Sensitivity Test");
-            addPatientReportGroupForMicrobiology();
+
+            // Prefill the group name field so the user can add the first antibiotic group.
+            String gName = configOptionApplicationController.getLongTextValueByKey("First Antibiotic List Group Name in Microbiology Report", "Antibiotic Sensitivity Test");
+            setGroupName(gName);
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
             JsfUtil.addErrorMessage("No ptIx or Ix selected to add");

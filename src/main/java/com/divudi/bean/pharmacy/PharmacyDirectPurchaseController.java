@@ -7,12 +7,17 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.PharmacyStockRow;
@@ -58,6 +63,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
 import java.math.RoundingMode;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -86,6 +92,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private BillItem currentExpense;
     private List<BillItem> billExpenses;
     private String warningMessage;
+    private boolean draftMode;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -93,6 +100,37 @@ public class PharmacyDirectPurchaseController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToStartNewDirectPurchaseBill() {
         prepareForNewDIrectPurchaseBill();
+        draftMode = false;
+        return "/pharmacy/direct_purchase?faces-redirect=true";
+    }
+
+    public String navigateToStartNewDirectPurchaseDraft() {
+        prepareForNewDIrectPurchaseBill();
+        draftMode = true;
+        return "/pharmacy/direct_purchase?faces-redirect=true";
+    }
+
+    public String loadDraftForEditing(com.divudi.core.entity.Bill draft) {
+        if (draft == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("No draft selected");
+            return null;
+        }
+        com.divudi.core.entity.Bill freshBill = billService.reloadBill(draft);
+        if (freshBill == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Draft bill could not be loaded");
+            return null;
+        }
+        prepareForNewDIrectPurchaseBill();
+        bill = (com.divudi.core.entity.BilledBill) freshBill;
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("billId", freshBill.getId());
+        billItems = billItemFacade.findByJpql(
+            "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false ORDER BY bi.searialNo",
+            params);
+        String expJpql = "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false ORDER BY be.searialNo";
+        billExpenses = billItemFacade.findByJpql(expJpql, params);
+        draftMode = true;
+        printPreview = false;
         return "/pharmacy/direct_purchase?faces-redirect=true";
     }
 
@@ -212,6 +250,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         if (BigDecimalUtil.isNullOrZero(f.getRetailSaleRatePerUnit()) || BigDecimalUtil.isNegative(f.getRetailSaleRatePerUnit())) {
             JsfUtil.addErrorMessage("Please enter the sale rate");
+            return;
+        }
+
+        // Issue #21635 / #13103 / #21837: block a retail rate below the purchase rate (selling
+        // at a loss) unless config allows it (clearance / loss-leader pricing). Normalize AMPP
+        // pack rates to per-unit before comparing.
+        if (!isAllowRetailRateBelowPurchaseRate() && isRetailRateBelowPurchaseRate(item, f)) {
+            JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Enable 'Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing' to proceed.");
             return;
         }
 
@@ -438,11 +484,34 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
         }
 
-        // Recalculate item totals when retail rate changes  
+        // Recalculate item totals when retail rate changes
         calculateItemTotals(currentBillItem);
     }
 
-    // </editor-fold>  
+    public void onWholesaleRateChange() {
+        if (currentBillItem == null) {
+            return;
+        }
+
+        BillItemFinanceDetails f = currentBillItem.getBillItemFinanceDetails();
+        if (f == null || f.getWholesaleRate() == null) {
+            return;
+        }
+
+        Item item = currentBillItem.getItem();
+        if (item instanceof Ampp) {
+            double dblVal = item.getDblValue();
+            BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+            f.setWholesaleRatePerUnit(f.getWholesaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
+        } else {
+            f.setWholesaleRatePerUnit(f.getWholesaleRate());
+        }
+
+        // Recalculate item totals when wholesale rate changes
+        calculateItemTotals(currentBillItem);
+    }
+
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Inner Classes Static Converter">
@@ -472,6 +541,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     PaymentService paymentService;
     @EJB
     PharmacyCostingService pharmacyCostingService;
+    @EJB
+    com.divudi.service.BillService billService;
 
     /**
      * Controllers
@@ -482,6 +553,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     @Inject
     ConfigOptionController configOptionController;
     @Inject
@@ -866,6 +939,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void addExpense() {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
             if (getBill().getBillFinanceDetails() == null) {
@@ -886,6 +963,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
         currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
 
+        // Owning-side FK: without this, Bill.billExpenses' cascade persists
+        // nothing back to this bill (issue #21856)
+        currentExpense.setExpenseBill(getBill());
+
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
 
@@ -896,10 +977,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
         recalculateExpenseTotals();
         recalculateProfitMarginsForAllItems();
 
-        // Persist the updated bill
-        if (getBill().getId() != null) {
-            getBillFacade().edit(getBill());
-        }
+        // Persist the expense directly so its generated id lands on this same
+        // in-memory object. Relying on getBillFacade().edit(getBill())'s cascade
+        // merges a copy of the bill graph - the id never comes back to
+        // currentExpense, so later save paths see getId()==null and either
+        // duplicate-create it or wrongly retire the row cascade already made
+        // (issue #21856 review).
+        getBillItemFacade().create(currentExpense);
+        getBillFacade().edit(getBill());
 
         currentExpense = null;
 
@@ -907,6 +992,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void removeExpense(BillItem expense) {
         if (expense == null) {
+            return;
+        }
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
             return;
         }
 
@@ -922,12 +1011,37 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().getBillExpenses().remove(expense);
         }
 
+        // Retire the persisted row - removing it from the in-memory list alone
+        // does not delete it (Bill.billExpenses has no orphanRemoval), so an
+        // "un-retired" removal would silently reappear on reload (issue #21856).
+        if (expense.getId() != null) {
+            expense.setRetired(true);
+            expense.setRetireComments("Removed during draft edit");
+            getBillItemFacade().edit(expense);
+        }
+
         recalculateExpenseTotals();
         recalculateProfitMarginsForAllItems();
 
         if (getBill().getId() != null) {
             billFacade.edit(getBill());
         }
+    }
+
+    /**
+     * Shared by settle/finalize/approve so the rule lives in one place instead of an
+     * inline copy at each call site. Shows an error message and returns false if invalid.
+     */
+    private boolean isPaymentMethodValid(com.divudi.core.entity.Bill b) {
+        if (b.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return false;
+        }
+        if (b.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+            return false;
+        }
+        return true;
     }
 
     public void settleDirectPurchaseBillFinally() {
@@ -962,12 +1076,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
-        if (getBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
-            return;
-        }
-        if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+        if (!isPaymentMethodValid(getBill())) {
             return;
         }
 
@@ -988,6 +1097,34 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
 //        Payment p = createPayment(getBill());
         billItemsTotalQty = 0;
+
+        // Calculate bill-level totals and distribute bill-level adjustments (discount,
+        // tax, expenses) into each item's cost rate BEFORE ItemBatch/Stock are created
+        // below. saveItemBatchWithCosting() reads BillItemFinanceDetails.totalCostRate
+        // to set ItemBatch.costRate (which StockHistory then snapshots) - if this ran
+        // after item batches were created, the batch/stock would be left with the
+        // pre-distribution cost rate forever while the report's cost totals reflect
+        // the post-distribution one, producing a permanent COGS cost variance.
+        calculateBillTotalsFromItems();
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            distributeProportionalBillValuesToItems();
+            // Persist the distributed values for previously-saved items here (a zero-qty/
+            // zero-freeQty item is skipped by the loop below's `continue` before it ever
+            // reaches create/edit(i) or getBill().getBillItems(), so it would otherwise
+            // silently lose whatever distribute() computed for it). Brand-new items (id
+            // still null - the common case for a Direct Purchase settled directly without
+            // going through the Save Draft flow first) are deliberately skipped here: edit()
+            // is em.merge(), which on a transient entity inserts a row but does NOT populate
+            // this object's id - the loop below would then see getId()==null and create() a
+            // second, duplicate row for the same item. Those items already carry the
+            // distributed values in memory and get persisted correctly by the loop's own
+            // create(i) call.
+            for (BillItem item : getBillItems()) {
+                if (item.getId() != null) {
+                    getBillItemFacade().edit(item);
+                }
+            }
+        }
 
         for (BillItem i : getBillItems()) {
             double lastPurchaseRate = 0.0;
@@ -1029,29 +1166,30 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().getBillItems().add(i);
         }
 
-        // CRITICAL: Calculate bill-level totals and update BillFinanceDetails after all items are processed
-        calculateBillTotalsFromItems();
-
-        // Distribute bill-level adjustments proportionally to items if needed
+        // Recalculate BillFinanceDetails cost aggregates after distribution
+        // This ensures bill-level totals reflect the updated cost rates with expenses
         if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
-            distributeProportionalBillValuesToItems();
-
-            for (BillItem item : getBillItems()) {
-                getBillItemFacade().edit(item);
-            }
-
-            // Recalculate BillFinanceDetails cost aggregates after distribution
-            // This ensures bill-level totals reflect the updated cost rates with expenses
             recalculateBillFinanceDetailsCostAggregates();
-
         }
 
         //check and calculate expenses separately
         if (billExpenses != null && !billExpenses.isEmpty()) {
-            getBill().setBillExpenses(billExpenses);
-
+            // Persist each expense explicitly and set the owning-side expenseBill
+            // FK - relying on Bill.billExpenses' cascade alone leaves this FK
+            // NULL, since the mappedBy side (Bill.billExpenses) is not the
+            // owning side of the relationship (issue #21856).
+            int expenseSerial = 0;
             double totalForExpenses = 0;
-            for (BillItem expense : getBillExpenses()) {
+            for (BillItem expense : billExpenses) {
+                expense.setSearialNo(expenseSerial++);
+                expense.setExpenseBill(getBill());
+                expense.setCreatedAt(new Date());
+                expense.setCreater(getSessionController().getLoggedUser());
+                if (expense.getId() == null) {
+                    getBillItemFacade().create(expense);
+                } else {
+                    getBillItemFacade().edit(expense);
+                }
                 totalForExpenses += expense.getNetValue();
             }
 
@@ -1076,6 +1214,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         getBillItems().remove(bi);
 
         int i = 0;
@@ -1097,6 +1239,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void updateBillItem() {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         if (editingBillItem == null) {
             JsfUtil.addErrorMessage("No item selected for editing");
             return;
@@ -1114,6 +1260,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
                     f.setRetailSaleRatePerUnit(f.getRetailSaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
                 } else {
                     f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
+                }
+            }
+
+            if (!isAllowRetailRateBelowPurchaseRate() && isRetailRateBelowPurchaseRate(item, f)) {
+                JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Enable 'Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing' to proceed.");
+                return;
+            }
+
+            // Sync wholesaleRatePerUnit from wholesaleRate (same logic as onWholesaleRateChange)
+            if (f.getWholesaleRate() != null) {
+                if (item instanceof Ampp) {
+                    double dblVal = item.getDblValue();
+                    BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+                    f.setWholesaleRatePerUnit(f.getWholesaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
+                } else {
+                    f.setWholesaleRatePerUnit(f.getWholesaleRate());
                 }
             }
 
@@ -1140,6 +1302,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
         distributeProportionalBillValuesToItems();
         recalculateProfitMarginsForAllItems();
         editingBillItem = null;
+    }
+
+    private boolean isRetailRateBelowPurchaseRate(Item item, BillItemFinanceDetails f) {
+        BigDecimal purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+        if (item instanceof Ampp) {
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                double dblVal = item.getDblValue();
+                unitsPerPack = BigDecimal.valueOf(dblVal > 0 ? dblVal : 1);
+            }
+            purchaseRatePerUnit = purchaseRatePerUnit.divide(unitsPerPack, 6, RoundingMode.HALF_UP);
+        }
+        return purchaseRatePerUnit.compareTo(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())) > 0;
     }
 
     /**
@@ -1280,6 +1455,360 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
     
     
+    // <editor-fold defaultstate="collapsed" desc="Draft Workflow Methods">
+
+    /**
+     * Persists the current bill and items as a draft (PRE type, not completed).
+     * Shared by the explicit Save Draft action and by Finalize, which
+     * transparently saves first when no draft has been saved yet.
+     *
+     * @return true if the draft was persisted, false if validation failed (an
+     * error message has already been added to the growl in that case)
+     */
+    private boolean persistDraftDirectPurchase() {
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add items before saving");
+            return false;
+        }
+        if (getBill().getFromInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select a Supplier");
+            return false;
+        }
+
+        // Save bill header as PRE type — no bill number yet, no stock
+        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
+        getBill().setBillType(com.divudi.core.data.BillType.PharmacyPurchaseBill);
+        getBill().setDepartment(getSessionController().getDepartment());
+        getBill().setInstitution(getSessionController().getInstitution());
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(getSessionController().getLoggedUser());
+        getBill().setChecked(false);
+        getBill().setCompleted(false);
+
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        } else {
+            syncBillItemsCollectionFromDatabase();
+            getBillFacade().edit(getBill());
+        }
+
+        // Retire any previously persisted items that were removed from the session list
+        if (getBill().getId() != null) {
+            java.util.Map<String, Object> retireParams = new java.util.HashMap<>();
+            retireParams.put("billId", getBill().getId());
+            List<BillItem> persistedItems = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false",
+                retireParams);
+            java.util.Set<Long> sessionIds = new java.util.HashSet<>();
+            for (BillItem bi : getBillItems()) {
+                if (bi.getId() != null) {
+                    sessionIds.add(bi.getId());
+                }
+            }
+            for (BillItem persisted : persistedItems) {
+                if (!sessionIds.contains(persisted.getId())) {
+                    persisted.setRetired(true);
+                    persisted.setRetireComments("Removed during draft edit");
+                    getBillItemFacade().edit(persisted);
+                }
+            }
+        }
+
+        // Save each bill item (PharmaceuticalBillItem cascades automatically)
+        int serial = 0;
+        for (BillItem bi : getBillItems()) {
+            bi.setSearialNo(serial++);
+            bi.setBill(getBill());
+            bi.setCreatedAt(new Date());
+            bi.setCreater(getSessionController().getLoggedUser());
+            if (bi.getId() == null) {
+                getBillItemFacade().create(bi);
+            } else {
+                getBillItemFacade().edit(bi);
+            }
+        }
+
+        // Retire any previously persisted expenses that were removed from the session list
+        java.util.Map<String, Object> retireExpenseParams = new java.util.HashMap<>();
+        retireExpenseParams.put("billId", getBill().getId());
+        List<BillItem> persistedExpenses = getBillItemFacade().findByJpql(
+            "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false",
+            retireExpenseParams);
+        java.util.Set<Long> sessionExpenseIds = new java.util.HashSet<>();
+        for (BillItem be : getBillExpenses()) {
+            if (be.getId() != null) {
+                sessionExpenseIds.add(be.getId());
+            }
+        }
+        for (BillItem persisted : persistedExpenses) {
+            if (!sessionExpenseIds.contains(persisted.getId())) {
+                persisted.setRetired(true);
+                persisted.setRetireComments("Removed during draft edit");
+                getBillItemFacade().edit(persisted);
+            }
+        }
+
+        // Save each bill expense explicitly - do not rely on Bill.billExpenses'
+        // cascade alone, since the owning-side expenseBill FK must be set on
+        // each child for the cascade-insert to actually link back to this bill
+        int expenseSerial = 0;
+        double totalForExpenses = 0.0;
+        for (BillItem expense : getBillExpenses()) {
+            expense.setSearialNo(expenseSerial++);
+            expense.setExpenseBill(getBill());
+            expense.setCreatedAt(new Date());
+            expense.setCreater(getSessionController().getLoggedUser());
+            if (expense.getId() == null) {
+                getBillItemFacade().create(expense);
+            } else {
+                getBillItemFacade().edit(expense);
+            }
+            totalForExpenses += expense.getNetValue();
+        }
+        getBill().setExpenseTotal(-Math.abs(totalForExpenses));
+
+        syncBillItemsCollectionFromDatabase();
+        getBillFacade().edit(getBill());
+        draftMode = true;
+        return true;
+    }
+
+    /**
+     * Bill.billItems has orphanRemoval=true, but this method persists each BillItem
+     * directly via BillItemFacade rather than through that collection, so the in-memory
+     * bill's billItems field is otherwise left null/stale across repeated calls. If
+     * something has since refreshed this bill's shared cache entry (e.g. a Finalize
+     * attempt blocked by validation, which reloads the bill before returning), a later
+     * edit(bill) can treat that stale/empty collection as authoritative and orphan-delete
+     * the BillItem rows this method just persisted (issue #21900). Re-fetching the
+     * collection immediately before each edit(bill) keeps it accurate.
+     */
+    private void syncBillItemsCollectionFromDatabase() {
+        if (getBill().getId() == null) {
+            return;
+        }
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("billId", getBill().getId());
+        List<BillItem> currentlyPersistedItems = getBillItemFacade().findByJpql(
+            "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId", params);
+        getBill().getBillItems().clear();
+        getBill().getBillItems().addAll(currentlyPersistedItems);
+    }
+
+    public void saveDraftDirectPurchase() {
+        if (persistDraftDirectPurchase()) {
+            JsfUtil.addSuccessMessage("Direct Purchase draft saved successfully.");
+        }
+    }
+
+    public void finalizeDraftDirectPurchase() {
+        // Always (re)persist first: addItem() may have already created a bare
+        // bill row (to get an id for the item FK) before department/supplier
+        // were set, so bill.getId() != null does not mean the draft is fully
+        // saved. persistDraftDirectPurchase() handles both create and edit.
+        if (!persistDraftDirectPurchase()) {
+            return;
+        }
+
+        // Fresh DB read to guard against concurrent finalization
+        com.divudi.core.entity.Bill freshBill = billService.reloadBill(bill);
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Draft bill not found in database.");
+            return;
+        }
+        if (freshBill.isCompleted()) {
+            JsfUtil.addErrorMessage("This draft was already finalized by another user. Please refresh the list.");
+            return;
+        }
+        if (!isPaymentMethodValid(freshBill)) {
+            return;
+        }
+
+        freshBill.setCompleted(true);
+        freshBill.setCompletedAt(new Date());
+        freshBill.setCompletedBy(getSessionController().getLoggedUser());
+        freshBill.setEditedAt(new Date());
+        freshBill.setEditor(getSessionController().getLoggedUser());
+        getBillFacade().edit(freshBill);
+        bill = (com.divudi.core.entity.BilledBill) freshBill;
+
+        JsfUtil.addSuccessMessage("Direct Purchase finalized. It is now pending approval.");
+        printPreview = true;
+    }
+
+    public void approveDirectPurchaseDraft() {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("No draft loaded.");
+            return;
+        }
+
+        // Fresh DB read to guard against concurrent approval
+        com.divudi.core.entity.Bill freshBill = billService.reloadBill(bill);
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Draft bill not found in database.");
+            return;
+        }
+        if (!freshBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Bill must be finalized before it can be approved.");
+            return;
+        }
+        if (freshBill.isChecked()) {
+            JsfUtil.addErrorMessage("This bill was already approved by another user. Please refresh the list.");
+            return;
+        }
+        // The Payment Method dropdown on direct_purchase.xhtml stays editable on this screen
+        // (unlike items/expenses), but nothing else on this page persists it, and unlike
+        // finalize (which calls persistDraftDirectPurchase() first) nothing saves `bill`
+        // before this method runs either - so a selection made here would otherwise be
+        // silently discarded by the DB reload above on every Approve click. Validate the
+        // pending in-memory selection itself (not the possibly-stale freshBill copy) before
+        // persisting it, so an invalid choice is rejected without ever being written.
+        if (!isPaymentMethodValid(bill)) {
+            return;
+        }
+        PaymentMethod pendingPaymentMethod = bill.getPaymentMethod();
+        if (freshBill.getPaymentMethod() != pendingPaymentMethod) {
+            freshBill.setPaymentMethod(pendingPaymentMethod);
+            getBillFacade().edit(freshBill);
+        }
+
+        // Switch session bill to the fresh DB copy so finalizeBill()/approveBill() operate on it
+        bill = (com.divudi.core.entity.BilledBill) freshBill;
+
+        // Generate real bill number (mirrors saveBill())
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        } else {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        }
+
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        } else {
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)
+                    || configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+                insId = deptId;
+            } else {
+                insId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            }
+        }
+
+        getBill().setDeptId(deptId);
+        getBill().setInsId(insId);
+        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        // Mark checked=true BEFORE the stock loop so a concurrent approve request
+        // that reloads the bill will see it already approved and abort
+        getBill().setChecked(true);
+        getBill().setCheckeAt(new Date());
+        getBill().setCheckedBy(getSessionController().getLoggedUser());
+        getBillFacade().edit(getBill());
+
+        // Reload bill items from DB to ensure we have the persisted state
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("billId", getBill().getId());
+        billItems = billItemFacade.findByJpql(
+            "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false ORDER BY bi.searialNo",
+            params);
+        String expJpql = "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false ORDER BY be.searialNo";
+        billExpenses = billItemFacade.findByJpql(expJpql, params);
+
+        // Calculate bill-level totals and distribute bill-level adjustments (discount,
+        // tax, expenses) into each item's cost rate BEFORE ItemBatch/Stock are created
+        // below. saveItemBatchWithCosting() reads BillItemFinanceDetails.totalCostRate
+        // to set ItemBatch.costRate (which StockHistory then snapshots) - if this ran
+        // after item batches were created, the batch/stock would be left with the
+        // pre-distribution cost rate forever while the report's cost totals reflect
+        // the post-distribution one, producing a permanent COGS cost variance (mirrors
+        // the same fix in settleDirectPurchaseBillFinally()).
+        calculateBillTotalsFromItems();
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            distributeProportionalBillValuesToItems();
+            // Unlike settle (fully in-memory graph, cascaded on the final bill edit),
+            // these items were reloaded from DB above, so they need an explicit edit
+            // here for the distributed values to persist.
+            for (BillItem item : getBillItems()) {
+                getBillItemFacade().edit(item);
+            }
+        }
+
+        // Add stock for each item (mirrors settleDirectPurchaseBillFinally())
+        billItemsTotalQty = 0;
+        for (BillItem i : getBillItems()) {
+            if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
+                continue;
+            }
+            double lastPurchaseRate = getPharmacyBean().getLastPurchaseRate(i.getItem());
+            billItemsTotalQty += i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
+            i.setCreatedAt(Calendar.getInstance().getTime());
+            i.setCreater(getSessionController().getLoggedUser());
+            i.setBill(getBill());
+            getBillItemFacade().edit(i);
+            saveBillFee(i);
+
+            ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
+            double addingQty = BigDecimalUtil.valueOrZero(i.getBillItemFinanceDetails().getTotalQuantityByUnits()).doubleValue();
+            i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
+            Stock stock = getPharmacyBean().addToStockForCosting(i, Math.abs(addingQty), getSessionController().getDepartment());
+            i.getPharmaceuticalBillItem().setLastPurchaseRate(lastPurchaseRate);
+            i.getPharmaceuticalBillItem().setStock(stock);
+            // Persist the stock link explicitly. Unlike the settle path (where
+            // the bill and items are an in-memory graph fully merged at the end),
+            // here the items were reloaded from DB and the detached bill's lazy
+            // billItems collection does not carry this change through the final
+            // bill merge - without this edit, phi.stock stays NULL in the DB and
+            // a later Direct Purchase Return fails with "Stock information not
+            // available for item".
+            getBillItemFacade().edit(i);
+            getBill().getBillItems().add(i);
+        }
+
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            recalculateBillFinanceDetailsCostAggregates();
+        }
+
+        if (billExpenses != null && !billExpenses.isEmpty()) {
+            getBill().setBillExpenses(billExpenses);
+            double totalForExpenses = 0;
+            for (BillItem expense : getBillExpenses()) {
+                totalForExpenses += expense.getNetValue();
+            }
+            getBill().setExpenseTotal(-Math.abs(totalForExpenses));
+        }
+
+        getBillFacade().edit(getBill());
+        finalizeBill();
+        approveBill();
+
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        if (generatePayments) {
+            paymentService.createPayment(getBill(), getPaymentMethodData());
+        }
+
+        JsfUtil.addSuccessMessage("Direct Purchase approved. Bill number: " + deptId + ". Stock updated.");
+        printPreview = true;
+    }
+
+    public boolean isDraftMode() {
+        return draftMode;
+    }
+
+    public void setDraftMode(boolean draftMode) {
+        this.draftMode = draftMode;
+    }
+
+    // </editor-fold>
+
     public double getNetTotal() {
         // If NetTotal has already been calculated by the service (includes expenses), return it as-is
         if (getBill().getNetTotal() != 0.0) {
@@ -2045,6 +2574,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
         this.printPreview = printPreview;
     }
 
+    /**
+     * Issue #21635 / #13103: whether saving a retail rate below the purchase rate
+     * (clearance / loss-leader pricing) is allowed. Policy decision, config-driven
+     * rather than a free per-transaction user toggle.
+     */
+    public boolean isAllowRetailRateBelowPurchaseRate() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing", false);
+    }
+
+    /**
+     * Issue #21837: gates the Wholesale Rate field/columns on this page.
+     */
+    public boolean isWholesaleTransactionsAllowed() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Allow Wholesale Transactions in Pharmacy Purchasing", false);
+    }
+
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
@@ -2166,6 +2713,124 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/direct_purchase",
+                "Pharmacy Direct Purchase",
+                "Create and manage direct purchase bills for pharmacy stock",
+                "PharmacyDirectPurchaseController"
+        );
+
+        // Configuration Options - APPLICATION scope
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Wholesale Transactions in Pharmacy Purchasing",
+                "Shows the Wholesale Rate field on the Add New Item row and item edit dialog",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing",
+                "Allows saving a retail rate below the purchase rate (clearance / loss-leader pricing)",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Adding Direct Purchase Items When Normal Quantity Is Zero And Free Quantity Is Present",
+                "Allows adding a direct purchase item with zero normal quantity as long as free quantity is entered, "
+                + "for fully-free supplier items. When off, quantity must be greater than zero to add an item.",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Use Save Finalize Approve Workflow for Direct Purchase",
+                "Switches the page from single-step Settle to a Save Draft / Finalize / Approve workflow",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Consignment in Pharmacy Purchasing",
+                "Shows or hides the consignment checkbox option in the purchasing details panel",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - A4",
+                "Renders the standard A4 print format for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - A4 (Custom 1)",
+                "Renders the A4 (Custom 1) print format for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - A4 Details",
+                "Renders the A4 format with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - Custom 1",
+                "Renders custom print format 1 with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - Custom 2",
+                "Renders custom print format 2 with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - Custom Letter Format",
+                "Renders the custom letter format with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show Profit % in Direct Purchase Bill",
+                "Shows the profit percentage column on direct purchase bill printouts",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show Retail Value in Direct Purchase Bill",
+                "Shows the retail value column on direct purchase bill printouts",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to page configuration",
+                "Config button visibility"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyDirectPurchaseSave",
+                "Permission to save a direct purchase draft",
+                "Save Draft button visibility"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyDirectPurchaseFinalize",
+                "Permission to finalize a direct purchase draft",
+                "Finalize button visibility"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyDirectPurchaseApprove",
+                "Permission to approve a finalized direct purchase draft",
+                "Controls access to the Approve Direct Purchase list page"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
 }

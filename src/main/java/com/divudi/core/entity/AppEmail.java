@@ -40,6 +40,8 @@ public class AppEmail implements Serializable {
     private Bill bill;
     @ManyToOne
     private EncounterCreditCompany encounterCreditCompany;
+    @ManyToOne
+    private PatientEncounter patientEncounter;
     
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
@@ -64,6 +66,7 @@ public class AppEmail implements Serializable {
     private String messageSubject;
     @Lob
     private String messageBody;
+    private String otp;
 
     @Deprecated
     private String senderUsername;
@@ -231,6 +234,14 @@ public class AppEmail implements Serializable {
         this.messageBody = messageBody;
     }
 
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
     public Boolean getSentSuccessfully() {
         return sentSuccessfully;
     }
@@ -341,6 +352,14 @@ public class AppEmail implements Serializable {
 
     public void setEncounterCreditCompany(EncounterCreditCompany encounterCreditCompany) {
         this.encounterCreditCompany = encounterCreditCompany;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
     
     

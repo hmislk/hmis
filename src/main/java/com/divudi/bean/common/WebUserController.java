@@ -114,6 +114,8 @@ public class WebUserController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     WebUserRoleController webUserRoleController;
+    @Inject
+    private UserRoleManagementController userRoleManagementController;
 
     /**
      * Class Variables
@@ -1202,12 +1204,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        webUserRoleController.setActivatediItems(null);
-        webUserRoleUserController.setWebUser(selected);
-        webUserRoleUserController.setDepartments(fillWebUserDepartments(selected));
-        webUserRoleUserController.loadWebUserRoles();
-        webUserRoleUserController.clear();
-        return "/admin/users/user_role_users?faces-redirect=true";
+        return userRoleManagementController.navigateToManageUserRoleDefaults(selected);
     }
     
     public List<Department> fillWebUserDepartments(WebUser wu) {
@@ -1340,6 +1337,8 @@ public class WebUserController implements Serializable {
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
+        current.setNeedToResetPassword(false);
+        current.setLastPasswordResetAt(new Date());
         getFacade().editAndCommit(current);
         WebUserPasswordHistory wh = new WebUserPasswordHistory();
         wh.setWebUser(current);

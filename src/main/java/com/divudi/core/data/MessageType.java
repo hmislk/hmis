@@ -37,5 +37,11 @@ public enum MessageType {
     @Deprecated
     OTP,
     PatientPortalOTP,
-    PatientPortal_Link
+    PatientPortal_Link,
+    InpatientDocumentUpload,
+    InpatientFilledForm,
+    InpatientClinicalDocument,
+    ClientPortalRegistrationOTP,
+    ClientPortalPasswordResetOTP,
+    ClientPortalEmailRegistrationOTP
 }

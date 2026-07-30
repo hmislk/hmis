@@ -15,6 +15,7 @@ import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.AdmissionController;
+import com.divudi.bean.inward.InpatientPackageAdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -31,6 +32,7 @@ import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.MrnGenerator;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -138,6 +140,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     BillNumberGenerator billNumberBean;
     @EJB
     private BillNumberGenerator billNumberGenerator;
+    @EJB
+    private MrnGenerator mrnGenerator;
 
     @EJB
     BillFacade billFacade;
@@ -186,6 +190,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Inject
     AppointmentController appointmentController;
     @Inject
+    InpatientPackageAdmissionController inpatientPackageAdmissionController;
+    @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
     BillBeanController billBeanController;
@@ -203,6 +209,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientDepositController patientDepositController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    PatientInsuranceController patientInsuranceController;
 
     /**
      *
@@ -333,6 +341,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private List<Patient> allPatientList;
     private List<Person> allPersonList;
     private Map<String, Patient> PatientMap;
+
+    /**
+     * Possible duplicate patients found by matching NIC/Passport, or
+     * name+DOB, against existing (non-retired) patients. Populated by
+     * {@link #checkForPossibleDuplicatePatients()} before saving a new
+     * patient, so the UI can warn the user before proceeding.
+     */
+    private List<Patient> possibleDuplicatePatients = new ArrayList<>();
 
     /**
      *
@@ -811,6 +827,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
+        patientInsuranceController.initForPatient(current);
         return "/emr/patient_profile?faces-redirect=true";
     }
 
@@ -865,7 +882,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdPatientProfile() {
-        if (current == null) {
+        if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
@@ -924,6 +941,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPhoneNumber = null;
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
+        
+        admissionController.setPatientForiegner(false);
         return "/inward/inward_admission?faces-redirect=true";
 
     }
@@ -951,6 +970,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         appointmentController.getCurrentAppointment().setPatient(getCurrent());
         appointmentController.getCurrentBill().setPatient(getCurrent());
         return "/inward/inward_appointment?faces-redirect=true";
+    }
+
+    public String navigateToPackageAdmitFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        inpatientPackageAdmissionController.setPatient(current);
+        inpatientPackageAdmissionController.setInpatientPackage(null);
+        return "/inward/package_admit?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromPatientProfile() {
@@ -1998,7 +2027,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         if (searchMrn != null && !searchMrn.trim().equals("")) {
-            j += " and p.phn =:mrn";
+            j += " and p.code =:mrn";
             m.put("mrn", searchMrn);
             atLeastOneCriteriaIsGiven = true;
         }
@@ -3145,6 +3174,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
+        possibleDuplicatePatients = new ArrayList<>();
 
         reGenerateePhn = true;
         return "/opd/patient_edit?faces-redirect=true";
@@ -3153,12 +3183,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOptician() {
         current = null;
         getCurrent();
+        possibleDuplicatePatients = new ArrayList<>();
         return "/optician/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
         current = null;
         getCurrent();
+        possibleDuplicatePatients = new ArrayList<>();
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3169,6 +3201,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOptician(String name, String nic, String phone) {
         current = null;
         getCurrent();
+        possibleDuplicatePatients = new ArrayList<>();
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3179,6 +3212,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd(String phone) {
         current = null;
         getCurrent();
+        possibleDuplicatePatients = new ArrayList<>();
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true";
@@ -3186,6 +3220,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToEmrEditPatient() {
         getCurrent();
+        patientInsuranceController.initForPatient(current);
         return "/emr/patient?faces-redirect=true";
     }
 
@@ -3378,6 +3413,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     List<Patient> patientList;
+    List<Patient> inactivePatients;
 
     public List<Patient> completePatientByNameOrCode(String query) {
         if (query == null) {
@@ -3455,10 +3491,82 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/membership/add_family?faces-redirect=true";
     }
 
+    /**
+     * Checks for other non-retired patients that possibly duplicate the
+     * current one, matching on NIC/Passport (Person.nic) or on name+DOB
+     * together. Populates {@link #possibleDuplicatePatients} (capped at 10
+     * results) so the UI can warn the user before saving a new patient.
+     * When editing an existing patient, that patient itself is excluded
+     * from the match.
+     */
+    public void checkForPossibleDuplicatePatients() {
+        possibleDuplicatePatients = new ArrayList<>();
+        if (current == null || current.getPerson() == null) {
+            return;
+        }
+        String nic = current.getPerson().getNic();
+        String name = current.getPerson().getName();
+        Date dob = current.getPerson().getDob();
+
+        boolean hasNic = nic != null && !nic.trim().isEmpty();
+        boolean hasNameDob = name != null && !name.trim().isEmpty() && dob != null;
+
+        if (!hasNic && !hasNameDob) {
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select p from Patient p where p.retired = false ");
+        Map<String, Object> params = new HashMap<>();
+
+        if (current.getId() != null) {
+            jpql.append("and p.id != :selfId ");
+            params.put("selfId", current.getId());
+        }
+
+        List<String> orConditions = new ArrayList<>();
+        if (hasNic) {
+            orConditions.add("UPPER(p.person.nic) = UPPER(:nic)");
+            params.put("nic", nic.trim());
+        }
+        if (hasNameDob) {
+            orConditions.add("(UPPER(p.person.name) = UPPER(:name) and p.person.dob = :dob)");
+            params.put("name", name.trim());
+            params.put("dob", dob);
+        }
+
+        jpql.append("and (").append(String.join(" or ", orConditions)).append(")");
+
+        possibleDuplicatePatients = getFacade().findByJpql(jpql.toString(), params, 10);
+    }
+
+    /**
+     * Navigates to the profile page of a possibly-duplicate patient
+     * surfaced by {@link #checkForPossibleDuplicatePatients()}, so the user
+     * can inspect it before deciding whether to proceed with a new
+     * registration.
+     */
+    public String viewDuplicatePatientProfile(Patient p) {
+        if (p == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        this.current = p;
+        navigatedFromAdmissionProfile = false;
+        return "/opd/patient?faces-redirect=true";
+    }
+
     public void checkBeforeSavePatient() {
         if (current != null && current.getId() != null && current.isBlacklisted()) {
             PrimeFaces.current().executeScript("PF('dlgBlacklistSaveWarning').show();");
             return;
+        }
+        if (current != null && current.getId() == null) {
+            checkForPossibleDuplicatePatients();
+            if (possibleDuplicatePatients != null && !possibleDuplicatePatients.isEmpty()) {
+                PrimeFaces.current().executeScript("PF('dlgDuplicatePatientSaveWarning').show();");
+                return;
+            }
         }
         boolean savedSuccessfully = saveSelected(current);
         if (!savedSuccessfully) {
@@ -3466,7 +3574,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         try {
             javax.faces.context.ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient");
+            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient.xhtml");
             FacesContext.getCurrentInstance().responseComplete();
         } catch (java.io.IOException e) {
             JsfUtil.addErrorMessage("Saved but could not redirect.");
@@ -3477,6 +3585,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (current != null && current.getId() != null && current.isBlacklisted()) {
             PrimeFaces.current().executeScript("PF('dlgBlacklistSaveAdmissionWarning').show();");
             return null;
+        }
+        if (current != null && current.getId() == null) {
+            checkForPossibleDuplicatePatients();
+            if (possibleDuplicatePatients != null && !possibleDuplicatePatients.isEmpty()) {
+                PrimeFaces.current().executeScript("PF('dlgDuplicatePatientAdmissionWarning').show();");
+                return null;
+            }
         }
         return saveAndNavigateToAdmissionProfile();
     }
@@ -3577,6 +3692,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         // Generate PHN upfront if needed
         if (p.getPhn() == null || p.getPhn().trim().equals("")) {
             p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+        }
+
+        if (p.getCode() == null || p.getCode().trim().isEmpty()) {
+            if (isMrnAutoGenerationEnabled()) {
+                p.setCode(mrnGenerator.generateMrn(getSessionController().getInstitution()));
+            }
         }
 
         // Add TextCase Format
@@ -3864,19 +3985,46 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void activePatient(Patient p) {
-//        p.setEditedAt(new Date());
-//        p.setEditer(getSessionController().getLoggedUser());
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            JsfUtil.addErrorMessage("You do not have permission to activate inactive patients.");
+            return;
+        }
+        if (p == null || p.getId() == null) {
+            return;
+        }
+        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                "Activate Patient",
+                "{\"patientId\":" + p.getId() + ",\"retired\":true}",
+                p.getId(),
+                "Patient");
         p.setRetired(false);
         p.setRetireComments("Re-Activated");
         getFacade().edit(p);
-
-//        p.getPerson().setEditedAt(new Date());
-//        p.getPerson().setEditer(getSessionController().getLoggedUser());
         p.getPerson().setRetired(false);
         p.getPerson().setRetireComments("Re-Activated");
         getPersonFacade().edit(p.getPerson());
-        createPatientList();
+        auditEventController.completeAuditEvent(auditEvent,
+                "{\"patientId\":" + p.getId() + ",\"retired\":false}");
+        searchInactivePatients();
         JsfUtil.addSuccessMessage("Re-Activated");
+    }
+
+    public void searchInactivePatients() {
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            inactivePatients = new java.util.ArrayList<>();
+            return;
+        }
+        String j = "select p from Patient p where p.retired = true order by p.id desc";
+        inactivePatients = getFacade().findByJpql(j);
+    }
+
+    public String navigateToInactivePatients() {
+        if (!webUserController.hasPrivilege("AdminInactivePatients")) {
+            JsfUtil.addErrorMessage("You do not have permission to manage inactive patients.");
+            return null;
+        }
+        searchInactivePatients();
+        return "/admin/patients/inactive_patients?faces-redirect=true";
     }
 
     public void deActivePatient(Patient p) {
@@ -4483,6 +4631,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.patientList = patientList;
     }
 
+    public List<Patient> getInactivePatients() {
+        return inactivePatients;
+    }
+
+    public void setInactivePatients(List<Patient> inactivePatients) {
+        this.inactivePatients = inactivePatients;
+    }
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -4513,6 +4669,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setNavigatedFromAdmissionProfile(boolean navigatedFromAdmissionProfile) {
         this.navigatedFromAdmissionProfile = navigatedFromAdmissionProfile;
+    }
+
+    public List<Patient> getPossibleDuplicatePatients() {
+        return possibleDuplicatePatients;
+    }
+
+    public void setPossibleDuplicatePatients(List<Patient> possibleDuplicatePatients) {
+        this.possibleDuplicatePatients = possibleDuplicatePatients;
     }
 
     public List<Patient> getSelectedItems() {
@@ -4967,6 +5131,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setReGenerateePhn(boolean reGenerateePhn) {
         this.reGenerateePhn = reGenerateePhn;
+    }
+
+    public boolean isMrnAutoGenerationEnabled() {
+        return mrnGenerator.isMrnAutoGenerationEnabled();
     }
 
     @Override

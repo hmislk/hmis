@@ -422,7 +422,8 @@ public class ChannelService {
                 + " bill.creater.id, "
                 + " bill.createdAt, "
                 + " rbill.createdAt,"
-                + " rbill.id "
+                + " rbill.id, "
+                + " bill.institution "
                 + " from Bill bill "
                 + " left join bill.referenceBill rbill"
                 + " where bill.id = :billId "
@@ -500,6 +501,118 @@ public class ChannelService {
 
     }
 
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelBookingBillsForShiftEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId, Institution hospital, List<Category> categoryList, List<PaymentMethod> paymentMethods) {
+        String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
+                + "bill.id, "
+                + "bill.billTypeAtomic, "
+                + "session.sessionDate, "
+                + "bill.createdAt, "
+                + "bill.creater.name, "
+                + "person.name, "
+                + "person.phone, "
+                + "bill.paymentMethod, "
+                + "COALESCE(bill.staffFee, 0), "
+                + "COALESCE(bill.hospitalFee, 0), "
+                + "COALESCE(bill.netTotal, 0), "
+                + "bill.comments, "
+                + "bill.cancelled, "
+                + "bill.refunded, "
+                + "cb.id ) "
+                + "from BillSession bs "
+                + "join bs.bill bill "
+                + "join bs.sessionInstance session "
+                + "join bill.patient patient "
+                + "left join patient.person person "
+                + "left join bill.cancelledBill cb "
+                + "where bill.billTypeAtomic in :bta "
+                + "and bill.id > :shiftStartBillId "
+                + "and bill.billType <> :bt ";
+
+        List<BillTypeAtomic> btaList = new ArrayList<>();
+
+        btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", btaList);
+        params.put("bt", BillType.ChannelAgent);
+        params.put("shiftStartBillId", shiftStartBillId);
+
+        params.put("createrId", createrId);
+
+        if (shiftEndBillId != null) {
+            sql += "and bill.id < :shiftEndBillId ";
+            params.put("shiftEndBillId", shiftEndBillId);
+        }
+
+        if (hospital != null) {
+            sql += "and bill.institution = :ins ";
+            params.put("ins", hospital);
+        }
+
+        if (categoryList != null && !categoryList.isEmpty()) {
+            sql += "and session.originatingSession.category in :category ";
+            params.put("category", categoryList);
+        }
+
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            sql += "and bill.paymentMethod in :pm ";
+            params.put("pm", paymentMethods);
+        }
+
+        sql += "and bill.creater.id = :createrId "
+                + "order by bill.createdAt desc";
+
+        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        if (dtoList == null || dtoList.isEmpty()) {
+            return null;
+        }
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
+        wrapperDto.setIncomeDtos(dtoList);
+        wrapperDto.setProcessDate(new Date());
+
+        List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
+        HashSet<Long> cancelledBillIds = new HashSet<>();
+
+        for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
+            if (summeryDtoList.isEmpty()) {
+                ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
+                summery1.setAppoimentDate(dto.getAppoinmentDate());
+                summeryDtoList.add(summery1);
+                fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
+                continue;
+            } else {
+                fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
+            }
+
+        }
+        wrapperDto.setSummeryDtos(summeryDtoList);
+
+        for (ChannelReportController.ChannelIncomeSummeryDto summery : wrapperDto.getSummeryDtos()) {
+            wrapperDto.setAllCashTotal(wrapperDto.getAllCashTotal() + summery.getCashTotal());
+            wrapperDto.setAllCardTotal(wrapperDto.getAllCardTotal() + summery.getCardTotal());
+            wrapperDto.setAllCreditTotal(wrapperDto.getAllCreditTotal() + summery.getCreditTotal());
+            wrapperDto.setAllCancelTotal(wrapperDto.getAllCancelTotal() + summery.getCancelTotal());
+            wrapperDto.setAllRefundTotal(wrapperDto.getAllRefundTotal() + summery.getRefundTotal());
+            wrapperDto.setAllCancelAppoinments(wrapperDto.getAllCancelAppoinments() + summery.getTotalCancelAppoinments());
+            wrapperDto.setAllRefundAppoinments(wrapperDto.getAllRefundAppoinments() + summery.getTotalRefundAppoinments());
+            wrapperDto.setTotalValidAppoinments(wrapperDto.getTotalValidAppoinments() + summery.getTotalActiveAppoinments());
+
+            // fee total calculation
+            wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + summery.getTotalHosFee());
+            wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + summery.getTotalDocFee());
+            wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + summery.getTotalAmount());
+        }
+
+        return wrapperDto;
+
+    }
+    
+
     public ChannelServiceCategorywiseDetailsWrapperDTO fetchAndGenerateChannelCategorywiseDetailsForShiftEnd(Long shiftStartBillId) {
         if (shiftStartBillId == null) {
             return null;
@@ -560,6 +673,61 @@ public class ChannelService {
 
         return wrapperDto;
 
+    }
+
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchAndGenerateChannelBookingBillsForShiftEnd(Long shiftStartBillId, List<Category> categoryList, List<PaymentMethod> paymentMethods) {
+        if (shiftStartBillId == null) {
+            return null;
+        }
+
+        Object[] billMetaData = fetchShiftEndBillDetails(shiftStartBillId);
+
+        if (billMetaData == null) {
+            return null;
+        }
+
+        String creatorName = (String) billMetaData[0];
+        Long creatorId = (Long) billMetaData[1];
+        Date shiftStartAt = (Date) billMetaData[2];
+        Date shiftEndAt = (Date) billMetaData[3];
+        Long shiftEndBillId = (Long) billMetaData[4];
+        Institution hospital = (Institution) billMetaData[5];
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome  wrapperDto = fetchChannelBookingBillsForShiftEnd(shiftStartBillId, shiftEndBillId, creatorId, hospital, categoryList, paymentMethods);
+
+        if (wrapperDto == null) {
+            return null;
+        }
+
+        wrapperDto.setShiftStartAt(shiftStartAt);
+        wrapperDto.setShiftEndAt(shiftEndAt);
+        wrapperDto.setCashierUserName(creatorName);
+        wrapperDto.setCashierId(creatorId);
+        wrapperDto.setShiftStartBillId(shiftStartBillId);
+        wrapperDto.setShiftEndBillId(shiftEndBillId);
+        wrapperDto.setHospital(hospital);
+
+        return wrapperDto;
+
+    }
+
+    public ChannelReportController.WrapperDtoForChannelFutureIncome updateChannelBookingBillsForShitEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId, Institution hospital, List<Category> categoryList, List<PaymentMethod> paymentMethods,
+                                                                                                Date shiftStartAt, Date shiftEndAt, String casherUserName) {
+        ChannelReportController.WrapperDtoForChannelFutureIncome tempDto = fetchChannelBookingBillsForShiftEnd(shiftStartBillId, shiftEndBillId, createrId, hospital, categoryList, paymentMethods);
+
+        if (tempDto == null) {
+            return null;
+        }                                                                                               
+
+        tempDto.setShiftStartAt(shiftStartAt);
+        tempDto.setShiftEndAt(shiftEndAt);
+        tempDto.setCashierUserName(casherUserName);
+        tempDto.setCashierId(createrId);
+        tempDto.setShiftStartBillId(shiftStartBillId);
+        tempDto.setShiftEndBillId(shiftEndBillId);
+        tempDto.setHospital(hospital);
+
+        return tempDto;
     }
 
     public Map getForeignFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
@@ -1525,7 +1693,7 @@ public class ChannelService {
 
     }
 
-    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
+    public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus, List<PaymentMethod> paymentMethods) {
 
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
                 + "bill.id, "
@@ -1541,12 +1709,14 @@ public class ChannelService {
                 + "COALESCE(bill.netTotal, 0), "
                 + "bill.comments, "
                 + "bill.cancelled, "
-                + "bill.refunded ) "
+                + "bill.refunded, "
+                + "cb.id ) "
                 + "from BillSession bs "
                 + "join bs.bill bill "
                 + "join bs.sessionInstance session "
                 + "join bill.patient patient "
                 + "left join patient.person person "
+                + "left join bill.cancelledBill cb "
                 + "where bs.createdAt between :fromDate and :todate "
                 + "and bill.billTypeAtomic in :bta "
                 + "and bill.billType <> :bt ";
@@ -1581,6 +1751,11 @@ public class ChannelService {
             params.put("category", categoryList);
         }
 
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            sql += "and bill.paymentMethod in :pm ";
+            params.put("pm", paymentMethods);
+        }
+
         sql += "order by bill.createdAt desc";
 
         List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
@@ -1588,6 +1763,7 @@ public class ChannelService {
         if (dtoList == null || dtoList.isEmpty()) {
             return null;
         }
+        
 
         ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
         wrapperDto.setIncomeDtos(dtoList);
@@ -1596,16 +1772,17 @@ public class ChannelService {
         if (reportStatus != null && reportStatus.equalsIgnoreCase("summery")) {
 
             List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
+            HashSet<Long> cancelledBillIds = new HashSet<>();
 
             for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
                 if (summeryDtoList.isEmpty()) {
                     ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
                     summery1.setAppoimentDate(dto.getAppoinmentDate());
                     summeryDtoList.add(summery1);
-                    fillPaymentsDataToDto(summeryDtoList, dto);
+                    fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
                     continue;
                 } else {
-                    fillPaymentsDataToDto(summeryDtoList, dto);
+                    fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
                 }
 
             }
@@ -1648,63 +1825,89 @@ public class ChannelService {
 //        bs.getBill().getCreater();
     }
 
-    public void fillPaymentsDataToDto(List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList, ChannelReportController.ChannelIncomeDetailDto dto) {
-
+    public void fillPaymentsDataToDto(List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList, ChannelReportController.ChannelIncomeDetailDto dto, Set<Long> cancelledBillIds) {
         boolean availableSummery = false;
 
         for (ChannelReportController.ChannelIncomeSummeryDto summeryDto : summeryDtoList) {
             if (dto.getAppoinmentDate().equals(summeryDto.getAppoimentDate())) {
                 availableSummery = true;
-                switch (dto.getPaymentMethod()) {
-                    case Cash:
-                        summeryDto.setCashTotal(summeryDto.getCashTotal() + dto.getTotalAppoinmentFee());
-                        break;
-                    case Card:
-                        summeryDto.setCardTotal(summeryDto.getCardTotal() + dto.getTotalAppoinmentFee());
-                        break;
-                    case MultiplePaymentMethods:
-                        Bill bill = billFacade.find(dto.getBillId());
-                        List<Payment> payments = new ArrayList<>();
-                        if (bill != null) {
-                            payments = billService.fetchBillPayments(bill);
-                        }
-                        for (Payment p : payments) {
-                            switch (p.getPaymentMethod()) {
-                                case Cash:
-                                    summeryDto.setCashTotal(summeryDto.getCashTotal() + p.getPaidValue());
-                                    break;
-                                case Card:
-                                    summeryDto.setCardTotal(summeryDto.getCardTotal() + p.getPaidValue());
-                                    break;
-                                default:
-                                    break;
+                if (dto.getPaymentMethod() == null) {
+                    Bill bill = billFacade.find(dto.getBillId());
+                    List<Payment> payments = new ArrayList<>();
+                    if (bill != null) {
+                        payments = billService.fetchBillPayments(bill);
+                    }
+                    for (Payment p : payments) {
+                        switch (p.getPaymentMethod()) {
+                            case Cash:
+                                summeryDto.setCashTotal(summeryDto.getCashTotal() + p.getPaidValue());
+                                break;
+                            case Card:
+                                summeryDto.setCardTotal(summeryDto.getCardTotal() + p.getPaidValue());
+                                break;
+                            default:
+                                break;
                             }
-                        }
-                        break;
-                    case Agent:
-                        summeryDto.setAgentTotal(summeryDto.getAgentTotal() + dto.getTotalAppoinmentFee());
-                        break;
+                    }
+                } else {
+                    switch (dto.getPaymentMethod()) {
+                        case Cash:
+                            summeryDto.setCashTotal(summeryDto.getCashTotal() + dto.getTotalAppoinmentFee());
+                            break;
+                        case Card:
+                            summeryDto.setCardTotal(summeryDto.getCardTotal() + dto.getTotalAppoinmentFee());
+                            break;
+                        case MultiplePaymentMethods:
+                            Bill bill = billFacade.find(dto.getBillId());
+                            List<Payment> payments = new ArrayList<>();
+                            if (bill != null) {
+                                payments = billService.fetchBillPayments(bill);
+                            }
+                            for (Payment p : payments) {
+                                switch (p.getPaymentMethod()) {
+                                    case Cash:
+                                        summeryDto.setCashTotal(summeryDto.getCashTotal() + p.getPaidValue());
+                                        break;
+                                    case Card:
+                                        summeryDto.setCardTotal(summeryDto.getCardTotal() + p.getPaidValue());
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            break;
+                        case Agent:
+                            summeryDto.setAgentTotal(summeryDto.getAgentTotal() + dto.getTotalAppoinmentFee());
+                            break;
 
-                    case Credit:
-                        summeryDto.setCreditTotal(summeryDto.getCreditTotal() + dto.getTotalAppoinmentFee());
-                        break;
+                        case Credit:
+                            summeryDto.setCreditTotal(summeryDto.getCreditTotal() + dto.getTotalAppoinmentFee());
+                            break;
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
                 }
+                
                 if (dto.isIsCancelled()) {
-                    summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
-                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
-                    summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
+                    if (!cancelledBillIds.contains(dto.getCancelBillId())) {
+                        summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
+                    }
                 } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments());
                     summeryDto.setTotalRefundAppoinments(summeryDto.getTotalRefundAppoinments() + 1);
                     summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
+                } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                    cancelledBillIds.add(dto.getBillId());
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments());
+                    summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
+                    summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
                 } else {
 
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() + 1);
 
                 }
+
                 summeryDto.setTotalDocFee(summeryDto.getTotalDocFee() + dto.getDoctorFee());
                 summeryDto.setTotalHosFee(summeryDto.getTotalHosFee() + dto.getHosFee());
                 summeryDto.setTotalAmount(summeryDto.getTotalAmount() + dto.getTotalAppoinmentFee());
@@ -1762,58 +1965,84 @@ public class ChannelService {
             ChannelReportController.ChannelIncomeSummeryDto newSummery = new ChannelReportController.ChannelIncomeSummeryDto();
             newSummery.setAppoimentDate(dto.getAppoinmentDate());
 
-            switch (dto.getPaymentMethod()) {
-                case Cash:
-                    newSummery.setCashTotal(newSummery.getCashTotal() + dto.getTotalAppoinmentFee());
-                    break;
-                case Card:
-                    newSummery.setCardTotal(newSummery.getCardTotal() + dto.getTotalAppoinmentFee());
-                    break;
-                case MultiplePaymentMethods:
-                    Bill bill = billFacade.find(dto.getBillId());
-                    List<Payment> payments = new ArrayList<>();
-                    if (bill != null) {
-                        payments = billService.fetchBillPayments(bill);
+            if (dto.getPaymentMethod() == null) {
+                Bill bill = billFacade.find(dto.getBillId());
+                List<Payment> payments = new ArrayList<>();
+                if (bill != null) {
+                    payments = billService.fetchBillPayments(bill);
+                }
+                for (Payment p : payments) {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            newSummery.setCashTotal(newSummery.getCashTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            newSummery.setCardTotal(newSummery.getCardTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            break;
                     }
-                    for (Payment p : payments) {
-                        switch (p.getPaymentMethod()) {
-                            case Cash:
-                                newSummery.setCashTotal(newSummery.getCashTotal() + p.getPaidValue());
-                                break;
-                            case Card:
-                                newSummery.setCardTotal(newSummery.getCardTotal() + p.getPaidValue());
-                                break;
-                            default:
-                                break;
+                }
+            } else {
+                switch (dto.getPaymentMethod()) {
+                    case Cash:
+                        newSummery.setCashTotal(newSummery.getCashTotal() + dto.getTotalAppoinmentFee());
+                        break;
+                    case Card:
+                        newSummery.setCardTotal(newSummery.getCardTotal() + dto.getTotalAppoinmentFee());
+                        break;
+                    case MultiplePaymentMethods:
+                        Bill bill = billFacade.find(dto.getBillId());
+                        List<Payment> payments = new ArrayList<>();
+                        if (bill != null) {
+                            payments = billService.fetchBillPayments(bill);
                         }
-                    }
-                    break;
+                        for (Payment p : payments) {
+                            switch (p.getPaymentMethod()) {
+                                case Cash:
+                                    newSummery.setCashTotal(newSummery.getCashTotal() + p.getPaidValue());
+                                    break;
+                                case Card:
+                                    newSummery.setCardTotal(newSummery.getCardTotal() + p.getPaidValue());
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
 
-                case Agent:
-                    newSummery.setAgentTotal(newSummery.getAgentTotal() + dto.getTotalAppoinmentFee());
-                    break;
+                    case Agent:
+                        newSummery.setAgentTotal(newSummery.getAgentTotal() + dto.getTotalAppoinmentFee());
+                        break;
 
-                case Credit:
-                    newSummery.setCreditTotal(newSummery.getCreditTotal() + dto.getTotalAppoinmentFee());
-                    break;
+                    case Credit:
+                        newSummery.setCreditTotal(newSummery.getCreditTotal() + dto.getTotalAppoinmentFee());
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                }
             }
 
             if (dto.isIsCancelled()) {
-                newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
-                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
-                newSummery.setCancelTotal(newSummery.getCancelTotal() + dto.getTotalAppoinmentFee());
-            } else if (dto.isIsRefunded()) {
-                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() - 1);
+                if (!cancelledBillIds.contains(dto.getCancelBillId())) {
+                    newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
+                }
+            } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments());
                 newSummery.setTotalRefundAppoinments(newSummery.getTotalRefundAppoinments() + 1);
                 newSummery.setRefundTotal(newSummery.getRefundTotal() + dto.getTotalAppoinmentFee());
+            } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                cancelledBillIds.add(dto.getBillId());
+                newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments());
+                newSummery.setTotalCancelAppoinments(newSummery.getTotalCancelAppoinments() + 1);
+                newSummery.setCancelTotal(newSummery.getCancelTotal() + dto.getTotalAppoinmentFee());
             } else {
 
                 newSummery.setTotalActiveAppoinments(newSummery.getTotalActiveAppoinments() + 1);
 
             }
+
             newSummery.setTotalDocFee(dto.getDoctorFee());
             newSummery.setTotalHosFee(dto.getHosFee());
             newSummery.setTotalAmount(dto.getTotalAppoinmentFee());

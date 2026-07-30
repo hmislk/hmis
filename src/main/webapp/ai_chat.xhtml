@@ -784,7 +784,7 @@
 
                         <!-- Input -->
                         <div class="aic-input-wrap">
-                            <h:form id="inputForm">
+                            <h:form id="inputForm" enctype="multipart/form-data">
 
                                 <h:panelGroup layout="block"
                                               rendered="#{aiChatController.hasAttachment()}"
@@ -813,16 +813,14 @@
                                     <div class="aic-input-btns">
                                         <h:panelGroup styleClass="aic-file-btn">
                                             <p:fileUpload
+                                                value="#{aiChatController.pendingAttachmentFile}"
                                                 mode="simple"
                                                 auto="false"
                                                 skinSimple="true"
                                                 label=""
                                                 chooseIcon="pi pi-paperclip"
                                                 title="Attach image or document"
-                                                allowTypes="/(\.|\/)(gif|jpe?g|png|pdf|txt|csv|md)$/"
-                                                fileUploadListener="#{aiChatController.handleFileUpload}"
-                                                update="inputForm :growl"
-                                                process="@this" />
+                                                allowTypes="/(\.|\/)(gif|jpe?g|png|pdf|txt|csv|md)$/" />
                                         </h:panelGroup>
                                         <h:panelGroup styleClass="aic-send-btn">
                                             <p:commandButton
@@ -831,8 +829,7 @@
                                                 title="Send (Enter)"
                                                 disabled="#{aiChatController.sending}"
                                                 action="#{aiChatController.sendMessage()}"
-                                                update=":messagesPanel :inputForm :growl"
-                                                process="inputForm" />
+                                                ajax="false" />
                                         </h:panelGroup>
                                     </div>
                                 </div>
@@ -886,6 +883,7 @@
 
                 <!-- ══ Markdown renderer ═════════════════════════════════ -->
                 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/dompurify@3.3.2/dist/purify.min.js"></script>
 
                 <!-- ══ Scripts ═══════════════════════════════════════════ -->
                 <h:outputScript>
@@ -894,7 +892,12 @@
                             if (el.getAttribute('data-md-rendered')) return;
                             var raw = el.textContent || '';
                             if (!raw.trim()) return;
-                            el.innerHTML = marked.parse(raw);
+                            var rendered = marked.parse(raw);
+                            el.innerHTML = DOMPurify.sanitize(rendered, {
+                                USE_PROFILES: { html: true },
+                                FORBID_TAGS: ['style', 'script'],
+                                FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick']
+                            });
                             el.setAttribute('data-md-rendered', 'true');
                         });
                     }

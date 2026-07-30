@@ -93,6 +93,8 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     DrawerService drawerService;
+    @EJB
+    private com.divudi.service.AuditService auditService;
 
     /**
      * JSF Controllers
@@ -141,6 +143,7 @@ public class InwardSearch implements Serializable {
     List<BillItem> refundingItems;
     private List<Bill> bills;
     private List<BillItem> tempbillItems;
+    private List<Bill> finalBillVersions;
     /////////////////////
 
     PaymentMethod paymentMethod;
@@ -152,21 +155,214 @@ public class InwardSearch implements Serializable {
     Sex[] sex;
     private Admission admission;
     private PaymentMethodData paymentMethodData;
+    private PaymentMethodData originalBillPaymentMethodData;
     boolean showOrginalBill;
 
     private boolean withProfessionalFee = false;
     private boolean showZeroInwardChargeCategoryTypes = false;
     private boolean changed = false;
 
+    public PaymentMethodData loadCurrentBillPaymentMethodData(Bill bill) {
+        System.out.println("loadCurrentBillPaymentMethodData");
+        System.out.println("bill = " + bill);
+        PaymentMethodData newPmd = new PaymentMethodData();
+        if (bill == null || bill.getId() == null) {
+            System.out.println("bill is null or not persisted, returning empty PaymentMethodData");
+            return newPmd;
+        }
+
+        List<Payment> originalPayments = getBillBean().fetchBillPayments(bill);
+        System.out.println("originalPayments = " + originalPayments);
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            System.out.println("no original payments found, returning empty PaymentMethodData");
+            return newPmd;
+        }
+
+        PaymentMethod firstMethod = null;
+        boolean mixedMethods = false;
+
+        for (Payment p : originalPayments) {
+            PaymentMethod pm = p.getPaymentMethod();
+            System.out.println("processing payment p = " + p);
+            System.out.println("payment method pm = " + pm);
+            if (pm == null) {
+                continue;
+            }
+            if (firstMethod == null) {
+                firstMethod = pm;
+            } else if (firstMethod != pm) {
+                mixedMethods = true;
+            }
+            populateComponentDetailFromPayment(newPmd, p, bill);
+        }
+
+        System.out.println("firstMethod = " + firstMethod);
+        System.out.println("mixedMethods = " + mixedMethods);
+        newPmd.setPaymentMethod(mixedMethods ? PaymentMethod.MultiplePaymentMethods : firstMethod);
+        System.out.println("resolved paymentMethod = " + newPmd.getPaymentMethod());
+        return newPmd;
+    }
+
+    private void populateComponentDetailFromPayment(PaymentMethodData pmd, Payment p, Bill bill) {
+        PaymentMethod pm = p.getPaymentMethod();
+        if (pm == null) {
+            return;
+        }
+        double amount = Math.abs(p.getPaidValue());
+        switch (pm) {
+            case Cash:
+                pmd.getCash().setTotalValue(pmd.getCash().getTotalValue() + amount);
+                break;
+            case Card:
+                pmd.getCreditCard().setTotalValue(pmd.getCreditCard().getTotalValue() + amount);
+                pmd.getCreditCard().setNo(p.getCreditCardRefNo());
+                pmd.getCreditCard().setInstitution(p.getBank());
+                pmd.getCreditCard().setComment(p.getComments());
+                break;
+            case Cheque:
+                pmd.getCheque().setTotalValue(pmd.getCheque().getTotalValue() + amount);
+                pmd.getCheque().setNo(p.getChequeRefNo());
+                pmd.getCheque().setDate(p.getChequeDate());
+                pmd.getCheque().setInstitution(p.getBank());
+                pmd.getCheque().setComment(p.getComments());
+                break;
+            case Slip:
+                pmd.getSlip().setTotalValue(pmd.getSlip().getTotalValue() + amount);
+                pmd.getSlip().setReferenceNo(p.getReferenceNo());
+                pmd.getSlip().setDate(p.getPaymentDate());
+                pmd.getSlip().setInstitution(p.getBank());
+                pmd.getSlip().setComment(p.getComments());
+                break;
+            case ewallet:
+                pmd.getEwallet().setTotalValue(pmd.getEwallet().getTotalValue() + amount);
+                pmd.getEwallet().setNo(p.getReferenceNo());
+                pmd.getEwallet().setInstitution(p.getBank());
+                pmd.getEwallet().setComment(p.getComments());
+                break;
+            case PatientDeposit:
+                pmd.getPatient_deposit().setTotalValue(pmd.getPatient_deposit().getTotalValue() + amount);
+                if (bill.getPatientEncounter() != null) {
+                    pmd.getPatient_deposit().setPatient(bill.getPatientEncounter().getPatient());
+                    PatientDeposit pd = patientDepositController.checkDepositOfThePatient(
+                            bill.getPatientEncounter().getPatient(), sessionController.getDepartment());
+                    if (pd != null && pd.getId() != null) {
+                        pmd.getPatient_deposit().setPatientDepost(pd);
+                    }
+                }
+                break;
+            case OnlineSettlement:
+                pmd.getOnlineSettlement().setTotalValue(pmd.getOnlineSettlement().getTotalValue() + amount);
+                pmd.getOnlineSettlement().setReferenceNo(p.getReferenceNo());
+                pmd.getOnlineSettlement().setDate(p.getPaymentDate());
+                pmd.getOnlineSettlement().setInstitution(p.getBank());
+                pmd.getOnlineSettlement().setComment(p.getComments());
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void refillPaymentDetail() {
+        if (originalBillPaymentMethodData == null) {
+            return;
+        }
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        paymentMethodData.setPaymentMethod(originalBillPaymentMethodData.getPaymentMethod());
+        
+        copyComponentDetail(originalBillPaymentMethodData.getCash(), paymentMethodData.getCash());
+        copyComponentDetail(originalBillPaymentMethodData.getCreditCard(), paymentMethodData.getCreditCard());
+        copyComponentDetail(originalBillPaymentMethodData.getCheque(), paymentMethodData.getCheque());
+        copyComponentDetail(originalBillPaymentMethodData.getSlip(), paymentMethodData.getSlip());
+        copyComponentDetail(originalBillPaymentMethodData.getEwallet(), paymentMethodData.getEwallet());
+        copyComponentDetail(originalBillPaymentMethodData.getPatient_deposit(), paymentMethodData.getPatient_deposit());
+        copyComponentDetail(originalBillPaymentMethodData.getOnlineSettlement(), paymentMethodData.getOnlineSettlement());
+    }
+
+    private void copyComponentDetail(ComponentDetail from, ComponentDetail to) {
+        if (from == null || to == null) {
+            return;
+        }
+        to.setTotalValue(from.getTotalValue());
+        to.setNo(from.getNo());
+        to.setReferenceNo(from.getReferenceNo());
+        to.setReferralNo(from.getReferralNo());
+        to.setComment(from.getComment());
+        to.setDate(from.getDate());
+        to.setInstitution(from.getInstitution());
+        to.setPatient(from.getPatient());
+        to.setPatientDepost(from.getPatientDepost());
+        to.setToStaff(from.getToStaff());
+        to.setCreditDuration(from.getCreditDuration());
+    }
+
+    private List<PaymentMethod> inwardDepositCancelationPaymentMethods;
+    
     public String navigateToPaymentBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
         switch (bill.getBillTypeAtomic()) {
             case INWARD_DEPOSIT:
+                inwardDepositCancelationPaymentMethods = new ArrayList<>();
+                getInwardDepositCancelationPaymentMethods().add(PaymentMethod.Cash);
+                
+                if(bill.getPaymentMethod() != PaymentMethod.Cash){
+                    inwardDepositCancelationPaymentMethods.add(bill.getPaymentMethod());
+                }
+                originalBillPaymentMethodData = new PaymentMethodData();
+                originalBillPaymentMethodData = loadCurrentBillPaymentMethodData(bill);
+                
+                paymentMethodData = new PaymentMethodData();
+                
+                refillPaymentDetail();
+                
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_DEPOSIT_REFUND:
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
+    }
+
+    public String navigateToCancelInwardServiceBillFromReprint() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+        return "/inward/inward_cancel_bill_service?faces-redirect=true";
+    }
+
+    public String navigateToCancelInwardProfessionalBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+        return "/inward/inward_cancel_bill_professional?faces-redirect=true";
+    }
+
+    public String navigateToViewInwardDepositCancellationBill(Bill b) {
+        if (b == null || b.getCancelledBill() == null) {
+            JsfUtil.addErrorMessage("No cancellation bill found");
+            return "";
+        }
+        bill = b;
+        printPreview = true;
+        return "/inward/inward_deposit_cancel_bill_payment?faces-redirect=true";
     }
 
     public void editBillDetails() {
@@ -200,6 +396,11 @@ public class InwardSearch implements Serializable {
     public String navigateToCancelInpatientBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
             return "";
         }
 
@@ -395,28 +596,115 @@ public class InwardSearch implements Serializable {
             return "";
         }
 
-        String jpql;
-        Map temMap = new HashMap();
-        jpql = "select b from Bill b where"
-                + " b.billType = :billType and "
-                + " b.retired=false ";
+        finalBillVersions = null;
+        List<Bill> versions = fetchFinalBillVersions(admission);
 
-        jpql += " and  b.patientEncounter=:pe ";
-        temMap.put("pe", admission);
-
-        temMap.put("billType", BillType.InwardFinalBill);
-        jpql += " order by b.id desc ";
-
-        // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        bill = getBillFacade().findFirstByJpql(jpql, temMap);
-
-        if (bill == null) {
+        if (versions.isEmpty()) {
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
         }
-        withProfessionalFee = false;
 
-        return "/inward/inward_reprint_bill_final?faces-redirect=true";
+        if (versions.size() == 1) {
+            bill = versions.get(0);
+            withProfessionalFee = false;
+            return "/inward/inward_reprint_bill_final?faces-redirect=true";
+        }
+
+        return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
+    public String navigateToManageFinalBills() {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+
+        finalBillVersions = null;
+        List<Bill> versions = fetchFinalBillVersions(admission);
+
+        if (versions.isEmpty()) {
+            JsfUtil.addErrorMessage("No Final Bill Created");
+            return "";
+        }
+
+        return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
+    /**
+     * Lazily fetches and caches all final-bill versions for the currently
+     * selected {@link #admission}. Callers that switch admissions must reset
+     * {@link #finalBillVersions} to null before calling this getter again.
+     */
+    public List<Bill> getFinalBillVersions() {
+        if (finalBillVersions == null && admission != null) {
+            finalBillVersions = fetchFinalBillVersions(admission);
+        }
+        return finalBillVersions;
+    }
+
+    private List<Bill> fetchFinalBillVersions(PatientEncounter admission) {
+        // billTypeAtomic (not just billType) is required here — the cancellation-record
+        // Bill created by createCancelBill() copies billType=InwardFinalBill from the
+        // bill it cancels, so filtering on billType alone would list cancellation
+        // records as if they were final bill versions.
+        String jpql = "select b from Bill b where b.patientEncounter = :pe and b.billType = :billType"
+                + " and b.billTypeAtomic = :atomic and b.retired = false order by b.finalBillVersionSerial asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", admission);
+        params.put("billType", BillType.InwardFinalBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    /**
+     * User-facing action to mark {@code newConfirmed} as the confirmed final
+     * bill version for its admission. Privilege checks are done in the XHTML
+     * via {@code rendered}, not here.
+     */
+    public void setAsConfirmedFinalBill(Bill newConfirmed) {
+        if (newConfirmed == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        if (newConfirmed.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot confirm a cancelled bill");
+            return;
+        }
+        setAsConfirmedFinalBillInternal(newConfirmed);
+        JsfUtil.addSuccessMessage("Final Bill Version Confirmed");
+        finalBillVersions = null;
+    }
+
+    /**
+     * Repoints {@code pe.finalBill} to {@code newConfirmed}, flips the
+     * {@code confirmedFinalBill} flag on the old and new bills, and mirrors
+     * the totals copy done in {@link BhtSummeryController#settle()}. Shared
+     * by the explicit "set as confirmed" action and the cancel-triggered
+     * auto-promotion of the next latest version.
+     */
+    private void setAsConfirmedFinalBillInternal(Bill newConfirmed) {
+        PatientEncounter pe = newConfirmed.getPatientEncounter();
+
+        Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
+
+        if (pe.getFinalBill() != null && !pe.getFinalBill().getId().equals(newConfirmed.getId())) {
+            Bill oldConfirmed = pe.getFinalBill();
+            oldConfirmed.setConfirmedFinalBill(false);
+            getBillFacade().edit(oldConfirmed);
+        }
+
+        newConfirmed.setConfirmedFinalBill(true);
+        getBillFacade().edit(newConfirmed);
+
+        pe.setFinalBill(newConfirmed);
+        pe.setGrantTotal(newConfirmed.getGrantTotal());
+        pe.setDiscount(newConfirmed.getDiscount());
+        pe.setNetTotal(newConfirmed.getNetTotal());
+        getPatientEncounterFacade().edit(pe);
+
+        auditService.logEncounterAudit(pe, "Final Bill Version Confirmed",
+                previousFinalBillId, newConfirmed.getId(), sessionController.getLoggedUser(),
+                "Bill", newConfirmed.getId());
     }
 
     public String navigateToProvisionalBillForAdmission() {
@@ -453,6 +741,10 @@ public class InwardSearch implements Serializable {
         PatientEncounter pe = inwardPaymentController.getCurrent().getPatientEncounter();
         inwardPaymentController.makeNull();
         inwardPaymentController.getCurrent().setPatientEncounter(pe);
+        inwardPaymentController.setPatient(pe.getPatient());
+        
+        inwardPaymentController.paymentListener();
+        
         if (sessionController.getPaymentManagementAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
@@ -693,6 +985,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
+        
         if (getBill().isRefunded()) {
             JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
@@ -702,6 +995,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
             return true;
         }
+        
         if (getBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("You can't cancel. Because this BHT is Already Discharged.");
             return true;
@@ -711,6 +1005,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Please select a payment Method.");
             return true;
         }
+        
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
@@ -1080,8 +1375,13 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
-            paymentService.updateBalances(payments);
+            paymentService.createPayment(
+                cb,
+                cb.getPaymentMethod(), 
+                paymentMethodData, 
+                sessionController.getInstitution(), 
+                sessionController.getDepartment(),
+                sessionController.getLoggedUser());
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -1218,6 +1518,8 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            boolean wasConfirmedFinalBill = getBill().isConfirmedFinalBill();
+
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
@@ -1226,15 +1528,53 @@ public class InwardSearch implements Serializable {
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
+            getBill().setConfirmedFinalBill(false);
             getBillFacade().edit((BilledBill) getBill());
 
-            getBill().getPatientEncounter().setGrantTotal(0);
-            getBill().getPatientEncounter().setDiscount(0);
-            getBill().getPatientEncounter().setNetTotal(0);
-            getBill().getPatientEncounter().setAdjustedTotal(0);
-            getBill().getPatientEncounter().setPaymentFinalized(false);
-            getBill().getPatientEncounter().setCreditUsedAmount(0);
-            getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+            // Only the cancellation of the *confirmed* version affects the encounter's
+            // totals/paymentFinalized/finalBill — cancelling an already-superseded,
+            // non-confirmed version must leave the confirmed version's state untouched.
+            if (wasConfirmedFinalBill) {
+                List<Bill> remainingVersions = fetchFinalBillVersions(getBill().getPatientEncounter());
+                List<Bill> nonCancelled = new ArrayList<>();
+                if (remainingVersions != null) {
+                    for (Bill v : remainingVersions) {
+                        if (!v.isCancelled()) {
+                            nonCancelled.add(v);
+                        }
+                    }
+                }
+                if (nonCancelled.isEmpty()) {
+                    getBill().getPatientEncounter().setGrantTotal(0);
+                    getBill().getPatientEncounter().setDiscount(0);
+                    getBill().getPatientEncounter().setNetTotal(0);
+                    getBill().getPatientEncounter().setAdjustedTotal(0);
+                    getBill().getPatientEncounter().setPaymentFinalized(false);
+                    getBill().getPatientEncounter().setCreditUsedAmount(0);
+                    getBill().getPatientEncounter().setFinalBill(null);
+                    getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+                } else {
+                    Bill nextConfirmed = nonCancelled.get(0);
+                    for (Bill v : nonCancelled) {
+                        if (v.getFinalBillVersionSerial() != null
+                                && (nextConfirmed.getFinalBillVersionSerial() == null
+                                || v.getFinalBillVersionSerial() > nextConfirmed.getFinalBillVersionSerial())) {
+                            nextConfirmed = v;
+                        }
+                    }
+                    // nextConfirmed was loaded by a separate query, so its patientEncounter
+                    // association is a distinct (though same-row) managed instance from
+                    // getBill().getPatientEncounter(). Force identity before promoting so
+                    // setAsConfirmedFinalBillInternal's edit() is the single, authoritative
+                    // persist for this encounter — otherwise a second edit() on the stale
+                    // getBill().getPatientEncounter() instance would silently clobber the
+                    // finalBill repoint this call just made.
+                    nextConfirmed.setPatientEncounter(getBill().getPatientEncounter());
+                    setAsConfirmedFinalBillInternal(nextConfirmed);
+                }
+            } else {
+                getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+            }
 
             JsfUtil.addSuccessMessage("Cancelled");
 
@@ -1426,6 +1766,11 @@ public class InwardSearch implements Serializable {
         cb.copy(getBill());
         cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setBilledBill(getBill());
+        if (getBill().getPatient() != null) {
+            cb.setPatient(getBill().getPatient());
+        } else if (getBill().getPatientEncounter() != null) {
+            cb.setPatient(getBill().getPatientEncounter().getPatient());
+        }
 
         ////////////
         cb.setBillDate(new Date());
@@ -1862,6 +2207,15 @@ public class InwardSearch implements Serializable {
         JsfUtil.addErrorMessage("Successfully Cheked");
     }
 
+    public void updateBillComments() {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        getBillFacade().edit(bill);
+        JsfUtil.addSuccessMessage("Comment Updated");
+    }
+
     public void selectBillItem(BillItem billItem) {
         makeNull();
         BillItem tmp = billItemFacede.find(billItem.getId());
@@ -2231,6 +2585,25 @@ public class InwardSearch implements Serializable {
 
     public void setCurrentRequest(Request currentRequest) {
         this.currentRequest = currentRequest;
+    }
+
+    public List<PaymentMethod> getInwardDepositCancelationPaymentMethods() {
+        if(inwardDepositCancelationPaymentMethods == null){
+            inwardDepositCancelationPaymentMethods = new ArrayList<>();
+        }
+        return inwardDepositCancelationPaymentMethods;
+    }
+
+    public void setInwardDepositCancelationPaymentMethods(List<PaymentMethod> inwardDepositCancelationPaymentMethods) {
+        this.inwardDepositCancelationPaymentMethods = inwardDepositCancelationPaymentMethods;
+    }
+
+    public PaymentMethodData getOriginalBillPaymentMethodData() {
+        return originalBillPaymentMethodData;
+    }
+
+    public void setOriginalBillPaymentMethodData(PaymentMethodData originalBillPaymentMethodData) {
+        this.originalBillPaymentMethodData = originalBillPaymentMethodData;
     }
 
 }

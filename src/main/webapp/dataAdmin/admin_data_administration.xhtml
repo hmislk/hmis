@@ -118,7 +118,8 @@
                                                 icon="pi pi-list"></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Manage Data Entry Forms" disabled="false" >
+                                    <p:tab title="Manage Data Entry Forms" disabled="false"
+                                           rendered="#{webUserController.hasPrivilege('InwardFormTemplateAdmin')}" >
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 ajax="false" 
@@ -138,6 +139,20 @@
                                     <p:tab title="Data" disabled="false">
                                         <div class="d-grid gap-2">
                                             <p:commandButton
+                                                value="Archive StockHistory"
+                                                action="#{stockHistoryArchivalController.navigateToArchiveStockHistory()}"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-warning"
+                                                icon="fa fa-archive"
+                                                rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory')}" />
+                                            <p:commandButton
+                                                value="Archive ItemBatch"
+                                                action="#{itemBatchArchivalController.navigateToArchiveItemBatch()}"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-warning"
+                                                icon="fa fa-archive"
+                                                rendered="#{webUserController.hasPrivilege('ArchiveOldItemBatch')}" />
+                                            <p:commandButton
                                                 value="Generate Historical Record"
                                                 action="#{historicalRecordController.navigateToHistoricalRecordGenerate()}"
                                                 ajax="false"
@@ -149,13 +164,6 @@
                                                 ajax="false"
                                                 styleClass="w-100 ui-button-success"
                                                 icon="fa fa-database" />
-                                            <p:commandButton
-                                                value="Archive Old StockHistory"
-                                                action="#{stockHistoryArchivalController.navigateToArchiveStockHistory()}"
-                                                ajax="false"
-                                                styleClass="w-100 ui-button-warning"
-                                                icon="fa fa-archive"
-                                                rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory')}" />
                                         </div>
                                     </p:tab>
 
@@ -265,24 +273,45 @@
                                         </div>
                                     </p:tab>
 
+                                    <p:tab title="Patient Data Management"
+                                           rendered="#{webUserController.hasPrivilege('MergePatients') or webUserController.hasPrivilege('AdminInactivePatients')}">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Patient Data Management"
+                                                action="#{patientMergeController.navigateToPatientDataManagement()}"
+                                                icon="fa fa-users-cog"
+                                                rendered="#{webUserController.hasPrivilege('MergePatients')}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Inactive Patients"
+                                                action="#{patientController.navigateToInactivePatients()}"
+                                                icon="fa fa-user-slash"
+                                                rendered="#{webUserController.hasPrivilege('AdminInactivePatients')}" />
+                                        </div>
+                                    </p:tab>
+
+                                    <!-- Keep System Administrator Functions as the last tab; add new tabs above this one. -->
                                     <p:tab title="System Administrator Functions" disabled="false" >
                                         <div class="d-grid gap-2">
                                             <p:commandButton
-                                                ajax="false" 
-                                                action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
-                                                value="Update Database Structure"  
-                                                class="w-100 m-1"
-                                                />
-                                            
-                                            <p:commandButton
-                                                ajax="false" 
-                                                action="#{databaseMigrationController.navigateToDatabaseMigration()}" 
-                                                value="Database Migration"  
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToCheckMissingFields()}"
+                                                value="Update Database Structure"
                                                 class="w-100 m-1"
                                                 />
 
                                             <p:commandButton
-                                                ajax="false" 
+                                                ajax="false"
+                                                action="#{databaseMigrationController.navigateToDatabaseMigration()}"
+                                                value="Database Migration"
+                                                class="w-100 m-1"
+                                                />
+
+                                            <p:commandButton
+                                                ajax="false"
                                             action="#{dataAdministrationController.navigateToDownloadLogFiles()}"
                                             value="To Download Log Files"
                                             class="w-100 m-1"
@@ -296,19 +325,19 @@
                                                 />
 
                                             <p:commandButton
-                                                ajax="false" 
-                                                action="#{dataAdministrationController.navigateToNameToCode()}" 
-                                                value="Name To Code"  
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToNameToCode()}"
+                                                value="Name To Code"
                                                 class="w-100 m-1"
                                                 />
                                             <p:commandButton
-                                                ajax="false" 
-                                                action="admin_functions?faces-redirect=true" 
-                                                value="Admin Functions"  
+                                                ajax="false"
+                                                action="admin_functions?faces-redirect=true"
+                                                value="Admin Functions"
                                                 class="m-1 w-100"
                                                 />
 
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 value="Test Error Handling"
                                                 action="#{dataAdministrationController.causeError}"
                                                 ajax="false"
@@ -316,7 +345,6 @@
 
                                         </div>
                                     </p:tab>
-
 
                                 </p:accordionPanel>
 
