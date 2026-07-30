@@ -4,7 +4,9 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.data.StockValueRow;
 import com.divudi.core.entity.Department;
@@ -170,9 +172,21 @@ public class StockService {
             List<Amp> amps = new ArrayList<>();
             amps.add(amp);
             return findStock(department, amps);
+        } else if (item instanceof Ampp) {
+            Amp amp = ((Ampp) item).getAmp();
+            if (amp == null) {
+                return 0.0;
+            }
+            return findDepartmentStock(department, amp);
         } else if (item instanceof Vmp) {
             List<Amp> amps = ampsOfVmp(item);
             return findStock(department, amps);
+        } else if (item instanceof Vmpp) {
+            Vmp vmp = ((Vmpp) item).getVmp();
+            if (vmp == null) {
+                return 0.0;
+            }
+            return findDepartmentStock(department, vmp);
         } else {
             return 0.0;
         }

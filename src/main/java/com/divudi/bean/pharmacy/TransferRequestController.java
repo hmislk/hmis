@@ -40,6 +40,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.service.BillService;
+import com.divudi.service.StockService;
 
 import java.text.DecimalFormat;
 import java.util.logging.Level;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -94,6 +96,8 @@ public class TransferRequestController implements Serializable {
     private DepartmentFacade departmentFacade;
     @EJB
     BillService billService;
+    @EJB
+    private StockService stockService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -318,6 +322,28 @@ public class TransferRequestController implements Serializable {
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    private final Map<BillItem, Double> availableQtyAtOrderingStoreCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getItem() == null || getToDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtOrderingStoreCache.computeIfAbsent(bi, this::calculateAvailableQtyAtOrderingStore);
+    }
+
+    private double calculateAvailableQtyAtOrderingStore(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(getToDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
+    public boolean isAvailableQtyShortAtOrderingStore(BillItem bi) {
+        return getAvailableQtyAtOrderingStore(bi) < bi.getQty();
     }
 
     public void saveBill() {
