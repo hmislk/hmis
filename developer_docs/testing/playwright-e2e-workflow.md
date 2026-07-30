@@ -1370,9 +1370,13 @@ if that code path (unlike the heavily-instrumented login flow) has no
 `LOGGER.log(...)` trace statements, making "no new log output" look like
 proof the request never arrived when it actually is just quiet.
 
-**Definitive diagnostic**: `asadmin generate-jvm-report --type=thread`,
-then `grep -A3 'http-thread-pool.*RUNNABLE'` in the output. A thread whose
-stack shows your controller method (e.g.
+**Definitive diagnostic**: `asadmin generate-jvm-report --type=thread` prints
+straight to stdout (no file to locate). Payara's report format — unlike a raw
+`jstack` dump — puts each thread's name and state on one physical line (e.g.
+`Thread "http-thread-pool::http-listener-1(2)" thread-id: 75 thread-state:
+RUNNABLE Running in native`), so a single-line `grep -A3
+'http-thread-pool.*RUNNABLE'` reliably catches it and the frames below. A
+thread whose stack shows your controller method (e.g.
 `TransferRequestController.navigateToApproveRequest`) blocked in
 `SocketInputStream.socketRead0` under
 `com.mysql.cj.protocol...`/`EclipseLink` frames is **genuinely executing** —
@@ -1382,10 +1386,10 @@ but constantly-refreshing row is the N+1 loop grinding through rows, not a
 single frozen query).
 
 **Fix for testing purposes**: don't fight the browser hang — stop issuing
-more clicks/tabs (each retry adds another slow in-flight request, and
-Chrome's per-origin connection cap means enough of these queued up will
-eventually make *every* tab/request against that origin appear to hang, even
-unrelated ones). Instead, narrow the date filter to the single day the
+more clicks/tabs. Each retry adds another slow in-flight request; enough of
+these piling up can exhaust server thread-pool, session, or DB connection
+capacity, making *every* tab/request against that origin appear to hang, even
+unrelated ones. Instead, narrow the date filter to the single day the
 target record was created before searching, which keeps the row count (and
 therefore the N+1 fan-out) small enough to return in a couple of seconds.
 The wide-range search's result **does** eventually land in the session-scoped

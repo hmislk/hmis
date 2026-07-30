@@ -98,7 +98,7 @@
                                     <p:column headerText="Available Qty (Ordering Store)" class="text-end" width="10em">
                                         <h:outputText
                                             value="#{transferRequestController.getAvailableQtyAtOrderingStore(bi)}"
-                                            styleClass="#{transferRequestController.getAvailableQtyAtOrderingStore(bi) lt bi.qty ? 'text-danger fw-bold' : ''}">
+                                            styleClass="#{transferRequestController.isAvailableQtyShortAtOrderingStore(bi) ? 'text-danger fw-bold' : ''}">
                                             <f:convertNumber pattern="#,##0.#"/>
                                         </h:outputText>
                                     </p:column>
