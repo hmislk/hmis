@@ -1265,6 +1265,56 @@ Two traps found verifying issue #19168's Transfer Issue Department Type filter f
   `TransferIssueDirectController`) instead — it doesn't require a prior
   approved request and reaches the same `Bill.departmentType` stamping logic.
 
+## 50. `p:calendar`/`p:selectOneMenu` widgets can silently ignore a plain Playwright `fill()`/`click()` — drive the PrimeFaces widget JS API directly when the visible value won't stick
+
+Hit while verifying issue #22414 (blocking Hold on an already-paid professional
+fee), which needed a specific old BHT found by widening a search page's date
+filter and switching its payment-method dropdown off "Cash" (no cash-drawer
+balance locally):
+
+- **`p:calendar`**: `browser_type`/`.fill()` on the visible text input updates
+  the DOM, but on some pages the value silently reverts to today's date after
+  the next postback (`inward_search_professional_payment_due.xhtml` did this;
+  `inpatient_search.xhtml`'s calendar accepted `.fill()` normally — behavior
+  isn't consistent across pages, so don't assume either way). If a submitted
+  search comes back with unexpectedly narrow/empty results right after typing
+  a date, suspect this before suspecting the query. Fix: drive the widget
+  directly via `browser_evaluate`:
+  ```js
+  const w = PrimeFaces.widgets['widget_<id_with_colons_as_underscores>'];
+  w.setDate(new Date(2020,0,1,0,0,0));
+  w.input.val('01 Jan 2020 00:00:00').trigger('change');
+  ```
+  Find the widget name with
+  `Object.keys(PrimeFaces.widgets).filter(k => k.includes('<idFragment>'))`.
+- **`p:selectOneMenu`**: setting the underlying native `<select>`'s `.value`
+  directly (even to a matching `<option value>`) does not reliably update the
+  PrimeFaces display label — it can silently resync to a stale/wrong option.
+  What actually works is clicking the real `<li>` inside the (JS-rendered,
+  `display:none` until opened) `..._panel` element:
+  ```js
+  const panel = document.getElementById('<id_with_colons>_panel');
+  const li = Array.from(panel.querySelectorAll('li')).find(li => li.textContent.trim() === 'Cheque');
+  li.click();
+  ```
+  This fires the widget's real `itemClick` handler, which updates both the
+  hidden select and the visible label consistently.
+- Both patterns require the target element to actually exist in
+  `PrimeFaces.widgets` first — a plain `browser_click` to open the dropdown
+  panel beforehand isn't necessary once you're driving it via JS, but doing a
+  quick `browser_snapshot` after any of this is worth it to confirm the
+  visible label actually changed before submitting the form.
+- Separately: local test data can have **zero** BillFee rows with
+  `paidValue == feeValue` (nobody has ever settled a professional payment
+  through this exact local DB copy) — check with a quick SQL count before
+  assuming a "must find an already-paid row" test fixture exists; if it
+  doesn't, settle one through the real UI first (Search Outstanding
+  Professional Payments → select one row only → Settle) rather than writing
+  `paidValue` via raw SQL, so the whole flow is genuinely exercised. Settling
+  with "Cash" fails locally with "Not enough cash in your drawer" — switch
+  Payment Method to Cheque/Card/Slip/ewallet (whichever needs no drawer
+  balance) to unblock the settlement without needing a funded cash drawer.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
