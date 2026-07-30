@@ -484,6 +484,7 @@ public class SearchController implements Serializable {
     private ReportTemplateRowBundle bundleBillItems;
     private List<OpdSaleSummaryDTO> opdSaleSummaryDtos;
     private List<OpdBillItemDTO> opdBillItemDtos;
+    private List<OpdBillItemDTO> labBillItemSearchDtos;
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
@@ -2727,6 +2728,14 @@ public class SearchController implements Serializable {
 
     public void setOpdBillItemDtos(List<OpdBillItemDTO> opdBillItemDtos) {
         this.opdBillItemDtos = opdBillItemDtos;
+    }
+
+    public List<OpdBillItemDTO> getLabBillItemSearchDtos() {
+        return labBillItemSearchDtos;
+    }
+
+    public void setLabBillItemSearchDtos(List<OpdBillItemDTO> labBillItemSearchDtos) {
+        this.labBillItemSearchDtos = labBillItemSearchDtos;
     }
 
     public List<OpdSaleSummaryDTO> getOpdSaleSummaryDtos() {
@@ -9127,6 +9136,165 @@ public class SearchController implements Serializable {
         checkLabReportsApprovedBillItem(billItems);
 
         //   searchBillItems = new LazyBillItem(tmp);
+    }
+
+    /**
+     * DTO-based replacement for createBillItemTableByKeyword(), used by
+     * opd_search_billitem_own.xhtml (Lab Bill Item Search). Avoids per-row
+     * lazy loading of Bill/Patient/Institution/Staff entities and the
+     * per-bill-item N+1 lab-report-approval check that made the original
+     * entity-based query unusable over a full month of data. See issue #17635.
+     */
+    public void createLabBillItemSearchDtosByKeyword() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        m.put("billTypesAtomics", billTypesAtomics);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.OpdBillItemDTO("
+                + "bi.id, "
+                + "bill.id, "
+                + "bill.deptId, "
+                + "bill.billTypeAtomic, "
+                + "bill.billClassType, "
+                + "bill.createdAt, "
+                + "bill.cancelled, "
+                + "bill.refunded, "
+                + "bill.paymentMethod, "
+                + "COALESCE(ps.name, ''), "
+                + "COALESCE(toIns.name, ''), "
+                + "COALESCE(cc.name, ''), "
+                + "COALESCE(pat.name, ''), "
+                + "pat.title, "
+                + "pat.dob, "
+                + "pat.sex, "
+                + "COALESCE(pat.phone, ''), "
+                + "COALESCE(cat.name, ''), "
+                + "COALESCE(itm.name, ''), "
+                + "COALESCE(creater.name, ''), "
+                + "cb.createdAt, "
+                + "COALESCE(cbCreater.name, ''), "
+                + "rb.createdAt, "
+                + "COALESCE(rbCreater.name, ''), "
+                + "bi.grossValue, "
+                + "bi.discount, "
+                + "bi.netValue, "
+                + "COALESCE(doc.name, ''), "
+                + "doc.title, "
+                + "bref.id, "
+                + "patient.id"
+                + ") "
+                + "FROM BillItem bi "
+                + "JOIN bi.bill bill "
+                + "LEFT JOIN bill.toInstitution toIns "
+                + "LEFT JOIN bill.creditCompany cc "
+                + "LEFT JOIN bill.patient patient "
+                + "LEFT JOIN patient.person pat "
+                + "LEFT JOIN bi.item itm "
+                + "LEFT JOIN itm.category cat "
+                + "LEFT JOIN bill.creater createrUser "
+                + "LEFT JOIN createrUser.webUserPerson creater "
+                + "LEFT JOIN bill.paymentScheme ps "
+                + "LEFT JOIN bill.cancelledBill cb "
+                + "LEFT JOIN cb.creater cbCreaterUser "
+                + "LEFT JOIN cbCreaterUser.webUserPerson cbCreater "
+                + "LEFT JOIN bill.refundedBill rb "
+                + "LEFT JOIN rb.creater rbCreaterUser "
+                + "LEFT JOIN rbCreaterUser.webUserPerson rbCreater "
+                + "LEFT JOIN bill.fromStaff fromStaff "
+                + "LEFT JOIN fromStaff.person doc "
+                + "LEFT JOIN bill.backwardReferenceBill bref "
+                + "WHERE bi.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND bill.billTypeAtomic IN :billTypesAtomics ";
+
+        if (showLoggedDepartmentOnly) {
+            Department dept = sessionController.getDepartment();
+            if (dept != null) {
+                jpql += " AND bill.department = :dept ";
+                m.put("dept", dept);
+            }
+        }
+
+        if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().equals("")) {
+            jpql += " AND pat.name LIKE :patientName ";
+            m.put("patientName", "%" + searchKeyword.getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().equals("")) {
+            jpql += " AND pat.phone LIKE :patientPhone ";
+            m.put("patientPhone", "%" + searchKeyword.getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().equals("")) {
+            jpql += " AND bill.insId LIKE :billNo ";
+            m.put("billNo", "%" + searchKeyword.getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getItemName() != null && !searchKeyword.getItemName().trim().equals("")) {
+            jpql += " AND itm.name LIKE :itemName ";
+            m.put("itemName", "%" + searchKeyword.getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getToInstitution() != null && !searchKeyword.getToInstitution().trim().equals("")) {
+            jpql += " AND toIns.name LIKE :toIns ";
+            m.put("toIns", "%" + searchKeyword.getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        jpql += " ORDER BY bi.id DESC ";
+
+        labBillItemSearchDtos = (List<OpdBillItemDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP, 50);
+
+        markApprovedLabTests(labBillItemSearchDtos);
+    }
+
+    /**
+     * Batched replacement for the old per-bill-item checkLabReportsApprovedBillItem()
+     * N+1 query. Flags every row whose Bill has at least one approved, non-retired
+     * PatientReport, matching the original per-Bill (not per-BillItem) semantics.
+     */
+    private void markApprovedLabTests(List<OpdBillItemDTO> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        Set<Long> billIds = new HashSet<>();
+        for (OpdBillItemDTO dto : dtos) {
+            billIds.add(dto.getBillId());
+        }
+        String jpql = "SELECT DISTINCT pr.patientInvestigation.billItem.bill.id FROM PatientReport pr "
+                + "WHERE pr.retired = false AND pr.approved = true "
+                + "AND pr.patientInvestigation.billItem.bill.id IN :billIds";
+        Map<String, Object> m = new HashMap<>();
+        m.put("billIds", billIds);
+        List<Long> approvedBillIds = getPatientReportFacade().findLongValuesByJpql(jpql, m);
+        Set<Long> approvedBillIdSet = new HashSet<>(approvedBillIds);
+        for (OpdBillItemDTO dto : dtos) {
+            dto.setApprovedAnyTest(approvedBillIdSet.contains(dto.getBillId()));
+        }
+    }
+
+    /**
+     * Loads a Bill by id for row-click navigation from a DTO-backed table
+     * (e.g. labBillItemSearchDtos), avoiding eager entity loading for all rows.
+     */
+    public Bill findBillById(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        return getBillFacade().find(billId);
+    }
+
+    /**
+     * Loads a Patient by id for row-click navigation from a DTO-backed table.
+     */
+    public Patient findPatientById(Long patientId) {
+        if (patientId == null) {
+            return null;
+        }
+        return getPatientFacade().find(patientId);
     }
 
     @Deprecated // Use LaborataryReportController.navigateToBillItemListForCreditCompany()
