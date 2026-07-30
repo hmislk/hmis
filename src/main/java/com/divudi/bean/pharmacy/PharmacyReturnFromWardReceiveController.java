@@ -122,36 +122,105 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         // Defense for pre-#21510 data: returns fully accepted before this change
         // were never stamped with fullyIssued/completed, so the flag filter above
         // alone would resurface them. Drop anything already fully accepted.
-        pendingReturnBills = new ArrayList<>();
-        for (PharmacyReturnFromWardPendingReturnDTO dto : candidates) {
-            if (!isFullyAcceptedByBillId(dto.getId())) {
-                pendingReturnBills.add(dto);
-            }
-        }
+        pendingReturnBills = filterOutFullyAccepted(candidates);
     }
 
     /**
+     * Drops candidates whose every return line has already been fully accepted.
      * Bill-item-only variant of {@link #isFullyAccepted(Bill)} for the
      * pending-list filter above, so listing candidates do not need a full
      * {@link Bill} entity fetch just to check remaining quantities.
+     *
+     * <p>Outstanding quantities are resolved with two grouped queries covering
+     * the whole candidate set rather than one query per bill plus one per bill
+     * item, so the pending list stays a fixed number of queries however long
+     * the return queue grows.</p>
      */
-    private boolean isFullyAcceptedByBillId(Long billId) {
-        if (billId == null) {
-            return false;
+    private List<PharmacyReturnFromWardPendingReturnDTO> filterOutFullyAccepted(
+            List<PharmacyReturnFromWardPendingReturnDTO> candidates) {
+        List<PharmacyReturnFromWardPendingReturnDTO> remaining = new ArrayList<>();
+        if (candidates == null || candidates.isEmpty()) {
+            return remaining;
         }
-        String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId";
-        Map<String, Object> params = new HashMap<>();
-        params.put("billId", billId);
-        List<BillItem> items = billItemFacade.findByJpql(jpql, params);
-        if (items == null || items.isEmpty()) {
-            return false;
-        }
-        for (BillItem item : items) {
-            if (getRemainingQuantityForReturnItem(item) > 0.001) {
-                return false;
+
+        List<Long> billIds = new ArrayList<>();
+        for (PharmacyReturnFromWardPendingReturnDTO dto : candidates) {
+            if (dto.getId() != null) {
+                billIds.add(dto.getId());
             }
         }
-        return true;
+
+        // billId -> (returnItemId -> returned qty)
+        Map<Long, Map<Long, Double>> returnedQtyByBill = new HashMap<>();
+        List<Long> returnItemIds = new ArrayList<>();
+        if (!billIds.isEmpty()) {
+            String itemJpql = "SELECT bi.bill.id, bi.id, bi.qty FROM BillItem bi "
+                    + "WHERE bi.bill.id IN :billIds";
+            Map<String, Object> itemParams = new HashMap<>();
+            itemParams.put("billIds", billIds);
+            List<Object[]> itemRows = billItemFacade.findObjectsArrayByJpql(itemJpql, itemParams, TemporalType.TIMESTAMP);
+            if (itemRows != null) {
+                for (Object[] row : itemRows) {
+                    Long billId = (Long) row[0];
+                    Long itemId = (Long) row[1];
+                    if (billId == null || itemId == null) {
+                        continue;
+                    }
+                    double qty = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                    Map<Long, Double> lines = returnedQtyByBill.get(billId);
+                    if (lines == null) {
+                        lines = new HashMap<>();
+                        returnedQtyByBill.put(billId, lines);
+                    }
+                    lines.put(itemId, qty);
+                    returnItemIds.add(itemId);
+                }
+            }
+        }
+
+        // returnItemId -> qty already accepted, mirroring the filters in
+        // getRemainingQuantityForReturnItem.
+        Map<Long, Double> acceptedQtyByItem = new HashMap<>();
+        if (!returnItemIds.isEmpty()) {
+            String acceptedJpql = "SELECT bi.referanceBillItem.id, SUM(ABS(bi.qty)) FROM BillItem bi "
+                    + "WHERE bi.referanceBillItem.id IN :refIds "
+                    + "AND bi.bill.billTypeAtomic = :acceptBta "
+                    + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL) "
+                    + "AND bi.bill.cancelled = false "
+                    + "GROUP BY bi.referanceBillItem.id";
+            Map<String, Object> acceptedParams = new HashMap<>();
+            acceptedParams.put("refIds", returnItemIds);
+            acceptedParams.put("acceptBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+            List<Object[]> acceptedRows = billItemFacade.findObjectsArrayByJpql(acceptedJpql, acceptedParams, TemporalType.TIMESTAMP);
+            if (acceptedRows != null) {
+                for (Object[] row : acceptedRows) {
+                    Long itemId = (Long) row[0];
+                    if (itemId == null) {
+                        continue;
+                    }
+                    acceptedQtyByItem.put(itemId, row[1] != null ? ((Number) row[1]).doubleValue() : 0.0);
+                }
+            }
+        }
+
+        for (PharmacyReturnFromWardPendingReturnDTO dto : candidates) {
+            Map<Long, Double> lines = dto.getId() != null ? returnedQtyByBill.get(dto.getId()) : null;
+            // A return with no lines at all counts as not fully accepted, as in
+            // the per-bill check this replaced, so anomalous bills stay visible.
+            if (lines == null || lines.isEmpty()) {
+                remaining.add(dto);
+                continue;
+            }
+            for (Map.Entry<Long, Double> line : lines.entrySet()) {
+                Double accepted = acceptedQtyByItem.get(line.getKey());
+                double outstanding = line.getValue() - (accepted != null ? accepted : 0.0);
+                if (outstanding > 0.001) {
+                    remaining.add(dto);
+                    break;
+                }
+            }
+        }
+        return remaining;
     }
 
     public String navigateToReceive() {
@@ -160,8 +229,15 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
             return null;
         }
         returnedBill = billFacade.find(returnedBillId);
-        if (returnedBill == null) {
+        if (returnedBill == null || !isWithinPendingScope(returnedBill)) {
+            // This bean is @SessionScoped, so a department switch after the
+            // pending list was rendered can leave a stale row pointing at
+            // another department's return. Receiving it would credit the stock
+            // to the current department instead (#21471).
+            returnedBill = null;
+            returnedBillId = null;
             JsfUtil.addErrorMessage("No return selected.");
+            loadPendingReturnBills();
             return null;
         }
         if (isFullyAccepted(returnedBill)) {
@@ -173,6 +249,20 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         printPreview = false;
         completed = false;
         return "/pharmacy/pharmacy_return_from_ward_receive?faces-redirect=true";
+    }
+
+    /**
+     * Whether a bill still satisfies the predicates of
+     * {@link #loadPendingReturnBills()}, i.e. it really is an uncancelled
+     * ward return addressed to the department currently in session.
+     */
+    private boolean isWithinPendingScope(Bill bill) {
+        return bill.getBillType() == BillType.PharmacyIssue
+                && bill.getBillTypeAtomic() == BillTypeAtomic.RETURN_MEDICINE_INWARD
+                && !bill.isCancelled()
+                && bill.getToDepartment() != null
+                && sessionController.getDepartment() != null
+                && bill.getToDepartment().equals(sessionController.getDepartment());
     }
 
     private void generateBillComponent() {

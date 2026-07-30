@@ -36,9 +36,18 @@ public class PharmacyReturnFromWardPendingReturnDTO implements Serializable {
         this.createdAt = createdAt;
     }
 
+    /**
+     * {@link Title#getLabel()} already ends with a space for most titles, so
+     * the delimiter is only added when both parts are non-empty. Otherwise
+     * values come out as {@code "Dr.  Smith"} with a double space.
+     */
     private static String buildNameWithTitle(Title title, String name) {
-        String label = title != null ? title.getLabel() : "";
-        return (label + " " + (name != null ? name : "")).trim();
+        String label = title != null && title.getLabel() != null ? title.getLabel().trim() : "";
+        String staffName = name != null ? name.trim() : "";
+        if (label.isEmpty() || staffName.isEmpty()) {
+            return label + staffName;
+        }
+        return label + " " + staffName;
     }
 
     public Long getId() {
