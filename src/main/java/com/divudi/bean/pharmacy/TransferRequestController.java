@@ -40,6 +40,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.service.BillService;
+import com.divudi.service.StockService;
 
 import java.text.DecimalFormat;
 import java.util.logging.Level;
@@ -94,6 +95,8 @@ public class TransferRequestController implements Serializable {
     private DepartmentFacade departmentFacade;
     @EJB
     BillService billService;
+    @EJB
+    private StockService stockService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -318,6 +321,13 @@ public class TransferRequestController implements Serializable {
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    public double getAvailableQtyAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getItem() == null || getToDepartment() == null) {
+            return 0.0;
+        }
+        return stockService.findDepartmentStock(getToDepartment(), bi.getItem());
     }
 
     public void saveBill() {

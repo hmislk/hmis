@@ -1345,6 +1345,57 @@ Item" dialog). The working counterpart,
 submitted form field — worth checking as the reference pattern before
 assuming `appendTo` itself needs to be removed.
 
+## 52. A non-AJAX search that looks "hung" in Playwright may actually be a real, still-running N+1 query — check a Payara thread dump before assuming the button is broken
+
+Clicking a date-filtered `ajax="false"` Search button (e.g.
+`SearchController.fillSavedTranserRequestBills()` behind
+`pharmacy_transfer_request_list_search_for_approval.xhtml`'s "Search") can
+time out on `browser_click` ("waiting for scheduled navigations to finish"),
+and every subsequent `browser_snapshot`/`browser_evaluate`/`browser_tabs`
+call on that page then also times out — indistinguishable, from Playwright's
+side, from a broken client-side handler that never reaches the server (the
+symptom described in §37). Opening a **fresh tab** in the same browser
+context can even reproduce the identical hang on the very first click,
+which looks like confirmation the page itself is broken.
+
+It isn't, necessarily. Check `server.log` first for whether the request even
+arrived — but a wide date range that doesn't filter by `billTypeAtomic`
+(only by `billType`, so it pulls every PRE **and** approved/downstream bill
+over the range) can trigger a classic EclipseLink N+1: one `ReadAllQuery` for
+the bill list, then a lazy `OneToOneMapping`/`ForeignReferenceMapping` round
+trip **per row per relationship** (`fromDepartment`, `toDepartment`,
+`creater`, `checkedBy`, …). Over hundreds of matching rows this is genuinely
+slow (multiple minutes), not stuck — but produces no new `server.log` lines
+if that code path (unlike the heavily-instrumented login flow) has no
+`LOGGER.log(...)` trace statements, making "no new log output" look like
+proof the request never arrived when it actually is just quiet.
+
+**Definitive diagnostic**: `asadmin generate-jvm-report --type=thread`,
+then `grep -A3 'http-thread-pool.*RUNNABLE'` in the output. A thread whose
+stack shows your controller method (e.g.
+`TransferRequestController.navigateToApproveRequest`) blocked in
+`SocketInputStream.socketRead0` under
+`com.mysql.cj.protocol...`/`EclipseLink` frames is **genuinely executing** —
+not stuck. `SELECT ... FROM information_schema.PROCESSLIST WHERE
+COMMAND='Query' AND ID != CONNECTION_ID()` corroborates this (a short-lived
+but constantly-refreshing row is the N+1 loop grinding through rows, not a
+single frozen query).
+
+**Fix for testing purposes**: don't fight the browser hang — stop issuing
+more clicks/tabs (each retry adds another slow in-flight request, and
+Chrome's per-origin connection cap means enough of these queued up will
+eventually make *every* tab/request against that origin appear to hang, even
+unrelated ones). Instead, narrow the date filter to the single day the
+target record was created before searching, which keeps the row count (and
+therefore the N+1 fan-out) small enough to return in a couple of seconds.
+The wide-range search's result **does** eventually land in the session-scoped
+searchController.bills once it finishes, so a plain navigate-away-and-back
+on a fresh tab can pick up the now-populated list without re-submitting.
+Verified while testing issue #22455 (Pharmacy Transfer Request Approval —
+`pharmacy_transfer_request_list_search_for_approval.xhtml` and its twin
+`pharmacy_transfer_request_list_to_approve.xhtml`, both driven by the same
+session-scoped `SearchController`).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
