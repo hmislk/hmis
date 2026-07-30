@@ -49,18 +49,18 @@ public class ShiftController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getRoster() == null) {
-            JsfUtil.addErrorMessage("Select Roster");
+            JsfUtil.addErrorMessage("Please select a Roster.");
             return true;
         }
 
         String name = getCurrent().getName();
         if (name == null || name.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Enter Name");
+            JsfUtil.addErrorMessage("Please enter a Name.");
             return true;
         }
 
         if (getCurrent().getDayType() == null) {
-            JsfUtil.addErrorMessage("Select Day Type");
+            JsfUtil.addErrorMessage("Please select a Day Type.");
             return true;
         }
 
@@ -82,15 +82,30 @@ public class ShiftController implements Serializable {
             return true;
         }
 
-//        if (getCurrent().getStartingTime() == null) {
-//            JsfUtil.addErrorMessage("Set Start Time");
-//            return true;
-//        }
-//
-//        if (getCurrent().getEndingTime() == null) {
-//            JsfUtil.addErrorMessage("Set End Time");
-//            return true;
-//        }
+       if (getCurrent().getStartingTime() == null) {
+           JsfUtil.addErrorMessage("Please set a Starting Time.");
+           return true;
+       }
+
+       if (getCurrent().getEndingTime() == null) {
+           JsfUtil.addErrorMessage("Please set a Ending Time.");
+           return true;
+       }
+
+       if(getCurrent().getStartingTime() != null && getCurrent().getEndingTime() != null &&
+               getCurrent().getStartingTime().after(getCurrent().getEndingTime())
+       ){
+           JsfUtil.addErrorMessage("Starting Time cannot be after ending time.");
+           return true;
+       }
+
+       if(getCurrent().getStartingTime() != null && getCurrent().getEndingTime() != null &&
+               getCurrent().getStartingTime().equals(getCurrent().getEndingTime())
+       ){
+           JsfUtil.addErrorMessage("Starting Time cannot be same as ending time.");
+           return true;
+       }
+
 //        if (getCurrent().getCount() == 0) {
 //            JsfUtil.addErrorMessage("Set Staff count correctly");
 //            return true;
@@ -103,6 +118,7 @@ public class ShiftController implements Serializable {
 //            JsfUtil.addErrorMessage("You Cant add more than 24h per Roster");
 //            return true;
 //        }
+
         return false;
     }
 
@@ -111,7 +127,7 @@ public class ShiftController implements Serializable {
     public List<Shift> completeShift(String qry) {
 
         String sql = "";
-        HashMap hm = new HashMap();
+        HashMap<String, Object> hm = new HashMap<>();
         sql = "select c from Shift c "
                 + " where c.retired=false "
                 + " and (c.name) like :q "
@@ -132,7 +148,7 @@ public class ShiftController implements Serializable {
     public List<Shift> completeShiftAll(String qry) {
 
         String sql = "";
-        HashMap hm = new HashMap();
+        HashMap<String, Object> hm = new HashMap<>();
         sql = "select c from Shift c "
                 + " where c.retired=false "
                 + " and (c.name) like :q ";
