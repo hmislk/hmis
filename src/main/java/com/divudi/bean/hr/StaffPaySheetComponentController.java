@@ -109,18 +109,38 @@ public class StaffPaySheetComponentController implements Serializable {
 //        return false;
 //    }
     private boolean errorCheck() {
+        if (getCurrent().getStaff() == null) {
+            JsfUtil.addErrorMessage("Select Staff");
+            return true;
+        }
 
         if (getCurrent().getPaysheetComponent() == null) {
-            JsfUtil.addErrorMessage("Check Component Name");
-            return true;
-        }
-        if (getCurrent().getToDate() == null || getCurrent().getFromDate() == null) {
-            JsfUtil.addErrorMessage("Check Date");
+            JsfUtil.addErrorMessage("Select Component Name");
             return true;
         }
 
-        if (getCurrent().getStaff() == null) {
-            JsfUtil.addErrorMessage("Check Staff");
+        if (getCurrent().getFromDate() == null) {
+            JsfUtil.addErrorMessage("Select From Date");
+            return true;
+        }
+
+        if (getCurrent().getToDate() == null) {
+            JsfUtil.addErrorMessage("Select To Date");
+            return true;
+        }
+
+        if (getCurrent().getFromDate().before(current.getStaff().getDateJoined())) {
+            JsfUtil.addErrorMessage("From Date is before Joining Date");
+            return true;
+        }
+
+        if (getCurrent().getToDate() != null && getCurrent().getToDate().before(getCurrent().getFromDate())) {
+            JsfUtil.addErrorMessage("To Date is before From Date");
+            return true;
+        }
+
+        if (getCurrent().getStaffPaySheetComponentValue() <= 0) {
+            JsfUtil.addErrorMessage("Value should be greater than 0");
             return true;
         }
 

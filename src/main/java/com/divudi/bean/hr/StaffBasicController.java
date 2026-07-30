@@ -102,6 +102,21 @@ public class StaffBasicController implements Serializable {
             return true;
         }
 
+        if (getCurrent().getFromDate().before(current.getStaff().getDateJoined())) {
+            JsfUtil.addErrorMessage("From Date is before Joining Date");
+            return true;
+        }
+
+        if (getCurrent().getToDate() != null && getCurrent().getToDate().before(getCurrent().getFromDate())) {
+            JsfUtil.addErrorMessage("To Date is before From Date");
+            return true;
+        }
+
+        if (getCurrent().getStaffPaySheetComponentValue() <= 0) {
+            JsfUtil.addErrorMessage("Basic Salary should be greater than 0");
+            return true;
+        }
+
         if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
             JsfUtil.addErrorMessage("There is Some component in Same Date Range");
             return true;
