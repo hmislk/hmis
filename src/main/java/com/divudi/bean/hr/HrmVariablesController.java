@@ -7,12 +7,14 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.hr;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.hr.HrmVariables;
 import com.divudi.core.entity.hr.PayeeTaxRange;
 import com.divudi.core.facade.HrmVariablesFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -24,10 +26,12 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.primefaces.event.SelectEvent;
+
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -140,21 +144,66 @@ public class HrmVariablesController implements Serializable {
             return true;
         }
 
-        if (getCurrentPayeeTaxRange().getTaxRate() == 0) {
-            JsfUtil.addErrorMessage("Set Tax Rate");
+        if (getCurrentPayeeTaxRange().getFromSalary() >= getCurrentPayeeTaxRange().getToSalary()) {
+            JsfUtil.addErrorMessage("To Salary should be greater than From Salary");
             return true;
         }
 
         return false;
     }
 
-
     public void addTaxRange() {
         if (errorCheck()) {
             return;
         }
-        getCurrent().getTaxRanges().add(getCurrentPayeeTaxRange());
-        currentPayeeTaxRange = null;
+
+        getCurrentPayeeTaxRange().setHrmVariables(getCurrent());
+
+        if (!getCurrent().getTaxRanges().contains(getCurrentPayeeTaxRange())) {
+            getCurrent().getTaxRanges().add(getCurrentPayeeTaxRange());
+        }
+
+        getFacade().edit(getCurrent());
+        refreshCurrent();
+        JsfUtil.addSuccessMessage("Tax Range Saved Successfully.");
+        clearSelectedTaxRange();
+    }
+
+    private void refreshCurrent() {
+        if (getCurrent().getId() != null) {
+            current = getFacade().find(getCurrent().getId());
+        }
+    }
+
+    public void onRowSelect(SelectEvent<PayeeTaxRange> event) {
+        this.currentPayeeTaxRange = event.getObject();
+    }
+
+    public void deleteTaxRange() {
+        if (currentPayeeTaxRange != null && getCurrent().getTaxRanges() != null
+                && getCurrent().getTaxRanges().contains(currentPayeeTaxRange)) {
+            currentPayeeTaxRange.setRetired(true);
+            getFacade().edit(getCurrent());
+            refreshCurrent();
+            JsfUtil.addSuccessMessage("Tax Range Removed Successfully.");
+            clearSelectedTaxRange();
+        } else {
+            JsfUtil.addErrorMessage("No Tax Range selected to delete.");
+        }
+    }
+
+    public List<PayeeTaxRange> getActiveTaxRanges() {
+        List<PayeeTaxRange> activeTaxRanges = new ArrayList<>();
+        for (PayeeTaxRange taxRange : getCurrent().getTaxRanges()) {
+            if (!taxRange.isRetired()) {
+                activeTaxRanges.add(taxRange);
+            }
+        }
+        return activeTaxRanges;
+    }
+
+    public void clearSelectedTaxRange() {
+        this.currentPayeeTaxRange = null;
     }
 
     public PayeeTaxRange getCurrentPayeeTaxRange() {
