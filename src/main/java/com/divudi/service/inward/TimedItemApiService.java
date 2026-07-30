@@ -14,12 +14,15 @@ import com.divudi.core.data.dto.timeditem.TimedItemResponseDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemSearchResultDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemUpdateRequestDTO;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.inward.TimedItemCategory;
 import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.TimedItemFacade;
@@ -56,6 +59,9 @@ public class TimedItemApiService implements Serializable {
 
     @EJB
     private InstitutionFacade institutionFacade;
+
+    @EJB
+    private CategoryFacade categoryFacade;
 
     // =========================================================================
     // Search
@@ -167,6 +173,10 @@ public class TimedItemApiService implements Serializable {
             item.setInstitution(inst);
         }
 
+        if (request.getCategoryId() != null) {
+            item.setCategory(resolveCategory(request.getCategoryId()));
+        }
+
         item.setCreater(user);
         item.setCreatedAt(Calendar.getInstance().getTime());
 
@@ -233,6 +243,9 @@ public class TimedItemApiService implements Serializable {
                 throw new Exception("Institution not found with ID: " + request.getInstitutionId());
             }
             item.setInstitution(inst);
+        }
+        if (request.getCategoryId() != null) {
+            item.setCategory(resolveCategory(request.getCategoryId()));
         }
 
         item.setEditer(user);
@@ -390,6 +403,14 @@ public class TimedItemApiService implements Serializable {
     // Private helpers
     // =========================================================================
 
+    private TimedItemCategory resolveCategory(Long categoryId) throws Exception {
+        Category category = categoryFacade.find(categoryId);
+        if (category == null || !(category instanceof TimedItemCategory)) {
+            throw new Exception("TimedItemCategory not found with ID: " + categoryId);
+        }
+        return (TimedItemCategory) category;
+    }
+
     private TimedItem loadAndValidate(Long id) throws Exception {
         if (id == null) {
             throw new Exception("TimedItem ID is required");
@@ -486,6 +507,10 @@ public class TimedItemApiService implements Serializable {
         if (item.getInstitution() != null) {
             dto.setInstitutionId(item.getInstitution().getId());
             dto.setInstitutionName(item.getInstitution().getName());
+        }
+        if (item.getCategory() != null) {
+            dto.setCategoryId(item.getCategory().getId());
+            dto.setCategoryName(item.getCategory().getName());
         }
         dto.setCreatedAt(item.getCreatedAt());
 

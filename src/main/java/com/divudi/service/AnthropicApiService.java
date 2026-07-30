@@ -1755,6 +1755,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("institutionId", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Institution id. Optional."))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "TimedItemCategory (Service Group) id. Optional."))
                                 .add("inactive", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "true or false — whether item is inactive. Optional."))
@@ -2391,6 +2394,7 @@ public class AnthropicApiService implements Serializable {
                     String chargeType   = toolInput.containsKey("inwardChargeType")  ? toolInput.getString("inwardChargeType", "")  : "";
                     String departmentId = toolInput.containsKey("departmentId")      ? toolInput.getString("departmentId", "")      : "";
                     String institutionId= toolInput.containsKey("institutionId")     ? toolInput.getString("institutionId", "")     : "";
+                    String categoryId   = toolInput.containsKey("categoryId")        ? toolInput.getString("categoryId", "")        : "";
                     String inactive     = toolInput.containsKey("inactive")          ? toolInput.getString("inactive", "")          : "";
                     String fee          = toolInput.containsKey("fee")               ? toolInput.getString("fee", "")               : "";
                     String ffee         = toolInput.containsKey("ffee")              ? toolInput.getString("ffee", "")              : "";
@@ -2403,7 +2407,7 @@ public class AnthropicApiService implements Serializable {
                     String size         = toolInput.containsKey("size")              ? toolInput.getString("size", "")              : "";
                     String retireComments = toolInput.containsKey("retireComments")  ? toolInput.getString("retireComments", "")    : "";
                     return callTimedItemsApi(method, id, feeId, name, code, deptType, chargeType,
-                            departmentId, institutionId, inactive,
+                            departmentId, institutionId, categoryId, inactive,
                             fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating,
                             query, size, retireComments, hmisBaseUrl, hmisApiKey);
                 }
@@ -5507,7 +5511,7 @@ public class AnthropicApiService implements Serializable {
 
     private String callTimedItemsApi(String method, String id, String feeId, String name, String code,
             String departmentType, String inwardChargeType, String departmentId, String institutionId,
-            String inactive, String fee, String ffee, String durationHours, String overShootHours,
+            String categoryId, String inactive, String fee, String ffee, String durationHours, String overShootHours,
             String durationDaysForMoCharge, String sortOrder, String repeating,
             String query, String size, String retireComments,
             String hmisBaseUrl, String hmisApiKey) {
@@ -5548,6 +5552,7 @@ public class AnthropicApiService implements Serializable {
                     if (!code.isEmpty()) b.add("code", code);
                     if (!departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
                     if (!institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                    if (!categoryId.isEmpty()) b.add("categoryId", Long.parseLong(categoryId));
                     if (!inactive.isEmpty()) b.add("inactive", Boolean.parseBoolean(inactive));
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -5564,6 +5569,7 @@ public class AnthropicApiService implements Serializable {
                     if (!inwardChargeType.isEmpty()) b.add("inwardChargeType", inwardChargeType);
                     if (!departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
                     if (!institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                    if (!categoryId.isEmpty()) b.add("categoryId", Long.parseLong(categoryId));
                     if (!inactive.isEmpty()) b.add("inactive", Boolean.parseBoolean(inactive));
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -6489,8 +6495,8 @@ public class AnthropicApiService implements Serializable {
                 new String[][]{
                     {"GET",    "/timed-items/search?query=&departmentType=&limit=", "Search timed items"},
                     {"GET",    "/timed-items/{id}",          "Fetch one timed item with fees"},
-                    {"POST",   "/timed-items",               "Create timed item. Body: name, departmentType, inwardChargeType (all required); code, departmentId, institutionId, inactive optional"},
-                    {"PUT",    "/timed-items/{id}",          "Update timed item (all fields optional)"},
+                    {"POST",   "/timed-items",               "Create timed item. Body: name, departmentType, inwardChargeType (all required); code, departmentId, institutionId, categoryId, inactive optional"},
+                    {"PUT",    "/timed-items/{id}",          "Update timed item (all fields optional, including categoryId)"},
                     {"DELETE", "/timed-items/{id}",          "Soft-retire timed item"},
                     {"PATCH",  "/timed-items/{id}/activate", "Set inactive=false"},
                     {"PATCH",  "/timed-items/{id}/deactivate", "Set inactive=true"},
