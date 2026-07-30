@@ -353,6 +353,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        thisLogin = null;
     }
 
     @Override
