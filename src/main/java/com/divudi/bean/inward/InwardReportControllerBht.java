@@ -106,6 +106,9 @@ public class InwardReportControllerBht implements Serializable {
 
     private List<InpatientPharmacyIssueDTO> pharmacyIssueDtosToPatientEncounter;
     private double pharmacyIssueDtosToPatientEncounterNetTotal;
+    private double pharmacyIssueDtosToPatientEncounterGrossTotal;
+    private double pharmacyIssueDtosToPatientEncounterDiscountTotal;
+    private double pharmacyIssueDtosToPatientEncounterServiceChargeTotal;
 
     private List<InpatientPharmacyNetSummaryDTO> pharmacyNetSummaryDtosToPatientEncounter;
     private double pharmacyNetSummaryDtosToPatientEncounterNetTotal;
@@ -233,6 +236,9 @@ public class InwardReportControllerBht implements Serializable {
         }
         pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
         pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+        pharmacyIssueDtosToPatientEncounterGrossTotal = 0.0;
+        pharmacyIssueDtosToPatientEncounterDiscountTotal = 0.0;
+        pharmacyIssueDtosToPatientEncounterServiceChargeTotal = 0.0;
         try {
 
             // New mode: Include regular issues and returns, but omit cancellations
@@ -255,14 +261,24 @@ public class InwardReportControllerBht implements Serializable {
             for (InpatientPharmacyIssueDTO dto : allDtos) {
                 BillTypeAtomic billType = dto.getBillTypeAtomic();
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                double grossValue = dto.getGrossValue() != null ? dto.getGrossValue() : 0.0;
+                double marginValue = dto.getMarginValue() != null ? dto.getMarginValue() : 0.0;
+                double discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
 
-                if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                boolean isReturn = billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
                         || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN;
+
+                if (isReturn) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                    pharmacyIssueDtosToPatientEncounterGrossTotal -= Math.abs(grossValue);
+                    pharmacyIssueDtosToPatientEncounterServiceChargeTotal -= Math.abs(marginValue);
                 } else {
                     pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                    pharmacyIssueDtosToPatientEncounterGrossTotal += Math.abs(grossValue);
+                    pharmacyIssueDtosToPatientEncounterServiceChargeTotal += Math.abs(marginValue);
                 }
+                pharmacyIssueDtosToPatientEncounterDiscountTotal += discount;
             }
 
         } catch (Exception e) {
@@ -605,7 +621,10 @@ public class InwardReportControllerBht implements Serializable {
                 + "bi.bill.createdAt, "
                 + "bi.bill.billTypeAtomic, "
                 + "COALESCE(bi.bill.department.name, 'N/A'), "
-                + "refBi.id) "
+                + "refBi.id, "
+                + "bi.grossValue, "
+                + "bi.discount, "
+                + "bi.marginValue) "
                 + "FROM BillItem bi LEFT JOIN bi.referanceBillItem refBi "
                 + "WHERE bi.bill.patientEncounter = :patientEncounter "
                 + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
@@ -2171,6 +2190,30 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPharmacyIssueDtosToPatientEncounterNetTotal(double pharmacyIssueDtosToPatientEncounterNetTotal) {
         this.pharmacyIssueDtosToPatientEncounterNetTotal = pharmacyIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public double getPharmacyIssueDtosToPatientEncounterGrossTotal() {
+        return pharmacyIssueDtosToPatientEncounterGrossTotal;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounterGrossTotal(double pharmacyIssueDtosToPatientEncounterGrossTotal) {
+        this.pharmacyIssueDtosToPatientEncounterGrossTotal = pharmacyIssueDtosToPatientEncounterGrossTotal;
+    }
+
+    public double getPharmacyIssueDtosToPatientEncounterDiscountTotal() {
+        return pharmacyIssueDtosToPatientEncounterDiscountTotal;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounterDiscountTotal(double pharmacyIssueDtosToPatientEncounterDiscountTotal) {
+        this.pharmacyIssueDtosToPatientEncounterDiscountTotal = pharmacyIssueDtosToPatientEncounterDiscountTotal;
+    }
+
+    public double getPharmacyIssueDtosToPatientEncounterServiceChargeTotal() {
+        return pharmacyIssueDtosToPatientEncounterServiceChargeTotal;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounterServiceChargeTotal(double pharmacyIssueDtosToPatientEncounterServiceChargeTotal) {
+        this.pharmacyIssueDtosToPatientEncounterServiceChargeTotal = pharmacyIssueDtosToPatientEncounterServiceChargeTotal;
     }
 
     public List<InpatientPharmacyNetSummaryDTO> getPharmacyNetSummaryDtosToPatientEncounter() {
