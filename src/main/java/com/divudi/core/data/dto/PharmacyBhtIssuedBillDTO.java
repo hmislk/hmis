@@ -30,10 +30,10 @@ public class PharmacyBhtIssuedBillDTO implements Serializable {
         this.bill = bill;
         this.billId = bill.getId();
         this.deptId = bill.getDeptId();
-        this.createdAt = bill.getCreatedAt();
+        this.createdAt = bill.peekCreatedAt();
         this.cancelled = bill.isCancelled();
         this.cancelledAt = (bill.isCancelled() && bill.getCancelledBill() != null)
-                ? bill.getCancelledBill().getCreatedAt() : null;
+                ? bill.getCancelledBill().peekCreatedAt() : null;
         this.cancelledByName = (bill.isCancelled() && bill.getCancelledBill() != null
                 && bill.getCancelledBill().getCreater() != null
                 && bill.getCancelledBill().getCreater().getWebUserPerson() != null)
