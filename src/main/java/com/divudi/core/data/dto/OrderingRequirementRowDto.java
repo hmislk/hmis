@@ -23,6 +23,14 @@ public class OrderingRequirementRowDto implements Serializable {
     private String itemName;
     private String code;
 
+    /**
+     * Name of the institution the item was most recently purchased from, across
+     * all time rather than just the report window - a buyer wants to know who
+     * they last bought from even if that was before the selected period.
+     * Filled by a separate batched lookup, not by the main aggregate.
+     */
+    private String lastSupplier;
+
     /** Current stock in scope, from the Stock table. */
     private double currentBalance;
     /** Consumption over the whole window, net of returns, positive. */
@@ -77,6 +85,14 @@ public class OrderingRequirementRowDto implements Serializable {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getLastSupplier() {
+        return lastSupplier;
+    }
+
+    public void setLastSupplier(String lastSupplier) {
+        this.lastSupplier = lastSupplier;
     }
 
     public double getCurrentBalance() {

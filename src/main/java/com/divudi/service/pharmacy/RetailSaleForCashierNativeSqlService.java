@@ -9,6 +9,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.data.dto.BillItemData;
 import com.divudi.core.data.dto.PrintBillData;
+import com.divudi.core.util.PaymentBreakdownCodec;
 import com.divudi.core.data.dto.StockAggregateResult;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -201,6 +202,16 @@ public class RetailSaleForCashierNativeSqlService {
                 .setParameter(3, billTotals[2])
                 .setParameter(4, preBillId)
                 .executeUpdate();
+
+        // The bill was persisted with billItems nulled (step 1a) because the items are
+        // inserted natively, so the in-memory entity claims the bill has none — and
+        // Bill.getBillItems() hands out an empty list rather than a lazy one. The caller
+        // keeps using this same instance after settle() returns (token handling merges it),
+        // which writes that empty collection into the shared cache; every later read of the
+        // bill then shows a bill with no items, e.g. a reprint printing "No of Items: 0"
+        // while the total is correct. Issue #22506. Refreshing rebuilds the lazy collection
+        // from the rows just written, and also picks up the totals updated above.
+        em.refresh(preBill);
 
         LOGGER.log(Level.INFO, "[CashierNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
@@ -653,10 +664,11 @@ public class RetailSaleForCashierNativeSqlService {
         pbd.setDiscount(disc);
         pbd.setDiscountPercentPharmacy(gross > 0 ? (disc / gross) * 100.0 : 0.0);
 
-        // For Multiple Payment Methods, bill.cashPaid stays 0 and the methods are
-        // recorded as individual Payment rows. Rebuild the itemised payment lines
-        // (and derive the amount paid from their sum) so reprinted/reopened bills
-        // match what the settle-time printout shows.
+        // For Multiple Payment Methods, bill.cashPaid stays 0 and the components live
+        // either in Payment rows (once the cashier has settled) or in the breakdown
+        // stored on the bill at pharmacy time. Rebuild the itemised payment lines from
+        // whichever is present (and derive the amount paid from their sum) so
+        // reprinted/reopened bills match what the settle-time printout showed.
         double cashPaid = bill.getCashPaid();
         double balance = cashPaid - net;
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
@@ -741,6 +753,11 @@ public class RetailSaleForCashierNativeSqlService {
      * Payment Methods bill from the persisted {@link Payment} rows. Each line
      * carries the method label, paid value and a method-specific reference
      * (card/cheque/slip/ewallet/online/credit reference) when available.
+     *
+     * Falls back to the breakdown stored on the bill when there are no Payment rows.
+     * A pharmacy Sale for Cashier pre-bill takes no money, so it has none until the
+     * cashier settles it - before this fallback existed, a reprint in that window
+     * dropped the split that the customer's slip showed (#22487).
      */
     private List<PrintBillData.PaymentLine> buildPrintPaymentLinesFromPersisted(Bill bill) {
         List<PrintBillData.PaymentLine> lines = new ArrayList<>();
@@ -750,6 +767,9 @@ public class RetailSaleForCashierNativeSqlService {
                 + " order by p.id", Payment.class)
                 .setParameter("bill", bill)
                 .getResultList();
+        if (payments.isEmpty()) {
+            return PaymentBreakdownCodec.deserialize(bill.getPaymentBreakdown());
+        }
         for (Payment p : payments) {
             if (p.getPaymentMethod() == null || p.getPaidValue() <= 0.0) {
                 continue;

@@ -111,6 +111,8 @@ public enum Privileges {
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
     InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
+    InwardFinalBillRetire("Inward Final Bill Retire"),
+    InwardFinalBillEmail("Inward Final Bill Email"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     InwardPostDischargeReports("Inward Post-Discharge Reports"),
@@ -1246,6 +1248,8 @@ public enum Privileges {
             case InwardSettleFinalBill:
             case InwardFinalBillCreateVersion:
             case InwardFinalBillSetConfirmed:
+            case InwardFinalBillRetire:
+            case InwardFinalBillEmail:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:

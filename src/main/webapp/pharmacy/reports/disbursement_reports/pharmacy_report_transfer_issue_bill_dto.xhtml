@@ -151,7 +151,12 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.deptId}"/>
+                                    <p:commandLink
+                                        ajax="false"
+                                        value="#{i.deptId}"
+                                        title="View transfer issue bill #{i.deptId}"
+                                        styleClass="text-primary text-decoration-underline"
+                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueByIdWithParam(i.billId)}" />
                                 </p:column>
 
                                 <p:column headerText="Date">

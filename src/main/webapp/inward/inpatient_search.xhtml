@@ -151,6 +151,22 @@
                                     value="#{admissionController.patientIdentityNumberForSearch}" >
                                 </p:inputText>
 
+                                <h:outputText value="Patient Area" />
+                                <p:autoComplete 
+                                    id="area" 
+                                    class="w-100 -mx-2"
+                                    inputStyleClass="form-control"
+                                    forceSelection="true"
+                                    value="#{admissionController.patientArea}"  
+                                    completeMethod="#{areaController.completeArea}" 
+                                    var="pa"
+                                    placeholder="Patient Area"
+                                    itemLabel="#{pa.name}" 
+                                    itemValue="#{pa}" 
+                                    maxResults="15"
+                                    size="10">
+                                </p:autoComplete> 
+
                                 <p:outputLabel value="Referring Doctor" ></p:outputLabel>
                                 <p:autoComplete
                                     forceSelection="true"
@@ -167,6 +183,8 @@
                                         <h:outputLabel value="#{ix.speciality.name}"></h:outputLabel>
                                     </p:column>
                                 </p:autoComplete>
+
+
 
                                 <p:outputLabel value="Occupation" ></p:outputLabel>
                                 <p:inputText
@@ -255,19 +273,21 @@
                             </div>
                             <div class="col-10">
                                 <div class="p-1" >
-                                    <p:dataTable id="tblBills"
-                                                 value="#{admissionController.items}"
-                                                 var="a"
-                                                 emptyMessage="No records found"
-                                                 rowKey="#{a.id}"
-                                                 paginator="true"
-                                                 rows="10"
-                                                 paginatorAlwaysVisible="false"
-                                                 paginatorPosition="bottom"
-                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                                                 >
+                                    <p:dataTable 
+                                        id="tblBills"
+                                        value="#{admissionController.items}"
+                                        var="a"
+                                        emptyMessage="No records found"
+                                        rowKey="#{a.id}"
+                                        paginator="true"
+                                        rows="10"
+                                        paginatorAlwaysVisible="false"
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                        rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                        >
+                                        
                                         <p:column headerText="BHT No" >
                                             <h:outputText value="#{a.bhtNo}"></h:outputText>
                                         </p:column>
@@ -294,6 +314,9 @@
                                         </p:column>
                                         <p:column headerText="Address" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Address in Admission Search',true)}" >
                                             <h:outputText value="#{a.patient.person.address}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Area" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Patient Area in Admission Search',true)}">
+                                            <h:outputText value="#{a.patient.person.area.name}" ></h:outputText>
                                         </p:column>
                                         <p:column headerText="Dr. Name" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Doctor Name in Admission Search',false)}" >
                                             <h:outputText value="#{a.referringConsultant.person.nameWithTitle}" ></h:outputText>
