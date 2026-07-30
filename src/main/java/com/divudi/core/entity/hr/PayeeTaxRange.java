@@ -28,6 +28,7 @@ public class PayeeTaxRange implements Serializable {
     private double fromSalary;
     private double toSalary;
     private double taxRate;
+    private boolean retired;
 
     public double getFromSalary() {
         return fromSalary;
@@ -59,6 +60,22 @@ public class PayeeTaxRange implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public HrmVariables getHrmVariables() {
+        return hrmVariables;
+    }
+
+    public void setHrmVariables(HrmVariables hrmVariables) {
+        this.hrmVariables = hrmVariables;
     }
 
     @Override
