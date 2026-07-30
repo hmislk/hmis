@@ -215,10 +215,9 @@ public class InwardReportDashboardController implements Serializable{
     }
 
     private void setNursingDischargeRooms() {
-        String sql = "SELECT COUNT(pr) FROM PatientRoom pr WHERE pr.retired=false AND pr.discharged=false "
-                 + " AND pr.patientEncounter IS NOT NULL "
+        String sql = "SELECT COUNT(pr) FROM PatientRoom pr WHERE pr.retired=false AND pr.discharged=true "
                  + " AND pr.patientEncounter.clinicalDischargeDateTime IS NOT NULL "
-                 + " AND (pr.patientEncounter.nursingDischarged = true OR pr.patientEncounter.nursingDischarged IS NOT NULL)";
+                 + " AND pr.patientEncounter.nursingDischarged = true ";
         nursingDischargeRooms = getPatientRoomFacade().findLongByJpql(sql);
     }
     
