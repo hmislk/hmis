@@ -72,9 +72,7 @@ jobs:
           # metacharacter would corrupt the remote argv. Base64-encode it instead.
           PAYARA_ADMIN_PASS_B64=$(printf '%s' "$PAYARA_ADMIN_PASS" | base64 -w0)
 
-          # -l makes this a login shell so it sources the same profile (and PATH,
-          # e.g. for mvn) that an interactive SSH session would get.
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP bash -ls -- "$PAYARA_ADMIN_PASS_B64" "${{ github.sha }}" <<'REMOTE_SCRIPT'
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP bash -s -- "$PAYARA_ADMIN_PASS_B64" "${{ github.sha }}" <<'REMOTE_SCRIPT'
           set -e
 
           PAYARA_ADMIN_PASS=$(printf '%s' "$1" | base64 -d)
@@ -103,7 +101,11 @@ jobs:
           sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
           sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
-          mvn clean package -DskipTests
+          # mvn on this server is a NetBeans-bundled binary, never added to any
+          # shell's PATH (confirmed 2026-07-30: `which mvn` is blank even in an
+          # interactive login session). Java itself resolves fine via the system
+          # PATH (/usr/lib/jvm/java-11-openjdk-amd64), so only mvn needs the full path.
+          /opt/netbeans/java/maven/bin/mvn clean package -DskipTests
 
           NEW_WAR=$(ls target/*.war | head -n1)
           NEW_WAR_SIZE=$(stat -c%s "$NEW_WAR" 2>/dev/null || echo 0)
