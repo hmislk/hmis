@@ -1315,6 +1315,36 @@ balance locally):
   Payment Method to Cheque/Card/Slip/ewallet (whichever needs no drawer
   balance) to unblock the settlement without needing a funded cash drawer.
 
+## 51. `p:dialog appendTo="@(body)"` silently drops that dialog's own bound inputs from every AJAX submission
+
+A `p:dialog` with `appendTo="@(body)"` gets physically relocated by PrimeFaces
+to be a direct child of `<body>` in the DOM — taking it **outside** whatever
+`<h:form>` it's declared inside in the JSF source. Any `p:selectOneMenu`/
+`p:inputText` inside that dialog that's bound via a normal `value="#{...}"`
+expression (rather than captured through
+`<f:setPropertyActionListener>`/an iteration var on a `p:dataTable` row) will
+never have its value included in the form's AJAX POST body, because
+PrimeFaces serializes the enclosing `<form>`'s actual DOM subtree, and the
+dialog's inputs are no longer part of it. The request still looks legitimate
+— `javax.faces.partial.execute` correctly lists the dialog's component IDs,
+and the response comes back `200` with no exception — but the parameter
+names for those specific inputs are simply absent from the POST body, so the
+server-side bean properties they're bound to never get updated. Symptom:
+"nothing happens" when clicking Save inside the dialog — a value the user
+just typed silently reverts, with no error unless you also check the
+`update` target's message component actually renders (see #32).
+
+Confirmed by injecting an `XMLHttpRequest.prototype.send` hook via
+`javascript_tool` to capture the real request body and diffing the parameter
+names against a known-good submission from the same form (see issue
+`#22352`'s `ward_pharmacy_bht_issue_request_bill.xhtml` "Edit / Substitute
+Item" dialog). The working counterpart,
+`pharmacy_bill_retail_sale_native.xhtml`'s `substituteDlg`, also uses
+`appendTo="@(body)"` but avoids the problem entirely by using
+`f:setPropertyActionListener` on the row's own "Replace" button instead of a
+submitted form field — worth checking as the reference pattern before
+assuming `appendTo` itself needs to be removed.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
