@@ -128,24 +128,24 @@
                                                 var="i"
                                                 itemLabel="#{i.itemName}"
                                                 itemValue="#{i}"
-                                                maxResults="5">
-                                                <p:column headerText="Item">
+                                                maxResults="15">
+                                                <p:column headerText="Item" style="padding: 6px;">
                                                     <h:outputText value="#{i.itemName}"/>
                                                 </p:column>
-                                                <p:column headerText="Code">
+                                                <p:column headerText="Code" style="padding: 6px;">
                                                     <h:outputLabel value="#{i.code}"/>
                                                 </p:column>
-                                                <p:column headerText="Expiry">
+                                                <p:column headerText="Expiry" style="padding: 6px;">
                                                     <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Stocks" styleClass="text-end">
+                                                <p:column headerText="Stocks" styleClass="text-end" style="padding: 6px;">
                                                     <h:outputLabel value="#{i.stockQty}">
                                                         <f:convertNumber pattern="#,###"/>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Retail Rate" styleClass="text-end">
+                                                <p:column headerText="Retail Rate" styleClass="text-end" style="padding: 6px;">
                                                     <h:outputLabel value="#{i.retailRate}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
