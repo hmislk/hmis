@@ -1292,23 +1292,29 @@ public class StaffController implements Serializable {
 //            return;
 //        }
 
-        if (current.getPerson().getLastName() == null || current.getPerson().getLastName().isEmpty()) {
-            JsfUtil.addErrorMessage("Last Name Requied To Save");
-            return;
-        }
-
         if (current.getPerson().getInitials() == null || current.getPerson().getInitials().isEmpty()) {
-            JsfUtil.addErrorMessage("Initials Requied To Save");
+            JsfUtil.addErrorMessage("Initials Required To Save");
             return;
         }
 
         if (current.getPerson().getFullName() == null || current.getPerson().getFullName().isEmpty()) {
-            JsfUtil.addErrorMessage("Full Name Requied To Save");
+            JsfUtil.addErrorMessage("Full Name Required To Save");
             return;
         }
 
         if (current.getPerson().getNameWithInitials() == null) {
-            JsfUtil.addErrorMessage("Name With Initials Requied To Save");
+            JsfUtil.addErrorMessage("Name With Initials Required To Save");
+            return;
+        }
+
+
+        if (current.getPerson().getLastName() == null || current.getPerson().getLastName().isEmpty()) {
+            JsfUtil.addErrorMessage("Last Name Required To Save");
+            return;
+        }
+
+        if(current.getDateJoined() == null){
+            JsfUtil.addErrorMessage("Date Joined Required To Save");
             return;
         }
 

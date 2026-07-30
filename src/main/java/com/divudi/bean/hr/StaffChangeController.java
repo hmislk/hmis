@@ -85,10 +85,41 @@ public class StaffChangeController implements Serializable {
     }
 
     public void update() {
-        if (getFromDate() == null) {
-            JsfUtil.addErrorMessage("Select Active Date");
+        if(getStaff() == null || getStaff().getId() == null){
+            JsfUtil.addErrorMessage("Please select the Staff");
             return;
         }
+
+        if (getFromDate() == null) {
+            JsfUtil.addErrorMessage("Please select the Active Date");
+            return;
+        }
+
+        if(getStaff().getWorkingDepartment() == null){
+            JsfUtil.addErrorMessage("Please select the Working Department");
+            return;
+        }
+
+        if(getStaff().getEmployeeStatus() == null){
+            JsfUtil.addErrorMessage("Please select the Employee Status");
+            return;
+        }
+
+        if(getStaff().getStaffCategory() == null){
+            JsfUtil.addErrorMessage("Please select the Staff Category");
+            return;
+        }
+
+        if(getStaff().getGrade() == null){
+            JsfUtil.addErrorMessage("Please select the Staff Grade");
+            return;
+        }
+
+        if(getStaff().getDesignation() == null){
+            JsfUtil.addErrorMessage("Please select the Staff Designation");
+            return;
+        }
+
         getStaffFacade().edit(getStaff());
         updateStaffEmployment();
     }
