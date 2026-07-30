@@ -655,6 +655,15 @@ public class TransferIssueDirectController implements Serializable {
             // Use absQtyByUnits so AMPP items are costed in units, not packs
             f.setLineCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyByUnits)));
             f.setTotalCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyByUnits)));
+
+            // Value estimates: negative for stock-out (stock valuation reduces).
+            // Disbursement reports (e.g. Detailed Transfer Listing) and cancellation
+            // reversal (TransferIssueCancellationController) read these fields; leaving
+            // them null makes the issue contribute nothing to report totals, so a later
+            // cancellation's positive reversal has no negative to offset (issue #21438).
+            f.setValueAtCostRate(BigDecimal.ZERO.subtract(costRate.multiply(absQtyByUnits)));
+            f.setValueAtPurchaseRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(absQtyByUnits)));
+            f.setValueAtRetailRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(absQtyByUnits)));
         }
 
         // For AMPP items: record pack quantity as negative (user's input in packs, stock going out)
