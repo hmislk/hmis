@@ -661,9 +661,13 @@ public class TransferIssueDirectController implements Serializable {
             // reversal (TransferIssueCancellationController) read these fields; leaving
             // them null makes the issue contribute nothing to report totals, so a later
             // cancellation's positive reversal has no negative to offset (issue #21438).
-            f.setValueAtCostRate(BigDecimal.ZERO.subtract(costRate.multiply(absQtyByUnits)));
-            f.setValueAtPurchaseRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(absQtyByUnits)));
-            f.setValueAtRetailRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(absQtyByUnits)));
+            // Use PharmaceuticalBillItem.qty directly (not absQtyByUnits) so this stays
+            // consistent with PharmacyReportController's COGS query, which multiplies
+            // pharmaceuticalBillItem.qty by the batch rate as-is.
+            BigDecimal absPhQty = BigDecimal.valueOf(Math.abs(b.getPharmaceuticalBillItem().getQty()));
+            f.setValueAtCostRate(BigDecimal.ZERO.subtract(costRate.multiply(absPhQty)));
+            f.setValueAtPurchaseRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(absPhQty)));
+            f.setValueAtRetailRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(absPhQty)));
         }
 
         // For AMPP items: record pack quantity as negative (user's input in packs, stock going out)
