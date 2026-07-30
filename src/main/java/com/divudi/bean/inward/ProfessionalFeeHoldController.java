@@ -103,7 +103,12 @@ public class ProfessionalFeeHoldController implements Serializable {
             return;
         }
         int held = 0;
+        List<String> alreadyPaidStaffNames = new ArrayList<>();
         for (BillFee bf : selectedFees) {
+            if (Boolean.TRUE.equals(bf.getCompletedPayment())) {
+                alreadyPaidStaffNames.add(bf.getStaff() != null ? bf.getStaff().getPerson().getNameWithTitle() : "Unknown");
+                continue;
+            }
             if (bf.isFeePaymentOnHold()) {
                 continue;
             }
@@ -122,7 +127,11 @@ public class ProfessionalFeeHoldController implements Serializable {
         loadProfessionalFees();
         if (held > 0) {
             JsfUtil.addSuccessMessage(held + " professional payment(s) held.");
-        } else {
+        }
+        if (!alreadyPaidStaffNames.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot hold payment(s) for " + String.join(", ", alreadyPaidStaffNames)
+                    + " because payment has already been completed.");
+        } else if (held == 0) {
             JsfUtil.addErrorMessage("Selected payment(s) are already on hold.");
         }
     }
