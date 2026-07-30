@@ -1345,6 +1345,23 @@ Item" dialog). The working counterpart,
 submitted form field — worth checking as the reference pattern before
 assuming `appendTo` itself needs to be removed.
 
+## 52. "Pharmacy Bill Search by Bill Type" has two different pages — pick the one keyed on `billType`, not `billTypeAtomic`
+
+Two separate JSF pages both claim to be the pharmacy bill-type search: `pharmacy/pharmacy_search.xhtml`
+(dropdown bound to `searchController.billType`, the plain `BillType` enum) and
+`pharmacy/pharmacy_search_by_bill_type_atomic.xhtml` (dropdown bound to `searchController.billTypeAtomic`,
+the finer-grained `BillTypeAtomic` enum). Both render a "Pharmacy Bill Search" panel with a Bill Type
+dropdown, so it's easy to land on the wrong one and see misleading results. For
+`PHARMACY_RETURN_WITHOUT_TREASING`/`PharmacyReturnWithoutTraising` specifically, the atomic-driven page is
+**dead for this bill type**: `BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING`'s constructor declares its
+associated `BillType` as `PharmacySale` (not `PharmacyReturnWithoutTraising`), so the atomic page's
+`rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyReturnWithoutTraising'}"` panel can never
+match — selecting "Pharmacy Return without a Receipt" there silently falls through to an unrelated stale
+"SALE BILL SEARCH" panel showing "No Bills Found", with no error. Grep
+`BillTypeAtomic.java` for other atomics whose declared `BillType` doesn't match their own name before trusting
+the atomic-based search page for a given bill type — `pharmacy_search.xhtml`'s plain-`billType` dropdown is
+the reliable one when in doubt. Found verifying issue #22563.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
