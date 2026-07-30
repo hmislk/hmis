@@ -66,10 +66,6 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                 class="w-100">
 
-                                <p:column headerText="Serial" width="80">
-                                    <h:outputText value="/#{b.finalBillVersionSerial}" />
-                                </p:column>
-
                                 <p:column headerText="Bill Number">
                                     <h:outputText value="#{b.deptId}" />
                                 </p:column>
@@ -100,7 +96,7 @@
                                     <p:tag value="Available" severity="secondary" rendered="#{not b.confirmedFinalBill and not b.cancelled}" />
                                 </p:column>
 
-                                <p:column headerText="Actions" width="320">
+                                <p:column headerText="Actions" width="420">
 
                                     <p:commandButton
                                         ajax="false"
@@ -129,11 +125,35 @@
                                     <p:commandButton
                                         ajax="false"
                                         icon="fa fa-plus"
-                                        class="ui-button-warning"
+                                        class="ui-button-warning me-1"
                                         value="Create New Version"
                                         title="Create New Version from #{b.deptId}"
                                         action="#{bhtSummeryController.createNewVersionFromBill(b)}"
                                         rendered="#{not b.cancelled and webUserController.hasPrivilege('InwardFinalBillCreateVersion')}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-trash"
+                                        class="ui-button-danger me-1"
+                                        value="Retire"
+                                        title="Retire #{b.deptId}"
+                                        actionListener="#{inwardSearch.retireFinalBillVersion(b)}"
+                                        rendered="#{not b.retired and not b.confirmedFinalBill and webUserController.hasPrivilege('InwardFinalBillRetire')}">
+                                        <p:confirm header="Confirm" message="Retire bill #{b.deptId}? This cannot be undone." icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="true"
+                                        icon="fa fa-envelope"
+                                        class="ui-button-help"
+                                        value="Email"
+                                        title="Email #{b.deptId}"
+                                        update=":formFinalBillVersions:emailDialog"
+                                        oncomplete="PF('wEmailDialog').show()"
+                                        rendered="#{webUserController.hasPrivilege('InwardFinalBillEmail')}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{inwardSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{b.patientEncounter.patient.person.email}" target="#{inwardSearch.emailRecipient}"/>
                                     </p:commandButton>
 
                                 </p:column>
@@ -143,6 +163,22 @@
                         </p:panel>
 
                     </p:panel>
+
+                    <p:dialog id="emailDialog" widgetVar="wEmailDialog" header="Email Final Bill" modal="true" width="420">
+                        <h:panelGrid columns="1" style="width:100%;">
+                            <p:outputLabel value="Bill Number: #{inwardSearch.bill.deptId}" rendered="#{inwardSearch.bill ne null}" />
+                            <p:outputLabel for="txtEmailRecipient" value="Recipient Email" />
+                            <p:inputText id="txtEmailRecipient" value="#{inwardSearch.emailRecipient}" style="width:100%;" />
+                            <p:commandButton
+                                ajax="true"
+                                icon="fa fa-envelope"
+                                class="ui-button-help"
+                                value="Send"
+                                update=":formFinalBillVersions"
+                                oncomplete="PF('wEmailDialog').hide()"
+                                actionListener="#{inwardSearch.emailFinalBillVersion(inwardSearch.bill)}" />
+                        </h:panelGrid>
+                    </p:dialog>
 
                     <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
                         <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-success" icon="pi pi-check" />
