@@ -2368,6 +2368,14 @@ public class PharmacyBillSearch implements Serializable {
             b.copy(nB);
             b.invertValue(nB);
 
+            if (nB.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails invertedFinanceDetails = new BillItemFinanceDetails();
+                invertedFinanceDetails.invertValue(nB.getBillItemFinanceDetails());
+                invertedFinanceDetails.setBillItem(b);
+                invertedFinanceDetails.setCreatedAt(new Date());
+                b.setBillItemFinanceDetails(invertedFinanceDetails);
+            }
+
             b.setReferanceBillItem(nB);
 
             b.setCreatedAt(new Date());
