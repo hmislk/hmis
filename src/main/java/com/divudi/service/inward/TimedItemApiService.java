@@ -405,7 +405,7 @@ public class TimedItemApiService implements Serializable {
 
     private TimedItemCategory resolveCategory(Long categoryId) throws Exception {
         Category category = categoryFacade.find(categoryId);
-        if (category == null || !(category instanceof TimedItemCategory)) {
+        if (category == null || !(category instanceof TimedItemCategory) || category.isRetired()) {
             throw new Exception("TimedItemCategory not found with ID: " + categoryId);
         }
         return (TimedItemCategory) category;

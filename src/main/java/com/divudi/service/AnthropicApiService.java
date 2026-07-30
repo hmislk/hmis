@@ -5854,7 +5854,7 @@ public class AnthropicApiService implements Serializable {
           .append("Use LIST to search items (filter by departmentType e.g. Inward or Theatre). ")
           .append("Use GET to fetch a single item with its fees. ")
           .append("Use POST to create a new timed item — required: name, departmentType, inwardChargeType. ")
-          .append("Use PUT to update name, code, departmentType, inwardChargeType, departmentId, institutionId, or inactive flag. ")
+          .append("Use PUT to update name, code, departmentType, inwardChargeType, departmentId, institutionId, categoryId, or inactive flag. ")
           .append("Use DELETE to soft-retire an item. Use ACTIVATE / DEACTIVATE to toggle availability without retiring. ")
           .append("For tiered fee management: LIST_FEES lists all fees ordered by sortOrder. ")
           .append("POST_FEE creates a fee tier — required: name, durationHours (> 0). fee, ffee, overShootHours, sortOrder, repeating are optional. ")
