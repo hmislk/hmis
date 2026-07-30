@@ -85,7 +85,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchPendingRequests() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
@@ -100,7 +100,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnacceptedIssues() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic IN :btas"
@@ -121,7 +121,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnacceptedWardReturns() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
@@ -136,7 +136,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnprocessedDirectIssueReturns() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"

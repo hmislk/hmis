@@ -132,6 +132,7 @@ import com.divudi.bean.pharmacy.SaleReturnController;
 import com.divudi.bean.pharmacy.TransferIssueNativeSqlController;
 import com.divudi.bean.pharmacy.TransferReceiveNativeSqlController;
 import com.divudi.bean.pharmacy.InpatientDirectIssueNativeSqlController;
+import com.divudi.bean.pharmacy.RetailSaleForCashierNativeSqlController;
 import com.divudi.bean.pharmacy.RetailSaleNativeSqlController;
 import com.divudi.bean.pharmacy.PurchaseOrderNativeSqlController;
 import com.divudi.bean.pharmacy.GrnNativeSqlController;
@@ -338,6 +339,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     InpatientDirectIssueNativeSqlController inpatientDirectIssueNativeSqlController;
     @Inject
     RetailSaleNativeSqlController retailSaleNativeSqlController;
+    @Inject
+    RetailSaleForCashierNativeSqlController retailSaleForCashierNativeSqlController;
     @Inject
     PurchaseOrderNativeSqlController purchaseOrderNativeSqlController;
     @Inject
@@ -4798,6 +4801,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return inpatientDirectIssueNativeSqlController.viewByBillId(BillId);
             case PHARMACY_RETAIL_SALE:
                 return retailSaleNativeSqlController.viewByBillId(BillId);
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                return retailSaleForCashierNativeSqlController.viewByBillId(BillId);
             case PHARMACY_TRANSFER_REQUEST_PRE:
             case PHARMACY_TRANSFER_REQUEST:
                 return pharmacyBillSearch.viewRequestByBillId(BillId);

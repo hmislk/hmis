@@ -203,6 +203,16 @@ public class RetailSaleForCashierNativeSqlService {
                 .setParameter(4, preBillId)
                 .executeUpdate();
 
+        // The bill was persisted with billItems nulled (step 1a) because the items are
+        // inserted natively, so the in-memory entity claims the bill has none — and
+        // Bill.getBillItems() hands out an empty list rather than a lazy one. The caller
+        // keeps using this same instance after settle() returns (token handling merges it),
+        // which writes that empty collection into the shared cache; every later read of the
+        // bill then shows a bill with no items, e.g. a reprint printing "No of Items: 0"
+        // while the total is correct. Issue #22506. Refreshing rebuilds the lazy collection
+        // from the rows just written, and also picks up the totals updated above.
+        em.refresh(preBill);
+
         LOGGER.log(Level.INFO, "[CashierNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
     }
