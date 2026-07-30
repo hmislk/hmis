@@ -124,7 +124,30 @@ public class PhDateController implements Serializable {
         items = null;
     }
 
+    private boolean errorCheck() {
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please set a Name");
+            return true;
+        }
+
+        if (getCurrent().getPhType() == null) {
+            JsfUtil.addErrorMessage("Please set a Day Type");
+            return true;
+        }
+
+        if (getCurrent().getPhDate() == null) {
+            JsfUtil.addErrorMessage("Please set a Date");
+            return true;
+        }
+        
+        return false;
+    }
+
     public void saveSelected() {
+
+        if (errorCheck()) {
+            return;
+        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
