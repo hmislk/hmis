@@ -324,6 +324,10 @@ public class SearchController implements Serializable {
     private Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
+    // DTO list for the transfer-request search-for-approval page (issue #22567)
+    private List<PharmacyTransferRequestListDTO> transferRequestApprovalSearchDtos;
+    // DTO list for the transfer-request "to approve" list page (issue #22567)
+    private List<PharmacyTransferRequestListDTO> transferRequestsToApproveDtos;
     // DTO list for pharmacy transfer issued list (pharmacy_transfer_issued_list.xhtml)
     private List<PharmacyTransferIssuedListDTO> transferIssuedListDtos = new ArrayList<>();
     // DTO lists for disposal issue search results
@@ -1081,23 +1085,32 @@ public class SearchController implements Serializable {
     }
 
     public void fillSavedTranserRequestBills() {
-
-        String sql = "Select bill from Bill bill where bill.retired =false "
-                + " and bill.billType = :billType "
-                + " and bill.institution = :institution "
-                + " and bill.fromDepartment = :fromDepartment "
-                + " and bill.createdAt between :fromDate and :toDate"
-                + " order by bill.createdAt desc";
-
-        Map parametersForSearching = new HashMap();
-        parametersForSearching.put("billType", BillType.PharmacyTransferRequest);
-        parametersForSearching.put("institution", sessionController.getInstitution());
-        parametersForSearching.put("fromDepartment", sessionController.getDepartment());
-        parametersForSearching.put("fromDate", getFromDate());
-        parametersForSearching.put("toDate", getToDate());
-
-        bills = getBillFacade().findByJpql(sql, parametersForSearching, TemporalType.TIMESTAMP);
-
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
+                + "b.id, b.deptId, b.createdAt, b.department.name, "
+                + "COALESCE(creatorPerson.name, ''), b.cancelled, "
+                + "canBill.createdAt, COALESCE(canCreatorPerson.name, ''), "
+                + "CASE WHEN b.checkedBy IS NOT NULL THEN true ELSE false END, "
+                + "CASE WHEN b.approveUser IS NOT NULL THEN true ELSE false END) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.creater creator "
+                + "LEFT JOIN creator.webUserPerson creatorPerson "
+                + "LEFT JOIN b.cancelledBill canBill "
+                + "LEFT JOIN canBill.creater canCreator "
+                + "LEFT JOIN canCreator.webUserPerson canCreatorPerson "
+                + "WHERE b.retired = false "
+                + "AND b.billType = :billType "
+                + "AND b.institution = :institution "
+                + "AND b.fromDepartment = :fromDepartment "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.PharmacyTransferRequest);
+        params.put("institution", sessionController.getInstitution());
+        params.put("fromDepartment", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        transferRequestApprovalSearchDtos = (List<PharmacyTransferRequestListDTO>)
+                getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
     
     public String navigateToApproveRequests() {
@@ -6866,27 +6879,33 @@ public class SearchController implements Serializable {
     }
 
     public void fillPharmacyTransferRequestsToApprove() {
-        bills = null;
-        HashMap tmp = new HashMap();
-        String sql;
-        sql = "Select b From Bill b where "
-                + " b.checkedBy is not null "
-                + " and (b.completed = false or b.completed is null) "
-                + " and b.institution = :ins "
-                + " and b.fromDepartment = :fromDep "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.retired=false "
-                + " and b.billTypeAtomic= :bTp";
-
-        sql += " order by b.createdAt desc  ";
-        tmp.put("toDate", getToDate());
-        tmp.put("fromDate", getFromDate());
-        tmp.put("ins", sessionController.getInstitution());
-        tmp.put("fromDep", sessionController.getDepartment());
-        tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
-
-        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
-
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
+                + "b.id, b.deptId, b.createdAt, COALESCE(toDept.name, ''), "
+                + "COALESCE(creatorPerson.name, ''), b.cancelled, "
+                + "canBill.createdAt, COALESCE(canCreatorPerson.name, ''), b.netTotal) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.toDepartment toDept "
+                + "LEFT JOIN b.creater creator "
+                + "LEFT JOIN creator.webUserPerson creatorPerson "
+                + "LEFT JOIN b.cancelledBill canBill "
+                + "LEFT JOIN canBill.creater canCreator "
+                + "LEFT JOIN canCreator.webUserPerson canCreatorPerson "
+                + "WHERE b.checkedBy IS NOT NULL "
+                + "AND (b.completed = false OR b.completed IS NULL) "
+                + "AND b.institution = :ins "
+                + "AND b.fromDepartment = :fromDep "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND b.retired = false "
+                + "AND b.billTypeAtomic = :bTp "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ins", sessionController.getInstitution());
+        params.put("fromDep", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+        transferRequestsToApproveDtos = (List<PharmacyTransferRequestListDTO>)
+                getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
     }
 
     public void fillApprovedPharmacyTransferRequests() {
@@ -23585,6 +23604,22 @@ public class SearchController implements Serializable {
 
     public void setTransferRequestDtos(List<PharmacyTransferRequestListDTO> transferRequestDtos) {
         this.transferRequestDtos = transferRequestDtos;
+    }
+
+    public List<PharmacyTransferRequestListDTO> getTransferRequestApprovalSearchDtos() {
+        return transferRequestApprovalSearchDtos;
+    }
+
+    public void setTransferRequestApprovalSearchDtos(List<PharmacyTransferRequestListDTO> transferRequestApprovalSearchDtos) {
+        this.transferRequestApprovalSearchDtos = transferRequestApprovalSearchDtos;
+    }
+
+    public List<PharmacyTransferRequestListDTO> getTransferRequestsToApproveDtos() {
+        return transferRequestsToApproveDtos;
+    }
+
+    public void setTransferRequestsToApproveDtos(List<PharmacyTransferRequestListDTO> transferRequestsToApproveDtos) {
+        this.transferRequestsToApproveDtos = transferRequestsToApproveDtos;
     }
 
     public List<PharmacyTransferIssuedListDTO> getTransferIssuedListDtos() {
