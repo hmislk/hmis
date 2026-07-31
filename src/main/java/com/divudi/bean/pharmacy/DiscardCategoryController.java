@@ -65,7 +65,7 @@ public class DiscardCategoryController implements Serializable {
 
     public void saveSelected() {
         if (!webUserController.hasPrivilege("PharmacyDiscardCategoryManage")) {
-            JsfUtil.addErrorMessage("You do not have the privilege to manage discard categories.");
+            JsfUtil.addErrorMessage("You do not have the privilege to manage issue categories.");
             return;
         }
 
@@ -119,7 +119,7 @@ public class DiscardCategoryController implements Serializable {
 
     public void delete() {
         if (!webUserController.hasPrivilege("PharmacyDiscardCategoryManage")) {
-            JsfUtil.addErrorMessage("You do not have the privilege to manage discard categories.");
+            JsfUtil.addErrorMessage("You do not have the privilege to manage issue categories.");
             return;
         }
 
