@@ -811,6 +811,10 @@ public class TransferRequestController implements Serializable {
             return "";
         }
         bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Selected bill is no longer available");
+            return "";
+        }
         printPreview = true;
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
