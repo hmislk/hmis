@@ -300,14 +300,17 @@ public class IssueReturnController implements Serializable {
      * not-yet-persisted draft as part of a Finalize action already
      * authorized under FinalizeDisposalReturn.
      */
-    private void doSaveDisposalIssueReturnBill() {
+    private boolean doSaveDisposalIssueReturnBill() {
         if (disposalReturnAlreadyProcessed()) {
-            return;
+            return false;
         }
         // No validation required for saving drafts - users can save incomplete data
-        saveBill();
+        if (!saveBill()) {
+            return false;
+        }
         saveBillComponents();
         JsfUtil.addSuccessMessage("Saved");
+        return true;
     }
 
     // synchronized: no double-click guard exists on the Finalize action. Although
@@ -344,7 +347,9 @@ public class IssueReturnController implements Serializable {
             return;
         }
 
-        doSaveDisposalIssueReturnBill();
+        if (!doSaveDisposalIssueReturnBill()) {
+            return;
+        }
         // Reload from DB so we don't trigger orphan-removal on billItems
         returnBill = billService.reloadBill(getReturnBill());
         if (returnBill != null) {
@@ -398,8 +403,12 @@ public class IssueReturnController implements Serializable {
             return;
         }
         calculateBillTotal();
-        saveSettlingBill();
-        saveSettlingBillComponents();
+        if (!saveSettlingBill()) {
+            return;
+        }
+        if (!saveSettlingBillComponents()) {
+            return;
+        }
 
         // Reload both bills so EclipseLink doesn't orphan-remove existing billItems
         Bill freshReturn = billService.reloadBill(getReturnBill());
@@ -574,7 +583,7 @@ public class IssueReturnController implements Serializable {
         originalBillItems = null;
     }
 
-    private void saveBill() {
+    private boolean saveBill() {
         if (getReturnBill().getReferenceBill() == null) {
             getReturnBill().setReferenceBill(originalBill);
         }
@@ -597,20 +606,39 @@ public class IssueReturnController implements Serializable {
             // before the reload replaces the entity, or they'd be silently lost.
             Bill referenceBill = getReturnBill().getReferenceBill();
             String comments = getReturnBill().getComments();
-            returnBill = billService.reloadBill(getReturnBill());
+            Bill fresh = billService.reloadBill(getReturnBill());
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+                return false;
+            }
+            returnBill = fresh;
+            // Recompute bill-level totals onto the fresh entity - calculateBillItemTotals()
+            // (the per-item Return Qty ajax handler) writes total/netTotal/billFinanceDetails
+            // directly onto the in-memory bill, which the reload above just replaced.
+            calculateBillTotal();
             getReturnBill().setReferenceBill(referenceBill);
             getReturnBill().setComments(comments);
             getBillFacade().edit(getReturnBill());
         }
+        return true;
     }
 
-    private void saveSettlingBill() {
+    private boolean saveSettlingBill() {
         // Reload from DB so we don't trigger orphan-removal on billItems.
         // Bill items are managed independently by saveSettlingBillComponents() / billItemFacade.
         // Capture comments (bound directly to returnBill by the UI) before the reload
         // replaces the entity, or the user's typed comment would be silently lost.
         String comments = getReturnBill().getComments();
-        returnBill = billService.reloadBill(getReturnBill());
+        Bill fresh = billService.reloadBill(getReturnBill());
+        if (fresh == null) {
+            JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+            return false;
+        }
+        returnBill = fresh;
+        // Recompute bill-level totals onto the fresh entity - calculateBillTotal() was just
+        // called by settleDisposalIssueReturnBill() before this method, and the reload above
+        // discarded whatever it had computed onto the previous in-memory bill.
+        calculateBillTotal();
 
         getReturnBill().setBillType(BillType.PharmacyIssue);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
@@ -669,9 +697,10 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setDeptId(deptId);
         getReturnBill().setInsId(insId);
         billFacade.edit(returnBill);
+        return true;
     }
 
-    private void saveSettlingBillComponents() {
+    private boolean saveSettlingBillComponents() {
         boolean fullyReturned = true;
         List<BillItem> itemsToProcess = new ArrayList<>(getReturnBillItems());
         for (BillItem i : itemsToProcess) {
@@ -900,16 +929,27 @@ public class IssueReturnController implements Serializable {
         }
         if (fullyReturned) {
             // Reload from DB so we don't trigger orphan-removal on billItems.
-            originalBill = billService.reloadBill(getOriginalBill());
+            Bill freshOriginal = billService.reloadBill(getOriginalBill());
+            if (freshOriginal == null) {
+                JsfUtil.addErrorMessage("The original disposal issue bill no longer exists. Please reload the page and try again.");
+                return false;
+            }
+            originalBill = freshOriginal;
             getOriginalBill().setFullReturned(true);
             getOriginalBill().setFullReturnedAt(new Date());
             getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
             getBillFacade().edit(getOriginalBill());
         }
         // Reload from DB so we don't trigger orphan-removal on billItems.
-        returnBill = billService.reloadBill(getReturnBill());
+        Bill freshReturn = billService.reloadBill(getReturnBill());
+        if (freshReturn == null) {
+            JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+            return false;
+        }
+        returnBill = freshReturn;
         getBillFacade().edit(getReturnBill());
 
+        return true;
     }
 
     private void saveBillComponents() {
