@@ -1653,6 +1653,15 @@ public class Bill implements Serializable, RetirableEntity {
         this.createdAt = createdAt;
     }
 
+    /**
+     * Read-only accessor for createdAt. Unlike getCreatedAt(), never computes or
+     * persists a fallback value - returns null if createdAt was never set. Use
+     * for display/reporting where triggering a backfill write is undesirable.
+     */
+    public Date peekCreatedAt() {
+        return createdAt;
+    }
+
     public boolean isRetired() {
         return retired;
     }

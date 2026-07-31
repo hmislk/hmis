@@ -46,15 +46,15 @@
                     </p:column>
 
                     <p:column headerText="Returned From Ward">
-                        <h:outputLabel value="#{p.fromDepartment.name}"/>
+                        <h:outputLabel value="#{p.fromDepartmentName}"/>
                     </p:column>
 
                     <p:column headerText="Returned By">
-                        <h:outputLabel value="#{p.creater.webUserPerson.name}"/>
+                        <h:outputLabel value="#{p.createrPersonName}"/>
                     </p:column>
 
                     <p:column headerText="Carried By">
-                        <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>
+                        <h:outputLabel value="#{p.toStaffNameWithTitle}"/>
                     </p:column>
 
                     <p:column headerText="Returned At">
@@ -72,7 +72,7 @@
                             icon="fa fa-check-circle"
                             value="Receive"
                             action="#{pharmacyReturnFromWardReceiveController.navigateToReceive}">
-                            <f:setPropertyActionListener value="#{p}" target="#{pharmacyReturnFromWardReceiveController.returnedBill}"/>
+                            <f:setPropertyActionListener value="#{p.id}" target="#{pharmacyReturnFromWardReceiveController.returnedBillId}"/>
                         </p:commandButton>
                     </p:column>
 

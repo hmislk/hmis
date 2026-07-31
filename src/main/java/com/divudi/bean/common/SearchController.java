@@ -324,6 +324,10 @@ public class SearchController implements Serializable {
     private Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
+    // DTO list for the transfer-request search-for-approval page (issue #22567)
+    private List<PharmacyTransferRequestListDTO> transferRequestApprovalSearchDtos;
+    // DTO list for the transfer-request "to approve" list page (issue #22567)
+    private List<PharmacyTransferRequestListDTO> transferRequestsToApproveDtos;
     // DTO list for pharmacy transfer issued list (pharmacy_transfer_issued_list.xhtml)
     private List<PharmacyTransferIssuedListDTO> transferIssuedListDtos = new ArrayList<>();
     // DTO lists for disposal issue search results
@@ -484,6 +488,7 @@ public class SearchController implements Serializable {
     private ReportTemplateRowBundle bundleBillItems;
     private List<OpdSaleSummaryDTO> opdSaleSummaryDtos;
     private List<OpdBillItemDTO> opdBillItemDtos;
+    private List<OpdBillItemDTO> labBillItemSearchDtos;
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
@@ -1080,23 +1085,32 @@ public class SearchController implements Serializable {
     }
 
     public void fillSavedTranserRequestBills() {
-
-        String sql = "Select bill from Bill bill where bill.retired =false "
-                + " and bill.billType = :billType "
-                + " and bill.institution = :institution "
-                + " and bill.fromDepartment = :fromDepartment "
-                + " and bill.createdAt between :fromDate and :toDate"
-                + " order by bill.createdAt desc";
-
-        Map parametersForSearching = new HashMap();
-        parametersForSearching.put("billType", BillType.PharmacyTransferRequest);
-        parametersForSearching.put("institution", sessionController.getInstitution());
-        parametersForSearching.put("fromDepartment", sessionController.getDepartment());
-        parametersForSearching.put("fromDate", getFromDate());
-        parametersForSearching.put("toDate", getToDate());
-
-        bills = getBillFacade().findByJpql(sql, parametersForSearching, TemporalType.TIMESTAMP);
-
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
+                + "b.id, b.deptId, b.createdAt, b.department.name, "
+                + "COALESCE(creatorPerson.name, ''), b.cancelled, "
+                + "canBill.createdAt, COALESCE(canCreatorPerson.name, ''), "
+                + "CASE WHEN b.checkedBy IS NOT NULL THEN true ELSE false END, "
+                + "CASE WHEN b.approveUser IS NOT NULL THEN true ELSE false END) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.creater creator "
+                + "LEFT JOIN creator.webUserPerson creatorPerson "
+                + "LEFT JOIN b.cancelledBill canBill "
+                + "LEFT JOIN canBill.creater canCreator "
+                + "LEFT JOIN canCreator.webUserPerson canCreatorPerson "
+                + "WHERE b.retired = false "
+                + "AND b.billType = :billType "
+                + "AND b.institution = :institution "
+                + "AND b.fromDepartment = :fromDepartment "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.PharmacyTransferRequest);
+        params.put("institution", sessionController.getInstitution());
+        params.put("fromDepartment", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        transferRequestApprovalSearchDtos = (List<PharmacyTransferRequestListDTO>)
+                getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
     
     public String navigateToApproveRequests() {
@@ -2727,6 +2741,14 @@ public class SearchController implements Serializable {
 
     public void setOpdBillItemDtos(List<OpdBillItemDTO> opdBillItemDtos) {
         this.opdBillItemDtos = opdBillItemDtos;
+    }
+
+    public List<OpdBillItemDTO> getLabBillItemSearchDtos() {
+        return labBillItemSearchDtos;
+    }
+
+    public void setLabBillItemSearchDtos(List<OpdBillItemDTO> labBillItemSearchDtos) {
+        this.labBillItemSearchDtos = labBillItemSearchDtos;
     }
 
     public List<OpdSaleSummaryDTO> getOpdSaleSummaryDtos() {
@@ -6857,27 +6879,33 @@ public class SearchController implements Serializable {
     }
 
     public void fillPharmacyTransferRequestsToApprove() {
-        bills = null;
-        HashMap tmp = new HashMap();
-        String sql;
-        sql = "Select b From Bill b where "
-                + " b.checkedBy is not null "
-                + " and (b.completed = false or b.completed is null) "
-                + " and b.institution = :ins "
-                + " and b.fromDepartment = :fromDep "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.retired=false "
-                + " and b.billTypeAtomic= :bTp";
-
-        sql += " order by b.createdAt desc  ";
-        tmp.put("toDate", getToDate());
-        tmp.put("fromDate", getFromDate());
-        tmp.put("ins", sessionController.getInstitution());
-        tmp.put("fromDep", sessionController.getDepartment());
-        tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
-
-        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
-
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
+                + "b.id, b.deptId, b.createdAt, COALESCE(toDept.name, ''), "
+                + "COALESCE(creatorPerson.name, ''), b.cancelled, "
+                + "canBill.createdAt, COALESCE(canCreatorPerson.name, ''), b.netTotal) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.toDepartment toDept "
+                + "LEFT JOIN b.creater creator "
+                + "LEFT JOIN creator.webUserPerson creatorPerson "
+                + "LEFT JOIN b.cancelledBill canBill "
+                + "LEFT JOIN canBill.creater canCreator "
+                + "LEFT JOIN canCreator.webUserPerson canCreatorPerson "
+                + "WHERE b.checkedBy IS NOT NULL "
+                + "AND (b.completed = false OR b.completed IS NULL) "
+                + "AND b.institution = :ins "
+                + "AND b.fromDepartment = :fromDep "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND b.retired = false "
+                + "AND b.billTypeAtomic = :bTp "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ins", sessionController.getInstitution());
+        params.put("fromDep", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+        transferRequestsToApproveDtos = (List<PharmacyTransferRequestListDTO>)
+                getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
     }
 
     public void fillApprovedPharmacyTransferRequests() {
@@ -8316,7 +8344,7 @@ public class SearchController implements Serializable {
             }
         }
         billFees.removeAll(removeingBillFees);
-        calTotal();
+        calTotalSplittingHeldProfessionalFees();
 
     }
 
@@ -8404,7 +8432,7 @@ public class SearchController implements Serializable {
             }
         }
         billFees.removeAll(removeingBillFees);
-        calTotal();
+        calTotalSplittingHeldProfessionalFees();
 
     }
 
@@ -8464,7 +8492,7 @@ public class SearchController implements Serializable {
         temMap.put("feeType", FeeType.Staff);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        calTotal();
+        calTotalSplittingHeldProfessionalFees();
     }
 
     double total;
@@ -8485,6 +8513,37 @@ public class SearchController implements Serializable {
 
         for (BillFee billFee : billFees) {
             total += billFee.getFeeValue();
+        }
+    }
+
+    double totalOnHold;
+
+    public double getTotalOnHold() {
+        return totalOnHold;
+    }
+
+    public void setTotalOnHold(double totalOnHold) {
+        this.totalOnHold = totalOnHold;
+    }
+
+    /**
+     * Totals for the inward professional-payment due lists, split so the
+     * payable figure is not inflated by fees that cannot currently be paid.
+     * A fee is held either individually or because its whole BHT is on hold —
+     * see {@link BillFee#isProfessionalPaymentHeld()}. (Issue #22483)
+     */
+    private void calTotalSplittingHeldProfessionalFees() {
+        total = 0;
+        totalOnHold = 0;
+        if (billFees == null) {
+            return;
+        }
+        for (BillFee billFee : billFees) {
+            if (billFee.isProfessionalPaymentHeld()) {
+                totalOnHold += billFee.getFeeValue();
+            } else {
+                total += billFee.getFeeValue();
+            }
         }
     }
 
@@ -8576,6 +8635,7 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        calTotalSplittingHeldProfessionalFees();
 
     }
 
@@ -9127,6 +9187,165 @@ public class SearchController implements Serializable {
         checkLabReportsApprovedBillItem(billItems);
 
         //   searchBillItems = new LazyBillItem(tmp);
+    }
+
+    /**
+     * DTO-based replacement for createBillItemTableByKeyword(), used by
+     * opd_search_billitem_own.xhtml (Lab Bill Item Search). Avoids per-row
+     * lazy loading of Bill/Patient/Institution/Staff entities and the
+     * per-bill-item N+1 lab-report-approval check that made the original
+     * entity-based query unusable over a full month of data. See issue #17635.
+     */
+    public void createLabBillItemSearchDtosByKeyword() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        m.put("billTypesAtomics", billTypesAtomics);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.OpdBillItemDTO("
+                + "bi.id, "
+                + "bill.id, "
+                + "bill.deptId, "
+                + "bill.billTypeAtomic, "
+                + "bill.billClassType, "
+                + "bill.createdAt, "
+                + "bill.cancelled, "
+                + "bill.refunded, "
+                + "bill.paymentMethod, "
+                + "COALESCE(ps.name, ''), "
+                + "COALESCE(toIns.name, ''), "
+                + "COALESCE(cc.name, ''), "
+                + "COALESCE(pat.name, ''), "
+                + "pat.title, "
+                + "pat.dob, "
+                + "pat.sex, "
+                + "COALESCE(pat.phone, ''), "
+                + "COALESCE(cat.name, ''), "
+                + "COALESCE(itm.name, ''), "
+                + "COALESCE(creater.name, ''), "
+                + "cb.createdAt, "
+                + "COALESCE(cbCreater.name, ''), "
+                + "rb.createdAt, "
+                + "COALESCE(rbCreater.name, ''), "
+                + "bi.grossValue, "
+                + "bi.discount, "
+                + "bi.netValue, "
+                + "COALESCE(doc.name, ''), "
+                + "doc.title, "
+                + "bref.id, "
+                + "patient.id"
+                + ") "
+                + "FROM BillItem bi "
+                + "JOIN bi.bill bill "
+                + "LEFT JOIN bill.toInstitution toIns "
+                + "LEFT JOIN bill.creditCompany cc "
+                + "LEFT JOIN bill.patient patient "
+                + "LEFT JOIN patient.person pat "
+                + "LEFT JOIN bi.item itm "
+                + "LEFT JOIN itm.category cat "
+                + "LEFT JOIN bill.creater createrUser "
+                + "LEFT JOIN createrUser.webUserPerson creater "
+                + "LEFT JOIN bill.paymentScheme ps "
+                + "LEFT JOIN bill.cancelledBill cb "
+                + "LEFT JOIN cb.creater cbCreaterUser "
+                + "LEFT JOIN cbCreaterUser.webUserPerson cbCreater "
+                + "LEFT JOIN bill.refundedBill rb "
+                + "LEFT JOIN rb.creater rbCreaterUser "
+                + "LEFT JOIN rbCreaterUser.webUserPerson rbCreater "
+                + "LEFT JOIN bill.fromStaff fromStaff "
+                + "LEFT JOIN fromStaff.person doc "
+                + "LEFT JOIN bill.backwardReferenceBill bref "
+                + "WHERE bi.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND bill.billTypeAtomic IN :billTypesAtomics ";
+
+        if (showLoggedDepartmentOnly) {
+            Department dept = sessionController.getDepartment();
+            if (dept != null) {
+                jpql += " AND bill.department = :dept ";
+                m.put("dept", dept);
+            }
+        }
+
+        if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().equals("")) {
+            jpql += " AND pat.name LIKE :patientName ";
+            m.put("patientName", "%" + searchKeyword.getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().equals("")) {
+            jpql += " AND pat.phone LIKE :patientPhone ";
+            m.put("patientPhone", "%" + searchKeyword.getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().equals("")) {
+            jpql += " AND bill.insId LIKE :billNo ";
+            m.put("billNo", "%" + searchKeyword.getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getItemName() != null && !searchKeyword.getItemName().trim().equals("")) {
+            jpql += " AND itm.name LIKE :itemName ";
+            m.put("itemName", "%" + searchKeyword.getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (searchKeyword.getToInstitution() != null && !searchKeyword.getToInstitution().trim().equals("")) {
+            jpql += " AND toIns.name LIKE :toIns ";
+            m.put("toIns", "%" + searchKeyword.getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        jpql += " ORDER BY bi.id DESC ";
+
+        labBillItemSearchDtos = (List<OpdBillItemDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP, 50);
+
+        markApprovedLabTests(labBillItemSearchDtos);
+    }
+
+    /**
+     * Batched replacement for the old per-bill-item checkLabReportsApprovedBillItem()
+     * N+1 query. Flags every row whose Bill has at least one approved, non-retired
+     * PatientReport, matching the original per-Bill (not per-BillItem) semantics.
+     */
+    private void markApprovedLabTests(List<OpdBillItemDTO> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        Set<Long> billIds = new HashSet<>();
+        for (OpdBillItemDTO dto : dtos) {
+            billIds.add(dto.getBillId());
+        }
+        String jpql = "SELECT DISTINCT pr.patientInvestigation.billItem.bill.id FROM PatientReport pr "
+                + "WHERE pr.retired = false AND pr.approved = true "
+                + "AND pr.patientInvestigation.billItem.bill.id IN :billIds";
+        Map<String, Object> m = new HashMap<>();
+        m.put("billIds", billIds);
+        List<Long> approvedBillIds = getPatientReportFacade().findLongValuesByJpql(jpql, m);
+        Set<Long> approvedBillIdSet = new HashSet<>(approvedBillIds);
+        for (OpdBillItemDTO dto : dtos) {
+            dto.setApprovedAnyTest(approvedBillIdSet.contains(dto.getBillId()));
+        }
+    }
+
+    /**
+     * Loads a Bill by id for row-click navigation from a DTO-backed table
+     * (e.g. labBillItemSearchDtos), avoiding eager entity loading for all rows.
+     */
+    public Bill findBillById(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        return getBillFacade().find(billId);
+    }
+
+    /**
+     * Loads a Patient by id for row-click navigation from a DTO-backed table.
+     */
+    public Patient findPatientById(Long patientId) {
+        if (patientId == null) {
+            return null;
+        }
+        return getPatientFacade().find(patientId);
     }
 
     @Deprecated // Use LaborataryReportController.navigateToBillItemListForCreditCompany()
@@ -23385,6 +23604,22 @@ public class SearchController implements Serializable {
 
     public void setTransferRequestDtos(List<PharmacyTransferRequestListDTO> transferRequestDtos) {
         this.transferRequestDtos = transferRequestDtos;
+    }
+
+    public List<PharmacyTransferRequestListDTO> getTransferRequestApprovalSearchDtos() {
+        return transferRequestApprovalSearchDtos;
+    }
+
+    public void setTransferRequestApprovalSearchDtos(List<PharmacyTransferRequestListDTO> transferRequestApprovalSearchDtos) {
+        this.transferRequestApprovalSearchDtos = transferRequestApprovalSearchDtos;
+    }
+
+    public List<PharmacyTransferRequestListDTO> getTransferRequestsToApproveDtos() {
+        return transferRequestsToApproveDtos;
+    }
+
+    public void setTransferRequestsToApproveDtos(List<PharmacyTransferRequestListDTO> transferRequestsToApproveDtos) {
+        this.transferRequestsToApproveDtos = transferRequestsToApproveDtos;
     }
 
     public List<PharmacyTransferIssuedListDTO> getTransferIssuedListDtos() {
