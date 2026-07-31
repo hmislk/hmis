@@ -106,6 +106,53 @@
     .channelNumber{
         font-size: 50px!important;
     }
+    
+    .paymentTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    }
+
+/* Header */
+    .paymentTable th {
+    font-weight: bold;
+    padding: 5px 8px;
+    text-align: left;
+    }
+
+/* Body cells */
+    .paymentTable td {
+    padding: 4px 8px;
+    vertical-align: top;
+    }
+
+/* Bill No */
+    .paymentTable th:nth-child(1),
+    .paymentTable td:nth-child(1) {
+    width: 180px;
+    }
+
+/* Service */
+    .paymentTable th:nth-child(2),
+    .paymentTable td:nth-child(2) {
+    width: auto;
+    word-wrap: break-word;
+    }
+
+/* Patient */
+    .paymentTable th:nth-child(3),
+    .paymentTable td:nth-child(3) {
+    width: auto;
+    word-wrap: break-word;
+    }
+
+/* Value */
+    .paymentTable th:nth-child(4),
+    .paymentTable td:nth-child(4) {
+    width: 140px;
+    text-align: right;
+    white-space: nowrap;
+    }
 
 }
 
@@ -228,6 +275,53 @@
         text-align: center!important;
         font-size: 12px!important;
         font-family:Arial, Helvetica, sans-serif!important;
+    }
+    
+    .paymentTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    }
+
+/* Header */
+    .paymentTable th {
+    font-weight: bold;
+    padding: 5px 8px;
+    text-align: left;
+    }
+
+/* Body cells */
+    .paymentTable td {
+    padding: 4px 8px;
+    vertical-align: top;
+    }
+
+/* Bill No */
+    .paymentTable th:nth-child(1),
+    .paymentTable td:nth-child(1) {
+    width: 180px;
+    }
+
+/* Service */
+    .paymentTable th:nth-child(2),
+    .paymentTable td:nth-child(2) {
+    width: auto;
+    word-wrap: break-word;
+    }
+
+/* Patient */
+    .paymentTable th:nth-child(3),
+    .paymentTable td:nth-child(3) {
+    width: auto;
+    word-wrap: break-word;
+    }
+
+/* Value */
+    .paymentTable th:nth-child(4),
+    .paymentTable td:nth-child(4) {
+    width: 140px;
+    text-align: right;
+    white-space: nowrap;
     }
 
 }
