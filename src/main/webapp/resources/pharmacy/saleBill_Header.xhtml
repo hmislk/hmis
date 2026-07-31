@@ -53,7 +53,7 @@
                             <h:outputLabel value="Date &nbsp;&nbsp;" class="billDetails1"/>
                             <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails1" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </h:panelGrid>
                     </div>

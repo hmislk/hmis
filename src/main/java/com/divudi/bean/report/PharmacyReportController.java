@@ -13867,9 +13867,16 @@ public class PharmacyReportController implements Serializable {
             creditTypePaymentMethods.add(PaymentMethod.Credit);
             creditTypePaymentMethods.add(PaymentMethod.Staff);
 
+            // FIX (#21419 COGS variance after cancellation): a cancelled retail sale bill
+            // gets billTypeAtomic=PHARMACY_RETAIL_SALE_CANCELLED with correctly negated
+            // PharmaceuticalBillItem qty/rates (see PharmacyBillSearch.pharmacyCancelBillItems()).
+            // Without this atomic in the list, the reversal is invisible to this row while the
+            // original sale (bills are immutable, never retired on cancellation) stays counted
+            // forever, permanently overstating this row by the cancelled bill's value.
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED
             );
 
             Map<String, Double> saleCreditValues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes, creditTypePaymentMethods);
@@ -13950,9 +13957,13 @@ public class PharmacyReportController implements Serializable {
                     .filter(pm -> pm != PaymentMethod.Credit && pm != PaymentMethod.Staff)
                     .collect(Collectors.toList());
 
+            // FIX (#21419 COGS variance after cancellation): see the matching comment in
+            // calculateSaleCreditValue() — PHARMACY_RETAIL_SALE_CANCELLED must be included
+            // here too so a cancelled non-credit retail sale nets back out of this row.
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED
             );
 
             Map<String, Double> saleWithoutCreditValues = retrievePurchaseAndCostValues(billTypes, nonCreditPaymentMethods);

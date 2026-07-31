@@ -5,6 +5,10 @@ on:
     branches:
       - rh-local-staging
 
+concurrency:
+  group: ruhunu-local-staging-deploy
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,15 +40,8 @@ jobs:
         run: |
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
 
-      - name: Build with Maven
+      - name: Verify build compiles
         run: mvn clean package -DskipTests
-
-      - name: Archive Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: target/*.war
-          overwrite: true
 
       # - name: Run Tests
       #   run: mvn test
@@ -54,76 +51,142 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
-
-      - name: Deploy to Payara
+      # Build directly on the target server (avoids transferring a ~130 MB WAR
+      # over the link, which was taking 25-30 minutes).
+      - name: Deploy to Payara (build from source on target server)
         env:
           SERVER_IP: ${{ secrets.RUHUNU_LOCAL_SERVER_IP }}
           SERVER_USER: ${{ secrets.RUHUNU_LOCAL_SERVER_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_LOCAL_SERVER_SSH_PRIVATE_KEY }}
           PAYARA_ADMIN_PASS: ${{ secrets.RUHUNU_LOCAL_SERVER_PAYARA_ADMIN_PASS }}
         run: |
-          # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
-          # Variables
-          WAR_NAME="ruhunuLocal.war"
+          CONTEXT_PATH="rhLocal"
+
+          # ssh flattens trailing args into one space-joined string for the remote
+          # shell to re-tokenize, so a password containing a space or shell
+          # metacharacter would corrupt the remote argv. Base64-encode it instead.
+          PAYARA_ADMIN_PASS_B64=$(printf '%s' "$PAYARA_ADMIN_PASS" | base64 -w0)
+
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP bash -s -- "$PAYARA_ADMIN_PASS_B64" "${{ github.sha }}" <<'REMOTE_SCRIPT'
+          set -e
+
+          PAYARA_ADMIN_PASS=$(printf '%s' "$1" | base64 -d)
+          COMMIT_SHA="$2"
+          SRC_DIR="/home/rhadmin/app/source"
           WAR_DIR="/home/rhadmin/app/latest"
           APP_NAME="ruhunuLocal"
           CONTEXT_PATH="rhLocal"
+          WAR_NAME="ruhunuLocal.war"
+          BRANCH="rh-local-staging"
+          PAYARA_HOME="/home/rhadmin/Payara_Server"
+          PAYARA_DOMAIN="$PAYARA_HOME/glassfish/domains/domain1"
+          PAYARA_LOG="$PAYARA_DOMAIN/logs/server.log"
+          ASADMIN="$PAYARA_HOME/bin/asadmin"
 
-          # Ensure deployment directory exists
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            mkdir -p $WAR_DIR
-            chown -R rhadmin:rhadmin $WAR_DIR
-            cd $WAR_DIR
+          # mvn on this server is a NetBeans-bundled binary never added to PATH
+          # (confirmed 2026-07-30). Java itself is on PATH via the system JVM.
+          MVN="/opt/netbeans/java/maven/bin/mvn"
 
-            # Remove old backup if it exists
-            if [ -f $WAR_NAME.old ]; then
-              rm $WAR_NAME.old
-            fi
+          mkdir -p "$WAR_DIR"
+          chown -R rhadmin:rhadmin "$WAR_DIR"
 
-            # If the current WAR file exists, back it up
-            if [ -f $WAR_NAME ]; then
-              mv $WAR_NAME $WAR_NAME.old
-            fi
-          "
- 
-          # Copy new WAR file to the server
-          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+          if [ ! -d "$SRC_DIR/.git" ]; then
+            git clone https://github.com/hmislk/hmis.git "$SRC_DIR"
+          fi
 
-          # Set the WAR file permission
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            chown rhadmin:rhadmin $WAR_DIR/$WAR_NAME
-          "
+          cd "$SRC_DIR"
+          git fetch origin "$BRANCH"
+          # Discard persistence.xml edits (and any other leftovers) from the
+          # previous run before moving HEAD, so git checkout cannot be blocked
+          # by "local changes would be overwritten".
+          git reset --hard
+          git clean -fdx
+          # Pin to the exact commit that the build job already compile-checked.
+          git checkout "$COMMIT_SHA"
 
-          # Deploy the WAR using asadmin
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
-            rm -f /tmp/payara-admin-pass.txt
-          "
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
-          # Validate if the application is running
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            if /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
-              echo 'Application is running.'
-            else
-              echo 'Application failed to start.'
-            fi
-            rm -f /tmp/payara-admin-pass.txt
-          "
- 
+          "$MVN" clean package -DskipTests
+
+          NEW_WAR=""
+          for candidate in target/*.war; do
+            [ -f "$candidate" ] && NEW_WAR="$candidate" && break
+          done
+          NEW_WAR_SIZE=0
+          [ -n "$NEW_WAR" ] && NEW_WAR_SIZE=$(stat -c%s "$NEW_WAR")
+          if [ -z "$NEW_WAR" ] || [ "$NEW_WAR_SIZE" -lt 1048576 ]; then
+            echo "Build did not produce a valid WAR file. Aborting deploy."
+            exit 1
+          fi
+
+          if [ -f "$WAR_DIR/$WAR_NAME.old" ]; then rm "$WAR_DIR/$WAR_NAME.old"; fi
+          if [ -f "$WAR_DIR/$WAR_NAME" ]; then mv "$WAR_DIR/$WAR_NAME" "$WAR_DIR/$WAR_NAME.old"; fi
+          cp "$NEW_WAR" "$WAR_DIR/$WAR_NAME"
+          chown rhadmin:rhadmin "$WAR_DIR/$WAR_NAME"
+
+          # -----------------------------------------------------------------------
+          # Root cause of prior failures: "Timer already cancelled" (Payara bug).
+          #
+          # The app was previously deployed by copying files directly into the
+          # applications directory, so asadmin has no record of it ("not deployed"
+          # on undeploy). When asadmin deploy --force=true tries to replace it,
+          # Payara cancels the running EJB timers mid-flight, then the new
+          # deployment inherits the cancelled java.util.Timer objects → all EJBs
+          # fail with IllegalStateException: Timer already cancelled.
+          #
+          # Fix: stop the domain, wipe the stale application artifacts for this
+          # app, restart fresh, then do a clean first-time deploy.
+          # -----------------------------------------------------------------------
+          echo "=== Stopping Payara domain for clean redeploy ==="
+          "$ASADMIN" stop-domain || true
+
+          echo "=== Removing stale application artifacts ==="
+          rm -rf "$PAYARA_DOMAIN/applications/$APP_NAME"
+          rm -rf "$PAYARA_DOMAIN/generated/xml/$APP_NAME"
+          rm -rf "$PAYARA_DOMAIN/generated/jsp/$APP_NAME"
+
+          echo "=== Starting Payara domain ==="
+          "$ASADMIN" start-domain
+
+          PASS_FILE=$(mktemp /tmp/payara-admin-pass.XXXXXX)
+          trap 'rm -f "$PASS_FILE"' EXIT
+          echo "AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS" > "$PASS_FILE"
+          chmod 600 "$PASS_FILE"
+
+          echo "=== Payara: registered applications ==="
+          "$ASADMIN" --user admin --passwordfile "$PASS_FILE" list-applications || true
+
+          echo "=== Payara: JDBC resources ==="
+          "$ASADMIN" --user admin --passwordfile "$PASS_FILE" list-jdbc-resources || true
+
+          echo "=== Payara: JDBC connection pools ==="
+          "$ASADMIN" --user admin --passwordfile "$PASS_FILE" list-jdbc-connection-pools || true
+
+          DEPLOY_EXIT=0
+          "$ASADMIN" --user admin --passwordfile "$PASS_FILE" \
+            deploy --contextroot "$CONTEXT_PATH" --name "$APP_NAME" \
+            "$WAR_DIR/$WAR_NAME" || DEPLOY_EXIT=$?
+
+          if [ "$DEPLOY_EXIT" -ne 0 ]; then
+            echo "=== PAYARA SERVER LOG (last 200 lines) ==="
+            tail -200 "$PAYARA_LOG" 2>/dev/null || echo "Could not read $PAYARA_LOG"
+            exit "$DEPLOY_EXIT"
+          fi
+
+          if "$ASADMIN" --user admin --passwordfile "$PASS_FILE" list-applications | grep -q "$APP_NAME"; then
+            echo "Application is running."
+          else
+            echo "Application failed to start."
+            echo "=== PAYARA SERVER LOG (last 200 lines) ==="
+            tail -200 "$PAYARA_LOG" 2>/dev/null || echo "Could not read $PAYARA_LOG"
+            exit 1
+          fi
+          REMOTE_SCRIPT
+
           # Check if the application is reachable
           for i in {1..5}; do
             RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP:8010/$CONTEXT_PATH/faces/index1.xhtml)
@@ -137,5 +200,4 @@ jobs:
             sleep 10
           done
 
-          # Cleanup
           rm -f private_key.pem

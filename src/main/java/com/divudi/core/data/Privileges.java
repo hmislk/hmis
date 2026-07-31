@@ -111,8 +111,11 @@ public enum Privileges {
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
     InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
+    InwardFinalBillRetire("Inward Final Bill Retire"),
+    InwardFinalBillEmail("Inward Final Bill Email"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
+    InwardPostDischargeReports("Inward Post-Discharge Reports"),
     InwardLaboratory("Inward Laboratory"),
     InwardLaboratoryBarcodeGeneration("Inward Laboratory Barcode Generation"),
     InwardLaboratorySampleManagement("Inward Laboratory Sample Management"),
@@ -629,7 +632,7 @@ public enum Privileges {
     PharmacyDisposalIssueFinalize("Pharmacy Disposal Issue Finalize"),
     PharmacyDisposalIssueApprove("Pharmacy Disposal Issue Approve"),
     PharmacyDisposalIssueCancel("Pharmacy Disposal Issue Cancel"),
-    PharmacyDiscardCategoryManage("Pharmacy Discard Category Manage"),
+    PharmacyDiscardCategoryManage("Pharmacy Issue Category Manage"),
     PharmacyDisposalSearchIssueBill("Pharmacy Disposal Search Issue Bill"),
     PharmacyDisposalSearchIssueBillItems("Pharmacy Disposal Search Issue Bill Items"),
     PharmacyDisposalSearchIssueReturnBill("Pharmacy Disposal Search Issue Return Bill"),
@@ -1245,6 +1248,8 @@ public enum Privileges {
             case InwardSettleFinalBill:
             case InwardFinalBillCreateVersion:
             case InwardFinalBillSetConfirmed:
+            case InwardFinalBillRetire:
+            case InwardFinalBillEmail:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:
@@ -1281,6 +1286,7 @@ public enum Privileges {
             case InwardImagesView:
             case InwardDiagnosisCardView:
             case InwardEventHistoryView:
+            case InwardPostDischargeReports:
                 return "Inward";
 
             case AdminInactivePatients:

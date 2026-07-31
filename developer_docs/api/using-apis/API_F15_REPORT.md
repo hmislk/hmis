@@ -475,7 +475,7 @@ curl -s -X PATCH "$BASE_URL/api/bill_data_correction" \
   }"
 ```
 
-Supported correction targets are documented in `developer_docs/api/API_BILL_DATA_CORRECTION.md`.
+Supported correction targets are documented in `developer_docs/api/using-apis/API_BILL_DATA_CORRECTION.md`.
 Note: `PATCH /api/bill_data_correction` **cannot create** a missing BFD — use
 `POST /api/pharmacy/backfill_bfd` for that.
 

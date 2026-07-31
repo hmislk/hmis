@@ -198,6 +198,48 @@
 
                                 <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
+                                        <h:outputLabel value="Gross Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.grossValue : dto.grossValue}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounterGrossTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.discount}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounterDiscountTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Service Charge" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.marginValue : dto.marginValue}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounterServiceChargeTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
                                     <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.netValue : dto.netValue}">

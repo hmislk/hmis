@@ -8,7 +8,7 @@ This is not a one-off script. Expect to repeat this exercise for other departmen
 
 ## Prerequisites
 
-- A `Finance`-header API key for the target environment (see `developer_docs/api/rest-api-development-guide.md` for the auth pattern).
+- A `Finance`-header API key for the target environment (see `developer_docs/api/building-apis/rest-api-development-guide.md` for the auth pattern).
 - The exact department name/ID, confirmed via `GET /api/pharmacy_adjustments/search/departments?query=...` — do not assume the name in the spreadsheet matches the system exactly (whitespace, "Pharmacy" suffixes, etc. can differ).
 - The physical count spreadsheet, with at minimum: item name, batch number and/or expiry date, current system quantity (as of export), physical count.
 
