@@ -1417,6 +1417,24 @@ match — selecting "Pharmacy Return without a Receipt" there silently falls thr
 the atomic-based search page for a given bill type — `pharmacy_search.xhtml`'s plain-`billType` dropdown is
 the reliable one when in doubt. Found verifying issue #22563.
 
+## 54. `pharmacy_fast_retail_sale_for_cashier.xhtml` "Settle Bill At Cashier" 500s with a Patient cascade error if the Patient Name field is left blank
+
+`PharmacyFastRetailSaleForCashierController.settlePreBill()` → `settlePharmacyToken()` creates a `Token`
+referencing an in-memory `Patient` placeholder when no patient is selected/entered. Committing that
+transaction throws `IllegalStateException: During synchronization a new object was found through a
+relationship that was not marked cascade PERSIST: com.divudi.core.entity.Patient[ id=null ]`, rolling back
+the whole "Settle Bill At Cashier" action with an HTTP 500 (unrelated to whatever feature is actually under
+test). Always type something into "Enter the Name of the patient" before clicking "Settle Bill At Cashier"
+on this page — a walk-in placeholder name is enough. Found verifying issue #21419.
+
+Also for this page: "Settle Bill At Cashier" only creates a `PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER`
+pre-bill and deducts stock — it does **not** create the final sale bill. To reach the actual
+`PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER` bill (the one with a cancellable "To Cancel" button on
+`pharmacy_reprint_bill_sale_cashier.xhtml`), separately go to `pharmacy_search_pre_bill.xhtml` → **Search
+Not Paid Tokens** → **Call Customer** → **Accept Payment** → enter Tendered amount → **Accept Payment and
+Settle**. Then from `pharmacy_search_pre_bill.xhtml` → **Search Paid Only Tokens** → **View Payment Bill**
+lands on the reprint/cancel page for that bill.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
