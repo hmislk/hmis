@@ -122,6 +122,9 @@ public class TransferRequestController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill bill;
     private Bill transferRequestBillPre;
+    // Bill id used for navigation from DTO-driven tables (issue #22567) that
+    // only have the bill id available, not the full Bill entity.
+    private Long billId;
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
@@ -779,6 +782,39 @@ public class TransferRequestController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
 
+    /**
+     * Navigation helper for DTO-driven tables that only have the bill id
+     * (not the full entity) available.
+     */
+    public String navigateToEditRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToEditRequest();
+    }
+
+    // synchronized for the same double-click defense-in-depth reason as navigateToApproveRequest()
+    public synchronized String navigateToApproveRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToApproveRequest();
+    }
+
+    public String navigateToViewApprovedRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        bill = billFacade.find(billId);
+        printPreview = true;
+        return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
+    }
+
     public void finalizeTranserRequestPreBill() {
         if (!isAuthorized("FINALIZE_REQUEST", "PharmacyDisbursementFinalizeRequest")) {
             return;
@@ -927,6 +963,14 @@ public class TransferRequestController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     public BillItemFacade getBillItemFacade() {
