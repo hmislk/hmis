@@ -67,7 +67,7 @@ These guidelines apply to the entire repository.
 - Privilege system: `developer_docs/security/privilege-system.md`
 - DTO guidelines: `developer_docs/dto/implementation-guidelines.md`
 - PR review workflow: `developer_docs/git/pr-review-workflow.md`
-- REST API dev guide: `developer_docs/api/rest-api-development-guide.md`
+- REST API dev guide: `developer_docs/api/building-apis/rest-api-development-guide.md`
 - Wiki publishing: `developer_docs/github/wiki-publishing.md`
 
 ---

@@ -218,9 +218,35 @@
                                                 <h:outputLabel  value="#{ix.total}" ></h:outputLabel>
                                             </p:column>
 
+                                            <p:ajax event="itemSelect"
+                                                    listener="#{inwardTimedItemController.serviceSelectListener}"
+                                                    update="serviceDepartment"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
+
+                                <div class="row m-1">
+                                    <div class="col-4">
+                                        <p:outputLabel value="Service Department"
+                                                       for="serviceDepartment"
+                                                       title="Where the service is given. Defaults to the service's own department."/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="mx-2"
+                                            id="serviceDepartment"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            value="#{inwardTimedItemController.fromDepartment}">
+                                            <f:selectItem itemLabel="Select Department" noSelectionOption="true"/>
+                                            <f:selectItems value="#{departmentController.items}"
+                                                           var="dep"
+                                                           itemLabel="#{dep.name}"
+                                                           itemValue="#{dep}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
                                 <div class="row m-1">
                                     <div class="col-4">
                                         <p:outputLabel value="Start Time"/>
@@ -284,7 +310,15 @@
                         <p:column headerText="Service Name" style="padding: 8px;">
                             #{ti.item.name}
                         </p:column>
-                        
+
+                        <p:column headerText="Service Department" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.bill.fromDepartment.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Billed Department" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.bill.toDepartment.name}"/>
+                        </p:column>
+
                         <p:column headerText="Start Time" style="padding: 8px;">
                             <p:datePicker
                                 showTime="true"
