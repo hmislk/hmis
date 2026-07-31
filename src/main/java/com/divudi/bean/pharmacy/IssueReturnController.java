@@ -591,15 +591,26 @@ public class IssueReturnController implements Serializable {
             getReturnBill().setCreater(sessionController.getLoggedUser());
             getBillFacade().create(getReturnBill());
         } else {
-            // Null out the billItems collection before merge so EclipseLink does not treat
-            // the in-memory empty ArrayList as an authoritative orphan-removal signal.
+            // Reload from DB so we don't trigger orphan-removal on billItems.
             // Bill items are managed independently by saveBillComponents() / billItemFacade.
-            getReturnBill().setBillItems(null);
+            // Capture in-memory fields set directly by the UI (JSF binds returnBill.comments)
+            // before the reload replaces the entity, or they'd be silently lost.
+            Bill referenceBill = getReturnBill().getReferenceBill();
+            String comments = getReturnBill().getComments();
+            returnBill = billService.reloadBill(getReturnBill());
+            getReturnBill().setReferenceBill(referenceBill);
+            getReturnBill().setComments(comments);
             getBillFacade().edit(getReturnBill());
         }
     }
 
     private void saveSettlingBill() {
+        // Reload from DB so we don't trigger orphan-removal on billItems.
+        // Bill items are managed independently by saveSettlingBillComponents() / billItemFacade.
+        // Capture comments (bound directly to returnBill by the UI) before the reload
+        // replaces the entity, or the user's typed comment would be silently lost.
+        String comments = getReturnBill().getComments();
+        returnBill = billService.reloadBill(getReturnBill());
 
         getReturnBill().setBillType(BillType.PharmacyIssue);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
@@ -622,7 +633,7 @@ public class IssueReturnController implements Serializable {
 
         // Copy reference information from original bill for traceability
         getReturnBill().setReferenceNumber(originalBill.getReferenceNumber());
-        getReturnBill().setComments(returnBill.getComments());
+        getReturnBill().setComments(comments);
 
         // Handle Department ID generation (independent)
         String deptId;
@@ -657,7 +668,6 @@ public class IssueReturnController implements Serializable {
         }
         getReturnBill().setDeptId(deptId);
         getReturnBill().setInsId(insId);
-        getReturnBill().setBillItems(null);
         billFacade.edit(returnBill);
     }
 
@@ -889,13 +899,15 @@ public class IssueReturnController implements Serializable {
 
         }
         if (fullyReturned) {
+            // Reload from DB so we don't trigger orphan-removal on billItems.
+            originalBill = billService.reloadBill(getOriginalBill());
             getOriginalBill().setFullReturned(true);
             getOriginalBill().setFullReturnedAt(new Date());
             getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
-            getOriginalBill().setBillItems(null);
             getBillFacade().edit(getOriginalBill());
         }
-        getReturnBill().setBillItems(null);
+        // Reload from DB so we don't trigger orphan-removal on billItems.
+        returnBill = billService.reloadBill(getReturnBill());
         getBillFacade().edit(getReturnBill());
 
     }
