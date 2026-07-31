@@ -1937,8 +1937,7 @@ public class BillService {
             Date toDate,
             Institution institution,
             Institution site,
-            Department department,
-            WebUser webUser) {
+            Department department) {
 
         String jpql = "SELECT COUNT(b) FROM Bill b "
                 + " WHERE b.retired = false "
@@ -1953,11 +1952,6 @@ public class BillService {
         if (institution != null) {
             jpql += " AND b.institution = :ins ";
             params.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            jpql += " AND b.creater = :user ";
-            params.put("user", webUser);
         }
 
         if (department != null) {
@@ -1978,11 +1972,10 @@ public class BillService {
             Date toDate,
             Institution institution,
             Institution site,
-            Department department,
-            WebUser webUser) {
+            Department department) {
 
         // First, debug with count query
-        Long count = countPharmacyReturnWithoutTrasingBills(fromDate, toDate, institution, site, department, webUser);
+        Long count = countPharmacyReturnWithoutTrasingBills(fromDate, toDate, institution, site, department);
 
         if (count == 0) {
             return new ArrayList<>();
@@ -1998,11 +1991,11 @@ public class BillService {
                 + " coalesce(b.invoiceNumber,''), "
                 + " b.createdAt, "
                 + " b.billDate, "
-                + " coalesce(b.toInstitution.name,''), " // ✅ SAFE: Using COALESCE with direct property
-                + " b.toInstitution.id, " // ✅ SAFE: Left join handles null
-                + " coalesce(b.department.name,''), " // ✅ SAFE: Using COALESCE with direct property
-                + " b.department.id, " // ✅ SAFE: Left join handles null
-                + " coalesce(b.creater.webUserPerson.name,''), " // ⚠️ POTENTIAL ISSUE: Nested relationship
+                + " coalesce(toIns.name,''), "
+                + " toIns.id, "
+                + " coalesce(dept.name,''), "
+                + " dept.id, "
+                + " coalesce(createrPerson.name,''), "
                 + " coalesce(b.comments,''), "
                 + " coalesce(b.paymentMethod,''), "
                 + " coalesce(b.total,0.0), "
@@ -2013,10 +2006,10 @@ public class BillService {
                 + " coalesce(bfd.totalRetailSaleValue,0.0) ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
-                + " left join b.toInstitution " // ✅ Explicit LEFT JOIN for safety
-                + " left join b.department " // ✅ Explicit LEFT JOIN for safety
-                + " left join b.creater " // ✅ Explicit LEFT JOIN for safety
-                + " left join b.creater.webUserPerson " // ✅ Explicit LEFT JOIN for nested relationship
+                + " left join b.toInstitution toIns "
+                + " left join b.department dept "
+                + " left join b.creater creater "
+                + " left join creater.webUserPerson createrPerson "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -2029,11 +2022,6 @@ public class BillService {
         if (institution != null) {
             jpql += " and b.institution = :ins ";
             params.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            jpql += " and b.creater = :user ";
-            params.put("user", webUser);
         }
 
         if (department != null) {
@@ -2065,8 +2053,7 @@ public class BillService {
             Date toDate,
             Institution institution,
             Institution site,
-            Department department,
-            WebUser webUser) {
+            Department department) {
 
         // First verify bill items exist
         String countJpql = "SELECT COUNT(bi) FROM Bill b "
@@ -2084,11 +2071,6 @@ public class BillService {
         if (institution != null) {
             countJpql += " AND b.institution = :ins ";
             countParams.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            countJpql += " AND b.creater = :user ";
-            countParams.put("user", webUser);
         }
 
         if (department != null) {
@@ -2115,7 +2097,7 @@ public class BillService {
                 + " b.id, "
                 + " coalesce(b.deptId,''), "
                 + " b.createdAt, "
-                + " coalesce(b.toInstitution.name,''), " // Direct property access with COALESCE
+                + " coalesce(toIns.name,''), "
                 + " coalesce(b.paymentMethod,''), "
                 + " coalesce(item.id,0), " // Handle null item
                 + " coalesce(item.name,''), "
@@ -2124,7 +2106,7 @@ public class BillService {
                 + " coalesce(batch.batchNo,''), "
                 + " batch.dateOfExpire, " // May be null from LEFT JOIN
                 + " coalesce(bi.qty,0.0), "
-                + " coalesce(pbi.qtyInUnit,0.0), "
+                + " coalesce(pbi.qty,0.0), "
                 + " coalesce(bifd.costRate,0.0), "
                 + " coalesce(bifd.purchaseRate,0.0), "
                 + " coalesce(bifd.retailSaleRate,0.0), "
@@ -2139,7 +2121,7 @@ public class BillService {
                 + " left join pbi.stock stock "
                 + " left join stock.itemBatch batch "
                 + " left join batch.item item "
-                + " left join b.toInstitution " // Explicit LEFT JOIN
+                + " left join b.toInstitution toIns "
                 + " where b.retired = false and bi.retired = false "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -2151,11 +2133,6 @@ public class BillService {
         if (institution != null) {
             jpql += " and b.institution = :ins ";
             params.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            jpql += " and b.creater = :user ";
-            params.put("user", webUser);
         }
 
         if (department != null) {
