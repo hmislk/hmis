@@ -92,7 +92,7 @@
                                 <p:outputLabel value="Site" for="phmSite" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="phmSite" class="w-100"
-                                            value="#{surgeryCostReportController.site}" filter="true">
+                                             value="#{surgeryCostReportController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
                                 <f:selectItems value="#{institutionController.sites}"
                                                var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
@@ -280,10 +280,28 @@
                             <!-- OT ROOM -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="OT Room" for="roomCategorySelect" class="m-3"/>
+                                <p:outputLabel value="OT Room" for="acTheatreRoom" class="m-3"/>
                             </h:panelGroup>
-                            <p:autoComplete id="roomCategorySelect" styleClass="w-100" inputStyleClass="w-100 form-control">
-
+                            <p:autoComplete
+                                id="acTheatreRoom"
+                                widgetVar="wTheatreRoom"
+                                forceSelection="true"
+                                value="#{surgeryCostReportController.selectedOtRoom}"
+                                completeMethod="#{roomFacilityChargeController.completeTheatreRoom}"
+                                var="tr"
+                                itemLabel="#{tr.name}"
+                                itemValue="#{tr}"
+                                placeholder="Type theatre room name..."
+                                minQueryLength="1"
+                                maxResults="10"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control">
+                                <p:column headerText="Room">
+                                    <h:outputText value="#{tr.name}"/>
+                                </p:column>
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{tr.department.name}"/>
+                                </p:column>
                             </p:autoComplete>
 
                             <p:spacer width="20"/>
@@ -313,7 +331,7 @@
                                 <h:outputText value="&#xf46d;" styleClass="fa mr-2"/> 
                                 <p:outputLabel value="Type" for="summeryType" styleClass="m-3"/>
                             </h:panelGroup>
-                                <p:selectOneMenu id="summeryType" styleClass="w-100" value="#{surgeryCostReportController.surgeryCostEstimationReportType}">
+                            <p:selectOneMenu id="summeryType" styleClass="w-100" value="#{surgeryCostReportController.surgeryCostEstimationReportType}">
                                 <f:selectItem itemLabel="Select Report Type " itemValue="" noSelectionOption="true"/>
                                 <f:selectItem itemLabel="Detail" itemValue="detail"/>
                                 <f:selectItem itemLabel="Summary By Surgeon" itemValue="bySurgeon"/>
@@ -366,7 +384,7 @@
                         <!-- Summary Table -->
                         <h:panelGroup id="printPanel">
                             <p:panel header="Surgery Cost Estimation Report" styleClass="m-3">
-                                
+
                                 <!-- Detail Mode: Screen Only -->
                                 <p:dataTable id="detailWise"
                                              styleClass="screen-only"
