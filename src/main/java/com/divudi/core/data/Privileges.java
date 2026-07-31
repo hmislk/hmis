@@ -632,7 +632,7 @@ public enum Privileges {
     PharmacyDisposalIssueFinalize("Pharmacy Disposal Issue Finalize"),
     PharmacyDisposalIssueApprove("Pharmacy Disposal Issue Approve"),
     PharmacyDisposalIssueCancel("Pharmacy Disposal Issue Cancel"),
-    PharmacyDiscardCategoryManage("Pharmacy Discard Category Manage"),
+    PharmacyDiscardCategoryManage("Pharmacy Issue Category Manage"),
     PharmacyDisposalSearchIssueBill("Pharmacy Disposal Search Issue Bill"),
     PharmacyDisposalSearchIssueBillItems("Pharmacy Disposal Search Issue Bill Items"),
     PharmacyDisposalSearchIssueReturnBill("Pharmacy Disposal Search Issue Return Bill"),

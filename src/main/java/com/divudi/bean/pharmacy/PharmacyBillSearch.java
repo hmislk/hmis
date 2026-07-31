@@ -2368,6 +2368,14 @@ public class PharmacyBillSearch implements Serializable {
             b.copy(nB);
             b.invertValue(nB);
 
+            if (nB.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails invertedFinanceDetails = new BillItemFinanceDetails();
+                invertedFinanceDetails.invertValue(nB.getBillItemFinanceDetails());
+                invertedFinanceDetails.setBillItem(b);
+                invertedFinanceDetails.setCreatedAt(new Date());
+                b.setBillItemFinanceDetails(invertedFinanceDetails);
+            }
+
             b.setReferanceBillItem(nB);
 
             b.setCreatedAt(new Date());
@@ -5837,7 +5845,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "b.refunded, rb.createdAt, COALESCE(refunderPerson.name, ''), "
                 + "COALESCE(cb.comments, rb.comments, ''), "
                 + "b.netTotal, b.pharmacyBill.saleValue, COALESCE(b.comments, '')) "
-                + "FROM BilledBill b "
+                + "FROM PreBill b "
                 + "LEFT JOIN b.creater creater LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.cancelledBill cb LEFT JOIN cb.creater canceller "
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
