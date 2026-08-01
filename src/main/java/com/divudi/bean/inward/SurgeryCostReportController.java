@@ -74,18 +74,6 @@ import software.xdev.chartjs.model.options.Title;
 import software.xdev.chartjs.model.options.scale.Scales;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearScaleOptions;
 
-/**
- * Controller for the Surgery Cost Estimation report.
- *
- * File layout (methods are ordered by execution flow, not alphabetically): 1.
- * Fields / constants 2. UI support (dropdown values + label lookups used across
- * the class) 3. Report orchestration (the single public entry point) 4. Detail
- * report: query + filter building 5. Detail report: enrichment pipeline (called
- * in the exact order the orchestrator invokes them) 6. Detail report: totals
- * calculation 7. Summary report: query + aggregation 8. Chart generation
- * (shared by both detail and summary paths) 9. Excel export 10. PDF export 11.
- * Generic utility helpers 12. JSF-bound getters/setters 13. Inner types
- */
 @Named
 @SessionScoped
 public class SurgeryCostReportController implements Serializable {
@@ -194,11 +182,6 @@ public class SurgeryCostReportController implements Serializable {
         this.surgeryCostBarChartModel = surgeryCostBarChartModel;
     }
 
-    // =====================================================================
-    // 3. REPORT ORCHESTRATION — single public entry point invoked by the
-    //    "Process" button. Everything below is called from here, directly
-    //    or transitively, in the order it appears in the file.
-    // =====================================================================
     public void processSurgeryCostEstimationReport() {
         surgeryCostEstimationList = new ArrayList<>();
         surgeryCostSummaryList = new ArrayList<>();
@@ -349,15 +332,6 @@ public class SurgeryCostReportController implements Serializable {
         return null;
     }
 
-    // =====================================================================
-    // 5. DETAIL REPORT — enrichment pipeline
-    //    Methods appear in the exact order processSurgeryCostEstimationReport()
-    //    invokes them: buildLookups -> enrichSurgeonsAndAssistants ->
-    //    enrichSurgeonsFromBillStaff -> enrichOtRoomAndStatus ->
-    //    enrichChildBillCharges -> enrichRoomCharges -> enrichBedNo ->
-    //    enrichDrugCharges. Each method's private sub-helper is placed
-    //    immediately after it.
-    // =====================================================================
     private ReportLookups buildLookups(List<SurgeryCostEstimationDTO> list) {
         ReportLookups lookups = new ReportLookups();
         for (SurgeryCostEstimationDTO dto : list) {
@@ -573,32 +547,6 @@ public class SurgeryCostReportController implements Serializable {
         }
     }
 
-
-    /**
-     * Enriches DTOs with per-admission drug charges.
-     *
-     * <p><b>IMPORTANT — Overwrite (set) semantics, not accumulate (+=):</b>
-     * Unlike {@code enrichRoomCharges} and {@code enrichChildBillCharges}, which
-     * <em>accumulate</em> values with {@code +=}, this method intentionally
-     * <em>overwrites</em> each DTO's drugCharges via {@code setDrugCharges(...)}.
-     *
-     * <p><b>Why this is correct:</b> The JPQL query aggregates drug bills with
-     * {@code GROUP BY pb.patientEncounter.id}, producing exactly <em>one</em>
-     * total per admission. When an admission has multiple surgeries, each
-     * surgery DTO receives the same per-admission drug total. This is
-     * intentional — drug charges are an admission-level aggregate that is
-     * duplicated identically across all sibling surgery rows for display
-     * purposes, not a per-surgery value that should be summed.
-     *
-     * <p><b>Do NOT change this to {@code +=}</b> without also changing the
-     * JPQL grouping strategy. A {@code +=} here would cause incorrect values
-     * if a batch boundary splits the same admission's results across batches
-     * (which the current query structure does not produce, but the overwrite
-     * semantics make the method robust against such scenarios anyway).
-     *
-     * @see #enrichRoomCharges   — accumulates (+=) room charges per encounter
-     * @see #enrichChildBillCharges — accumulates (+=) child bill charges per bill
-     */
     private void enrichDrugCharges(Set<Long> peIds,
             Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId) {
         if (peIds.isEmpty()) {
@@ -637,11 +585,6 @@ public class SurgeryCostReportController implements Serializable {
         }
     }
 
-    // =====================================================================
-    // 6. DETAIL REPORT — totals calculation
-    //    Last step of the detail path before the orchestrator assigns the
-    //    result list and builds the chart.
-    // =====================================================================
     private void computeTotals(List<SurgeryCostEstimationDTO> list) {
         for (SurgeryCostEstimationDTO dto : list) {
             double net = dto.getTotalHospitalCharge() + dto.getProfessionalCharge();
@@ -651,11 +594,6 @@ public class SurgeryCostReportController implements Serializable {
         }
     }
 
-    // =====================================================================
-    // 7. SUMMARY REPORT — query + aggregation
-    //    Invoked directly by the orchestrator on the summary path, as an
-    //    alternative to section 4/5/6 above.
-    // =====================================================================
     @SuppressWarnings("unchecked")
     private void fetchSurgeryCostSummary(String type) {
         Map<String, Object> params = new HashMap<>();
@@ -738,11 +676,6 @@ public class SurgeryCostReportController implements Serializable {
         appendOptionalFilters(jpql, params);
     }
 
-    // =====================================================================
-    // 8. CHART GENERATION — shared by both the detail and summary paths;
-    //    called last in processSurgeryCostEstimationReport() regardless of
-    //    which branch was taken.
-    // =====================================================================
     private void createSurgeryCostEstimationChart() {
         if ((surgeryCostEstimationList == null || surgeryCostEstimationList.isEmpty())
                 && (surgeryCostSummaryList == null || surgeryCostSummaryList.isEmpty())) {
@@ -812,11 +745,6 @@ public class SurgeryCostReportController implements Serializable {
         surgeryCostBarChartModel = barChart.toJson();
     }
 
-    // =====================================================================
-    // 9. EXCEL EXPORT — invoked by the "Download" button; independent of
-    //    the process/orchestration flow above but reads the same result
-    //    lists it produced.
-    // =====================================================================
     public void downloadSurgeryCostEstimationExcel() {
         boolean isSummary = surgeryCostEstimationReportType != null
                 && !surgeryCostEstimationReportType.isEmpty()
@@ -1150,10 +1078,6 @@ public class SurgeryCostReportController implements Serializable {
         }
     }
 
-    // =====================================================================
-    // 10. PDF EXPORT — invoked by the "PDF" button; independent of the
-    //     process/orchestration flow above but reads the same result lists.
-    // =====================================================================
     public void downloadSurgeryCostEstimationPdf() {
         boolean isSummary = surgeryCostEstimationReportType != null
                 && !surgeryCostEstimationReportType.isEmpty()
@@ -1424,9 +1348,6 @@ public class SurgeryCostReportController implements Serializable {
         info.addCell(v);
     }
 
-    // =====================================================================
-    // 11. GENERIC UTILITY HELPERS — used throughout sections 4-10 above.
-    // =====================================================================
     private static double toDouble(Object value) {
         return value instanceof Number ? ((Number) value).doubleValue() : 0.0;
     }
@@ -1447,12 +1368,6 @@ public class SurgeryCostReportController implements Serializable {
         return batches;
     }
 
-    // =====================================================================
-    // 12. JSF-BOUND GETTERS / SETTERS — plain property accessors used by
-    //     the .xhtml via EL bindings. No execution-order dependency between
-    //     these; grouped here at the end, in the same order the filter
-    //     fields appear on the form.
-    // =====================================================================
     public List<SurgeryCostEstimationDTO> getSurgeryCostEstimationList() {
         return surgeryCostEstimationList;
     }
@@ -1581,9 +1496,6 @@ public class SurgeryCostReportController implements Serializable {
         this.surgeryCostEstimationReportType = surgeryCostEstimationReportType;
     }
 
-    // =====================================================================
-    // 13. INNER TYPES
-    // =====================================================================
     private static final class ReportLookups {
 
         final Set<Long> billIds = new LinkedHashSet<>();
