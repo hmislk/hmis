@@ -248,7 +248,16 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
     }
 
     private static String renderNodes(List<Node> nodes) {
-        Element wrapper = new Element("span");
+        // A detached Element has no owner Document, so it falls back to
+        // Jsoup's default OutputSettings, which pretty-prints block tags
+        // (e.g. ol/li) with indentation newlines between them. .micMemoValue
+        // renders with white-space: pre-wrap to preserve intentional
+        // spacing, so those injected newlines were showing up as a big gap
+        // between list lines. Giving the wrapper an owner Document with
+        // prettyPrint disabled avoids that.
+        Document shell = Document.createShell("");
+        shell.outputSettings().prettyPrint(false);
+        Element wrapper = shell.body().appendElement("span");
         for (Node n : nodes) {
             wrapper.appendChild(n);
         }
