@@ -38,6 +38,22 @@
                so the indent is lost. The longhand padding-left overrides the
                padding:0 reset above (higher specificity). Values match Quill's
                default of 3em per indent level. */
+            /* Auto-aligned label:value grid for memo lines split by
+               PatientReportItemValue#getLobValueLinesAligned(). Grid's first
+               two columns size themselves to the widest label/colon
+               actually present in this memo block, so every line's colon
+               lines up without a hardcoded width - the alignment holds
+               however long the longest label turns out to be. Lines with no
+               ":" (.micLineFull) just span the full row untouched. */
+            .micMemoValue .micLineGrid {
+                display: grid;
+                grid-template-columns: max-content max-content 1fr;
+                column-gap: 0;
+            }
+            .micMemoValue .micLineLabel { grid-column: 1; }
+            .micMemoValue .micLineSep { grid-column: 2; padding: 0 16px; }
+            .micMemoValue .micLineValue { grid-column: 3; }
+            .micMemoValue .micLineFull { grid-column: 1 / -1; }
             .micMemoValue .ql-indent-1 { padding-left: 3em; }
             .micMemoValue .ql-indent-2 { padding-left: 6em; }
             .micMemoValue .ql-indent-3 { padding-left: 9em; }
@@ -81,7 +97,7 @@
                                     </div>
                                     <div style="display: inline-block; float: left; width: 3%; " ></div>
                                     <div class="micMemoValue" style="display: inline-block; text-align: left; float:left; width: 60%; padding-top: 0.1%; padding-bottom: 0.1%; ">
-                                        <h:outputLabel value="#{fn:replace(prv.lobValuePrintable,'\\n','&lt;br/&gt;')}"   escape="false"   />
+                                        <h:outputLabel value="#{prv.lobValueLinesAligned}"   escape="false"   />
                                     </div>
                                 </h:panelGroup>
                             </ui:repeat>
@@ -229,7 +245,7 @@
                                 </h:panelGroup>
                                 <h:panelGroup layout="block" style="display: block; clear: left; float: left; width: 100%; margin-bottom: 12px;" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValuePrintable ne '' and prv.lobValuePrintable ne null and prv.investigationItem.riTop gt 50 }" >
                                     <div class="micMemoValue" style=" text-align: left; float:left; margin-left: 5%; width: 90%;padding-left: 1px; padding-right: 1px; padding-top: 1px; vertical-align: top;">
-                                        <h:outputLabel value="#{fn:replace(prv.lobValuePrintable,'\\n','&lt;br/&gt;')}"    escape="false" />
+                                        <h:outputLabel value="#{prv.lobValueLinesAligned}"    escape="false" />
                                     </div>
                                 </h:panelGroup>
                             </ui:repeat>
