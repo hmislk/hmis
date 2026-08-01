@@ -21,6 +21,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -132,6 +133,7 @@ import com.divudi.bean.pharmacy.SaleReturnController;
 import com.divudi.bean.pharmacy.TransferIssueNativeSqlController;
 import com.divudi.bean.pharmacy.TransferReceiveNativeSqlController;
 import com.divudi.bean.pharmacy.InpatientDirectIssueNativeSqlController;
+import com.divudi.bean.pharmacy.RetailSaleForCashierNativeSqlController;
 import com.divudi.bean.pharmacy.RetailSaleNativeSqlController;
 import com.divudi.bean.pharmacy.PurchaseOrderNativeSqlController;
 import com.divudi.bean.pharmacy.GrnNativeSqlController;
@@ -339,6 +341,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     @Inject
     RetailSaleNativeSqlController retailSaleNativeSqlController;
     @Inject
+    RetailSaleForCashierNativeSqlController retailSaleForCashierNativeSqlController;
+    @Inject
     PurchaseOrderNativeSqlController purchaseOrderNativeSqlController;
     @Inject
     GrnNativeSqlController grnNativeSqlController;
@@ -351,6 +355,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private double refundAmount;
     private String txtSearch;
     private Bill bill;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private BillLight billLight;
     private Long selectedBillId;
     private Bill printingBill;
@@ -3807,6 +3813,15 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         this.bill = bill;
     }
 
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != bill) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(bill);
+            individualVoucherGroupsBill = bill;
+        }
+        return individualVoucherGroups;
+    }
+
     public Long getSelectedBillId() {
         return selectedBillId;
     }
@@ -4798,6 +4813,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return inpatientDirectIssueNativeSqlController.viewByBillId(BillId);
             case PHARMACY_RETAIL_SALE:
                 return retailSaleNativeSqlController.viewByBillId(BillId);
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                return retailSaleForCashierNativeSqlController.viewByBillId(BillId);
             case PHARMACY_TRANSFER_REQUEST_PRE:
             case PHARMACY_TRANSFER_REQUEST:
                 return pharmacyBillSearch.viewRequestByBillId(BillId);

@@ -63,6 +63,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dto.PatientEncounterDto;
+import com.divudi.core.entity.Area;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
@@ -906,6 +907,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAddBabyAdmission() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission selected");
+            return "";
+        }
+        if (current.getParentEncounter() != null) {
+            // A baby admission's parentEncounter already points to the mother.
+            // Do not allow a baby to have its own baby admission (e.g. grandmother
+            // admits mother, mother admits daughter is not a realistic scenario).
+            JsfUtil.addErrorMessage("A baby admission cannot have its own baby admission.");
+            return "";
+        }
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
@@ -913,6 +925,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
+        // This @SessionScoped bean may still hold a room selection left over from
+        // whatever admission was being edited before. Baby admissions never get
+        // their own room (see bhtNumberCalculation()/errorCheck()), so start the
+        // baby flow with a clean patientRoom to avoid carrying a stale selection
+        // through to saveSelected() and double-charging the room fee. (#9900)
+        patientRoom = new PatientRoom();
         patient = null;
         yearMonthDay = null;
         getPatient();
@@ -943,6 +961,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (parentAdmission.getGuardianRelationshipToPatient() != null) {
             current.setGuardianRelationshipToPatient(parentAdmission.getGuardianRelationshipToPatient());
         }
+    }
+
+    /**
+     * Copies address, area, and contact numbers from the mother's patient
+     * record onto the baby's own patient record. Bound to a button on the
+     * "Admit a Baby" page — babies usually share the mother's home address
+     * and contact numbers, so this saves re-typing them. (#9900)
+     */
+    public void copyPatientDetailsFromParent() {
+        if (parentAdmission == null || parentAdmission.getPatient() == null
+                || parentAdmission.getPatient().getPerson() == null) {
+            JsfUtil.addErrorMessage("No parent admission found to copy details from.");
+            return;
+        }
+        if (current == null || current.getPatient() == null || current.getPatient().getPerson() == null) {
+            return;
+        }
+        Person parentPerson = parentAdmission.getPatient().getPerson();
+        Person babyPerson = current.getPatient().getPerson();
+        babyPerson.setAddress(parentPerson.getAddress());
+        babyPerson.setArea(parentPerson.getArea());
+        babyPerson.setPhone(parentPerson.getPhone());
+        babyPerson.setMobile(parentPerson.getMobile());
+        JsfUtil.addSuccessMessage("Address and contact details copied from mother.");
     }
 
     public String navigateCancelBabyAdmission() {
@@ -1081,6 +1123,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void searchAdmissions() {
         searchAdmissions(null, null);
     }
+    
+    private Area patientArea;
 
     /**
      * @param currentRoomInstitutionFilter when non-null, restricts to admissions whose
@@ -1120,6 +1164,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (bhtNumberFilter != null) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberFilter + "%");
+        }
+        
+        if(patientArea != null){
+            j += " and c.patient.person.area = :area ";
+            m.put("area",  patientArea);
         }
 
         if (patientNumberFilter != null) {
@@ -1600,6 +1649,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         admissionStatusForSearch = null;
         admissionTypeForSearch = null;
         parentAdmission = null;
+        patientArea = null;
     }
 
     public String navigateToListAdmissions() {
@@ -2027,7 +2077,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // MO-charge validation, but room occupancy is always enforced when a room
         // is voluntarily provided — an occupied room must never be double-assigned
         // regardless of admission type. (Issue #21183)
-        if (!isRapidTempAe()) {
+        // Baby admissions also skip the room requirement: the baby stays in the
+        // mother's room, so a separate PatientRoom would double-charge the room fee.
+        if (!isRapidTempAe() && !isBabyAdmission()) {
             if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
                 if (getPatientRoom().getRoomFacilityCharge() == null) {
                     JsfUtil.addErrorMessage("Select Room ");
@@ -2480,6 +2532,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private boolean isRapidTempAe() {
         return getCurrent() != null
                 && getCurrent().getEncounterRegistrationFlag() == EncounterRegistrationFlag.RAPID_TEMP_AE;
+    }
+
+    /**
+     * @return {@code true} when the current encounter is a baby admission
+     * (i.e. it has a parent encounter). Babies stay in the mother's room, so
+     * room selection is optional for them (#9900).
+     */
+    private boolean isBabyAdmission() {
+        return getCurrent() != null && getCurrent().getParentEncounter() != null;
     }
 
     /**
@@ -3086,7 +3147,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
 
-        getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
+        // Baby admissions never get a room of their own — the baby stays in the
+        // mother's room. Skip applying the admission type's default/package room
+        // facility charge here, otherwise picking a package-priced admission type
+        // would silently create a PatientRoom and double-charge the room fee (#9900).
+        if (!isBabyAdmission()) {
+            getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
+        }
     }
 
     public String getBhtText() {
@@ -3560,6 +3627,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setPatientForiegner(boolean patientForiegner) {
         this.patientForiegner = patientForiegner;
+    }
+
+    public Area getPatientArea() {
+        return patientArea;
+    }
+
+    public void setPatientArea(Area patientArea) {
+        this.patientArea = patientArea;
     }
 
     /**

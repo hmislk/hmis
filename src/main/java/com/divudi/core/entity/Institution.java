@@ -172,6 +172,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     //Inactive Status
     private boolean inactive;
+    private boolean defaultInstitution;
     @ManyToOne
     private Institution parentInstitution;
 
@@ -654,6 +655,14 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setInactive(boolean inactive) {
         this.inactive = inactive;
+    }
+
+    public boolean isDefaultInstitution() {
+        return defaultInstitution;
+    }
+
+    public void setDefaultInstitution(boolean defaultInstitution) {
+        this.defaultInstitution = defaultInstitution;
     }
 
     public String getTransAddress5() {

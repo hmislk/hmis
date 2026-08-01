@@ -982,6 +982,63 @@ test-fixture data, not a bug.
   silently toggle the wrong control if the page has more than one:
   `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
 
+## 47. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
+
+Unlike §38 (a pool holding connections from *before* an `ALTER TABLE`), this is
+the pool holding connections to a MySQL instance that was itself restarted or
+the host machine slept/resumed. Symptoms are more severe than §38's
+single-page hang: **the app root itself** (`GET /rh`, even the pre-login page)
+times out in both a direct `Invoke-WebRequest`/`curl` and
+`browser_navigate`/`browser_snapshot` (30-60s timeouts with no response) —
+because `ConfigOptionApplicationController.init()` runs on first
+request/session and hits the DB immediately. `server.log` shows
+`CJCommunicationsException: Communications link failure` /
+`SQLNonTransientConnectionException: No operations allowed after connection
+closed` from background EJB timers even while `mysql -h <local-mysql-host>
+... SELECT 1` succeeds fine from the shell — proving MySQL itself is up and
+it's specifically Payara's pool holding dead connections.
+
+**Diagnose**: confirm MySQL responds directly first (rules out "DB is down"),
+then confirm Payara's admin port responds to `list-applications` (rules out
+"domain is down") — if both succeed but the HTTP listener (9090) times out,
+suspect the connection pool.
+
+**Fix**: flush both the main and audit pools (find pool names via
+`grep -B2 'jndi-name="jdbc/coop"' domain.xml` /
+`grep -B2 'jndi-name="jdbc/ruhunuAudit"' domain.xml` — e.g. `poolCoop` and
+`poolRuhunuAuditLocal` locally):
+```powershell
+& asadmin.bat --port 5858 flush-connection-pool poolCoop
+& asadmin.bat --port 5858 flush-connection-pool poolRuhunuAuditLocal
+```
+No redeploy or domain restart needed — a plain HTTP request succeeds
+immediately after the flush. Verified while testing issue #22423 (itself a
+stale-audit-pool-connection bug), where the local dev machine's own audit
+pool had gone stale exactly the way the issue described.
+
+## 48. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
+
+`mcp__playwright__browser_navigate`/`browser_snapshot` can fail with `Browser
+is already in use for <profile-dir>, use --isolated to run multiple instances
+of the same browser` even when no Playwright session is visibly active. This
+comes from an orphaned Chrome process tree still holding that specific
+`--user-data-dir` (named `ms-playwright-mcp\mcp-chrome-<hash>` on Windows),
+left behind by a prior session that didn't shut down cleanly — it is **not**
+related to the user's everyday Chrome windows, which run under a different
+profile entirely. Confirm before touching anything:
+```powershell
+Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" |
+  Where-Object { $_.CommandLine -like '*ms-playwright-mcp*' } |
+  Select-Object ProcessId, CommandLine
+```
+Every process whose `CommandLine` contains `ms-playwright-mcp` (main browser,
+crashpad handler, gpu-process, utility, renderer subprocesses) is safe to
+`Stop-Process -Force` — they all share that same isolated profile directory,
+distinct from the user's real Chrome profile. After clearing them,
+`browser_navigate` launches a fresh instance normally (the very first
+navigation after relaunch can still take up to 60s — a single retry is
+usually enough). Verified while testing issue #22423.
+
 Found while verifying issue #21538 (discharge notifications routing to the
 wrong patient) — the fix couldn't be end-to-end tested at all until this was
 discovered and worked around.
@@ -1112,6 +1169,271 @@ and the copy silently escaped `&&` to `&amp;&amp;`. The OTP boxes never
 rendered and the browser console showed `initOtpBoxes is not defined` and
 `startOtpCountdown is not defined` — errors that look like a missing/renamed
 JS function, not a stray HTML entity three screens away in the same script tag.
+
+## 46. A fixed-position status banner (e.g. "Database Migration Pending") can silently swallow every click on the page below it
+
+When a global banner is rendered with fixed/sticky positioning and no
+`pointer-events: none`, Playwright's actionability check reports the target
+element as "visible, enabled and stable" and still fails the click with
+`<div class="nonPrintBlock">…</div> intercepts pointer events` — this can hit
+*any* element on the page, not just ones physically near the banner, if the
+banner's box overlaps them in the stacking order. Real symptoms seen while
+verifying issue #22415 (Custom Bills tab): clicking a `p:tabView` tab header
+and a `p:commandButton` both timed out this way, even though the elements
+themselves were correctly rendered and enabled.
+
+Standard fixes (Escape, clicking a neutral area first, waiting) don't help
+because the banner isn't a transient overlay (like a datepicker popup) — it's
+a permanent part of the page layout. The reliable workaround is to bypass
+Playwright's actionability gate entirely and dispatch the click straight to
+the element via `browser_evaluate`:
+
+```js
+() => { document.getElementById('theActualElementId').click(); return 'clicked'; }
+```
+
+Get the id from the failed click's error output (it echoes the resolved
+locator's outer HTML, e.g. `id="j_idt524:j_idt867:j_idt3539_header"`). This
+is a real accessibility gap worth fixing in the banner itself (add
+`pointer-events: none` unless the banner has its own interactive controls,
+or `z-index`/positioning that keeps it from overlapping page content) — but
+until that's fixed, `browser_evaluate` + `.click()` is the dependable way to
+drive the page underneath it.
+
+## 47. Any JSF page under a plain (non-`/faces/`) webapp path must still be loaded through `/faces/` — otherwise the raw `.xhtml` source is served unprocessed
+
+`FacesServlet` is mapped to `/faces/*` in `web.xml` (`<url-pattern>/faces/*</url-pattern>`).
+Requesting `http://localhost:8080/rh/client_portal/login.xhtml` directly (no `/faces/`
+segment) does **not** 404 — the container serves the file as a static resource, so the
+page loads with a real `<title>`, but every EL expression renders as literal text
+(`#{clientPortalLoginController.login}`, `#{bean.property}` etc.) and there are **zero**
+`<input>` elements in the DOM (Facelets never ran, so `p:inputText`/`h:commandButton`
+components were never compiled to HTML). This looks like a broken page at first glance —
+confirmed via issue #22371 verification, where `register_phone.xhtml` initially appeared
+to have no input fields at all. Always use `/rh/faces/<same-path>.xhtml` for any new page
+under `src/main/webapp/`, matching the pattern already used for `client_portal/login.xhtml`
+→ `/rh/faces/client_portal/login.xhtml`. (JSF's own `action`/`outcome` navigation strings
+like `"/client_portal/home?faces-redirect=true"` and `<h:link outcome="/client_portal/login"/>`
+already resolve to the correct `/faces/`-prefixed URL automatically — this gotcha only
+bites when a human or a script types the URL by hand.)
+
+## 48. Raw SQL `UPDATE` on an already-cached EclipseLink-mapped entity (not just `ConfigOption`) can be invisible to the running app — the shared L2 cache is general, not `ConfigOption`-specific
+
+§26 documents this for `ConfigOption` specifically, but `eclipselink.cache.size.default`
+in `persistence.xml` applies to every entity class, so the same trap exists for `Institution`,
+`Patient`, or any other frequently-read entity **once that row has already been loaded into
+the shared L2 cache during the current app run** — visibility depends on persistence-context/
+cache state, not a blanket guarantee that every raw SQL update is invisible. Hit while
+verifying issue #22371: a direct `UPDATE INSTITUTION SET DEFAULTINSTITUTION=1,
+POINTOFISSUENO='COOP' WHERE id=2` via the `mysql` CLI changed the DB row, but the next page
+load still showed the old (unset) values in the edit form and the PHN-generation code path
+still saw a blank POI — the already-cached `Institution` entity in the running Payara instance
+kept serving stale field values, with no error anywhere. Re-doing the exact same change through
+the admin UI form (Save button, which goes through `EntityManager.merge`/`edit`) fixed it
+immediately, confirming the raw SQL path was the problem. **Rule of thumb: if a row might
+already be cached (anything read earlier in the same test session), don't `UPDATE` it via raw
+SQL mid-test — use the corresponding admin UI/CRUD screen instead, so the cache gets properly
+refreshed, and reserve raw SQL for read-only verification queries.**
+
+## 49. Pharmacy Transfer Issue: "Request From" is the requester, not the issuer — and the entity-based `TransferIssueForRequestsController` "Issue" button is commented out in favor of the native-SQL path
+
+Two traps found verifying issue #19168's Transfer Issue Department Type filter fix:
+
+- On `pharmacy_transfer_request.xhtml`, "Request From: X / Request To: Y" means
+  **X is requesting stock FROM Y** — Y is the department that later approves and
+  issues. Logging in as X and searching "Issue for Requests" after approval shows
+  nothing ("No records found.") because the issue action belongs to Y's session,
+  not X's. Switch department (§17) to Y before expecting the request to appear
+  in "Select Request For Department: Y".
+- `pharmacy_transfer_request_list.xhtml`'s `p:commandButton` calling
+  `transferIssueForRequestsController.navigateToPharmacyIssueForRequestsById`
+  (id `btnToIssue`) is commented out in the current XHTML — the active "Issue"
+  button now calls `transferIssueNativeSqlController.navigateToIssueRequestNative()`
+  (`pharmacy_transfer_issue_native.xhtml`, the "Fast Issue" path) instead. The
+  entity-based controller class and its tests/fixes still exist and matter (the
+  comment says it can be re-enabled if the native path shows data-correctness
+  issues), but it is **not reachable through today's UI** — don't expect a code
+  change there to be exercisable via a normal click-through without first
+  re-enabling that button. Confirm which controller a page's button actually
+  wires to (`grep` the `.xhtml` for the bean name) before planning an E2E pass
+  around it, rather than assuming the "obvious" controller for a named flow.
+- If the department picked as issuer has zero stock for the item under test
+  (common for a secondary pharmacy like OPD Pharmacy in local seed data), the
+  Fast Issue page renders `Available Stock: 0.00` and blocks entering an issue
+  qty. Switch to the department that actually holds stock (usually Main
+  Pharmacy) and use **Direct Issue** (`pharmacy_transfer_issue_direct_department.xhtml`,
+  `TransferIssueDirectController`) instead — it doesn't require a prior
+  approved request and reaches the same `Bill.departmentType` stamping logic.
+
+## 50. `p:calendar`/`p:selectOneMenu` widgets can silently ignore a plain Playwright `fill()`/`click()` — drive the PrimeFaces widget JS API directly when the visible value won't stick
+
+Hit while verifying issue #22414 (blocking Hold on an already-paid professional
+fee), which needed a specific old BHT found by widening a search page's date
+filter and switching its payment-method dropdown off "Cash" (no cash-drawer
+balance locally):
+
+- **`p:calendar`**: `browser_type`/`.fill()` on the visible text input updates
+  the DOM, but on some pages the value silently reverts to today's date after
+  the next postback (`inward_search_professional_payment_due.xhtml` did this;
+  `inpatient_search.xhtml`'s calendar accepted `.fill()` normally — behavior
+  isn't consistent across pages, so don't assume either way). If a submitted
+  search comes back with unexpectedly narrow/empty results right after typing
+  a date, suspect this before suspecting the query. Fix: drive the widget
+  directly via `browser_evaluate`:
+  ```js
+  const w = PrimeFaces.widgets['widget_<id_with_colons_as_underscores>'];
+  w.setDate(new Date(2020,0,1,0,0,0));
+  w.input.val('01 Jan 2020 00:00:00').trigger('change');
+  ```
+  Find the widget name with
+  `Object.keys(PrimeFaces.widgets).filter(k => k.includes('<idFragment>'))`.
+- **`p:selectOneMenu`**: setting the underlying native `<select>`'s `.value`
+  directly (even to a matching `<option value>`) does not reliably update the
+  PrimeFaces display label — it can silently resync to a stale/wrong option.
+  What actually works is clicking the real `<li>` inside the (JS-rendered,
+  `display:none` until opened) `..._panel` element:
+  ```js
+  const panel = document.getElementById('<id_with_colons>_panel');
+  const li = Array.from(panel.querySelectorAll('li')).find(li => li.textContent.trim() === 'Cheque');
+  li.click();
+  ```
+  This fires the widget's real `itemClick` handler, which updates both the
+  hidden select and the visible label consistently.
+- Both patterns require the target element to actually exist in
+  `PrimeFaces.widgets` first — a plain `browser_click` to open the dropdown
+  panel beforehand isn't necessary once you're driving it via JS, but doing a
+  quick `browser_snapshot` after any of this is worth it to confirm the
+  visible label actually changed before submitting the form.
+- Separately: local test data can have **zero** BillFee rows with
+  `paidValue == feeValue` (nobody has ever settled a professional payment
+  through this exact local DB copy) — check with a quick SQL count before
+  assuming a "must find an already-paid row" test fixture exists; if it
+  doesn't, settle one through the real UI first (Search Outstanding
+  Professional Payments → select one row only → Settle) rather than writing
+  `paidValue` via raw SQL, so the whole flow is genuinely exercised. Settling
+  with "Cash" fails locally with "Not enough cash in your drawer" — switch
+  Payment Method to Cheque/Card/Slip/ewallet (whichever needs no drawer
+  balance) to unblock the settlement without needing a funded cash drawer.
+
+## 51. `p:dialog appendTo="@(body)"` silently drops that dialog's own bound inputs from every AJAX submission
+
+A `p:dialog` with `appendTo="@(body)"` gets physically relocated by PrimeFaces
+to be a direct child of `<body>` in the DOM — taking it **outside** whatever
+`<h:form>` it's declared inside in the JSF source. Any `p:selectOneMenu`/
+`p:inputText` inside that dialog that's bound via a normal `value="#{...}"`
+expression (rather than captured through
+`<f:setPropertyActionListener>`/an iteration var on a `p:dataTable` row) will
+never have its value included in the form's AJAX POST body, because
+PrimeFaces serializes the enclosing `<form>`'s actual DOM subtree, and the
+dialog's inputs are no longer part of it. The request still looks legitimate
+— `javax.faces.partial.execute` correctly lists the dialog's component IDs,
+and the response comes back `200` with no exception — but the parameter
+names for those specific inputs are simply absent from the POST body, so the
+server-side bean properties they're bound to never get updated. Symptom:
+"nothing happens" when clicking Save inside the dialog — a value the user
+just typed silently reverts, with no error unless you also check the
+`update` target's message component actually renders (see #32).
+
+Confirmed by injecting an `XMLHttpRequest.prototype.send` hook via
+`javascript_tool` to capture the real request body and diffing the parameter
+names against a known-good submission from the same form (see issue
+`#22352`'s `ward_pharmacy_bht_issue_request_bill.xhtml` "Edit / Substitute
+Item" dialog). The working counterpart,
+`pharmacy_bill_retail_sale_native.xhtml`'s `substituteDlg`, also uses
+`appendTo="@(body)"` but avoids the problem entirely by using
+`f:setPropertyActionListener` on the row's own "Replace" button instead of a
+submitted form field — worth checking as the reference pattern before
+assuming `appendTo` itself needs to be removed.
+
+## 52. A non-AJAX search that looks "hung" in Playwright may actually be a real, still-running N+1 query — check a Payara thread dump before assuming the button is broken
+
+Clicking a date-filtered `ajax="false"` Search button (e.g.
+`SearchController.fillSavedTranserRequestBills()` behind
+`pharmacy_transfer_request_list_search_for_approval.xhtml`'s "Search") can
+time out on `browser_click` ("waiting for scheduled navigations to finish"),
+and every subsequent `browser_snapshot`/`browser_evaluate`/`browser_tabs`
+call on that page then also times out — indistinguishable, from Playwright's
+side, from a broken client-side handler that never reaches the server (the
+symptom described in §37). Opening a **fresh tab** in the same browser
+context can even reproduce the identical hang on the very first click,
+which looks like confirmation the page itself is broken.
+
+It isn't, necessarily. Check `server.log` first for whether the request even
+arrived — but a wide date range that doesn't filter by `billTypeAtomic`
+(only by `billType`, so it pulls every PRE **and** approved/downstream bill
+over the range) can trigger a classic EclipseLink N+1: one `ReadAllQuery` for
+the bill list, then a lazy `OneToOneMapping`/`ForeignReferenceMapping` round
+trip **per row per relationship** (`fromDepartment`, `toDepartment`,
+`creater`, `checkedBy`, …). Over hundreds of matching rows this is genuinely
+slow (multiple minutes), not stuck — but produces no new `server.log` lines
+if that code path (unlike the heavily-instrumented login flow) has no
+`LOGGER.log(...)` trace statements, making "no new log output" look like
+proof the request never arrived when it actually is just quiet.
+
+**Definitive diagnostic**: `asadmin generate-jvm-report --type=thread` prints
+straight to stdout (no file to locate). Payara's report format — unlike a raw
+`jstack` dump — puts each thread's name and state on one physical line (e.g.
+`Thread "http-thread-pool::http-listener-1(2)" thread-id: 75 thread-state:
+RUNNABLE Running in native`), so a single-line `grep -A3
+'http-thread-pool.*RUNNABLE'` reliably catches it and the frames below. A
+thread whose stack shows your controller method (e.g.
+`TransferRequestController.navigateToApproveRequest`) blocked in
+`SocketInputStream.socketRead0` under
+`com.mysql.cj.protocol...`/`EclipseLink` frames is **genuinely executing** —
+not stuck. `SELECT ... FROM information_schema.PROCESSLIST WHERE
+COMMAND='Query' AND ID != CONNECTION_ID()` corroborates this (a short-lived
+but constantly-refreshing row is the N+1 loop grinding through rows, not a
+single frozen query).
+
+**Fix for testing purposes**: don't fight the browser hang — stop issuing
+more clicks/tabs. Each retry adds another slow in-flight request; enough of
+these piling up can exhaust server thread-pool, session, or DB connection
+capacity, making *every* tab/request against that origin appear to hang, even
+unrelated ones. Instead, narrow the date filter to the single day the
+target record was created before searching, which keeps the row count (and
+therefore the N+1 fan-out) small enough to return in a couple of seconds.
+The wide-range search's result **does** eventually land in the session-scoped
+searchController.bills once it finishes, so a plain navigate-away-and-back
+on a fresh tab can pick up the now-populated list without re-submitting.
+Verified while testing issue #22455 (Pharmacy Transfer Request Approval —
+`pharmacy_transfer_request_list_search_for_approval.xhtml` and its twin
+`pharmacy_transfer_request_list_to_approve.xhtml`, both driven by the same
+session-scoped `SearchController`).
+
+## 53. "Pharmacy Bill Search by Bill Type" has two different pages — pick the one keyed on `billType`, not `billTypeAtomic`
+
+Two separate JSF pages both claim to be the pharmacy bill-type search: `pharmacy/pharmacy_search.xhtml`
+(dropdown bound to `searchController.billType`, the plain `BillType` enum) and
+`pharmacy/pharmacy_search_by_bill_type_atomic.xhtml` (dropdown bound to `searchController.billTypeAtomic`,
+the finer-grained `BillTypeAtomic` enum). Both render a "Pharmacy Bill Search" panel with a Bill Type
+dropdown, so it's easy to land on the wrong one and see misleading results. For
+`PHARMACY_RETURN_WITHOUT_TREASING`/`PharmacyReturnWithoutTraising` specifically, the atomic-driven page is
+**dead for this bill type**: `BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING`'s constructor declares its
+associated `BillType` as `PharmacySale` (not `PharmacyReturnWithoutTraising`), so the atomic page's
+`rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyReturnWithoutTraising'}"` panel can never
+match — selecting "Pharmacy Return without a Receipt" there silently falls through to an unrelated stale
+"SALE BILL SEARCH" panel showing "No Bills Found", with no error. Grep
+`BillTypeAtomic.java` for other atomics whose declared `BillType` doesn't match their own name before trusting
+the atomic-based search page for a given bill type — `pharmacy_search.xhtml`'s plain-`billType` dropdown is
+the reliable one when in doubt. Found verifying issue #22563.
+
+## 54. `pharmacy_fast_retail_sale_for_cashier.xhtml` "Settle Bill At Cashier" 500s with a Patient cascade error if the Patient Name field is left blank
+
+`PharmacyFastRetailSaleForCashierController.settlePreBill()` → `settlePharmacyToken()` creates a `Token`
+referencing an in-memory `Patient` placeholder when no patient is selected/entered. Committing that
+transaction throws `IllegalStateException: During synchronization a new object was found through a
+relationship that was not marked cascade PERSIST: com.divudi.core.entity.Patient[ id=null ]`, rolling back
+the whole "Settle Bill At Cashier" action with an HTTP 500 (unrelated to whatever feature is actually under
+test). Always type something into "Enter the Name of the patient" before clicking "Settle Bill At Cashier"
+on this page — a walk-in placeholder name is enough. Found verifying issue #21419.
+
+Also for this page: "Settle Bill At Cashier" only creates a `PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER`
+pre-bill and deducts stock — it does **not** create the final sale bill. To reach the actual
+`PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER` bill (the one with a cancellable "To Cancel" button on
+`pharmacy_reprint_bill_sale_cashier.xhtml`), separately go to `pharmacy_search_pre_bill.xhtml` → **Search
+Not Paid Tokens** → **Call Customer** → **Accept Payment** → enter Tendered amount → **Accept Payment and
+Settle**. Then from `pharmacy_search_pre_bill.xhtml` → **Search Paid Only Tokens** → **View Payment Bill**
+lands on the reprint/cancel page for that bill.
 
 ## Quick checklist
 

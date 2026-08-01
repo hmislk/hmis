@@ -965,4 +965,86 @@ public class BillFee implements Serializable, RetirableEntity {
         this.feePaymentHoldNotes = feePaymentHoldNotes;
     }
 
+    /**
+     * Single source of truth for "may this professional fee be paid?".
+     *
+     * A professional fee is held either because this individual fee was put on
+     * hold ({@link #isFeePaymentOnHold()}) or because the whole admission was
+     * put on hold
+     * ({@link PatientEncounter#isProfessionalPaymentsOnHold()}). Every page
+     * that lists or pays professional fees must consult this, so the two hold
+     * levels stay in sync across the application. (Issues #22483, #22484)
+     */
+    @Transient
+    public boolean isProfessionalPaymentHeld() {
+        return isFeePaymentOnHold() || isBhtProfessionalPaymentsOnHold();
+    }
+
+    @Transient
+    public boolean isBhtProfessionalPaymentsOnHold() {
+        return patienEncounter != null && patienEncounter.isProfessionalPaymentsOnHold();
+    }
+
+    /**
+     * Short label describing where the hold comes from, for the "Hold Status"
+     * column: {@code Payable}, {@code On Hold (This Fee)},
+     * {@code On Hold (Whole BHT)} or {@code On Hold (This Fee + Whole BHT)}.
+     */
+    @Transient
+    public String getProfessionalPaymentHoldStatus() {
+        boolean fee = isFeePaymentOnHold();
+        boolean bht = isBhtProfessionalPaymentsOnHold();
+        if (fee && bht) {
+            return "On Hold (This Fee + Whole BHT)";
+        }
+        if (fee) {
+            return "On Hold (This Fee)";
+        }
+        if (bht) {
+            return "On Hold (Whole BHT)";
+        }
+        return "Payable";
+    }
+
+    /**
+     * Who held it, when, and why — used as the tooltip beside the hold status.
+     */
+    @Transient
+    public String getProfessionalPaymentHoldDetails() {
+        StringBuilder sb = new StringBuilder();
+        if (isFeePaymentOnHold()) {
+            sb.append("This fee was held");
+            if (feePaymentHoldBy != null) {
+                sb.append(" by ").append(feePaymentHoldBy.getName());
+            }
+            if (feePaymentHoldDateTime != null) {
+                sb.append(" on ").append(feePaymentHoldDateTime);
+            }
+            if (feePaymentHoldNotes != null && !feePaymentHoldNotes.trim().isEmpty()) {
+                sb.append(" — ").append(feePaymentHoldNotes.trim());
+            }
+            sb.append('.');
+        }
+        if (isBhtProfessionalPaymentsOnHold()) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append("All professional payments for BHT ")
+                    .append(patienEncounter.getBhtNo())
+                    .append(" are held");
+            if (patienEncounter.getProfessionalPaymentsHoldBy() != null) {
+                sb.append(" by ").append(patienEncounter.getProfessionalPaymentsHoldBy().getName());
+            }
+            if (patienEncounter.getProfessionalPaymentsHoldDateTime() != null) {
+                sb.append(" on ").append(patienEncounter.getProfessionalPaymentsHoldDateTime());
+            }
+            String bhtNotes = patienEncounter.getProfessionalPaymentsHoldNotes();
+            if (bhtNotes != null && !bhtNotes.trim().isEmpty()) {
+                sb.append(" — ").append(bhtNotes.trim());
+            }
+            sb.append('.');
+        }
+        return sb.toString();
+    }
+
 }

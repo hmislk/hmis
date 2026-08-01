@@ -61,6 +61,28 @@
                                         </div>
                                     </f:facet>
 
+                                    <!-- The whole-BHT hold overrides every row here; releasing an
+                                         individual fee alone will not make it payable (#22483) -->
+                                    <h:panelGroup layout="block" styleClass="mb-3"
+                                                  rendered="#{professionalFeeHoldController.currentEncounter.professionalPaymentsOnHold}">
+                                        <p:panel styleClass="w-100 ui-state-error">
+                                            <h:outputText
+                                                value="All professional payments for this BHT are on hold — held by #{professionalFeeHoldController.currentEncounter.professionalPaymentsHoldBy.name}."
+                                                styleClass="fw-bold" />
+                                            <h:outputText value=" #{professionalFeeHoldController.currentEncounter.professionalPaymentsHoldNotes}"
+                                                          rendered="#{not empty professionalFeeHoldController.currentEncounter.professionalPaymentsHoldNotes}" />
+                                            <h:outputText value=" Releasing an individual payment below will not make it payable until the whole-BHT hold is released on the Hold Professional Payments page."
+                                                          styleClass="d-block mt-1" />
+                                            <p:commandButton
+                                                id="btnGoToBhtHold"
+                                                value="Hold Professional Payments"
+                                                ajax="false"
+                                                icon="fa fa-unlock"
+                                                class="mt-2"
+                                                action="#{professionalPaymentHoldController.navigateToProfessionalPaymentHold(professionalFeeHoldController.currentEncounter)}" />
+                                        </p:panel>
+                                    </h:panelGroup>
+
                                     <p:outputLabel for="txtFeeHoldNotes" value="Hold Notes (applied to newly held payments):" styleClass="font-weight-bold" />
                                     <p:inputTextarea
                                         id="txtFeeHoldNotes"
@@ -121,17 +143,14 @@
                                             </h:outputLabel>
                                         </p:column>
 
+                                        <!-- Reflects BOTH the per-fee hold and the whole-BHT hold, so the
+                                             two levels stay in sync with the payment pages (#22483) -->
                                         <p:column headerText="Hold Status">
-                                            <h:panelGroup layout="block" rendered="#{bf.feePaymentOnHold}">
-                                                <span class="ui-tag ui-tag-danger" title="#{bf.feePaymentHoldNotes}">
-                                                    On Hold since
-                                                    <h:outputText value="#{bf.feePaymentHoldDateTime}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                                    </h:outputText>
-                                                    by #{bf.feePaymentHoldBy.name}
-                                                </span>
+                                            <h:panelGroup layout="block" rendered="#{bf.professionalPaymentHeld}">
+                                                <span class="ui-tag ui-tag-danger"
+                                                      title="#{bf.professionalPaymentHoldDetails}">#{bf.professionalPaymentHoldStatus}</span>
                                             </h:panelGroup>
-                                            <h:panelGroup layout="block" rendered="#{not bf.feePaymentOnHold}">
+                                            <h:panelGroup layout="block" rendered="#{not bf.professionalPaymentHeld}">
                                                 <span class="ui-tag ui-tag-success">Payable</span>
                                             </h:panelGroup>
                                         </p:column>
