@@ -516,6 +516,58 @@ public class BhtSummeryController implements Serializable {
         return new ArrayList<>(totals.entrySet());
     }
 
+    /**
+     * Charges grouped by inward charge type, alphabetical by display name,
+     * for the Custom3 5x5 impact-printer bill ("Custom Bill 2" in the UI).
+     * Unlike getCustom2CategoryTotals, ProfessionalCharge (doctor/consultant
+     * fee) is NOT excluded — Custom3 is a single-page format with no separate
+     * Professional Bill page, so it must appear as its own particulars line.
+     */
+    public List<Map.Entry<String, Double>> getCustom3CategoryTotals(Bill bill) {
+        Map<String, Double> totals = new TreeMap<>();
+        if (bill == null || bill.getBillItems() == null) {
+            return new ArrayList<>(totals.entrySet());
+        }
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.getAdjustedValue() == 0.0) {
+                continue;
+            }
+            String label = getChargeTypeLabel(bi.getInwardChargeType());
+            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+        }
+        return new ArrayList<>(totals.entrySet());
+    }
+
+    /**
+     * Sum of prior payments/receipts recorded against this admission — the
+     * Custom3 bill's "Deposit" line. Same backwardReferenceBills source and
+     * qualifying filter as the Custom2 receipts table (finalBillCustom2.xhtml
+     * lines 280-291), just summed instead of rendered row by row.
+     */
+    public double getCustom3DepositTotal(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        List<Bill> receipts = (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null)
+                ? bill.getPatientEncounter().getFinalBill().getBackwardReferenceBills()
+                : bill.getBackwardReferenceBills();
+        double total = 0.0;
+        if (receipts == null) {
+            return total;
+        }
+        for (Bill b : receipts) {
+            if (b.getNetTotal() == 0.0) {
+                continue;
+            }
+            boolean qualifies = (!b.isCancelled() && "class com.divudi.core.entity.BilledBill".equals(b.getBillClass()))
+                    || (!b.isCancelled() && b.getRefundedBill() == null && "class com.divudi.core.entity.RefundBill".equals(b.getBillClass()));
+            if (qualifies) {
+                total += b.getNetTotal();
+            }
+        }
+        return total;
+    }
+
     public boolean isCustom2ShowAddress() {
         return custom2ShowAddress;
     }
