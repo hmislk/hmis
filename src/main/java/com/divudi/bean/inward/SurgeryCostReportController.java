@@ -441,16 +441,6 @@ public class SurgeryCostReportController implements Serializable {
         }
     }
 
-    private String resolveStaffName(EncounterComponent ec) {
-        if (ec.getStaff() == null) {
-            return "";
-        }
-        if (ec.getStaff().getPerson() != null) {
-            return ec.getStaff().getPerson().getNameWithTitle();
-        }
-        return ec.getStaff().getName();
-    }
-
     private void enrichSurgeonsFromBillStaff(Set<Long> billIds, Map<Long, SurgeryCostEstimationDTO> dtoByBillId) {
         if (billIds.isEmpty()) {
             return;
@@ -698,7 +688,7 @@ public class SurgeryCostReportController implements Serializable {
                         .append("JOIN proc.item item ")
                         .append("LEFT JOIN sb.staff p ")
                         .append("JOIN sb.patientEncounter admission ");
-                appendSummaryWhereClause(jpql, params, BillType.InwardBill, BillTypeAtomic.INWARD_SERVICE_BILL);
+                appendSummaryWhereClause(jpql, params);
                 jpql.append(" GROUP BY p.id, p.person.name, item.id, item.name ORDER BY p.person.name ASC, COUNT(DISTINCT sb.id) DESC");
                 break;
             case "byOtRoom":
