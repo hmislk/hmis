@@ -1605,13 +1605,24 @@ public class DataAdministrationController implements Serializable {
                         continue;
                     }
 
-                    double changingQty = bi.getQty();
+                    // saveDeptAdjustmentBillItems() stores the TARGET quantity on
+                    // BillItem.qty but the signed DELTA on PharmaceuticalBillItem.qty
+                    // (afterAdjustmentValue - beforeAdjustmentValue) -- use the latter,
+                    // matching the value the original save path intended for BFD.
+                    double changingQty = pharmaItem.getQty();
                     double retailRate = pharmaItem.getRetailRate();
+                    if (retailRate <= 0 && pharmaItem.getItemBatch() != null) {
+                        retailRate = pharmaItem.getItemBatch().getRetailsaleRate();
+                    }
 
                     Double costRateObj = pharmaItem.getItemBatch() != null ? pharmaItem.getItemBatch().getCostRate() : null;
                     double costRate = (costRateObj != null && costRateObj > 0)
                             ? costRateObj
                             : (pharmaItem.getItemBatch() != null ? pharmaItem.getItemBatch().getPurcahseRate() : 0.0);
+
+                    if (changingQty == 0 && retailRate == 0) {
+                        continue;
+                    }
 
                     BigDecimal retailChangeValue = BigDecimal.valueOf(changingQty * retailRate);
                     BigDecimal retailAbsChangeValue = BigDecimal.valueOf(Math.abs(changingQty * retailRate));

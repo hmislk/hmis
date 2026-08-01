@@ -781,7 +781,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
 
         // Create BillFinanceDetails for the adjustment
-        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
@@ -816,7 +816,7 @@ public class PharmacyAdjustmentController implements Serializable {
             applyOrValidateDepartmentType(stock.getItemBatch().getItem());
         }
 
-        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
@@ -851,7 +851,7 @@ public class PharmacyAdjustmentController implements Serializable {
             applyOrValidateDepartmentType(stock.getItemBatch().getItem());
         }
 
-        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
@@ -1892,7 +1892,8 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        double changingQtyForBfd = qty - getStockFacade().find(stock.getId()).getStock();
+        double stockQtyBeforeAdjustmentForBfd = getStockFacade().find(stock.getId()).getStock();
+        double changingQtyForBfd = qty - stockQtyBeforeAdjustmentForBfd;
         double retailRateForBfd = stock.getItemBatch().getRetailsaleRate();
         Double costRateObjForBfd = stock.getItemBatch().getCostRate();
         double costRateForBfd = (costRateObjForBfd != null && costRateObjForBfd > 0) ? costRateObjForBfd : stock.getItemBatch().getPurcahseRate();
@@ -1918,6 +1919,8 @@ public class PharmacyAdjustmentController implements Serializable {
             bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changingQtyForBfd * retailRateForBfd)));
             bfd.setNetTotal(retailChangeValue);
             bfd.setTotalQuantity(java.math.BigDecimal.valueOf(Math.abs(changingQtyForBfd)));
+            bfd.setTotalBeforeAdjustmentValue(java.math.BigDecimal.valueOf(stockQtyBeforeAdjustmentForBfd * retailRateForBfd));
+            bfd.setTotalAfterAdjustmentValue(java.math.BigDecimal.valueOf(qty * retailRateForBfd));
             bfd.setTotalPurchaseValue(java.math.BigDecimal.ZERO);
             bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
             billFinanceDetailsFacade.create(bfd);
