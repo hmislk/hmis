@@ -153,10 +153,16 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
 
         final List<Node> nodes;
         final String extraClass;
+        final boolean noSplit;
 
         MicLine(List<Node> nodes, String extraClass) {
+            this(nodes, extraClass, false);
+        }
+
+        MicLine(List<Node> nodes, String extraClass, boolean noSplit) {
             this.nodes = nodes;
             this.extraClass = extraClass;
+            this.noSplit = noSplit;
         }
     }
 
@@ -179,7 +185,7 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
                     }
                     List<Node> single = new ArrayList<>();
                     single.add(el);
-                    lines.add(new MicLine(single, null));
+                    lines.add(new MicLine(single, null, true));
                     continue;
                 }
                 if ("p".equals(tag) || "div".equals(tag)) {
@@ -188,10 +194,8 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
                         current = new ArrayList<>();
                     }
                     String indentClass = extractIndentClass(el);
-                    boolean first = true;
                     for (List<Node> sub : splitOnBr(new ArrayList<>(el.childNodes()))) {
-                        lines.add(new MicLine(sub, first ? indentClass : null));
-                        first = false;
+                        lines.add(new MicLine(sub, indentClass));
                     }
                     continue;
                 }
@@ -233,7 +237,7 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
             out.append("<div class=\"micLineFull\"></div>");
             return;
         }
-        ColonSplit split = splitAtColon(line.nodes);
+        ColonSplit split = line.noSplit ? new ColonSplit() : splitAtColon(line.nodes);
         String cls = line.extraClass == null ? "" : " " + line.extraClass;
         if (split.found) {
             out.append("<div class=\"micLineLabel").append(cls).append("\">")
