@@ -12,8 +12,12 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.ByteArrayOutputStream;
@@ -78,7 +82,11 @@ public class SurgeryCostReportController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
+    private EncounterComponentFacade encounterComponentFacade;
+    @EJB
     private PatientTransferRequestFacade patientTransferRequestFacade;
+    @EJB
+    PatientRoomFacade patientRoomFacade;
 
     private Institution institution;
     private Institution site;
@@ -368,7 +376,7 @@ public class SurgeryCostReportController implements Serializable {
             params.put("perfType", PatientEncounterComponentType.Performed_By);
             params.put("asstType", PatientEncounterComponentType.Assisted_by);
 
-            List<Object[]> rows = billFacade.findAggregates(ecJpql, params);
+            List<Object[]> rows = encounterComponentFacade.findAggregates(ecJpql, params);
             if (rows == null) {
                 continue;
             }
@@ -424,7 +432,7 @@ public class SurgeryCostReportController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             params.put("billIds", batch);
 
-            List<Object[]> rows = billFacade.findAggregates(ptrJpql, params);
+            List<Object[]> rows = patientTransferRequestFacade.findAggregates(ptrJpql, params);
             if (rows == null) {
                 continue;
             }
@@ -517,7 +525,7 @@ public class SurgeryCostReportController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             params.put("peIds", batch);
 
-            List<Object[]> roomList = billFacade.findAggregates(roomJpql, params);
+            List<Object[]> roomList = patientRoomFacade.findAggregates(roomJpql, params);
             if (roomList == null) {
                 continue;
             }
