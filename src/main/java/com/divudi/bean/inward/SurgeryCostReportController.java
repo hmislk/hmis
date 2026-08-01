@@ -12,11 +12,8 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Staff;
-import com.divudi.core.entity.inward.EncounterComponent;
-import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.ByteArrayOutputStream;
@@ -81,8 +78,6 @@ public class SurgeryCostReportController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    private EncounterComponentFacade encounterComponentFacade;
-    @EJB
     private PatientTransferRequestFacade patientTransferRequestFacade;
 
     private Institution institution;
@@ -121,11 +116,6 @@ public class SurgeryCostReportController implements Serializable {
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
     );
 
-    // =====================================================================
-    // 2. UI SUPPORT — dropdown value sources and label lookups.
-    //    Used by the .xhtml directly and by the enrichment/export methods
-    //    below, so they're declared once, up front.
-    // =====================================================================
     public TheatreOccupancyStatus[] getTheatreOccupancyStatusValues() {
         return TheatreOccupancyStatus.values();
     }
