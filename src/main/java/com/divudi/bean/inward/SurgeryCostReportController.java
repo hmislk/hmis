@@ -228,7 +228,6 @@ public class SurgeryCostReportController implements Serializable {
         ReportLookups lookups = buildLookups(list);
 
         enrichSurgeonsAndAssistants(lookups.procIds, lookups.dtosByProcId);
-        enrichSurgeonsFromBillStaff(lookups.billIds, lookups.dtoByBillId);
         enrichOtRoomAndStatus(lookups.billIds, lookups.dtoByBillId);
         enrichChildBillCharges(lookups.billIds, lookups.dtoByBillId);
         enrichRoomCharges(lookups.peIds, lookups.dtosByPeId);
@@ -248,13 +247,14 @@ public class SurgeryCostReportController implements Serializable {
         jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostEstimationDTO( ")
                 .append("sb.id, proc.id, admission.patient.phn, admission.patient.person.name, ")
                 .append("admission.bhtNo, admission.dateOfAdmission, room.roomFacilityCharge.name, ")
-                .append("item.name, cat.name, admission.id) ")
+                .append("item.name, cat.name, admission.id, billPerson.title, billPerson.name) ")
                 .append("FROM BilledBill sb ")
                 .append("JOIN sb.procedure proc ")
                 .append("JOIN proc.item item ")
                 .append("LEFT JOIN item.category cat ")
                 .append("JOIN sb.patientEncounter admission ")
                 .append("LEFT JOIN admission.currentPatientRoom room ")
+                .append("LEFT JOIN sb.staff billStaff LEFT JOIN billStaff.person billPerson ")
                 .append("WHERE sb.retired = false ")
                 .append("AND sb.cancelled = false ")
                 .append("AND sb.billType = :surgeryBillType ")
@@ -441,34 +441,7 @@ public class SurgeryCostReportController implements Serializable {
         }
     }
 
-    private void enrichSurgeonsFromBillStaff(Set<Long> billIds, Map<Long, SurgeryCostEstimationDTO> dtoByBillId) {
-        if (billIds.isEmpty()) {
-            return;
-        }
-        String staffJpql = "SELECT sb.id, sb.staff.person.title, sb.staff.person.name "
-                + "FROM BilledBill sb "
-                + "WHERE sb.id IN :billIds";
-        for (List<Long> batch : partition(billIds, IN_CLAUSE_BATCH_SIZE)) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("billIds", batch);
-            List<Object[]> results = billFacade.findAggregates(staffJpql, params);
-            if (results == null) {
-                continue;
-            }
-            for (Object[] row : results) {
-                Long billId = (Long) row[0];
-                com.divudi.core.data.Title staffTitleName = (com.divudi.core.data.Title) row[1];
-                String staffName = (String) row[2];
-                String surgeon = staffTitleName != null ? staffTitleName.toString() : staffName;
-                if (surgeon != null && !surgeon.trim().isEmpty()) {
-                    SurgeryCostEstimationDTO dto = dtoByBillId.get(billId);
-                    if (dto != null && (dto.getSurgeonName() == null || dto.getSurgeonName().trim().isEmpty())) {
-                        dto.setSurgeonName(surgeon);
-                    }
-                }
-            }
-        }
-    }
+
 
     private void enrichOtRoomAndStatus(Set<Long> billIds,
             Map<Long, SurgeryCostEstimationDTO> dtoByBillId) {
@@ -601,6 +574,31 @@ public class SurgeryCostReportController implements Serializable {
     }
 
 
+    /**
+     * Enriches DTOs with per-admission drug charges.
+     *
+     * <p><b>IMPORTANT — Overwrite (set) semantics, not accumulate (+=):</b>
+     * Unlike {@code enrichRoomCharges} and {@code enrichChildBillCharges}, which
+     * <em>accumulate</em> values with {@code +=}, this method intentionally
+     * <em>overwrites</em> each DTO's drugCharges via {@code setDrugCharges(...)}.
+     *
+     * <p><b>Why this is correct:</b> The JPQL query aggregates drug bills with
+     * {@code GROUP BY pb.patientEncounter.id}, producing exactly <em>one</em>
+     * total per admission. When an admission has multiple surgeries, each
+     * surgery DTO receives the same per-admission drug total. This is
+     * intentional — drug charges are an admission-level aggregate that is
+     * duplicated identically across all sibling surgery rows for display
+     * purposes, not a per-surgery value that should be summed.
+     *
+     * <p><b>Do NOT change this to {@code +=}</b> without also changing the
+     * JPQL grouping strategy. A {@code +=} here would cause incorrect values
+     * if a batch boundary splits the same admission's results across batches
+     * (which the current query structure does not produce, but the overwrite
+     * semantics make the method robust against such scenarios anyway).
+     *
+     * @see #enrichRoomCharges   — accumulates (+=) room charges per encounter
+     * @see #enrichChildBillCharges — accumulates (+=) child bill charges per bill
+     */
     private void enrichDrugCharges(Set<Long> peIds,
             Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId) {
         if (peIds.isEmpty()) {
