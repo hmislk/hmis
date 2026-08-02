@@ -517,11 +517,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
-     * Charges grouped by inward charge type, alphabetical by display name,
-     * for the Custom3 5x5 impact-printer bill ("Custom Bill 2" in the UI).
-     * Unlike getCustom2CategoryTotals, ProfessionalCharge (doctor/consultant
-     * fee) is NOT excluded — Custom3 is a single-page format with no separate
-     * Professional Bill page, so it must appear as its own particulars line.
+     * Charges grouped by inward charge type (excluding Professional Charge,
+     * which is now listed as individual per-doctor fee lines), alphabetical
+     * by display name, for the Custom3 5x5 impact-printer bill ("Custom Bill
+     * 2" in the UI).
      */
     public List<Map.Entry<String, Double>> getCustom3CategoryTotals(Bill bill) {
         Map<String, Double> totals = new TreeMap<>();
@@ -529,6 +528,9 @@ public class BhtSummeryController implements Serializable {
             return new ArrayList<>(totals.entrySet());
         }
         for (BillItem bi : bill.getBillItems()) {
+            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                continue;
+            }
             if (bi.getAdjustedValue() == 0.0) {
                 continue;
             }
