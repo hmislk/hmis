@@ -144,10 +144,18 @@
                         </h:outputLabel>
                     </td>
                 </tr>
-                <tr style="font-weight: bold; font-size: 13px; border-top: 1px solid #000;">
+                <tr style="font-size: 13px; border-top: 1px solid #000;">
                     <td style="text-align: left;">Net Amount (LKR)</td>
                     <td style="text-align: right;">
                         <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr style="font-weight: bold; font-size: 13px;">
+                    <td style="text-align: left;">Due Amount</td>
+                    <td style="text-align: right;">
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal - cc.attrs.bill.paidAmount}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </td>
