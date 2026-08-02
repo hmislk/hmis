@@ -189,6 +189,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     String selectText = "";
     private String ageText = "";
     private String bhtText = "";
+    // Snapshot of the suggested BHT/OPD-card text at the moment the admission
+    // form loaded it into bhtText. Used at save time to detect whether the
+    // user actually edited the field, instead of comparing against a fresh
+    // peek (which can drift if another admission consumes the counter while
+    // this form is still open, wrongly looking like a manual override). (#22583)
+    private String suggestedBhtAtLoad = "";
     private String patientTabId = "tabNewPt";
     private int patientSearchTab;
     private Patient patient;
@@ -2651,9 +2657,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatientAllergies();
         saveGuardian();
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        String suggestedBht = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
+        // Compare against the snapshot taken when the form loaded, not a fresh
+        // peek — the counter may have moved on since then (another admission
+        // saved while this form sat open), which would make an untouched
+        // field look like a manual override and bypass the counter/lock,
+        // silently colliding with a number already issued elsewhere. (#22583)
         boolean userOverrodeBht = bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
-                && !bhtText.trim().equals(suggestedBht);
+                && !bhtText.trim().equals(suggestedBhtAtLoad.trim());
 
         long oldBhtLong = getCurrent().getBhtLong();
         String oldBhtNo = getCurrent().getBhtNo();
@@ -3146,6 +3156,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
+        suggestedBhtAtLoad = bhtText;
 
         // Baby admissions never get a room of their own — the baby stays in the
         // mother's room. Skip applying the admission type's default/package room
