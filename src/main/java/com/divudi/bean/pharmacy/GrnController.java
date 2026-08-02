@@ -287,14 +287,18 @@ public class GrnController implements Serializable {
 
     /**
      * @deprecated Entry point into the legacy non-costing approval flow
-     * (issue #21289), reached from the now-unreachable
+     * (issue #21289), reached from
      * {@code pharmacy_purchase_order_list_for_recieve_with_approval.xhtml}.
      * Navigates to {@code pharmacy_grn_with_approval.xhtml} whose
      * Save/Finalize buttons call {@link #request()} /
      * {@link #requestFinalize()}; the flow's terminal Approve step
      * ({@link #navigateToApproveRecieveGrnPreBill()} / {@link #settle()})
-     * always fails with "Please select a payment method". No longer
-     * reachable from the UI.
+     * always fails with "Please select a payment method". No longer linked
+     * from any navigation menu (the home tile and Procurement &gt; GRN button
+     * were removed), but the backing XHTML pages and their JSF action
+     * bindings are intentionally left in place — not deleted — until the QA
+     * comparison in #22595 confirms the DTO/costing flow has full parity,
+     * at which point this whole flow will be removed.
      */
     @Deprecated
     public String navigateToRecieveGrnPreBill() {
@@ -320,8 +324,10 @@ public class GrnController implements Serializable {
      * {@code GrnCostingController}'s Save/Finalize/Approve flow
      * ({@code requestWithSaveApprove()} / {@code finalizeGrnWithSaveApprove()}
      * / {@code approveGrnWithSaveApprove()}), which is already the sole path
-     * for GRN creation whenever "Manage Costing" is enabled. No longer
-     * reachable from the UI as of #21289.
+     * for GRN creation whenever "Manage Costing" is enabled. No longer linked
+     * from any navigation menu, but the backing XHTML pages and their JSF
+     * action bindings are intentionally left in place until the QA
+     * comparison in #22595 confirms the DTO/costing flow has full parity.
      */
     @Deprecated
     public String navigateToApproveRecieveGrnPreBill() {
@@ -533,7 +539,10 @@ public class GrnController implements Serializable {
 
     /**
      * @deprecated Part of the legacy non-costing approval flow (issue
-     * #21289), no longer reachable from the UI. See
+     * #21289), no longer linked from any navigation menu. The backing XHTML
+     * page ({@code pharmacy_grn_with_approval.xhtml}) and its JSF action
+     * binding are intentionally left in place until the QA comparison in
+     * #22595 confirms the DTO/costing flow has full parity. See
      * {@link #navigateToApproveRecieveGrnPreBill()} for details.
      */
     @Deprecated
@@ -647,7 +656,10 @@ public class GrnController implements Serializable {
 
     /**
      * @deprecated Part of the legacy non-costing approval flow (issue
-     * #21289), no longer reachable from the UI. See
+     * #21289), no longer linked from any navigation menu. The backing XHTML
+     * page ({@code pharmacy_grn_with_approval.xhtml}) and its JSF action
+     * binding are intentionally left in place until the QA comparison in
+     * #22595 confirms the DTO/costing flow has full parity. See
      * {@link #navigateToApproveRecieveGrnPreBill()} for details.
      */
     @Deprecated
@@ -759,7 +771,12 @@ public class GrnController implements Serializable {
      * {@link #navigateToApproveRecieveGrnPreBill()} and lazily creates a
      * disconnected empty {@code Bill} — the real payment method lives on
      * {@code currentGrnBillPre}, so Settle always fails with "Please select
-     * a payment method". No longer reachable from the UI. Superseded by
+     * a payment method", unconditionally — this does not depend on the
+     * "Manage Costing" config flag. No longer linked from any navigation
+     * menu, but the backing XHTML page
+     * ({@code pharmacy_grn_approval_finalized.xhtml}) and its JSF action
+     * binding are intentionally left in place until the QA comparison in
+     * #22595 confirms the DTO/costing flow has full parity. Superseded by
      * {@code GrnCostingController.approveGrnWithSaveApprove()}.
      */
     @Deprecated
