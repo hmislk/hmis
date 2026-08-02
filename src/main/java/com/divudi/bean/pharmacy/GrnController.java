@@ -285,6 +285,18 @@ public class GrnController implements Serializable {
         insTotal = 0;
     }
 
+    /**
+     * @deprecated Entry point into the legacy non-costing approval flow
+     * (issue #21289), reached from the now-unreachable
+     * {@code pharmacy_purchase_order_list_for_recieve_with_approval.xhtml}.
+     * Navigates to {@code pharmacy_grn_with_approval.xhtml} whose
+     * Save/Finalize buttons call {@link #request()} /
+     * {@link #requestFinalize()}; the flow's terminal Approve step
+     * ({@link #navigateToApproveRecieveGrnPreBill()} / {@link #settle()})
+     * always fails with "Please select a payment method". No longer
+     * reachable from the UI.
+     */
+    @Deprecated
     public String navigateToRecieveGrnPreBill() {
         clear();
         currentGrnBillPre = null;
