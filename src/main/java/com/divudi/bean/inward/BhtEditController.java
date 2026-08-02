@@ -266,6 +266,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (removingPrimary) {
             current.setCreditCompany(encounterCreditCompanys.isEmpty()
                     ? null : encounterCreditCompanys.get(0).getInstitution());
+            getEjbFacade().edit(current);
         }
     }
 
@@ -301,6 +302,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         encounterCreditCompanys.add(newEncounterCreditCompany);
         if (current.getCreditCompany() == null) {
             current.setCreditCompany(newEncounterCreditCompany.getInstitution());
+            getEjbFacade().edit(current);
         }
         newEncounterCreditCompany = new EncounterCreditCompany();
         JsfUtil.addSuccessMessage("Credit company added");
