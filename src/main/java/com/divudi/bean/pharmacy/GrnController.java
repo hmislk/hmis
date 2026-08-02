@@ -285,6 +285,22 @@ public class GrnController implements Serializable {
         insTotal = 0;
     }
 
+    /**
+     * @deprecated Entry point into the legacy non-costing approval flow
+     * (issue #21289), reached from
+     * {@code pharmacy_purchase_order_list_for_recieve_with_approval.xhtml}.
+     * Navigates to {@code pharmacy_grn_with_approval.xhtml} whose
+     * Save/Finalize buttons call {@link #request()} /
+     * {@link #requestFinalize()}; the flow's terminal Approve step
+     * ({@link #navigateToApproveRecieveGrnPreBill()} / {@link #settle()})
+     * always fails with "Please select a payment method". No longer linked
+     * from any navigation menu (the home tile and Procurement &gt; GRN button
+     * were removed), but the backing XHTML pages and their JSF action
+     * bindings are intentionally left in place — not deleted — until the QA
+     * comparison in #22595 confirms the DTO/costing flow has full parity,
+     * at which point this whole flow will be removed.
+     */
+    @Deprecated
     public String navigateToRecieveGrnPreBill() {
         clear();
         currentGrnBillPre = null;
@@ -299,6 +315,21 @@ public class GrnController implements Serializable {
         return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
     }
 
+    /**
+     * @deprecated Legacy non-costing approval flow (issue #21289). Never
+     * assigns {@code grnBill}, so {@link #settle()} operates on a
+     * disconnected, lazily-created empty {@code Bill} instead of
+     * {@code currentGrnBillPre} where the real payment method lives — Settle
+     * always fails with "Please select a payment method". Superseded by
+     * {@code GrnCostingController}'s Save/Finalize/Approve flow
+     * ({@code requestWithSaveApprove()} / {@code finalizeGrnWithSaveApprove()}
+     * / {@code approveGrnWithSaveApprove()}), which is already the sole path
+     * for GRN creation whenever "Manage Costing" is enabled. No longer linked
+     * from any navigation menu, but the backing XHTML pages and their JSF
+     * action bindings are intentionally left in place until the QA
+     * comparison in #22595 confirms the DTO/costing flow has full parity.
+     */
+    @Deprecated
     public String navigateToApproveRecieveGrnPreBill() {
         clear();
         billItems = getCurrentGrnBillPre().getBillItems();
@@ -506,6 +537,15 @@ public class GrnController implements Serializable {
         return fromDate;
     }
 
+    /**
+     * @deprecated Part of the legacy non-costing approval flow (issue
+     * #21289), no longer linked from any navigation menu. The backing XHTML
+     * page ({@code pharmacy_grn_with_approval.xhtml}) and its JSF action
+     * binding are intentionally left in place until the QA comparison in
+     * #22595 confirms the DTO/costing flow has full parity. See
+     * {@link #navigateToApproveRecieveGrnPreBill()} for details.
+     */
+    @Deprecated
     public void request() {
         if (!isAuthorized("REQUEST", "PharmacyGrnSave")) {
             return;
@@ -614,6 +654,15 @@ public class GrnController implements Serializable {
 
     }
 
+    /**
+     * @deprecated Part of the legacy non-costing approval flow (issue
+     * #21289), no longer linked from any navigation menu. The backing XHTML
+     * page ({@code pharmacy_grn_with_approval.xhtml}) and its JSF action
+     * binding are intentionally left in place until the QA comparison in
+     * #22595 confirms the DTO/costing flow has full parity. See
+     * {@link #navigateToApproveRecieveGrnPreBill()} for details.
+     */
+    @Deprecated
     public void requestFinalize() {
         if (!isAuthorized("REQUEST_FINALIZE", "PharmacyGrnFinalize")) {
             return;
@@ -716,6 +765,21 @@ public class GrnController implements Serializable {
 
     }
 
+    /**
+     * @deprecated Legacy non-costing approval flow (issue #21289). Operates
+     * on {@code getGrnBill()}, which is never populated by
+     * {@link #navigateToApproveRecieveGrnPreBill()} and lazily creates a
+     * disconnected empty {@code Bill} — the real payment method lives on
+     * {@code currentGrnBillPre}, so Settle always fails with "Please select
+     * a payment method", unconditionally — this does not depend on the
+     * "Manage Costing" config flag. No longer linked from any navigation
+     * menu, but the backing XHTML page
+     * ({@code pharmacy_grn_approval_finalized.xhtml}) and its JSF action
+     * binding are intentionally left in place until the QA comparison in
+     * #22595 confirms the DTO/costing flow has full parity. Superseded by
+     * {@code GrnCostingController.approveGrnWithSaveApprove()}.
+     */
+    @Deprecated
     public void settle() {
         if (!isAuthorized("SETTLE", "PharmacyGrnFinalize")) {
             return;
