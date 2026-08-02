@@ -114,6 +114,25 @@
                             </td>
                         </tr>
                     </ui:repeat>
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
+                            <ui:repeat value="#{bip.proFees}" var="fe">
+                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                    <tr>
+                                        <td style="text-align: left;">
+                                            <h:outputLabel value="#{fe.staff.person.nameWithTitle}" />
+                                            <h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}" />
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </ui:repeat>
                 </tbody>
             </table>
 
@@ -136,26 +155,10 @@
                         </h:outputLabel>
                     </td>
                 </tr>
-                <tr>
-                    <td style="text-align: left;">Deposit</td>
-                    <td style="text-align: right;">
-                        <h:outputLabel value="#{bhtSummeryController.getCustom3DepositTotal(cc.attrs.bill)}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </td>
-                </tr>
                 <tr style="font-size: 13px; border-top: 1px solid #000;">
                     <td style="text-align: left;">Net Amount (LKR)</td>
                     <td style="text-align: right;">
                         <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </td>
-                </tr>
-                <tr style="font-weight: bold; font-size: 13px;">
-                    <td style="text-align: left;">Due Amount</td>
-                    <td style="text-align: right;">
-                        <h:outputLabel value="#{cc.attrs.bill.netTotal - cc.attrs.bill.paidAmount}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </td>
@@ -165,14 +168,18 @@
             <div class="sep"></div>
 
             <table>
-                <tr style="font-weight: bold;">
-                    <td style="text-align: left;">Pay Type</td>
-                    <td style="text-align: right;">Amount Rs.</td>
-                </tr>
                 <tr>
-                    <td style="text-align: left;"><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>
+                    <td style="text-align: left;">Deposit</td>
                     <td style="text-align: right;">
-                        <h:outputLabel value="#{cc.attrs.bill.paidAmount}">
+                        <h:outputLabel value="#{bhtSummeryController.getCustom3DepositTotal(cc.attrs.bill)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr style="font-weight: bold; font-size: 13px;">
+                    <td style="text-align: left;">Due Amount</td>
+                    <td style="text-align: right;">
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal - cc.attrs.bill.paidAmount}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </td>
