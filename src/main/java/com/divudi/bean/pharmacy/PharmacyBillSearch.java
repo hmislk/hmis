@@ -1485,6 +1485,10 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
         return navigateToEditSavedGrn();
     }
 
@@ -1525,6 +1529,10 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
         return navigateToEditSavedGrnCosting();
     }
 
