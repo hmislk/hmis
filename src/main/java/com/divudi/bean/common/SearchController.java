@@ -92,6 +92,7 @@ import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
 import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
+import com.divudi.core.data.dto.PharmacyGrnSummaryDTO;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssuedListDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceivedListDTO;
@@ -7678,6 +7679,14 @@ public class SearchController implements Serializable {
             logger.info("createPoTablePharmacyDto: Result size = {}", (pharmacyPurchaseOrderDtos != null ? pharmacyPurchaseOrderDtos.size() : "null"));
             if (pharmacyPurchaseOrderDtos != null && !pharmacyPurchaseOrderDtos.isEmpty()) {
                 logger.debug("createPoTablePharmacyDto: First DTO = {}", pharmacyPurchaseOrderDtos.get(0));
+
+                // Bulk-load GRNs already raised against each PO (issue #22612)
+                // so the DTO page can show/reopen them like the legacy page.
+                List<BillTypeAtomic> grnBillTypesAtomicsToList = new ArrayList<>();
+                grnBillTypesAtomicsToList.add(BillTypeAtomic.PHARMACY_GRN);
+                grnBillTypesAtomicsToList.add(BillTypeAtomic.PHARMACY_GRN_PRE);
+                grnBillTypesAtomicsToList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                fillGrnDtosByBulkQuery(pharmacyPurchaseOrderDtos, grnBillTypesAtomicsToList);
             }
         } catch (Exception e) {
             logger.error("createPoTablePharmacyDto: ERROR while executing DTO query", e);
@@ -7860,6 +7869,78 @@ public class SearchController implements Serializable {
 
         for (Bill po : poList) {
             po.setListOfBill(grnsByPoId.getOrDefault(po.getId(), new ArrayList<>()));
+        }
+    }
+
+    /**
+     * DTO-page counterpart of fillGrnsByBulkQuery: bulk-loads GRN summaries
+     * for every PO in the list using 2 queries (same 2 relationship paths as
+     * fillGrnsByBulkQuery), projecting a lightweight DTO instead of loading
+     * full Bill entities, then assigns the results to each PO DTO's
+     * listOfGrnDtos (issue #22612).
+     */
+    private void fillGrnDtosByBulkQuery(List<PharmacyPurchaseOrderDTO> poDtos, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
+        Map<Long, List<PharmacyGrnSummaryDTO>> grnsByPoId = new HashMap<>();
+        List<Long> poIds = new ArrayList<>();
+        for (PharmacyPurchaseOrderDTO po : poDtos) {
+            poIds.add(po.getBillId());
+            grnsByPoId.put(po.getBillId(), new ArrayList<>());
+        }
+
+        // Path 1: GRN.referenceBill is the PO
+        String jpql1 = "SELECT g.referenceBill.id, g.id, g.deptId, g.createdAt, g.netTotal, g.billTypeAtomic, g.cancelled, g.refunded "
+                + "FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.referenceBill.id IN :poIds";
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("btas", grnBillTypesAtomicsToList);
+        params1.put("poIds", poIds);
+        List<Object> rows1 = getBillFacade().findObjects(jpql1, params1);
+        if (rows1 != null) {
+            for (Object row : rows1) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                PharmacyGrnSummaryDTO grnDto = new PharmacyGrnSummaryDTO(
+                        (Long) cols[1], (String) cols[2], (Date) cols[3], (Double) cols[4], cols[5], cols[6], cols[7]);
+                grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>()).add(grnDto);
+            }
+        }
+
+        // Path 2: GRN.billedBill.referenceBill is the PO
+        String jpql2 = "SELECT g.billedBill.referenceBill.id, g.id, g.deptId, g.createdAt, g.netTotal, g.billTypeAtomic, g.cancelled, g.refunded "
+                + "FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.billedBill IS NOT NULL "
+                + "AND g.billedBill.referenceBill.id IN :poIds";
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("btas", grnBillTypesAtomicsToList);
+        params2.put("poIds", poIds);
+        List<Object> rows2 = getBillFacade().findObjects(jpql2, params2);
+        if (rows2 != null) {
+            for (Object row : rows2) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                Long grnBillId = (Long) cols[1];
+                List<PharmacyGrnSummaryDTO> grnList = grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>());
+                boolean alreadyPresent = false;
+                for (PharmacyGrnSummaryDTO existing : grnList) {
+                    if (existing.getBillId().equals(grnBillId)) {
+                        alreadyPresent = true;
+                        break;
+                    }
+                }
+                if (!alreadyPresent) {
+                    PharmacyGrnSummaryDTO grnDto = new PharmacyGrnSummaryDTO(
+                            grnBillId, (String) cols[2], (Date) cols[3], (Double) cols[4], cols[5], cols[6], cols[7]);
+                    grnList.add(grnDto);
+                }
+            }
+        }
+
+        for (PharmacyPurchaseOrderDTO po : poDtos) {
+            po.setListOfGrnDtos(grnsByPoId.getOrDefault(po.getBillId(), new ArrayList<>()));
         }
     }
 

@@ -7,11 +7,13 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!--
-        5 inch wide Inward Final Bill ("Custom Bill 2" in the Custom Bills tab).
-        Tuned for impact / dot-matrix printers (e.g. Epson LX/FX series):
-        a single clean sans-serif font, solid black text, no background fills.
-        Replicates tmp/COOP/OPD CARD.pdf — see
-        docs/superpowers/specs/2026-08-01-inward-final-bill-custom3-five-five-design.md
+        Inward Final Bill ("Custom Bill 2" in the Custom Bills tab), printed
+        on the same pre-printed continuous stationery as the Inward Deposit
+        Receipt (five_five_custom_3_inward_payments.xhtml /
+        sale_bill_five_five_custom_3.css) — that receipt is the proven-good
+        reference for this printer's actual printable area. No institution
+        header is printed here: the letterhead paper already has it
+        pre-printed, so the bill starts directly with the FINAL BILL title.
     -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true" />
@@ -21,7 +23,7 @@
     <cc:implementation>
         <style>
             .custom3-bill {
-                width: 12.7cm; /* 5 inch */
+                width: 10cm;
                 font-family: Arial, "Liberation Sans", sans-serif;
                 color: #000;
                 font-size: 12px;
@@ -32,32 +34,22 @@
             .custom3-bill table { width: 100%; border-collapse: collapse; }
             .custom3-bill .sep { border-top: 1px solid #000; margin: 4px 0; }
             .custom3-bill .title { text-align: center; font-weight: bold; font-size: 14px; }
-            .custom3-bill .dept-name { text-align: center; font-weight: bold; font-size: 15px; }
             .custom3-bill .items th, .custom3-bill .items td { padding: 2px 0; }
             @media print {
                 .custom3-bill {
-                    width: 12.7cm !important;
-                    min-height: 12.7cm; /* 5 inch */
-                    page-break-after: always;
+                    width: 10cm !important;
+                    margin-left: 0cm !important;
+                    margin-right: 2.5cm !important;
+                    margin-top: 2.5cm !important;
+                    margin-bottom: 1.0cm !important;
+                    padding-left: 0.25cm;
                 }
             }
         </style>
 
         <div class="custom3-bill">
 
-            <div class="dept-name">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
-            </div>
-            <div style="text-align: center; font-size: 11px;">
-                <h:outputLabel value="#{cc.attrs.bill.department.address}" />
-            </div>
-            <div style="text-align: center; font-size: 11px;">
-                <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" />
-                <h:outputLabel value=" / " rendered="#{cc.attrs.bill.department.telephone2 ne null}" />
-                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" />
-            </div>
-
-            <div class="title" style="margin-top: 4px;">
+            <div class="title">
                 <h:outputLabel value="FINAL BILL" />
                 <h:outputLabel value=" **Duplicate**" rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value=" **Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" />
@@ -112,6 +104,25 @@
                             </td>
                         </tr>
                     </ui:repeat>
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
+                            <ui:repeat value="#{bip.proFees}" var="fe">
+                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                    <tr>
+                                        <td style="text-align: left;">
+                                            <h:outputLabel value="#{fe.staff.person.nameWithTitle}" />
+                                            <h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}" />
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </ui:repeat>
                 </tbody>
             </table>
 
@@ -134,15 +145,7 @@
                         </h:outputLabel>
                     </td>
                 </tr>
-                <tr>
-                    <td style="text-align: left;">Deposit</td>
-                    <td style="text-align: right;">
-                        <h:outputLabel value="#{bhtSummeryController.getCustom3DepositTotal(cc.attrs.bill)}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </td>
-                </tr>
-                <tr style="font-weight: bold; font-size: 13px; border-top: 1px solid #000;">
+                <tr style="font-size: 13px; border-top: 1px solid #000;">
                     <td style="text-align: left;">Net Amount (LKR)</td>
                     <td style="text-align: right;">
                         <h:outputLabel value="#{cc.attrs.bill.netTotal}">
@@ -155,14 +158,18 @@
             <div class="sep"></div>
 
             <table>
-                <tr style="font-weight: bold;">
-                    <td style="text-align: left;">Pay Type</td>
-                    <td style="text-align: right;">Amount Rs.</td>
-                </tr>
                 <tr>
-                    <td style="text-align: left;"><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>
+                    <td style="text-align: left;">Deposit</td>
                     <td style="text-align: right;">
-                        <h:outputLabel value="#{cc.attrs.bill.paidAmount}">
+                        <h:outputLabel value="#{bhtSummeryController.getCustom3DepositTotal(cc.attrs.bill)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr style="font-weight: bold; font-size: 13px;">
+                    <td style="text-align: left;">Due Amount</td>
+                    <td style="text-align: right;">
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal - cc.attrs.bill.paidAmount}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </td>
