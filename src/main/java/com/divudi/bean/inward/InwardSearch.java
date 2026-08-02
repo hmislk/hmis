@@ -2458,12 +2458,14 @@ public class InwardSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
-        hm.put("b", getBill());
-        billItems = getBillItemFacede().findByJpql(sql, hm);
         if (billItems == null) {
-            billItems = new ArrayList<>();
+            HashMap hm = new HashMap();
+            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
+            hm.put("b", getBill());
+            billItems = getBillItemFacede().findByJpql(sql, hm);
+            if (billItems == null) {
+                billItems = new ArrayList<>();
+            }
         }
 
         return billItems;
