@@ -80,10 +80,16 @@
                                                 <p:column headerText="Bill No" style="width:15%">
                                                     <h:outputText value="#{item.billNumber}" />
                                                 </p:column>
-                                                <p:column headerText="Date" style="width:15%">
+                                                <p:column headerText="Requested At" style="width:15%">
                                                     <h:outputText value="#{item.billDate}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                     </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Requested By" style="width:15%">
+                                                    <h:outputText value="#{item.requestedBy}" />
+                                                </p:column>
+                                                <p:column headerText="Requested To" style="width:15%">
+                                                    <h:outputText value="#{item.requestedTo}" />
                                                 </p:column>
                                                 <p:column headerText="Pending Item">
                                                     <h:outputText value="#{item.pendingTypeLabel}" />

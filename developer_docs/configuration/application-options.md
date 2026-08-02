@@ -45,6 +45,12 @@ This document lists the configuration options used in the application and their 
 | `OPD Billing - Clear Referring Doctor on New Bill`              | Boolean   | `true`  | When true, clears the referring doctor and referring institution when starting a new OPD bill. When false, the values are preserved across consecutive bills. |
 | `Show Mark Foreigner and Mark Local Buttons in Billing`         | Boolean   | `true`  | Controls visibility of the Mark Foreigner / Mark Local buttons across OPD Billing, Channel Booking, Clinic Sessions, and Inward Service Bill screens. Independent of `Save the Patient with Patient Status` (which only controls the read-only status badge/toggle shown during patient registration). See issue #22311. |
 
+## Inward Discharge
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
+
 ## Pharmacy Procurement
 
 | Key                                                              | Type      | Default | Description                                                                                             |

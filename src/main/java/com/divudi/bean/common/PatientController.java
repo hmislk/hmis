@@ -489,7 +489,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return;
         }
-        current.setPhn(applicationController.createNewPersonalHealthNumber(sessionController.getInstitution()));
+        String newPhn = applicationController.createNewPersonalHealthNumber(sessionController.getInstitution());
+        if (newPhn != null) {
+            current.setPhn(newPhn);
+        } else {
+            JsfUtil.addErrorMessage("PHN generation failed. Please check PHN configuration (POI Number must be 4 characters).");
+        }
     }
 
     public void downloadAllPatients() {

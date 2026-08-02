@@ -921,7 +921,7 @@
                                     items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS paper with header', true)}">
-                                <phi:saleBill_Header_Inward_native
+                                <phi:saleBill_Header_native
                                     bill="#{retailSaleNativeSqlController1.printBill}"
                                     items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
@@ -936,7 +936,7 @@
                                     items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper', false)}">
-                                <phi:saleBill_Header_Inward_native
+                                <phi:saleBill_Header_native
                                     bill="#{retailSaleNativeSqlController1.printBill}"
                                     items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>

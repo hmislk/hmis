@@ -985,9 +985,16 @@ public class DepartmentController implements Serializable {
         return ejbFacade;
     }
 
+    /**
+     * Active departments, for the {@code departmentController.items} dropdowns.
+     * <p>
+     * This used to call {@code fillSearchItems()}, which only ever assigns
+     * {@code searchItems} — {@code items} stayed null, so every page binding
+     * this getter rendered an empty dropdown and re-ran the query on each call.
+     */
     public List<Department> getItems() {
         if (items == null) {
-            fillSearchItems();
+            items = fillAllItems();
         }
         return items;
     }

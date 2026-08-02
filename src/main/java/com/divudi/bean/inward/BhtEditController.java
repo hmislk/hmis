@@ -249,6 +249,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void removeCreditCompany(EncounterCreditCompany ecc) {
+        boolean removingPrimary = current.getCreditCompany() != null
+                && ecc.getInstitution() != null
+                && current.getCreditCompany().equals(ecc.getInstitution());
         for (EncounterCreditCompany e : encounterCreditCompanys) {
             if (e == ecc) {
                 Map<String, Object> before = creditCompanyAuditMap(e);
@@ -259,9 +262,12 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                         "EncounterCreditCompany", e.getId());
             }
         }
-        current.setCreditCompany(null);
         fillCreditCompaniesByPatient();
-//        current.setCreditCompany(encounterCreditCompanys.get(0).getInstitution());
+        if (removingPrimary) {
+            current.setCreditCompany(encounterCreditCompanys.isEmpty()
+                    ? null : encounterCreditCompanys.get(0).getInstitution());
+            getEjbFacade().edit(current);
+        }
     }
 
     public void fillCreditCompaniesByPatient() {
@@ -294,6 +300,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 sessionController.getLoggedUser(),
                 "EncounterCreditCompany", newEncounterCreditCompany.getId());
         encounterCreditCompanys.add(newEncounterCreditCompany);
+        if (current.getCreditCompany() == null) {
+            current.setCreditCompany(newEncounterCreditCompany.getInstitution());
+            getEjbFacade().edit(current);
+        }
         newEncounterCreditCompany = new EncounterCreditCompany();
         JsfUtil.addSuccessMessage("Credit company added");
     }
@@ -572,6 +582,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void saveCurrent() {
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("No admission record to save");
+            return;
+        }
+
+        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit && getCurrent().getCreditCompany() == null) {
+            JsfUtil.addErrorMessage("Please add a credit company before saving a Credit admission");
             return;
         }
 

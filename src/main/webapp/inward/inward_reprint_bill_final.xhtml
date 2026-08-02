@@ -293,6 +293,34 @@
                                 </div>
                             </div>
 
+                            <div class="row mt-3">
+                                <div class="col-lg-12">
+                                    <p:panel header="Sent Emails">
+                                        <p:dataTable
+                                            value="#{inwardSearch.sentEmailsForBill}"
+                                            var="e"
+                                            emptyMessage="No emails sent for this bill.">
+                                            <p:column headerText="Recipient">
+                                                <h:outputText value="#{e.receipientEmail}" />
+                                            </p:column>
+                                            <p:column headerText="Subject">
+                                                <h:outputText value="#{e.messageSubject}" />
+                                            </p:column>
+                                            <p:column headerText="Sent At">
+                                                <h:outputText value="#{e.sentAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Status">
+                                                <p:tag value="Sent" severity="success" rendered="#{e.sentSuccessfully}" />
+                                                <p:tag value="Pending" severity="warning" rendered="#{e.pending and not e.sentSuccessfully}" />
+                                                <p:tag value="Failed" severity="danger" rendered="#{not e.pending and not e.sentSuccessfully}" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
+                            </div>
+
                             <p:tabView rendered="true">
                                 <p:tab title="Final Bill"  >
 
@@ -630,6 +658,55 @@
 
                                                 <h:panelGroup id="duplicateCustom2BillPriview">
                                                     <bi:finalBillCustom2 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-3">
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill 2"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="originalCustom3BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="originalCustom3BillPriview">
+                                                    <bi:finalBillCustom3 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill 2"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="duplicateCustom3BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="duplicateCustom3BillPriview">
+                                                    <bi:finalBillCustom3 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
                                                 </h:panelGroup>
 
                                             </p:panel>

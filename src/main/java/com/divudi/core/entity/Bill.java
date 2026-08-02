@@ -116,6 +116,21 @@ public class Bill implements Serializable, RetirableEntity {
     private String comments;
     @Lob
     private String paymentMemo;
+    /**
+     * Serialised breakdown of a Multiple Payment Methods settlement, held as a JSON
+     * array of {@code {label, value, reference}} entries.
+     *
+     * Written where the components are entered but no {@link Payment} rows are created
+     * yet - notably the pharmacy Sale for Cashier pre-bill, where the cashier collects
+     * the money and writes the real Payment rows later against the settled bill. Without
+     * this the split exists only in session state, so a reprint of the pre-bill loses the
+     * breakdown that the slip handed to the customer showed (#22487).
+     *
+     * Print-only. It is never summed and must not be treated as evidence that money was
+     * received - persisted Payment rows remain the single source of truth for that.
+     */
+    @Lob
+    private String paymentBreakdown;
     @Lob
     private String indication;
     // Bank Detail
@@ -1638,6 +1653,15 @@ public class Bill implements Serializable, RetirableEntity {
         this.createdAt = createdAt;
     }
 
+    /**
+     * Read-only accessor for createdAt. Unlike getCreatedAt(), never computes or
+     * persists a fallback value - returns null if createdAt was never set. Use
+     * for display/reporting where triggering a backfill write is undesirable.
+     */
+    public Date peekCreatedAt() {
+        return createdAt;
+    }
+
     public boolean isRetired() {
         return retired;
     }
@@ -1914,6 +1938,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPaymentMemo(String paymentMemo) {
         this.paymentMemo = paymentMemo;
+    }
+
+    public String getPaymentBreakdown() {
+        return paymentBreakdown;
+    }
+
+    public void setPaymentBreakdown(String paymentBreakdown) {
+        this.paymentBreakdown = paymentBreakdown;
     }
 
     public Bill getReferenceBill() {

@@ -516,6 +516,60 @@ public class BhtSummeryController implements Serializable {
         return new ArrayList<>(totals.entrySet());
     }
 
+    /**
+     * Charges grouped by inward charge type (excluding Professional Charge,
+     * which is now listed as individual per-doctor fee lines), alphabetical
+     * by display name, for the Custom3 5x5 impact-printer bill ("Custom Bill
+     * 2" in the UI).
+     */
+    public List<Map.Entry<String, Double>> getCustom3CategoryTotals(Bill bill) {
+        Map<String, Double> totals = new TreeMap<>();
+        if (bill == null || bill.getBillItems() == null) {
+            return new ArrayList<>(totals.entrySet());
+        }
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                continue;
+            }
+            if (bi.getAdjustedValue() == 0.0) {
+                continue;
+            }
+            String label = getChargeTypeLabel(bi.getInwardChargeType());
+            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+        }
+        return new ArrayList<>(totals.entrySet());
+    }
+
+    /**
+     * Sum of prior payments/receipts recorded against this admission — the
+     * Custom3 bill's "Deposit" line. Same backwardReferenceBills source and
+     * qualifying filter as the Custom2 receipts table (finalBillCustom2.xhtml
+     * lines 280-291), just summed instead of rendered row by row.
+     */
+    public double getCustom3DepositTotal(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        List<Bill> receipts = (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null)
+                ? bill.getPatientEncounter().getFinalBill().getBackwardReferenceBills()
+                : bill.getBackwardReferenceBills();
+        double total = 0.0;
+        if (receipts == null) {
+            return total;
+        }
+        for (Bill b : receipts) {
+            if (b.getNetTotal() == 0.0) {
+                continue;
+            }
+            boolean qualifies = (!b.isCancelled() && "class com.divudi.core.entity.BilledBill".equals(b.getBillClass()))
+                    || (!b.isCancelled() && b.getRefundedBill() == null && "class com.divudi.core.entity.RefundBill".equals(b.getBillClass()));
+            if (qualifies) {
+                total += b.getNetTotal();
+            }
+        }
+        return total;
+    }
+
     public boolean isCustom2ShowAddress() {
         return custom2ShowAddress;
     }
@@ -1432,8 +1486,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double updatePatientItems(InwardChargeType inwardChargeType, double discountPercent) {
+        double disTot = updateTimedServiceBillItems(inwardChargeType, discountPercent);
+
         List<PatientItem> list = getInwardBean().fetchTimedPatientItemByInwardChargeType(inwardChargeType, getPatientEncounter());
-        double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
         }
@@ -1449,8 +1504,44 @@ public class BhtSummeryController implements Serializable {
         return disTot;
     }
 
+    /**
+     * Discounts timed services that carry their charge on a BillItem.
+     * <p>
+     * A timed service added from the consume page now creates its own Bill and
+     * BillItem, and the inward total for it is summed from the BillItem side —
+     * so the discount has to land there. It cannot go through
+     * {@code updateServiceBillFees}, because a timed service has no BillFee and
+     * recomputing its net value from fees would zero the charge. The matching
+     * PatientItem is kept in step so the breakdown screens agree with the bill.
+     */
+    private double updateTimedServiceBillItems(InwardChargeType inwardChargeType, double discountPercent) {
+        List<BillItem> list = getInwardBean().fetchTimedServiceBillItemsByInwardChargeType(inwardChargeType, getPatientEncounter());
+        double disTot = 0;
+        if (list == null || list.isEmpty()) {
+            return disTot;
+        }
+
+        for (BillItem bi : list) {
+            double value = bi.getGrossValue() + bi.getMarginValue();
+            double dis = (value * discountPercent) / 100;
+            disTot += dis;
+            bi.setDiscount(dis);
+            bi.setNetValue(value - dis);
+            getBillItemFacade().edit(bi);
+
+            PatientItem pi = getInwardBean().fetchPatientItemByBillItem(bi);
+            if (pi != null) {
+                pi.setDiscount(dis);
+                getPatientItemFacade().edit(pi);
+            }
+        }
+
+        return disTot;
+    }
+
     private void updatePatientItemsWithOutMatrix(InwardChargeType inwardChargeType) {
         getInwardBean().bulkClearPatientItemsWithOutMatrix(inwardChargeType, getPatientEncounter());
+        getInwardBean().bulkClearTimedServiceBillItemsWithOutMatrix(inwardChargeType, getPatientEncounter());
     }
 
     private double updatePatientRoomCharge(InwardChargeType inwardChargeType) {
@@ -2021,7 +2112,9 @@ public class BhtSummeryController implements Serializable {
 
         if (getPatientEncounter().getAdmissionType() != null
                 && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
-            if (!getPatientEncounter().isNursingDischarged()) {
+            boolean nursingDischargeRequired = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Administrative Discharge - Require Nursing Discharge", true);
+            if (nursingDischargeRequired && !getPatientEncounter().isNursingDischarged()) {
                 JsfUtil.addErrorMessage("Nursing discharge must be completed before the bill can be settled.");
                 return true;
             }
@@ -2658,16 +2751,100 @@ public class BhtSummeryController implements Serializable {
         }
     }
 
-    private boolean checkPatientItems() {
-        List<PatientItem> lst = createPatientItems();
-
-        for (PatientItem pi : lst) {
-            if (pi != null && pi.getToTime() == null) {
-                return true;
-            }
+    /**
+     * Closes off any timed service still running at discharge, stopping it at
+     * the discharge time and pricing it for that duration.
+     * <p>
+     * This used to be a hard block ("Please Finalize Patient Timed Service")
+     * that made staff go back and stop each service by hand. Stopping them at
+     * the discharge time is what that manual step amounted to anyway, and doing
+     * it here guarantees the charge is priced for the real length of stay
+     * instead of whatever stale value was last persisted.
+     */
+    private void finalizeRunningTimedServices(Date dischargeTime) {
+        if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+            childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+        }
+        List<PatientItem> running = getInwardBean().fetchRunningTimedPatientItems(getPatientEncounter(), childPatientEncouters);
+        if (running == null || running.isEmpty()) {
+            return;
         }
 
-        return false;
+        int closed = 0;
+        for (PatientItem pi : running) {
+            if (pi.getBillItem() != null && pi.getBillItem().isFromPackage()) {
+                continue;
+            }
+            if (pi.getFromTime() != null && dischargeTime.before(pi.getFromTime())) {
+                continue;
+            }
+            // getTimedItemFee never returns null — it hands back an empty fee
+            // with durationHours = 0, which would price the service at zero.
+            // Check for a real fee row instead, and skip rather than wipe the
+            // charge of a service nobody has configured a price for.
+            if (getInwardBean().getAllTimedItemFees((TimedItem) pi.getItem()).isEmpty()) {
+                continue;
+            }
+            pi.setToTime(dischargeTime);
+            // Priced through calTotalTimedChargeForItem, the same path the
+            // manual stop uses, so tiered fee blocks and foreigner rates give
+            // the same amount whether a service is stopped by hand or here.
+            // The foreigner flag comes from the item's own encounter, which for
+            // a baby's service is the child encounter, not the mother's.
+            PatientEncounter owner = pi.getPatientEncounter() != null
+                    ? pi.getPatientEncounter() : getPatientEncounter();
+            pi.setServiceValue(getInwardBean().calTotalTimedChargeForItem(
+                    (TimedItem) pi.getItem(), pi.getFromTime(), pi.getToTime(),
+                    owner.isForiegner()));
+            getPatientItemFacade().edit(pi);
+            syncTimedServiceCharge(pi);
+            closed++;
+        }
+
+        if (closed > 0) {
+            patientItems = null;
+            JsfUtil.addSuccessMessage(closed + " running timed service(s) were stopped at the discharge time.");
+        }
+    }
+
+    /**
+     * Pushes a recalculated timed-service charge onto its BillItem and Bill, so
+     * the inward totals (which sum the BillItem side) never read a stale
+     * duration. Package-locked items keep their fixed price.
+     * <p>
+     * The discount is read from the BillItem, not the PatientItem. The BillItem
+     * is the side the discount routines clear when no price matrix applies, and
+     * the bulk clear cannot reach the PatientItem (it filters on
+     * {@code billItem is null}). Taking the discount from the PatientItem would
+     * silently re-apply one that had just been removed. The PatientItem is
+     * mirrored back so the breakdown screens still agree with the bill.
+     */
+    private void syncTimedServiceCharge(PatientItem patientItem) {
+        if (patientItem == null || patientItem.getBillItem() == null) {
+            return;
+        }
+        BillItem bi = patientItem.getBillItem();
+        if (bi.isFromPackage()) {
+            return;
+        }
+        double discount = bi.getDiscount();
+        bi.setGrossValue(patientItem.getServiceValue());
+        bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - discount);
+        bi.setFromTime(patientItem.getFromTime());
+        bi.setToTime(patientItem.getToTime());
+        getBillItemFacade().edit(bi);
+
+        if (patientItem.getDiscount() != discount) {
+            patientItem.setDiscount(discount);
+            getPatientItemFacade().edit(patientItem);
+        }
+
+        Bill b = bi.getBill();
+        if (b != null) {
+            b.setTotal(bi.getGrossValue());
+            b.setNetTotal(bi.getNetValue());
+            getBillFacade().edit(b);
+        }
     }
 
     public void dischargeCancel() {
@@ -2753,10 +2930,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        if (checkPatientItems()) {
-            JsfUtil.addErrorMessage("Please Finalize Patient Timed Service");
-            return;
-        }
+        finalizeRunningTimedServices(date);
 
         if (!getPatientEncounter().isClinicallyDischarged()) {
             JsfUtil.addErrorMessage("Warning: Clinical discharge has not been confirmed for this patient.");
@@ -3023,7 +3197,8 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setSettledAmountByPatient(paidByPatient);
         getCurrent().setPaymentMethod(getPatientEncounter().getPaymentMethod());
         getCurrent().setCreditCompany(getPatientEncounter().getCreditCompany());
-        getCurrent().setInstitution(getSessionController().getInstitution());
+        getCurrent().setInstitution(patientEncounter.getInstitution());
+        getCurrent().setDepartment(patientEncounter.getDepartment());
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
         getCurrent().setBillType(BillType.InwardFinalBill);
 
@@ -3044,8 +3219,8 @@ public class BhtSummeryController implements Serializable {
         getBillNumberBean().withFinalBillVersionLock(patientEncounter, () -> {
             int versionSerial = getBillNumberBean().computeNextFinalBillVersionSerial(patientEncounter);
             getCurrent().setFinalBillVersionSerial(versionSerial);
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
 
             if (getCurrent().getId() == null) {
                 getBillFacade().create(getCurrent());
@@ -3102,10 +3277,11 @@ public class BhtSummeryController implements Serializable {
         getOriginalBill().setSettledAmountByPatient(paidByPatient);
         getOriginalBill().setPaymentMethod(getPatientEncounter().getPaymentMethod());
         getOriginalBill().setCreditCompany(getPatientEncounter().getCreditCompany());
-        getOriginalBill().setInstitution(getSessionController().getInstitution());
+        getOriginalBill().setInstitution(patientEncounter.getInstitution());
+        getOriginalBill().setDepartment(patientEncounter.getDepartment());
         getOriginalBill().setBillTypeAtomic(BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL);
-        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
-        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
 
         getOriginalBill().setBillType(BillType.InwardOriginalFinalBill);
 
@@ -3132,12 +3308,13 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setGrantTotal(value);
         creditCompanyBill.setTotal(value);
         creditCompanyBill.setNetTotal(value);
-        creditCompanyBill.setInstitution(getSessionController().getInstitution());
+        creditCompanyBill.setInstitution(patientEncounter.getInstitution());
+        creditCompanyBill.setDepartment(patientEncounter.getDepartment());
         creditCompanyBill.setCreditCompany(ecc.getInstitution());
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -3165,12 +3342,13 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setGrantTotal(value);
         creditCompanyBill.setTotal(value);
         creditCompanyBill.setNetTotal(value);
-        creditCompanyBill.setInstitution(getSessionController().getInstitution());
+        creditCompanyBill.setInstitution(patientEncounter.getInstitution());
+        creditCompanyBill.setDepartment(patientEncounter.getDepartment());
         creditCompanyBill.setCreditCompany(company);
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -3625,6 +3803,7 @@ public class BhtSummeryController implements Serializable {
         patientItem.setServiceValue(count * timedItemFee.getFee());
 
         getPatientItemFacade().edit(patientItem);
+        syncTimedServiceCharge(patientItem);
 
         createPatientItems();
 
@@ -4446,11 +4625,18 @@ public class BhtSummeryController implements Serializable {
      */
     private void setGrossMarginVatBreakdown() {
         Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+        // Timed services that predate the bill-at-add change still carry their
+        // charge on the PatientItem alone. They are part of the gross for their
+        // charge type, so they have to be added to the BillItem-side breakdown —
+        // otherwise a charge type holding both kinds would report only the
+        // BillItem half as gross while Total and Net show the full amount.
+        Map<InwardChargeType, Double> timedItemTotals = getInwardBean().getTimedItemFeeTotalByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             double[] values = serviceBreakdown.get(cit.getInwardChargeType());
+            Double timedTotal = timedItemTotals.get(cit.getInwardChargeType());
             if (values != null) {
-                cit.setGross(values[0]);
+                cit.setGross(values[0] + (timedTotal != null ? timedTotal : 0.0));
                 cit.setMargin(values[1]);
                 cit.setVat(values[2]);
             } else {
@@ -4500,6 +4686,10 @@ public class BhtSummeryController implements Serializable {
                     cit.setMargin(docMargin);
                     cit.setVat(docVat);
                 }
+            } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
+                cit.setGross(cit.getTotal());
+                cit.setMargin(0.0);
+                cit.setVat(0.0);
             }
         }
     }
