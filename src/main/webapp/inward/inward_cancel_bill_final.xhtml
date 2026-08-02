@@ -178,10 +178,7 @@
                                     icon="fas fa-id-card"
                                     styleClass="ui-button-info ui-button-outlined"
                                     style="float: right;"
-                                    action="#{bhtSummeryController.navigateToInpatientProfile()}">
-                                    <f:setPropertyActionListener
-                                        value="#{inwardSearch.bill.patientEncounter}"
-                                        target="#{bhtSummeryController.patientEncounter}"/>
+                                    action="#{admissionController.navigateToAdmissionProfilePage()}">
                                     <f:setPropertyActionListener
                                         value="#{inwardSearch.bill.patientEncounter}"
                                         target="#{admissionController.current}"/>
