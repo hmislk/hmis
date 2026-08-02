@@ -3102,19 +3102,31 @@ public class PharmacyBillSearch implements Serializable {
                 ? BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
                 : BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
-        Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
-        newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
+        // Bills settled through InpatientDirectIssueNativeSqlService write their real netTotal
+        // and BillItem rows via native SQL after this session-scoped bean's `bill` reference was
+        // already populated from an earlier (now stale) query, so getBill() here can still show
+        // netTotal=0 and an empty item list even though the database row is correct. Bypassing the
+        // cache guarantees the reversal is built from the real billed amount (#22599).
+        Bill billToCancel = getBillFacade().findWithoutCache(getBill().getId());
+        Bill originalForwardReferenceBill = billToCancel.getForwardReferenceBill();
+        Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(billToCancel, getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
+        newlyCreatedCancellationBill.setForwardReferenceBill(originalForwardReferenceBill);
         newlyCreatedCancellationBill.setBillTypeAtomic(cancellationAtomic);
         newlyCreatedCancellationBill.setDeptId(deptId);
-        newlyCreatedCancellationBill.setReferenceBill(getBill());
+        newlyCreatedCancellationBill.setReferenceBill(billToCancel);
         getBillFacade().edit(newlyCreatedCancellationBill);
         // REMOVED: Finance details already correctly created by reAddToStock() method
         // Fixes #18144 - This redundant call was overwriting correct positive values with incorrect negative values
         // billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
 
-        getBill().setCancelled(true);
-        getBill().setCancelledBill(newlyCreatedCancellationBill);
-        getBillFacade().edit(getBill());
+        // Merge through billToCancel (not the stale getBill()): its billItems collection is
+        // empty on the stale reference, and Bill.billItems cascades ALL/orphanRemoval, so
+        // merging the stale bill here would delete the original BillItem rows the reversal
+        // above just linked to via referanceBillItem_ID.
+        billToCancel.setCancelled(true);
+        billToCancel.setCancelledBill(newlyCreatedCancellationBill);
+        getBillFacade().edit(billToCancel);
+        setBill(billToCancel);
         JsfUtil.addSuccessMessage("Cancelled");
 
         printPreview = true;
