@@ -4682,6 +4682,10 @@ public class BhtSummeryController implements Serializable {
                     cit.setMargin(docMargin);
                     cit.setVat(docVat);
                 }
+            } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
+                cit.setGross(cit.getTotal());
+                cit.setMargin(0.0);
+                cit.setVat(0.0);
             }
         }
     }

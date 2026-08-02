@@ -667,6 +667,13 @@ public class InwardSearch implements Serializable {
         return getBillFacade().findByJpql(jpql, params);
     }
 
+    public boolean hasAnyFinalBillVersion(PatientEncounter admission) {
+        if (admission == null) {
+            return false;
+        }
+        return !fetchFinalBillVersions(admission).isEmpty();
+    }
+
     /**
      * User-facing action to mark {@code newConfirmed} as the confirmed final
      * bill version for its admission. Privilege checks are done in the XHTML
