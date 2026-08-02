@@ -71,6 +71,18 @@ so the entire menu — including the notification bell, websocket, and remoteCom
 is absent from the page. Any Playwright check for these components will fail silently.
 Always go through the department-selection screen first.
 
+**The department gate is a hard prerequisite for every session, not a one-time
+step to satisfy and forget.** After clicking **Select** on the department
+screen, the app redirects to `home.xhtml` — that redirect (not a specific
+target page) is the real confirmation the gate passed. Only after landing on
+`home.xhtml` is it safe to `browser_navigate` straight to a specific report/page
+URL. Prefer clicking through the actual menu (Pharmacy Analytics → tab →
+Generate Report, etc.) over guessing/typing report URLs directly wherever a
+menu path is reasonably discoverable — direct URL navigation is a fallback for
+pages with no simple menu path, not the default technique, since several pages
+(e.g. Inward final-bill pages, see §17 below) rely on session-bean state that a
+URL alone won't set up correctly even post-department-selection.
+
 **A redeploy invalidates the session.** Every time the WAR is redeployed you are
 logged out and must log in again. Plan test runs so you are not mid-flow when a
 deploy lands.

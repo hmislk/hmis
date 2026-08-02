@@ -37,9 +37,11 @@
             @media print {
                 .custom3-bill {
                     width: 12.7cm !important;
-                    min-height: 12.7cm; /* 5 inch */
-                    page-break-after: always;
                 }
+            }
+            @page {
+                size: 12.7cm auto; /* 5 inch wide continuous stationery */
+                margin: 0;
             }
         </style>
 
