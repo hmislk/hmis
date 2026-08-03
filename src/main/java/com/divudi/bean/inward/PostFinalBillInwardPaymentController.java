@@ -571,7 +571,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
                                     }
                                     break;
                                 default:
-                                    System.out.println("[DEBUG] Processing default/unknown payment method: " + method);
+                                    JsfUtil.addErrorMessage("Payment method " + cd.getPaymentMethod() + " is not supported for post final bill payments.");
+                                    return true;
                             }
                         }
                     }
@@ -583,7 +584,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
                     amountToCheck = multipleTotal;
                     break;
                 default:
-                    System.out.println("[DEBUG] Processing default/unknown payment method: " + method);
+                    JsfUtil.addErrorMessage("Payment method " + method + " is not supported for post final bill payments.");
+                    return true;
             }
         }
 
@@ -687,7 +689,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         paymentService.createPayment(
                 cb,
                 cb.getPaymentMethod(),
-                paymentMethodData,
+                getPaymentMethodData(),
                 sessionController.getInstitution(),
                 sessionController.getDepartment(),
                 sessionController.getLoggedUser());

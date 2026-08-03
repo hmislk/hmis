@@ -280,6 +280,7 @@
                                         value="Pay"
                                         style="width:250px;"
                                         ajax="false"
+                                        onclick="if (!confirm('Record this payment?')) return false;"
                                         action="#{postFinalBillInwardPaymentController.pay()}" >
                                     </p:commandButton>
 

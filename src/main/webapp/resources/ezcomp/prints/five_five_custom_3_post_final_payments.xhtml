@@ -20,14 +20,6 @@
     </h:head>
 
     <h:body>
-        <!-- Composite Component Interface -->
-        <cc:interface>
-            <!-- Attributes passed to the component -->
-            <cc:attribute name="bill" required="true" />
-            <cc:attribute name="duplicate" required="false" />
-        </cc:interface>
-
-        <!-- Composite Component Implementation -->
         <cc:implementation>
             <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Inward Payment Custom 3 Bill Header')}" >
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
@@ -96,7 +88,7 @@
                             <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                         </div>
                         <div >
-                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2} / #{cc.attrs.bill.department.telephone2}"/>
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone1} / #{cc.attrs.bill.department.telephone2}"/>
                         </div>
                         <div >
                             <h:outputLabel value="#{cc.attrs.bill.department.email}" />
@@ -169,9 +161,7 @@
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px;">Mobile :</td>
                         <td style="padding: 2px;">
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" >
-                                <f:convertDateTime pattern="HH:mm a" />
-                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" />
                         </td>
                     </tr>
 

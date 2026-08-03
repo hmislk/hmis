@@ -26,6 +26,7 @@
                                         ajax="false" value="To Cancel"
                                         class="ui-button-danger"
                                         icon="fa fa-ban"
+                                        onclick="if (!confirm('Cancel this post-final payment?')) return false;"
                                         action="#{postFinalBillInwardPaymentController.cancelPostFinalPayment()}"
                                         disabled="#{postFinalBillInwardPaymentController.current.cancelled}"  >
                                     </p:commandButton>
