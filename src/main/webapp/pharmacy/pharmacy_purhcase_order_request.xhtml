@@ -386,7 +386,7 @@
                                         class="m-1 ui-button-success"
                                         value="Add"
                                         action="#{purchaseOrderRequestController.addItem}"
-                                        process="exDItem @this"
+                                        process="exDItem @this po"
                                         update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot po pageMessages" />
                                     <hr/>
                                     <p:outputLabel 
@@ -423,7 +423,7 @@
                                         class="mx-1 ui-button-success"
                                         value="Add"
                                         action="#{purchaseOrderRequestController.addItem}"
-                                        process="exItem @this"
+                                        process="exItem @this po"
                                         update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot po pageMessages" />
 
                                 </p:panel>
