@@ -39,9 +39,11 @@ import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -109,6 +111,9 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     private double total;
     private Patient patient;
     private PaymentMethodData paymentMethodData;
+    private List<Bill> eligiblePostFinalPaymentBills;
+    private Bill originalBillToRefund;
+    private Map<Long, Double> remainingRefundableAmountCache;
     // </editor-fold>
 
     public PaymentMethod[] getPaymentMethods() {
@@ -757,6 +762,10 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         getRefundCurrent().setBillTypeAtomic(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
         getBillFacade().edit(getRefundCurrent());
         saveRefundBillItem();
+
+        getOriginalBillToRefund().setRefunded(true);
+        getBillFacade().edit(getOriginalBillToRefund());
+
         printPreview = true;
 
         List<Payment> payments = paymentService.createPayment(getRefundCurrent(), paymentMethodData);
@@ -775,6 +784,9 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         refundCurrent = null;
         paidAmount = 0.0;
         printPreview = false;
+        eligiblePostFinalPaymentBills = null;
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = null;
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             JsfUtil.addErrorMessage("Start Your Shift First !");
@@ -797,6 +809,101 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             return;
         }
         paidAmount = getPostFinalPaymentTotal(getRefundCurrent().getPatientEncounter());
+        loadEligiblePostFinalPaymentBills();
+    }
+
+    /**
+     * Loads the encounter's post-final payment bills that still have a
+     * nonzero remaining refundable amount (issue #22627 - refund must be
+     * linked to one specific original bill, not an encounter-wide
+     * aggregate). Mirrors {@code InwardRefundController.loadEligiblePaymentBills()}.
+     */
+    private void loadEligiblePostFinalPaymentBills() {
+        eligiblePostFinalPaymentBills = new ArrayList<>();
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = new HashMap<>();
+        for (Bill b : getInwardBean().fetchPostFinalPaymentBill(getRefundCurrent().getPatientEncounter(), null)) {
+            if (b instanceof BilledBill && !b.isCancelled() && computeRemainingRefundableAmount(b) > 0.01) {
+                eligiblePostFinalPaymentBills.add(b);
+            }
+        }
+    }
+
+    /**
+     * Cached per-bill remaining-refundable amount, populated once per bill
+     * by loadEligiblePostFinalPaymentBills(). The bill picker table calls
+     * this once per row through EL on every render/postback, so without the
+     * cache it would re-run computeRemainingRefundableAmount()'s JPQL SUM
+     * query for every row on every render, on top of the same query already
+     * run for every bill while building eligiblePostFinalPaymentBills.
+     * Mirrors {@code InwardRefundController.getRemainingRefundableAmount()}.
+     */
+    public double getRemainingRefundableAmount(Bill originalBill) {
+        if (originalBill == null) {
+            return 0.0;
+        }
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            Double cached = remainingRefundableAmountCache.get(originalBill.getId());
+            if (cached != null) {
+                return cached;
+            }
+        }
+        return computeRemainingRefundableAmount(originalBill);
+    }
+
+    /**
+     * Sum of netTotal of every RefundBill already linked to originalBill via
+     * referenceBill (always <= 0), added to the bill's own netTotal. Do NOT
+     * use Bill.refundBills/getRefundBills() here - that collection is
+     * mappedBy="billedBill", which no refund flow in this codebase
+     * populates, so it never reflects referenceBill-linked refunds.
+     */
+    private double computeRemainingRefundableAmount(Bill originalBill) {
+        String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
+        HashMap hm = new HashMap();
+        hm.put("orig", originalBill);
+        double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm);
+        double remaining = originalBill.getNetTotal() + refundedSoFar;
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            remainingRefundableAmountCache.put(originalBill.getId(), remaining);
+        }
+        return remaining;
+    }
+
+    public void selectBillToRefundListener() {
+        if (getOriginalBillToRefund() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return;
+        }
+        getRefundCurrent().setTotal(getRemainingRefundableAmount(getOriginalBillToRefund()));
+    }
+
+    /**
+     * Lets the cashier pick a different bill without losing the BHT
+     * selection or re-querying eligiblePostFinalPaymentBills.
+     */
+    public void clearSelectedBillToRefund() {
+        originalBillToRefund = null;
+        getRefundCurrent().setTotal(0);
+    }
+
+    public List<Bill> getEligiblePostFinalPaymentBills() {
+        if (eligiblePostFinalPaymentBills == null) {
+            eligiblePostFinalPaymentBills = new ArrayList<>();
+        }
+        return eligiblePostFinalPaymentBills;
+    }
+
+    public void setEligiblePostFinalPaymentBills(List<Bill> eligiblePostFinalPaymentBills) {
+        this.eligiblePostFinalPaymentBills = eligiblePostFinalPaymentBills;
+    }
+
+    public Bill getOriginalBillToRefund() {
+        return originalBillToRefund;
+    }
+
+    public void setOriginalBillToRefund(Bill originalBillToRefund) {
+        this.originalBillToRefund = originalBillToRefund;
     }
 
     private boolean errorCheckForRefund() {
@@ -804,6 +911,12 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
+
+        if (getOriginalBillToRefund() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return true;
+        }
+
         if (getRefundCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return true;
@@ -813,8 +926,10 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             return true;
         }
 
-        if (Math.abs(getPaidAmount()) < getRefundCurrent().getTotal()) {
-            double different = Math.abs(Math.abs(getPaidAmount()) - Math.abs(getRefundCurrent().getTotal()));
+        double remaining = getRemainingRefundableAmount(getOriginalBillToRefund());
+
+        if (Math.abs(remaining) < getRefundCurrent().getTotal()) {
+            double different = Math.abs(Math.abs(remaining) - Math.abs(getRefundCurrent().getTotal()));
             if (different > 0.1) {
                 JsfUtil.addErrorMessage("Check Refunding Amount");
                 return true;
@@ -831,6 +946,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         getRefundCurrent().setBillTime(new Date());
         getRefundCurrent().setInstitution(getSessionController().getInstitution());
         getRefundCurrent().setDepartment(getSessionController().getDepartment());
+        getRefundCurrent().setReferenceBill(getOriginalBillToRefund());
         getRefundCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getRefundCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
         getRefundCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getRefundCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
 
