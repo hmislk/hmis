@@ -2316,25 +2316,37 @@ public class CashierReportController implements Serializable {
         c.setAgentCancelCheque(calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.AgentPaymentReceiveBill));
         c.setAgentCancelSlip(calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.AgentPaymentReceiveBill));
 
-        c.setInwardPaymentCash(
-                calTotOwn(w, new BilledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill)
-                + calTotOwn(w, new BilledBill(), PaymentMethod.Cash, BillType.PostFinalBillInwardPayment));
-        c.setInwardPaymentCheque(
-                calTotOwn(w, new BilledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill)
-                + calTotOwn(w, new BilledBill(), PaymentMethod.Cheque, BillType.PostFinalBillInwardPayment));
-        c.setInwardPaymentSlip(
-                calTotOwn(w, new BilledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill)
-                + calTotOwn(w, new BilledBill(), PaymentMethod.Slip, BillType.PostFinalBillInwardPayment));
+        setInwardPaymentFields(c, w, true);
+    }
+
+    /**
+     * Shared by findSummeryOwn() and findSummery(). Sums both
+     * BillType.InwardPaymentBill (pre-final deposit) and
+     * BillType.PostFinalBillInwardPayment (#22617) into the same "Inward
+     * Payment" bucket, and folds RefundBill amounts into the cancel/reversal
+     * totals alongside CancelledBill (issue #22629 — refunds were previously
+     * never counted in either report).
+     */
+    private void setInwardPaymentFields(CashierSummeryData c, WebUser w, boolean own) {
+        c.setInwardPaymentCash(sumInwardPayment(w, new BilledBill(), PaymentMethod.Cash, own));
+        c.setInwardPaymentCheque(sumInwardPayment(w, new BilledBill(), PaymentMethod.Cheque, own));
+        c.setInwardPaymentSlip(sumInwardPayment(w, new BilledBill(), PaymentMethod.Slip, own));
 
         c.setInwardCancelCash(
-                calTotOwn(w, new CancelledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill)
-                + calTotOwn(w, new CancelledBill(), PaymentMethod.Cash, BillType.PostFinalBillInwardPayment));
+                sumInwardPayment(w, new CancelledBill(), PaymentMethod.Cash, own)
+                + sumInwardPayment(w, new RefundBill(), PaymentMethod.Cash, own));
         c.setInwardCancelCheque(
-                calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill)
-                + calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.PostFinalBillInwardPayment));
+                sumInwardPayment(w, new CancelledBill(), PaymentMethod.Cheque, own)
+                + sumInwardPayment(w, new RefundBill(), PaymentMethod.Cheque, own));
         c.setInwardCancelSlip(
-                calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill)
-                + calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.PostFinalBillInwardPayment));
+                sumInwardPayment(w, new CancelledBill(), PaymentMethod.Slip, own)
+                + sumInwardPayment(w, new RefundBill(), PaymentMethod.Slip, own));
+    }
+
+    private double sumInwardPayment(WebUser w, Bill billClass, PaymentMethod pm, boolean own) {
+        double total = own ? calTotOwn(w, billClass, pm, BillType.InwardPaymentBill) : calTot(w, billClass, pm, BillType.InwardPaymentBill);
+        total += own ? calTotOwn(w, billClass, pm, BillType.PostFinalBillInwardPayment) : calTot(w, billClass, pm, BillType.PostFinalBillInwardPayment);
+        return total;
     }
 
     double calTotOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
@@ -2574,6 +2586,7 @@ public class CashierReportController implements Serializable {
         c.setAgentCancelCheque(calTot(w, new CancelledBill(), PaymentMethod.Cheque, BillType.AgentPaymentReceiveBill));
         c.setAgentCancelSlip(calTot(w, new CancelledBill(), PaymentMethod.Slip, BillType.AgentPaymentReceiveBill));
 
+        setInwardPaymentFields(c, w, false);
     }
 
     double calTot(WebUser w, Bill bill, PaymentMethod paymentMethod, BillType billType) {
