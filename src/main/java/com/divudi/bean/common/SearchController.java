@@ -92,6 +92,7 @@ import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
 import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
+import com.divudi.core.data.dto.PharmacyGrnSummaryDTO;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssuedListDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceivedListDTO;
@@ -6504,12 +6505,17 @@ public class SearchController implements Serializable {
                 + "b.paymentMethod, "
                 + "b.cancelled, "
                 + "b.consignment, "
-                + "b.creater.webUserPerson.name, "
+                + "createrPerson.name, "
                 + "b.toInstitution.name, "
                 + "b.department.name, "
-                + "b.checkedBy.id, "
-                + "b.checkedBy.webUserPerson.name) "
-                + "FROM BilledBill b WHERE "
+                + "checkedByUser.id, "
+                + "checkedByPerson.name) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson createrPerson "
+                + "LEFT JOIN b.checkedBy checkedByUser "
+                + "LEFT JOIN checkedByUser.webUserPerson checkedByPerson "
+                + "WHERE "
                 + "b.referenceBill is null "
                 + "and b.toInstitution.institutionType=:insTp "
                 + "and b.checkeAt between :fromDate and :toDate "
@@ -6543,19 +6549,27 @@ public class SearchController implements Serializable {
                 + "b.paymentMethod, "
                 + "b.cancelled, "
                 + "b.consignment, "
-                + "b.creater.webUserPerson.name, "
+                + "createrPerson.name, "
                 + "b.toInstitution.name, "
                 + "b.department.name, "
-                + "b.referenceBill.id, "
-                + "b.referenceBill.deptId, "
-                + "b.referenceBill.createdAt, "
-                + "b.referenceBill.netTotal, "
-                + "b.referenceBill.paymentMethod, "
-                + "b.referenceBill.creater.webUserPerson.name, "
-                + "b.referenceBill.cancelled, "
-                + "b.checkedBy.id, "
-                + "b.checkedBy.webUserPerson.name) "
-                + "FROM BilledBill b WHERE "
+                + "refBill.id, "
+                + "refBill.deptId, "
+                + "refBill.createdAt, "
+                + "refBill.netTotal, "
+                + "refBill.paymentMethod, "
+                + "refCreaterPerson.name, "
+                + "refBill.cancelled, "
+                + "checkedByUser.id, "
+                + "checkedByPerson.name) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson createrPerson "
+                + "LEFT JOIN b.referenceBill refBill "
+                + "LEFT JOIN refBill.creater refCreater "
+                + "LEFT JOIN refCreater.webUserPerson refCreaterPerson "
+                + "LEFT JOIN b.checkedBy checkedByUser "
+                + "LEFT JOIN checkedByUser.webUserPerson checkedByPerson "
+                + "WHERE "
                 + "b.createdAt between :fromDate and :toDate "
                 + "and b.retired=false "
                 + "and b.toInstitution.institutionType=:insTp "
@@ -6586,21 +6600,29 @@ public class SearchController implements Serializable {
                 + "b.paymentMethod, "
                 + "b.cancelled, "
                 + "b.consignment, "
-                + "b.creater.webUserPerson.name, "
+                + "createrPerson.name, "
                 + "b.toInstitution.name, "
                 + "b.department.name, "
-                + "b.referenceBill.id, "
-                + "b.referenceBill.deptId, "
-                + "b.referenceBill.createdAt, "
-                + "b.referenceBill.netTotal, "
-                + "b.referenceBill.paymentMethod, "
-                + "b.referenceBill.creater.webUserPerson.name, "
-                + "b.referenceBill.cancelled, "
-                + "b.checkedBy.id, "
-                + "b.checkedBy.webUserPerson.name) "
-                + "FROM BilledBill b WHERE "
-                + "b.referenceBill.creater is not null "
-                + "and b.referenceBill.cancelled=false "
+                + "refBill.id, "
+                + "refBill.deptId, "
+                + "refBill.createdAt, "
+                + "refBill.netTotal, "
+                + "refBill.paymentMethod, "
+                + "refCreaterPerson.name, "
+                + "refBill.cancelled, "
+                + "checkedByUser.id, "
+                + "checkedByPerson.name) "
+                + "FROM BilledBill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson createrPerson "
+                + "LEFT JOIN b.referenceBill refBill "
+                + "LEFT JOIN refBill.creater refCreater "
+                + "LEFT JOIN refCreater.webUserPerson refCreaterPerson "
+                + "LEFT JOIN b.checkedBy checkedByUser "
+                + "LEFT JOIN checkedByUser.webUserPerson checkedByPerson "
+                + "WHERE "
+                + "refCreater is not null "
+                + "and refBill.cancelled=false "
                 + "and b.toInstitution.institutionType=:insTp "
                 + "and b.checkeAt between :fromDate and :toDate "
                 + "and b.retired=false "
@@ -7678,6 +7700,14 @@ public class SearchController implements Serializable {
             logger.info("createPoTablePharmacyDto: Result size = {}", (pharmacyPurchaseOrderDtos != null ? pharmacyPurchaseOrderDtos.size() : "null"));
             if (pharmacyPurchaseOrderDtos != null && !pharmacyPurchaseOrderDtos.isEmpty()) {
                 logger.debug("createPoTablePharmacyDto: First DTO = {}", pharmacyPurchaseOrderDtos.get(0));
+
+                // Bulk-load GRNs already raised against each PO (issue #22612)
+                // so the DTO page can show/reopen them like the legacy page.
+                List<BillTypeAtomic> grnBillTypesAtomicsToList = new ArrayList<>();
+                grnBillTypesAtomicsToList.add(BillTypeAtomic.PHARMACY_GRN);
+                grnBillTypesAtomicsToList.add(BillTypeAtomic.PHARMACY_GRN_PRE);
+                grnBillTypesAtomicsToList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                fillGrnDtosByBulkQuery(pharmacyPurchaseOrderDtos, grnBillTypesAtomicsToList);
             }
         } catch (Exception e) {
             logger.error("createPoTablePharmacyDto: ERROR while executing DTO query", e);
@@ -7812,6 +7842,12 @@ public class SearchController implements Serializable {
      *   1. g.referenceBill = po
      *   2. g.billedBill.referenceBill = po
      */
+    /**
+     * Legacy-page counterpart of fillGrnDtosByBulkQuery. Both methods check
+     * the same 3 GRN-to-PO relationship paths; the 3rd catches GRNs linked
+     * one hop further up the approval chain, to the original PHARMACY_ORDER
+     * bill instead of its PHARMACY_ORDER_APPROVAL bill (issue #22624/#22630).
+     */
     private void fillGrnsByBulkQuery(List<Bill> poList, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
         Map<Long, List<Bill>> grnsByPoId = new HashMap<>();
         for (Bill po : poList) {
@@ -7858,8 +7894,180 @@ public class SearchController implements Serializable {
             }
         }
 
+        // Path 3: GRN.referenceBill is the PO's own originating PHARMACY_ORDER bill
+        // instead of its PHARMACY_ORDER_APPROVAL bill (issue #22624/#22630). Some GRNs
+        // end up linked one hop further up the approval chain than expected, so resolve
+        // each approval bill's own referenceBill (the original PO) and match on that
+        // too, mirroring Path 1/2's tolerance for an alternate linking path.
+        Map<Long, List<Long>> approvalIdsByOriginalPoId = new HashMap<>();
+        String originalPoJpql = "SELECT b.id, b.referenceBill.id FROM Bill b "
+                + "WHERE b IN :pos AND b.referenceBill IS NOT NULL";
+        Map<String, Object> originalPoParams = new HashMap<>();
+        originalPoParams.put("pos", poList);
+        List<Object> originalPoRows = getBillFacade().findObjects(originalPoJpql, originalPoParams);
+        if (originalPoRows != null) {
+            for (Object row : originalPoRows) {
+                Object[] cols = (Object[]) row;
+                Long approvalId = ((Number) cols[0]).longValue();
+                Long originalPoId = ((Number) cols[1]).longValue();
+                approvalIdsByOriginalPoId.computeIfAbsent(originalPoId, k -> new ArrayList<>()).add(approvalId);
+            }
+        }
+
+        if (!approvalIdsByOriginalPoId.isEmpty()) {
+            String jpql3 = "SELECT g.referenceBill.id, g FROM Bill g "
+                    + "WHERE g.retired = false "
+                    + "AND g.billTypeAtomic IN :btas "
+                    + "AND g.referenceBill.id IN :originalPoIds";
+            Map<String, Object> params3 = new HashMap<>();
+            params3.put("btas", grnBillTypesAtomicsToList);
+            params3.put("originalPoIds", approvalIdsByOriginalPoId.keySet());
+            List<Object> rows3 = getBillFacade().findObjects(jpql3, params3);
+            if (rows3 != null) {
+                for (Object row : rows3) {
+                    Object[] cols = (Object[]) row;
+                    Long originalPoId = ((Number) cols[0]).longValue();
+                    Bill grn = (Bill) cols[1];
+                    for (Long approvalId : approvalIdsByOriginalPoId.getOrDefault(originalPoId, new ArrayList<>())) {
+                        List<Bill> grnList = grnsByPoId.computeIfAbsent(approvalId, k -> new ArrayList<>());
+                        if (!grnList.contains(grn)) {
+                            grnList.add(grn);
+                        }
+                    }
+                }
+            }
+        }
+
         for (Bill po : poList) {
             po.setListOfBill(grnsByPoId.getOrDefault(po.getId(), new ArrayList<>()));
+        }
+    }
+
+    /**
+     * DTO-page counterpart of fillGrnsByBulkQuery: bulk-loads GRN summaries
+     * for every PO in the list, projecting a lightweight DTO instead of
+     * loading full Bill entities, then assigns the results to each PO DTO's
+     * listOfGrnDtos (issue #22612). Both methods check the same 3
+     * relationship paths; the 3rd catches GRNs linked one hop further up the
+     * approval chain, to the original PHARMACY_ORDER bill instead of its
+     * PHARMACY_ORDER_APPROVAL bill (issue #22624/#22630).
+     */
+    private void fillGrnDtosByBulkQuery(List<PharmacyPurchaseOrderDTO> poDtos, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
+        Map<Long, List<PharmacyGrnSummaryDTO>> grnsByPoId = new HashMap<>();
+        List<Long> poIds = new ArrayList<>();
+        for (PharmacyPurchaseOrderDTO po : poDtos) {
+            poIds.add(po.getBillId());
+            grnsByPoId.put(po.getBillId(), new ArrayList<>());
+        }
+
+        // Path 1: GRN.referenceBill is the PO
+        String jpql1 = "SELECT g.referenceBill.id, g.id, g.deptId, g.createdAt, g.netTotal, g.billTypeAtomic, g.cancelled, g.refunded "
+                + "FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.referenceBill.id IN :poIds";
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("btas", grnBillTypesAtomicsToList);
+        params1.put("poIds", poIds);
+        List<Object> rows1 = getBillFacade().findObjects(jpql1, params1);
+        if (rows1 != null) {
+            for (Object row : rows1) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                PharmacyGrnSummaryDTO grnDto = new PharmacyGrnSummaryDTO(
+                        (Long) cols[1], (String) cols[2], (Date) cols[3], (Double) cols[4], cols[5], cols[6], cols[7]);
+                grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>()).add(grnDto);
+            }
+        }
+
+        // Path 2: GRN.billedBill.referenceBill is the PO
+        String jpql2 = "SELECT g.billedBill.referenceBill.id, g.id, g.deptId, g.createdAt, g.netTotal, g.billTypeAtomic, g.cancelled, g.refunded "
+                + "FROM Bill g "
+                + "WHERE g.retired = false "
+                + "AND g.billTypeAtomic IN :btas "
+                + "AND g.billedBill IS NOT NULL "
+                + "AND g.billedBill.referenceBill.id IN :poIds";
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("btas", grnBillTypesAtomicsToList);
+        params2.put("poIds", poIds);
+        List<Object> rows2 = getBillFacade().findObjects(jpql2, params2);
+        if (rows2 != null) {
+            for (Object row : rows2) {
+                Object[] cols = (Object[]) row;
+                Long poId = ((Number) cols[0]).longValue();
+                Long grnBillId = (Long) cols[1];
+                List<PharmacyGrnSummaryDTO> grnList = grnsByPoId.computeIfAbsent(poId, k -> new ArrayList<>());
+                boolean alreadyPresent = false;
+                for (PharmacyGrnSummaryDTO existing : grnList) {
+                    if (existing.getBillId().equals(grnBillId)) {
+                        alreadyPresent = true;
+                        break;
+                    }
+                }
+                if (!alreadyPresent) {
+                    PharmacyGrnSummaryDTO grnDto = new PharmacyGrnSummaryDTO(
+                            grnBillId, (String) cols[2], (Date) cols[3], (Double) cols[4], cols[5], cols[6], cols[7]);
+                    grnList.add(grnDto);
+                }
+            }
+        }
+
+        // Path 3: GRN.referenceBill is the PO's own originating PHARMACY_ORDER bill
+        // instead of its PHARMACY_ORDER_APPROVAL bill (issue #22624). Some GRNs end
+        // up linked one hop further up the approval chain than expected, so resolve
+        // each approval bill's own referenceBill (the original PO) and match on that
+        // too, mirroring Path 1/2's tolerance for an alternate linking path.
+        Map<Long, List<Long>> approvalIdsByOriginalPoId = new HashMap<>();
+        String originalPoJpql = "SELECT b.id, b.referenceBill.id FROM Bill b "
+                + "WHERE b.id IN :poIds AND b.referenceBill IS NOT NULL";
+        Map<String, Object> originalPoParams = new HashMap<>();
+        originalPoParams.put("poIds", poIds);
+        List<Object> originalPoRows = getBillFacade().findObjects(originalPoJpql, originalPoParams);
+        if (originalPoRows != null) {
+            for (Object row : originalPoRows) {
+                Object[] cols = (Object[]) row;
+                Long approvalId = ((Number) cols[0]).longValue();
+                Long originalPoId = ((Number) cols[1]).longValue();
+                approvalIdsByOriginalPoId.computeIfAbsent(originalPoId, k -> new ArrayList<>()).add(approvalId);
+            }
+        }
+
+        if (!approvalIdsByOriginalPoId.isEmpty()) {
+            String jpql3 = "SELECT g.referenceBill.id, g.id, g.deptId, g.createdAt, g.netTotal, g.billTypeAtomic, g.cancelled, g.refunded "
+                    + "FROM Bill g "
+                    + "WHERE g.retired = false "
+                    + "AND g.billTypeAtomic IN :btas "
+                    + "AND g.referenceBill.id IN :originalPoIds";
+            Map<String, Object> params3 = new HashMap<>();
+            params3.put("btas", grnBillTypesAtomicsToList);
+            params3.put("originalPoIds", approvalIdsByOriginalPoId.keySet());
+            List<Object> rows3 = getBillFacade().findObjects(jpql3, params3);
+            if (rows3 != null) {
+                for (Object row : rows3) {
+                    Object[] cols = (Object[]) row;
+                    Long originalPoId = ((Number) cols[0]).longValue();
+                    Long grnBillId = (Long) cols[1];
+                    for (Long approvalId : approvalIdsByOriginalPoId.getOrDefault(originalPoId, new ArrayList<>())) {
+                        List<PharmacyGrnSummaryDTO> grnList = grnsByPoId.computeIfAbsent(approvalId, k -> new ArrayList<>());
+                        boolean alreadyPresent = false;
+                        for (PharmacyGrnSummaryDTO existing : grnList) {
+                            if (existing.getBillId().equals(grnBillId)) {
+                                alreadyPresent = true;
+                                break;
+                            }
+                        }
+                        if (!alreadyPresent) {
+                            PharmacyGrnSummaryDTO grnDto = new PharmacyGrnSummaryDTO(
+                                    grnBillId, (String) cols[2], (Date) cols[3], (Double) cols[4], cols[5], cols[6], cols[7]);
+                            grnList.add(grnDto);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (PharmacyPurchaseOrderDTO po : poDtos) {
+            po.setListOfGrnDtos(grnsByPoId.getOrDefault(po.getBillId(), new ArrayList<>()));
         }
     }
 

@@ -11,6 +11,7 @@
     <cc:interface>
         <cc:attribute name="controller" required="true" />
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true" />
+        <cc:attribute name="dup" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -28,6 +29,8 @@
 
                     <div class="headingBill" style="text-align: center; font-weight: bold;">
                         <h:outputText value="PAYMENT VOUCHER" />
+                        <br/>
+                        <h:outputText value="**Duplicate**" rendered="#{cc.attrs.dup eq true}" />
                     </div>
 
                     <div class="billline"><hr/></div>
@@ -124,6 +127,8 @@
 
                 <div class="headingBill" style="text-align: center; font-weight: bold;">
                     <h:outputText value="PAYMENT VOUCHER — SUMMARY" />
+                    <br/>
+                    <h:outputText value="**Duplicate**" rendered="#{cc.attrs.dup eq true}" />
                 </div>
 
                 <div class="billline"><hr/></div>

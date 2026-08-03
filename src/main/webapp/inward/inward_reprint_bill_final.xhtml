@@ -664,6 +664,55 @@
                                         </div>
                                     </div>
 
+                                    <div class="row mt-3">
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill 2"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="originalCustom3BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="originalCustom3BillPriview">
+                                                    <bi:finalBillCustom3 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill 2"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="duplicateCustom3BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="duplicateCustom3BillPriview">
+                                                    <bi:finalBillCustom3 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                    </div>
+
                                     <p:dialog id="custom2ConfigDialog"
                                               header="Custom Bills Printer Configuration"
                                               widgetVar="custom2ConfigDialog"
