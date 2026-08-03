@@ -2343,10 +2343,13 @@ public class CashierReportController implements Serializable {
                 + sumInwardPayment(w, new RefundBill(), PaymentMethod.Slip, own));
     }
 
+    private static final List<BillType> INWARD_PAYMENT_BILL_TYPES
+            = Arrays.asList(BillType.InwardPaymentBill, BillType.PostFinalBillInwardPayment);
+
     private double sumInwardPayment(WebUser w, Bill billClass, PaymentMethod pm, boolean own) {
-        double total = own ? calTotOwn(w, billClass, pm, BillType.InwardPaymentBill) : calTot(w, billClass, pm, BillType.InwardPaymentBill);
-        total += own ? calTotOwn(w, billClass, pm, BillType.PostFinalBillInwardPayment) : calTot(w, billClass, pm, BillType.PostFinalBillInwardPayment);
-        return total;
+        return own
+                ? calTotOwn(w, billClass, pm, INWARD_PAYMENT_BILL_TYPES)
+                : calTot(w, billClass, pm, INWARD_PAYMENT_BILL_TYPES);
     }
 
     double calTotOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
@@ -2382,6 +2385,37 @@ public class CashierReportController implements Serializable {
         }
         return tot;
 
+    }
+
+    /**
+     * Same as calTotOwn(WebUser, Bill, PaymentMethod, BillType) but sums
+     * across several bill types in one query (b.billType IN :billTps)
+     * instead of one query per type.
+     */
+    private double calTotOwn(WebUser w, Bill billClass, PaymentMethod pM, List<BillType> billTypes) {
+        if (getSessionController().getInstitution() == null) {
+            return 0.0;
+        }
+
+        String sql = "select b from Bill b where type(b)=:bill and b.creater=:cret and "
+                + " b.paymentMethod=:payMethod  and b.institution=:ins"
+                + " and b.billType in :billTps and b.createdAt between :fromDate and :toDate ";
+
+        Map temMap = new HashMap();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTps", billTypes);
+        temMap.put("payMethod", pM);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("cret", w);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        double tot = 0;
+        for (Bill b : bills) {
+            tot += b.getNetTotal();
+        }
+        return tot;
     }
 
     public Date getFromDate() {
@@ -2599,6 +2633,30 @@ public class CashierReportController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTp", billType);
+        temMap.put("pm", paymentMethod);
+        temMap.put("bill", bill.getClass());
+        temMap.put("web", w);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        double tot = 0;
+        for (Bill b : bills) {
+            tot += b.getNetTotal();
+        }
+        return tot;
+    }
+
+    /**
+     * Same as calTot(WebUser, Bill, PaymentMethod, BillType) but sums across
+     * several bill types in one query (b.billType IN :billTps) instead of
+     * one query per type.
+     */
+    private double calTot(WebUser w, Bill bill, PaymentMethod paymentMethod, List<BillType> billTypes) {
+        String sql = "select b from Bill b  where b.retired=false and type(b)=:bill and b.creater=:web and "
+                + "b.paymentMethod= :pm "
+                + " and b.billType in :billTps and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTps", billTypes);
         temMap.put("pm", paymentMethod);
         temMap.put("bill", bill.getClass());
         temMap.put("web", w);
