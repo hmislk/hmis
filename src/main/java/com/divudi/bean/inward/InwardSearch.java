@@ -371,6 +371,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         bill = b;
+        billItems = null;
         printPreview = true;
         return "/inward/inward_deposit_cancel_bill_payment?faces-redirect=true";
     }
@@ -617,6 +618,7 @@ public class InwardSearch implements Serializable {
 
         if (versions.size() == 1) {
             bill = versions.get(0);
+            billItems = null;
             withProfessionalFee = false;
             return "/inward/inward_reprint_bill_final?faces-redirect=true";
         }
@@ -939,6 +941,7 @@ public class InwardSearch implements Serializable {
 
         // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         bill = getBillFacade().findFirstByJpql(jpql, temMap);
+        billItems = null;
 
         if (bill == null) {
             JsfUtil.addErrorMessage("No Provisional Bill Created");
@@ -2458,12 +2461,14 @@ public class InwardSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
-        hm.put("b", getBill());
-        billItems = getBillItemFacede().findByJpql(sql, hm);
         if (billItems == null) {
-            billItems = new ArrayList<>();
+            HashMap hm = new HashMap();
+            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
+            hm.put("b", getBill());
+            billItems = getBillItemFacede().findByJpql(sql, hm);
+            if (billItems == null) {
+                billItems = new ArrayList<>();
+            }
         }
 
         return billItems;
