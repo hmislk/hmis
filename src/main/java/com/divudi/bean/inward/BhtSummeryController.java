@@ -177,6 +177,7 @@ public class BhtSummeryController implements Serializable {
     private DoctorFeeGroup selectedDoctorFeeGroup;
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
+    private List<Bill> postFinalPaymentBill;
     private List<Bill> pharmacyIssues;
 
     //Groping Medicine by Issueing Department
@@ -514,6 +515,60 @@ public class BhtSummeryController implements Serializable {
             totals.merge(label, bi.getAdjustedValue(), Double::sum);
         }
         return new ArrayList<>(totals.entrySet());
+    }
+
+    /**
+     * Charges grouped by inward charge type (excluding Professional Charge,
+     * which is now listed as individual per-doctor fee lines), alphabetical
+     * by display name, for the Custom3 5x5 impact-printer bill ("Custom Bill
+     * 2" in the UI).
+     */
+    public List<Map.Entry<String, Double>> getCustom3CategoryTotals(Bill bill) {
+        Map<String, Double> totals = new TreeMap<>();
+        if (bill == null || bill.getBillItems() == null) {
+            return new ArrayList<>(totals.entrySet());
+        }
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                continue;
+            }
+            if (bi.getAdjustedValue() == 0.0) {
+                continue;
+            }
+            String label = getChargeTypeLabel(bi.getInwardChargeType());
+            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+        }
+        return new ArrayList<>(totals.entrySet());
+    }
+
+    /**
+     * Sum of prior payments/receipts recorded against this admission — the
+     * Custom3 bill's "Deposit" line. Same backwardReferenceBills source and
+     * qualifying filter as the Custom2 receipts table (finalBillCustom2.xhtml
+     * lines 280-291), just summed instead of rendered row by row.
+     */
+    public double getCustom3DepositTotal(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        List<Bill> receipts = (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null)
+                ? bill.getPatientEncounter().getFinalBill().getBackwardReferenceBills()
+                : bill.getBackwardReferenceBills();
+        double total = 0.0;
+        if (receipts == null) {
+            return total;
+        }
+        for (Bill b : receipts) {
+            if (b.getNetTotal() == 0.0) {
+                continue;
+            }
+            boolean qualifies = (!b.isCancelled() && "class com.divudi.core.entity.BilledBill".equals(b.getBillClass()))
+                    || (!b.isCancelled() && b.getRefundedBill() == null && "class com.divudi.core.entity.RefundBill".equals(b.getBillClass()));
+            if (qualifies) {
+                total += b.getNetTotal();
+            }
+        }
+        return total;
     }
 
     public boolean isCustom2ShowAddress() {
@@ -2058,7 +2113,9 @@ public class BhtSummeryController implements Serializable {
 
         if (getPatientEncounter().getAdmissionType() != null
                 && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
-            if (!getPatientEncounter().isNursingDischarged()) {
+            boolean nursingDischargeRequired = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Administrative Discharge - Require Nursing Discharge", true);
+            if (nursingDischargeRequired && !getPatientEncounter().isNursingDischarged()) {
                 JsfUtil.addErrorMessage("Nursing discharge must be completed before the bill can be settled.");
                 return true;
             }
@@ -3768,6 +3825,7 @@ public class BhtSummeryController implements Serializable {
         allDoctorCharges = null;
         patientItems = null;
         paymentBill = null;
+        postFinalPaymentBill = null;
         departmentBillItems = null;
         latestCheckedBillItemsByItem = null;
         printPreview = false;
@@ -4333,6 +4391,17 @@ public class BhtSummeryController implements Serializable {
         this.paymentBill = paymentBill;
     }
 
+    public List<Bill> getPostFinalPaymentBill() {
+        if (postFinalPaymentBill == null) {
+            postFinalPaymentBill = getInwardBean().fetchPostFinalPaymentBill(getPatientEncounter(), childPatientEncouters);
+        }
+        return postFinalPaymentBill;
+    }
+
+    public void setPostFinalPaymentBill(List<Bill> postFinalPaymentBill) {
+        this.postFinalPaymentBill = postFinalPaymentBill;
+    }
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -4630,6 +4699,10 @@ public class BhtSummeryController implements Serializable {
                     cit.setMargin(docMargin);
                     cit.setVat(docVat);
                 }
+            } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
+                cit.setGross(cit.getTotal());
+                cit.setMargin(0.0);
+                cit.setVat(0.0);
             }
         }
     }

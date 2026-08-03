@@ -158,6 +158,7 @@ public enum Privileges {
     InwardEditPaymentDetails("Inward Edit Payment Details"),
     InwardManageAllergies("Inward Manage Allergies"),
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
+    InwardPostFinalPaymentAccess("Inward Post Final Payment Access"),
     InwardSurgeryAdd("Inward Surgery Add"),
     InwardSurgeryManage("Inward Surgery Manage"),
     InwardSurgeryValidate("Inward Surgery Validate"),
@@ -1274,6 +1275,7 @@ public enum Privileges {
             case InwardEditPaymentDetails:
             case InwardManageAllergies:
             case InwardDoctorPaymentAccess:
+            case InwardPostFinalPaymentAccess:
             case InwardSurgeryAdd:
             case InwardSurgeryManage:
             case InwardSurgeryValidate:
