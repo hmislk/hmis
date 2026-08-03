@@ -7850,8 +7850,10 @@ public class SearchController implements Serializable {
      */
     private void fillGrnsByBulkQuery(List<Bill> poList, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
         Map<Long, List<Bill>> grnsByPoId = new HashMap<>();
+        List<Long> poIds = new ArrayList<>();
         for (Bill po : poList) {
             grnsByPoId.put(po.getId(), new ArrayList<>());
+            poIds.add(po.getId());
         }
 
         // Path 1: GRN.referenceBill is the PO
@@ -7899,11 +7901,17 @@ public class SearchController implements Serializable {
         // end up linked one hop further up the approval chain than expected, so resolve
         // each approval bill's own referenceBill (the original PO) and match on that
         // too, mirroring Path 1/2's tolerance for an alternate linking path.
+        // NOTE: must filter on b.id IN :poIds here, not "b IN :pos" against a
+        // List<Bill> - comparing the root identification variable directly to an
+        // entity-valued list parameter silently matches zero rows under EclipseLink,
+        // unlike a navigated path expression (e.g. Path 1/2's "g.referenceBill IN
+        // :pos"). This previously left the legacy page's GRN list empty even after
+        // porting Path 3 from the DTO method (which correctly uses "b.id IN :poIds").
         Map<Long, List<Long>> approvalIdsByOriginalPoId = new HashMap<>();
         String originalPoJpql = "SELECT b.id, b.referenceBill.id FROM Bill b "
-                + "WHERE b IN :pos AND b.referenceBill IS NOT NULL";
+                + "WHERE b.id IN :poIds AND b.referenceBill IS NOT NULL";
         Map<String, Object> originalPoParams = new HashMap<>();
-        originalPoParams.put("pos", poList);
+        originalPoParams.put("poIds", poIds);
         List<Object> originalPoRows = getBillFacade().findObjects(originalPoJpql, originalPoParams);
         if (originalPoRows != null) {
             for (Object row : originalPoRows) {
