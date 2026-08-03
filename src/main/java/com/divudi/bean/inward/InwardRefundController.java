@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -67,6 +68,7 @@ public class InwardRefundController implements Serializable {
     private InwardBeanController inwardBean;
     private List<Bill> eligiblePaymentBills;
     private Bill originalBillToRefund;
+    private Map<Long, Double> remainingRefundableAmountCache;
 
     public void makeNull() {
         current = null;
@@ -74,6 +76,7 @@ public class InwardRefundController implements Serializable {
         printPreview = false;
         eligiblePaymentBills = null;
         originalBillToRefund = null;
+        remainingRefundableAmountCache = null;
     }
 
     /**
@@ -298,11 +301,33 @@ public class InwardRefundController implements Serializable {
     private void loadEligiblePaymentBills() {
         eligiblePaymentBills = new ArrayList<>();
         originalBillToRefund = null;
+        remainingRefundableAmountCache = new HashMap<>();
         for (Bill b : getInwardBean().fetchPaymentBill(getCurrent().getPatientEncounter(), null)) {
-            if (b instanceof BilledBill && !b.isCancelled() && getRemainingRefundableAmount(b) > 0.01) {
+            if (b instanceof BilledBill && !b.isCancelled() && computeRemainingRefundableAmount(b) > 0.01) {
                 eligiblePaymentBills.add(b);
             }
         }
+    }
+
+    /**
+     * Cached per-bill remaining-refundable amount, populated once per bill
+     * by loadEligiblePaymentBills(). The bill picker table calls this once
+     * per row through EL on every render/postback, so without the cache it
+     * would re-run computeRemainingRefundableAmount()'s JPQL SUM query for
+     * every row on every render, on top of the same query already run for
+     * every bill while building eligiblePaymentBills.
+     */
+    public double getRemainingRefundableAmount(Bill originalBill) {
+        if (originalBill == null) {
+            return 0.0;
+        }
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            Double cached = remainingRefundableAmountCache.get(originalBill.getId());
+            if (cached != null) {
+                return cached;
+            }
+        }
+        return computeRemainingRefundableAmount(originalBill);
     }
 
     /**
@@ -312,15 +337,16 @@ public class InwardRefundController implements Serializable {
      * mappedBy="billedBill", which no refund flow in this codebase populates,
      * so it never reflects referenceBill-linked refunds.
      */
-    public double getRemainingRefundableAmount(Bill originalBill) {
-        if (originalBill == null) {
-            return 0.0;
-        }
+    private double computeRemainingRefundableAmount(Bill originalBill) {
         String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
         HashMap hm = new HashMap();
         hm.put("orig", originalBill);
         double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm);
-        return originalBill.getNetTotal() + refundedSoFar;
+        double remaining = originalBill.getNetTotal() + refundedSoFar;
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            remainingRefundableAmountCache.put(originalBill.getId(), remaining);
+        }
+        return remaining;
     }
 
     public void selectBillToRefundListener() {

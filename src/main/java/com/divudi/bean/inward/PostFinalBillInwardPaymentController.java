@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -112,6 +113,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     private PaymentMethodData paymentMethodData;
     private List<Bill> eligiblePostFinalPaymentBills;
     private Bill originalBillToRefund;
+    private Map<Long, Double> remainingRefundableAmountCache;
     // </editor-fold>
 
     public PaymentMethod[] getPaymentMethods() {
@@ -784,6 +786,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         printPreview = false;
         eligiblePostFinalPaymentBills = null;
         originalBillToRefund = null;
+        remainingRefundableAmountCache = null;
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             JsfUtil.addErrorMessage("Start Your Shift First !");
@@ -818,11 +821,34 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     private void loadEligiblePostFinalPaymentBills() {
         eligiblePostFinalPaymentBills = new ArrayList<>();
         originalBillToRefund = null;
+        remainingRefundableAmountCache = new HashMap<>();
         for (Bill b : getInwardBean().fetchPostFinalPaymentBill(getRefundCurrent().getPatientEncounter(), null)) {
-            if (b instanceof BilledBill && !b.isCancelled() && getRemainingRefundableAmount(b) > 0.01) {
+            if (b instanceof BilledBill && !b.isCancelled() && computeRemainingRefundableAmount(b) > 0.01) {
                 eligiblePostFinalPaymentBills.add(b);
             }
         }
+    }
+
+    /**
+     * Cached per-bill remaining-refundable amount, populated once per bill
+     * by loadEligiblePostFinalPaymentBills(). The bill picker table calls
+     * this once per row through EL on every render/postback, so without the
+     * cache it would re-run computeRemainingRefundableAmount()'s JPQL SUM
+     * query for every row on every render, on top of the same query already
+     * run for every bill while building eligiblePostFinalPaymentBills.
+     * Mirrors {@code InwardRefundController.getRemainingRefundableAmount()}.
+     */
+    public double getRemainingRefundableAmount(Bill originalBill) {
+        if (originalBill == null) {
+            return 0.0;
+        }
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            Double cached = remainingRefundableAmountCache.get(originalBill.getId());
+            if (cached != null) {
+                return cached;
+            }
+        }
+        return computeRemainingRefundableAmount(originalBill);
     }
 
     /**
@@ -830,18 +856,18 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
      * referenceBill (always <= 0), added to the bill's own netTotal. Do NOT
      * use Bill.refundBills/getRefundBills() here - that collection is
      * mappedBy="billedBill", which no refund flow in this codebase
-     * populates, so it never reflects referenceBill-linked refunds. Mirrors
-     * {@code InwardRefundController.getRemainingRefundableAmount()}.
+     * populates, so it never reflects referenceBill-linked refunds.
      */
-    public double getRemainingRefundableAmount(Bill originalBill) {
-        if (originalBill == null) {
-            return 0.0;
-        }
+    private double computeRemainingRefundableAmount(Bill originalBill) {
         String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
         HashMap hm = new HashMap();
         hm.put("orig", originalBill);
         double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm);
-        return originalBill.getNetTotal() + refundedSoFar;
+        double remaining = originalBill.getNetTotal() + refundedSoFar;
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            remainingRefundableAmountCache.put(originalBill.getId(), remaining);
+        }
+        return remaining;
     }
 
     public void selectBillToRefundListener() {
