@@ -1888,6 +1888,24 @@ public class InwardBeanController implements Serializable {
 
     }
 
+    public List<Bill> fetchPostFinalPaymentBill(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT  b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter IN :pe ";
+        hm.put("btp", BillType.PostFinalBillInwardPayment);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
     public double calPatientRoomChargeDiscount(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
         String sql = "SELECT sum(pr.discountRoomCharge) FROM PatientRoom pr "

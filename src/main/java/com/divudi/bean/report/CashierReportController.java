@@ -2316,13 +2316,25 @@ public class CashierReportController implements Serializable {
         c.setAgentCancelCheque(calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.AgentPaymentReceiveBill));
         c.setAgentCancelSlip(calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.AgentPaymentReceiveBill));
 
-        c.setInwardPaymentCash(calTotOwn(w, new BilledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill));
-        c.setInwardPaymentCheque(calTotOwn(w, new BilledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill));
-        c.setInwardPaymentSlip(calTotOwn(w, new BilledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill));
+        c.setInwardPaymentCash(
+                calTotOwn(w, new BilledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill)
+                + calTotOwn(w, new BilledBill(), PaymentMethod.Cash, BillType.PostFinalBillInwardPayment));
+        c.setInwardPaymentCheque(
+                calTotOwn(w, new BilledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill)
+                + calTotOwn(w, new BilledBill(), PaymentMethod.Cheque, BillType.PostFinalBillInwardPayment));
+        c.setInwardPaymentSlip(
+                calTotOwn(w, new BilledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill)
+                + calTotOwn(w, new BilledBill(), PaymentMethod.Slip, BillType.PostFinalBillInwardPayment));
 
-        c.setInwardCancelCash(calTotOwn(w, new CancelledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill));
-        c.setInwardCancelCheque(calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill));
-        c.setInwardCancelSlip(calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill));
+        c.setInwardCancelCash(
+                calTotOwn(w, new CancelledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill)
+                + calTotOwn(w, new CancelledBill(), PaymentMethod.Cash, BillType.PostFinalBillInwardPayment));
+        c.setInwardCancelCheque(
+                calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill)
+                + calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.PostFinalBillInwardPayment));
+        c.setInwardCancelSlip(
+                calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill)
+                + calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.PostFinalBillInwardPayment));
     }
 
     double calTotOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
