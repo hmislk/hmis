@@ -282,6 +282,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private double totalProFee;
     private double totalDiscount;
     private double totalNetHosFee;
+    private double totalInvoiceAmount;
+    private double totalProfitMargin;
     private double totalNetTotal;
     private Double staffFeeTotal;
     private Double grossFeeTotal;
@@ -2614,7 +2616,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         Map<String, Object> params = new HashMap<>();
         String jpql = "select new com.divudi.core.data.dto.PatientJourneyRow("
-            + " b.createdAt,"
+                + " b.createdAt,"
                 + " b.deptId,"
                 + " b.billTypeAtomic,"
                 + " b.billType,"
@@ -2624,8 +2626,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 + " cr.name)"
                 + " from Bill b"
                 + " left join b.creater cr"
-            + " where b.retired=false"
-            + " and coalesce(b.createdAt, b.billDate) between :fd and :td"
+                + " where b.retired=false"
+                + " and coalesce(b.createdAt, b.billDate) between :fd and :td"
                 + " and b.patient=:pt";
         params.put("fd", fromDate);
         params.put("td", toDate);
@@ -2638,15 +2640,15 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         String peJpql = "select pe.dateOfAdmission, pe.timeOfAdmission, pe.fromTime, "
-            + " pe.dateOfDischarge, pe.timeOfDischarge, pe.toTime, "
-            + " pe.bhtNo, pe.encounterId, at.name, cr.name "
-            + " from PatientEncounter pe"
-            + " left join pe.admissionType at"
-            + " left join pe.creater cr"
-            + " where pe.retired=false"
-            + " and pe.patient=:pt"
-            + " and (coalesce(pe.dateOfAdmission, pe.timeOfAdmission, pe.fromTime) between :fd and :td"
-            + " or coalesce(pe.dateOfDischarge, pe.timeOfDischarge, pe.toTime) between :fd and :td)";
+                + " pe.dateOfDischarge, pe.timeOfDischarge, pe.toTime, "
+                + " pe.bhtNo, pe.encounterId, at.name, cr.name "
+                + " from PatientEncounter pe"
+                + " left join pe.admissionType at"
+                + " left join pe.creater cr"
+                + " where pe.retired=false"
+                + " and pe.patient=:pt"
+                + " and (coalesce(pe.dateOfAdmission, pe.timeOfAdmission, pe.fromTime) between :fd and :td"
+                + " or coalesce(pe.dateOfDischarge, pe.timeOfDischarge, pe.toTime) between :fd and :td)";
 
         List<Object[]> encounters = peFacade.findObjectArrayByJpql(peJpql, params, TemporalType.TIMESTAMP);
         if (encounters != null) {
@@ -2700,7 +2702,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                     userName != null ? userName : ""));
         }
     }
-
 
     private String firstNonEmpty(String... values) {
         if (values == null) {
@@ -4098,9 +4099,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return filters;
     }
-    
+
     // collection center receipt report pdf generation method
-    public void exportCollectionCenterReciptReportToPDF(){
+    public void exportCollectionCenterReciptReportToPDF() {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
@@ -4164,11 +4165,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
                 table.addCell(textCell(String.valueOf(indexRow), bodyFontSmall));
                 Bill b = row.getBill();
-                table.addCell(textCell(b.getDeptId() != null ? b.getDeptId() : "-" , bodyFontSmall));
-                table.addCell(textCell( b.getCreatedAt() != null ? sdf.format(b.getCreatedAt()) : "-", bodyFontSmall));
-                table.addCell(textCell(b.getCreater() != null ?  b.getCreater().getName() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getDeptId() != null ? b.getDeptId() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getCreatedAt() != null ? sdf.format(b.getCreatedAt()) : "-", bodyFontSmall));
+                table.addCell(textCell(b.getCreater() != null ? b.getCreater().getName() : "-", bodyFontSmall));
                 table.addCell(textCell(b.getPaymentMethod() != null ? b.getPaymentMethod().getLabel() : "-", bodyFontSmall));
-                table.addCell(textCell(b.getFromInstitution() != null ?  b.getFromInstitution().getCode() : "-", bodyFontSmall));
+                table.addCell(textCell(b.getFromInstitution() != null ? b.getFromInstitution().getCode() : "-", bodyFontSmall));
                 table.addCell(textCell(b.getFromInstitution() != null ? b.getFromInstitution().getName() : "-", bodyFontSmall));
 
                 table.addCell(numCell(b.getTotal(), bodyFontSmall));
@@ -4183,7 +4184,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             table.addCell(footerCell);
             table.addCell(numCell(bundle.getTotal(), bodyFontSmall));
             table.addCell(textCell("-", bodyFontSmall));
-            
+
             document.add(table);
             document.close();
             context.responseComplete();
@@ -4193,7 +4194,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                     .getName()).log(Level.SEVERE, "Error exporting Collection center receipt report to PDF", e);
         }
     }
-    
 
     // PostProcessor for collection center recipt report excel export
     public void postProcessCollectionCenterReciptReportExcel(Object document) {
@@ -4383,17 +4383,17 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("ORDER BY pe.dateOfDischarge, pe.bhtNo, timedItem.name, pi.fromTime ");
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
-        
+
         List<DurationServiceReportDTO> results = (List<DurationServiceReportDTO>) (Object) billItemFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
         if (results == null) {
             results = new ArrayList<>();
         }
-        
+
         this.durationServiceReportRows = results;
     }
-    
-     public void exportDurationServiceReportToPDF() {
+
+    public void exportDurationServiceReportToPDF() {
         if (durationServiceReportRows == null || durationServiceReportRows.isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
@@ -4572,7 +4572,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return date != null ? sdf.format(date) : "-";
     }
 
-
     private String personName(Person person) {
         return person != null && person.getNameWithTitle() != null ? person.getNameWithInitials() : "";
     }
@@ -4587,9 +4586,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("per.name, ")
                 .append("CASE WHEN type(pe) = Admission THEN 'IP' ELSE 'OPD' END, ")
                 .append("rdPer.name, ")
+                .append("rdPer.title, ")
                 .append("pe.grantTotal, ")
                 .append("rfc.roomCategory, ")
-                .append("pe.netTotal")
+                .append("pe.netTotal ")
                 .append(") ")
                 .append("FROM Admission pe ")
                 .append("LEFT JOIN pe.finalBill fb ")
@@ -4650,10 +4650,34 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 jpql.toString(), params, TemporalType.TIMESTAMP);
 
         totalNetTotal = 0.0;
+        totalInvoiceAmount = 0.0;
+        totalProfitMargin = 0.0;
         if (profitMatrixSummaryRows != null) {
             for (ProfitMatrixRowDTO row : profitMatrixSummaryRows) {
+                String pmJpql = "SELECT SUM(bi.netValue * bi.item.category.profitMargin) "
+                        + "FROM BillItem bi "
+                        + "WHERE bi.bill.patientEncounter.bhtNo = :bht "
+                        + "AND bi.retired = false "
+                        + "AND bi.bill.retired = false "
+                        + "AND bi.bill.cancelled = false";
+                Map<String, Object> pmParams = new HashMap<>();
+                pmParams.put("bht", row.getAdmissionNo());
+                Double pm = billItemFacade.findDoubleByJpql(pmJpql, pmParams);
+                if (pm == null) {
+                    pm = 0.0;
+                }
+                row.setProfitMargin(pm);
+                double invAmt = row.getInvoiceAmount() != null ? row.getInvoiceAmount() : 0.0;
+                row.setFinalAmount(invAmt + pm);
+
                 if (row.getFinalAmount() != null) {
                     totalNetTotal += row.getFinalAmount();
+                }
+                if (row.getInvoiceAmount() != null) {
+                    totalInvoiceAmount += row.getInvoiceAmount();
+                }
+                if (row.getProfitMargin() != null) {
+                    totalProfitMargin += row.getProfitMargin();
                 }
             }
         }
@@ -4664,28 +4688,32 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("SELECT new com.divudi.core.data.dto.ProfitMatrixRowDTO(")
-                .append("b.deptId, ")
+                .append("COALESCE(fb.deptId, b.deptId), ")
                 .append("pe.bhtNo, ")
                 .append("pat.phn, ")
                 .append("per.name, ")
                 .append("CASE WHEN type(pe) = Admission THEN 'IP' ELSE 'OPD' END, ")
                 .append("rdPer.name, ")
-                .append("bi.item.name, ")
-                .append("bi.item.department.name, ")
-                .append("bi.grossValue, ")
-                .append("itemFee.fee, ")
-                .append("bi.netValue ")
+                .append("rdPer.title, ")
+                .append("i.name, ")
+                .append("i.inwardChargeType, ")
+                .append("iDept.name, ")
+                .append("pe.grantTotal, ")
+                .append("bi.netValue, ")
+                .append("pe.netTotal, ")
+                .append(" cat.profitMargin ")
                 .append(") ")
                 .append("FROM BillItem bi ")
                 .append("JOIN bi.bill b ")
                 .append("JOIN b.patientEncounter pe ")
+                .append("LEFT JOIN pe.finalBill fb ")
                 .append("LEFT JOIN pe.patient pat ")
                 .append("LEFT JOIN pat.person per ")
                 .append("LEFT JOIN pe.referringConsultant rd ")
                 .append("LEFT JOIN rd.person rdPer ")
                 .append("LEFT JOIN bi.item i ")
+                .append("LEFT JOIN i.category cat ")
                 .append("LEFT JOIN i.department iDept ")
-                .append("LEFT JOIN i.itemFeesAuto itemFee ")
                 .append("LEFT JOIN pe.currentPatientRoom room ")
                 .append("LEFT JOIN room.roomFacilityCharge rfc ");
 
@@ -4693,6 +4721,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("AND b.retired = :bret ")
                 .append("AND b.cancelled = :can ")
                 .append("AND pe.retired = :peret ")
+                .append("AND bi.netValue > 0.0 ")
                 .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
                 .append("AND pe.discharged = true ")
                 .append("AND pe.paymentFinalized = true ");
@@ -4757,10 +4786,38 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 jpql.toString(), params, TemporalType.TIMESTAMP);
 
         totalNetTotal = 0.0;
+        totalInvoiceAmount = 0.0;
+        totalProfitMargin = 0.0;
         if (profitMatrixDetailRows != null) {
+            Map<String, Double> pmMap = new HashMap<>();
             for (ProfitMatrixRowDTO row : profitMatrixDetailRows) {
-                if (row.getFinalAmount() != null) {
-                    totalNetTotal += row.getFinalAmount();
+                String inv = row.getAdmissionNo();
+                if (inv != null) {
+                    double pm = row.getProfitMargin() != null ? row.getProfitMargin() : 0.0;
+                    pmMap.put(inv, pmMap.getOrDefault(inv, 0.0) + pm);
+                }
+            }
+
+            Set<String> processedInvoices = new HashSet<>();
+            for (ProfitMatrixRowDTO row : profitMatrixDetailRows) {
+                String inv = row.getAdmissionNo();
+                if (inv != null) {
+                    double totalPm = pmMap.getOrDefault(inv, 0.0);
+                    double invAmt = row.getInvoiceAmount() != null ? row.getInvoiceAmount() : 0.0;
+                    row.setFinalAmount(invAmt + totalPm);
+                }
+
+                if (row.getInvoiceNo() != null && !processedInvoices.contains(row.getInvoiceNo())) {
+                    processedInvoices.add(row.getInvoiceNo());
+                    if (row.getFinalAmount() != null) {
+                        totalNetTotal += row.getFinalAmount();
+                    }
+                    if (row.getInvoiceAmount() != null) {
+                        totalInvoiceAmount += row.getInvoiceAmount();
+                    }
+                }
+                if (row.getProfitMargin() != null) {
+                    totalProfitMargin += row.getProfitMargin();
                 }
             }
         }
@@ -7782,6 +7839,30 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return agentReferenceBooks;
     }
 
+    public double getTotalNetTotal() {
+        return totalNetTotal;
+    }
+
+    public void setTotalNetTotal(Double totalNetTotal) {
+        this.totalNetTotal = totalNetTotal;
+    }
+
+    public double getTotalInvoiceAmount() {
+        return totalInvoiceAmount;
+    }
+
+    public void setTotalInvoiceAmount(Double totalInvoiceAmount) {
+        this.totalInvoiceAmount = totalInvoiceAmount;
+    }
+
+    public double getTotalProfitMargin() {
+        return totalProfitMargin;
+    }
+
+    public void setTotalProfitMargin(Double totalProfitMargin) {
+        this.totalProfitMargin = totalProfitMargin;
+    }
+
     public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
         this.agentReferenceBooks = agentReferenceBooks;
     }
@@ -7850,13 +7931,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.totalProFee = totalProFee;
     }
 
-    public Double getTotalNetTotal() {
-        return totalNetTotal;
-    }
 
-    public void setTotalNetTotal(Double totalNetTotal) {
-        this.totalNetTotal = totalNetTotal;
-    }
 
     public double getHospitalFeeTotal() {
         return hospitalFeeTotal;
