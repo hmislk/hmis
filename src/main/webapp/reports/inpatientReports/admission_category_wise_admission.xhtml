@@ -307,8 +307,8 @@
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
-                                             value="Print All">
-                                <p:printer target="printPanel"/>
+                                             value="To Print"
+                                             action="admission_category_wise_admission_print_view?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-danger mx-1"
@@ -374,12 +374,6 @@
                                     value="#{inwardReportController.admissionCategoryWiseAdmissionList}"
                                     var="row"
                                     rowIndexVar="n"
-                                    paginator="true"
-                                    paginatorPosition="bottom"
-                                    rows="10"
-                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                    rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                     styleClass="table-sm w-100">
 
                                     <p:column headerText="No" width="4em" styleClass="text-center">

@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
+                <h:form>
+                    <style>
+                        @media screen, print {
+                            .col-no       { width: 3%; }
+                            .col-bht      { width: 8%; }
+                            .col-name     { width: 16%; }
+                            .col-category { width: 10%; }
+                            .col-advance  { width: 9%; }
+                            .col-pf       { width: 9%; }
+                            .col-hosp     { width: 9%; }
+                            .col-sponsor  { width: 9%; }
+                            .col-patient  { width: 9%; }
+                            .col-discount { width: 9%; }
+                            .col-invoice  { width: 9%; }
+                            .col-billbal  { width: 9%; }
+                            .col-patbal   { width: 9%; }
+
+                            .totals-row td {
+                                font-weight: 700;
+                                border-top: 2px solid #000000;
+                                background-color: #f8f9fa;
+                            }
+                        }
+                    </style>
+
+                    <h:panelGroup>
+                        <p:panel header="Admission Category Wise Admission Report" styleClass="my-2">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Admission Category Wise Admission Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="report" />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inwardReports/admission_category_wise_admission?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+
+                        <h:panelGroup id="report" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="Admission Category Wise Admission Report"/>
+                                    </div>
+
+                                    <div class="d-flex justify-content-center m-3">
+                                        <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:85%;" columnClasses="label,value,label,value,label,value">
+
+                                            <!-- Row 1 -->
+                                            <h:outputText value="Admission From Date:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Admission To Date:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Admission Category:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.admissionType eq null ? 'All' : inwardReportController.admissionType.name}"/>
+
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Discharge From Date:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.dischargeFromDate eq null ? 'N/A' : inwardReportController.dischargeFromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Discharge To Date:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.dischargeToDate eq null ? 'N/A' : inwardReportController.dischargeToDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Admission Status:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.admissionStatus eq null ? 'All' : inwardReportController.admissionStatus.label}"/>
+
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Institution:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.institution eq null ? 'All Institutions' : inwardReportController.institution.name}"/>
+
+                                            <h:outputText value="Site:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.site eq null ? 'All Sites' : inwardReportController.site.name}"/>
+
+                                            <h:outputText value="Department:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.department eq null ? 'All Departments' : inwardReportController.department.name}"/>
+
+                                            <!-- Row 4 -->
+                                            <h:outputText value="Consultant:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.consultant eq null ? 'All' : inwardReportController.consultant.person.nameWithTitle}"/>
+
+                                            <h:outputText value="Sponsor:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.sponsor eq null ? 'All Sponsors' : inwardReportController.sponsor.name}"/>
+
+                                            <h:outputText value="Payment Method:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.paymentMethod eq null ? 'All' : inwardReportController.paymentMethod.label}"/>
+
+                                            <!-- Row 5 -->
+                                            <h:outputText value="Invoice Approved From:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.invoiceApprovedFromDate eq null ? 'N/A' : inwardReportController.invoiceApprovedFromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Invoice Approved To:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.invoiceApprovedToDate eq null ? 'N/A' : inwardReportController.invoiceApprovedToDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Total Records:" styleClass="label"/>
+                                            <h:outputText value="#{inwardReportController.admissionCategoryWiseAdmissionList.size()}"/>
+
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+
+                                <p:dataTable id="tbl"
+                                             value="#{inwardReportController.admissionCategoryWiseAdmissionList}"
+                                             var="row"
+                                             rowIndexVar="n"
+                                             styleClass="table"
+                                             style="font-size: 6pt!important; table-layout: fixed;">
+
+                                    <p:column headerText="No" styleClass="text-center col-no">
+                                        <h:outputText value="#{n+1}"/>
+                                    </p:column>
+
+                                    <p:column headerText="BHT" styleClass="text-center col-bht">
+                                        <h:outputText value="#{row.bhtNo}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Patient Name" styleClass="col-name">
+                                        <h:outputText value="#{row.patientName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Admission Category" styleClass="col-category">
+                                        <h:outputText value="#{row.categoryName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Advance" styleClass="text-end col-advance">
+                                        <h:outputText value="#{row.advance}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Professional Fees" styleClass="text-end col-pf">
+                                        <h:outputText value="#{row.professionalFees}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Hospital Amount" styleClass="text-end col-hosp">
+                                        <h:outputText value="#{row.hospitalAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Sponsor Amount" styleClass="text-end col-sponsor">
+                                        <h:outputText value="#{row.sponsorAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Patient Amount" styleClass="text-end col-patient">
+                                        <h:outputText value="#{row.patientAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Discount" styleClass="text-end col-discount">
+                                        <h:outputText value="#{row.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Invoice Amount" styleClass="text-end col-invoice">
+                                        <h:outputText value="#{row.invoiceAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Balance" styleClass="text-end col-billbal">
+                                        <h:outputText value="#{row.billBalance}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Patient Balance" styleClass="text-end col-patbal">
+                                        <h:outputText value="#{row.patientBalance}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    
+                                   
+
+                                </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

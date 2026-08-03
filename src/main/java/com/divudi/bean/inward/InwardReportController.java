@@ -4776,13 +4776,42 @@ public class InwardReportController implements Serializable {
         try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             XSSFSheet sheet = wb.createSheet("Admission Category Wise");
 
+            int rowNum = 0;
+            SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
+            
+            Row filterRow1 = sheet.createRow(rowNum++);
+            filterRow1.createCell(0).setCellValue("Institution:");
+            filterRow1.createCell(1).setCellValue(institution != null ? institution.getName() : "All");
+            
+            Row filterRow2 = sheet.createRow(rowNum++);
+            filterRow2.createCell(0).setCellValue("Site:");
+            filterRow2.createCell(1).setCellValue(site != null ? site.getName() : "All");
+
+            Row filterRow3 = sheet.createRow(rowNum++);
+            filterRow3.createCell(0).setCellValue("Department:");
+            filterRow3.createCell(1).setCellValue(department != null ? department.getName() : "All");
+
+            Row filterRow4 = sheet.createRow(rowNum++);
+            filterRow4.createCell(0).setCellValue("Admission Category:");
+            filterRow4.createCell(1).setCellValue(admissionType != null ? admissionType.getName() : "All");
+
+            Row filterRow5 = sheet.createRow(rowNum++);
+            filterRow5.createCell(0).setCellValue("From Date:");
+            filterRow5.createCell(1).setCellValue(fromDate != null ? sdt.format(fromDate) : "-");
+
+            Row filterRow6 = sheet.createRow(rowNum++);
+            filterRow6.createCell(0).setCellValue("To Date:");
+            filterRow6.createCell(1).setCellValue(toDate != null ? sdt.format(toDate) : "-");
+
+            rowNum++;
+
             String[] headers = {
                 "No", "BHT", "Patient Name", "Admission Category", "Advance",
                 "Professional Fees", "Hospital Amount", "Sponsor Amount", "Patient Amount",
                 "Discount", "Invoice Amount", "Bill Balance", "Patient Balance"
             };
 
-            Row headerRow = sheet.createRow(0);
+            Row headerRow = sheet.createRow(rowNum++);
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
             }
@@ -4791,7 +4820,6 @@ public class InwardReportController implements Serializable {
             CellStyle moneyStyle = wb.createCellStyle();
             moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
 
-            int rowNum = 1;
             int idx = 1;
             for (AdmissionCategoryWiseAdmissionDTO dto : admissionCategoryWiseAdmissionList) {
                 Row row = sheet.createRow(rowNum++);
@@ -4848,7 +4876,7 @@ public class InwardReportController implements Serializable {
         SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
+            Document document = new Document(com.lowagie.text.PageSize.A4.rotate(), 10f, 10f, 10f, 10f);
             com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
             document.open();
 
@@ -4951,15 +4979,17 @@ public class InwardReportController implements Serializable {
         table.addCell(new Phrase(nullSafe(row.getBhtNo()), normal));
         table.addCell(new Phrase(nullSafe(row.getPatientName()), normal));
         table.addCell(new Phrase(nullSafe(row.getCategoryName()), normal));
-        table.addCell(new Phrase(formatAmount(row.getAdvance()), normal));
-        table.addCell(new Phrase(formatAmount(row.getProfessionalFees()), normal));
-        table.addCell(new Phrase(formatAmount(row.getHospitalAmount()), normal));
-        table.addCell(new Phrase(formatAmount(row.getSponsorAmount()), normal));
-        table.addCell(new Phrase(formatAmount(row.getPatientAmount()), normal));
-        table.addCell(new Phrase(formatAmount(row.getDiscount()), normal));
-        table.addCell(new Phrase(formatAmount(row.getInvoiceAmount()), normal));
-        table.addCell(new Phrase(formatAmount(row.getBillBalance()), normal));
-        table.addCell(new Phrase(formatAmount(row.getPatientBalance()), normal));
+        
+        PdfPCell c;
+        c = new PdfPCell(new Phrase(formatAmount(row.getAdvance()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getProfessionalFees()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getHospitalAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getSponsorAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getPatientAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getDiscount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getInvoiceAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getBillBalance()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getPatientBalance()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
     }
 
     public void downloadIpUnsettledInvoicesPdf() {
