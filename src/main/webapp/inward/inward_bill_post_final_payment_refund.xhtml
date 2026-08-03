@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <h:panelGroup  class="row" rendered="#{postFinalBillInwardPaymentController.refundCurrent.patientEncounter.bhtNo eq null}">
+                    <div class="col-12">
+                        <h:panelGroup>
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
+                                    <p:outputLabel value="Post Final Bill Payment Refund" class="m-2"/>
+                                </f:facet>
+                                <h:outputLabel value="Type Patient Name or BHT : "/>
+
+                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
+                                                required="true" requiredMessage="Please select a patient"
+                                                value="#{postFinalBillInwardPaymentController.refundCurrent.patientEncounter}"
+                                                completeMethod="#{admissionController.completePatientAll}"
+                                                var="myItem" itemValue="#{myItem}"
+                                                itemLabel="#{myItem.bhtNo}"
+                                                class="mx-2" size="30">
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.bhtNo}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                                    </p:column>
+                                </p:autoComplete>
+
+                                <p:commandButton
+                                    id="btnSelect"
+                                    ajax="false"
+                                    value="Select"
+                                    action="#{postFinalBillInwardPaymentController.selectBhtListenerForRefund}"
+                                    />
+
+                            </p:panel>
+                        </h:panelGroup>
+
+                    </div>
+
+                </h:panelGroup>
+
+                <h:panelGroup class="row" rendered="#{postFinalBillInwardPaymentController.refundCurrent.patientEncounter.bhtNo ne null}">
+                    <p:panel rendered="#{!postFinalBillInwardPaymentController.printPreview}">
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" style="margin-left: 8px;"/>
+                            <p:outputLabel value="Post Final Bill Payment Refund" class="m-2"/>
+                            <h:panelGroup style="float: right; padding-right: 10px;">
+                                <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund"
+                                                 ajax="false" value="Refund" action="#{postFinalBillInwardPaymentController.refundPostFinalPayment}" />
+                                <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false"
+                                                 value="Clear" action="#{postFinalBillInwardPaymentController.navigateToPostFinalPaymentRefund}" />
+                            </h:panelGroup>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel header="BHT">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-user-circle"></h:outputText>
+                                        <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+
+                                    <h:panelGroup id="panSearch2">
+                                        <in:bhtDetail admission="#{postFinalBillInwardPaymentController.refundCurrent.patientEncounter}"/>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel id="paid">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Post Final Payments Made" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputLabel value="Available to Refund" style="color: green"/>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{postFinalBillInwardPaymentController.paidAmount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel id="amount" class="my-2">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-money-bill-wave"></h:outputText>
+                                        <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+
+                                    <h:panelGrid columns="3" class="w-100" columnClasses="col-label,col-colon,col-value" >
+                                        <p:outputLabel value="Payment Method"/>
+                                        <h:outputText value=":"/>
+                                        <p:selectOneMenu class="w-100" autoWidth="false" id="cmbPs" value="#{postFinalBillInwardPaymentController.refundCurrent.paymentMethod}">
+                                            <f:selectItem itemLabel="Select Payment Method"/>
+                                            <f:selectItems value="#{postFinalBillInwardPaymentController.paymentMethods}"/>
+                                            <p:ajax process="cmbPs" update="pnlPaymentMethodDetails" event="change"/>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Amount"/>
+                                        <h:outputText value=":"/>
+                                        <p:inputText
+                                            class="w-100"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{postFinalBillInwardPaymentController.refundCurrent.total}"/>
+                                    </h:panelGrid>
+
+                                    <h:panelGroup id="pnlPaymentMethodDetails" layout="block" class="mt-2">
+                                        <h:panelGroup rendered="#{postFinalBillInwardPaymentController.refundCurrent.paymentMethod eq 'Card'}" layout="block">
+                                            <pa:creditCard paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{postFinalBillInwardPaymentController.refundCurrent.paymentMethod eq 'Cheque'}" layout="block">
+                                            <pa:cheque paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{postFinalBillInwardPaymentController.refundCurrent.paymentMethod eq 'Slip'}" layout="block">
+                                            <pa:slip paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                </p:panel>
+
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+                <p:panel rendered="#{postFinalBillInwardPaymentController.printPreview}">
+                    <p:commandButton ajax="false" value="New Refund" class="ui-button-success mb-3" icon="fas fa-plus" action="#{postFinalBillInwardPaymentController.navigateToPostFinalPaymentRefund}" />
+                    <bill:paymentRefund_1 bill="#{postFinalBillInwardPaymentController.refundCurrent}"/>
+                </p:panel>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

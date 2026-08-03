@@ -1383,6 +1383,71 @@
                                     </p:dataTable>
                                 </p:tab>
 
+                                <p:tab id="tabPostFinalP" title="Post Final Payments"  >
+                                    <p:dataTable
+                                        scrollable="true"
+                                        scrollHeight="300"
+                                        value="#{bhtSummeryController.postFinalPaymentBill}"
+                                        var="p"
+                                        rowStyleClass="#{((p.billClass eq 'class com.divudi.core.entity.BilledBill')
+                                                         or
+                                                         (p.refundedBill eq null and p.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                        <p:column headerText="Bill No">
+                                            #{p.deptId}
+                                        </p:column>
+
+                                        <p:column headerText="Paid At">
+                                            <h:outputLabel value="#{p.createdAt}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                            <br/>
+                                            <h:panelGroup rendered="#{p.cancelled}" class="d-flex gap-2">
+                                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                <h:outputLabel style="color: red;" value="#{p.cancelledBill.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="Added User">
+                                            <h:outputLabel value="#{p.creater.webUserPerson.nameWithTitle}"/>
+                                            <br/>
+                                            <h:panelGroup rendered="#{p.cancelled}" class="d-flex gap-2">
+                                                <h:outputLabel style="color: red;" value="Cancelled By " />
+                                                <h:outputLabel
+                                                    style="color: red;" value="#{p.cancelledBill.creater.webUserPerson.nameWithTitle}" >
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="Payment Method" >
+                                            <h:outputLabel value="#{p.paymentMethod}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Value" class="text-end" width="6em;">
+                                            <h:outputLabel  value="#{p.netTotal}" class="text-end">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Checked User">
+                                            <h:outputLabel value="#{p.checkedBy.creater.webUserPerson.nameWithTitle}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Checked At">
+                                            <h:outputLabel value="#{p.checkeAt}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Action" width="6em;">
+                                            <p:commandButton ajax="false" action="inward_reprint_bill_post_final_payment?faces-redirect=true" value="View Bill" >
+                                                <f:setPropertyActionListener value="#{p}" target="#{postFinalBillInwardPaymentController.current}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:tab>
+
                             </p:tabView>
                         </p:panel>
 

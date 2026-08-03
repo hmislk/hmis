@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <div class=" d-flex justify-content-between ">
+                                <div><h:outputLabel value="Post Final Bill Payment Reprint" class="mt-2"></h:outputLabel></div>
+                                <div class="d-flex gap-2">
+
+                                    <p:commandButton
+                                        id="btnToCancel"
+                                        ajax="false" value="To Cancel"
+                                        class="ui-button-danger"
+                                        icon="fa fa-ban"
+                                        action="#{postFinalBillInwardPaymentController.cancelPostFinalPayment()}"
+                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled}"  >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnPrintBill"
+                                        value="Print"
+                                        ajax="false"
+                                        action="#"
+                                        class="ui-button-info"
+                                        icon="fas fa-print">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnBackToInterim"
+                                        ajax="false"
+                                        value="Back To Interim"
+                                        icon="fa fa-backward"
+                                        action="/inward/inward_bill_intrim?faces-redirect=true"
+                                        actionListener="#{bhtSummeryController.createTables()}"
+                                        >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-6">
+                                <h:panelGroup id="panSearch2" class="d-flex align-items-center justify-content-center p-1 w-100" >
+                                    <p:panel class="w-100">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                            <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <in:bhtDetail admission="#{postFinalBillInwardPaymentController.current.patientEncounter}"/>
+                                    </p:panel>
+
+                                </h:panelGroup>
+                            </div>
+                            <div class="col-6">
+                                <p:panel class="mt-2">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-comment-dots"></h:outputText>
+                                        <h:outputLabel value="Bill Comment" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+
+                                    <div class="d-flex gap-2 justify-content-between">
+                                        <h:outputText
+                                            id="billComment"
+                                            class="w-100"
+                                            value="#{postFinalBillInwardPaymentController.current.comments}">
+                                        </h:outputText>
+                                    </div>
+                                </p:panel>
+
+                            </div>
+                        </div>
+
+                        <p:panel >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <p:outputLabel value="Bill Preview" class="m-2"></p:outputLabel>
+                                    <div class="d-flex gap-3">
+                                        <p:commandButton
+                                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            class="ui-button-secondary"
+                                            type="button"
+                                            onclick="PF('postFinalPaymentConfigDialog').show();"/>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <div class="d-flex justify-content-center">
+                                <h:panelGroup id="gpBillPreview" >
+
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
+                                        <bill:A4PaperPostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" duplicate="true"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
+                                        <bill:FiveFivePostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" duplicate="true" />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                        <bill:posPaperPostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" duplicate="true"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
+                                        <prints:five_five_custom_3_post_final_payments bill="#{postFinalBillInwardPaymentController.current}" duplicate="true" />
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+                            </div>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+
+                <p:dialog id="postFinalPaymentConfigDialog"
+                          header="Inward Payment Bill Printer Configuration"
+                          widgetVar="postFinalPaymentConfigDialog"
+                          modal="true"
+                          width="560"
+                          resizable="false"
+                          closeOnEscape="true">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="postFinalPaymentConfigForm"/>
+                    <h:form id="postFinalPaymentConfigForm">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <i class="fas fa-file-alt me-2"/>
+                                <h:outputText value="Paper Format Settings"/>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                                    <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                                    <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <p:commandButton value="Apply &amp; Close"
+                                             icon="fas fa-save"
+                                             class="ui-button-success"
+                                             ajax="false"
+                                             action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                            <p:commandButton value="Cancel"
+                                             icon="fas fa-times"
+                                             class="ui-button-secondary"
+                                             type="button"
+                                             onclick="PF('postFinalPaymentConfigDialog').hide(); return false;"/>
+                        </div>
+                    </h:form>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

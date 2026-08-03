@@ -173,6 +173,27 @@
                                         </div>
                                     </p:tab>
 
+                                    <p:tab title="Post Final Bill Payment">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Payment"
+                                                title="Payment"
+                                                action="#{postFinalBillInwardPaymentController.navigateToPostFinalPayment()}"
+                                                rendered="#{webUserController.hasPrivilege('InwardPostFinalPaymentAccess')}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Refund"
+                                                title="Refund"
+                                                action="#{postFinalBillInwardPaymentController.navigateToPostFinalPaymentRefund()}"
+                                                rendered="#{webUserController.hasPrivilege('InwardPostFinalPaymentAccess')}">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Cheques">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 

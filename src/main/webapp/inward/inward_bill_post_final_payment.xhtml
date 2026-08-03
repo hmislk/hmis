@@ -1,0 +1,417 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+
+
+
+    <ui:define name="content">
+        <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
+        <h:panelGroup rendered="#{postFinalBillInwardPaymentController.current.patientEncounter eq null}">
+            <h:form>
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
+                        <p:outputLabel value="Patient Details" class="m-2"/>
+                    </f:facet>
+
+                    <div class="d-flex gap-4">
+                        <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
+
+                        <p:autoComplete
+                            widgetVar="aPt"
+                            id="acPt"
+                            forceSelection="true"
+                            value="#{postFinalBillInwardPaymentController.current.patientEncounter}"
+                            completeMethod="#{admissionController.completePatientAll}"
+                            var="myItem"
+                            size="60"
+                            maxResults="20"
+                            itemValue="#{myItem}"
+                            itemLabel="#{myItem.bhtNo}"
+                            style="width: 550px;"
+                            class="mx-2">
+
+                            <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{myItem.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient" style="padding: 6px; width: 15em;">
+                                <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                            <p:column headerText="Status" style="padding: 6px; width: 12em;">
+                                <div class="d-flex justify-content-center">
+                                    <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                        #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                    </span>
+                                </div>
+                            </p:column>
+                            <p:column headerText="Payment" style="padding: 6px; width: 12em;">
+                                <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                            </p:column>
+                        </p:autoComplete>
+
+                        <p:commandButton
+                            value="select"
+                            ajax="false"
+                            action="#{postFinalBillInwardPaymentController.bhtListener}" >
+                        </p:commandButton>
+
+                        <style>
+                            .discharged-badge {
+                                background-color: #f44336;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
+
+                            .not-discharged-badge {
+                                background-color: #2196F3;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
+                        </style>
+
+                    </div>
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{postFinalBillInwardPaymentController.current.patientEncounter ne null}">
+            <h:form  >
+
+                <p:panel header="Post Final Bill Payment" rendered="#{!postFinalBillInwardPaymentController.printPreview}">
+                    <f:facet name="header">
+                        <div class="row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputLabel value="Post Final Bill Payment" />
+                                </div>
+                                <div class="mx-4" >
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning"
+                                        value="Lookup"
+                                        action="#{patientController.navigateToSearchPatients()}"
+                                        >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-user"
+                                        value="Patient Profile"
+                                        class="ui-button-warning  mx-2"
+                                        action="#{patientController.navigateToOpdPatientProfile()}">
+                                        <f:setPropertyActionListener
+                                            value="#{postFinalBillInwardPaymentController.current.patientEncounter.patient}"
+                                            target="#{patientController.current}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fas fa-id-card"
+                                        value="Inpatient Dashboard"
+                                        class="ui-button-secondary "
+                                        action="#{postFinalBillInwardPaymentController.navigateToInpationDashbord()}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <div class="row">
+                        <div class="col-5">
+                            <p:panel header="BHT">
+                                <h:panelGroup id="panSearch2">
+                                    <in:bhtDetail admission="#{postFinalBillInwardPaymentController.current.patientEncounter}"/>
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                        <div class="col-7">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText class="mx-4" styleClass="fas fa-money-bill-wave" />
+                                    <p:outputLabel value="&nbsp; Payment Details" />
+                                </f:facet>
+
+                                <div class="border border-#{postFinalBillInwardPaymentController.liveBalanceDue gt 0 ? 'danger' : 'success'} rounded p-2 mb-3 shadow-sm" style="background-color:#f8f9fa;">
+                                    <h:panelGrid columns="3" class="w-100" columnClasses="col-label,col-colon,col-value">
+                                        <h:outputLabel value="Final Bill Net Total" />
+                                        <h:outputLabel value=":" />
+                                        <h:outputText value="#{postFinalBillInwardPaymentController.current.patientEncounter.finalBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Paid So Far" />
+                                        <h:outputLabel value=":" />
+                                        <h:outputText value="#{postFinalBillInwardPaymentController.current.patientEncounter.finalBill.netTotal - postFinalBillInwardPaymentController.liveBalanceDue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGrid>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-2 p-2 rounded border #{postFinalBillInwardPaymentController.liveBalanceDue gt 0 ? 'border-danger bg-danger-subtle' : 'border-success bg-success-subtle'}">
+                                        <span class="fw-bold text-uppercase">
+                                            <i class="fa fa-money-bill-wave me-1"/> Balance Due
+                                        </span>
+                                        <span class="fw-bold fs-5 #{postFinalBillInwardPaymentController.liveBalanceDue gt 0 ? 'text-danger' : 'text-success'}">
+                                            <h:outputText value="#{postFinalBillInwardPaymentController.liveBalanceDue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-md-2">
+                                        <h:outputLabel value="Payment Mode" class="mt-2"/>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            autoWidth="false"
+                                            id="cmbPs"
+                                            value="#{postFinalBillInwardPaymentController.paymentMethod}">
+                                            <f:selectItem itemLabel="Select Payment Method." itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="Cash" itemValue="Cash"/>
+                                            <f:selectItem itemLabel="Card" itemValue="Card"/>
+                                            <f:selectItem itemLabel="Cheque" itemValue="Cheque"/>
+                                            <f:selectItem itemLabel="Slip" itemValue="Slip"/>
+                                            <f:selectItem itemLabel="e-Wallet" itemValue="ewallet"/>
+                                            <f:selectItem itemLabel="Online Settlement" itemValue="OnlineSettlement"/>
+                                            <p:ajax
+                                                process="cmbPs"
+                                                update="paymentDetails"
+                                                event="change"
+                                                listener="#{postFinalBillInwardPaymentController.updatePaymentData()}">
+                                            </p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row ">
+                                    <div class="col-md-8">
+                                        <h:panelGroup id="paymentDetails">
+
+                                            <h:panelGroup rendered="#{postFinalBillInwardPaymentController.paymentMethod eq 'Cash'}">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <h:outputLabel value="Paying Amount"  class="mt-2"/>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <p:inputText class=" w-100" autocomplete="off" value="#{postFinalBillInwardPaymentController.current.total}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{postFinalBillInwardPaymentController.paymentMethod ne 'Cash'}">
+                                                <div class="row">
+                                                    <div class="col-md-3"></div>
+                                                    <div class="col-md-9">
+                                                        <h:panelGroup
+                                                            id="creditCard"
+                                                            rendered="#{postFinalBillInwardPaymentController.paymentMethod eq 'Card'}">
+                                                            <pa:creditCard paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="cheque"
+                                                            rendered="#{postFinalBillInwardPaymentController.paymentMethod eq 'Cheque'}">
+                                                            <pa:cheque paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="slip"
+                                                            rendered="#{postFinalBillInwardPaymentController.paymentMethod eq 'Slip'}">
+                                                            <pa:slip paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="eWallet"
+                                                            rendered="#{postFinalBillInwardPaymentController.paymentMethod eq 'ewallet'}" >
+                                                            <pa:ewallet paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}" />
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="onlinePayment"
+                                                            rendered="#{postFinalBillInwardPaymentController.paymentMethod eq 'OnlineSettlement'}" >
+                                                            <pa:online_settlement paymentMethodData="#{postFinalBillInwardPaymentController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <div class="row my-1 mt-3">
+                                    <div class="col-md-2">
+                                        <h:outputLabel value="Comments" class="mt-2"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p:inputText class="w-100"  value="#{postFinalBillInwardPaymentController.comment}" id="comment"/>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-3">
+                                    <p:commandButton
+                                        class="ui-button-success"
+                                        icon="fas fa-money-bill"
+                                        id="btnPay"
+                                        value="Pay"
+                                        style="width:250px;"
+                                        ajax="false"
+                                        action="#{postFinalBillInwardPaymentController.pay()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-danger mx-2"
+                                        icon="fas fa-ban"
+                                        value="Clear"
+                                        ajax="false"
+                                        style="width:250px;"
+                                        action="#{postFinalBillInwardPaymentController.makeNull}" >
+                                    </p:commandButton>
+
+                                </div>
+
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+                <p:panel rendered="#{postFinalBillInwardPaymentController.printPreview}">
+                    <f:facet name="header">
+                        <h:outputLabel value="Post Final Bill Payment Receipt" class="mt-2"/>
+                        <div class="d-flex gap-2" style="float: right;">
+                            <p:commandButton
+                                value="New Payment"
+                                icon="fa-solid fa-plus"
+                                class="ui-button-success"
+                                ajax="false"
+                                action="#{postFinalBillInwardPaymentController.makeNull}" >
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary"
+                                type="button"
+                                onclick="PF('postFinalPaymentConfigDialog').show();"/>
+                            <p:commandButton
+                                ajax="false"
+                                icon="fas fa-file-invoice-dollar"
+                                value="Interim Bill"
+                                class="ui-button-info mx-1"
+                                action="#{bhtSummeryController.navigateToIntrimBillRefresh()}"
+                                />
+                            <p:commandButton
+                                ajax="false"
+                                icon="fas fa-id-card"
+                                value="Inpatient Dashboard"
+                                class="ui-button-secondary "
+                                action="#{postFinalBillInwardPaymentController.navigateToInpationDashbord()}"
+                                />
+                        </div>
+                    </f:facet>
+
+                    <div class="row">
+                        <h:panelGroup id="gpBillPreview">
+
+                            <div class="d-flex justify-content-center">
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
+                                    <bill:FiveFivePostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
+                                    <bill:A4PaperPostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                    <bill:posPaperPostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
+                                    <prints:five_five_custom_3_post_final_payments bill="#{postFinalBillInwardPaymentController.current}" />
+                                </h:panelGroup>
+
+                            </div>
+
+                        </h:panelGroup>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+        <p:dialog id="postFinalPaymentConfigDialog"
+                  header="Inward Payment Bill Printer Configuration"
+                  widgetVar="postFinalPaymentConfigDialog"
+                  modal="true"
+                  width="560"
+                  resizable="false"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="postFinalPaymentConfigForm"/>
+            <h:form id="postFinalPaymentConfigForm">
+                <div class="card config-section">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"/>
+                        <h:outputText value="Paper Format Settings"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                            <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                            <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                            <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <p:commandButton value="Apply &amp; Close"
+                                     icon="fas fa-save"
+                                     class="ui-button-success"
+                                     ajax="false"
+                                     action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                    <p:commandButton value="Cancel"
+                                     icon="fas fa-times"
+                                     class="ui-button-secondary"
+                                     type="button"
+                                     onclick="PF('postFinalPaymentConfigDialog').hide(); return false;"/>
+                </div>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
