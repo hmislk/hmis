@@ -177,6 +177,7 @@ public class BhtSummeryController implements Serializable {
     private DoctorFeeGroup selectedDoctorFeeGroup;
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
+    private List<Bill> postFinalPaymentBill;
     private List<Bill> pharmacyIssues;
 
     //Groping Medicine by Issueing Department
@@ -3824,6 +3825,7 @@ public class BhtSummeryController implements Serializable {
         allDoctorCharges = null;
         patientItems = null;
         paymentBill = null;
+        postFinalPaymentBill = null;
         departmentBillItems = null;
         latestCheckedBillItemsByItem = null;
         printPreview = false;
@@ -4387,6 +4389,17 @@ public class BhtSummeryController implements Serializable {
 
     public void setPaymentBill(List<Bill> paymentBill) {
         this.paymentBill = paymentBill;
+    }
+
+    public List<Bill> getPostFinalPaymentBill() {
+        if (postFinalPaymentBill == null) {
+            postFinalPaymentBill = getInwardBean().fetchPostFinalPaymentBill(getPatientEncounter(), childPatientEncouters);
+        }
+        return postFinalPaymentBill;
+    }
+
+    public void setPostFinalPaymentBill(List<Bill> postFinalPaymentBill) {
+        this.postFinalPaymentBill = postFinalPaymentBill;
     }
 
     public BillFacade getBillFacade() {
