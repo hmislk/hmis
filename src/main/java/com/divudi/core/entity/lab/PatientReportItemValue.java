@@ -10,7 +10,14 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -110,6 +117,220 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
         String trimmed = lobValue.replaceAll("(?i)^(?:" + LOB_VALUE_BLANK_UNIT + ")+", "");
         trimmed = trimmed.replaceAll("(?i)(?:" + LOB_VALUE_BLANK_UNIT + ")+$", "");
         return trimmed;
+    }
+
+    /**
+     * lobValuePrintable restructured into an auto-aligned label/value grid.
+     * Each line is split on its first top-level ":" into a label (before)
+     * and a value (after); rendered with the .micLineGrid CSS rules in
+     * microbiology_patient_report.xhtml, the colons of every line in this
+     * memo line up in one column no matter how long the longest label is -
+     * the column width is not hardcoded, it is sized by the browser to the
+     * widest label actually present. Lines without a ":" are left as a
+     * single full-width line, untouched. List blocks (ol/ul) are left
+     * unsplit since their marker layout is not compatible with the
+     * label/value column split.
+     */
+    public String getLobValueLinesAligned() {
+        String html = getLobValuePrintable();
+        if (html == null) {
+            return null;
+        }
+        // Normalize legacy plain "\n" (real or literal backslash-n), typed
+        // before the rich-text editor existed, into <br/> line breaks.
+        String normalized = html.replaceAll("\\\\n|\\r\\n|\\r|\\n", "<br/>");
+        Document doc = Jsoup.parseBodyFragment(normalized);
+
+        StringBuilder out = new StringBuilder("<div class=\"micLineGrid\">");
+        for (MicLine line : splitIntoLines(new ArrayList<>(doc.body().childNodes()))) {
+            appendLine(out, line);
+        }
+        out.append("</div>");
+        return out.toString();
+    }
+
+    private static final class MicLine {
+
+        final List<Node> nodes;
+        final String extraClass;
+        final boolean noSplit;
+
+        MicLine(List<Node> nodes, String extraClass) {
+            this(nodes, extraClass, false);
+        }
+
+        MicLine(List<Node> nodes, String extraClass, boolean noSplit) {
+            this.nodes = nodes;
+            this.extraClass = extraClass;
+            this.noSplit = noSplit;
+        }
+    }
+
+    private static List<MicLine> splitIntoLines(List<Node> topLevelNodes) {
+        List<MicLine> lines = new ArrayList<>();
+        List<Node> current = new ArrayList<>();
+        for (Node node : topLevelNodes) {
+            if (node instanceof Element) {
+                Element el = (Element) node;
+                String tag = el.tagName().toLowerCase();
+                if ("br".equals(tag)) {
+                    lines.add(new MicLine(current, null));
+                    current = new ArrayList<>();
+                    continue;
+                }
+                if ("ol".equals(tag) || "ul".equals(tag)) {
+                    if (!current.isEmpty()) {
+                        lines.add(new MicLine(current, null));
+                        current = new ArrayList<>();
+                    }
+                    List<Node> single = new ArrayList<>();
+                    single.add(el);
+                    lines.add(new MicLine(single, null, true));
+                    continue;
+                }
+                if ("p".equals(tag) || "div".equals(tag)) {
+                    if (!current.isEmpty()) {
+                        lines.add(new MicLine(current, null));
+                        current = new ArrayList<>();
+                    }
+                    String indentClass = extractIndentClass(el);
+                    for (List<Node> sub : splitOnBr(new ArrayList<>(el.childNodes()))) {
+                        lines.add(new MicLine(sub, indentClass));
+                    }
+                    continue;
+                }
+            }
+            current.add(node);
+        }
+        if (!current.isEmpty()) {
+            lines.add(new MicLine(current, null));
+        }
+        return lines;
+    }
+
+    private static List<List<Node>> splitOnBr(List<Node> nodes) {
+        List<List<Node>> result = new ArrayList<>();
+        List<Node> current = new ArrayList<>();
+        for (Node node : nodes) {
+            if (node instanceof Element && "br".equalsIgnoreCase(((Element) node).tagName())) {
+                result.add(current);
+                current = new ArrayList<>();
+            } else {
+                current.add(node);
+            }
+        }
+        result.add(current);
+        return result;
+    }
+
+    private static String extractIndentClass(Element el) {
+        for (String cls : el.classNames()) {
+            if (cls.startsWith("ql-indent-")) {
+                return cls;
+            }
+        }
+        return null;
+    }
+
+    private static void appendLine(StringBuilder out, MicLine line) {
+        if (line.nodes.isEmpty()) {
+            out.append("<div class=\"micLineFull\"></div>");
+            return;
+        }
+        ColonSplit split = line.noSplit ? new ColonSplit() : splitAtColon(line.nodes);
+        String cls = line.extraClass == null ? "" : " " + line.extraClass;
+        if (split.found) {
+            out.append("<div class=\"micLineLabel").append(cls).append("\">")
+                    .append(renderNodes(split.before)).append("</div>");
+            out.append("<div class=\"micLineSep\">:</div>");
+            out.append("<div class=\"micLineValue\">")
+                    .append(renderNodes(split.after)).append("</div>");
+        } else {
+            out.append("<div class=\"micLineFull").append(cls).append("\">")
+                    .append(renderNodes(line.nodes)).append("</div>");
+        }
+    }
+
+    private static String renderNodes(List<Node> nodes) {
+        // A detached Element has no owner Document, so it falls back to
+        // Jsoup's default OutputSettings, which pretty-prints block tags
+        // (e.g. ol/li) with indentation newlines between them. .micMemoValue
+        // renders with white-space: pre-wrap to preserve intentional
+        // spacing, so those injected newlines were showing up as a big gap
+        // between list lines. Giving the wrapper an owner Document with
+        // prettyPrint disabled avoids that.
+        Document shell = Document.createShell("");
+        shell.outputSettings().prettyPrint(false);
+        Element wrapper = shell.body().appendElement("span");
+        for (Node n : nodes) {
+            wrapper.appendChild(n);
+        }
+        return wrapper.html();
+    }
+
+    private static final class ColonSplit {
+
+        final List<Node> before = new ArrayList<>();
+        final List<Node> after = new ArrayList<>();
+        boolean found;
+    }
+
+    /**
+     * Splits a line's node list at the first top-level ":" text character,
+     * recursing into inline elements (strong/em/span/...) so formatting
+     * that wraps the split point (e.g. "&lt;strong&gt;Organism:&lt;/strong&gt; E.coli")
+     * is preserved on both sides rather than producing unbalanced HTML.
+     */
+    private static ColonSplit splitAtColon(List<Node> nodes) {
+        ColonSplit split = new ColonSplit();
+        for (Node node : nodes) {
+            if (split.found) {
+                split.after.add(node.clone());
+                continue;
+            }
+            if (node instanceof TextNode) {
+                String text = ((TextNode) node).getWholeText();
+                int idx = text.indexOf(':');
+                if (idx >= 0) {
+                    split.found = true;
+                    String beforeText = text.substring(0, idx);
+                    String afterText = text.substring(idx + 1);
+                    if (!beforeText.isEmpty()) {
+                        split.before.add(new TextNode(beforeText));
+                    }
+                    if (!afterText.isEmpty()) {
+                        split.after.add(new TextNode(afterText));
+                    }
+                } else {
+                    split.before.add(node.clone());
+                }
+            } else if (node instanceof Element) {
+                Element el = (Element) node;
+                ColonSplit childSplit = splitAtColon(new ArrayList<>(el.childNodes()));
+                if (childSplit.found) {
+                    split.found = true;
+                    Element beforeEl = el.shallowClone();
+                    for (Node c : childSplit.before) {
+                        beforeEl.appendChild(c);
+                    }
+                    if (beforeEl.childNodeSize() > 0) {
+                        split.before.add(beforeEl);
+                    }
+                    Element afterEl = el.shallowClone();
+                    for (Node c : childSplit.after) {
+                        afterEl.appendChild(c);
+                    }
+                    if (afterEl.childNodeSize() > 0) {
+                        split.after.add(afterEl);
+                    }
+                } else {
+                    split.before.add(node.clone());
+                }
+            } else {
+                split.before.add(node.clone());
+            }
+        }
+        return split;
     }
 
     public byte[] getBaImage() {

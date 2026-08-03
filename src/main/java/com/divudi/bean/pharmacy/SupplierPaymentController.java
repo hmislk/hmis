@@ -2392,6 +2392,10 @@ public class SupplierPaymentController implements Serializable {
         hm.put("bta", BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION);
         hm.put("bill", b);
         BillItem supBillItem = getBillItemFacade().findFirstByJpql(jpql, hm);
+        if (supBillItem == null) {
+            JsfUtil.addErrorMessage("No supplier payment voucher found for this bill.");
+            return null;
+        }
         Bill supplierPaymentBill = supBillItem.getBill();
 
         if (supplierPaymentBill == null) {

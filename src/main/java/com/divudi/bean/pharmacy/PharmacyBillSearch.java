@@ -1474,6 +1474,24 @@ public class PharmacyBillSearch implements Serializable {
         return grnController.navigateToEditGrn();
     }
 
+    /**
+     * Id-based counterpart of navigateToEditSavedGrn(), for pages (e.g. the
+     * DTO PO-receive list, issue #22612) that only carry a lightweight GRN
+     * summary DTO rather than a preloaded Bill entity.
+     */
+    public String navigateToEditSavedGrnByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        return navigateToEditSavedGrn();
+    }
+
     public String navigateToEditSavedDirectPurchase() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -1498,6 +1516,24 @@ public class PharmacyBillSearch implements Serializable {
         bill = billService.reloadBill(bill);
         grnCostingController.setCurrentGrnBillPre(bill);
         return grnCostingController.navigateToEditGrnCosting();
+    }
+
+    /**
+     * Id-based counterpart of navigateToEditSavedGrnCosting(), for pages
+     * (e.g. the DTO PO-receive list, issue #22612) that only carry a
+     * lightweight GRN summary DTO rather than a preloaded Bill entity.
+     */
+    public String navigateToEditSavedGrnCostingByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        return navigateToEditSavedGrnCosting();
     }
 
 //    public String navigateToApproveGrn() {

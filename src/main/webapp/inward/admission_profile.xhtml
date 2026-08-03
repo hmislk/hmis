@@ -439,7 +439,7 @@
                                 </div>
                                 <div class="col-12">
                                     <p:commandButton
-                                        rendered="#{admissionController.current.discharged and admissionController.current.paymentFinalized and webUserController.hasPrivilege('InwardSettleFinalBill')}"
+                                        rendered="#{admissionController.current.discharged and inwardSearch.hasAnyFinalBillVersion(admissionController.current) and webUserController.hasPrivilege('InwardSettleFinalBill')}"
                                         value="Manage Final Bills"
                                         ajax="false"
                                         action="#{inwardSearch.navigateToManageFinalBills}"
