@@ -575,6 +575,27 @@ public class StaffSalary implements Serializable {
         return roundOff(getTransGrossSalary() + noPayValueBasic);
     }
 
+    /**
+     * Display-only figure for the "EPF+ETF Deductable" report column: the
+     * actual sum of components that are flagged as EPF/ETF eligible (Basic
+     * Salary plus any allowance marked includedForEpf/includedForEtf).
+     * Not used in the Gross/Net Salary formulas, which rely on
+     * getTransEpfEtfDiductableSalary() representing Basic only so they can
+     * add getTransTotalAllowance() on top without double-counting.
+     */
+    public double getTransEpfEtfDeductableBase() {
+        double total = 0;
+        for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
+            if (spc.getStaffPaysheetComponent() != null
+                    && spc.getStaffPaysheetComponent().getPaysheetComponent() != null
+                    && (spc.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForEpf()
+                    || spc.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForEtf())) {
+                total += spc.getComponantValue();
+            }
+        }
+        return roundOff(total);
+    }
+
     private double roundOff(double d) {
 //        return  d;
         DecimalFormat newFormat = new DecimalFormat("#.##");

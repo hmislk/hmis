@@ -3499,7 +3499,8 @@ public class HumanResourceBean {
 
         sql = "Select s From PaysheetComponent s"
                 + "  where s.retired=false "
-                + " and  s.componentType=:type ";
+                + " and  s.componentType=:type "
+                + " order by s.id";
 
         hm = new HashMap();
         hm.put("type", paysheetComponentType);

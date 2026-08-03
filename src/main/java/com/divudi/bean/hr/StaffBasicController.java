@@ -450,7 +450,7 @@ public class StaffBasicController implements Serializable {
     }
 
     public PaysheetComponent getBasicCompnent() {
-        String sql = "Select pc From PaysheetComponent pc where pc.retired=false and pc.componentType=:tp";
+        String sql = "Select pc From PaysheetComponent pc where pc.retired=false and pc.componentType=:tp order by pc.id";
         HashMap hm = new HashMap();
         hm.put("tp", PaysheetComponentType.BasicSalary);
 
