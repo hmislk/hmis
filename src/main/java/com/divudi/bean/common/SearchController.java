@@ -7895,10 +7895,12 @@ public class SearchController implements Serializable {
 
     /**
      * DTO-page counterpart of fillGrnsByBulkQuery: bulk-loads GRN summaries
-     * for every PO in the list using 2 queries (same 2 relationship paths as
-     * fillGrnsByBulkQuery), projecting a lightweight DTO instead of loading
-     * full Bill entities, then assigns the results to each PO DTO's
-     * listOfGrnDtos (issue #22612).
+     * for every PO in the list, projecting a lightweight DTO instead of
+     * loading full Bill entities, then assigns the results to each PO DTO's
+     * listOfGrnDtos (issue #22612). Checks 3 relationship paths: the first 2
+     * match fillGrnsByBulkQuery; the 3rd additionally catches GRNs linked one
+     * hop further up the approval chain, to the original PHARMACY_ORDER bill
+     * instead of its PHARMACY_ORDER_APPROVAL bill (issue #22624).
      */
     private void fillGrnDtosByBulkQuery(List<PharmacyPurchaseOrderDTO> poDtos, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
         Map<Long, List<PharmacyGrnSummaryDTO>> grnsByPoId = new HashMap<>();
@@ -7956,6 +7958,60 @@ public class SearchController implements Serializable {
                     PharmacyGrnSummaryDTO grnDto = new PharmacyGrnSummaryDTO(
                             grnBillId, (String) cols[2], (Date) cols[3], (Double) cols[4], cols[5], cols[6], cols[7]);
                     grnList.add(grnDto);
+                }
+            }
+        }
+
+        // Path 3: GRN.referenceBill is the PO's own originating PHARMACY_ORDER bill
+        // instead of its PHARMACY_ORDER_APPROVAL bill (issue #22624). Some GRNs end
+        // up linked one hop further up the approval chain than expected, so resolve
+        // each approval bill's own referenceBill (the original PO) and match on that
+        // too, mirroring Path 1/2's tolerance for an alternate linking path.
+        Map<Long, List<Long>> approvalIdsByOriginalPoId = new HashMap<>();
+        String originalPoJpql = "SELECT b.id, b.referenceBill.id FROM Bill b "
+                + "WHERE b.id IN :poIds AND b.referenceBill IS NOT NULL";
+        Map<String, Object> originalPoParams = new HashMap<>();
+        originalPoParams.put("poIds", poIds);
+        List<Object> originalPoRows = getBillFacade().findObjects(originalPoJpql, originalPoParams);
+        if (originalPoRows != null) {
+            for (Object row : originalPoRows) {
+                Object[] cols = (Object[]) row;
+                Long approvalId = ((Number) cols[0]).longValue();
+                Long originalPoId = ((Number) cols[1]).longValue();
+                approvalIdsByOriginalPoId.computeIfAbsent(originalPoId, k -> new ArrayList<>()).add(approvalId);
+            }
+        }
+
+        if (!approvalIdsByOriginalPoId.isEmpty()) {
+            String jpql3 = "SELECT g.referenceBill.id, g.id, g.deptId, g.createdAt, g.netTotal, g.billTypeAtomic, g.cancelled, g.refunded "
+                    + "FROM Bill g "
+                    + "WHERE g.retired = false "
+                    + "AND g.billTypeAtomic IN :btas "
+                    + "AND g.referenceBill.id IN :originalPoIds";
+            Map<String, Object> params3 = new HashMap<>();
+            params3.put("btas", grnBillTypesAtomicsToList);
+            params3.put("originalPoIds", approvalIdsByOriginalPoId.keySet());
+            List<Object> rows3 = getBillFacade().findObjects(jpql3, params3);
+            if (rows3 != null) {
+                for (Object row : rows3) {
+                    Object[] cols = (Object[]) row;
+                    Long originalPoId = ((Number) cols[0]).longValue();
+                    Long grnBillId = (Long) cols[1];
+                    for (Long approvalId : approvalIdsByOriginalPoId.getOrDefault(originalPoId, new ArrayList<>())) {
+                        List<PharmacyGrnSummaryDTO> grnList = grnsByPoId.computeIfAbsent(approvalId, k -> new ArrayList<>());
+                        boolean alreadyPresent = false;
+                        for (PharmacyGrnSummaryDTO existing : grnList) {
+                            if (existing.getBillId().equals(grnBillId)) {
+                                alreadyPresent = true;
+                                break;
+                            }
+                        }
+                        if (!alreadyPresent) {
+                            PharmacyGrnSummaryDTO grnDto = new PharmacyGrnSummaryDTO(
+                                    grnBillId, (String) cols[2], (Date) cols[3], (Double) cols[4], cols[5], cols[6], cols[7]);
+                            grnList.add(grnDto);
+                        }
+                    }
                 }
             }
         }
