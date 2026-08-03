@@ -3206,11 +3206,11 @@ public class BillService {
                 + " bi.item.id," // Item ID for navigation
                 + " coalesce(bi.item.name, 'No Item')," // Item name for display
                 + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end)," // Count
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.hospitalFee else bi.hospitalFee end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.staffFee else bi.staffFee end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.grossValue else bi.grossValue end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.discount else bi.discount end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.netValue else bi.netValue end)"
+                + " sum(bi.hospitalFee),"
+                + " sum(bi.staffFee),"
+                + " sum(bi.grossValue),"
+                + " sum(bi.discount),"
+                + " sum(bi.netValue)"
                 + ") "
                 + " from BillItem bi join bi.bill b "
                 + " where b.retired=:ret "
