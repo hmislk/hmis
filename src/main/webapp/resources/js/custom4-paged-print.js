@@ -38,7 +38,22 @@ function printCustom4Bill(targetId, pagedJsUrl) {
         return;
     }
 
-    fetchInlineStyles().then(function (styleMarkup) {
+    // Every step below is asynchronous (fetching stylesheets, loading
+    // Paged.js, running pagination), and any of them can fail or reject.
+    // Without a catch-all, a failure leaves the popup permanently blank -
+    // no print, no error the user can see - so every path funnels through
+    // this handler instead of failing silently.
+    function onPrintFailure(err) {
+        console.error('printCustom4Bill: printing failed.', err);
+        win.close();
+        alert('Could not prepare this bill for printing. Please try again.');
+    }
+
+    // fetchInlineStyles() can throw SYNCHRONOUSLY (e.g. a stylesheet <link>
+    // with no href attribute) before it ever returns a promise - wrapping
+    // the call itself in Promise.resolve().then(...) ensures that throw is
+    // caught by the .catch() below too, not just genuine promise rejections.
+    Promise.resolve().then(fetchInlineStyles).then(function (styleMarkup) {
         var absolutePagedJsUrl = new URL(pagedJsUrl, document.baseURI).href;
 
         // outerHTML (not innerHTML) so the printed markup keeps the
@@ -59,25 +74,35 @@ function printCustom4Bill(targetId, pagedJsUrl) {
         );
         win.document.close();
 
-        win.addEventListener('load', function () {
+        function paginateAndPrint() {
             if (!win.Paged) {
                 console.error('printCustom4Bill: Paged.js failed to load, printing unpaginated content.');
                 win.focus();
                 win.print();
                 return;
             }
-            new win.Paged.Previewer().preview().then(function () {
+            return new win.Paged.Previewer().preview().then(function () {
                 console.log('printCustom4Bill: pagination complete, ' +
                     win.document.querySelectorAll('.pagedjs_page').length + ' page(s) generated.');
                 win.focus();
                 win.print();
-            });
-        });
+            }).catch(onPrintFailure);
+        }
+
+        // The document was just written synchronously via document.write(),
+        // so by the time this line runs, "load" may already have fired -
+        // registering the listener alone can silently miss it (most likely
+        // when the stylesheets/Paged.js are already cached).
+        if (win.document.readyState === 'complete') {
+            paginateAndPrint();
+        } else {
+            win.addEventListener('load', paginateAndPrint);
+        }
 
         win.onafterprint = function () {
             win.close();
         };
-    });
+    }).catch(onPrintFailure);
 }
 
 /*

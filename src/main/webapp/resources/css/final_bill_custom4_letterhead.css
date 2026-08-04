@@ -54,21 +54,22 @@
 
     /* Page number, top-right of every page, "Page X of Y" format - only
        rendered by Paged.js, not by native browser printing.
-       @top-right is right-aligned by default, and margin-right/margin-top on
-       @page are both 0 here, so its right edge is literally the page's
-       physical right edge - the text was sitting flush in the corner with no
-       breathing room. padding-right/padding-top nudge it inward instead. */
+       @top-right is right-aligned by default. margin-right on @page is 0,
+       so its right edge is literally the page's physical right edge - the
+       text was sitting flush in the corner with no breathing room.
+       padding-right/padding-top nudge it inward instead; padding-right is
+       larger than the theoretical 0.55cm content-edge match (see note
+       below) because that value clipped too close to the physically
+       unprintable edge on a real print. */
     @top-right {
         content: "Page " counter(page) " of " counter(pages);
         font-size: 11px;
         padding-top: 3.0cm;
-        /* Matches the content's own right inset exactly, rather than another
-           guessed value: .container-fluid is a fixed 214mm (21.4cm) wide,
-           centered on the 22.5cm page via margin:auto, which leaves
-           (22.5 - 21.4) / 2 = 0.55cm on each side. This lines the page
-           number's right edge up with the bill content's own right edge
-           (e.g. where the Charge amounts column ends), not an arbitrary
-           distance from the physical paper edge. */
+        /* Started from the content's own right inset - .container-fluid is
+           a fixed 214mm (21.4cm) wide, centered on the 22.5cm page via
+           margin:auto, which leaves (22.5 - 21.4) / 2 = 0.55cm on each
+           side - then increased to 1.5cm after a real print showed 0.55cm
+           printing too close to the paper's physically unprintable edge. */
         padding-right: 1.5cm;
     }
 }
@@ -84,6 +85,18 @@
    purely to make room for that single line of text. */
 @page :first {
     margin-top: 0.8cm;
+
+    /* The general @top-right above has padding-top: 3.0cm, which fits the
+       4cm margin-top most pages get - but this page's margin-top is only
+       0.8cm, so that padding alone would overflow/clip the page-number text.
+       Override with a padding that actually fits this page's smaller margin
+       box; keep padding-right the same since the page width doesn't change. */
+    @top-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 11px;
+        padding-top: 0.1cm;
+        padding-right: 1.5cm;
+    }
 }
 
 [id$="originalCustom4BillPriview"] .container-fluid,
@@ -159,5 +172,6 @@
     [id$="custom4BillOnly"] tr,
     [id$="custom4BillOnlyDuplicate"] tr {
         page-break-inside: avoid;
+        break-inside: avoid;
     }
 }

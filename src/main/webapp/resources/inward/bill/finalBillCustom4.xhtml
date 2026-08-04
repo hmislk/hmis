@@ -21,7 +21,7 @@
 
         <h:panelGroup id="gpBillPreview" >
             <div  class="container-fluid" style="width: 214mm!important; margin-bottom: 3cm!important">
-                <div  style="margin-top: #{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header {Custem 4} Margin-Top Space','3.5cm')}"></div>
+                <div  style="margin-top: #{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Margin-Top Space','4cm')}"></div>
 
                 <div style="font-family: verdana ">
 
@@ -91,7 +91,7 @@
 
                             <!-- Address -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Address on Final Bill',true)}">
+                                          rendered="#{bhtSummeryController.custom4ShowAddress}">
                                 <span style="width: 130px;">Address</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -111,7 +111,7 @@
 
                             <!-- NIC No -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill',false) or (cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals(''))}">
+                                          rendered="#{bhtSummeryController.custom4ShowNic}">
                                 <span style="width: 130px;">NIC No</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -121,7 +121,7 @@
 
                             <!-- Phone No -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Phone Number on Final Bill',false)}">
+                                          rendered="#{bhtSummeryController.custom4ShowPhone}">
                                 <span style="width: 130px;">Phone No</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -153,7 +153,7 @@
 
                             <!-- Guardian -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Guardian on Final Bill',true)}">
+                                          rendered="#{bhtSummeryController.custom4ShowGuardian}">
                                 <span style="width: 130px;">Guardian</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -170,9 +170,9 @@
                                 </span>
                             </div>
 
-                            <!-- Credit Company -->
+                            <!-- Credit Company (Corporate Sponsor) -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
+                                          rendered="#{bhtSummeryController.custom4ShowCorporateSponsor and cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
                                 <span style="width: 130px;">Credit Company</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -471,7 +471,7 @@
 
                                 <!-- Loop through all other items excluding RoomCharges and ProfessionalCharge -->
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                    <h:panelGroup rendered="#{bip.inwardChargeType ne 'RoomCharges' and bip.inwardChargeType ne 'ProfessionalCharge' and bip.inwardChargeType ne 'DoctorAndNurses' and bip.inwardChargeType ne 'AdmissionFee' and bip.inwardChargeType ne 'NursingCharges' and bip.inwardChargeType ne 'MOCharges' and bip.inwardChargeType ne 'LinenCharges' and bip.inwardChargeType ne 'MedicalCareICU' and bip.inwardChargeType ne 'AdministrationCharge' and bip.inwardChargeType ne 'Medicine' and bip.inwardChargeType ne 'Laboratory' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType ne 'RoomCharges' and bip.inwardChargeType ne 'ProfessionalCharge' and bip.inwardChargeType ne 'DoctorAndNurses' and bip.inwardChargeType ne 'AdmissionFee' and bip.inwardChargeType ne 'NursingCharges' and bip.inwardChargeType ne 'MOCharges' and bip.inwardChargeType ne 'LinenCharges' and bip.inwardChargeType ne 'MedicalCareICU' and bip.inwardChargeType ne 'AdministrationCharge' and bip.inwardChargeType ne 'Medicine' and (bip.inwardChargeType ne 'MedicinesAndSurgicalSupplies' or !configOptionApplicationController.getBooleanValueByKey('Separate Medicines and Surgical Supplies Tab', false)) and bip.inwardChargeType ne 'Laboratory' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                             <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
                                                 <h:outputLabel value="#{bip.inwardChargeType.name}" />
