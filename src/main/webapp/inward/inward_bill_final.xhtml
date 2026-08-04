@@ -14,7 +14,7 @@
     <ui:define name="content">
 
         <h:head>
-            <h:outputScript library="js" name="galle-coop-paged-print.js" target="head"/>
+            <h:outputScript library="js" name="custom4-paged-print.js" target="head"/>
             <h:outputStylesheet>
                 .top-aligned-grid td {
                 vertical-align: top !important;
@@ -999,10 +999,10 @@
 
                                     <p:commandButton value="Custom Bill 3" type="button"
                                                      class="ui-button-info mx-1" icon="fas fa-print"
-                                                     onclick="printGalleCoopBill('#{p:resolveFirstComponentWithId('custom4BillOnly',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                     onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('custom4BillOnly',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
                                     <p:commandButton value="Custom Bill 3 (Duplicate)" type="button"
                                                      class="ui-button-info mx-1" icon="fas fa-print"
-                                                     onclick="printGalleCoopBill('#{p:resolveFirstComponentWithId('custom4BillOnlyDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                     onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('custom4BillOnlyDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
 
                                     <h:panelGroup
                                         rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">

@@ -1,5 +1,5 @@
 /*
-    Print helper for the Galle Co-op Hospital letterhead bill ("Custom Bill 3").
+    Print helper for the Inward Final Bill letterhead paper ("Custom Bill 3").
 
     Why this exists instead of the usual <p:printer target="..."/>: PrimeFaces'
     printer.js clones the target into a fresh iframe/window and calls print()
@@ -25,10 +25,10 @@
     directly into the popup as inline <style> removes all of that uncertainty -
     if a fetch fails, it's now a visible console.error instead of a silent gap.
 */
-function printGalleCoopBill(targetId, pagedJsUrl) {
+function printCustom4Bill(targetId, pagedJsUrl) {
     var target = document.getElementById(targetId);
     if (!target) {
-        console.error('printGalleCoopBill: target not found: ' + targetId);
+        console.error('printCustom4Bill: target not found: ' + targetId);
         return;
     }
 
@@ -61,13 +61,13 @@ function printGalleCoopBill(targetId, pagedJsUrl) {
 
         win.addEventListener('load', function () {
             if (!win.Paged) {
-                console.error('printGalleCoopBill: Paged.js failed to load, printing unpaginated content.');
+                console.error('printCustom4Bill: Paged.js failed to load, printing unpaginated content.');
                 win.focus();
                 win.print();
                 return;
             }
             new win.Paged.Previewer().preview().then(function () {
-                console.log('printGalleCoopBill: pagination complete, ' +
+                console.log('printCustom4Bill: pagination complete, ' +
                     win.document.querySelectorAll('.pagedjs_page').length + ' page(s) generated.');
                 win.focus();
                 win.print();
@@ -112,8 +112,8 @@ function fetchInlineStyles() {
                     return '<style data-source="' + absoluteHref + '">' + cssText + '</style>';
                 })
                 .catch(function (err) {
-                    console.error('printGalleCoopBill: failed to load stylesheet ' + absoluteHref, err);
-                    return '<!-- printGalleCoopBill: failed to load ' + absoluteHref + ' -->';
+                    console.error('printCustom4Bill: failed to load stylesheet ' + absoluteHref, err);
+                    return '<!-- printCustom4Bill: failed to load ' + absoluteHref + ' -->';
                 });
         }
     );

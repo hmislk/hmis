@@ -1,5 +1,5 @@
 /*
-    Paper: Galle Co-op Hospital Ltd. pre-printed continuous (pin-feed) stationery.
+    Paper: hospital-specific pre-printed continuous (pin-feed) stationery.
     Confirmed physical sheet size: 22.5cm wide x 28cm tall. Logo block is
     pre-printed at the top-left, an address/contact footer band is pre-printed at
     the bottom of every sheet.
@@ -30,21 +30,21 @@
     Chrome's native print engine does not reliably apply @page margin-top to
     naturally-overflowing (not explicitly paginated) content past the first page,
     so page 2+ was never getting its reserved header space no matter what value
-    was set here. Printing instead goes through printGalleCoopBill() (resources/
-    js/galle-coop-paged-print.js), which opens a dedicated print window and runs
+    was set here. Printing instead goes through printCustom4Bill() (resources/
+    js/custom4-paged-print.js), which opens a dedicated print window and runs
     Paged.js (resources/js/paged.polyfill.js) to do real CSS Paged Media
     pagination before calling window.print() - that's what makes @page margins,
     "@page :first", and the page-number margin box below actually work per page.
 */
 
-/* Measured from the physical letterhead paper (tmp/new_paper_type/
-   20260803_170216.jpg.jpeg): the usable printable strip is ~23cm tall on the
-   28cm sheet. With the 4cm top reserve (matches the content's own inline
-   top-margin div), that leaves 28 - 4 - 23 = 1cm for margin-bottom. Earlier
-   attempts to grow this value (up to 8.5cm) were chasing a bug where the
-   popup's stylesheet wasn't loading at all (see galle-coop-paged-print.js) -
-   none of those numbers were ever actually reflected in the print output, so
-   they should not be treated as real measurements. */
+/* Measured from the physical letterhead paper: the usable printable strip is
+   ~23cm tall on the 28cm sheet. With the 4cm top reserve (matches the
+   content's own inline top-margin div), that leaves 28 - 4 - 23 = 1cm for
+   margin-bottom. Earlier attempts to grow this value (up to 8.5cm) were
+   chasing a bug where the popup's stylesheet wasn't loading at all (see
+   custom4-paged-print.js) - none of those numbers were ever actually
+   reflected in the print output, so they should not be treated as real
+   measurements. */
 @page {
     size: 22.5cm 28cm;
     margin-top: 4cm;

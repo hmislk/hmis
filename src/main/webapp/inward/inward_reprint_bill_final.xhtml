@@ -352,9 +352,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="finalOriginalBillPriview">
-                                                    <!--<bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /> **Hospital Bill**Original Bill**-->
-                                                    <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
-
+                                                    <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /> **Hospital Bill**Original Bill**
                                                 </h:panelGroup>
 
                                             </p:panel>
@@ -608,7 +606,7 @@
                                 </p:tab>
 
                                 <p:tab title="Custom Bills">
-                                    <h:outputScript library="js" name="galle-coop-paged-print.js" target="head"/>
+                                    <h:outputScript library="js" name="custom4-paged-print.js" target="head"/>
                                     <div class="d-flex justify-content-end mb-2">
                                         <p:commandButton
                                             rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
@@ -728,7 +726,7 @@
                                                                 value="Custom Bill 3"
                                                                 class="ui-button-info"
                                                                 type="button"
-                                                                onclick="printGalleCoopBill('#{p:resolveFirstComponentWithId('originalCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                                onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('originalCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
                                                         </div>
                                                     </div>
                                                 </f:facet>
@@ -750,7 +748,7 @@
                                                                 value="Custom Bill 3"
                                                                 class="ui-button-info"
                                                                 type="button"
-                                                                onclick="printGalleCoopBill('#{p:resolveFirstComponentWithId('duplicateCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                                onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('duplicateCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
                                                         </div>
                                                     </div>
                                                 </f:facet>
@@ -797,7 +795,7 @@
                                                 </div>
 
                                                 <hr/>
-                                                <h6>Custom Bill 3 (Galle Co-op Letterhead) Settings</h6>
+                                                <h6>Custom Bill 3 (Letterhead) Settings</h6>
                                                 <div class="mb-3">
                                                     <h:selectBooleanCheckbox id="custom4ShowAddress" value="#{bhtSummeryController.custom4ShowAddress}" />
                                                     <h:outputLabel for="custom4ShowAddress" value="Show Patient Address" class="ms-2" />

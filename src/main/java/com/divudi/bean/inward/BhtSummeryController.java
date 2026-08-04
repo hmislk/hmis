@@ -226,7 +226,7 @@ public class BhtSummeryController implements Serializable {
     private boolean custom2ShowPhone;
     private boolean custom2ShowGuardian;
     private boolean custom2ShowCorporateSponsor;
-    // Custom4 (Custom Bills tab - Galle Co-op letterhead) print-format settings
+    // Custom4 (Custom Bills tab - letterhead) print-format settings
     private boolean custom4ShowAddress;
     private boolean custom4ShowNic;
     private boolean custom4ShowPhone;
@@ -479,7 +479,7 @@ public class BhtSummeryController implements Serializable {
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
         custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
         custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
-        // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (Galle Co-op letterhead)
+        // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
         loadCustom4Config();
     }
 
@@ -494,7 +494,7 @@ public class BhtSummeryController implements Serializable {
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
-            // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (Galle Co-op letterhead)
+            // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
             persistCustom4Config();
             JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
             loadCustom2Config();
@@ -622,7 +622,7 @@ public class BhtSummeryController implements Serializable {
     }
     // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom4 print format (Galle Co-op letterhead)">
+    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom4 print format (letterhead)">
     public void loadCustom4Config() {
         custom4ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", false);
         custom4ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", false);
