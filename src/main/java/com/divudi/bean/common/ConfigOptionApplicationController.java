@@ -252,6 +252,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
+        getBooleanValueByKey("Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
 
         // Bill-type-specific numbering strategies for Purchase Order Requests (POR)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
