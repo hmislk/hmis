@@ -1327,7 +1327,13 @@ balance locally):
   month/year text, since the arrows' refs change every re-render) until the
   target month is showing, then click the day-number link. This sets the
   widget's real internal Date object (unlike a raw `.fill()`), so the value
-  survives subsequent postbacks/field changes.
+  survives subsequent postbacks/field changes. Note this page has no
+  `showTime`/`timeInput` attribute, so clicking a day only changes the date —
+  the time-of-day stays whatever that field's default already was (00:00:00
+  for From, 23:59:59 for To here). If a test needs the submitted range to land
+  on a specific time or cross midnight, pick the From/To *days* accordingly
+  (e.g. From = day N 00:00:00, To = day N+1 23:59:59) rather than assuming the
+  time resets.
 - Separately: local test data can have **zero** BillFee rows with
   `paidValue == feeValue` (nobody has ever settled a professional payment
   through this exact local DB copy) — check with a quick SQL count before
