@@ -1316,6 +1316,24 @@ balance locally):
   panel beforehand isn't necessary once you're driving it via JS, but doing a
   quick `browser_snapshot` after any of this is worth it to confirm the
   visible label actually changed before submitting the form.
+- Confirmed again while verifying issue #22649 (OPD Itemized Sales Summary
+  cancellation-doubling report): `itemized_sale_summary_dto.xhtml`'s From/To
+  `p:calendar` inputs silently reverted to today's date after `.fill()`, every
+  time — as soon as the *other* date field (or any other input on the page)
+  was touched next, both fields resnapped to their pre-fill value. If you'd
+  rather not reach for `browser_evaluate`/widget internals, driving the actual
+  calendar UI works just as reliably: click the input to open its popup, click
+  the "Previous"/"Next" month arrows (found via `browser_find` for the visible
+  month/year text, since the arrows' refs change every re-render) until the
+  target month is showing, then click the day-number link. This sets the
+  widget's real internal Date object (unlike a raw `.fill()`), so the value
+  survives subsequent postbacks/field changes. Note this page has no
+  `showTime`/`timeInput` attribute, so clicking a day only changes the date —
+  the time-of-day stays whatever that field's default already was (00:00:00
+  for From, 23:59:59 for To here). If a test needs the submitted range to land
+  on a specific time or cross midnight, pick the From/To *days* accordingly
+  (e.g. From = day N 00:00:00, To = day N+1 23:59:59) rather than assuming the
+  time resets.
 - Separately: local test data can have **zero** BillFee rows with
   `paidValue == feeValue` (nobody has ever settled a professional payment
   through this exact local DB copy) — check with a quick SQL count before
