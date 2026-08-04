@@ -226,6 +226,12 @@ public class BhtSummeryController implements Serializable {
     private boolean custom2ShowPhone;
     private boolean custom2ShowGuardian;
     private boolean custom2ShowCorporateSponsor;
+    // Custom4 (Custom Bills tab - Galle Co-op letterhead) print-format settings
+    private boolean custom4ShowAddress;
+    private boolean custom4ShowNic;
+    private boolean custom4ShowPhone;
+    private boolean custom4ShowGuardian;
+    private boolean custom4ShowCorporateSponsor;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -473,6 +479,8 @@ public class BhtSummeryController implements Serializable {
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
         custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
         custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
+        // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (Galle Co-op letterhead)
+        loadCustom4Config();
     }
 
     public void saveCustom2Config() {
@@ -486,6 +494,8 @@ public class BhtSummeryController implements Serializable {
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
+            // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (Galle Co-op letterhead)
+            persistCustom4Config();
             JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
             loadCustom2Config();
         } catch (Exception e) {
@@ -609,6 +619,78 @@ public class BhtSummeryController implements Serializable {
 
     public void setCustom2ShowCorporateSponsor(boolean custom2ShowCorporateSponsor) {
         this.custom2ShowCorporateSponsor = custom2ShowCorporateSponsor;
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom4 print format (Galle Co-op letterhead)">
+    public void loadCustom4Config() {
+        custom4ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", false);
+        custom4ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", false);
+        custom4ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", false);
+        custom4ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", true);
+        custom4ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", true);
+    }
+
+    public void saveCustom4Config() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
+            return;
+        }
+        try {
+            persistCustom4Config();
+            JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
+            loadCustom4Config();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Custom Bills configuration: " + e.getMessage());
+        }
+    }
+
+    private void persistCustom4Config() {
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", custom4ShowAddress);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", custom4ShowNic);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", custom4ShowPhone);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", custom4ShowGuardian);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", custom4ShowCorporateSponsor);
+    }
+
+    public boolean isCustom4ShowAddress() {
+        return custom4ShowAddress;
+    }
+
+    public void setCustom4ShowAddress(boolean custom4ShowAddress) {
+        this.custom4ShowAddress = custom4ShowAddress;
+    }
+
+    public boolean isCustom4ShowNic() {
+        return custom4ShowNic;
+    }
+
+    public void setCustom4ShowNic(boolean custom4ShowNic) {
+        this.custom4ShowNic = custom4ShowNic;
+    }
+
+    public boolean isCustom4ShowPhone() {
+        return custom4ShowPhone;
+    }
+
+    public void setCustom4ShowPhone(boolean custom4ShowPhone) {
+        this.custom4ShowPhone = custom4ShowPhone;
+    }
+
+    public boolean isCustom4ShowGuardian() {
+        return custom4ShowGuardian;
+    }
+
+    public void setCustom4ShowGuardian(boolean custom4ShowGuardian) {
+        this.custom4ShowGuardian = custom4ShowGuardian;
+    }
+
+    public boolean isCustom4ShowCorporateSponsor() {
+        return custom4ShowCorporateSponsor;
+    }
+
+    public void setCustom4ShowCorporateSponsor(boolean custom4ShowCorporateSponsor) {
+        this.custom4ShowCorporateSponsor = custom4ShowCorporateSponsor;
     }
     // </editor-fold>
 
