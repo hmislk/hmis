@@ -60,9 +60,16 @@
        breathing room. padding-right/padding-top nudge it inward instead. */
     @top-right {
         content: "Page " counter(page) " of " counter(pages);
-        font-size: 10px;
-        padding-top: 0.4cm;
-        padding-right: 0.15cm;
+        font-size: 11px;
+        padding-top: 3.0cm;
+        /* Matches the content's own right inset exactly, rather than another
+           guessed value: .container-fluid is a fixed 214mm (21.4cm) wide,
+           centered on the 22.5cm page via margin:auto, which leaves
+           (22.5 - 21.4) / 2 = 0.55cm on each side. This lines the page
+           number's right edge up with the bill content's own right edge
+           (e.g. where the Charge amounts column ends), not an arbitrary
+           distance from the physical paper edge. */
+        padding-right: 1.5cm;
     }
 }
 
