@@ -1313,11 +1313,6 @@ public class StaffController implements Serializable {
             return;
         }
 
-        if(current.getDateJoined() == null){
-            JsfUtil.addErrorMessage("Date Joined Required To Save");
-            return;
-        }
-
         if (removeResign) {
             current.setDateLeft(null);
             removeResign = false;
