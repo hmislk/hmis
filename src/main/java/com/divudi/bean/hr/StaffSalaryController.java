@@ -236,6 +236,43 @@ public class StaffSalaryController implements Serializable {
 
     }
 
+    public void saveSalaryComponents() {
+        if (current == null || current.getStaffSalaryComponants() == null) {
+            return;
+        }
+
+        for (StaffSalaryComponant tmp : current.getStaffSalaryComponants()) {
+            if (tmp.getStaffPaysheetComponent() != null
+                    && tmp.getStaffPaysheetComponent().getPaysheetComponent() != null
+                    && tmp.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
+                continue;
+            }
+
+            getHumanResourceBean().setEpf(tmp, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+            getHumanResourceBean().setEtf(tmp, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+            tmp.setLastEditedAt(new Date());
+            tmp.setLastEditor(getSessionController().getLoggedUser());
+
+            if (tmp.getId() != null) {
+                getStaffSalaryComponantFacade().edit(tmp);
+            }
+        }
+
+        getCurrent().calculateComponentTotal();
+        getCurrent().calcualteEpfAndEtf();
+        if (getCurrent().getId() != null) {
+            getStaffSalaryFacade().edit(getCurrent());
+        }
+        JsfUtil.addSuccessMessage("Salary Components Updated");
+    }
+
+    public void cancelSalaryComponentEdits() {
+        if (current != null && current.getId() != null) {
+            current = getStaffSalaryFacade().find(current.getId());
+        }
+        JsfUtil.addSuccessMessage("Changes Discarded");
+    }
+
     public StaffSalaryController() {
     }
 
@@ -290,20 +327,47 @@ public class StaffSalaryController implements Serializable {
             return;
         }
 
-        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(), getSalaryCycle());
-        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getSalaryCycle());
+        current.calculateComponentTotal();
+        current.calcualteEpfAndEtf();
 
-//        System.err.println("Add Size " + paysheetComponentsAddition.size());
-//        System.err.println("Sub Size " + paysheetComponentsSubstraction.size());
-        for (PaysheetComponent psc : paysheetComponentsAddition) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
-//            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
+        current.getTransStaffSalaryComponantsAddition().clear();
+        current.getTransStaffSalaryComponantsSubtraction().clear();
 
+        if (salaryCycleController != null && getSalaryCycle() != null) {
+            List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(), getSalaryCycle());
+            List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getSalaryCycle());
+
+            for (PaysheetComponent psc : paysheetComponentsAddition) {
+                StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
+                if (c != null) {
+                    getCurrent().getTransStaffSalaryComponantsAddition().add(c);
+                }
+            }
+            for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+                StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
+                if (c != null) {
+                    getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
+                }
+            }
         }
-        for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
-//            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
 
+        if (current.getStaffSalaryComponants() != null) {
+            for (StaffSalaryComponant ssc : current.getStaffSalaryComponants()) {
+                if (ssc.getStaffPaysheetComponent() != null && ssc.getStaffPaysheetComponent().getPaysheetComponent() != null) {
+                    PaysheetComponentType ct = ssc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType();
+                    if (ct != null) {
+                        if (ct.getParent(ct) == PaysheetComponentType.addition) {
+                            if (!current.getTransStaffSalaryComponantsAddition().contains(ssc)) {
+                                current.getTransStaffSalaryComponantsAddition().add(ssc);
+                            }
+                        } else if (ct.getParent(ct) == PaysheetComponentType.subtraction) {
+                            if (!current.getTransStaffSalaryComponantsSubtraction().contains(ssc)) {
+                                current.getTransStaffSalaryComponantsSubtraction().add(ssc);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
     }
@@ -1676,6 +1740,10 @@ public class StaffSalaryController implements Serializable {
 
         }
 
+        if (getItems() != null && !getItems().isEmpty()) {
+            onEditListener(getItems().get(0));
+        }
+
         //   createStaffSalaryTable();
     }
 
@@ -1746,6 +1814,10 @@ public class StaffSalaryController implements Serializable {
             getItems().add(current);
             current = null;
 
+        }
+
+        if (getItems() != null && !getItems().isEmpty()) {
+            onEditListener(getItems().get(0));
         }
 
         //   createStaffSalaryTable();

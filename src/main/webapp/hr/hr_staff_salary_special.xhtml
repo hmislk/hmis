@@ -225,18 +225,38 @@
 
                         <!-- Sub-tab: Salary Components -->
                         <p:tab title="Salary Components">
-                            <p:dataTable editable="true"
+                            <p:dataTable id="componentsTable" editable="true"
                                 value="#{staffSalaryController.current.staffSalaryComponants}"
                                 var="i">
                                 <f:facet name="header">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <h:outputText value="#{staffSalaryController.current.staff.person.nameWithTitle}" />
-                                        <h:outputText value="#{staffSalaryController.current.staff.code}"
-                                            style="font-style: italic; font-weight: normal;" />
+                                        <div>
+                                            <h:outputText value="#{staffSalaryController.current.staff.person.nameWithTitle}" />
+                                            <h:outputText value=" #{staffSalaryController.current.staff.code}"
+                                                style="font-style: italic; font-weight: normal;" />
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <p:commandButton
+                                                process="componentsTable"
+                                                update="componentsTable"
+                                                value="Save"
+                                                icon="fas fa-save"
+                                                styleClass="ui-button-success"
+                                                style="padding: 0.25rem 0.75rem; font-size: 0.85rem;"
+                                                action="#{staffSalaryController.saveSalaryComponents}" />
+                                            <p:commandButton
+                                                process="@this"
+                                                update="componentsTable"
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                styleClass="ui-button-secondary"
+                                                style="padding: 0.25rem 0.75rem; font-size: 0.85rem;"
+                                                action="#{staffSalaryController.cancelSalaryComponentEdits}" />
+                                        </div>
                                     </div>
                                 </f:facet>
 
-                                <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" />
+                                <p:ajax event="rowEdit" update="componentsTable" listener="#{staffSalaryController.onEdit}" />
 
                                 <p:column headerText="Component Name" style="width: 12rem;">
                                     <h:outputText value="#{i.staffPaysheetComponent.paysheetComponent.name}" />
@@ -244,10 +264,7 @@
                                 <p:column headerText="Type" style="width: 8rem;">
                                     <h:outputText value="#{i.staffPaysheetComponent.paysheetComponent.componentType}" />
                                 </p:column>
-                                <p:column style="width: 6rem;">
-                                    <f:facet name="header">
-                                        <p:commandButton type="button" value="Process" styleClass="ui-button-info" />
-                                    </f:facet>
+                                <p:column headerText="Edit" style="width: 6rem;">
                                     <p:rowEditor />
                                 </p:column>
                                 <p:column headerText="Value" style="width: 8rem;">
@@ -310,7 +327,9 @@
 
                         <!-- Sub-tab: Preview -->
                         <p:tab title="Preview">
-                            <salary:pay_slip bill="#{staffSalaryController.current}" />
+                            <div style="max-height: 420px; overflow: auto; border: 1px solid #e0e0e0; border-radius: 4px; padding: 0.5rem; background-color: #ffffff;">
+                                <salary:pay_slip bill="#{staffSalaryController.current}" />
+                            </div>
                         </p:tab>
 
                     </p:tabView>
