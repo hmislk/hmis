@@ -240,10 +240,13 @@ public class BhtPaymentSummaryDTO implements Serializable {
     /**
      * Balance = final bill net total − (deposits + post-final payments + credit billed).
      * Positive means amount still due; negative means overpayment / refund due.
-     * Returns 0 when no final bill exists.
+     * Returns 0 when no final bill exists — checked via finalBillNumber presence,
+     * not finalBillTotal, so a genuine final bill with a zero net total still
+     * nets out any deposits/post-final payments/credit billed instead of being
+     * mistaken for "no final bill".
      */
     public double getTotalBalance() {
-        if (finalBillTotal == 0.0) {
+        if (finalBillNumber == null || finalBillNumber.isBlank()) {
             return 0.0;
         }
         return finalBillTotal - getTotalDeposits() - getTotalPostFinalPayments() - creditBilledTotal;

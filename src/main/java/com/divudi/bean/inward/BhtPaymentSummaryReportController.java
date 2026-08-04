@@ -312,6 +312,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + " where b.retired = false"
                 + " and b.billTypeAtomic = :bta"
                 + " and b.paymentMethod = :pm"
+                + " and b.cancelled = false"
                 + " and b.cancelledBill is null"
                 + " and b.refundedBill is null"
                 + " and b.patientEncounter = :enc";
