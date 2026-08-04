@@ -208,6 +208,7 @@
                         <!-- Sub-tab: Salary Components -->
                         <p:tab title="Salary Components">
                             <p:dataTable
+                                id="componentsTable"
                                 editable="true"
                                 value="#{staffSalaryAdvanceController.current.staffSalaryComponants}"
                                 var="i">
@@ -219,7 +220,7 @@
                                     </div>
                                 </f:facet>
 
-                                <p:ajax event="rowEdit" listener="#{staffSalaryAdvanceController.onEdit}" />
+                                <p:ajax event="rowEdit" listener="#{staffSalaryAdvanceController.onEdit}" update="componentsTable salaryAdvanceTable" />
 
                                 <p:column headerText="Component Name" style="width: 12rem;">
                                     <h:outputText value="#{i.staffPaysheetComponent.paysheetComponent.name}" />
@@ -300,6 +301,7 @@
                         </f:facet>
 
                         <p:dataTable
+                            id="salaryAdvanceTable"
                             value="#{staffSalaryAdvanceController.items}"
                             var="ii"
                             scrollable="true"

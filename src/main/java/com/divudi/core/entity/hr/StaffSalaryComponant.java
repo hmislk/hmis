@@ -131,7 +131,7 @@ public class StaffSalaryComponant implements Serializable {
                 && getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != null
                 && getStaffPaysheetComponent().getPaysheetComponent().getComponentType().is(PaysheetComponentType.subtraction)) {
 
-            this.componantValue = roundOff(0 - componantValue);
+            this.componantValue = roundOff(0 - Math.abs(componantValue));
         } else {
             this.componantValue = roundOff(componantValue);
         }
