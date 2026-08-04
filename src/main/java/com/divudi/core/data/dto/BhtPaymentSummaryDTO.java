@@ -33,7 +33,13 @@ public class BhtPaymentSummaryDTO implements Serializable {
     /** Sum of deposit bill payments, keyed by payment method. */
     private Map<PaymentMethod, Double> depositsByMethod = new EnumMap<>(PaymentMethod.class);
 
-    /** Sum of INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED bill items for this BHT. */
+    /** Sum of post-final-bill payments, keyed by payment method. */
+    private Map<PaymentMethod, Double> postFinalPaymentsByMethod = new EnumMap<>(PaymentMethod.class);
+
+    /** Sum of billed amounts (netTotal) of credit company bills for this BHT. */
+    private double creditBilledTotal;
+
+    /** Sum of settled (paid) amounts of credit company bills for this BHT. */
     private double creditSettlementTotal;
 
     /** Slash-separated names of credit companies from the settlement bills. */
@@ -68,8 +74,56 @@ public class BhtPaymentSummaryDTO implements Serializable {
         depositsByMethod.merge(method, amount, Double::sum);
     }
 
-    public void addCreditSettlement(double amount, String companyName) {
-        creditSettlementTotal += amount;
+    public double getDepositCash() {
+        return getDepositForMethod(PaymentMethod.Cash);
+    }
+
+    public double getDepositCard() {
+        return getDepositForMethod(PaymentMethod.Card);
+    }
+
+    public double getDepositOther() {
+        return getTotalDeposits() - getDepositCash() - getDepositCard();
+    }
+
+    public double getTotalPostFinalPayments() {
+        return postFinalPaymentsByMethod.values().stream().mapToDouble(Double::doubleValue).sum();
+    }
+
+    public double getPostFinalPaymentForMethod(PaymentMethod method) {
+        return postFinalPaymentsByMethod.getOrDefault(method, 0.0);
+    }
+
+    /**
+     * Amounts are merged with their natural sign — callers must NOT pass
+     * {@code Math.abs(...)} here. Unlike deposits, post-final-bill payment
+     * cancellations/refunds arrive as separate negative-amount rows that
+     * must net out against the original positive row.
+     */
+    public void addPostFinalPayment(PaymentMethod method, double amount) {
+        if (method == null) {
+            LOG.log(Level.WARNING, "BHT {0}: post-final payment of {1} has null PaymentMethod — amount dropped from totals",
+                    new Object[]{bhtNo, amount});
+            return;
+        }
+        postFinalPaymentsByMethod.merge(method, amount, Double::sum);
+    }
+
+    public double getPostFinalCash() {
+        return getPostFinalPaymentForMethod(PaymentMethod.Cash);
+    }
+
+    public double getPostFinalCard() {
+        return getPostFinalPaymentForMethod(PaymentMethod.Card);
+    }
+
+    public double getPostFinalOther() {
+        return getTotalPostFinalPayments() - getPostFinalCash() - getPostFinalCard();
+    }
+
+    public void addCreditCompanyBill(double billedAmount, double settledAmount, String companyName) {
+        creditBilledTotal += billedAmount;
+        creditSettlementTotal += settledAmount;
         if (companyName != null && !companyName.isBlank()) {
             if (creditCompanyNamesSet.add(companyName)) {
                 if (creditCompanyNames == null || creditCompanyNames.isBlank()) {
@@ -79,6 +133,10 @@ public class BhtPaymentSummaryDTO implements Serializable {
                 }
             }
         }
+    }
+
+    public double getCreditBalance() {
+        return creditBilledTotal - creditSettlementTotal;
     }
 
     // --- getters / setters ---
@@ -135,6 +193,18 @@ public class BhtPaymentSummaryDTO implements Serializable {
         return depositsByMethod;
     }
 
+    public Map<PaymentMethod, Double> getPostFinalPaymentsByMethod() {
+        return postFinalPaymentsByMethod;
+    }
+
+    public double getCreditBilledTotal() {
+        return creditBilledTotal;
+    }
+
+    public void setCreditBilledTotal(double creditBilledTotal) {
+        this.creditBilledTotal = creditBilledTotal;
+    }
+
     public double getCreditSettlementTotal() {
         return creditSettlementTotal;
     }
@@ -168,14 +238,14 @@ public class BhtPaymentSummaryDTO implements Serializable {
     }
 
     /**
-     * Balance = final bill net total − (deposits + credit settlements collected).
+     * Balance = final bill net total − (deposits + post-final payments + credit billed).
      * Positive means amount still due; negative means overpayment / refund due.
      * Returns 0 when no final bill exists.
      */
-    public double getBalance() {
+    public double getTotalBalance() {
         if (finalBillTotal == 0.0) {
             return 0.0;
         }
-        return finalBillTotal - getTotalDeposits() - creditSettlementTotal;
+        return finalBillTotal - getTotalDeposits() - getTotalPostFinalPayments() - creditBilledTotal;
     }
 }
