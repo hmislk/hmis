@@ -51,6 +51,19 @@
                 <div class="alert alert-info" role="alert">
                     No database migration is pending.
                 </div>
+
+                <!-- Feedback from a migration action just run in this same request (e.g. the
+                     Update Database button, which marks the migration complete on success and
+                     therefore switches this page straight to the "not pending" branch above) —
+                     shown here so the result isn't lost, since the tool that produced it is
+                     no longer rendered once migration is no longer pending. -->
+                <h:panelGroup layout="block" styleClass="alert alert-secondary" style="white-space: pre-wrap;"
+                              rendered="#{not empty dataAdministrationController.executionFeedback}">
+                    #{dataAdministrationController.executionFeedback}
+                </h:panelGroup>
+
+                <p:button value="Back to Home" outcome="/index" icon="fa fa-home"
+                          styleClass="ui-button-info ui-button-outlined"/>
             </div>
         </h:panelGroup>
 
