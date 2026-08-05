@@ -1900,7 +1900,7 @@ public class BillNumberGenerator {
         hm.put("dep", department);
         hm.put("admType", admissionType);
         BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
-        if (billNumber == null) {
+        if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "
                     + " Bill b "
                     + " where b.retired=false "

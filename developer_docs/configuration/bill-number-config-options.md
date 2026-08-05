@@ -56,8 +56,8 @@ public static final String BILL_NUMBER_GENERATION_STRATEGY_FOR_INSTITUTION_ID_IS
 **Default**: `false`
 **Description**: When enabled, the **Inward Deposit** (`InwardPaymentBill` / `BillNumberSuffix.INWPAY`) and **Post Final Payment** (`PostFinalBillInwardPayment` / `BillNumberSuffix.INWPFP`) bill numbers are given a separate serial counter per `AdmissionType` (e.g. "BHT" vs "OPD Card") instead of one shared serial across all admission types for the department/institution. The `AdmissionType` code and an extra delimiter are inserted into the bill number, right after the existing suffix and before the numeric serial. Only applies when the bill's `PatientEncounter` has a non-null `AdmissionType`; otherwise the legacy (shared-serial) behavior is used regardless of this setting. Default (`false`) behavior is byte-for-byte identical to the pre-existing bill number format.
 
-**Example Output (enabled, admission type code `BHT`)**: `ICU/INWPAY/BHT/000001`
-**Example Output (disabled, legacy format)**: `ICU/INWPAY/000001`
+**Example Output (enabled, admission type code `BHT`)**: `ICUINWPAY/BHT/1`
+**Example Output (disabled, legacy format)**: `ICUINWPAY/1`
 
 ## Bill Type Suffix Configuration
 
