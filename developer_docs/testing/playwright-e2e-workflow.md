@@ -1465,6 +1465,21 @@ Not Paid Tokens** → **Call Customer** → **Accept Payment** → enter Tendere
 Settle**. Then from `pharmacy_search_pre_bill.xhtml` → **Search Paid Only Tokens** → **View Payment Bill**
 lands on the reprint/cancel page for that bill.
 
+## 55. `inward_bill_professional.xhtml` "Add Professional Fee" silently no-ops if the Speciality autocomplete is left empty
+
+On "Add New Professional Fees", the `+ Add Professional Fee` button is a
+`type="submit"` full postback guarded only by a JS `confirm(...)` — clicking
+it and accepting the dialog looks successful (page reloads, no visible
+error) but the row never appears in "Professional Fees for This Encounter"
+and no `BILLFEE` row is inserted, if the **Speciality** autocomplete (above
+Doctor) was left blank. This is the same zero-observable-signal
+required-field pattern as §37, just on a different page/field — the Doctor
+field alone is not enough. Fix: search and select a Speciality (e.g. type
+`PHYSICIAN`, press Enter) before Doctor/Fee Amount/Add. Confirmed via
+`mysql.general_log`: with Speciality empty, no `INSERT INTO BILLFEE`
+statement reaches the server at all; with it filled, the insert fires
+immediately. Verified while testing issue #22665.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
