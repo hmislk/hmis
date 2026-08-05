@@ -3178,10 +3178,19 @@ public class GrnCostingController implements Serializable {
     private String validateLineDiscountRates(List<BillItem> billItems) {
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-            if (f == null || f.getLineNetRate() == null) {
+            if (f == null) {
                 continue;
             }
-            if (f.getLineNetRate().compareTo(BigDecimal.ZERO) < 0) {
+            // Compare the raw discount/gross rates directly rather than the derived
+            // lineNetRate, which recalculateFinancialsBeforeAddingBillItem() rounds to
+            // 4 decimal places - a discount only fractionally above the gross rate
+            // could otherwise round down to 0.0000 and slip past a >= 0 check.
+            BigDecimal grossRate = f.getLineGrossRate();
+            BigDecimal discountRate = f.getLineDiscountRate();
+            if (grossRate == null || discountRate == null) {
+                continue;
+            }
+            if (discountRate.compareTo(grossRate) > 0) {
                 String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown Item";
                 return "Item " + itemName + ": Discount Rate cannot exceed Purchase Rate (results in a negative net rate)";
             }
