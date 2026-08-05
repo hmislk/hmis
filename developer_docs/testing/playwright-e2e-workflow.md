@@ -1480,7 +1480,34 @@ field alone is not enough. Fix: search and select a Speciality (e.g. type
 statement reaches the server at all; with it filled, the insert fires
 immediately. Verified while testing issue #22665.
 
-## 56. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link
+## 56. `p:datePicker timeInput="true"` — typing into the input does not commit; use the PrimeFaces widget API for non-AJAX forms
+
+On `theater/inward_timed_service_consume_surgery.xhtml`'s Start/End Time
+fields (`p:datePicker showTime="true" timeInput="true"`, no `readonlyInput`
+set — `input.readOnly` is `false`), the documented "click → Ctrl+A →
+pressSequentially → Escape" pattern (§ "p:datePicker / p:calendar") left the
+input **empty** every time: `document.getElementById(...).value` read `""`
+both before and after `Escape`, with no visible error. Root cause wasn't
+narrowed further, but the fix that reliably works is to skip DOM typing
+entirely and drive the PrimeFaces widget directly — safe here because the
+submit button (`+ Add Service`) is `ajax="false"`, so (per §29) only the
+final submitted `_input` value matters:
+```js
+Object.keys(PrimeFaces.widgets).filter(k => /starttime|endtime/i.test(k))
+// -> ["widget_form_startTime", "widget_form_endTime"]
+PrimeFaces.widgets.widget_form_startTime.setDate(new Date(2026, 7, 5, 19, 0, 0));
+```
+`setDate()` both sets the widget's internal date **and** re-serializes the
+visible `_input` text using the field's configured pattern, so a DOM read
+right after confirms the committed value. Verified end-to-end for issue #20890:
+the typed-looking string round-tripped correctly through the
+non-AJAX submit and the saved `PATIENTITEM.FROMTIME`/`TOTIME` matched. Only
+use this shortcut for non-AJAX (full-postback) submits — for an AJAX
+`p:datePicker` where the *change* event itself must fire a listener, this
+bypasses that and the real key-event pattern would still be required (untested
+here).
+
+## 57. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link
 
 `inward/nurse/index.xhtml` populates its Rooms/BHT tab lists (room and BHT
 buttons per ward) only when reached via the real PrimeFaces menu action
