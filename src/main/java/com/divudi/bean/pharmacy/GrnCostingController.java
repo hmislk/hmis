@@ -1967,12 +1967,17 @@ public class GrnCostingController implements Serializable {
         onEdit(bi);
     }
 
-    public void onEdit(BillItem tmp) {
-        setBatch(tmp);
-        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
-        if (f == null) {
-            return;
-        }
+    /**
+     * Clamps a bill item's quantity down to the PO's remaining orderable
+     * qty and surfaces an error message when it's over. Shared by both
+     * onEdit() (Purchase Rate blur) and qtyChangedListner() (Qty field's
+     * own blur) so the rule is enforced - and visible - no matter which
+     * field the user edits. See issue #22681: previously only onEdit() had
+     * this check, and its f:ajax render list didn't include the Qty field
+     * or the messages panel, so the clamp silently corrected the saved qty
+     * while the screen kept showing the rejected value.
+     */
+    private void clampQuantityToRemaining(BillItem tmp, BillItemFinanceDetails f) {
         if (tmp.getReferanceBillItem() != null) {
             double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
             if (remains < f.getQuantity().doubleValue()) {
@@ -1981,6 +1986,15 @@ public class GrnCostingController implements Serializable {
                 JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
             }
         }
+    }
+
+    public void onEdit(BillItem tmp) {
+        setBatch(tmp);
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        clampQuantityToRemaining(tmp, f);
 
         if (f.getLineGrossRate().compareTo(f.getRetailSaleRatePerUnit()) > 0) {
             f.setRetailSaleRatePerUnit(f.getLineGrossRate());
@@ -2091,6 +2105,8 @@ public class GrnCostingController implements Serializable {
                 return;
             }
         }
+
+        clampQuantityToRemaining(tmp, f);
 
         recalculateFinancialsBeforeAddingBillItem(f);
 
