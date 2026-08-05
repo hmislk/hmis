@@ -1499,8 +1499,8 @@ PrimeFaces.widgets.widget_form_startTime.setDate(new Date(2026, 7, 5, 19, 0, 0))
 ```
 `setDate()` both sets the widget's internal date **and** re-serializes the
 visible `_input` text using the field's configured pattern, so a DOM read
-right after confirms the committed value. Verified end-to-end for issue
-#20890: the typed-looking string round-tripped correctly through the
+right after confirms the committed value. Verified end-to-end for issue #20890:
+the typed-looking string round-tripped correctly through the
 non-AJAX submit and the saved `PATIENTITEM.FROMTIME`/`TOTIME` matched. Only
 use this shortcut for non-AJAX (full-postback) submits — for an AJAX
 `p:datePicker` where the *change* event itself must fire a listener, this
