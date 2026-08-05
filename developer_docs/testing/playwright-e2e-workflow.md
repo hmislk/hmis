@@ -1480,6 +1480,26 @@ field alone is not enough. Fix: search and select a Speciality (e.g. type
 statement reaches the server at all; with it filled, the insert fires
 immediately. Verified while testing issue #22665.
 
+## 56. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link
+
+`inward/nurse/index.xhtml` populates its Rooms/BHT tab lists (room and BHT
+buttons per ward) only when reached via the real PrimeFaces menu action
+(**Inward → Nursing WorkBench**, an `onclick`/`PrimeFaces.addSubmitParam`
+command link that posts a form before navigating). A `browser_navigate`
+straight to `/rh/faces/nurse/index.xhtml` — even from an already-authenticated,
+department-selected session — loads the page shell but leaves both tab panels
+empty, with no console error and no failed network request to explain it; the
+list is populated by server-side controller init tied to the menu's action
+listener, not by a `f:viewAction` or ajax poll that a plain GET would trigger.
+Same rule as the admission/final-bill pages noted in §1 §17: prefer clicking
+through the actual menu path over guessing the URL, and if a page you reached
+by URL shows a suspiciously empty list with no error, retry via the menu link
+before assuming the data itself is missing. Verified while testing issue
+#22689 — also worth noting: not every active admission has a `BHT` tab entry
+(the tab only lists encounters with a non-null `encounterId`/BHT number);
+some test-seeded admissions only had a `currentPatientRoom`, so the **Rooms**
+tab (click the matching ward name) was the reliable way to reach them.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
