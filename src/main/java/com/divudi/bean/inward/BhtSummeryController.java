@@ -4929,6 +4929,13 @@ public class BhtSummeryController implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
 
+        List<BillTypeAtomic> medicineCancellationBtas = new ArrayList<>();
+        medicineCancellationBtas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
                 case AdmissionFee:
@@ -4960,6 +4967,11 @@ public class BhtSummeryController implements Serializable {
                 case Medicine:
                     if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
                         i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
+                    }
+                    break;
+                case CancelledReturnedMedicine:
+                    if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
+                        i.setTotal(getInwardBean().calCancelledCostOfIssueByBill(getPatientEncounter(), medicineCancellationBtas, childPatientEncouters));
                     }
                     break;
                 case GeneralIssuing:
