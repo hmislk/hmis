@@ -2750,6 +2750,14 @@ public class BillService {
         // correctly negative (the 2 positive outliers are the tracked writer anomaly, not the
         // norm). An earlier version of this query special-cased this bill type to skip negation,
         // which was backwards and displayed real returns with a negative out-quantity - see #21833.
+        //
+        // Pending (not yet approved) Direct Purchase Return bills are excluded below: pbi.qty is
+        // only sign-flipped to the correct negative-for-out value at approval time
+        // (DirectPurchaseReturnWorkflowController.completeApproval() -> updateStock()); before
+        // that, prepareBillItems() leaves it as a positive "available to return" quantity, which
+        // is not yet a real stock movement and would net incorrectly if included. Every other
+        // bill type in this report is unaffected by this filter (they don't use the completed
+        // flag the same way and are left as before).
         jpql = "select new com.divudi.core.data.dto.PharmacyMovementOutByItemDTO( "
                 + " it.id, "
                 + " coalesce(it.name, 'N/A'), "
@@ -2768,9 +2776,11 @@ public class BillService {
                 + " where (b.retired = false or b.retired is null) "
                 + " and (bi.retired = false or bi.retired is null) "
                 + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and (b.billTypeAtomic <> :directPurchaseReturnBta or b.completed = true) "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         params.put("billTypesAtomics", billTypeAtomics);
+        params.put("directPurchaseReturnBta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
 
