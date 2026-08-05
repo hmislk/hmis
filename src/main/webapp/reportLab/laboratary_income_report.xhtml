@@ -351,7 +351,8 @@
                                 <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 2px!important; margin: 0px!important;" />
                             </p:column>
 
-                            <p:column headerText="Collecting Centre"  style="padding: 2px!important; margin: 0px!important;" >
+                            <p:column headerText="Collecting Centre"  style="padding: 2px!important; margin: 0px!important;"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Laboratory Income Report - Show Collecting Centre Column',true)}">
                                 <h:outputText value="#{row.bill.collectingCentre.name}"  style="padding: 2px!important; margin: 0px!important;" />
                             </p:column>
 
