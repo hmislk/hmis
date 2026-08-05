@@ -1495,10 +1495,13 @@ Same rule as the admission/final-bill pages noted in §1 §17: prefer clicking
 through the actual menu path over guessing the URL, and if a page you reached
 by URL shows a suspiciously empty list with no error, retry via the menu link
 before assuming the data itself is missing. Verified while testing issue
-#22689 — also worth noting: not every active admission has a `BHT` tab entry
-(the tab only lists encounters with a non-null `encounterId`/BHT number);
-some test-seeded admissions only had a `currentPatientRoom`, so the **Rooms**
-tab (click the matching ward name) was the reliable way to reach them.
+`#22689`. Note: `NursingWorkBenchController.loadLists()` populates the Rooms
+and BHT tabs from the identical query (same `discharged=false /
+paymentFinalized=false / currentPatientRoom` filter) — they always list the
+same admissions, just labeled/sorted by room name vs. BHT number
+respectively. If a specific admission seems "missing" from one tab, search by
+the label that tab actually renders (BHT number on the BHT tab, room name on
+the Rooms tab), not by patient name — neither tab's buttons show it.
 
 ## Quick checklist
 
