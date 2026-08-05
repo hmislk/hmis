@@ -294,7 +294,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             initializeRefundPaymentFromOriginalPayments(originalPayments);
         } else {
             // Fallback: just set payment method enum if no payment details found
-            returnPaymentMethod = bill.getPaymentMethod();
+            returnPaymentMethod = paymentBill.getPaymentMethod();
         }
 
         return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
