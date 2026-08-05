@@ -593,7 +593,7 @@ public class InwardInvoiceJournalController implements Serializable {
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
                 + " and bf.bill.cancelled = false"
-                + " and bf.bill.billTypeAtomic not in :excludedTypes"
+                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
