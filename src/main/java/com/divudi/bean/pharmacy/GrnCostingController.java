@@ -3161,7 +3161,41 @@ public class GrnCostingController implements Serializable {
             msg = quantityValidationMsg;
         }
 
+        // Discount Rate is a per-unit discount amount, not a percentage. Nothing
+        // upstream clamps it against the Purchase Rate, so a discount larger than
+        // the purchase rate silently drives the line's net rate (and therefore the
+        // whole GRN) negative - i.e. the pharmacy would be "receiving" stock at a
+        // negative cost. Block finalization instead of persisting that nonsensical
+        // value (found during legacy-vs-DTO GRN QA, issue #22595).
+        String discountValidationMsg = validateLineDiscountRates(billItems);
+        if (!discountValidationMsg.isEmpty()) {
+            msg = discountValidationMsg;
+        }
+
         return msg;
+    }
+
+    private String validateLineDiscountRates(List<BillItem> billItems) {
+        for (BillItem bi : billItems) {
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+            if (f == null) {
+                continue;
+            }
+            // Compare the raw discount/gross rates directly rather than the derived
+            // lineNetRate, which recalculateFinancialsBeforeAddingBillItem() rounds to
+            // 4 decimal places - a discount only fractionally above the gross rate
+            // could otherwise round down to 0.0000 and slip past a >= 0 check.
+            BigDecimal grossRate = f.getLineGrossRate();
+            BigDecimal discountRate = f.getLineDiscountRate();
+            if (grossRate == null || discountRate == null) {
+                continue;
+            }
+            if (discountRate.compareTo(grossRate) > 0) {
+                String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown Item";
+                return "Item " + itemName + ": Discount Rate cannot exceed Purchase Rate (results in a negative net rate)";
+            }
+        }
+        return "";
     }
 
     private String validateGrnQuantities(List<BillItem> billItems) {
