@@ -66,6 +66,7 @@ public class AppEmail implements Serializable {
     private String messageSubject;
     @Lob
     private String messageBody;
+    private String otp;
 
     @Deprecated
     private String senderUsername;
@@ -231,6 +232,14 @@ public class AppEmail implements Serializable {
 
     public void setMessageBody(String messageBody) {
         this.messageBody = messageBody;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 
     public Boolean getSentSuccessfully() {

@@ -37,7 +37,7 @@
                                         <p:dataExporter target="tblList" type="xlsx" fileName="pharmacy_vmpp_list"/>
                                     </p:commandButton>
                                     <p:commandButton id="btnBack" value="Back" icon="fas fa-arrow-left"
-                                        action="/pharmacy/admin/vmpp?faces-redirect=true"
+                                        action="/pharmacy/admin/vmpp_dto?faces-redirect=true"
                                         ajax="false" styleClass="ui-button-secondary m-1"
                                         title="Return to VMPP management"/>
                                 </div>
@@ -62,6 +62,12 @@
                             </p:column>
                             <p:column headerText="Code" sortBy="#{dto.code}" filterBy="#{dto.code}" filterMatchMode="contains" style="width: 8em;">
                                 <h:outputText value="#{dto.code}"/>
+                            </p:column>
+                            <p:column headerText="Pack Size" sortBy="#{dto.dblValue}" style="width: 7em; text-align: center;">
+                                <h:outputText value="#{dto.dblValue}"/>
+                            </p:column>
+                            <p:column headerText="Pack Unit" sortBy="#{dto.packUnitName}" filterBy="#{dto.packUnitName}" filterMatchMode="contains" style="width: 8em;">
+                                <h:outputText value="#{dto.packUnitName}"/>
                             </p:column>
                             <p:column headerText="VMP" sortBy="#{dto.vmpName}" filterBy="#{dto.vmpName}" filterMatchMode="contains" style="min-width: 10em;">
                                 <h:outputText value="#{dto.vmpName}"/>

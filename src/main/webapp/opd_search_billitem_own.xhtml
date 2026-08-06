@@ -46,13 +46,13 @@
                                 </p:selectBooleanButton>
                                 <hr/>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnSearch"
                                     class="my-1 w-100 ui-button-warning"
-                                    icon="fas fa-search" 
-                                    ajax="false" 
-                                    value="Search" 
-                                    action="#{searchController.createBillItemTableByKeyword()}">
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    value="Search"
+                                    action="#{searchController.createLabBillItemSearchDtosByKeyword()}">
                                 </p:commandButton>
                                 
                                 <p:commandButton 
@@ -80,10 +80,10 @@
                             </div>
 
                             <div class="col-md-10">
-                                <p:dataTable 
-                                    rowIndexVar="i" 
-                                    id="tblBills" 
-                                    value="#{searchController.billItems}" 
+                                <p:dataTable
+                                    rowIndexVar="i"
+                                    id="tblBills"
+                                    value="#{searchController.labBillItemSearchDtos}"
                                     var="pi"
                                     rows="10"
                                     paginatorPosition="bottom"
@@ -97,118 +97,119 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" styleClass="alignTop" sortBy="#{pi.bill.deptId}" filterBy="#{pi.bill.deptId}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.deptId}">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>   
-                                    </p:column>
-
-                                    <p:column headerText="Institution Name" styleClass="alignTop" sortBy="#{pi.bill.toInstitution.name}" filterBy="#{pi.bill.toInstitution.name}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.toInstitution.name}">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                    <p:column headerText="Bill No" styleClass="alignTop" sortBy="#{pi.deptId}" filterBy="#{pi.deptId}" filterMatchMode="contains">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.deptId}">
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Credit Company" styleClass="alignTop" sortBy="#{pi.bill.creditCompany.name}" filterBy="#{pi.bill.creditCompany.name}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.creditCompany.name}">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                    <p:column headerText="Institution Name" styleClass="alignTop" sortBy="#{pi.toInstitutionName}" filterBy="#{pi.toInstitutionName}" filterMatchMode="contains">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.toInstitutionName}">
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Patient" styleClass="alignTop" sortBy="#{pi.bill.patient.person.nameWithTitle}" filterBy="#{pi.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                        <h:commandLink value="#{pi.bill.patient.person.nameWithTitle}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and pi.bill.approvedAnyTest ne true}">
-                                            <f:setPropertyActionListener value="#{pi.bill.patient}" target="#{patientController.current}"/>
+                                    <p:column headerText="Credit Company" styleClass="alignTop" sortBy="#{pi.creditCompanyName}" filterBy="#{pi.creditCompanyName}" filterMatchMode="contains">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.creditCompanyName}">
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
-                                        <br/>
-                                        <h:outputLabel value="#{pi.bill.patient.person.ageAsString}" />
-                                        <br/>
-                                        <h:outputLabel value="#{pi.bill.patient.person.sex}" />
-                                        <br/>
-                                        <h:outputLabel value="#{pi.bill.patient.person.phone}" />
                                     </p:column>
 
-                                    <p:column headerText="Investigation or Service" styleClass="alignTop" sortBy="#{pi.item.name}" filterBy="#{pi.item.name}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.item.name}" />
+                                    <p:column headerText="Patient" styleClass="alignTop" sortBy="#{pi.patientNameWithTitle}" filterBy="#{pi.patientNameWithTitle}" filterMatchMode="contains">
+                                        <h:commandLink value="#{pi.patientNameWithTitle}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and pi.approvedAnyTest ne true}">
+                                            <f:setPropertyActionListener value="#{searchController.findPatientById(pi.patientId)}" target="#{patientController.current}"/>
+                                        </h:commandLink>
+                                        <h:outputLabel value="#{pi.patientNameWithTitle}" rendered="#{not (webUserController.hasPrivilege('OpdBillSearchEdit') and pi.approvedAnyTest ne true)}"/>
+                                        <br/>
+                                        <h:outputLabel value="#{pi.patientAgeAsString}" />
+                                        <br/>
+                                        <h:outputLabel value="#{pi.patientSex}" />
+                                        <br/>
+                                        <h:outputLabel value="#{pi.patientPhone}" />
                                     </p:column>
 
-                                    <p:column headerText="Billed At" sortBy="#{pi.bill.createdAt}" filterBy="#{pi.bill.createdAt}" filterMatchMode="equals">
+                                    <p:column headerText="Investigation or Service" styleClass="alignTop" sortBy="#{pi.itemName}" filterBy="#{pi.itemName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{pi.itemName}" />
+                                    </p:column>
+
+                                    <p:column headerText="Billed At" sortBy="#{pi.billedAt}" filterBy="#{pi.billedAt}" filterMatchMode="equals">
                                         <h:outputLabel value="Billed at " />
-                                        <h:outputLabel value="#{pi.bill.createdAt}">
+                                        <h:outputLabel value="#{pi.billedAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputLabel>
                                         <br/>
 
-                                        <h:panelGroup rendered="#{pi.bill.cancelled}">
+                                        <h:panelGroup rendered="#{pi.cancelled}">
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.bill.cancelled}" value="#{pi.bill.cancelledBill.createdAt}">
+                                            <h:outputLabel style="color: red;" rendered="#{pi.cancelled}" value="#{pi.cancelledAt}">
                                                 <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.bill.refunded}">
+                                        <h:panelGroup rendered="#{pi.refunded}">
                                             <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.bill.refunded}" value="#{pi.bill.refundedBill.createdAt}">
+                                            <h:outputLabel style="color: red;" rendered="#{pi.refunded}" value="#{pi.refundedAt}">
                                                 <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <br/>
                                     </p:column>
 
-                                    <p:column headerText="Billed By" sortBy="#{pi.bill.creater.webUserPerson.name}" filterBy="#{pi.bill.creater.webUserPerson.name}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.bill.creater.webUserPerson.name}" />
+                                    <p:column headerText="Billed By" sortBy="#{pi.billedByName}" filterBy="#{pi.billedByName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{pi.billedByName}" />
                                         <br/>
-                                        <h:panelGroup rendered="#{pi.bill.cancelled}">
+                                        <h:panelGroup rendered="#{pi.cancelled}">
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.bill.cancelled}" value="#{pi.bill.cancelledBill.creater.webUserPerson.name}" />
+                                            <h:outputLabel style="color: red;" rendered="#{pi.cancelled}" value="#{pi.cancelledByName}" />
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.bill.refunded}">
+                                        <h:panelGroup rendered="#{pi.refunded}">
                                             <h:outputLabel style="color: red;" value="Refunded By " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.bill.refunded}" value="#{pi.bill.refundedBill.creater.webUserPerson.name}" />
+                                            <h:outputLabel style="color: red;" rendered="#{pi.refunded}" value="#{pi.refundedByName}" />
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Payment Method" sortBy="#{pi.bill.paymentMethod}" filterBy="#{pi.bill.paymentMethod}" filterMatchMode="contains">
+                                    <p:column headerText="Payment Method" sortBy="#{pi.paymentMethod}" filterBy="#{pi.paymentMethod}" filterMatchMode="contains">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.bill.paymentMethod}" />
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                            <h:outputLabel value="#{pi.paymentMethod}" />
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Discount Scheme" sortBy="#{pi.bill.paymentScheme.name}" filterBy="#{pi.bill.paymentScheme.name}" filterMatchMode="contains">
+                                    <p:column headerText="Discount Scheme" sortBy="#{pi.paymentSchemeName}" filterBy="#{pi.paymentSchemeName}" filterMatchMode="contains">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.bill.paymentScheme.name}" />
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                            <h:outputLabel value="#{pi.paymentSchemeName}" />
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value" sortBy="#{pi.bill.total}" filterBy="#{pi.bill.total}" filterMatchMode="gte">
+                                    <p:column headerText="Gross Value" sortBy="#{pi.grossValue}" filterBy="#{pi.grossValue}" filterMatchMode="gte">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.bill.total}">
+                                            <h:outputLabel value="#{pi.grossValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Discount" sortBy="#{pi.bill.discount}" filterBy="#{pi.bill.discount}" filterMatchMode="gte">
+                                    <p:column headerText="Discount" sortBy="#{pi.discount}" filterBy="#{pi.discount}" filterMatchMode="gte">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.bill.discount}">
+                                            <h:outputLabel value="#{pi.discount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Net Value" sortBy="#{pi.bill.netTotal}" filterBy="#{pi.bill.netTotal}" filterMatchMode="gte">
+                                    <p:column headerText="Net Value" sortBy="#{pi.netValue}" filterBy="#{pi.netValue}" filterMatchMode="gte">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.bill.netTotal}">
+                                            <h:outputLabel value="#{pi.netValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                            <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Doctor" sortBy="#{pi.bill.fromStaff.person.nameWithTitle}" filterBy="#{pi.bill.fromStaff.person.nameWithTitle}" filterMatchMode="contains">
-                                        <p:outputLabel value="#{pi.bill.fromStaff.person.nameWithTitle}" />
+                                    <p:column headerText="Doctor" sortBy="#{pi.doctorNameWithTitle}" filterBy="#{pi.doctorNameWithTitle}" filterMatchMode="contains">
+                                        <p:outputLabel value="#{pi.doctorNameWithTitle}" />
                                     </p:column>
 
                                 </p:dataTable>

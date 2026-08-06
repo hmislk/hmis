@@ -19,7 +19,7 @@
             <p:focus id="selectFocus" for="lstSelect" />
             <p:focus id="detailFocus" for="gpDetail" />
 
-            <p:panel header="Manage Discard Category" >
+            <p:panel header="Manage Issue Category" >
                 <div class="row">
                     <div class="col-5">
                         <p:commandButton id="btnAdd" value="Add"
@@ -49,7 +49,7 @@
                         </p:selectOneListbox>
                     </div>
                     <div class="col-7">
-                        <p:panel header="Discard Category Details">
+                        <p:panel header="Issue Category Details">
                             <h:panelGrid id="gpDetail" columns="2" class="w-100">
                                 <h:outputText id="lblName" value="Name" ></h:outputText>
                                 <p:inputText autocomplete="off" id="txtName" value="#{discardCategoryController.current.name}" class="w-100"></p:inputText>

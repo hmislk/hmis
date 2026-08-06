@@ -94,17 +94,18 @@
 
                             <p:panel header="Bill Item Detail">
                                 <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="b"
+                                             selectionMode="multiple"
                                              rowKey="#{b.id}"
                                              selection="#{inwardServiceRefundController.refundingItems}" >
 
                                     <p:ajax event="rowSelectCheckbox" listener="#{inwardServiceRefundController.calculateRefundTotal()}"
-                                            update=":refundForm:txtTotal" />
+                                            update=":refundForm:txtTotal" process="colSelect dtF" />
                                     <p:ajax event="rowUnselectCheckbox" listener="#{inwardServiceRefundController.calculateRefundTotal()}"
-                                            update=":refundForm:txtTotal" />
+                                            update=":refundForm:txtTotal" process="colSelect dtF" />
                                     <p:ajax event="toggleSelect" listener="#{inwardServiceRefundController.calculateRefundTotal()}"
-                                            update=":refundForm:txtTotal" />
+                                            update=":refundForm:txtTotal" process="colSelect dtF" />
 
-                                    <p:column selectionMode="multiple" style="width: 3em; text-align: center;" disabledSelection="#{b.refunded}" />
+                                    <p:column selectionBox="true" id="colSelect" style="width: 3em; text-align: center;" disabledSelection="#{b.refunded}" />
 
                                     <p:column headerText="Item Name">
                                         <h:outputLabel value="#{b.item.name}"/>

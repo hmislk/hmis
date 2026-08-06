@@ -213,6 +213,8 @@ public class VmppController implements Serializable {
             auditData.put("departmentType", vmpp.getDepartmentType() != null
                     ? vmpp.getDepartmentType().toString() : null);
             auditData.put("descreption", vmpp.getDescreption());
+            auditData.put("dblValue", vmpp.getDblValue());
+            auditData.put("packUnit", vmpp.getPackUnit() != null ? vmpp.getPackUnit().getName() : null);
             auditData.put("vmpId", vmpp.getVmp() != null ? vmpp.getVmp().getId() : null);
             auditData.put("vmpName", vmpp.getVmp() != null ? vmpp.getVmp().getName() : null);
         }
@@ -489,9 +491,10 @@ public class VmppController implements Serializable {
         if (pharmacyVmppListDtos == null) {
             String jpql = "SELECT new com.divudi.core.data.dto.VmppDto("
                     + "a.id, a.name, a.code, "
-                    + "a.retired, a.inactive, v.id, v.name) "
+                    + "a.retired, a.inactive, a.dblValue, pu.name, v.id, v.name) "
                     + "FROM Vmpp a "
                     + "LEFT JOIN a.vmp v "
+                    + "LEFT JOIN a.packUnit pu "
                     + "WHERE a.retired=false AND a.departmentType=:dep ";
 
             Map<String, Object> params = new HashMap<>();
