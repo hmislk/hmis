@@ -78,9 +78,10 @@ SET @record_sql = IF(@bill_table IS NULL,
 );
 PREPARE stmt FROM @record_sql;
 EXECUTE stmt;
+SET @recorded_step1 = ROW_COUNT();
 DEALLOCATE PREPARE stmt;
 
-SELECT ROW_COUNT() AS recorded_step1;
+SELECT @recorded_step1 AS recorded_step1;
 
 -- ── STEP 2: Bill → BilledBill for the recorded GrnPaymentPre rows ────────────
 
@@ -98,9 +99,10 @@ SET @sql = IF(@bill_table IS NULL,
 );
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
+SET @updated_step2 = ROW_COUNT();
 DEALLOCATE PREPARE stmt;
 
-SELECT ROW_COUNT() AS updated_step2;
+SELECT @updated_step2 AS updated_step2;
 
 -- ── VERIFY ───────────────────────────────────────────────────────────────────
 

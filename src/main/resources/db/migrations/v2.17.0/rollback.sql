@@ -43,8 +43,9 @@ SET @sql = IF(@bill_table IS NULL OR @backup_exists = 0,
 );
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
+SET @reverted_step1 = ROW_COUNT();
 DEALLOCATE PREPARE stmt;
 
-SELECT ROW_COUNT() AS reverted_step1;
+SELECT @reverted_step1 AS reverted_step1;
 
 SELECT 'Rollback v2.17.0 completed' AS final_status;
