@@ -17,6 +17,22 @@
                         <p:accordionPanel id="reportsAccordion" class="w-100" activeIndex="#{investigationCategoryController.manageItemIndex}" >
                             <p:ajax process="@this" ></p:ajax>
                             <p:tab title="⭐ Favorites">
+                                <!--
+                                    Each report button below is intentionally duplicated from its
+                                    category tab further down this file (same reportKey, label,
+                                    category, action), gated on isFavorite() instead of always
+                                    rendering. This is NOT rendered generically via
+                                    userFavoriteReportController.getFavorites() + ui:repeat because
+                                    report actions are a mix of real bean-method calls
+                                    (#{reportController.navigateToX()}) and literal outcome strings
+                                    (#{'/reports/...'}) - routing both through one reportKey-keyed
+                                    navigation action would need either a full report-catalog entity
+                                    or dynamic EL method invocation from a stored string, both of
+                                    which were evaluated and rejected (the latter was attempted and
+                                    hit real Mojarra composite-attribute bugs before landing on this
+                                    static-duplicate approach). If you add or rename a report button
+                                    below, update BOTH copies - the reportKey ties them together.
+                                -->
                                 <h:panelGroup id="favoritesPanel" layout="block">
                                     <h:panelGroup layout="block" styleClass="text-muted p-2" rendered="#{empty userFavoriteReportController.favorites}">
                                         <h:outputText value="No favorite reports yet — click the star next to any report to add it here." />

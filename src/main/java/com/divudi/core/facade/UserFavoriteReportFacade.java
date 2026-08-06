@@ -20,7 +20,7 @@ public class UserFavoriteReportFacade extends AbstractFacade<UserFavoriteReport>
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        return em;
     }
 
     public UserFavoriteReportFacade() {
