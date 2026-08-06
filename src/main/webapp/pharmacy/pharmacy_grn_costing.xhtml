@@ -20,7 +20,7 @@
                         <h:outputLabel value="Goods Receive" />
                         <p:commandButton
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                             actionListener="#{searchController.makeListNull()}"
                             class="ui-button-warning"
                             icon="fa fa-arrow-left"
@@ -645,7 +645,7 @@
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                     ajax="false"
-                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-warning"
                                     icon="fa fa-arrow-left"
