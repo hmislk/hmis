@@ -545,6 +545,12 @@ public class InwardProfessionalBillController implements Serializable {
         return suggestions;
     }
 
+    public void onDoctorSelect(AjaxBehaviorEvent event) {
+        if (currentBillFee != null && currentBillFee.getStaff() != null && currentBillFee.getStaff().getSpeciality() != null) {
+            currentBillFee.setSpeciality(currentBillFee.getStaff().getSpeciality());
+        }
+    }
+
     public boolean isToClearBill() {
         return toClearBill;
     }
