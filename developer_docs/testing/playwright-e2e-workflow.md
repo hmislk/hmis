@@ -1553,8 +1553,11 @@ While testing issue #22719 (appointment → admission → deposit conversion), t
     that widget only *computes* a DOB client-side via a JS listener that a
     plain `fill()`/`pressSequentially()` doesn't reliably trigger. Set the
     **Date of Birth** `p:calendar` field directly instead (click → Ctrl+A →
-    type `dd/mm/yyyy` → Escape → Save) and verify `SELECT DOB FROM person` is
-    non-NULL before retrying the admission.
+    type `dd/mm/yyyy` → Escape → Save) and verify
+    `SELECT DOB FROM person WHERE ID = (SELECT PERSON_ID FROM patient WHERE ID = <patientId>)`
+    returns a non-NULL row for the specific patient under test before
+    retrying the admission — an unfiltered `SELECT DOB FROM person` returns
+    every patient in the DB and can't confirm the one that matters.
   - To find *which* config key is blocking an error message with no field
     reference, `grep` the exact error string in
     `src/main/java/com/divudi/bean/inward/AdmissionController.java` to find

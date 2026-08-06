@@ -67,7 +67,7 @@
                                 <div class="text-muted small">Bill Date</div>
                                 <div class="fs-5 fw-bold">
                                     <h:outputText value="#{admissionController.pendingAppointmentConversion.bill.billDate}">
-                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="Asia/Colombo"/>
                                     </h:outputText>
                                 </div>
                             </div>

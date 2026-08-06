@@ -2369,6 +2369,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAppointmentDepositConversion() {
+        if (!webUserController.hasPrivilege("InwardEditPaymentDetails")) {
+            JsfUtil.addErrorMessage("You are not authorized to convert appointment deposits.");
+            return "";
+        }
         if (current == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
@@ -2391,10 +2395,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * user-triggered instead of silent (issue #22719).
      */
     public void convertAppointmentDepositToInwardDeposit() {
+        if (!webUserController.hasPrivilege("InwardEditPaymentDetails")) {
+            JsfUtil.addErrorMessage("You are not authorized to convert appointment deposits.");
+            return;
+        }
         if (pendingAppointmentConversion == null || pendingAppointmentConversion.getBill() == null) {
             JsfUtil.addErrorMessage("No appointment deposit to convert.");
             return;
         }
+        // Re-validate against the current admission and re-check cancellation
+        // status right before acting: current is @SessionScoped and could have
+        // changed in another tab, and this also rejects a second click on an
+        // already-converted deposit (its bill.cancelled is now true, so it no
+        // longer matches).
+        Appointment revalidated = findPendingAppointmentDepositConversion(current);
+        if (revalidated == null || !revalidated.getId().equals(pendingAppointmentConversion.getId())) {
+            JsfUtil.addErrorMessage("This appointment deposit conversion is no longer valid for the current admission. Please retry from the dashboard.");
+            pendingAppointmentConversion = null;
+            return;
+        }
+        pendingAppointmentConversion = revalidated;
         Bill originalBill = pendingAppointmentConversion.getBill();
         double amount = originalBill.getTotal();
 
