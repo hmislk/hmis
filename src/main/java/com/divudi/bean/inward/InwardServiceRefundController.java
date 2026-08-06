@@ -134,6 +134,10 @@ public class InwardServiceRefundController implements Serializable {
             JsfUtil.addErrorMessage("Cannot return services: nursing discharge has been confirmed for this patient.");
             return null;
         }
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return null;
+        }
         inwardSearch.setBill(bill);
         if (!isSupportedForReturn(bill)) {
             JsfUtil.addErrorMessage("Unsupported bill type for inward service return");
