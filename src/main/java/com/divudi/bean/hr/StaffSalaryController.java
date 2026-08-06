@@ -225,6 +225,11 @@ public class StaffSalaryController implements Serializable {
 
         if (tmp.getId() != null) {
             getStaffSalaryComponantFacade().edit(tmp);
+        } else if (getCurrent().getId() != null) {
+            // Parent StaffSalary is already persisted (Save Salary already ran) but this
+            // component isn't yet - create it now instead of silently dropping the edit.
+            tmp.setStaffSalary(getCurrent());
+            getStaffSalaryComponantFacade().create(tmp);
         }
 
         getCurrent().calculateComponentTotal();
@@ -255,6 +260,11 @@ public class StaffSalaryController implements Serializable {
 
             if (tmp.getId() != null) {
                 getStaffSalaryComponantFacade().edit(tmp);
+            } else if (getCurrent().getId() != null) {
+                // Parent StaffSalary is already persisted (Save Salary already ran) but this
+                // component isn't yet - create it now instead of silently dropping the edit.
+                tmp.setStaffSalary(getCurrent());
+                getStaffSalaryComponantFacade().create(tmp);
             }
         }
 
@@ -859,8 +869,10 @@ public class StaffSalaryController implements Serializable {
         ss.setSalaryCycle(salaryCycle);
         ss.setCreater(getSessionController().getLoggedUser());
         ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), paysheetComponentType));
-        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
-        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+        if (ss.getStaffPaysheetComponent() != null) {
+            getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+            getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+        }
 
         return ss;
     }
