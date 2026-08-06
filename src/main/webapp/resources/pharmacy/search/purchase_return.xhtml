@@ -65,13 +65,13 @@
                             <h:panelGroup rendered="#{dto.cancelled}">
                                 <h:outputLabel style="color:red;" value="Cancelled at "/>
                                 <h:outputLabel style="color:red;" rendered="#{dto.cancelled}" value="#{dto.cancelledAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMM yyyy hh mm a"/>
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{dto.refunded}">
                                 <h:outputLabel style="color:red;" value="Refunded at "/>
                                 <h:outputLabel style="color:red;" rendered="#{dto.refunded}" value="#{dto.refundedAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMM yyyy hh mm a"/>
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column>
