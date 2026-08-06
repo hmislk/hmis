@@ -1309,6 +1309,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
             if (checkPaid()) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
@@ -1404,6 +1409,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
             if (checkPaid()) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
@@ -1457,6 +1467,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
@@ -1929,6 +1944,10 @@ public class InwardSearch implements Serializable {
                 JsfUtil.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
                 return;
             }
+            if (getBill().getPatientEncounter() != null && getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
@@ -2085,6 +2104,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 

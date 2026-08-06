@@ -460,6 +460,7 @@ public class InwardProfessionalBillController implements Serializable {
         makeNullList();
         current = null;
         settlePreview = true;
+        surgeryBillController.refreshProEncounterComponents();
         JsfUtil.addSuccessMessage("Professional fee bill saved.");
     }
 

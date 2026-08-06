@@ -2452,7 +2452,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String jpql = "Select f "
                 + "from Family f "
                 + "where f.retired=false "
-                + "and (f.phoneNo = :pn or f.membershipCardNo = :mcn) ";
+                + "and (f.phoneNo = :pn or f.membershipCardNo = :mcn "
+                + "     or exists (select fm from FamilyMember fm "
+                + "                where fm.family=f and fm.retired=false "
+                + "                and (fm.patient.person.mobile = :pn or fm.patient.person.phone = :pn))) ";
         Map params = new HashMap();
         Long mcn;
         try {
@@ -2527,7 +2530,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String jpql = "Select f "
                 + " from Family f "
                 + " where f.retired=false "
-                + " and f.chiefHouseHolder.person.nic like :nic "
+                + " and (f.chiefHouseHolder.person.nic like :nic "
+                + "      or exists (select fm from FamilyMember fm "
+                + "                 where fm.family=f and fm.retired=false "
+                + "                 and fm.patient.person.nic like :nic)) "
                 + " order by f.chiefHouseHolder.person.name";
         Map params = new HashMap();
         params.put("nic", "%" + searchNic.trim().toUpperCase() + "%");
