@@ -516,6 +516,11 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             JsfUtil.addErrorMessage("Select the destination pharmacy department.");
             return;
         }
+        if (selectedReceiveBill.getPatientEncounter() != null
+                && selectedReceiveBill.getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return;
+        }
 
         List<BillItem> itemsToReturn = new ArrayList<>();
         for (ReturnLine line : getReturnLines()) {
