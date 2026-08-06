@@ -41,75 +41,71 @@
 
             <h:panelGroup id="gpBill">
                 <div class="pharma-search-wrapper">
-                    <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill">
+                    <p:dataTable rowIndexVar="i" id="tblBills" value="#{pharmacyBillSearch.purchaseReturnSearchDtos}" var="dto"
+                                 paginator="true" rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="10,20,50,100">
 
                         <p:column headerText="Return Note No">
-                            <h:commandLink action="pharmacy_reprint_direct_purchase_return?faces-redirect=true" value="#{bill.deptId}">
-                                <h:outputLabel/>
-                                <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                            </h:commandLink>
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToDirectPurchaseReturnById(dto.id)}" value="#{dto.deptId}"/>
                         </p:column>
 
                         <p:column headerText="Purchase No">
-                            <h:commandLink action="pharmacy_reprint_purchase?faces-redirect=true" value="#{bill.referenceBill.deptId}">
-                                <h:outputLabel/>
-                                <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>
-                            </h:commandLink>
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToPurchaseById(dto.id)}" value="#{dto.referenceBillDeptId}"/>
                         </p:column>
 
                         <p:column headerText="Supplier Name">
-                            <h:outputLabel value="#{bill.toInstitution.name}"/>
+                            <h:outputLabel value="#{dto.toInstitutionName}"/>
                         </p:column>
 
                         <p:column headerText="Billed At">
-                            <h:outputLabel value="#{bill.createdAt}">
+                            <h:outputLabel value="#{dto.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputLabel>
-                            <h:panelGroup rendered="#{bill.cancelled}">
+                            <h:panelGroup rendered="#{dto.cancelled}">
                                 <h:outputLabel style="color:red;" value="Cancelled at "/>
-                                <h:outputLabel style="color:red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}">
+                                <h:outputLabel style="color:red;" rendered="#{dto.cancelled}" value="#{dto.cancelledAt}">
                                     <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{bill.refunded}">
+                            <h:panelGroup rendered="#{dto.refunded}">
                                 <h:outputLabel style="color:red;" value="Refunded at "/>
-                                <h:outputLabel style="color:red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}">
+                                <h:outputLabel style="color:red;" rendered="#{dto.refunded}" value="#{dto.refundedAt}">
                                     <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column>
 
                         <p:column headerText="Billed By">
-                            <h:outputLabel value="#{bill.creater.webUserPerson.name}"/>
-                            <h:panelGroup rendered="#{bill.cancelled}">
+                            <h:outputLabel value="#{dto.creatorName}"/>
+                            <h:panelGroup rendered="#{dto.cancelled}">
                                 <h:outputLabel style="color:red;" value="Cancelled By "/>
-                                <h:outputLabel style="color:red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}"/>
+                                <h:outputLabel style="color:red;" rendered="#{dto.cancelled}" value="#{dto.cancelledBy}"/>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{bill.refunded}">
+                            <h:panelGroup rendered="#{dto.refunded}">
                                 <h:outputLabel style="color:red;" value="Refunded By "/>
-                                <h:outputLabel style="color:red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}"/>
+                                <h:outputLabel style="color:red;" rendered="#{dto.refunded}" value="#{dto.refundedBy}"/>
                             </h:panelGroup>
                         </p:column>
 
                         <p:column headerText="Payment Method">
-                            <h:outputLabel value="#{bill.paymentMethod}"/>
+                            <h:outputLabel value="#{dto.paymentMethod}"/>
                         </p:column>
 
                         <p:column headerText="Net Value" style="text-align:right;">
-                            <h:outputLabel value="#{bill.netTotal}">
+                            <h:outputLabel value="#{dto.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Sale Value" style="text-align:right;">
-                            <h:outputLabel value="#{bill.saleValue}">
+                            <h:outputLabel value="#{dto.saleValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Comments">
-                            <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}"/>
-                            <h:outputLabel rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}"/>
+                            <h:outputLabel value="#{dto.cancelRefundComments}"/>
                         </p:column>
 
                     </p:dataTable>

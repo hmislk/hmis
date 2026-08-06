@@ -35,48 +35,48 @@
             </h:panelGrid>
 
             <div class="pharma-search-wrapper">
-                <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill">
+                <p:dataTable rowIndexVar="i" id="tblBills" value="#{pharmacyBillSearch.transferReceiveSearchDtos}" var="dto"
+                             paginator="true" rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100">
 
                     <p:column headerText="Receive No">
-                        <h:outputLabel value="#{bill.insId}"/>
+                        <h:outputLabel value="#{dto.insId}"/>
                     </p:column>
 
                     <p:column headerText="Received By">
-                        <h:outputLabel value="#{bill.creater.webUserPerson.name}"/>
-                        <h:panelGroup rendered="#{bill.cancelled}">
+                        <h:outputLabel value="#{dto.createrName}"/>
+                        <h:panelGroup rendered="#{dto.cancelled}">
                             <h:outputLabel style="color:red;" value="Cancelled By "/>
-                            <h:outputLabel style="color:red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}"/>
+                            <h:outputLabel style="color:red;" rendered="#{dto.cancelled}" value="#{dto.cancelledByName}"/>
                         </h:panelGroup>
                     </p:column>
 
                     <p:column headerText="Received At">
-                        <h:outputLabel value="#{bill.createdAt}"/>
-                        <h:panelGroup rendered="#{bill.cancelled}">
+                        <h:outputLabel value="#{dto.createdAt}"/>
+                        <h:panelGroup rendered="#{dto.cancelled}">
                             <h:outputLabel style="color:red;" value="Cancelled at "/>
-                            <h:outputLabel style="color:red;" rendered="#{bill.cancelled}"
-                                           value="#{bill.cancelledBill.createdAt}">
+                            <h:outputLabel style="color:red;" rendered="#{dto.cancelled}"
+                                           value="#{dto.cancelledAt}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
                             </h:outputLabel>
                         </h:panelGroup>
                     </p:column>
 
                     <p:column headerText="Net Value" style="text-align:right;">
-                        <h:outputLabel value="#{bill.netTotal}">
+                        <h:outputLabel value="#{dto.netTotal}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 
                     <p:column headerText="Comments">
-                        <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}"/>
-                        <h:outputLabel rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}"/>
+                        <h:outputLabel value="#{dto.comments}"/>
                     </p:column>
 
                     <!-- Actions (last column, not exported) -->
                     <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
                         <p:commandButton ajax="false" value="View Bill" styleClass="ui-button-info ui-button-sm"
-                                         action="pharmacy_reprint_transfer_receive?faces-redirect=true">
-                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{bill}"/>
-                        </p:commandButton>
+                                         action="#{pharmacyBillSearch.navigateToTransferReceiveReprintById(dto.billId)}"/>
                     </p:column>
 
                 </p:dataTable>

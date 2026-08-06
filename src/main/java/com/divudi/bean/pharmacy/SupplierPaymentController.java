@@ -3253,6 +3253,34 @@ public class SupplierPaymentController implements Serializable {
         this.billFacade = billFacade;
     }
 
+    /**
+     * Id-based navigation to the GRN dealer payment print/preview page (issue
+     * #20523). Fetches the bill fresh (with items and fees) by id so callers
+     * driven by lightweight DTO search rows (which do not carry the full
+     * entity) can still navigate to {@code /dealerPayment/bill_dealor_all}
+     * exactly as the old entity-bound {@code f:setPropertyActionListener}
+     * wiring did.
+     *
+     * @param billId the id of the GRN payment bill to preview
+     * @return the navigation outcome, or {@code null} if the bill could not
+     * be found
+     */
+    public String navigateToDealerPaymentBillById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        setCurrent(tb);
+        setBillItems(tb.getBillItems());
+        setPrintPreview(true);
+        return "/dealerPayment/bill_dealor_all?faces-redirect=true";
+    }
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
