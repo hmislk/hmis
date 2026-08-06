@@ -3198,6 +3198,18 @@ public class BhtSummeryController implements Serializable {
         return false;
     }
 
+    private boolean hasAnyUncheckedInwardBills() {
+        return getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)
+                || getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.StoreBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.StoreBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardOutSideBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardPaymentBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.InwardPaymentBill);
+    }
+
     public String toSettle() {
 
         if (getPatientEncounter() == null) {
@@ -3224,10 +3236,18 @@ public class BhtSummeryController implements Serializable {
         System.out.println("Option = " + configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge"));
 
         System.out.println("Starting Bills Checking Process.... ");
-        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission && !getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
-            System.out.println("Checking.... ---> ");
-            if (checkBill()) {
-                return "";
+        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
+            if (!getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
+                System.out.println("Checking.... ---> ");
+                if (checkBill()) {
+                    return "";
+                }
+            } else if (!configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")
+                    && hasAnyUncheckedInwardBills()) {
+                JsfUtil.addWarningMessage("Settling with unchecked Inward Service / Professional / Pharmacy / Store / Payment bills. "
+                        + "Proceeding because you hold the 'Inward Bill Settle Without Check' privilege.");
+            } else {
+                System.out.println("Ignore Checking.... ---> ");
             }
         } else {
             System.out.println("Ignore Checking.... ---> ");
