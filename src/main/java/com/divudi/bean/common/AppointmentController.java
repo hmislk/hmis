@@ -900,6 +900,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     private Bill saveCacelBill(Bill originalBill) {
+        return saveCacelBill(originalBill, comment);
+    }
+
+    private Bill saveCacelBill(Bill originalBill, String comments) {
         Bill newCancelBill = new Bill();
 
         newCancelBill.copy(originalBill);
@@ -915,7 +919,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         newCancelBill.setReferenceBill(originalBill);
         newCancelBill.setBillDate(new Date());
         newCancelBill.setBillTime(new Date());
-        newCancelBill.setComments(comment);
+        newCancelBill.setComments(comments);
 
         newCancelBill.setCreatedAt(new Date());
         newCancelBill.setCreater(sessionController.getLoggedUser());
@@ -947,10 +951,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
      * other controllers with an explicit bill/appointment instead of relying
      * on this bean's page-scoped currentBill/currentAppointment/comment
      * state. Used by the Inward appointment-to-admission deposit conversion
-     * flow (issue #22719).
+     * flow (issue #22719). Unlike {@link #cancelAppointment()}, this passes
+     * {@code reason} straight through as the cancel bill's comment instead of
+     * reading the page-scoped {@code comment} field, which may be stale or
+     * unrelated when this bean's session is reused across pages.
      */
     public Bill cancelAppointmentBillForConversion(Bill originalBill, Appointment apt, String reason) {
-        Bill cancelBill = saveCacelBill(originalBill);
+        Bill cancelBill = saveCacelBill(originalBill, reason);
         cancelAppointment(cancelBill, apt, reason);
         createCancelPayments(originalBill, cancelBill);
         return cancelBill;
