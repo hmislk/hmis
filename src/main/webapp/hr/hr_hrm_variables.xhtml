@@ -25,82 +25,121 @@
       <h:form id="taxForm">
         <p:growl id="growl" />
         <p:panel header="Manage HRM Variable">
-          <div class="row">
-            <div class="col-4">
-              <p:panel id="payeeMainPanel">
-                <f:facet name="header">
-                  <div class="d-flex justify-content-between">
-                    <h:outputLabel value="Payee" />
-                    <h:panelGroup
-                      id="payeeButtons"
-                      layout="block"
-                      class="d-flex justify-content-end gap-2"
-                    >
-                      <p:commandButton
-                        id="btnAdd"
-                        class="ui-button-success"
-                        icon="#{hrmVariablesController.currentPayeeTaxRange.id ne null ? 'fas fa-save' : 'fas fa-plus'}"
-                        process="@this payeeMainPanel"
-                        update="payeeMainPanel :taxForm:gpDetail2 :taxForm:growl"
-                        value="#{hrmVariablesController.currentPayeeTaxRange.id ne null ? 'Update' : 'Add'}"
-                        action="#{hrmVariablesController.addTaxRange}"
-                      />
+          <p:tabView id="tabView" style="min-height: 300px">
+            <p:tab title="Payee">
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 1.25rem;
+                  align-items: start;
+                "
+              >
+                <p:panel id="gpDetail2">
+                  <f:facet name="header">
+                    <h:outputText value="Pay Details" />
+                  </f:facet>
+                  <p:dataTable
+                    id="tblTaxRanges"
+                    value="#{hrmVariablesController.activeTaxRanges}"
+                    var="tx"
+                    selectionMode="single"
+                    selection="#{hrmVariablesController.currentPayeeTaxRange}"
+                    rowKey="#{tx.id ne null ? tx.id : tx.hashCode()}"
+                  >
+                    <p:ajax
+                      event="rowSelect"
+                      listener="#{hrmVariablesController.onRowSelect}"
+                      update=":taxForm:tabView:payeeMainPanel"
+                    />
 
-                      <p:commandButton
-                        id="btnDelete"
-                        class="ui-button-danger"
-                        icon="fas fa-trash"
-                        process="btnDelete"
-                        update="payeeMainPanel :taxForm:gpDetail2 :taxForm:growl"
-                        value="Delete"
-                        onclick="
-                          if (
-                            !confirm(
-                              'Are you sure you want to delete this record?',
+                    <p:column headerText="From">
+                      <h:outputLabel value="#{tx.fromSalary}" />
+                    </p:column>
+                    <p:column headerText="To">
+                      <h:outputLabel value="#{tx.toSalary}" />
+                    </p:column>
+                    <p:column headerText="Rate">
+                      <h:outputLabel value="#{tx.taxRate}" />
+                    </p:column>
+                  </p:dataTable>
+                </p:panel>
+                <p:panel id="payeeMainPanel">
+                  <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                      <h:outputLabel value="Payee" />
+                      <h:panelGroup
+                        id="payeeButtons"
+                        layout="block"
+                        class="d-flex justify-content-end gap-2"
+                      >
+                        <p:commandButton
+                          id="btnAdd"
+                          class="ui-button-success"
+                          icon="#{hrmVariablesController.currentPayeeTaxRange.id ne null ? 'fas fa-save' : 'fas fa-plus'}"
+                          process="@this payeeMainPanel"
+                          update="payeeMainPanel :taxForm:tabView:gpDetail2 :taxForm:growl"
+                          value="#{hrmVariablesController.currentPayeeTaxRange.id ne null ? 'Update' : 'Add'}"
+                          action="#{hrmVariablesController.addTaxRange}"
+                        />
+
+                        <p:commandButton
+                          id="btnDelete"
+                          class="ui-button-danger"
+                          icon="fas fa-trash"
+                          process="btnDelete"
+                          update="payeeMainPanel :taxForm:tabView:gpDetail2 :taxForm:growl"
+                          value="Delete"
+                          onclick="
+                            if (
+                              !confirm(
+                                'Are you sure you want to delete this record?',
+                              )
                             )
-                          )
-                            return false;
-                        "
-                        action="#{hrmVariablesController.deleteTaxRange}"
-                        rendered="#{hrmVariablesController.currentPayeeTaxRange.id ne null}"
-                      />
+                              return false;
+                          "
+                          action="#{hrmVariablesController.deleteTaxRange}"
+                          rendered="#{hrmVariablesController.currentPayeeTaxRange.id ne null}"
+                        />
 
-                      <p:commandButton
-                        id="btnCancelEdit"
-                        class="ui-button-secondary"
-                        icon="fas fa-times"
-                        process="@this"
-                        update="payeeMainPanel"
-                        value="Clear"
-                        action="#{hrmVariablesController.clearSelectedTaxRange}"
-                        rendered="#{hrmVariablesController.currentPayeeTaxRange.id ne null}"
+                        <p:commandButton
+                          id="btnCancelEdit"
+                          class="ui-button-secondary"
+                          icon="fas fa-times"
+                          process="@this"
+                          update="payeeMainPanel"
+                          value="Clear"
+                          action="#{hrmVariablesController.clearSelectedTaxRange}"
+                          rendered="#{hrmVariablesController.currentPayeeTaxRange.id ne null}"
+                        />
+                      </h:panelGroup>
+                    </div>
+                  </f:facet>
+                  <h:panelGroup id="payeeDetails" layout="block">
+                    <h:panelGrid columns="2">
+                      <h:outputText value="From Salary"></h:outputText>
+                      <p:inputText
+                        autocomplete="off"
+                        value="#{hrmVariablesController.currentPayeeTaxRange.fromSalary}"
                       />
-                    </h:panelGroup>
-                  </div>
-                </f:facet>
-                <h:panelGroup id="payeeDetails" layout="block">
-                  <h:panelGrid columns="2">
-                    <h:outputText value="From Salary"></h:outputText>
-                    <p:inputText
-                      autocomplete="off"
-                      value="#{hrmVariablesController.currentPayeeTaxRange.fromSalary}"
-                    />
-                    <h:outputText value="To Salary"></h:outputText>
-                    <p:inputText
-                      autocomplete="off"
-                      value="#{hrmVariablesController.currentPayeeTaxRange.toSalary}"
-                    />
-                    <h:outputText value="Tax Rate"></h:outputText>
-                    <p:inputText
-                      autocomplete="off"
-                      value="#{hrmVariablesController.currentPayeeTaxRange.taxRate}"
-                    />
-                  </h:panelGrid>
-                </h:panelGroup>
-              </p:panel>
-            </div>
-            <div class="col-4">
-              <p:panel>
+                      <h:outputText value="To Salary"></h:outputText>
+                      <p:inputText
+                        autocomplete="off"
+                        value="#{hrmVariablesController.currentPayeeTaxRange.toSalary}"
+                      />
+                      <h:outputText value="Tax Rate"></h:outputText>
+                      <p:inputText
+                        autocomplete="off"
+                        value="#{hrmVariablesController.currentPayeeTaxRange.taxRate}"
+                      />
+                    </h:panelGrid>
+                  </h:panelGroup>
+                </p:panel>
+              </div>
+            </p:tab>
+
+            <p:tab title="EPF/ETF">
+              <p:panel style="max-width: 480px">
                 <f:facet name="header">
                   <h:outputText value="Details" />
                 </f:facet>
@@ -132,44 +171,13 @@
                   id="btnSave"
                   class="ui-button-warning mt-4 w-25"
                   process="btnSave gpDetail"
+                  update="growl gpDetail"
                   value="Save"
                   action="#{hrmVariablesController.saveSelected()}"
-                >
-                </p:commandButton>
+                />
               </p:panel>
-            </div>
-            <div class="col-4">
-              <p:panel id="gpDetail2">
-                <f:facet name="header">
-                  <h:outputText value="Pay Details" />
-                </f:facet>
-                <p:dataTable
-                  id="tblTaxRanges"
-                  value="#{hrmVariablesController.activeTaxRanges}"
-                  var="tx"
-                  selectionMode="single"
-                  selection="#{hrmVariablesController.currentPayeeTaxRange}"
-                  rowKey="#{tx.id ne null ? tx.id : tx.hashCode()}"
-                >
-                  <p:ajax
-                    event="rowSelect"
-                    listener="#{hrmVariablesController.onRowSelect}"
-                    update=":taxForm:payeeMainPanel"
-                  />
-
-                  <p:column headerText="From">
-                    <h:outputLabel value="#{tx.fromSalary}" />
-                  </p:column>
-                  <p:column headerText="To">
-                    <h:outputLabel value="#{tx.toSalary}" />
-                  </p:column>
-                  <p:column headerText="Rate">
-                    <h:outputLabel value="#{tx.taxRate}" />
-                  </p:column>
-                </p:dataTable>
-              </p:panel>
-            </div>
-          </div>
+            </p:tab>
+          </p:tabView>
         </p:panel>
       </h:form>
     </h:panelGroup>
