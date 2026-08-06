@@ -1,0 +1,14 @@
+{
+  "version": "v2.17.0",
+  "description": "Fix DTYPE for GRN Payment bills mis-saved as base Bill class",
+  "issue": "#22717 — GRN Payment listing never shows data, bills persisted as base Bill class",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-08-06",
+  "type": "data",
+  "tables_affected": ["bill"],
+  "data_changes": true,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "Backfills DTYPE='BilledBill' on historical BILLTYPE='GrnPaymentPre' rows that were saved with DTYPE='Bill' due to SupplierPaymentController.settleApprovedSupplierPayment() instantiating the base Bill class instead of BilledBill. These rows were silently excluded from every GRN Payment listing query. Only touches rows where DTYPE='Bill' — safe to re-run.",
+  "rollback": "rollback.sql"
+}
