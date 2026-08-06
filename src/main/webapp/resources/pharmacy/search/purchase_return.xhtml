@@ -51,7 +51,7 @@
                         </p:column>
 
                         <p:column headerText="Purchase No">
-                            <h:commandLink action="#{pharmacyBillSearch.navigateToPurchaseById(dto.id)}" value="#{dto.referenceBillDeptId}"/>
+                            <h:commandLink action="#{pharmacyBillSearch.navigateToPurchaseById(dto.referenceBillId)}" value="#{dto.referenceBillDeptId}"/>
                         </p:column>
 
                         <p:column headerText="Supplier Name">
@@ -60,18 +60,18 @@
 
                         <p:column headerText="Billed At">
                             <h:outputLabel value="#{dto.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputLabel>
                             <h:panelGroup rendered="#{dto.cancelled}">
                                 <h:outputLabel style="color:red;" value="Cancelled at "/>
                                 <h:outputLabel style="color:red;" rendered="#{dto.cancelled}" value="#{dto.cancelledAt}">
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMM yyyy hh mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{dto.refunded}">
                                 <h:outputLabel style="color:red;" value="Refunded at "/>
                                 <h:outputLabel style="color:red;" rendered="#{dto.refunded}" value="#{dto.refundedAt}">
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMM yyyy hh mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column>

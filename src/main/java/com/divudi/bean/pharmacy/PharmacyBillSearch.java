@@ -6217,7 +6217,7 @@ public class PharmacyBillSearch implements Serializable {
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getDepartment());
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseReturnSearchDTO("
-                + "b.id, COALESCE(b.deptId, ''), COALESCE(refBill.deptId, ''), "
+                + "b.id, refBill.id, COALESCE(b.deptId, ''), COALESCE(refBill.deptId, ''), "
                 + "COALESCE(b.toInstitution.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
                 + "b.cancelled, cb.createdAt, COALESCE(cancellerPerson.name, ''), "
                 + "b.refunded, rb.createdAt, COALESCE(refunderPerson.name, ''), "

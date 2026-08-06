@@ -13,6 +13,7 @@ public class PharmacyPurchaseReturnSearchDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
+    private Long referenceBillId;
     private String deptId;
     private String referenceBillDeptId;
     private String toInstitutionName;
@@ -34,6 +35,7 @@ public class PharmacyPurchaseReturnSearchDTO implements Serializable {
 
     public PharmacyPurchaseReturnSearchDTO(
             Long id,
+            Long referenceBillId,
             String deptId,
             String referenceBillDeptId,
             String toInstitutionName,
@@ -50,6 +52,7 @@ public class PharmacyPurchaseReturnSearchDTO implements Serializable {
             Double netTotal,
             Double saleValue) {
         this.id = id;
+        this.referenceBillId = referenceBillId;
         this.deptId = deptId;
         this.referenceBillDeptId = referenceBillDeptId;
         this.toInstitutionName = toInstitutionName;
@@ -69,6 +72,9 @@ public class PharmacyPurchaseReturnSearchDTO implements Serializable {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getReferenceBillId() { return referenceBillId; }
+    public void setReferenceBillId(Long referenceBillId) { this.referenceBillId = referenceBillId; }
 
     public String getDeptId() { return deptId; }
     public void setDeptId(String deptId) { this.deptId = deptId; }

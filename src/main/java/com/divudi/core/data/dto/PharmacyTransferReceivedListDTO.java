@@ -67,15 +67,9 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
             Date createdAt, Boolean cancelled, String createrName, Double netTotal,
             String cancelledByName, Date cancelledAt,
             String fromDepartmentName, String staffName, String comments) {
-        this.billId = billId;
-        this.deptId = deptId;
+        this(billId, null, deptId, createdAt, cancelled, createrName, netTotal,
+                cancelledByName, cancelledAt);
         this.insId = insId;
-        this.createdAt = createdAt;
-        this.cancelled = cancelled != null ? cancelled : false;
-        this.createrName = createrName;
-        this.netTotal = netTotal != null ? netTotal : 0.0;
-        this.cancelledByName = cancelledByName;
-        this.cancelledAt = cancelledAt;
         this.fromDepartmentName = fromDepartmentName;
         this.staffName = staffName;
         this.comments = comments;

@@ -53,12 +53,14 @@
                     </p:column>
 
                     <p:column headerText="Received At">
-                        <h:outputLabel value="#{dto.createdAt}"/>
+                        <h:outputLabel value="#{dto.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
                         <h:panelGroup rendered="#{dto.cancelled}">
                             <h:outputLabel style="color:red;" value="Cancelled at "/>
                             <h:outputLabel style="color:red;" rendered="#{dto.cancelled}"
                                            value="#{dto.cancelledAt}">
-                                <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMM yyyy hh mm a"/>
                             </h:outputLabel>
                         </h:panelGroup>
                     </p:column>
