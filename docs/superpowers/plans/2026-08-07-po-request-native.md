@@ -196,7 +196,6 @@ git commit -m "feat(pharmacy): add PurchaseOrderRequestLineData DTO for native P
 
 **Files:**
 - Create: `src/main/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlService.java`
-- Test: `src/test/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlServiceTest.java`
 
 **Interfaces:**
 - Consumes: `PurchaseOrderRequestLineData` (Task 1)
@@ -207,45 +206,25 @@ git commit -m "feat(pharmacy): add PurchaseOrderRequestLineData DTO for native P
   - `boolean isBillChecked(long billId)` — used by controller guards
   - Later tasks (3, 4) call these exact method names/signatures.
 
-This test uses an in-memory/test persistence unit exactly like existing native
-service tests in this codebase — check `src/test/java/com/divudi/service/pharmacy/`
-for the harness pattern already used by `RetailSaleNativeSqlService`'s tests and
-follow the same `@Before`/entity-manager setup before writing this test, since this
-plan cannot assume a specific harness without seeing it.
+**Codebase testing convention for native SQL services (verified against
+`BhtIssueRequestNativeSqlServiceTest`/`BhtIssueRequestNativeSqlService`, the only
+existing test precedent for a `@Stateless` native SQL service in this package):
+there is no EntityManager/database test harness for these services anywhere in
+the codebase. Only package-private, EntityManager-free pure logic gets a JUnit
+test. Methods that call `em.createNativeQuery(...)` are NOT unit tested — they
+are verified via Task 11's Playwright + manual DB-query pass instead.** Do not
+invent a test container or in-memory persistence unit; none exists here.
 
-- [ ] **Step 1: Write the failing test**
+This task's `createDraftBill`/`updateDraftBillHeader`/`isBillChecked` all touch
+`em` directly and have no extractable pure logic (no branching on plain
+values) — per the convention above, they get no JUnit test in this task. The
+package-private `resolveTable()` table-name-resolution helper also touches
+`em` and is not unit tested for the same reason (matches
+`BhtIssueRequestNativeSqlService`, whose own `resolveTable`-equivalent has no
+test — only its return-nothing pure helpers like `str`/`toBool`/`toDate` do).
 
-```java
-package com.divudi.service.pharmacy;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-public class PurchaseOrderRequestNativeSqlServiceTest {
-
-    // Follow the same EntityManager/test-container setup pattern as
-    // RetailSaleNativeSqlServiceTest in this package — copy its @Before,
-    // persistence-unit name, and teardown exactly, then adapt the body below.
-
-    @Test
-    public void createDraftBillPersistsPharmacyOrderPreAtomic() {
-        PurchaseOrderRequestNativeSqlService service = new PurchaseOrderRequestNativeSqlService();
-        // inject test EntityManager per harness pattern
-
-        long billId = service.createDraftBill(1L, 1L, 1L, "POR-0001", "POR-0001");
-
-        assertTrue(billId > 0);
-        assertTrue(service.isBillChecked(billId) == false);
-    }
-}
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `mvn -q -Dtest=PurchaseOrderRequestNativeSqlServiceTest test`
-Expected: FAIL — compile error, class does not exist.
-
-- [ ] **Step 3: Write minimal implementation**
+- [ ] **Step 1: Write the implementation directly (no test-first step — see
+  convention note above; this task has no pure logic to isolate)**
 
 ```java
 package com.divudi.service.pharmacy;
@@ -365,15 +344,15 @@ public class PurchaseOrderRequestNativeSqlService {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 2: Compile check**
 
-Run: `mvn -q -Dtest=PurchaseOrderRequestNativeSqlServiceTest test`
-Expected: PASS
+Run: `mvn -q compile`
+Expected: BUILD SUCCESS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlService.java src/test/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlServiceTest.java
+git add src/main/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlService.java
 git commit -m "feat(pharmacy): native SQL draft-bill create/update for PO Request"
 ```
 
@@ -383,52 +362,121 @@ git commit -m "feat(pharmacy): native SQL draft-bill create/update for PO Reques
 
 **Files:**
 - Modify: `src/main/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlService.java`
-- Modify: `src/test/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlServiceTest.java`
+- Create: `src/test/java/com/divudi/service/pharmacy/PurchaseOrderRequestNativeSqlServiceTest.java`
 
 **Interfaces:**
-- Consumes: `PurchaseOrderRequestLineData` (Task 1), `createDraftBill`/`billItemTable`/`pharmBillItemTable` (Task 2)
-- Produces: `long saveLine(long billId, PurchaseOrderRequestLineData line)` — inserts or
-  updates `billitem` + `pharmaceuticalbillitem` natively, persists/merges
-  `BillItemFinanceDetails` via JPA, returns the `billitem` id. Task 4 (finalize) and
-  the controller (Task 5) call this for every line on every save.
+- Consumes: `PurchaseOrderRequestLineData` (Task 1), `billItemTable`/`pharmBillItemTable` (Task 2)
+- Produces:
+  - `long saveLine(long billId, PurchaseOrderRequestLineData line)` — inserts or
+    updates `billitem` + `pharmaceuticalbillitem` natively, persists/merges
+    `BillItemFinanceDetails` via JPA, returns the `billitem` id. Task 4 (finalize) and
+    the controller (Task 5) call this for every line on every save.
+  - `LineValues computeLineValues(PurchaseOrderRequestLineData line)` — package-private,
+    pure (no `em` access), extracts the calculation math from legacy
+    `calculateLineValues()` into a testable unit. `LineValues` is a package-private
+    static nested class on the service exposing (all `BigDecimal`, all
+    package-private final fields with a package-private constructor, matching
+    `BhtIssueRequestNativeSqlServiceTest`'s convention of testing package-private
+    logic directly, same package, no getters needed): `qty, freeQty, purchaseRate,
+    retailRate, unitsPerPack, grossValue, netValue, purchaseValue, retailValue,
+    netRate, pbiQty (double), pbiFreeQty (double), pbiPurchaseRate (double),
+    pbiRetailRate (double)`. `saveLine()` calls `computeLineValues()` first, then
+    uses the returned values for both the native SQL and the BIFD JPA write —
+    no duplicated math between the two.
 
-Mirrors the calculation in legacy `calculateLineValues()` (read §2 of the design
-spec) but the persistence is native for `billitem`/`pharmaceuticalbillitem`, JPA for
-`BillItemFinanceDetails`.
+**Codebase testing convention (see Task 2's note):** only pure logic gets a
+JUnit test. `saveLine()` itself touches `em` and is not unit tested — verified
+via Task 11's Playwright + DB pass. `computeLineValues()` has no `em` access and
+mirrors legacy `calculateLineValues()`'s branching (AMPP vs non-AMPP, zero-qty
+netRate guard) — it gets a real test here, following
+`BhtIssueRequestNativeSqlServiceTest`'s pattern of testing package-private pure
+methods directly via `new PurchaseOrderRequestNativeSqlService()` with no mocks.
 
 - [ ] **Step 1: Write the failing test**
 
 ```java
-@Test
-public void saveLineInsertsBillItemAndPharmaceuticalBillItem() {
-    PurchaseOrderRequestNativeSqlService service = new PurchaseOrderRequestNativeSqlService();
-    // inject test EntityManager per harness pattern
-    long billId = service.createDraftBill(1L, 1L, 1L, "POR-0002", "POR-0002");
+package com.divudi.service.pharmacy;
 
-    PurchaseOrderRequestLineData line = new PurchaseOrderRequestLineData();
-    line.setItemId(500L); // seed a test Item fixture with id 500 per harness convention
-    line.setAmpp(false);
-    line.setQuantity(new java.math.BigDecimal("10"));
-    line.setFreeQuantity(new java.math.BigDecimal("1"));
-    line.setPurchaseRate(new java.math.BigDecimal("25.50"));
-    line.setRetailRate(new java.math.BigDecimal("30.00"));
-    line.setUnitsPerPack(java.math.BigDecimal.ONE);
-    line.setSerialNo(0);
-    line.setCreaterId(1L);
+import com.divudi.core.data.dto.pharmacy.PurchaseOrderRequestLineData;
+import org.junit.jupiter.api.Test;
 
-    long billItemId = service.saveLine(billId, line);
+import java.math.BigDecimal;
 
-    assertTrue(billItemId > 0);
-    // Follow-up assertion: read back via native query and confirm
-    // netValue = 255.00 (25.50 * 10), matching calculateLineValues()'s
-    // "purchase rate * qty" rule for non-AMPP items.
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class PurchaseOrderRequestNativeSqlServiceTest {
+
+    private final PurchaseOrderRequestNativeSqlService service = new PurchaseOrderRequestNativeSqlService();
+
+    @Test
+    void computeLineValues_nonAmpp_purchaseRateTimesQtyIsGrossAndNetValue() {
+        PurchaseOrderRequestLineData line = new PurchaseOrderRequestLineData();
+        line.setAmpp(false);
+        line.setQuantity(new BigDecimal("10"));
+        line.setFreeQuantity(new BigDecimal("1"));
+        line.setPurchaseRate(new BigDecimal("25.50"));
+        line.setRetailRate(new BigDecimal("30.00"));
+        line.setUnitsPerPack(BigDecimal.ONE);
+
+        PurchaseOrderRequestNativeSqlService.LineValues v = service.computeLineValues(line);
+
+        assertEquals(new BigDecimal("255.00"), v.grossValue.setScale(2));
+        assertEquals(new BigDecimal("255.00"), v.netValue.setScale(2));
+        assertEquals(new BigDecimal("280.50"), v.purchaseValue.setScale(2)); // 25.50 * (10+1)
+        assertEquals(new BigDecimal("330.00"), v.retailValue.setScale(2));  // 30.00 * (10+1)
+        assertEquals(25.50, v.pbiPurchaseRate, 0.0001); // non-AMPP: no pack conversion
+        assertEquals(10.0, v.pbiQty, 0.0001);
+    }
+
+    @Test
+    void computeLineValues_ampp_convertsQtyAndRateByUnitsPerPack() {
+        PurchaseOrderRequestLineData line = new PurchaseOrderRequestLineData();
+        line.setAmpp(true);
+        line.setQuantity(new BigDecimal("2")); // 2 packs
+        line.setFreeQuantity(BigDecimal.ZERO);
+        line.setPurchaseRate(new BigDecimal("100")); // rate per pack
+        line.setRetailRate(new BigDecimal("120"));
+        line.setUnitsPerPack(new BigDecimal("10")); // 10 units per pack
+
+        PurchaseOrderRequestNativeSqlService.LineValues v = service.computeLineValues(line);
+
+        assertEquals(20.0, v.pbiQty, 0.0001); // 2 packs * 10 units/pack
+        assertEquals(10.0, v.pbiPurchaseRate, 0.0001); // 100 / 10 units per pack
+        assertEquals(12.0, v.pbiRetailRate, 0.0001); // 120 / 10
+    }
+
+    @Test
+    void computeLineValues_zeroQuantity_netRateIsZeroNotDivideByZero() {
+        PurchaseOrderRequestLineData line = new PurchaseOrderRequestLineData();
+        line.setAmpp(false);
+        line.setQuantity(BigDecimal.ZERO);
+        line.setFreeQuantity(BigDecimal.ZERO);
+        line.setPurchaseRate(new BigDecimal("50"));
+        line.setRetailRate(new BigDecimal("60"));
+        line.setUnitsPerPack(BigDecimal.ONE);
+
+        PurchaseOrderRequestNativeSqlService.LineValues v = service.computeLineValues(line);
+
+        assertEquals(BigDecimal.ZERO.setScale(2), v.netRate.setScale(2));
+    }
+
+    @Test
+    void computeLineValues_nullFields_defaultToZeroOrOne() {
+        PurchaseOrderRequestLineData line = new PurchaseOrderRequestLineData();
+        // quantity, freeQuantity, purchaseRate, retailRate, unitsPerPack all left null
+
+        PurchaseOrderRequestNativeSqlService.LineValues v = service.computeLineValues(line);
+
+        assertEquals(BigDecimal.ZERO.setScale(2), v.grossValue.setScale(2));
+        assertEquals(BigDecimal.ONE, v.unitsPerPack);
+    }
 }
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `mvn -q -Dtest=PurchaseOrderRequestNativeSqlServiceTest test`
-Expected: FAIL — `saveLine` does not exist.
+Expected: FAIL — `computeLineValues`/`LineValues` do not exist.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -440,7 +488,29 @@ import java.math.BigDecimal;
 
 // ... inside the class ...
 
-public long saveLine(long billId, com.divudi.core.data.dto.pharmacy.PurchaseOrderRequestLineData line) {
+/**
+ * Pure calculation extracted from legacy calculateLineValues() — no em access,
+ * unit tested directly. AMPP items store rates per-pack on BillItemFinanceDetails
+ * but per-unit on PharmaceuticalBillItem; non-AMPP items use the same rate for both.
+ */
+static final class LineValues {
+    final BigDecimal qty, freeQty, purchaseRate, retailRate, unitsPerPack;
+    final BigDecimal grossValue, netValue, purchaseValue, retailValue, netRate;
+    final double pbiQty, pbiFreeQty, pbiPurchaseRate, pbiRetailRate;
+
+    LineValues(BigDecimal qty, BigDecimal freeQty, BigDecimal purchaseRate, BigDecimal retailRate,
+               BigDecimal unitsPerPack, BigDecimal grossValue, BigDecimal netValue,
+               BigDecimal purchaseValue, BigDecimal retailValue, BigDecimal netRate,
+               double pbiQty, double pbiFreeQty, double pbiPurchaseRate, double pbiRetailRate) {
+        this.qty = qty; this.freeQty = freeQty; this.purchaseRate = purchaseRate; this.retailRate = retailRate;
+        this.unitsPerPack = unitsPerPack; this.grossValue = grossValue; this.netValue = netValue;
+        this.purchaseValue = purchaseValue; this.retailValue = retailValue; this.netRate = netRate;
+        this.pbiQty = pbiQty; this.pbiFreeQty = pbiFreeQty;
+        this.pbiPurchaseRate = pbiPurchaseRate; this.pbiRetailRate = pbiRetailRate;
+    }
+}
+
+LineValues computeLineValues(com.divudi.core.data.dto.pharmacy.PurchaseOrderRequestLineData line) {
     BigDecimal qty = line.getQuantity() != null ? line.getQuantity() : BigDecimal.ZERO;
     BigDecimal freeQty = line.getFreeQuantity() != null ? line.getFreeQuantity() : BigDecimal.ZERO;
     BigDecimal purchaseRate = line.getPurchaseRate() != null ? line.getPurchaseRate() : BigDecimal.ZERO;
@@ -452,7 +522,23 @@ public long saveLine(long billId, com.divudi.core.data.dto.pharmacy.PurchaseOrde
     BigDecimal netValue = grossValue;
     BigDecimal purchaseValue = purchaseRate.multiply(qty.add(freeQty));
     BigDecimal retailValue = retailRate.multiply(qty.add(freeQty));
-    BigDecimal netRate = qty.doubleValue() > 0 ? netValue.divide(qty, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO;
+    BigDecimal netRate = qty.doubleValue() > 0
+            ? netValue.divide(qty, 2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO;
+
+    double pbiQty = line.isAmpp() ? qty.doubleValue() * unitsPerPack.doubleValue() : qty.doubleValue();
+    double pbiFreeQty = line.isAmpp() ? freeQty.doubleValue() * unitsPerPack.doubleValue() : freeQty.doubleValue();
+    double pbiPurchaseRate = line.isAmpp() ? purchaseRate.doubleValue() / unitsPerPack.doubleValue() : purchaseRate.doubleValue();
+    double pbiRetailRate = line.isAmpp() ? retailRate.doubleValue() / unitsPerPack.doubleValue() : retailRate.doubleValue();
+
+    return new LineValues(qty, freeQty, purchaseRate, retailRate, unitsPerPack, grossValue, netValue,
+            purchaseValue, retailValue, netRate, pbiQty, pbiFreeQty, pbiPurchaseRate, pbiRetailRate);
+}
+
+public long saveLine(long billId, com.divudi.core.data.dto.pharmacy.PurchaseOrderRequestLineData line) {
+    LineValues v = computeLineValues(line);
+    BigDecimal qty = v.qty, freeQty = v.freeQty, purchaseRate = v.purchaseRate, retailRate = v.retailRate;
+    BigDecimal grossValue = v.grossValue, netValue = v.netValue, netRate = v.netRate;
+    BigDecimal purchaseValue = v.purchaseValue, retailValue = v.retailValue, unitsPerPack = v.unitsPerPack;
 
     long billItemId;
     if (line.getBillItemId() == null) {
@@ -488,10 +574,7 @@ public long saveLine(long billId, com.divudi.core.data.dto.pharmacy.PurchaseOrde
             .executeUpdate();
     }
 
-    double pbiQty = line.isAmpp() ? qty.doubleValue() * unitsPerPack.doubleValue() : qty.doubleValue();
-    double pbiFreeQty = line.isAmpp() ? freeQty.doubleValue() * unitsPerPack.doubleValue() : freeQty.doubleValue();
-    double pbiPurchaseRate = line.isAmpp() ? purchaseRate.doubleValue() / unitsPerPack.doubleValue() : purchaseRate.doubleValue();
-    double pbiRetailRate = line.isAmpp() ? retailRate.doubleValue() / unitsPerPack.doubleValue() : retailRate.doubleValue();
+    double pbiQty = v.pbiQty, pbiFreeQty = v.pbiFreeQty, pbiPurchaseRate = v.pbiPurchaseRate, pbiRetailRate = v.pbiRetailRate;
 
     if (line.getPharmaceuticalBillItemId() == null) {
         em.createNativeQuery(
@@ -614,60 +697,69 @@ git commit -m "feat(pharmacy): native SQL line-item insert/update for PO Request
 
 **Interfaces:**
 - Consumes: `billTable()`, `billItemTable()`, `pharmBillItemTable()` (Task 2)
-- Produces: `void finalizeBill(long billId, long editorId)` — promotes
-  `BILLTYPEATOMIC` to `PHARMACY_ORDER` and sets `checked=1, checkeAt=now,
-  checkedBy_ID=editorId`; `int retireZeroQtyLines(long billId, long retirerId)` —
-  retires (native `UPDATE billitem/pharmaceuticalbillitem SET retired=1,...`) any
-  line whose `qty+freeQty <= 0`, sets `remainingQty`/`remainingFreeQty` on surviving
-  lines, returns count of surviving (non-retired) lines with qty > 0 — mirrors legacy
-  `finalizeBillComponent()`'s `totalBillItemsCount` accumulation. Controller (Task 5)
-  calls both in sequence for the Finalize button.
+- Produces:
+  - `void finalizeBill(long billId, long editorId)` — promotes
+    `BILLTYPEATOMIC` to `PHARMACY_ORDER` and sets `checked=1, checkeAt=now,
+    checkedBy_ID=editorId`
+  - `int retireZeroQtyLines(long billId, long retirerId)` —
+    retires (native `UPDATE billitem/pharmaceuticalbillitem SET retired=1,...`) any
+    line whose `qty+freeQty <= 0`, sets `remainingQty`/`remainingFreeQty` on surviving
+    lines, returns count of surviving (non-retired) lines with qty > 0 — mirrors legacy
+    `finalizeBillComponent()`'s `totalBillItemsCount` accumulation. Controller (Task 5)
+    calls both in sequence for the Finalize button.
+  - `boolean isZeroQtyLine(double qty, double freeQty)` — package-private, pure
+    predicate extracted from legacy `finalizeBillComponent()`'s `totalUnits.compareTo(BigDecimal.ZERO) <= 0`
+    check, called by `retireZeroQtyLines` for each row.
+
+**Codebase testing convention (see Task 2/3's notes):** `finalizeBill` and
+`retireZeroQtyLines` both touch `em` directly (native UPDATE/SELECT) and are not
+unit tested — verified via Task 11's Playwright + DB pass. `isZeroQtyLine` has no
+`em` access and gets a real test, same pattern as Task 3's `computeLineValues`.
 
 - [ ] **Step 1: Write the failing test**
 
 ```java
 @Test
-public void finalizeBillPromotesAtomicAndSetsChecked() {
-    PurchaseOrderRequestNativeSqlService service = new PurchaseOrderRequestNativeSqlService();
-    long billId = service.createDraftBill(1L, 1L, 1L, "POR-0003", "POR-0003");
-
-    service.finalizeBill(billId, 1L);
-
-    assertTrue(service.isBillChecked(billId));
+void isZeroQtyLine_trueWhenQtyAndFreeQtyBothZero() {
+    assertTrue(service.isZeroQtyLine(0.0, 0.0));
 }
 
 @Test
-public void retireZeroQtyLinesRetiresLinesWithNoQuantity() {
-    PurchaseOrderRequestNativeSqlService service = new PurchaseOrderRequestNativeSqlService();
-    long billId = service.createDraftBill(1L, 1L, 1L, "POR-0004", "POR-0004");
+void isZeroQtyLine_falseWhenQtyPositive() {
+    assertFalse(service.isZeroQtyLine(5.0, 0.0));
+}
 
-    com.divudi.core.data.dto.pharmacy.PurchaseOrderRequestLineData zeroLine =
-            new com.divudi.core.data.dto.pharmacy.PurchaseOrderRequestLineData();
-    zeroLine.setItemId(500L);
-    zeroLine.setQuantity(java.math.BigDecimal.ZERO);
-    zeroLine.setFreeQuantity(java.math.BigDecimal.ZERO);
-    zeroLine.setPurchaseRate(java.math.BigDecimal.TEN);
-    zeroLine.setRetailRate(java.math.BigDecimal.TEN);
-    zeroLine.setUnitsPerPack(java.math.BigDecimal.ONE);
-    zeroLine.setCreaterId(1L);
-    service.saveLine(billId, zeroLine);
+@Test
+void isZeroQtyLine_falseWhenOnlyFreeQtyPositive() {
+    assertFalse(service.isZeroQtyLine(0.0, 3.0));
+}
 
-    int survivingCount = service.retireZeroQtyLines(billId, 1L);
-
-    assertEquals(0, survivingCount);
+@Test
+void isZeroQtyLine_trueWhenNegativeTotal() {
+    // Defensive: legacy compares totalUnits <= 0, so a negative sum (shouldn't
+    // happen in practice but the guard must match) also counts as zero-qty.
+    assertTrue(service.isZeroQtyLine(-1.0, 0.5));
 }
 ```
+
+(Add these four `@Test` methods to `PurchaseOrderRequestNativeSqlServiceTest`,
+same class as Task 3's tests — import `assertTrue`/`assertFalse` from
+`org.junit.jupiter.api.Assertions` alongside the existing `assertEquals` import.)
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `mvn -q -Dtest=PurchaseOrderRequestNativeSqlServiceTest test`
-Expected: FAIL — `finalizeBill`/`retireZeroQtyLines` do not exist.
+Expected: FAIL — `isZeroQtyLine` does not exist.
 
 - [ ] **Step 3: Write minimal implementation**
 
 Add to `PurchaseOrderRequestNativeSqlService`:
 
 ```java
+boolean isZeroQtyLine(double qty, double freeQty) {
+    return (qty + freeQty) <= 0;
+}
+
 public void finalizeBill(long billId, long editorId) {
     em.createNativeQuery(
         "UPDATE " + billTable()
@@ -697,9 +789,8 @@ public int retireZeroQtyLines(long billId, long retirerId) {
         long billItemId = ((Number) row[0]).longValue();
         double qty = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
         double freeQty = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
-        double total = qty + freeQty;
 
-        if (total <= 0) {
+        if (isZeroQtyLine(qty, freeQty)) {
             em.createNativeQuery(
                 "UPDATE " + billItemTable() + " SET retired=1, retirer_ID=?, retiredAt=?, retireComments=? WHERE ID=?")
                 .setParameter(1, retirerId)
