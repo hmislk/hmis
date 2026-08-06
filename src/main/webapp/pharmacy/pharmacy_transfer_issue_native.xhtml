@@ -42,6 +42,7 @@
                             class="ui-button-success mx-2"
                             action="#{transferIssueNativeSqlController.settle}"
                             ajax="false"
+                            onclick="if (!confirm('Do you want to process this transfer issue?')) return false;"
                             disabled="#{not webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}"
                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false) and !transferIssueNativeSqlController.draftMode}"/>
 
