@@ -1507,6 +1507,29 @@ use this shortcut for non-AJAX (full-postback) submits — for an AJAX
 bypasses that and the real key-event pattern would still be required (untested
 here).
 
+## 57. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link
+
+`inward/nurse/index.xhtml` populates its Rooms/BHT tab lists (room and BHT
+buttons per ward) only when reached via the real PrimeFaces menu action
+(**Inward → Nursing WorkBench**, an `onclick`/`PrimeFaces.addSubmitParam`
+command link that posts a form before navigating). A `browser_navigate`
+straight to `/rh/faces/nurse/index.xhtml` — even from an already-authenticated,
+department-selected session — loads the page shell but leaves both tab panels
+empty, with no console error and no failed network request to explain it; the
+list is populated by server-side controller init tied to the menu's action
+listener, not by a `f:viewAction` or ajax poll that a plain GET would trigger.
+Same rule as the admission/final-bill pages noted in §1 §17: prefer clicking
+through the actual menu path over guessing the URL, and if a page you reached
+by URL shows a suspiciously empty list with no error, retry via the menu link
+before assuming the data itself is missing. Verified while testing issue
+`#22689`. Note: `NursingWorkBenchController.loadLists()` populates the Rooms
+and BHT tabs from the identical query (same `discharged=false /
+paymentFinalized=false / currentPatientRoom` filter) — they always list the
+same admissions, just labeled/sorted by room name vs. BHT number
+respectively. If a specific admission seems "missing" from one tab, search by
+the label that tab actually renders (BHT number on the BHT tab, room name on
+the Rooms tab), not by patient name — neither tab's buttons show it.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

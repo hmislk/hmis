@@ -290,7 +290,8 @@
 
                             <!-- ===== Discount ===== -->
                             <p:column headerText="Discount"
-                                      style="text-align:right; white-space:nowrap;">
+                                      style="text-align:right; white-space:nowrap;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
                                 <h:outputText value="#{row.totalDiscount}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -303,7 +304,8 @@
 
                             <!-- ===== Service Charge (margin) ===== -->
                             <p:column headerText="Service Charge"
-                                      style="text-align:right; white-space:nowrap;">
+                                      style="text-align:right; white-space:nowrap;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
                                 <h:outputText value="#{row.totalServiceCharge}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -316,7 +318,8 @@
 
                             <!-- ===== Gross total of charges ===== -->
                             <p:column headerText="Gross Total"
-                                      style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                      style="text-align:right; white-space:nowrap; font-weight:bold;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
                                 <h:outputText value="#{row.grossTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -372,21 +375,23 @@
 
                             <f:facet name="footer">
                                 <div class="text-end">
-                                    <strong>Grand Total Gross: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Discount: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Service Charge: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
+                                    <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
+                                        <strong>Grand Total Gross: </strong>
+                                        <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;&#160;
+                                        <strong>Grand Total Discount: </strong>
+                                        <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;&#160;
+                                        <strong>Grand Total Service Charge: </strong>
+                                        <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;&#160;
+                                    </ui:fragment>
                                     <strong>Grand Total Net Charges: </strong>
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCharges}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
