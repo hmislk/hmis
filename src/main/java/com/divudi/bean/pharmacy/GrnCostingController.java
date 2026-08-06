@@ -1967,12 +1967,17 @@ public class GrnCostingController implements Serializable {
         onEdit(bi);
     }
 
-    public void onEdit(BillItem tmp) {
-        setBatch(tmp);
-        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
-        if (f == null) {
-            return;
-        }
+    /**
+     * Clamps a bill item's quantity down to the PO's remaining orderable
+     * qty and surfaces an error message when it's over. Shared by both
+     * onEdit() (Purchase Rate blur) and qtyChangedListner() (Qty field's
+     * own blur) so the rule is enforced - and visible - no matter which
+     * field the user edits. See issue #22681: previously only onEdit() had
+     * this check, and its f:ajax render list didn't include the Qty field
+     * or the messages panel, so the clamp silently corrected the saved qty
+     * while the screen kept showing the rejected value.
+     */
+    private void clampQuantityToRemaining(BillItem tmp, BillItemFinanceDetails f) {
         if (tmp.getReferanceBillItem() != null) {
             double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
             if (remains < f.getQuantity().doubleValue()) {
@@ -1981,6 +1986,15 @@ public class GrnCostingController implements Serializable {
                 JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
             }
         }
+    }
+
+    public void onEdit(BillItem tmp) {
+        setBatch(tmp);
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        clampQuantityToRemaining(tmp, f);
 
         if (f.getLineGrossRate().compareTo(f.getRetailSaleRatePerUnit()) > 0) {
             f.setRetailSaleRatePerUnit(f.getLineGrossRate());
@@ -2091,6 +2105,8 @@ public class GrnCostingController implements Serializable {
                 return;
             }
         }
+
+        clampQuantityToRemaining(tmp, f);
 
         recalculateFinancialsBeforeAddingBillItem(f);
 
@@ -3161,7 +3177,41 @@ public class GrnCostingController implements Serializable {
             msg = quantityValidationMsg;
         }
 
+        // Discount Rate is a per-unit discount amount, not a percentage. Nothing
+        // upstream clamps it against the Purchase Rate, so a discount larger than
+        // the purchase rate silently drives the line's net rate (and therefore the
+        // whole GRN) negative - i.e. the pharmacy would be "receiving" stock at a
+        // negative cost. Block finalization instead of persisting that nonsensical
+        // value (found during legacy-vs-DTO GRN QA, issue #22595).
+        String discountValidationMsg = validateLineDiscountRates(billItems);
+        if (!discountValidationMsg.isEmpty()) {
+            msg = discountValidationMsg;
+        }
+
         return msg;
+    }
+
+    private String validateLineDiscountRates(List<BillItem> billItems) {
+        for (BillItem bi : billItems) {
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+            if (f == null) {
+                continue;
+            }
+            // Compare the raw discount/gross rates directly rather than the derived
+            // lineNetRate, which recalculateFinancialsBeforeAddingBillItem() rounds to
+            // 4 decimal places - a discount only fractionally above the gross rate
+            // could otherwise round down to 0.0000 and slip past a >= 0 check.
+            BigDecimal grossRate = f.getLineGrossRate();
+            BigDecimal discountRate = f.getLineDiscountRate();
+            if (grossRate == null || discountRate == null) {
+                continue;
+            }
+            if (discountRate.compareTo(grossRate) > 0) {
+                String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown Item";
+                return "Item " + itemName + ": Discount Rate cannot exceed Purchase Rate (results in a negative net rate)";
+            }
+        }
+        return "";
     }
 
     private String validateGrnQuantities(List<BillItem> billItems) {
@@ -3288,6 +3338,63 @@ public class GrnCostingController implements Serializable {
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
 
+        // Generate the bill number BEFORE the stock-mutating item loop below. This method
+        // has no surrounding transaction of its own (GrnCostingController is a plain CDI
+        // bean, not an EJB), so each Facade edit/create call below commits independently.
+        // Bill number generation depends on config lookups and can fail for reasons
+        // unrelated to the GRN itself (e.g. a missing DB column from an out-of-sync
+        // schema, as happened live during QA - issue #22595). If that failure happened
+        // AFTER the stock/batch loop had already run, the stock addition would remain
+        // committed even though the GRN never became PHARMACY_GRN, and a retry would
+        // silently double the stock. Doing this first keeps the risky, config-driven
+        // work outside the item loop's blast radius.
+        // Check if bill number suffix is configured, if not set default "GRN" for Pharmacy GRN
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Set default suffix for Pharmacy GRN if not configured
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "GRN");
+        }
+
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        // Handle Department ID generation
+        String deptId;
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else {
+            // Default behavior - use the original method
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
+        }
+
+        // Handle Institution ID generation separately
+        String insId;
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else {
+            // Default behavior - use the department ID for institution ID or original method
+            if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+                insId = deptId;
+            } else {
+                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN);
+            }
+        }
+
+        getCurrentGrnBillPre().setDeptId(deptId);
+        getCurrentGrnBillPre().setInsId(insId);
+
         // Process bill items for finalization with full stock management
         for (BillItem grnBillItem : getBillItems()) {
             BillItemFinanceDetails f = grnBillItem.getBillItemFinanceDetails();
@@ -3340,53 +3447,6 @@ public class GrnCostingController implements Serializable {
             }
 
         }
-
-        // Check if bill number suffix is configured, if not set default "GRN" for Pharmacy GRN
-        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "");
-        if (billSuffix == null || billSuffix.trim().isEmpty()) {
-            // Set default suffix for Pharmacy GRN if not configured
-            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "GRN");
-        }
-
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
-        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
-
-        // Handle Department ID generation
-        String deptId;
-        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_GRN
-            );
-        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_GRN
-            );
-        } else {
-            // Default behavior - use the original method
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
-        }
-
-        // Handle Institution ID generation separately
-        String insId;
-        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_GRN
-            );
-        } else {
-            // Default behavior - use the department ID for institution ID or original method
-            if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
-                insId = deptId;
-            } else {
-                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN);
-            }
-        }
-
-        getCurrentGrnBillPre().setDeptId(deptId);
-        getCurrentGrnBillPre().setInsId(insId);
 
         // Set finalization timestamps and user
         getCurrentGrnBillPre().setEditedAt(new Date());

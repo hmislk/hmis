@@ -2635,6 +2635,7 @@ public class DataAdministrationController implements Serializable {
                 configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
                 databaseMigrationService.markMigrationComplete();
                 wikiDdlVersion = version;
+                JsfUtil.addSuccessMessage("Migration applied and schema marked up to date (version " + version + ").");
             }
         } catch (Exception e) {
             // Schema operations succeeded; version tracking is secondary — swallow silently

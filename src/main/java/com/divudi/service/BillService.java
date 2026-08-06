@@ -2743,21 +2743,27 @@ public class BillService {
         // positive = stock came back on a return). For a "movement OUT" report we want the
         // quantity that went out, so we negate the summed pbi.qty: a sale yields a positive
         // out-quantity and a return reduces it, matching the signed value columns below.
-        // Direct Purchase Return is an exception: DirectPurchaseReturnController always
-        // persists pbi.qty as a positive magnitude (see its calculateBillItemDetails()), not
-        // the negative-for-out convention above, even though it is itself an OUT movement
-        // (goods leaving stock back to the supplier). This is a known writer bug tracked
-        // under #21032/#21053 (pbi.qty should be negative for this bill type but the writer
-        // is not yet fixed there); negating it here like a normal sale would flip its sign
-        // and net it against genuine sales, so it's added un-negated to match the current
-        // (buggy) persisted convention. If #21053 is ever fixed to store negative qty for
-        // this bill type, this special case must be removed at the same time.
+        // Direct Purchase Return follows this same convention: DirectPurchaseReturnWorkflowController
+        // (the writer wired to the UI) persists pbi.qty as negative at approval, same as every
+        // other OUT movement here (goods leaving stock back to the supplier) - confirmed by
+        // #21053, where 1098/1100 real DIRECT_PURCHASE_REFUND rows on ruhunu have pbi.qty
+        // correctly negative (the 2 positive outliers are the tracked writer anomaly, not the
+        // norm). An earlier version of this query special-cased this bill type to skip negation,
+        // which was backwards and displayed real returns with a negative out-quantity - see #21833.
+        //
+        // Pending (not yet approved) Direct Purchase Return bills are excluded below: pbi.qty is
+        // only sign-flipped to the correct negative-for-out value at approval time
+        // (DirectPurchaseReturnWorkflowController.completeApproval() -> updateStock()); before
+        // that, prepareBillItems() leaves it as a positive "available to return" quantity, which
+        // is not yet a real stock movement and would net incorrectly if included. Every other
+        // bill type in this report is unaffected by this filter (they don't use the completed
+        // flag the same way and are left as before).
         jpql = "select new com.divudi.core.data.dto.PharmacyMovementOutByItemDTO( "
                 + " it.id, "
                 + " coalesce(it.name, 'N/A'), "
                 + " it.code, "
                 + " coalesce(cat.name, 'N/A'), "
-                + " coalesce(sum(case when b.billTypeAtomic = :directPurchaseReturnBta then pbi.qty else (pbi.qty * -1.0) end), 0.0), "
+                + " (coalesce(sum(pbi.qty), 0.0) * -1.0), "
                 + " coalesce(sum(bi.grossValue), 0.0), "
                 + " coalesce(sum(bi.discount), 0.0), "
                 + " coalesce(sum(bi.marginValue), 0.0), "
@@ -2770,6 +2776,7 @@ public class BillService {
                 + " where (b.retired = false or b.retired is null) "
                 + " and (bi.retired = false or bi.retired is null) "
                 + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and (b.billTypeAtomic <> :directPurchaseReturnBta or b.completed = true) "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         params.put("billTypesAtomics", billTypeAtomics);
@@ -3205,7 +3212,10 @@ public class BillService {
                 + " coalesce(bi.item.category.name, 'No Category')," // Category name for display
                 + " bi.item.id," // Item ID for navigation
                 + " coalesce(bi.item.name, 'No Item')," // Item name for display
-                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end)," // Count
+                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end)," // Count (no stored sign)
+                // Fee/value columns are ALREADY stored negative on cancellation/refund bill
+                // items, so they are summed as-is. Negating them here would double-negate and
+                // make cancellations show as positive (the fee-doubling bug of issue #22649).
                 + " sum(bi.hospitalFee),"
                 + " sum(bi.staffFee),"
                 + " sum(bi.grossValue),"
