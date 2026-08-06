@@ -111,6 +111,8 @@ public enum Privileges {
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
     InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
+    InwardFinalBillRetire("Inward Final Bill Retire"),
+    InwardFinalBillEmail("Inward Final Bill Email"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     InwardPostDischargeReports("Inward Post-Discharge Reports"),
@@ -156,6 +158,7 @@ public enum Privileges {
     InwardEditPaymentDetails("Inward Edit Payment Details"),
     InwardManageAllergies("Inward Manage Allergies"),
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
+    InwardPostFinalPaymentAccess("Inward Post Final Payment Access"),
     InwardSurgeryAdd("Inward Surgery Add"),
     InwardSurgeryManage("Inward Surgery Manage"),
     InwardSurgeryValidate("Inward Surgery Validate"),
@@ -630,7 +633,7 @@ public enum Privileges {
     PharmacyDisposalIssueFinalize("Pharmacy Disposal Issue Finalize"),
     PharmacyDisposalIssueApprove("Pharmacy Disposal Issue Approve"),
     PharmacyDisposalIssueCancel("Pharmacy Disposal Issue Cancel"),
-    PharmacyDiscardCategoryManage("Pharmacy Discard Category Manage"),
+    PharmacyDiscardCategoryManage("Pharmacy Issue Category Manage"),
     PharmacyDisposalSearchIssueBill("Pharmacy Disposal Search Issue Bill"),
     PharmacyDisposalSearchIssueBillItems("Pharmacy Disposal Search Issue Bill Items"),
     PharmacyDisposalSearchIssueReturnBill("Pharmacy Disposal Search Issue Return Bill"),
@@ -1246,6 +1249,8 @@ public enum Privileges {
             case InwardSettleFinalBill:
             case InwardFinalBillCreateVersion:
             case InwardFinalBillSetConfirmed:
+            case InwardFinalBillRetire:
+            case InwardFinalBillEmail:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:
@@ -1270,6 +1275,7 @@ public enum Privileges {
             case InwardEditPaymentDetails:
             case InwardManageAllergies:
             case InwardDoctorPaymentAccess:
+            case InwardPostFinalPaymentAccess:
             case InwardSurgeryAdd:
             case InwardSurgeryManage:
             case InwardSurgeryValidate:

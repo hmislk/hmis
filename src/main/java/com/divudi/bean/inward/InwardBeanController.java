@@ -500,6 +500,31 @@ public class InwardBeanController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
     
+    /**
+     * Sums the value of cancelled/returned issue bills as a positive magnitude, so it can be
+     * printed as its own breakup line instead of silently netting out of the parent charge
+     * total (issue #22674). {@code cancellationBtas} should be the cancellation-only subset of
+     * the {@link BillTypeAtomic} list already used to compute the parent charge type's net total.
+     */
+    public double calCancelledCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> cancellationBtas, List<PatientEncounter> cpts) {
+        String sql;
+        HashMap hm;
+        sql = "SELECT  sum(b.netTotal)"
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic IN :btp "
+                + " and  b.patientEncounter IN :pe";
+        hm = new HashMap();
+        hm.put("btp", cancellationBtas);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return -getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
     public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
         String sql;
         HashMap hm;
@@ -1878,6 +1903,24 @@ public class InwardBeanController implements Serializable {
                 + " and b.billType=:btp "
                 + " and b.patientEncounter IN :pe ";
         hm.put("btp", BillType.InwardPaymentBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Bill> fetchPostFinalPaymentBill(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT  b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter IN :pe ";
+        hm.put("btp", BillType.PostFinalBillInwardPayment);
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {

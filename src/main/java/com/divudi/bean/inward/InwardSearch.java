@@ -18,6 +18,8 @@ import com.divudi.core.data.Sex;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.EmailAttachment;
+import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -46,9 +48,12 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +64,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -95,6 +101,10 @@ public class InwardSearch implements Serializable {
     DrawerService drawerService;
     @EJB
     private com.divudi.service.AuditService auditService;
+    @EJB
+    private com.divudi.core.facade.EmailFacade emailFacade;
+    @EJB
+    private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
 
     /**
      * JSF Controllers
@@ -361,6 +371,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         bill = b;
+        billItems = null;
         printPreview = true;
         return "/inward/inward_deposit_cancel_bill_payment?faces-redirect=true";
     }
@@ -570,6 +581,7 @@ public class InwardSearch implements Serializable {
         refundingItems = null;
         bills = null;
         tempbillItems = null;
+        sentEmailsForBill = null;
     }
 
     public WebUser getUser() {
@@ -606,6 +618,7 @@ public class InwardSearch implements Serializable {
 
         if (versions.size() == 1) {
             bill = versions.get(0);
+            billItems = null;
             withProfessionalFee = false;
             return "/inward/inward_reprint_bill_final?faces-redirect=true";
         }
@@ -654,6 +667,13 @@ public class InwardSearch implements Serializable {
         params.put("billType", BillType.InwardFinalBill);
         params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
         return getBillFacade().findByJpql(jpql, params);
+    }
+
+    public boolean hasAnyFinalBillVersion(PatientEncounter admission) {
+        if (admission == null) {
+            return false;
+        }
+        return !fetchFinalBillVersions(admission).isEmpty();
     }
 
     /**
@@ -707,6 +727,200 @@ public class InwardSearch implements Serializable {
                 "Bill", newConfirmed.getId());
     }
 
+    /**
+     * User-facing action to retire (soft delete) a final bill version.
+     * Irreversible — there is no un-retire action. Privilege checks are done
+     * in the XHTML via {@code rendered}, not here.
+     */
+    public void retireFinalBillVersion(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        if (b.isRetired()) {
+            JsfUtil.addErrorMessage("Bill is already retired");
+            return;
+        }
+        if (b.isConfirmedFinalBill()) {
+            JsfUtil.addErrorMessage("Cannot retire the Confirmed Final Bill. Confirm a different version first.");
+            return;
+        }
+        List<Bill> versions = fetchFinalBillVersions(b.getPatientEncounter());
+        if (versions.size() <= 1) {
+            JsfUtil.addErrorMessage("Cannot retire the only remaining final bill version");
+            return;
+        }
+
+        b.setRetired(true);
+        b.setRetirer(sessionController.getLoggedUser());
+        b.setRetiredAt(new Date());
+        getBillFacade().edit(b);
+
+        auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Retired",
+                b.getId(), null, sessionController.getLoggedUser(),
+                "Bill", b.getId());
+
+        JsfUtil.addSuccessMessage("Final Bill Version Retired");
+        finalBillVersions = null;
+    }
+
+    private String emailRecipient;
+    private List<AppEmail> sentEmailsForBill;
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
+    }
+
+    /**
+     * Emails a one-page summary of the given final bill version (patient,
+     * admission, and totals — not a full itemized reprint) as a PDF
+     * attachment, and logs the send via {@link AppEmail} so it shows up in
+     * the "Sent Emails" history on the view/print screen.
+     */
+    public void emailFinalBillVersion(Bill b) {
+        boolean sent = false;
+        try {
+            sent = emailFinalBillVersionInternal(b);
+        } finally {
+            // Tell the client whether the send succeeded so the dialog closes
+            // only on success (see the Send button's oncomplete), mirroring
+            // BhtSummeryController.addNewCreditCompany()'s creditCompanyAdded.
+            if (PrimeFaces.current().isAjaxRequest()) {
+                PrimeFaces.current().ajax().addCallbackParam("emailSent", sent);
+            }
+        }
+    }
+
+    private boolean emailFinalBillVersionInternal(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return false;
+        }
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No recipient Email");
+            return false;
+        }
+        if (!CommonFunctions.isValidEmail(emailRecipient)) {
+            JsfUtil.addErrorMessage("Recipient Email is NOT valid");
+            return false;
+        }
+
+        AppEmail email = new AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(emailRecipient);
+        email.setMessageSubject("Final Bill " + b.getDeptId());
+        email.setMessageBody("Please find attached the final bill " + b.getDeptId() + ".");
+        email.setDepartment(b.getDepartment());
+        email.setInstitution(b.getInstitution());
+        email.setBill(b);
+        email.setPatientEncounter(b.getPatientEncounter());
+        email.setMessageType(MessageType.InwardFinalBillEmail);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        boolean success = false;
+        try {
+            byte[] pdfBytes = buildFinalBillPdf(b);
+            EmailAttachment attachment = new EmailAttachment(
+                    "FinalBill_" + b.getFinalBillVersionSerial() + ".pdf",
+                    "application/pdf",
+                    Base64.getEncoder().encodeToString(pdfBytes));
+
+            success = emailManagerEjb.sendEmail(
+                    Collections.singletonList(email.getReceipientEmail()),
+                    email.getMessageBody(),
+                    email.getMessageSubject(),
+                    false,
+                    Collections.singletonList(attachment));
+
+            if (success) {
+                email.setSentAt(new Date());
+                email.setSentSuccessfully(true);
+                email.setPending(false);
+                emailFacade.edit(email);
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                email.setPending(false);
+                emailFacade.edit(email);
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+        } catch (Exception ex) {
+            email.setPending(false);
+            emailFacade.edit(email);
+            JsfUtil.addErrorMessage("Sending Email Failed");
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill email failed", ex);
+        }
+
+        sentEmailsForBill = null;
+        return success;
+    }
+
+    private byte[] buildFinalBillPdf(Bill b) throws Exception {
+        String html = buildFinalBillHtml(b);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            com.itextpdf.kernel.pdf.PdfWriter writer = new com.itextpdf.kernel.pdf.PdfWriter(out);
+            com.itextpdf.kernel.pdf.PdfDocument pdfDoc = new com.itextpdf.kernel.pdf.PdfDocument(writer);
+            pdfDoc.setDefaultPageSize(com.itextpdf.kernel.geom.PageSize.A4);
+            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(html, pdfDoc, new com.itextpdf.html2pdf.ConverterProperties());
+            return out.toByteArray();
+        }
+    }
+
+    private String buildFinalBillHtml(Bill b) {
+        PatientEncounter pe = b.getPatientEncounter();
+        String patientName = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
+                ? pe.getPatient().getPerson().getNameWithTitle() : "";
+        String bhtNo = pe != null ? pe.getBhtNo() : "";
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body style='font-family:sans-serif;font-size:12px;'>");
+        sb.append("<h2>Final Bill</h2>");
+        sb.append("<table style='width:100%;margin-bottom:10px;'>");
+        sb.append("<tr><td><b>Bill Number</b></td><td>").append(escapeHtml(b.getDeptId())).append("</td></tr>");
+        sb.append("<tr><td><b>Version</b></td><td>").append(b.getFinalBillVersionSerial()).append("</td></tr>");
+        sb.append("<tr><td><b>Patient</b></td><td>").append(escapeHtml(patientName)).append("</td></tr>");
+        sb.append("<tr><td><b>BHT No</b></td><td>").append(escapeHtml(bhtNo)).append("</td></tr>");
+        sb.append("</table>");
+        sb.append("<table style='width:100%;border-collapse:collapse;' border='1' cellpadding='4'>");
+        sb.append("<tr><th style='text-align:left;'>Description</th><th style='text-align:right;'>Amount</th></tr>");
+        sb.append("<tr><td>Gross Total</td><td style='text-align:right;'>").append(df.format(b.getGrantTotal())).append("</td></tr>");
+        sb.append("<tr><td>Discount</td><td style='text-align:right;'>").append(df.format(b.getDiscount())).append("</td></tr>");
+        sb.append("<tr><td>Net Total</td><td style='text-align:right;'>").append(df.format(b.getNetTotal())).append("</td></tr>");
+        sb.append("<tr><td>Claimable Total</td><td style='text-align:right;'>").append(df.format(b.getClaimableTotal())).append("</td></tr>");
+        sb.append("</table>");
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private String escapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    public List<AppEmail> getSentEmailsForBill() {
+        if (sentEmailsForBill == null && bill != null) {
+            sentEmailsForBill = fetchSentEmailsForBill(bill);
+        }
+        return sentEmailsForBill;
+    }
+
+    private List<AppEmail> fetchSentEmailsForBill(Bill b) {
+        String jpql = "select e from AppEmail e where e.bill = :bill order by e.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", b);
+        return emailFacade.findByJpql(jpql, params);
+    }
+
     public String navigateToProvisionalBillForAdmission() {
         if (admission == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
@@ -727,6 +941,7 @@ public class InwardSearch implements Serializable {
 
         // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         bill = getBillFacade().findFirstByJpql(jpql, temMap);
+        billItems = null;
 
         if (bill == null) {
             JsfUtil.addErrorMessage("No Provisional Bill Created");
@@ -897,6 +1112,7 @@ public class InwardSearch implements Serializable {
         printPreview = false;
         tempbillItems = null;
         comment = null;
+        sentEmailsForBill = null;
     }
 
     private void cancelBillComponents(Bill can, BillItem bt) {
@@ -2245,12 +2461,14 @@ public class InwardSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
-        hm.put("b", getBill());
-        billItems = getBillItemFacede().findByJpql(sql, hm);
         if (billItems == null) {
-            billItems = new ArrayList<>();
+            HashMap hm = new HashMap();
+            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
+            hm.put("b", getBill());
+            billItems = getBillItemFacede().findByJpql(sql, hm);
+            if (billItems == null) {
+                billItems = new ArrayList<>();
+            }
         }
 
         return billItems;

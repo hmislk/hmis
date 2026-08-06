@@ -177,6 +177,7 @@ public class BhtSummeryController implements Serializable {
     private DoctorFeeGroup selectedDoctorFeeGroup;
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
+    private List<Bill> postFinalPaymentBill;
     private List<Bill> pharmacyIssues;
 
     //Groping Medicine by Issueing Department
@@ -225,6 +226,12 @@ public class BhtSummeryController implements Serializable {
     private boolean custom2ShowPhone;
     private boolean custom2ShowGuardian;
     private boolean custom2ShowCorporateSponsor;
+    // Custom4 (Custom Bills tab - letterhead) print-format settings
+    private boolean custom4ShowAddress;
+    private boolean custom4ShowNic;
+    private boolean custom4ShowPhone;
+    private boolean custom4ShowGuardian;
+    private boolean custom4ShowCorporateSponsor;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -472,6 +479,8 @@ public class BhtSummeryController implements Serializable {
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
         custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
         custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
+        // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
+        loadCustom4Config();
     }
 
     public void saveCustom2Config() {
@@ -485,6 +494,8 @@ public class BhtSummeryController implements Serializable {
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
+            // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
+            persistCustom4Config();
             JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
             loadCustom2Config();
         } catch (Exception e) {
@@ -514,6 +525,60 @@ public class BhtSummeryController implements Serializable {
             totals.merge(label, bi.getAdjustedValue(), Double::sum);
         }
         return new ArrayList<>(totals.entrySet());
+    }
+
+    /**
+     * Charges grouped by inward charge type (excluding Professional Charge,
+     * which is now listed as individual per-doctor fee lines), alphabetical
+     * by display name, for the Custom3 5x5 impact-printer bill ("Custom Bill
+     * 2" in the UI).
+     */
+    public List<Map.Entry<String, Double>> getCustom3CategoryTotals(Bill bill) {
+        Map<String, Double> totals = new TreeMap<>();
+        if (bill == null || bill.getBillItems() == null) {
+            return new ArrayList<>(totals.entrySet());
+        }
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                continue;
+            }
+            if (bi.getAdjustedValue() == 0.0) {
+                continue;
+            }
+            String label = getChargeTypeLabel(bi.getInwardChargeType());
+            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+        }
+        return new ArrayList<>(totals.entrySet());
+    }
+
+    /**
+     * Sum of prior payments/receipts recorded against this admission — the
+     * Custom3 bill's "Deposit" line. Same backwardReferenceBills source and
+     * qualifying filter as the Custom2 receipts table (finalBillCustom2.xhtml
+     * lines 280-291), just summed instead of rendered row by row.
+     */
+    public double getCustom3DepositTotal(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        List<Bill> receipts = (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null)
+                ? bill.getPatientEncounter().getFinalBill().getBackwardReferenceBills()
+                : bill.getBackwardReferenceBills();
+        double total = 0.0;
+        if (receipts == null) {
+            return total;
+        }
+        for (Bill b : receipts) {
+            if (b.getNetTotal() == 0.0) {
+                continue;
+            }
+            boolean qualifies = (!b.isCancelled() && "class com.divudi.core.entity.BilledBill".equals(b.getBillClass()))
+                    || (!b.isCancelled() && b.getRefundedBill() == null && "class com.divudi.core.entity.RefundBill".equals(b.getBillClass()));
+            if (qualifies) {
+                total += b.getNetTotal();
+            }
+        }
+        return total;
     }
 
     public boolean isCustom2ShowAddress() {
@@ -554,6 +619,78 @@ public class BhtSummeryController implements Serializable {
 
     public void setCustom2ShowCorporateSponsor(boolean custom2ShowCorporateSponsor) {
         this.custom2ShowCorporateSponsor = custom2ShowCorporateSponsor;
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom4 print format (letterhead)">
+    public void loadCustom4Config() {
+        custom4ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", false);
+        custom4ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", false);
+        custom4ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", false);
+        custom4ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", true);
+        custom4ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", true);
+    }
+
+    public void saveCustom4Config() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
+            return;
+        }
+        try {
+            persistCustom4Config();
+            JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
+            loadCustom4Config();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Custom Bills configuration: " + e.getMessage());
+        }
+    }
+
+    private void persistCustom4Config() {
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", custom4ShowAddress);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", custom4ShowNic);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", custom4ShowPhone);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", custom4ShowGuardian);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", custom4ShowCorporateSponsor);
+    }
+
+    public boolean isCustom4ShowAddress() {
+        return custom4ShowAddress;
+    }
+
+    public void setCustom4ShowAddress(boolean custom4ShowAddress) {
+        this.custom4ShowAddress = custom4ShowAddress;
+    }
+
+    public boolean isCustom4ShowNic() {
+        return custom4ShowNic;
+    }
+
+    public void setCustom4ShowNic(boolean custom4ShowNic) {
+        this.custom4ShowNic = custom4ShowNic;
+    }
+
+    public boolean isCustom4ShowPhone() {
+        return custom4ShowPhone;
+    }
+
+    public void setCustom4ShowPhone(boolean custom4ShowPhone) {
+        this.custom4ShowPhone = custom4ShowPhone;
+    }
+
+    public boolean isCustom4ShowGuardian() {
+        return custom4ShowGuardian;
+    }
+
+    public void setCustom4ShowGuardian(boolean custom4ShowGuardian) {
+        this.custom4ShowGuardian = custom4ShowGuardian;
+    }
+
+    public boolean isCustom4ShowCorporateSponsor() {
+        return custom4ShowCorporateSponsor;
+    }
+
+    public void setCustom4ShowCorporateSponsor(boolean custom4ShowCorporateSponsor) {
+        this.custom4ShowCorporateSponsor = custom4ShowCorporateSponsor;
     }
     // </editor-fold>
 
@@ -2058,7 +2195,9 @@ public class BhtSummeryController implements Serializable {
 
         if (getPatientEncounter().getAdmissionType() != null
                 && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
-            if (!getPatientEncounter().isNursingDischarged()) {
+            boolean nursingDischargeRequired = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Administrative Discharge - Require Nursing Discharge", true);
+            if (nursingDischargeRequired && !getPatientEncounter().isNursingDischarged()) {
                 JsfUtil.addErrorMessage("Nursing discharge must be completed before the bill can be settled.");
                 return true;
             }
@@ -3141,7 +3280,8 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setSettledAmountByPatient(paidByPatient);
         getCurrent().setPaymentMethod(getPatientEncounter().getPaymentMethod());
         getCurrent().setCreditCompany(getPatientEncounter().getCreditCompany());
-        getCurrent().setInstitution(getSessionController().getInstitution());
+        getCurrent().setInstitution(patientEncounter.getInstitution());
+        getCurrent().setDepartment(patientEncounter.getDepartment());
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
         getCurrent().setBillType(BillType.InwardFinalBill);
 
@@ -3162,8 +3302,8 @@ public class BhtSummeryController implements Serializable {
         getBillNumberBean().withFinalBillVersionLock(patientEncounter, () -> {
             int versionSerial = getBillNumberBean().computeNextFinalBillVersionSerial(patientEncounter);
             getCurrent().setFinalBillVersionSerial(versionSerial);
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
 
             if (getCurrent().getId() == null) {
                 getBillFacade().create(getCurrent());
@@ -3220,10 +3360,11 @@ public class BhtSummeryController implements Serializable {
         getOriginalBill().setSettledAmountByPatient(paidByPatient);
         getOriginalBill().setPaymentMethod(getPatientEncounter().getPaymentMethod());
         getOriginalBill().setCreditCompany(getPatientEncounter().getCreditCompany());
-        getOriginalBill().setInstitution(getSessionController().getInstitution());
+        getOriginalBill().setInstitution(patientEncounter.getInstitution());
+        getOriginalBill().setDepartment(patientEncounter.getDepartment());
         getOriginalBill().setBillTypeAtomic(BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL);
-        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
-        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
 
         getOriginalBill().setBillType(BillType.InwardOriginalFinalBill);
 
@@ -3250,12 +3391,13 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setGrantTotal(value);
         creditCompanyBill.setTotal(value);
         creditCompanyBill.setNetTotal(value);
-        creditCompanyBill.setInstitution(getSessionController().getInstitution());
+        creditCompanyBill.setInstitution(patientEncounter.getInstitution());
+        creditCompanyBill.setDepartment(patientEncounter.getDepartment());
         creditCompanyBill.setCreditCompany(ecc.getInstitution());
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -3283,12 +3425,13 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setGrantTotal(value);
         creditCompanyBill.setTotal(value);
         creditCompanyBill.setNetTotal(value);
-        creditCompanyBill.setInstitution(getSessionController().getInstitution());
+        creditCompanyBill.setInstitution(patientEncounter.getInstitution());
+        creditCompanyBill.setDepartment(patientEncounter.getDepartment());
         creditCompanyBill.setCreditCompany(company);
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -3764,6 +3907,7 @@ public class BhtSummeryController implements Serializable {
         allDoctorCharges = null;
         patientItems = null;
         paymentBill = null;
+        postFinalPaymentBill = null;
         departmentBillItems = null;
         latestCheckedBillItemsByItem = null;
         printPreview = false;
@@ -4329,6 +4473,17 @@ public class BhtSummeryController implements Serializable {
         this.paymentBill = paymentBill;
     }
 
+    public List<Bill> getPostFinalPaymentBill() {
+        if (postFinalPaymentBill == null) {
+            postFinalPaymentBill = getInwardBean().fetchPostFinalPaymentBill(getPatientEncounter(), childPatientEncouters);
+        }
+        return postFinalPaymentBill;
+    }
+
+    public void setPostFinalPaymentBill(List<Bill> postFinalPaymentBill) {
+        this.postFinalPaymentBill = postFinalPaymentBill;
+    }
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -4626,6 +4781,10 @@ public class BhtSummeryController implements Serializable {
                     cit.setMargin(docMargin);
                     cit.setVat(docVat);
                 }
+            } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
+                cit.setGross(cit.getTotal());
+                cit.setMargin(0.0);
+                cit.setVat(0.0);
             }
         }
     }
@@ -4770,6 +4929,17 @@ public class BhtSummeryController implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
 
+        List<BillTypeAtomic> medicineCancellationBtas = new ArrayList<>();
+        medicineCancellationBtas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
                 case AdmissionFee:
@@ -4801,6 +4971,11 @@ public class BhtSummeryController implements Serializable {
                 case Medicine:
                     if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
                         i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
+                    }
+                    break;
+                case CancelledReturnedMedicine:
+                    if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
+                        i.setTotal(getInwardBean().calCancelledCostOfIssueByBill(getPatientEncounter(), medicineCancellationBtas, childPatientEncouters));
                     }
                     break;
                 case GeneralIssuing:

@@ -301,11 +301,11 @@
                                                 <span class="input-group-btn">
                                                     <p:commandButton
                                                         id="btnPhn"
-                                                        value="Generate" 
-                                                        process="btnPhn" 
+                                                        value="Generate"
+                                                        process="btnPhn"
                                                         disabled="#{not patientController.reGenerateePhn}"
-                                                        update="txtPhn" 
-                                                        action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
+                                                        update="txtPhn :growl"
+                                                        action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}"
                                                         class="mx-1" />
                                                 </span>
                                             </div>
