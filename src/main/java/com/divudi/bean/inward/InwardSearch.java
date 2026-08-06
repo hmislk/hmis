@@ -1409,6 +1409,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
             if (checkPaid()) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
