@@ -9,6 +9,6 @@
   "data_changes": true,
   "requires_downtime": false,
   "estimated_duration_minutes": 1,
-  "note": "Backfills DTYPE='BilledBill' on historical BILLTYPE='GrnPaymentPre' rows that were saved with DTYPE='Bill' due to SupplierPaymentController.settleApprovedSupplierPayment() instantiating the base Bill class instead of BilledBill. These rows were silently excluded from every GRN Payment listing query. Only touches rows where DTYPE='Bill' — safe to re-run.",
+  "note": "Backfills DTYPE='BilledBill' on historical BILLTYPE='GrnPaymentPre' rows that were saved with DTYPE='Bill' due to SupplierPaymentController.settleApprovedSupplierPayment() instantiating the base Bill class instead of BilledBill. These rows were silently excluded from every GRN Payment listing query. Only touches rows where DTYPE='Bill' — safe to re-run. Affected bill IDs are recorded into migration_v2170_grn_payment_bill_ids so rollback.sql can revert exactly those rows without touching unrelated bills correctly created as BilledBill after this migration runs.",
   "rollback": "rollback.sql"
 }

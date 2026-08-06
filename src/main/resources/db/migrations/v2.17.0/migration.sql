@@ -16,6 +16,13 @@
 --
 -- Safe to re-run: UPDATE ... WHERE is idempotent (rows already fixed no longer match).
 --
+-- ROLLBACK SAFETY: the affected bill IDs are recorded into
+-- migration_v2170_grn_payment_bill_ids before the UPDATE runs, and rollback.sql only
+-- reverts those exact IDs. This matters because, after this migration ships, newly
+-- settled GRN Payment bills are correctly created as BilledBill by the application
+-- code fix (#22717) — a rollback that matched on BILLTYPE/DTYPE alone would also
+-- revert those unrelated, already-correct rows.
+--
 -- UNIVERSAL: detects actual table-name case via INFORMATION_SCHEMA so this works on both
 -- case-sensitive (Linux, lower_case_table_names=0) and case-insensitive (Windows/Azure) MySQL.
 
@@ -48,9 +55,36 @@ PREPARE stmt FROM @before_sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- ── STEP 1: Bill → BilledBill for GrnPaymentPre rows ─────────────────────────
+-- ── STEP 1: RECORD AFFECTED BILL IDS FOR SAFE ROLLBACK ────────────────────────
 
-SELECT 'Step 1: DTYPE Bill -> BilledBill for BILLTYPE=GrnPaymentPre' AS status;
+SELECT 'Step 1: Recording affected bill IDs' AS status;
+
+SET @create_backup_sql = 'CREATE TABLE IF NOT EXISTS migration_v2170_grn_payment_bill_ids (
+    BILL_ID BIGINT NOT NULL PRIMARY KEY,
+    RECORDED_AT DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
+PREPARE stmt FROM @create_backup_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @record_sql = IF(@bill_table IS NULL,
+    'SELECT "SKIPPED: bill table not found" AS status',
+    CONCAT(
+        'INSERT IGNORE INTO migration_v2170_grn_payment_bill_ids (BILL_ID) ',
+        'SELECT ID FROM ', @bill_table, ' ',
+        'WHERE BILLTYPE = ''GrnPaymentPre'' ',
+        '  AND DTYPE    = ''Bill'''
+    )
+);
+PREPARE stmt FROM @record_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SELECT ROW_COUNT() AS recorded_step1;
+
+-- ── STEP 2: Bill → BilledBill for the recorded GrnPaymentPre rows ────────────
+
+SELECT 'Step 2: DTYPE Bill -> BilledBill for recorded BILLTYPE=GrnPaymentPre rows' AS status;
 
 SET @sql = IF(@bill_table IS NULL,
     'SELECT "SKIPPED: bill table not found" AS status',
@@ -58,14 +92,15 @@ SET @sql = IF(@bill_table IS NULL,
         'UPDATE ', @bill_table, ' ',
         'SET DTYPE = ''BilledBill'' ',
         'WHERE BILLTYPE = ''GrnPaymentPre'' ',
-        '  AND DTYPE    = ''Bill'''
+        '  AND DTYPE    = ''Bill'' ',
+        '  AND ID IN (SELECT BILL_ID FROM migration_v2170_grn_payment_bill_ids)'
     )
 );
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
-SELECT ROW_COUNT() AS updated_step1;
+SELECT ROW_COUNT() AS updated_step2;
 
 -- ── VERIFY ───────────────────────────────────────────────────────────────────
 
