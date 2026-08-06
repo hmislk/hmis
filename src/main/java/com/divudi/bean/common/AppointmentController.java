@@ -939,6 +939,23 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return newCancelBill;
     }
 
+    /**
+     * Cancels an appointment bill using the same cancel-bill pattern as
+     * {@link #cancelAppointment()} — creates an INWARD_APPOINTMENT_CANCEL_BILL
+     * with inverted value referencing the original bill, marks the original
+     * bill cancelled, and clones/inverts its payments — but callable from
+     * other controllers with an explicit bill/appointment instead of relying
+     * on this bean's page-scoped currentBill/currentAppointment/comment
+     * state. Used by the Inward appointment-to-admission deposit conversion
+     * flow (issue #22719).
+     */
+    public Bill cancelAppointmentBillForConversion(Bill originalBill, Appointment apt, String reason) {
+        Bill cancelBill = saveCacelBill(originalBill);
+        cancelAppointment(cancelBill, apt, reason);
+        createCancelPayments(originalBill, cancelBill);
+        return cancelBill;
+    }
+
     public void cancelAppointment() {
         if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("No Comment Selected.");

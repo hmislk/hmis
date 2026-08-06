@@ -129,6 +129,30 @@
                     </div>
                 </ui:fragment>
 
+                <!-- Pending Appointment Deposit Conversion warning: the appointment
+                     that was admitted still has an un-cancelled appointment deposit
+                     bill that hasn't been converted into this admission's Inward
+                     Deposit. Admitting from an appointment no longer auto-converts
+                     the payment (it used to silently double-count it in Daily
+                     Return); conversion is now this explicit, user-triggered step.
+                     (Issue #22719) -->
+                <ui:fragment rendered="#{webUserController.hasPrivilege('InwardEditPaymentDetails') and admissionController.hasPendingAppointmentDepositConversion}">
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 my-2" role="alert">
+                        <div>
+                            <h:outputText styleClass="fas fa-triangle-exclamation me-2"/>
+                            <h:outputText value="This admission's appointment deposit has not yet been converted into an Inward Deposit."/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Convert to Inward Deposit"
+                                ajax="false"
+                                icon="fa-solid fa-money-bill-transfer"
+                                class="ui-button-warning"
+                                action="#{admissionController.navigateToAppointmentDepositConversion()}"/>
+                        </div>
+                    </div>
+                </ui:fragment>
+
                 <div class="row">
                     <!-- Column 1: Patient Info -->
                     <div class="col-3">
