@@ -489,10 +489,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void addCreditCompnay() {
-        if (encounterCreditCompany.getCreditLimit() <= 0) {
-            JsfUtil.addErrorMessage("Credit limit must be greater than zero");
-            return;
-        }
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
             encounterCreditCompanies.add(encounterCreditCompany);
