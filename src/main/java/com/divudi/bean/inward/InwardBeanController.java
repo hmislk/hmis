@@ -2572,6 +2572,21 @@ public class InwardBeanController implements Serializable {
         return patientRoom;
     }
 
+    /**
+     * Same as the 6-arg {@link #savePatientRoom(PatientRoom, PatientRoom, RoomFacilityCharge, PatientEncounter, Date, WebUser)}
+     * but additionally sets {@code PatientRoom.admitted}, for callers (e.g. the "simultaneous"
+     * admit-and-room-assign flow) that must mark the room as occupied immediately rather than
+     * leaving it pending a separate handover/accept step.
+     */
+    public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser, boolean admitted) {
+        PatientRoom savedPatientRoom = savePatientRoom(patientRoom, previousRoom, newRoomFacilityCharge, patientEncounter, admittedAt, webUser);
+        if (savedPatientRoom != null) {
+            savedPatientRoom.setAdmitted(admitted);
+            getPatientRoomFacade().edit(savedPatientRoom);
+        }
+        return savedPatientRoom;
+    }
+
     public PatientRoom admitPatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, Date admittedAt, WebUser webUser) {
 //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
         if (patientRoom == null) {
