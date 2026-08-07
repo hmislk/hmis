@@ -1338,29 +1338,47 @@ git commit -m "feat(pharmacy): wire saveRequest/finalizeRequest to native servic
 
 ---
 
-## Task 8: Controller — bulk-add, rate lookups, email (ported verbatim)
+## Task 8: Controller — bulk-add item methods (ported verbatim)
+
+**Correction to an earlier draft of this task:** the rate-lookup chain
+(`applyLastRatesToBillItem` both overloads, `fetchLastPurchaseRatesForItems`,
+`fetchLastRetailRatesForItems`, and all their private helpers) and the email
+methods (`prepareEmailDialog`, `sendPurchaseOrderEmail`, `generatePurchaseOrderHtml`)
+were **already copied into `PurchaseOrderRequestNativeSqlController` by Task 5**
+(confirmed present in the file — Task 5's own review verified them verbatim
+against legacy). Only the bulk-add and item-history-display methods below are
+still missing. Do NOT copy the rate-lookup or email methods again — they already
+exist in the file; re-adding them would either duplicate a method (compile error)
+or silently diverge from the Task-5-verified copy.
 
 **Files:**
 - Modify: `src/main/java/com/divudi/bean/pharmacy/PurchaseOrderRequestNativeSqlController.java`
 
 **Interfaces:**
-- Consumes: nothing new — pure JPQL/JPA logic
+- Consumes: `applyLastRatesToBillItem`/`fetchLastPurchaseRatesForItems`/
+  `fetchLastRetailRatesForItems` (already present from Task 5 — call them, don't
+  recreate them), `getUnitsPerPack` (already present from Task 5)
 - Produces: `generateBillComponentsForAllSupplierItems(List<Item>)`,
   `addAllSupplierItems()`, `addAllSupplierItemsBelowRol()`, `displayItemDetails(BillItem)`,
-  `closeItemHistory()`, `prepareEmailDialog()`, `sendPurchaseOrderEmail()` — same
-  names as legacy for the copied XHTML.
+  `closeItemHistory()` — same names as legacy for the copied XHTML.
 
-Copy these methods from `PurchaseOrderRequestController` **verbatim** per Task 5's
-instructions (§2/§4 of the design spec establish these are out of the native-SQL
-migration surface — they are read-only JPQL or unrelated JPA writes like `AppEmail`).
-Only adapt field/method access to this controller's field names (`billItems`,
+Copy these methods from `PurchaseOrderRequestController` **verbatim** — read the
+legacy file first to find their current exact line numbers rather than trusting
+any line-number reference in this plan (line numbers drift). Search for
+`generateBillComponentsForAllSupplierItems`, `addAllSupplierItems`,
+`addAllSupplierItemsBelowRol`, `displayItemDetails`, `closeItemHistory` in
+`PurchaseOrderRequestController.java` and copy each method body verbatim. Only
+adapt field/method access to this controller's field names (`billItems`,
 `currentBill`, `sessionController`, `configOptionApplicationController`,
 `pharmacyBean` — inject `@EJB private PharmacyBean pharmacyBean;` if not already
 present) — do not alter the logic itself.
 
-- [ ] **Step 1: Copy the methods listed above from `PurchaseOrderRequestController`
-  lines 495–976 (rate lookups) and 1019–1443 (bulk-add, email) verbatim**, adjusting
-  only field references to match this controller.
+- [ ] **Step 1: Find and copy the 5 methods listed above from
+  `PurchaseOrderRequestController` verbatim**, adjusting only field references to
+  match this controller. Do NOT touch or re-copy any rate-lookup or email method —
+  verify each of the 5 target methods doesn't already exist in the new controller
+  before adding it (a quick grep for the method name), since this brief itself was
+  corrected once already for over-claiming what was missing.
 
 - [ ] **Step 2: Compile check**
 
