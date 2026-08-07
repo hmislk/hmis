@@ -346,18 +346,54 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             java.math.BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
             if (qty != null && qty.remainder(java.math.BigDecimal.ONE).compareTo(java.math.BigDecimal.ZERO) != 0) {
                 bi.getBillItemFinanceDetails().setQuantity(java.math.BigDecimal.ZERO);
+                recalculateLineValues(bi);
                 JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
                 calculateBillTotals();
                 return;
             }
             if (freeQty != null && freeQty.remainder(java.math.BigDecimal.ONE).compareTo(java.math.BigDecimal.ZERO) != 0) {
                 bi.getBillItemFinanceDetails().setFreeQuantity(java.math.BigDecimal.ZERO);
+                recalculateLineValues(bi);
                 JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
                 calculateBillTotals();
                 return;
             }
         }
+        recalculateLineValues(bi);
         calculateBillTotals();
+    }
+
+    /**
+     * Recomputes the BillItem-level rate/value fields (rate, netRate, grossValue,
+     * netValue) from the current BillItemFinanceDetails quantity/rate after an
+     * in-place edit on the page. BillItemFinanceDetails and PharmaceuticalBillItem
+     * fields are already correctly bound via two-way JSF EL on the qty/freeQty/rate
+     * inputs (see pharmacy_purhcase_order_request_native.xhtml), so only the
+     * BillItem-level fields — which calculateBillTotals() sums for the on-screen
+     * total — need recalculating here. Mirrors the BillItem-level subset of legacy
+     * PurchaseOrderRequestController.calculateLineValues() (no discount/tax/expense
+     * in purchase order requests, so net == gross).
+     */
+    private void recalculateLineValues(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return;
+        }
+        java.math.BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+        java.math.BigDecimal purchaseRate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        if (qty == null) {
+            qty = java.math.BigDecimal.ZERO;
+        }
+        if (purchaseRate == null) {
+            purchaseRate = java.math.BigDecimal.ZERO;
+        }
+
+        java.math.BigDecimal grossValue = purchaseRate.multiply(qty);
+        java.math.BigDecimal netValue = grossValue;
+
+        bi.setRate(purchaseRate.doubleValue());
+        bi.setNetRate(purchaseRate.doubleValue());
+        bi.setGrossValue(grossValue.doubleValue());
+        bi.setNetValue(netValue.doubleValue());
     }
 
     private void calculateBillTotals() {
@@ -515,6 +551,15 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             long billItemId = purchaseOrderRequestNativeSqlService.saveLine(currentBill.getId(), line);
             bi.setId(billItemId);
         }
+
+        // Persist bill-level netTotal/total: calculateBillTotals() only mutates
+        // the in-memory Bill, and nothing else in the native save path writes
+        // these two columns back to the DB (unlike legacy's billFacade.edit()
+        // full-entity merge). Recompute from ALL current lines (not just the
+        // one being edited) since removeSelected()/finalizeRequest() also
+        // route through this method.
+        calculateBillTotals();
+        purchaseOrderRequestNativeSqlService.updateBillTotals(currentBill.getId(), currentBill.getNetTotal(), currentBill.getTotal());
 
         return true;
     }

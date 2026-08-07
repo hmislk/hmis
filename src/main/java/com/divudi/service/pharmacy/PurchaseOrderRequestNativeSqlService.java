@@ -73,6 +73,25 @@ public class PurchaseOrderRequestNativeSqlService {
         evictCache();
     }
 
+    /**
+     * Persists the bill-level netTotal/total columns. calculateBillTotals()
+     * in the controller only mutates the in-memory Bill entity — nothing else
+     * in the native save path wrote these columns back to the DB, so totals
+     * went stale in the database after the first edit-then-save cycle.
+     * Legacy relied on billFacade.edit(currentBill) (a full JPA merge) to
+     * persist whatever calculateBillTotals() computed; this is the native
+     * equivalent for just these two columns.
+     */
+    public void updateBillTotals(long billId, double netTotal, double total) {
+        em.createNativeQuery(
+            "UPDATE " + billTable() + " SET netTotal=?, total=? WHERE ID=?")
+            .setParameter(1, netTotal)
+            .setParameter(2, total)
+            .setParameter(3, billId)
+            .executeUpdate();
+        evictCache();
+    }
+
     public boolean isBillChecked(long billId) {
         Object result = em.createNativeQuery(
             "SELECT checked FROM " + billTable() + " WHERE ID=?")
