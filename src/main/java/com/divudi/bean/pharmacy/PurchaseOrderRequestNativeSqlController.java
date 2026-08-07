@@ -273,6 +273,12 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             return;
         }
 
+        List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+        if (allowedTypes == null || !allowedTypes.contains(currentBill.getDepartmentType())) {
+            JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + currentBill.getDepartmentType().getLabel());
+            return;
+        }
+
         if (configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false)) {
             for (BillItem existing : billItems) {
                 if (existing != null && !existing.isRetired() && existing.getItem() != null
@@ -298,6 +304,9 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             return;
         }
         bi.setRetired(true);
+        if (bi.getId() != null) {
+            purchaseOrderRequestNativeSqlService.retireLine(bi.getId(), sessionController.getLoggedUser().getId());
+        }
         billItems.remove(bi);
         calculateBillTotals();
         itemHistoryVisible = false;

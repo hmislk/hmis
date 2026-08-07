@@ -374,4 +374,27 @@ public class PurchaseOrderRequestNativeSqlService {
         evictLineCache();
         return survivingCount;
     }
+
+    /**
+     * Retires a single billitem line (used when a user removes a line from
+     * an in-progress purchase order request) and its associated
+     * pharmacybillitem row. Mirrors legacy PurchaseOrderRequestController's
+     * removeItem() persisting the retirement via billItemFacade.edit(bi).
+     */
+    public void retireLine(long billItemId, long retirerId) {
+        Timestamp now = new Timestamp(new Date().getTime());
+        em.createNativeQuery(
+            "UPDATE " + billItemTable() + " SET retired=1, retirer_ID=?, retiredAt=? WHERE ID=?")
+            .setParameter(1, retirerId)
+            .setParameter(2, now)
+            .setParameter(3, billItemId)
+            .executeUpdate();
+        em.createNativeQuery(
+            "UPDATE " + pharmBillItemTable() + " SET retired=1, retirer_ID=?, retiredAt=? WHERE billItem_ID=?")
+            .setParameter(1, retirerId)
+            .setParameter(2, now)
+            .setParameter(3, billItemId)
+            .executeUpdate();
+        evictLineCache();
+    }
 }
