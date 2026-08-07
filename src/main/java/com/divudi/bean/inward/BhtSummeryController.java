@@ -2547,11 +2547,17 @@ public class BhtSummeryController implements Serializable {
         updateTotal();
         Double due = netTotal - (paidByCompany + paidByPatient);
         List<EncounterCreditCompany> encounterCreditCompanys = fillCreditCompaniesByPatient(patientEncounter);
-        for (EncounterCreditCompany ecc : encounterCreditCompanys) {
+        for (int i = 0; i < encounterCreditCompanys.size(); i++) {
+            EncounterCreditCompany ecc = encounterCreditCompanys.get(i);
             if (due > 0) {
-                if (due > ecc.getCreditLimit()) {
-                    saveCreditBillForCreditCompany(patientEncounter, ecc, ecc.getCreditLimit());
-                    due = due - ecc.getCreditLimit();
+                boolean isLastCompany = i == encounterCreditCompanys.size() - 1;
+                // Credit limit is a guide for splitting across multiple companies, not a
+                // hard cap: the last company (or the only one, the common case) always
+                // takes whatever due remains rather than leaving it unallocated.
+                double cap = (!isLastCompany && ecc.getCreditLimit() > 0) ? ecc.getCreditLimit() : due;
+                if (due > cap) {
+                    saveCreditBillForCreditCompany(patientEncounter, ecc, cap);
+                    due = due - cap;
                 } else {
                     saveCreditBillForCreditCompany(patientEncounter, ecc, due);
                     due = due - due;
@@ -2624,9 +2630,12 @@ public class BhtSummeryController implements Serializable {
                     Comparator.nullsLast(Comparator.naturalOrder())));
             // Every registered company gets a row (0.00 when the due is already
             // covered) so the cashier can redistribute freely. Auto-split honours
-            // each company's credit limit; manual edits afterwards are not capped.
+            // each company's credit limit as a guide when one is recorded (>0);
+            // an unset/zero limit (now optional) is treated as no cap rather than
+            // always suggesting 0. Manual edits afterwards are not capped either way.
             for (EncounterCreditCompany ecc : eccs) {
-                double alloc = Math.min(Math.max(0.0, remaining), ecc.getCreditLimit());
+                double cap = ecc.getCreditLimit() > 0 ? ecc.getCreditLimit() : remaining;
+                double alloc = Math.min(Math.max(0.0, remaining), cap);
                 creditCompanyAllocations.add(new CreditCompanyAllocation(ecc, alloc));
                 remaining -= alloc;
             }
@@ -2708,10 +2717,6 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Please select a credit company");
             return false;
         }
-        if (newEncounterCreditCompany.getCreditLimit() <= 0) {
-            JsfUtil.addErrorMessage("Please enter a credit limit greater than zero");
-            return false;
-        }
         if (creditCompanyAllocations == null) {
             creditCompanyAllocations = new ArrayList<>();
         }
@@ -2748,7 +2753,13 @@ public class BhtSummeryController implements Serializable {
                 ccSum += alloc.getAllocatedAmount();
             }
         }
-        double allocatable = Math.max(0.0, Math.min(expected - ccSum, newEncounterCreditCompany.getCreditLimit()));
+        double remainingDue = expected - ccSum;
+        // Suggested amount only — the cashier can raise it further in the allocation
+        // table (checkCreditAllocationTotal doesn't cap by credit limit). A recorded
+        // limit (>0) is used as the suggestion cap; an optional/unset limit suggests
+        // the full remaining due instead of always defaulting to 0.
+        double cap = newEncounterCreditCompany.getCreditLimit() > 0 ? newEncounterCreditCompany.getCreditLimit() : remainingDue;
+        double allocatable = Math.max(0.0, Math.min(remainingDue, cap));
         creditCompanyAllocations.add(new CreditCompanyAllocation(newEncounterCreditCompany, allocatable));
         moveCompanyRowsAbovePatientRow();
         recalculatePatientPortion();
@@ -3198,6 +3209,18 @@ public class BhtSummeryController implements Serializable {
         return false;
     }
 
+    private boolean hasAnyUncheckedInwardBills() {
+        return getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)
+                || getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.StoreBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.StoreBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardOutSideBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardPaymentBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.InwardPaymentBill);
+    }
+
     public String toSettle() {
 
         if (getPatientEncounter() == null) {
@@ -3224,10 +3247,18 @@ public class BhtSummeryController implements Serializable {
         System.out.println("Option = " + configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge"));
 
         System.out.println("Starting Bills Checking Process.... ");
-        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission && !getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
-            System.out.println("Checking.... ---> ");
-            if (checkBill()) {
-                return "";
+        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
+            if (!getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
+                System.out.println("Checking.... ---> ");
+                if (checkBill()) {
+                    return "";
+                }
+            } else if (!configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")
+                    && hasAnyUncheckedInwardBills()) {
+                JsfUtil.addWarningMessage("Settling with unchecked Inward Service / Professional / Pharmacy / Store / Payment bills. "
+                        + "Proceeding because you hold the 'Inward Bill Settle Without Check' privilege.");
+            } else {
+                System.out.println("Ignore Checking.... ---> ");
             }
         } else {
             System.out.println("Ignore Checking.... ---> ");
