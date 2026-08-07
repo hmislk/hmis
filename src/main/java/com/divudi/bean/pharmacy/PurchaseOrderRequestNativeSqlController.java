@@ -6,7 +6,6 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
-import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
@@ -72,8 +71,6 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private ConfigOptionController configOptionController;
-    @Inject
-    private EnumController enumController;
     @Inject
     private ItemController itemController;
 
