@@ -299,4 +299,79 @@ public class PurchaseOrderRequestNativeSqlService {
         cache.evict(com.divudi.core.entity.pharmacy.PharmaceuticalBillItem.class);
         cache.evict(BillItemFinanceDetails.class);
     }
+
+    /**
+     * Pure predicate extracted from legacy finalizeBillComponent()'s
+     * totalUnits.compareTo(BigDecimal.ZERO) <= 0 check.
+     * No em access, unit tested.
+     */
+    boolean isZeroQtyLine(double qty, double freeQty) {
+        return (qty + freeQty) <= 0;
+    }
+
+    /**
+     * Promotes BILLTYPEATOMIC to PHARMACY_ORDER and marks bill as checked.
+     * Sets checked=1, checkeAt=now, checkedBy_ID=editorId, editor_ID=editorId, editedAt=now.
+     */
+    public void finalizeBill(long billId, long editorId) {
+        em.createNativeQuery(
+            "UPDATE " + billTable()
+            + " SET BILLTYPEATOMIC=?, checked=1, checkeAt=?, checkedBy_ID=?, editor_ID=?, editedAt=? WHERE ID=?")
+            .setParameter(1, BillTypeAtomic.PHARMACY_ORDER.toString())
+            .setParameter(2, new Timestamp(new Date().getTime()))
+            .setParameter(3, editorId)
+            .setParameter(4, editorId)
+            .setParameter(5, new Timestamp(new Date().getTime()))
+            .setParameter(6, billId)
+            .executeUpdate();
+        evictCache();
+    }
+
+    /**
+     * Retires any line where qty + freeQty <= 0 (zero-qty lines).
+     * For surviving (non-retired) lines, sets remainingQty=qty and remainingFreeQty=freeQty.
+     * Returns count of surviving lines with qty > 0.
+     * Mirrors legacy finalizeBillComponent()'s totalBillItemsCount accumulation.
+     */
+    @SuppressWarnings("unchecked")
+    public int retireZeroQtyLines(long billId, long retirerId) {
+        java.util.List<Object[]> rows = em.createNativeQuery(
+            "SELECT bi.ID, pbi.qty, pbi.freeQty FROM " + billItemTable() + " bi "
+            + "JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID "
+            + "WHERE bi.bill_ID = ? AND bi.retired = 0")
+            .setParameter(1, billId)
+            .getResultList();
+
+        int survivingCount = 0;
+        Timestamp now = new Timestamp(new Date().getTime());
+        for (Object[] row : rows) {
+            long billItemId = ((Number) row[0]).longValue();
+            double qty = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+            double freeQty = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+
+            if (isZeroQtyLine(qty, freeQty)) {
+                em.createNativeQuery(
+                    "UPDATE " + billItemTable() + " SET retired=1, retirer_ID=?, retiredAt=?, retireComments=? WHERE ID=?")
+                    .setParameter(1, retirerId)
+                    .setParameter(2, now)
+                    .setParameter(3, "Retired at Finalising PO")
+                    .setParameter(4, billItemId)
+                    .executeUpdate();
+                em.createNativeQuery(
+                    "UPDATE " + pharmBillItemTable() + " SET retired=1, retirer_ID=?, retiredAt=? WHERE billItem_ID=?")
+                    .setParameter(1, retirerId)
+                    .setParameter(2, now)
+                    .setParameter(3, billItemId)
+                    .executeUpdate();
+            } else {
+                em.createNativeQuery(
+                    "UPDATE " + pharmBillItemTable() + " SET remainingQty=qty, remainingFreeQty=freeQty WHERE billItem_ID=?")
+                    .setParameter(1, billItemId)
+                    .executeUpdate();
+                survivingCount++;
+            }
+        }
+        evictLineCache();
+        return survivingCount;
+    }
 }

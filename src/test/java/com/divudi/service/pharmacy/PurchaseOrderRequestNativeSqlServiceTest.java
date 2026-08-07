@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class PurchaseOrderRequestNativeSqlServiceTest {
 
@@ -72,5 +74,27 @@ class PurchaseOrderRequestNativeSqlServiceTest {
 
         assertEquals(BigDecimal.ZERO.setScale(2), v.grossValue.setScale(2));
         assertEquals(BigDecimal.ONE, v.unitsPerPack);
+    }
+
+    @Test
+    void isZeroQtyLine_trueWhenQtyAndFreeQtyBothZero() {
+        assertTrue(service.isZeroQtyLine(0.0, 0.0));
+    }
+
+    @Test
+    void isZeroQtyLine_falseWhenQtyPositive() {
+        assertFalse(service.isZeroQtyLine(5.0, 0.0));
+    }
+
+    @Test
+    void isZeroQtyLine_falseWhenOnlyFreeQtyPositive() {
+        assertFalse(service.isZeroQtyLine(0.0, 3.0));
+    }
+
+    @Test
+    void isZeroQtyLine_trueWhenNegativeTotal() {
+        // Defensive: legacy compares totalUnits <= 0, so a negative sum (shouldn't
+        // happen in practice but the guard must match) also counts as zero-qty.
+        assertTrue(service.isZeroQtyLine(-1.0, 0.5));
     }
 }
