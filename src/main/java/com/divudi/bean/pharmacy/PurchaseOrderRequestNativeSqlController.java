@@ -343,6 +343,10 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         currentBill.setTotal(total);
     }
 
+    // synchronized: a double-submit on the Save/Finalize button (Enter-key defaultCommand
+    // racing a button click, or a resubmitted form) let two requests race through the same
+    // in-memory billItems list before either had persisted, so both saw BillItem.id == null
+    // and created every line twice, sharing one BillItemFinanceDetails (issue #21417).
     public synchronized void saveRequest() {
         if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
             return;
