@@ -269,6 +269,9 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     }
 
     public void addItem() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         if (currentBillItem.getItem() == null) {
             JsfUtil.addErrorMessage("Please select and item from the list");
             return;
@@ -1191,6 +1194,16 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         }
     }
 
+    /**
+     * HTML-escapes free-text values (item/institution/person names, addresses,
+     * phone numbers) before they are concatenated into the email body — those
+     * fields are staff-editable and would otherwise let stray HTML/script
+     * markup reach the outbound email unescaped.
+     */
+    private static String esc(String value) {
+        return value != null ? org.apache.commons.text.StringEscapeUtils.escapeHtml4(value) : "";
+    }
+
     private String generatePurchaseOrderHtml() {
         try {
             if (currentBill == null) {
@@ -1205,12 +1218,12 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             // Institution header
             if (currentBill.getCreater() != null && currentBill.getCreater().getInstitution() != null) {
                 html.append("<div style='text-align: center; margin-bottom: 20px;'>");
-                html.append("<h2>").append(currentBill.getCreater().getInstitution().getName() != null ? currentBill.getCreater().getInstitution().getName() : "").append("</h2>");
+                html.append("<h2>").append(esc(currentBill.getCreater().getInstitution().getName())).append("</h2>");
                 if (currentBill.getCreater().getInstitution().getAddress() != null) {
-                    html.append("<p>").append(currentBill.getCreater().getInstitution().getAddress()).append("</p>");
+                    html.append("<p>").append(esc(currentBill.getCreater().getInstitution().getAddress())).append("</p>");
                 }
                 if (currentBill.getCreater().getInstitution().getPhone() != null) {
-                    html.append("<p>Phone: ").append(currentBill.getCreater().getInstitution().getPhone()).append("</p>");
+                    html.append("<p>Phone: ").append(esc(currentBill.getCreater().getInstitution().getPhone())).append("</p>");
                 }
                 html.append("</div>");
             }
@@ -1219,18 +1232,18 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
 
             // Order details
             html.append("<table style='width: 100%; margin-bottom: 20px;'>");
-            html.append("<tr><td><strong>Order No:</strong></td><td>").append(currentBill.getDeptId() != null ? currentBill.getDeptId() : "").append("</td></tr>");
+            html.append("<tr><td><strong>Order No:</strong></td><td>").append(esc(currentBill.getDeptId())).append("</td></tr>");
             if (currentBill.getDepartment() != null) {
-                html.append("<tr><td><strong>Order Department:</strong></td><td>").append(currentBill.getDepartment().getName() != null ? currentBill.getDepartment().getName() : "").append("</td></tr>");
+                html.append("<tr><td><strong>Order Department:</strong></td><td>").append(esc(currentBill.getDepartment().getName())).append("</td></tr>");
             }
             if (currentBill.getToInstitution() != null) {
-                html.append("<tr><td><strong>Supplier:</strong></td><td>").append(currentBill.getToInstitution().getName() != null ? currentBill.getToInstitution().getName() : "").append("</td></tr>");
-                html.append("<tr><td><strong>Supplier Code:</strong></td><td>").append(currentBill.getToInstitution().getCode() != null ? currentBill.getToInstitution().getCode() : "").append("</td></tr>");
+                html.append("<tr><td><strong>Supplier:</strong></td><td>").append(esc(currentBill.getToInstitution().getName())).append("</td></tr>");
+                html.append("<tr><td><strong>Supplier Code:</strong></td><td>").append(esc(currentBill.getToInstitution().getCode())).append("</td></tr>");
                 if (currentBill.getToInstitution().getPhone() != null) {
-                    html.append("<tr><td><strong>Supplier Phone:</strong></td><td>").append(currentBill.getToInstitution().getPhone()).append("</td></tr>");
+                    html.append("<tr><td><strong>Supplier Phone:</strong></td><td>").append(esc(currentBill.getToInstitution().getPhone())).append("</td></tr>");
                 }
                 if (currentBill.getToInstitution().getAddress() != null) {
-                    html.append("<tr><td><strong>Supplier Address:</strong></td><td>").append(currentBill.getToInstitution().getAddress()).append("</td></tr>");
+                    html.append("<tr><td><strong>Supplier Address:</strong></td><td>").append(esc(currentBill.getToInstitution().getAddress())).append("</td></tr>");
                 }
             }
             html.append("<tr><td><strong>Payment Method:</strong></td><td>").append(currentBill.getPaymentMethod() != null ? currentBill.getPaymentMethod().toString() : "").append("</td></tr>");
@@ -1253,8 +1266,8 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                 for (BillItem bi : billItems) {
                     if (bi != null && !bi.isRetired() && bi.getItem() != null) {
                         html.append("<tr>");
-                        html.append("<td style='padding: 8px;'>").append(bi.getItem().getCode() != null ? bi.getItem().getCode() : "").append("</td>");
-                        html.append("<td style='padding: 8px;'>").append(bi.getItem().getName() != null ? bi.getItem().getName() : "").append("</td>");
+                        html.append("<td style='padding: 8px;'>").append(esc(bi.getItem().getCode())).append("</td>");
+                        html.append("<td style='padding: 8px;'>").append(esc(bi.getItem().getName())).append("</td>");
                         html.append("<td style='padding: 8px; text-align: right;'>");
                         if (bi.getPharmaceuticalBillItem() != null) {
                             html.append(String.format("%,.0f", bi.getPharmaceuticalBillItem().getQty()));
@@ -1286,10 +1299,10 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             // Footer details
             html.append("<div style='margin-top: 20px;'>");
             if (currentBill.getCreater() != null && currentBill.getCreater().getWebUserPerson() != null) {
-                html.append("<p><strong>Order Initiated By:</strong> ").append(currentBill.getCreater().getWebUserPerson().getName() != null ? currentBill.getCreater().getWebUserPerson().getName() : "").append("</p>");
+                html.append("<p><strong>Order Initiated By:</strong> ").append(esc(currentBill.getCreater().getWebUserPerson().getName())).append("</p>");
             }
             if (currentBill.getCheckedBy() != null) {
-                html.append("<p><strong>Order Finalized By:</strong> ").append(currentBill.getCheckedBy().getName() != null ? currentBill.getCheckedBy().getName() : "").append("</p>");
+                html.append("<p><strong>Order Finalized By:</strong> ").append(esc(currentBill.getCheckedBy().getName())).append("</p>");
             }
             if (currentBill.getCheckeAt() != null) {
                 html.append("<p><strong>Order Finalized At:</strong> ").append(CommonFunctions.formatDate(currentBill.getCheckeAt(), "dd/MM/yyyy HH:mm:ss")).append("</p>");
