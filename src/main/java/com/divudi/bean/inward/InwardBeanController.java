@@ -2579,12 +2579,10 @@ public class InwardBeanController implements Serializable {
      * leaving it pending a separate handover/accept step.
      */
     public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser, boolean admitted) {
-        PatientRoom savedPatientRoom = savePatientRoom(patientRoom, previousRoom, newRoomFacilityCharge, patientEncounter, admittedAt, webUser);
-        if (savedPatientRoom != null) {
-            savedPatientRoom.setAdmitted(admitted);
-            getPatientRoomFacade().edit(savedPatientRoom);
+        if (patientRoom != null) {
+            patientRoom.setAdmitted(admitted);
         }
-        return savedPatientRoom;
+        return savePatientRoom(patientRoom, previousRoom, newRoomFacilityCharge, patientEncounter, admittedAt, webUser);
     }
 
     public PatientRoom admitPatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, Date admittedAt, WebUser webUser) {
