@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.AppointmentController;
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
@@ -24,6 +25,7 @@ import com.divudi.core.data.admin.PageMetadata;
 
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.AdmissionStatus;
@@ -32,6 +34,7 @@ import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
@@ -167,6 +170,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
     @Inject
     AppointmentController appointmentController;
+    @Inject
+    BillSearch billSearch;
     @Inject
     private ConfigOptionController configOptionController;
     @Inject
@@ -2426,6 +2431,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         PaymentMethod appointmentPaymentMethod = originalBill.getPaymentMethod() != null
                 ? originalBill.getPaymentMethod()
                 : getCurrent().getPaymentMethod();
+        PaymentMethodData conversionPaymentMethodData = buildPaymentMethodDataFromOriginalPayment(originalBill, appointmentPaymentMethod, amount);
+        if (conversionPaymentMethodData != null) {
+            getInwardPaymentController().setPaymentMethodData(conversionPaymentMethodData);
+        }
         getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
         getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
         getInwardPaymentController().getCurrent().setPatientEncounter(current);
@@ -2435,6 +2444,79 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         pendingAppointmentConversion = null;
         JsfUtil.addSuccessMessage("Appointment deposit converted to Inward Deposit.");
+    }
+
+    /**
+     * Builds the {@link PaymentMethodData} needed by
+     * {@link InwardPaymentController#pay()} so the new Inward Deposit
+     * carries the same bank/cheque/reference details as the original
+     * appointment deposit payment — e.g. a cheque given as "Sampath Bank
+     * 1134" for the appointment must produce a new deposit payment that
+     * also reads "Sampath Bank 1134", not just the same amount and payment
+     * method. Returns {@code null} for {@code Cash} (no extra data needed)
+     * and for methods with no original {@link Payment} row to copy from.
+     * {@code PatientDeposit} is intentionally not handled here — reversing
+     * and re-consuming deposit balance correctly needs its own dedicated
+     * fix and was already unsupported by this conversion flow before this
+     * method existed.
+     */
+    private PaymentMethodData buildPaymentMethodDataFromOriginalPayment(Bill originalBill, PaymentMethod method, double amount) {
+        if (method == null || method == PaymentMethod.Cash) {
+            return null;
+        }
+        List<Payment> originalPayments = billSearch.fetchBillPayments(originalBill);
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return null;
+        }
+        Payment original = originalPayments.get(0);
+
+        PaymentMethodData pmd = new PaymentMethodData();
+        ComponentDetail cd;
+        switch (method) {
+            case Card:
+                cd = pmd.getCreditCard();
+                cd.setInstitution(original.getBank());
+                cd.setNo(original.getCreditCardRefNo());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case Cheque:
+                cd = pmd.getCheque();
+                cd.setInstitution(original.getBank());
+                cd.setNo(original.getChequeRefNo());
+                cd.setDate(original.getChequeDate());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case Slip:
+                cd = pmd.getSlip();
+                cd.setInstitution(original.getBank());
+                cd.setDate(original.getChequeDate() != null ? original.getChequeDate() : original.getPaymentDate());
+                cd.setReferenceNo(original.getReferenceNo());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case ewallet:
+                cd = pmd.getEwallet();
+                cd.setInstitution(original.getBank());
+                cd.setReferenceNo(original.getReferenceNo());
+                cd.setReferralNo(original.getPolicyNo());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case OnlineSettlement:
+                cd = pmd.getOnlineSettlement();
+                cd.setInstitution(original.getBank());
+                cd.setReferenceNo(original.getReferenceNo());
+                cd.setDate(original.getPaymentDate());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            default:
+                return null;
+        }
+        pmd.setPaymentMethod(method);
+        return pmd;
     }
     // </editor-fold>
 
