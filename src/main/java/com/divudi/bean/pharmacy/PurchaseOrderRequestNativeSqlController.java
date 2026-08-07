@@ -254,6 +254,86 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         financeDetails.setRetailSaleRate(BigDecimal.valueOf(retailRate));
     }
 
+    public void addItem() {
+        if (currentBillItem.getItem() == null) {
+            JsfUtil.addErrorMessage("Please select and item from the list");
+            return;
+        }
+
+        if (currentBill.getDepartmentType() == null) {
+            currentBill.setDepartmentType(currentBillItem.getItem().getDepartmentType() != null
+                    ? currentBillItem.getItem().getDepartmentType() : DepartmentType.Pharmacy);
+        }
+
+        DepartmentType itemDepartmentType = currentBillItem.getItem().getDepartmentType();
+        if (itemDepartmentType != null && !itemDepartmentType.equals(currentBill.getDepartmentType())) {
+            JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                    + "Bill is set for " + currentBill.getDepartmentType().getLabel()
+                    + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false)) {
+            for (BillItem existing : billItems) {
+                if (existing != null && !existing.isRetired() && existing.getItem() != null
+                        && existing.getItem().equals(currentBillItem.getItem())) {
+                    JsfUtil.addErrorMessage("This item has already been added to the purchase order. Please update the quantity of the existing item instead of adding it again.");
+                    return;
+                }
+            }
+        }
+
+        currentBillItem.setSearialNo(billItems.size());
+        applyLastRatesToBillItem(currentBillItem);
+        billItems.add(currentBillItem);
+        calculateBillTotals();
+        currentBillItem = new BillItem();
+    }
+
+    public void removeItem(BillItem bi) {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
+        if (currentBill == null || bi == null) {
+            return;
+        }
+        bi.setRetired(true);
+        billItems.remove(bi);
+        calculateBillTotals();
+        itemHistoryVisible = false;
+    }
+
+    public void onEdit(BillItem bi) {
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            java.math.BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            java.math.BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+            if (qty != null && qty.remainder(java.math.BigDecimal.ONE).compareTo(java.math.BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setQuantity(java.math.BigDecimal.ZERO);
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                calculateBillTotals();
+                return;
+            }
+            if (freeQty != null && freeQty.remainder(java.math.BigDecimal.ONE).compareTo(java.math.BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setFreeQuantity(java.math.BigDecimal.ZERO);
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                calculateBillTotals();
+                return;
+            }
+        }
+        calculateBillTotals();
+    }
+
+    private void calculateBillTotals() {
+        double total = 0.0;
+        for (BillItem bi : billItems) {
+            if (bi != null && !bi.isRetired()) {
+                total += bi.getNetValue();
+            }
+        }
+        currentBill.setNetTotal(total);
+        currentBill.setTotal(total);
+    }
+
     private BigDecimal getUnitsPerPack(Item item) {
         if (item instanceof Ampp) {
             BigDecimal unitsPerPack = BigDecimal.valueOf(item.getDblValue());
