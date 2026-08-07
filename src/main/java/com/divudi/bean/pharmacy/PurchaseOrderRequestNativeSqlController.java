@@ -136,7 +136,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         return result != null ? result : new ArrayList<>();
     }
 
-    private void resetBillValues() {
+    public void resetBillValues() {
         currentBill = null;
         currentBillItem = new BillItem();
         billItems = new ArrayList<>();
@@ -315,6 +315,29 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         billItems.remove(bi);
         calculateBillTotals();
         itemHistoryVisible = false;
+    }
+
+    public void removeSelected() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
+        if (selectedBillItems == null) {
+            return;
+        }
+        saveRequestWithoutMessage();
+        for (BillItem b : selectedBillItems) {
+            b.setBill(null);
+            b.setRetired(true);
+            b.setRetirer(sessionController.getLoggedUser());
+            b.setRetiredAt(new Date());
+            if (b.getId() != null) {
+                purchaseOrderRequestNativeSqlService.retireLine(b.getId(), sessionController.getLoggedUser().getId());
+            }
+        }
+
+        billItems.removeAll(selectedBillItems);
+        calculateBillTotals();
+        selectedBillItems = null;
     }
 
     public void onEdit(BillItem bi) {
