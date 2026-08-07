@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
+import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
@@ -48,6 +50,9 @@ public class DatabaseMigrationService {
     @EJB
     private DatabaseMigrationVersionCheckService databaseMigrationVersionCheckService;
 
+    @Resource
+    private SessionContext sessionContext;
+
     private volatile boolean migrationPending = true;
 
     @PostConstruct
@@ -66,16 +71,23 @@ public class DatabaseMigrationService {
         LOGGER.info("DatabaseMigrationService: Migration page is open to all users until marked as complete or not necessary.");
         try {
             // Fire-and-forget: runs on a background thread via @Asynchronous.
-            // Must go through the injected proxy, not a self-invocation, or
-            // @Asynchronous would be silently ignored and this would block
-            // startup exactly like the code removed in c32868a9f5.
-            databaseMigrationVersionCheckService.checkAndUpdateMigrationStatus(this);
+            // Pass the container-managed no-interface business proxy (via
+            // SessionContext.getBusinessObject), never raw "this" — the
+            // callback's calls back into this bean must go through the
+            // proxy so singleton concurrency locking applies. Also, the
+            // outbound call itself must go through the injected
+            // databaseMigrationVersionCheckService proxy, not a
+            // self-invocation, or @Asynchronous would be silently ignored
+            // and this would block startup exactly like the code removed
+            // in c32868a9f5.
+            DatabaseMigrationService self = sessionContext.getBusinessObject(DatabaseMigrationService.class);
+            databaseMigrationVersionCheckService.checkAndUpdateMigrationStatus(self);
         } catch (Exception e) {
             LOGGER.log(Level.FINE, "DatabaseMigrationService: Could not schedule background DDL version check.", e);
         }
     }
 
-    String readStoredDdlVersion() {
+    public String readStoredDdlVersion() {
         try {
             Map<String, Object> params = new HashMap<>();
             params.put("key", CONFIG_KEY_DDL_VERSION);
