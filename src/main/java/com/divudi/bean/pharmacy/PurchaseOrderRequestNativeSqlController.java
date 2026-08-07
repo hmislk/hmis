@@ -343,6 +343,110 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         currentBill.setTotal(total);
     }
 
+    public synchronized void saveRequest() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
+        boolean saved = saveRequestWithoutMessage();
+        if (saved) {
+            JsfUtil.addSuccessMessage("Request Saved");
+        }
+    }
+
+    private boolean saveRequestWithoutMessage() {
+        if (currentBill.isChecked()) {
+            JsfUtil.addErrorMessage("Cannot save a finalized bill");
+            return false;
+        }
+        if (currentBill.getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select a supplier");
+            return false;
+        }
+
+        if (currentBill.getId() == null) {
+            String[] billNumbers = createAndAssignBillNumber();
+            long newBillId = purchaseOrderRequestNativeSqlService.createDraftBill(
+                    sessionController.getLoggedUser().getDepartment().getId(),
+                    sessionController.getLoggedUser().getDepartment().getInstitution().getId(),
+                    sessionController.getLoggedUser().getId(),
+                    billNumbers[0],
+                    billNumbers[1]);
+            currentBill = billFacade.find(newBillId);
+        }
+
+        purchaseOrderRequestNativeSqlService.updateDraftBillHeader(
+                currentBill.getId(),
+                currentBill.getToInstitution().getId(),
+                currentBill.getPaymentMethod(),
+                currentBill.getCreditDuration(),
+                currentBill.isConsignment(),
+                currentBill.getDepartmentType(),
+                sessionController.getLoggedUser().getId());
+
+        for (BillItem bi : billItems) {
+            PurchaseOrderRequestLineData line = toLineData(bi);
+            long billItemId = purchaseOrderRequestNativeSqlService.saveLine(currentBill.getId(), line);
+            bi.setId(billItemId);
+        }
+
+        return true;
+    }
+
+    public synchronized void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PurchaseOrderFinalize")) {
+            return;
+        }
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (currentBill.getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please selectr a supplier");
+            return;
+        }
+        if (currentBill.isChecked()) {
+            JsfUtil.addErrorMessage("Cannot finalize an already finalized bill");
+            return;
+        }
+        if (currentBill.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a payment method.");
+            return;
+        }
+        if (billItems == null || billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items.");
+            return;
+        }
+        saveRequestWithoutMessage();
+
+        purchaseOrderRequestNativeSqlService.finalizeBill(currentBill.getId(), sessionController.getLoggedUser().getId());
+        int survivingCount = purchaseOrderRequestNativeSqlService.retireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
+        if (survivingCount == 0) {
+            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
+            return;
+        }
+
+        currentBill = billFacade.find(currentBill.getId());
+        billItems = loadBillItems(currentBill);
+        JsfUtil.addSuccessMessage("Request successfully finalized.");
+        printPreview = true;
+    }
+
+    private PurchaseOrderRequestLineData toLineData(BillItem bi) {
+        PurchaseOrderRequestLineData line = new PurchaseOrderRequestLineData();
+        line.setBillItemId(bi.getId());
+        line.setPharmaceuticalBillItemId(bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getId() : null);
+        line.setItemId(bi.getItem().getId());
+        line.setAmpp(bi.getItem() instanceof com.divudi.core.entity.pharmacy.Ampp);
+        line.setQuantity(bi.getBillItemFinanceDetails().getQuantity());
+        line.setFreeQuantity(bi.getBillItemFinanceDetails().getFreeQuantity());
+        line.setPurchaseRate(bi.getBillItemFinanceDetails().getLineGrossRate());
+        line.setRetailRate(bi.getBillItemFinanceDetails().getRetailSaleRate());
+        line.setUnitsPerPack(bi.getBillItemFinanceDetails().getUnitsPerPack());
+        line.setSerialNo(bi.getSearialNo());
+        line.setCreaterId(sessionController.getLoggedUser().getId());
+        return line;
+    }
+
     private BigDecimal getUnitsPerPack(Item item) {
         if (item instanceof Ampp) {
             BigDecimal unitsPerPack = BigDecimal.valueOf(item.getDblValue());
@@ -631,7 +735,20 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         private Institution institution;
     }
 
-    private void createAndAssignBillNumber() {
+    /**
+     * Computes the department-scoped and institution-scoped bill number
+     * strings in a single invocation. Returns {@code String[]{deptId, insId}}.
+     * <p>
+     * Adapted from legacy's mutate-{@code currentBill}-directly style: at the
+     * point this is called in the native flow, {@code createDraftBill()} has
+     * not run yet, so there is no bill row to mutate. The exact same strategy
+     * branching and the exact same deptId-to-insId fallback relationship
+     * (insId normally reuses the just-computed deptId, per legacy
+     * {@code PurchaseOrderRequestController.java:830-881}) are preserved.
+     * Must be called exactly once per save — deptId and insId are NOT
+     * independent draws from the sequence generator.
+     */
+    private String[] createAndAssignBillNumber() {
         // Check if bill number suffix is configured, if not set default "POR" for Purchase Order Requests
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "");
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
@@ -639,49 +756,30 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "POR");
         }
 
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
-        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean stratDeptInsYear = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean stratInsDeptYear = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean stratInsYear = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean stratInsIdInsYear = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
 
-        String billId = "";
-
-        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
-            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
-                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-                getCurrentBill().setDeptId(billId);
-            }
-        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
-            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
-                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-                getCurrentBill().setDeptId(billId);
-            }
-        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
-            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
-                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-                getCurrentBill().setDeptId(billId);
-            }
+        String deptId;
+        if (stratDeptInsYear) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+        } else if (stratInsDeptYear) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+        } else if (stratInsYear) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
         } else {
-            //Keep Legacy Method intact without any changes
-            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
-                billId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-                getCurrentBill().setDeptId(billId);
-            }
+            deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
         }
 
-        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-            if (getCurrentBill().getInsId() == null || getCurrentBill().getInsId().trim().equals("")) {
-                String insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-                getCurrentBill().setInsId(insId);
-            }
+        String insId;
+        if (stratInsIdInsYear) {
+            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
         } else {
-            //Keep Legacy Method intact without any changes
-            if (getCurrentBill().getInsId() == null || getCurrentBill().getInsId().trim().equals("")) {
-                if (billId != null && !billId.trim().isEmpty()) {
-                    getCurrentBill().setInsId(billId);
-                }
-            }
+            insId = (deptId != null && !deptId.trim().isEmpty()) ? deptId : null;
         }
+
+        return new String[]{deptId, insId};
     }
 
     public void prepareEmailDialog() {
