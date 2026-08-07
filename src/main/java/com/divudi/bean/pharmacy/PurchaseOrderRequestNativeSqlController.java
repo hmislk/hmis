@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
@@ -64,6 +65,9 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(PurchaseOrderRequestNativeSqlController.class.getName());
 
+    /** Smallest purchase rate a line may carry and still be finalizable. */
+    private static final double MIN_PURCHASE_RATE = 0.00001;
+
     @Inject
     private SessionController sessionController;
     @Inject
@@ -72,6 +76,8 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private ConfigOptionController configOptionController;
+    @Inject
+    private EnumController enumController;
     @Inject
     private ItemController itemController;
     @Inject
@@ -107,7 +113,10 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
 
     public String navigateToCreateNewPurchaseOrder() {
         resetBillValues();
-        currentBill = new Bill();
+        // getCurrentBill() rebuilds the draft with the configured default
+        // payment method and consignment flag, so the entry path and the page's
+        // "New Order" buttons produce an identically initialised bill.
+        getCurrentBill();
         return "/pharmacy/pharmacy_purhcase_order_request_native?faces-redirect=true";
     }
 
@@ -402,15 +411,148 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         bi.setNetValue(netValue.doubleValue());
     }
 
+    /**
+     * Recomputes the on-screen bill total AND renumbers the surviving lines'
+     * serial numbers so they stay contiguous from 0.
+     * <p>
+     * Renumbering matters because the page's dataTable uses
+     * {@code rowKey="#{bi.searialNo}"} (see
+     * pharmacy_purhcase_order_request_native.xhtml) and both {@code addItem()}
+     * and {@code generateBillComponentsForAllSupplierItems()} seed a new line's
+     * serial from {@code billItems.size()}. After a removal the size shrinks
+     * back over a serial already held by a survivor, so the next added line
+     * would collide with it and PrimeFaces would bind edits to the wrong row.
+     * Mirrors legacy PurchaseOrderRequestController.calculateBillTotals().
+     */
     private void calculateBillTotals() {
         double total = 0.0;
+        int serialNo = 0;
         for (BillItem bi : billItems) {
-            if (bi != null && !bi.isRetired()) {
-                total += bi.getNetValue();
+            if (bi == null || bi.isRetired()) {
+                continue;
             }
+            bi.setSearialNo(serialNo++);
+            total += bi.getNetValue();
         }
         currentBill.setNetTotal(total);
         currentBill.setTotal(total);
+    }
+
+    /**
+     * Total quantity (in atomic units) across all non-retired lines. Used as
+     * the in-memory pre-check that a finalize is allowed at all, before any
+     * native mutation touches the DB. Mirrors legacy
+     * PurchaseOrderRequestController.calculateTotalBillItemsCount().
+     */
+    private double calculateTotalBillItemsCount(List<BillItem> items) {
+        double total = 0d;
+        if (items == null) {
+            return total;
+        }
+        for (BillItem b : items) {
+            if (b == null || b.isRetired()) {
+                continue;
+            }
+            BigDecimal totalUnits = totalUnitsForLine(b);
+            if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
+                total += totalUnits.doubleValue();
+            }
+        }
+        return total;
+    }
+
+    /**
+     * True only when every non-retired line carries at least one atomic unit of
+     * quantity and a usable purchase rate. Mirrors legacy
+     * PurchaseOrderRequestController.allBillItemsValid().
+     */
+    private boolean allBillItemsValid(List<BillItem> items) {
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        boolean sawLine = false;
+        for (BillItem bi : items) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+            sawLine = true;
+            com.divudi.core.entity.BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd == null) {
+                return false;
+            }
+            // Require at least one atomic unit (e.g., tablet)
+            if (totalUnitsForLine(bi).compareTo(BigDecimal.ONE) < 0) {
+                return false;
+            }
+            BigDecimal rate = fd.getLineGrossRate();
+            if (rate == null || rate.compareTo(BigDecimal.valueOf(MIN_PURCHASE_RATE)) < 0) {
+                return false;
+            }
+        }
+        return sawLine;
+    }
+
+    /**
+     * Quantity + free quantity for a line, expressed in atomic units.
+     * <p>
+     * Legacy reads {@code BillItemFinanceDetails.quantityByUnits} /
+     * {@code freeQuantityByUnits} directly, because legacy's
+     * {@code calculateLineValues()} refreshes those two in-memory fields on
+     * every edit. The native flow deliberately does NOT: {@code quantityByUnits}
+     * is computed server-side inside
+     * {@code PurchaseOrderRequestNativeSqlService.saveBillItemFinanceDetails()},
+     * and the page binds only {@code quantity} / {@code freeQuantity} /
+     * {@code lineGrossRate}. A freshly added, not-yet-saved line therefore has
+     * a null {@code quantityByUnits}, so reading it directly would reject every
+     * valid new order. Derive it here from the same inputs and the same formula
+     * the service uses (pack quantity x unitsPerPack), so validation matches
+     * what will actually be persisted.
+     */
+    private BigDecimal totalUnitsForLine(BillItem bi) {
+        com.divudi.core.entity.BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        if (fd == null) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal qty = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
+        BigDecimal freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
+        BigDecimal unitsPerPack = (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0)
+                ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        if (bi.getItem() instanceof Ampp) {
+            return qty.multiply(unitsPerPack).add(freeQty.multiply(unitsPerPack));
+        }
+        return qty.add(freeQty);
+    }
+
+    /**
+     * A duplicate-line removal can leave the surviving BillItem with a lazily
+     * created all-zero PharmaceuticalBillItem while its BillItemFinanceDetails
+     * still holds the real quantities; downstream approval/GRN reads the PBI,
+     * so rebuild the derived line values from the finance details before
+     * persisting (issue #21417).
+     * <p>
+     * The native flow rebuilds the persisted PBI qty/freeQty from the line's
+     * BillItemFinanceDetails on every save (see
+     * {@code toLineData()} -> {@code PurchaseOrderRequestNativeSqlService.saveLine()}),
+     * so the PBI columns self-heal. What does NOT self-heal is the in-memory
+     * BillItem's own rate/netValue fields, which {@code calculateBillTotals()}
+     * sums for the on-screen and persisted bill total. Recalculate them here,
+     * matching legacy's {@code calculateLineValues(b)} call.
+     */
+    private void resyncPharmaceuticalBillItemIfEmpty(BillItem b) {
+        if (b == null || b.isRetired() || b.getBillItemFinanceDetails() == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbi = b.getPharmaceuticalBillItem();
+        if (pbi == null || pbi.getQty() != 0 || pbi.getFreeQty() != 0) {
+            return;
+        }
+        BigDecimal qtyByUnits = b.getBillItemFinanceDetails().getQuantity();
+        BigDecimal freeQtyByUnits = b.getBillItemFinanceDetails().getFreeQuantity();
+        boolean financeDetailsHaveQty = (qtyByUnits != null && qtyByUnits.compareTo(BigDecimal.ZERO) > 0)
+                || (freeQtyByUnits != null && freeQtyByUnits.compareTo(BigDecimal.ZERO) > 0);
+        if (financeDetailsHaveQty) {
+            recalculateLineValues(b);
+        }
     }
 
     public void generateBillComponentsForAllSupplierItems(List<Item> items) {
@@ -553,6 +695,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                 sessionController.getLoggedUser().getId());
 
         for (BillItem bi : billItems) {
+            resyncPharmaceuticalBillItemIfEmpty(bi);
             PurchaseOrderRequestLineData line = toLineData(bi);
             long billItemId = purchaseOrderRequestNativeSqlService.saveLine(currentBill.getId(), line);
             bi.setId(billItemId);
@@ -594,14 +737,30 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("Please add bill items.");
             return;
         }
-        saveRequestWithoutMessage();
-
-        purchaseOrderRequestNativeSqlService.finalizeBill(currentBill.getId(), sessionController.getLoggedUser().getId());
-        int survivingCount = purchaseOrderRequestNativeSqlService.retireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
-        if (survivingCount == 0) {
+        // Every guard below runs against the IN-MEMORY line list, before any
+        // native mutation reaches the DB. finalizeBill() sets checked=1 and
+        // promotes BILLTYPEATOMIC, and retireZeroQtyLines() retires lines --
+        // both commit immediately. Letting them run first and only then
+        // discovering the bill had no real quantity left the bill permanently
+        // checked=1 with every line retired, and the page disables Save and
+        // Finalize once checked=true, so it could never be recovered.
+        if (!allBillItemsValid(billItems)) {
+            JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
+            return;
+        }
+        if (calculateTotalBillItemsCount(billItems) == 0) {
             JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
             return;
         }
+
+        // Validation passed -- safe to persist, then promote.
+        if (!saveRequestWithoutMessage()) {
+            return;
+        }
+
+        purchaseOrderRequestNativeSqlService.finalizeBill(currentBill.getId(), sessionController.getLoggedUser().getId());
+        // Per-line sweep for any zero-qty straggler that survived validation.
+        purchaseOrderRequestNativeSqlService.retireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
 
         currentBill = billFacade.find(currentBill.getId());
         billItems = loadBillItems(currentBill);
@@ -1148,7 +1307,33 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     }
 
     // Getters/setters
+    /**
+     * Lazily rebuilds a fresh draft bill when the field is null.
+     * <p>
+     * The three "New Order" buttons on the page bind straight to
+     * {@code resetBillValues()}, which nulls {@code currentBill} without
+     * recreating it. Every writable header binding on the page
+     * ({@code currentBill.toInstitution}, {@code .paymentMethod},
+     * {@code .consignment}, {@code .comments}, {@code .departmentType},
+     * {@code .creditDuration}) then resolves against null and fails on the next
+     * form interaction. Reconstructing here — with the same config-driven
+     * defaults legacy applies — makes "New Order" leave the page immediately
+     * usable. Mirrors legacy PurchaseOrderRequestController.getCurrentBill().
+     */
     public Bill getCurrentBill() {
+        if (currentBill == null) {
+            currentBill = new Bill();
+            currentBill.setBillType(BillType.PharmacyOrder);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
+
+            String strEnumValue = configOptionApplicationController.getEnumValueByKey("Pharmacy Purchase Order Default Payment Method");
+            PaymentMethod pm = enumController.getEnumValue(PaymentMethod.class, strEnumValue);
+            currentBill.setPaymentMethod(pm);
+
+            boolean consignmentEnabled = configOptionApplicationController.getBooleanValueByKey(
+                    "Consignment Option is checked in new Pharmacy Purchasing Bills", false);
+            currentBill.setConsignment(consignmentEnabled);
+        }
         return currentBill;
     }
 
