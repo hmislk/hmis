@@ -9,8 +9,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Native SQL write path for the Purchase Order Request draft bill.
@@ -21,8 +19,6 @@ import java.util.logging.Logger;
  */
 @Stateless
 public class PurchaseOrderRequestNativeSqlService {
-
-    private static final Logger LOGGER = Logger.getLogger(PurchaseOrderRequestNativeSqlService.class.getName());
 
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
@@ -103,11 +99,13 @@ public class PurchaseOrderRequestNativeSqlService {
         return tBill;
     }
 
+    // Forward-declared table helpers; used by line-item and finalization methods added in Task 3/4
     private String billItemTable() {
         if (tBillItem == null) tBillItem = resolveTable("BILLITEM");
         return tBillItem;
     }
 
+    // Forward-declared table helpers; used by line-item and finalization methods added in Task 3/4
     private String pharmBillItemTable() {
         if (tPharmBillItem == null) tPharmBillItem = resolveTable("PHARMACEUTICALBILLITEM");
         return tPharmBillItem;
