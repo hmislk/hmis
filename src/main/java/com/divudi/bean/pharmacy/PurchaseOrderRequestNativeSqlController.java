@@ -314,6 +314,9 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         }
         billItems.remove(bi);
         calculateBillTotals();
+        if (currentBill.getId() != null) {
+            purchaseOrderRequestNativeSqlService.updateBillTotals(currentBill.getId(), currentBill.getNetTotal(), currentBill.getTotal());
+        }
         itemHistoryVisible = false;
     }
 
@@ -337,6 +340,9 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
 
         billItems.removeAll(selectedBillItems);
         calculateBillTotals();
+        if (currentBill.getId() != null) {
+            purchaseOrderRequestNativeSqlService.updateBillTotals(currentBill.getId(), currentBill.getNetTotal(), currentBill.getTotal());
+        }
         selectedBillItems = null;
     }
 
