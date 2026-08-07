@@ -1176,12 +1176,13 @@ private boolean saveRequestWithoutMessage() {
     }
 
     if (currentBill.getId() == null) {
+        String[] billNumbers = createAndAssignBillNumber();
         long newBillId = purchaseOrderRequestNativeSqlService.createDraftBill(
                 sessionController.getLoggedUser().getDepartment().getId(),
                 sessionController.getLoggedUser().getDepartment().getInstitution().getId(),
                 sessionController.getLoggedUser().getId(),
-                createAndAssignBillNumber(),
-                createAndAssignBillNumber());
+                billNumbers[0],
+                billNumbers[1]);
         currentBill = billFacade.find(newBillId);
     }
 
@@ -1227,11 +1228,7 @@ public synchronized void finalizeRequest() {
         JsfUtil.addErrorMessage("Please add bill items.");
         return;
     }
-    if (currentBill.getId() == null) {
-        saveRequestWithoutMessage();
-    } else {
-        saveRequestWithoutMessage();
-    }
+    saveRequestWithoutMessage();
 
     purchaseOrderRequestNativeSqlService.finalizeBill(currentBill.getId(), sessionController.getLoggedUser().getId());
     int survivingCount = purchaseOrderRequestNativeSqlService.retireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
@@ -1263,13 +1260,69 @@ private PurchaseOrderRequestLineData toLineData(BillItem bi) {
 }
 ```
 
-Note: `createAndAssignBillNumber()` here returns the generated `deptId`/`insId`
-string per the legacy method (copied per Task 5's instructions, adapted to
-`return` rather than mutate `currentBill` directly since the bill doesn't exist
-yet at that point in this native flow) — implement it in this task by adapting
-legacy `PurchaseOrderRequestController.createAndAssignBillNumber()`'s 4-strategy
-branching to return the computed `deptId` string, and call it twice (deptId
-strategy, then insId strategy) exactly as legacy does internally.
+**`createAndAssignBillNumber()` must return `String[2]` = `{deptId, insId}` from a
+SINGLE call — never call it twice.** This is a correction to an earlier draft of
+this plan that called it twice (once "for deptId", once "for insId"); that is
+wrong and would generate two independent sequence numbers. Verified against the
+actual legacy method (`PurchaseOrderRequestController.java:830-881`): legacy
+computes `deptId` exactly once via one of 4 configured strategies (lines
+845-866), THEN computes `insId` either via its own separate strategy (line
+868-872) OR — in the default/most common case — by reusing the just-computed
+`deptId` value as `insId`'s fallback (lines 873-879: `if (billId != null &&
+!billId.trim().isEmpty()) { getCurrentBill().setInsId(billId); }`). `deptId` and
+`insId` are NOT independent draws from the sequence generator; `insId` depends
+on the `deptId` computed in the same invocation.
+
+Implement `createAndAssignBillNumber()` in this task as:
+
+```java
+private String[] createAndAssignBillNumber() {
+    String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "");
+    if (billSuffix == null || billSuffix.trim().isEmpty()) {
+        configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "POR");
+    }
+
+    boolean stratDeptInsYear = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+    boolean stratInsDeptYear = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+    boolean stratInsYear = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+    boolean stratInsIdInsYear = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+    String deptId;
+    if (stratDeptInsYear) {
+        deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+    } else if (stratInsDeptYear) {
+        deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+    } else if (stratInsYear) {
+        deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+    } else {
+        deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+    }
+
+    String insId;
+    if (stratInsIdInsYear) {
+        insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+    } else {
+        insId = (deptId != null && !deptId.trim().isEmpty()) ? deptId : null;
+    }
+
+    return new String[]{deptId, insId};
+}
+```
+
+This adapts legacy's mutate-`currentBill`-directly style (there is no `currentBill`
+row yet at this point in the native flow — `createDraftBill()` hasn't been called
+yet) into a pure return, but preserves the exact same strategy branching and the
+exact same deptId→insId fallback relationship.
+
+**Task 5 already added a `private void createAndAssignBillNumber()` to this
+controller** (copied byte-for-byte from legacy per Task 5's "copy verbatim"
+instruction, at the time correctly matching legacy's own signature). That
+version calls `getCurrentBill().setDeptId(...)`/`setInsId(...)` directly — but
+at the point Task 7 needs to call it (before `createDraftBill()` has run), there
+is no bill row yet for `getCurrentBill()` to mutate. **Task 7 must REPLACE that
+existing method** with the `private String[] createAndAssignBillNumber()`
+version shown above (same name, changed signature and return type) — do not
+leave both versions in the file, and do not call the old void version anywhere.
 
 - [ ] **Step 2: Compile check**
 
