@@ -33,6 +33,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.pharmacy.PurchaseOrderRequestNativeSqlService;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -73,6 +74,10 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     private ConfigOptionController configOptionController;
     @Inject
     private ItemController itemController;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private PharmacyCalculation pharmacyBillBean;
 
     @EJB
     private PurchaseOrderRequestNativeSqlService purchaseOrderRequestNativeSqlService;
@@ -341,6 +346,101 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         }
         currentBill.setNetTotal(total);
         currentBill.setTotal(total);
+    }
+
+    public void generateBillComponentsForAllSupplierItems(List<Item> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
+
+        int serialStart = billItems.size();
+        boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
+        int skippedCount = 0;
+
+        List<Item> itemsToAdd = new ArrayList<>();
+        for (Item i : items) {
+            if (preventDuplicates) {
+                boolean isDuplicate = false;
+                for (BillItem existingItem : billItems) {
+                    if (existingItem != null && !existingItem.isRetired()
+                            && existingItem.getItem() != null
+                            && existingItem.getItem().equals(i)) {
+                        isDuplicate = true;
+                        skippedCount++;
+                        break;
+                    }
+                }
+                if (isDuplicate) {
+                    continue; // Skip this item as it already exists
+                }
+            }
+            itemsToAdd.add(i);
+        }
+
+        Map<Long, Double> purchaseRatesByItemId = fetchLastPurchaseRatesForItems(itemsToAdd);
+        Map<Long, Double> retailRatesByItemId = fetchLastRetailRatesForItems(itemsToAdd);
+
+        for (Item i : itemsToAdd) {
+            BillItem bi = new BillItem();
+            bi.setItem(i);
+
+            PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
+            tmp.setBillItem(bi);
+            bi.setPharmaceuticalBillItem(tmp);
+
+            bi.setSearialNo(serialStart++);
+
+            applyLastRatesToBillItem(
+                    bi,
+                    getRateForItem(purchaseRatesByItemId, i),
+                    getRateForItem(retailRatesByItemId, i));
+
+            billItems.add(bi);
+        }
+
+        if (preventDuplicates && skippedCount > 0) {
+            JsfUtil.addErrorMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
+        }
+
+        calculateBillTotals();
+    }
+
+    public void addAllSupplierItems() {
+        if (currentBill.getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please Select Dealor");
+            return;
+        }
+        List<Item> allItems = pharmacyBillBean.getItemsForDealor(currentBill.getToInstitution());
+        generateBillComponentsForAllSupplierItems(allItems);
+    }
+
+    public void addAllSupplierItemsBelowRol() {
+        if (currentBill.getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please Select Dealer");
+            return;
+        }
+
+        String jpql = "SELECT i FROM Item i WHERE i IN "
+                + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false AND id.item.inactive = false) "
+                + "AND i IN "
+                + "(SELECT s.itemBatch.item FROM Stock s JOIN Reorder r ON r.item = s.itemBatch.item AND r.department = s.department "
+                + "WHERE s.department = :department AND s.stock < r.rol GROUP BY s.itemBatch.item) "
+                + "ORDER BY i.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("supplier", currentBill.getToInstitution());
+        parameters.put("department", sessionController.getDepartment());
+        List<Item> itemsBelowReorderLevel = itemFacade.findByJpql(jpql, parameters);
+
+        if (itemsBelowReorderLevel == null || itemsBelowReorderLevel.isEmpty()) {
+            JsfUtil.addErrorMessage("No items found below reorder level for the selected supplier and department.");
+        } else {
+            generateBillComponentsForAllSupplierItems(itemsBelowReorderLevel);
+        }
     }
 
     // synchronized: a double-submit on the Save/Finalize button (Enter-key defaultCommand
@@ -1020,6 +1120,15 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
 
     public void setItemHistoryVisible(boolean itemHistoryVisible) {
         this.itemHistoryVisible = itemHistoryVisible;
+    }
+
+    public void displayItemDetails(BillItem bi) {
+        pharmacyController.fillItemDetails(bi.getItem());
+        itemHistoryVisible = true;
+    }
+
+    public void closeItemHistory() {
+        itemHistoryVisible = false;
     }
 
     public Long getBillId() {
