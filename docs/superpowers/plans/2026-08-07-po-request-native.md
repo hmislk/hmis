@@ -1411,6 +1411,39 @@ then do a global find-and-replace of `purchaseOrderRequestController` →
 numbered-controller pattern that caused the #15845 defect (single window only, per
 design spec §8), so a plain unanchored replace of this one bean name is safe here.
 
+**Two controller gaps discovered by a pre-flight EL audit (before this task was
+dispatched) that must be fixed on the CONTROLLER first, not the XHTML** — the
+legacy page directly binds `action="#{purchaseOrderRequestController.resetBillValues}"`
+(3 call sites: a "New"/"Clear" button) and
+`action="#{purchaseOrderRequestController.removeSelected()}"` (a "Remove Selected"
+bulk-delete button on the item table). Both would silently fail at JSF EL resolution
+time (`MethodNotFoundException`/`PropertyNotFoundException` at runtime, NOT a
+compile error — `mvn compile` would report success on a broken page):
+
+1. `PurchaseOrderRequestNativeSqlController.resetBillValues()` (added by Task 5)
+   is currently `private`. Change it to `public void resetBillValues()` — no other
+   change needed, it's already correct logic, just wrong visibility for direct
+   XHTML action binding.
+2. `PurchaseOrderRequestNativeSqlController` has no `removeSelected()` method at
+   all yet. Add one, ported verbatim from legacy
+   `PurchaseOrderRequestController.removeSelected()`
+   (`src/main/java/com/divudi/bean/pharmacy/PurchaseOrderRequestController.java:129-148`
+   at time of writing — search by name, don't trust the line number) — same
+   `isAuthorized("SAVE", "PurchaseOrderSave")` guard, same null-guard on
+   `selectedBillItems`, same per-item soft-retire loop. **Adapt the persistence
+   call**: legacy calls `saveRequestWithoutMessage()` then
+   `billItemFacade.edit(b)` per already-saved item; the native controller must
+   call `saveRequestWithoutMessage()` (already exists, Task 7) then
+   `purchaseOrderRequestNativeSqlService.retireLine(b.getId(), sessionController.getLoggedUser().getId())`
+   for each selected item that has a non-null `getId()` (mirrors Task 6's fix to
+   `removeItem()`, which had this exact same native-retire requirement — reuse
+   the same `retireLine` service method, do not write a new one). Then remove the
+   retired items from `billItems` and recalculate totals, same shape as
+   `removeItem()`.
+
+Add this fix as part of this task's Step 1 (before copying the XHTML), so the
+copied page has a controller it can actually bind to.
+
 Add a small "Legacy View" link near the page header (same visual treatment as
 `pharmacy_reprint_po_native.xhtml`'s Legacy View button, per the print-page guide
 pattern) pointing back to `pharmacy_purhcase_order_request.xhtml`, for use during
