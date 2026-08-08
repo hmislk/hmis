@@ -34,7 +34,7 @@ Read the whole guide before touching either — the two checklists at the bottom
 
 - **Every `reportKey` in the whole app must be globally unique.** Two different reports on two different pages must never share a key — if they did, favoriting one would incorrectly show the other as favorited too (and clicking it from the Favorites tab would run the wrong navigation action).
 - The original Reports page (`reports/index.xhtml`) uses short camelCase keys with no prefix (`assetRegister`, `profitMatrixReport`, …). **Leave those as-is** — do not rename existing keys, since they're persisted per-user in the `USERFAVORITEREPORT` table and a rename silently orphans existing users' favorites.
-- **Every other page being wired in under the Favorites rollout must prefix its keys** with a short page code, to make collisions structurally impossible without having to manually grep the whole codebase every time:
+- **Every other page being wired in under the Favorites rollout must prefix its keys** with a short page code. This is a convention, not something the code enforces — `isFavorite(String)` just compares raw strings — so it only *reduces* the chance of an accidental collision; always search the whole repository (not just `src/main/webapp`) for the exact key before introducing it, since `reportKey` values can also appear in Java (e.g. `toggleFavorite(...)` calls) or other resource producers, not only XHTML:
 
 | Page | Prefix |
 |---|---|
@@ -78,7 +78,7 @@ The Favorites tab is built by **duplicating** every report button from its home 
 </h:panelGroup>
 ```
 
-**If the home-tab button is privilege-gated**, AND the same privilege check into the Favorites-tab wrapper's `rendered`, so a favorited report a user no longer has access to disappears from the Favorites tab too:
+**If the home-tab button is privilege-gated**, add the same privilege check to the Favorites-tab wrapper's `rendered`, so a favorited report a user no longer has access to disappears from the Favorites tab too:
 
 ```xml
 rendered="#{webUserController.hasPrivilege('ViewFundTransferReports') and userFavoriteReportController.isFavorite('fundTransferReport')}"
@@ -122,10 +122,10 @@ rendered="#{not userFavoriteReportController.hasAnyFavoriteWithKeyPrefix('pharma
 ## Checklist: adding a NEW report button to a page that already has Favorites
 
 - [ ] Pick a `reportKey` — reuse the page's existing prefix (see the table above), never reuse an existing key
-- [ ] `grep -rn 'reportKey="yourNewKey"' src/main/webapp` first to confirm it's not already used anywhere in the app
+- [ ] `grep -rn 'yourNewKey' src/main src/main/webapp` first to confirm it's not already used anywhere in the app — not just `src/main/webapp`, since a `reportKey` can also appear in Java (e.g. a `toggleFavorite(...)` call) or another resource producer
 - [ ] Add `<fav:favoriteStar reportKey="..." label="..." category="..." />` beside the button in its home tab
 - [ ] Duplicate the whole row into the page's Favorites tab, wrapped in `<h:panelGroup layout="block" ... rendered="#{userFavoriteReportController.isFavorite('yourNewKey')}">` — **never a raw `<div>`** (Gotcha 2)
-- [ ] If the button is privilege-gated, AND that same privilege check into the Favorites-tab wrapper's `rendered` too
+- [ ] If the button is privilege-gated, add that same privilege check to the Favorites-tab wrapper's `rendered` too
 - [ ] Never rename or reuse an existing `reportKey` once it has shipped — the underlying report's label/action can change freely, but the key is the stable identity users' starred rows are keyed against
 
 ## Checklist: adding Favorites to a report/analytics page for the first time
