@@ -11,37 +11,189 @@
     <cc:interface>
         <cc:attribute name="controller" required="true" />
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true" />
+        <cc:attribute name="dup" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="opd_five_five.css" />
         <h:panelGroup id="gpIndividualVouchersFiveFive" layout="block">
+            <style>
+                @media screen{
+                    .fiveinchbill {
+                        width: 20cm!important; /* Consider adjusting if too wide for the screen */
+                        height: auto!important;
+                    }
+                }
+                </style>
 
-            <!-- One mini-voucher per patient / BHT -->
-            <ui:repeat value="#{cc.attrs.controller.individualVoucherGroups}" var="vg">
-                <div class="fiveinchbill" style="page-break-after: always;">
-                    <div style="margin-left: 5%; margin-right: 5%">
+                <!-- One mini-voucher per patient / BHT -->
+                <ui:repeat value="#{cc.attrs.controller.individualVoucherGroups}" var="vg">
+                    <div class="fiveinchbill" style="page-break-after: always;">
+                        <div style="margin-left: 5%;
+                            margin-right: 5%">
+
+                            <div class="institutionName">
+                                <h:outputText value="#{cc.attrs.bill.department.printingName}" />
+                            </div>
+
+                            <div class="h6 my-2" style="text-align: center;
+                                font-weight: bold;">
+                                <h:outputText value="PAYMENT VOUCHER : " />
+                                <h:outputText value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize;"/>
+                                <br/>
+                                <h:outputText value="**Duplicate**" rendered="#{cc.attrs.dup eq true}" />
+                            </div>
+
+                            <div class="billline"><hr/></div>
+
+                            <div class="billDetailsFiveFive">
+                                <div class="d-flex gap-2">
+                                    <h:outputText value="Date : " />
+                                    <h:outputText value="#{cc.attrs.bill.billDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <h:outputText value="Bill No : " />
+                                    <h:outputText value="#{cc.attrs.bill.deptId}"  />
+                                </div>
+                            </div>
+
+                            <!--                         Patient / BHT identity 
+                                                    <div style="text-align: center; font-weight: bold; margin: 4px 0;">
+                                                        <h:outputText value="#{vg.displayName}" />
+                                                        <h:outputText value=" — #{vg.displayIdentifier}" rendered="#{not empty vg.displayIdentifier}" />
+                                                    </div>-->
+
+                            <div class="billline"><hr/></div>
+
+                            <!-- Fee lines of this patient / BHT -->
+                            <!--                        <div class="billDetailsFiveFive">
+                                                        <h:dataTable value="#{vg.billItems}" var="bip" style="width: 100%;">
+                                                            <h:column>
+                                                                <f:facet name="header"><h:outputText value="Bill No" /></f:facet>
+                                                                <h:outputText value="#{bip.paidForBillFee.bill.deptId}" />
+                                                            </h:column>
+                                                            <h:column>
+                                                                <f:facet name="header"><h:outputText value="Service" /></f:facet>
+                                                                <h:outputText value="#{bip.referanceBillItem.item.name}" />
+                                                            </h:column>
+                                                            <h:column>
+                                                                <f:facet name="header"><h:outputText value="Patient" /></f:facet>
+                                                                <h:outputText value="#{vg.displayName}" />
+                                                            </h:column>
+                                                            <h:column>
+                                                                <f:facet name="header"><h:outputText value="Value" /></f:facet>
+                                                                <h:outputText value="#{bip.netValue}" style="text-align: right!important;">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </h:column>
+                                                        </h:dataTable>
+                                                    </div>-->
+
+                            <div class="billDetailsFiveFive">
+                                <h:dataTable value="#{vg.billItems}" var="bip"
+                                             styleClass="paymentTable">
+
+                                    <h:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Bill No"/>
+                                        </f:facet>
+                                        <h:outputText value="#{bip.paidForBillFee.bill.deptId}" />
+                                    </h:column>
+
+                                    <h:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Service"/>
+                                        </f:facet>
+                                        <h:outputText value="#{bip.referanceBillItem.item.name}" />
+                                    </h:column>
+
+                                    <h:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Patient"/>
+                                        </f:facet>
+                                        <h:outputText value="#{vg.displayName}" />
+                                    </h:column>
+
+                                    <h:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Value"/>
+                                        </f:facet>
+
+                                        <h:outputText value="#{bip.netValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </h:column>
+
+                                </h:dataTable>
+                            </div>
+
+                            <div class="billline"><hr/></div>
+
+                            <!-- Patient subtotal (item values are stored positive) -->
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="totalsBlock" style="text-align: left;
+                                        width: 60%;
+                                        font-weight: bold;">
+                                        <h:outputText value="Total" />
+                                    </td>
+                                    <td class="totalsBlock" style="text-align: right!important;
+                                        width: 40%;
+                                        font-weight: bold;">
+                                        <h:outputText value="#{vg.subtotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div class="billline"><hr/></div>
+
+                            <!-- Signature footer on every page -->
+                            <div class="footer mt-4">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <h:outputText value="--------------------------" /><br/>
+                                        <h:outputText value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" />
+                                    </div>
+                                    <div class="col-4">
+                                        <br/>
+                                        <h:outputText value="Payment Received" />
+                                    </div>
+                                    <div class="col-4">
+                                        <h:outputText value="--------------------------" /><br/>
+                                        <h:outputText value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </ui:repeat>
+
+                <!-- Final summary page (grand totals; bill totals are stored negative) -->
+                <div class="fiveinchbill">
+                    <div style="margin-left: 5%;
+                        margin-right: 5%">
 
                         <div class="institutionName">
                             <h:outputText value="#{cc.attrs.bill.department.printingName}" />
                         </div>
 
-                        <div class="h6 my-2" style="text-align: center; font-weight: bold;">
-                            <h:outputText value="PAYMENT VOUCHER" />
+                        <div class="h6 my-2" style="text-align: center;
+                            font-weight: bold;">
+                            <h:outputText value="PAYMENT VOUCHER — SUMMARY" />
                             <h:outputText value="(#{cc.attrs.bill.deptId})" class="mx-2" />
+                            <br/>
+                            <h:outputText value="**Duplicate**" rendered="#{cc.attrs.dup eq true}" />
                         </div>
 
                         <div class="billline"><hr/></div>
 
                         <div class="billDetailsFiveFive">
-                            <div class="d-flex gap-2">
-                                <h:outputText value="Date : " />
-                                <h:outputText value="#{cc.attrs.bill.billDate}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                </h:outputText>
-                                <h:outputText value="Payment : #{cc.attrs.bill.paymentMethod}" class="ms-3" />
-                            </div>
                             <div class="d-flex gap-2">
                                 <h:outputText value="Doctor : " />
                                 <h:outputText value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize;" />
@@ -50,48 +202,45 @@
 
                         <div class="billline"><hr/></div>
 
-                        <!-- Patient / BHT identity -->
-                        <div style="text-align: center; font-weight: bold; margin: 4px 0;">
-                            <h:outputText value="#{vg.displayName}" />
-                            <h:outputText value=" — #{vg.displayIdentifier}" rendered="#{not empty vg.displayIdentifier}" />
-                        </div>
-
-                        <div class="billline"><hr/></div>
-
-                        <!-- Fee lines of this patient / BHT -->
-                        <div class="billDetailsFiveFive">
-                            <h:dataTable value="#{vg.billItems}" var="bip" style="width: 100%;">
-                                <h:column>
-                                    <f:facet name="header"><h:outputText value="Bill No" /></f:facet>
-                                    <h:outputText value="#{bip.paidForBillFee.bill.deptId}" />
-                                </h:column>
-                                <h:column>
-                                    <f:facet name="header"><h:outputText value="Service" /></f:facet>
-                                    <h:outputText value="#{bip.referanceBillItem.item.name}" />
-                                </h:column>
-                                <h:column>
-                                    <f:facet name="header"><h:outputText value="Fee Type" /></f:facet>
-                                    <h:outputText value="#{bip.paidForBillFee.fee.feeType}" />
-                                </h:column>
-                                <h:column>
-                                    <f:facet name="header"><h:outputText value="Value" /></f:facet>
-                                    <h:outputText value="#{bip.netValue}" style="text-align: right!important;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </h:column>
-                            </h:dataTable>
-                        </div>
-
-                        <div class="billline"><hr/></div>
-
-                        <!-- Patient subtotal (item values are stored positive) -->
                         <table style="width: 100%;">
                             <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%; font-weight: bold;">
-                                    <h:outputText value="Total for #{vg.displayName}" />
+                                <td class="totalsBlock" style="text-align: left;
+                                    width: 60%;
+                                    font-weight: bold;">
+                                    <h:outputText value="Gross Total" />
                                 </td>
-                                <td class="totalsBlock" style="text-align: right!important; width: 40%; font-weight: bold;">
-                                    <h:outputText value="#{vg.subtotal}">
+                                <td class="totalsBlock" style="text-align: right!important;
+                                    width: 40%;
+                                    font-weight: bold;">
+                                    <h:outputText value="#{-cc.attrs.bill.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="totalsBlock" style="text-align: left;
+                                    width: 60%;
+                                    font-weight: bold;">
+                                    <h:outputText value="Withholding Tax" />
+                                </td>
+                                <td class="totalsBlock" style="text-align: right!important;
+                                    width: 40%;
+                                    font-weight: bold;">
+                                    <h:outputText value="#{-cc.attrs.bill.tax}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="totalsBlock" style="text-align: left;
+                                    width: 60%;
+                                    font-weight: bold;">
+                                    <h:outputText value="Net Total" />
+                                </td>
+                                <td class="totalsBlock" style="text-align: right!important;
+                                    width: 40%;
+                                    font-weight: bold;">
+                                    <h:outputText value="#{-cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
@@ -100,7 +249,6 @@
 
                         <div class="billline"><hr/></div>
 
-                        <!-- Signature footer on every page -->
                         <div class="footer">
                             <div class="row">
                                 <div class="col-4">
@@ -120,87 +268,7 @@
 
                     </div>
                 </div>
-            </ui:repeat>
 
-            <!-- Final summary page (grand totals; bill totals are stored negative) -->
-            <div class="fiveinchbill">
-                <div style="margin-left: 5%; margin-right: 5%">
-
-                    <div class="institutionName">
-                        <h:outputText value="#{cc.attrs.bill.department.printingName}" />
-                    </div>
-
-                    <div class="h6 my-2" style="text-align: center; font-weight: bold;">
-                        <h:outputText value="PAYMENT VOUCHER — SUMMARY" />
-                        <h:outputText value="(#{cc.attrs.bill.deptId})" class="mx-2" />
-                    </div>
-
-                    <div class="billline"><hr/></div>
-
-                    <div class="billDetailsFiveFive">
-                        <div class="d-flex gap-2">
-                            <h:outputText value="Doctor : " />
-                            <h:outputText value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize;" />
-                        </div>
-                    </div>
-
-                    <div class="billline"><hr/></div>
-
-                    <table style="width: 100%;">
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%; font-weight: bold;">
-                                <h:outputText value="Gross Total" />
-                            </td>
-                            <td class="totalsBlock" style="text-align: right!important; width: 40%; font-weight: bold;">
-                                <h:outputText value="#{-cc.attrs.bill.total}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%; font-weight: bold;">
-                                <h:outputText value="Withholding Tax" />
-                            </td>
-                            <td class="totalsBlock" style="text-align: right!important; width: 40%; font-weight: bold;">
-                                <h:outputText value="#{-cc.attrs.bill.tax}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%; font-weight: bold;">
-                                <h:outputText value="Net Total" />
-                            </td>
-                            <td class="totalsBlock" style="text-align: right!important; width: 40%; font-weight: bold;">
-                                <h:outputText value="#{-cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <div class="billline"><hr/></div>
-
-                    <div class="footer">
-                        <div class="row">
-                            <div class="col-4">
-                                <h:outputText value="--------------------------" /><br/>
-                                <h:outputText value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" />
-                            </div>
-                            <div class="col-4">
-                                <br/>
-                                <h:outputText value="Payment Received" />
-                            </div>
-                            <div class="col-4">
-                                <h:outputText value="--------------------------" /><br/>
-                                <h:outputText value="Professional : #{cc.attrs.bill.toStaff.person.nameWithTitle}" />
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </h:panelGroup>
-    </cc:implementation>
-</html>
+            </h:panelGroup>
+        </cc:implementation>
+    </html>

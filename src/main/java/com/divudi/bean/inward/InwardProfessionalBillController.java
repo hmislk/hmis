@@ -460,6 +460,7 @@ public class InwardProfessionalBillController implements Serializable {
         makeNullList();
         current = null;
         settlePreview = true;
+        surgeryBillController.refreshProEncounterComponents();
         JsfUtil.addSuccessMessage("Professional fee bill saved.");
     }
 
@@ -542,6 +543,12 @@ public class InwardProfessionalBillController implements Serializable {
         suggestions = getStaffFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
+    }
+
+    public void onDoctorSelect(AjaxBehaviorEvent event) {
+        if (currentBillFee != null && currentBillFee.getStaff() != null && currentBillFee.getStaff().getSpeciality() != null) {
+            currentBillFee.setSpeciality(currentBillFee.getStaff().getSpeciality());
+        }
     }
 
     public boolean isToClearBill() {

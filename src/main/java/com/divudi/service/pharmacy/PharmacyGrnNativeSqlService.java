@@ -8,6 +8,9 @@ package com.divudi.service.pharmacy;
 import com.divudi.core.data.dto.pharmacy.GrnPrintHeaderDto;
 import com.divudi.core.data.dto.pharmacy.GrnPrintItemDto;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -310,6 +313,14 @@ public class PharmacyGrnNativeSqlService {
         if (o instanceof Timestamp) return new Date(((Timestamp) o).getTime());
         if (o instanceof java.sql.Date) return new Date(((java.sql.Date) o).getTime());
         if (o instanceof Date) return (Date) o;
+        // EclipseLink native queries can return java.time types for DATETIME
+        // columns instead of java.sql.Timestamp, depending on driver/version.
+        if (o instanceof LocalDateTime) {
+            return Date.from(((LocalDateTime) o).atZone(ZoneId.systemDefault()).toInstant());
+        }
+        if (o instanceof LocalDate) {
+            return Date.from(((LocalDate) o).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        }
         return null;
     }
 }

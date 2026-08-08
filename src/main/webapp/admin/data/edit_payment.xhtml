@@ -396,9 +396,9 @@
                                             <h:outputText value="#{billSearch.payment.creditCompany.name}" rendered="#{not webUserController.hasPrivilege('Developers')}"/>
                                             <p:autoComplete value="#{billSearch.payment.creditCompany}"
                                                           completeMethod="#{institutionController.completeCompany}"
-                                                          var="cc"
-                                                          itemLabel="#{cc.name}"
-                                                          itemValue="#{cc}"
+                                                          var="ccIns"
+                                                          itemLabel="#{ccIns.name}"
+                                                          itemValue="#{ccIns}"
                                                           forceSelection="true"
                                                           rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                         </h:panelGroup>

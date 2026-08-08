@@ -371,6 +371,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         bill = b;
+        billItems = null;
         printPreview = true;
         return "/inward/inward_deposit_cancel_bill_payment?faces-redirect=true";
     }
@@ -617,6 +618,7 @@ public class InwardSearch implements Serializable {
 
         if (versions.size() == 1) {
             bill = versions.get(0);
+            billItems = null;
             withProfessionalFee = false;
             return "/inward/inward_reprint_bill_final?faces-redirect=true";
         }
@@ -665,6 +667,13 @@ public class InwardSearch implements Serializable {
         params.put("billType", BillType.InwardFinalBill);
         params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
         return getBillFacade().findByJpql(jpql, params);
+    }
+
+    public boolean hasAnyFinalBillVersion(PatientEncounter admission) {
+        if (admission == null) {
+            return false;
+        }
+        return !fetchFinalBillVersions(admission).isEmpty();
     }
 
     /**
@@ -932,6 +941,7 @@ public class InwardSearch implements Serializable {
 
         // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         bill = getBillFacade().findFirstByJpql(jpql, temMap);
+        billItems = null;
 
         if (bill == null) {
             JsfUtil.addErrorMessage("No Provisional Bill Created");
@@ -1299,6 +1309,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
             if (checkPaid()) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
@@ -1394,6 +1409,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
             if (checkPaid()) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
@@ -1447,6 +1467,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
@@ -1919,6 +1944,10 @@ public class InwardSearch implements Serializable {
                 JsfUtil.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
                 return;
             }
+            if (getBill().getPatientEncounter() != null && getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
@@ -2075,6 +2104,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
@@ -2451,12 +2485,14 @@ public class InwardSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
-        hm.put("b", getBill());
-        billItems = getBillItemFacede().findByJpql(sql, hm);
         if (billItems == null) {
-            billItems = new ArrayList<>();
+            HashMap hm = new HashMap();
+            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
+            hm.put("b", getBill());
+            billItems = getBillItemFacede().findByJpql(sql, hm);
+            if (billItems == null) {
+                billItems = new ArrayList<>();
+            }
         }
 
         return billItems;

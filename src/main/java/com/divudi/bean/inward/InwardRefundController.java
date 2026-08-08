@@ -24,9 +24,11 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -64,11 +66,17 @@ public class InwardRefundController implements Serializable {
     private boolean printPreview;
     @Inject
     private InwardBeanController inwardBean;
+    private List<Bill> eligiblePaymentBills;
+    private Bill originalBillToRefund;
+    private Map<Long, Double> remainingRefundableAmountCache;
 
     public void makeNull() {
         current = null;
         paidAmount = 0.0;
         printPreview = false;
+        eligiblePaymentBills = null;
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = null;
     }
 
     /**
@@ -99,6 +107,12 @@ public class InwardRefundController implements Serializable {
             JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
+
+        if (getOriginalBillToRefund() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return true;
+        }
+
         if (getCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return true;
@@ -108,8 +122,10 @@ public class InwardRefundController implements Serializable {
             return true;
         }
 
-        if ((Math.abs(getPaidAmount()) < getCurrent().getTotal())) {
-            double different = Math.abs(Math.abs((getPaidAmount()) - Math.abs(getCurrent().getTotal())));
+        double remaining = getRemainingRefundableAmount(getOriginalBillToRefund());
+
+        if (Math.abs(remaining) < getCurrent().getTotal()) {
+            double different = Math.abs(Math.abs(remaining) - Math.abs(getCurrent().getTotal()));
 
             if (different > 0.1) {
                 JsfUtil.addErrorMessage("Check Refuning Amount");
@@ -132,6 +148,10 @@ public class InwardRefundController implements Serializable {
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         getBillFacade().edit(getCurrent());
         saveBillItem();
+
+        getOriginalBillToRefund().setRefunded(true);
+        getBillFacade().edit(getOriginalBillToRefund());
+
         printPreview = true;
 
         List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
@@ -161,7 +181,7 @@ public class InwardRefundController implements Serializable {
         getCurrent().setBillTime(new Date());
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
-        // getCurrent().setForwardReferenceBill(getCurrent().getPatientEncounter().getFinalBill());
+        getCurrent().setReferenceBill(getOriginalBillToRefund());
         getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
 
@@ -270,7 +290,99 @@ public class InwardRefundController implements Serializable {
         } else {
             calculatePaidAmount();
         }
+        loadEligiblePaymentBills();
+    }
 
+    /**
+     * Loads the encounter's payment bills that still have a nonzero
+     * remaining refundable amount (issue #22627 - refund must be linked to
+     * one specific original bill, not an encounter-wide aggregate).
+     */
+    private void loadEligiblePaymentBills() {
+        eligiblePaymentBills = new ArrayList<>();
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = new HashMap<>();
+        for (Bill b : getInwardBean().fetchPaymentBill(getCurrent().getPatientEncounter(), null)) {
+            if (b instanceof BilledBill && !b.isCancelled() && computeRemainingRefundableAmount(b) > 0.01) {
+                eligiblePaymentBills.add(b);
+            }
+        }
+    }
+
+    /**
+     * Cached per-bill remaining-refundable amount, populated once per bill
+     * by loadEligiblePaymentBills(). The bill picker table calls this once
+     * per row through EL on every render/postback, so without the cache it
+     * would re-run computeRemainingRefundableAmount()'s JPQL SUM query for
+     * every row on every render, on top of the same query already run for
+     * every bill while building eligiblePaymentBills.
+     */
+    public double getRemainingRefundableAmount(Bill originalBill) {
+        if (originalBill == null) {
+            return 0.0;
+        }
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            Double cached = remainingRefundableAmountCache.get(originalBill.getId());
+            if (cached != null) {
+                return cached;
+            }
+        }
+        return computeRemainingRefundableAmount(originalBill);
+    }
+
+    /**
+     * Sum of netTotal of every RefundBill already linked to originalBill via
+     * referenceBill (always <= 0), added to the bill's own netTotal. Do NOT
+     * use Bill.refundBills/getRefundBills() here - that collection is
+     * mappedBy="billedBill", which no refund flow in this codebase populates,
+     * so it never reflects referenceBill-linked refunds.
+     */
+    private double computeRemainingRefundableAmount(Bill originalBill) {
+        String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
+        HashMap hm = new HashMap();
+        hm.put("orig", originalBill);
+        double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm);
+        double remaining = originalBill.getNetTotal() + refundedSoFar;
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            remainingRefundableAmountCache.put(originalBill.getId(), remaining);
+        }
+        return remaining;
+    }
+
+    public void selectBillToRefundListener() {
+        if (getOriginalBillToRefund() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return;
+        }
+        getCurrent().setTotal(getRemainingRefundableAmount(getOriginalBillToRefund()));
+    }
+
+    /**
+     * Lets the cashier pick a different bill without losing the BHT
+     * selection or re-querying eligiblePaymentBills.
+     */
+    public void clearSelectedBillToRefund() {
+        originalBillToRefund = null;
+        getCurrent().setTotal(0);
+    }
+
+    public List<Bill> getEligiblePaymentBills() {
+        if (eligiblePaymentBills == null) {
+            eligiblePaymentBills = new ArrayList<>();
+        }
+        return eligiblePaymentBills;
+    }
+
+    public void setEligiblePaymentBills(List<Bill> eligiblePaymentBills) {
+        this.eligiblePaymentBills = eligiblePaymentBills;
+    }
+
+    public Bill getOriginalBillToRefund() {
+        return originalBillToRefund;
+    }
+
+    public void setOriginalBillToRefund(Bill originalBillToRefund) {
+        this.originalBillToRefund = originalBillToRefund;
     }
 
     public void calculteFinalBillMax() {
