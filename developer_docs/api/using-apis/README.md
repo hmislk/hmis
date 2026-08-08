@@ -13,6 +13,7 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 
 | File | Module | Auth |
 |---|---|---|
+| [API_ADMISSION_DETAILS.md](API_ADMISSION_DETAILS.md) | Consolidated index: which API to call for admission worklist/BHT numbers/clinical forms | `Finance` |
 | [API_ADMISSION_NUMBERS.md](API_ADMISSION_NUMBERS.md) | View/reset BHT/OPD admission-number sequence counters | `Finance` |
 | [API_BALANCE_HISTORY.md](API_BALANCE_HISTORY.md) | Drawer/patient-deposit/agent balance change history | `Finance` |
 | [API_BILL_DATA_CORRECTION.md](API_BILL_DATA_CORRECTION.md) | Correct saved bill finance-detail fields (UPDATE only) | `Finance` |
