@@ -209,11 +209,19 @@ public class BhtPaymentDetailReportController implements Serializable {
         return paymentFacade.findByJpql(jpql.toString(), params);
     }
 
+    /**
+     * Fetch BillItems from INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED and
+     * INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION bills that reference this encounter.
+     * Deliberately does NOT filter on bi.bill.cancelled: cancelling a CC payment sets
+     * cancelled=true on the original RECEIVED bill while its negative-value items live on
+     * a separate CANCELLATION bill, so filtering by cancelled would drop the original
+     * positive row and leave only the negative one. Including both rows with their signed
+     * netValue preserves the audit trail and nets out correctly.
+     */
     private List<BillItem> fetchCreditSettlementItems(PatientEncounter enc) {
         String jpql = "select bi from BillItem bi"
                 + " where bi.retired = false"
                 + " and bi.bill.retired = false"
-                + " and bi.bill.cancelled = false"
                 + " and bi.bill.billTypeAtomic in :btas"
                 + " and bi.patientEncounter = :enc"
                 + " order by bi.createdAt";
