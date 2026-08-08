@@ -188,10 +188,20 @@
 
 
                                 <p:outputLabel value="Occupation" ></p:outputLabel>
-                                <p:inputText
+                                <p:autoComplete
+                                    id="occupation"
                                     class="w-100"
-                                    value="#{admissionController.occupationForSearch}" >
-                                </p:inputText>
+                                    inputStyleClass="form-control"
+                                    forceSelection="true"
+                                    value="#{admissionController.occupationForSearch}"
+                                    completeMethod="#{clinicalEntityController.completeOccupation}"
+                                    var="occ"
+                                    itemLabel="#{occ.name}"
+                                    itemValue="#{occ.name}"
+                                    placeholder="Occupation"
+                                    maxResults="15"
+                                    size="10">
+                                </p:autoComplete>
 
                                 <p:outputLabel value="Insurance Company" ></p:outputLabel>
                                 <p:selectOneMenu
