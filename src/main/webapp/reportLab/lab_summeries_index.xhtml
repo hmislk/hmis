@@ -3,70 +3,396 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:fav="http://xmlns.jcp.org/jsf/composite/ezcomp/reports">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">            
+        <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <p:panel header="Lab Analytics">  
+                <p:panel header="Lab Analytics">
                     <div class="row">
-                        <div class="col-2"> 
+                        <div class="col-2">
                             <p:accordionPanel id="accPanel" activeIndex="#{laborataryReportController.activeIndex}">
                                 <p:ajax process="accPanel" ></p:ajax>
-                                <p:tab title="Performance"  > 
+
+                                <p:tab title="⭐ Favorites">
+                                    <h:form>
+                                        <h:panelGroup layout="block" styleClass="text-muted p-2" rendered="#{not userFavoriteReportController.hasAnyFavoriteWithKeyPrefix('labAnalytics_')}">
+                                            <h:outputText value="No favorite reports yet — click the star next to any report to add it here." />
+                                        </h:panelGroup>
+                                        <div class="d-grid gap-2">
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationList')}">
+                                                <p:commandButton ajax="false" class="w-100 ui-button-success" value="Investigation List" action="investigation_counts?faces-redirect=true" />
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationList" label="Investigation List" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_billList')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Bill List" action="/reportLab/bill_list?faces-redirect=true" />
+                                                <fav:favoriteStar reportKey="labAnalytics_billList" label="Bill List" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_billItemList')}">
+                                                <p:commandButton ajax="false" class="w-100 ui-button-success mt-1" value="Bill Item List" action="/reportLab/bill_item_list?faces-redirect=true" />
+                                                <fav:favoriteStar reportKey="labAnalytics_billItemList" label="Bill Item List" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_clientList')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Client List" action="/reportLab/client_list?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_clientList" label="Client List" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_sampleList')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Sample List" action="/lab/patient_sample_list?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_sampleList" label="Sample List" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_sampleListDto')}">
+                                                <p:commandButton ajax="false" class="w-100 ui-button-success" value="Sample List (DTO)" action="/lab/dto_patient_sample_list?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_sampleListDto" label="Sample List (DTO)" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_avgTurnAroundTime')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Average Turn Around Time" action="turn_over_time?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_avgTurnAroundTime" label="Average Turn Around Time" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_billWiseTurnAroundTime')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Bill-vice turn-around time" action="turn_over_time_bills?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_billWiseTurnAroundTime" label="Bill-vice turn-around time" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_byBilledInstitution')}">
+                                                <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Billed Institution" action="report_lab_by_billed_institution?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_byBilledInstitution" label="By Billed Institution" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_byBilledDepartment')}">
+                                                <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Billed Department" action="report_lab_by_billed_department?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_byBilledDepartment" label="By Billed Department" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_byReportedInstitution')}">
+                                                <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_byReportedInstitution" label="By Reported Institution" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_byReportedDepartment')}">
+                                                <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_byReportedDepartment" label="By Reported Department" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_opdBillItemsForCreditCompanies')}">
+                                                <p:commandButton
+                                                    actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}"
+                                                    ajax="false"
+                                                    class="w-100 ui-button-success mt-1"
+                                                    value="OPD Bill Items For Credit Companies"
+                                                    action="#{laborataryReportController.navigateToBillItemListForCreditCompany()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_opdBillItemsForCreditCompanies" label="OPD Bill Items For Credit Companies" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_cancelledLabBillList')}">
+                                                <p:commandButton ajax="false"
+                                                                 class="w-100 ui-button-danger mt-1"
+                                                                 value="List of Cancelled Lab Bills"
+                                                                 action="#{laborataryReportController.navigateToLabCancelledBillListFromLabAnalytics()}"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_cancelledLabBillList" label="List of Cancelled Lab Bills" category="Performance" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_byOrderingInstitution')}">
+                                                <p:commandButton ajax="false" class="w-100" value="By Ordering Institution" action="ix_count_by_billed_institution?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_byOrderingInstitution" label="By Ordering Institution" category="Institutions" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_collectionCentreDetail')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_collectionCentreDetail" label="Report by Collection Centre(Detail)" category="Collecting Centres" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_collectionCentreSummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report by Collection Centre(Summary)" action="report_lab_collection_centre_summery?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_collectionCentreSummary" label="Report by Collection Centre(Summary)" category="Collecting Centres" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_collectionCentreCount')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_collectionCentreCount" label="Report by Collection Centre Count" category="Collecting Centres" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_collectionCentreCountSummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report by Collection Centre Count(Summary)" action="report_lab_by_collection_centre_investigation_count_summery?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_collectionCentreCountSummary" label="Report by Collection Centre Count(Summary)" category="Collecting Centres" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_referringDoctorDetail')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report by Referring Doctor(Details)" action="report_lab_by_refering_doctor?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_referringDoctorDetail" label="Report by Referring Doctor(Details)" category="Referring Doctors" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_referringDoctorSummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report by Referring Doctor(Summary)" action="report_lab_by_refering_doctor_summery?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_referringDoctorSummary" label="Report by Referring Doctor(Summary)" category="Referring Doctors" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_inwardSummaryByAddedDate')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_inwardSummaryByAddedDate" label="Inward Lab Summary by Added Date" category="Inward" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_inwardSummaryByAddedDateWithMargin')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_inwardSummaryByAddedDateWithMargin" label="Inward Lab Summary by Added Date With Margin" category="Inward" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationSummaryInward')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Investigation Summary Inward" action="report_investigation_summery_by_inward?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationSummaryInward" label="Investigation Summary Inward" category="Inward" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationSummaryInwardByDate')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationSummaryInwardByDate" label="Investigation Summary Inward by Date" category="Inward" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_incomeSummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Income Summary" action="income_summery?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_incomeSummary" label="Income Summary" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_reportSummaryDepartment')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report Summary Department" action="report_cashier_detailed_by_department?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_reportSummaryDepartment" label="Report Summary Department" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_reportSummaryByDay')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report Summary by day" action="report_lab_by_date_summery?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_reportSummaryByDay" label="Report Summary by day" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationSummaryFeeType')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationSummaryFeeType" label="Investigation Summary Fee Type" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationSummaryRegentFee')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationSummaryRegentFee" label="Investigation Summary Regent Fee" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationSummaryFeeTypeWithCredit')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationSummaryFeeTypeWithCredit" label="Investigation Summary Fee Type With Credit" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationSummaryRegentFeeWithCredit')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationSummaryRegentFeeWithCredit" label="Investigation Summary Regent Fee With Credit" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_investigationSummaryRegentFeeByPayMethod')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationSummaryRegentFeeByPayMethod" label="Investigation Summary Regent Fee By Payment Method" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100"
+                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method') and userFavoriteReportController.isFavorite('labAnalytics_dailyLabSummaryByDepartment')}">
+                                                <p:commandButton ajax="false"
+                                                                class="w-100"
+                                                                value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
+                                                                action="lab_daily_summary_by_department?faces-redirect=true" />
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyLabSummaryByDepartment" label="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100"
+                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Optimized Method') and userFavoriteReportController.isFavorite('labAnalytics_dailyLabSummaryByDepartmentDto')}">
+                                                <p:commandButton ajax="false"
+                                                                class="w-100"
+                                                                value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)"
+                                                                action="lab_daily_summary_by_department_dto?faces-redirect=true" />
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyLabSummaryByDepartmentDto" label="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_cardIncomeReport')}">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Laboratary Card Income Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryCardIncomeReportFromLabAnalytics()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_cardIncomeReport" label="Laboratary Card Income Report" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailyOpdFeeSummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyOpdFeeSummary" label="Daily OPD Fee Summary" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailyOpdFeeSummaryWithCounts')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyOpdFeeSummaryWithCounts" label="Daily OPD Fee Summary with Counts" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailyInwardFeeSummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily Inward Fee Summary" action="daily_inward_fee_summery?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyInwardFeeSummary" label="Daily Inward Fee Summary" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailyInwardFeeSummaryWithCounts')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily Inward Fee Summary with Counts" action="daily_inward_fee_summery_counts?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyInwardFeeSummaryWithCounts" label="Daily Inward Fee Summary with Counts" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_reportSummaryByMonthCashCredit')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_reportSummaryByMonthCashCredit" label="Report Summary by Month With Cash and Credit" category="Income" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100"
+                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report is Enabled',true) and userFavoriteReportController.isFavorite('labAnalytics_testWiseCountReport')}">
+                                                <p:commandButton
+                                                    class="w-100 ui-button-primary"
+                                                    ajax="false"
+                                                    value="Test Wise Count Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" />
+                                                <fav:favoriteStar reportKey="labAnalytics_testWiseCountReport" label="Test Wise Count Report" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100"
+                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report By DTO is Enabled',true) and userFavoriteReportController.isFavorite('labAnalytics_testWiseCountReportDto')}">
+                                                <p:commandButton
+                                                    class="w-100 ui-button-success mt-1"
+                                                    ajax="false"
+                                                    value="Test Wise Count Report - DTO"
+                                                    action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
+                                                <fav:favoriteStar reportKey="labAnalytics_testWiseCountReportDto" label="Test Wise Count Report - DTO" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_testWiseReagentCostReport')}">
+                                                <p:commandButton
+                                                    class="w-100 ui-button-success"
+                                                    ajax="false"
+                                                    value="Test Wise Reagent Cost Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics()}" />
+                                                <fav:favoriteStar reportKey="labAnalytics_testWiseReagentCostReport" label="Test Wise Reagent Cost Report" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_incomeReport')}">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Laboratary Income Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryIncomeReportFromLabAnalytics()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_incomeReport" label="Laboratary Income Report" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_orderReport')}">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Laboratory Order Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryInwardOrderReportFromLabAnalytics}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_orderReport" label="Laboratory Order Report" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_laboratorySummary')}">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100 ui-button-success mt-1"
+                                                    value="Laboratory Summary"
+                                                    action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_laboratorySummary" label="Laboratory Summary" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailySummaryByBillTypes')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailySummaryByBillTypes" label="Daily Summary By Bill Types" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailySummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily Summary" action="report_opd_service_summery?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailySummary" label="Daily Summary" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailySummaryInwardOpd')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailySummaryInwardOpd" label="Daily Summary Inward and Opd" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailySummaryInwardOpdByDate')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailySummaryInwardOpdByDate" label="Daily Summary Inward and Opd by Date" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_dailySummaryInwardOpdCount')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_dailySummaryInwardOpdCount" label="Daily Summary Inward and Opd Count" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_allIncomeSummary')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Laboratory All Income Summary" action="laboratory_all_income_summary?faces-redirect=true;"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_allIncomeSummary" label="Laboratory All Income Summary" category="Lab Summary" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_cancelledBillSearch')}">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Bills Cancelled after Approving Reports"
+                                                    action="/lab/report_cancelled_bill_search?faces-redirect=true">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_cancelledBillSearch" label="Bills Cancelled after Approving Reports" category="Auditing" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_testResultsSingle')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Test Results - Single" action="test_results_single?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_testResultsSingle" label="Test Results - Single" category="Clinical" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_testResults')}">
+                                                <p:commandButton ajax="false" class="w-100" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_testResults" label="Test Results" category="Clinical" accordionId="accPanel" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('labAnalytics_priceList')}">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Price List"
+                                                    icon="fa fa-tags"
+                                                    action="#{laborataryReportController.navigateToInvestigationPriceListFromLabAnalytics()}"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_priceList" label="Price List" category="Reference" accordionId="accPanel" />
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+
+                                <p:tab title="Performance"  >
                                     <h:form>
 
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                class="w-100 ui-button-success"
-                                                value="Investigation List" 
-                                                action="investigation_counts?faces-redirect=true">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Bill List" 
-                                                action="/reportLab/bill_list?faces-redirect=true">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                ajax="false"
-                                                class="w-100 ui-button-success mt-1"
-                                                value="Bill Item List"
-                                                action="/reportLab/bill_item_list?faces-redirect=true">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton ajax="false" value="Client List" action="/reportLab/client_list?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" value="Sample List" action="/lab/patient_sample_list?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" class="w-100 ui-button-success mt-1" value="Sample List (DTO)" action="/lab/dto_patient_sample_list?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" value="Average Turn Around Time" action="turn_over_time?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" value="Bill-vice turn-around time" action="turn_over_time_bills?faces-redirect=true"/> 
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution?faces-redirect=true"/>
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Billed Department" action="report_lab_by_billed_department?faces-redirect=true"/>
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true"/>
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true"/>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100 ui-button-success"
+                                                    value="Investigation List"
+                                                    action="investigation_counts?faces-redirect=true">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_investigationList" label="Investigation List" category="Performance" accordionId="accPanel" />
+                                            </div>
 
-                                            <p:commandButton
-                                                actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}"
-                                                ajax="false"
-                                                class="w-100 ui-button-success mt-1"
-                                                value="OPD Bill Items For Credit Companies"
-                                                action="#{laborataryReportController.navigateToBillItemListForCreditCompany()}">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Bill List"
+                                                    action="/reportLab/bill_list?faces-redirect=true">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_billList" label="Bill List" category="Performance" accordionId="accPanel" />
+                                            </div>
 
-                                            <p:commandButton ajax="false"
-                                                             class="w-100 ui-button-danger mt-1"
-                                                             value="List of Cancelled Lab Bills"
-                                                             action="#{laborataryReportController.navigateToLabCancelledBillListFromLabAnalytics()}"/>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100 ui-button-success mt-1"
+                                                    value="Bill Item List"
+                                                    action="/reportLab/bill_item_list?faces-redirect=true">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_billItemList" label="Bill Item List" category="Performance" accordionId="accPanel" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Client List" action="/reportLab/client_list?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_clientList" label="Client List" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Sample List" action="/lab/patient_sample_list?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_sampleList" label="Sample List" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100 ui-button-success" value="Sample List (DTO)" action="/lab/dto_patient_sample_list?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_sampleListDto" label="Sample List (DTO)" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Average Turn Around Time" action="turn_over_time?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_avgTurnAroundTime" label="Average Turn Around Time" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Bill-vice turn-around time" action="turn_over_time_bills?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_billWiseTurnAroundTime" label="Bill-vice turn-around time" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Billed Institution" action="report_lab_by_billed_institution?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_byBilledInstitution" label="By Billed Institution" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Billed Department" action="report_lab_by_billed_department?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_byBilledDepartment" label="By Billed Department" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_byReportedInstitution" label="By Reported Institution" category="Performance" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" class="w-100" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_byReportedDepartment" label="By Reported Department" category="Performance" accordionId="accPanel" /></div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}"
+                                                    ajax="false"
+                                                    class="w-100 ui-button-success mt-1"
+                                                    value="OPD Bill Items For Credit Companies"
+                                                    action="#{laborataryReportController.navigateToBillItemListForCreditCompany()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_opdBillItemsForCreditCompanies" label="OPD Bill Items For Credit Companies" category="Performance" accordionId="accPanel" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton ajax="false"
+                                                                 class="w-100 ui-button-danger mt-1"
+                                                                 value="List of Cancelled Lab Bills"
+                                                                 action="#{laborataryReportController.navigateToLabCancelledBillListFromLabAnalytics()}"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_cancelledLabBillList" label="List of Cancelled Lab Bills" category="Performance" accordionId="accPanel" />
+                                            </div>
                                         </div>
                                     </h:form>
                                 </p:tab>
                                 <p:tab title="Institutions" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="By Ordering Institution" action="ix_count_by_billed_institution?faces-redirect=true"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="By Ordering Institution" action="ix_count_by_billed_institution?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_byOrderingInstitution" label="By Ordering Institution" category="Institutions" accordionId="accPanel" /></div>
 
                                         </div>
                                     </h:form>
@@ -74,18 +400,18 @@
                                 <p:tab title="Collecting Centres" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Report by Collection Centre(Summary)" action="report_lab_collection_centre_summery?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count?faces-redirect=true"/>                            
-                                            <p:commandButton ajax="false" value="Report by Collection Centre Count(Summary)" action="report_lab_by_collection_centre_investigation_count_summery?faces-redirect=true"/>                            
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_collectionCentreDetail" label="Report by Collection Centre(Detail)" category="Collecting Centres" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report by Collection Centre(Summary)" action="report_lab_collection_centre_summery?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_collectionCentreSummary" label="Report by Collection Centre(Summary)" category="Collecting Centres" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_collectionCentreCount" label="Report by Collection Centre Count" category="Collecting Centres" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report by Collection Centre Count(Summary)" action="report_lab_by_collection_centre_investigation_count_summery?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_collectionCentreCountSummary" label="Report by Collection Centre Count(Summary)" category="Collecting Centres" accordionId="accPanel" /></div>
                                         </div>
                                     </h:form>
                                 </p:tab>
                                 <p:tab title="Referring Doctors" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Report by Referring Doctor(Details)" action="report_lab_by_refering_doctor?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Report by Referring Doctor(Summary)" action="report_lab_by_refering_doctor_summery?faces-redirect=true"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report by Referring Doctor(Details)" action="report_lab_by_refering_doctor?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_referringDoctorDetail" label="Report by Referring Doctor(Details)" category="Referring Doctors" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report by Referring Doctor(Summary)" action="report_lab_by_refering_doctor_summery?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_referringDoctorSummary" label="Report by Referring Doctor(Summary)" category="Referring Doctors" accordionId="accPanel" /></div>
                                         </div>
                                     </h:form>
                                 </p:tab>
@@ -93,10 +419,10 @@
                                 <p:tab title="Inward" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Inward" action="report_investigation_summery_by_inward?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward?faces-redirect=true"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_inwardSummaryByAddedDate" label="Inward Lab Summary by Added Date" category="Inward" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_inwardSummaryByAddedDateWithMargin" label="Inward Lab Summary by Added Date With Margin" category="Inward" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Investigation Summary Inward" action="report_investigation_summery_by_inward?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_investigationSummaryInward" label="Investigation Summary Inward" category="Inward" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_investigationSummaryInwardByDate" label="Investigation Summary Inward by Date" category="Inward" accordionId="accPanel" /></div>
 
                                         </div>
                                     </h:form>
@@ -105,32 +431,44 @@
                                 <p:tab title="Income" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Income Summary" action="income_summery?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" value="Report Summary Department" action="report_cashier_detailed_by_department?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Report Summary by day" action="report_lab_by_date_summery?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true"/>
-                                            <p:commandButton ajax="false"
-                                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
-                                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
-                                                            action="lab_daily_summary_by_department?faces-redirect=true" />
-                                            <p:commandButton ajax="false"
-                                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Optimized Method')}"
-                                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)"
-                                                            action="lab_daily_summary_by_department_dto?faces-redirect=true" />
-                                            <p:commandButton
-                                                ajax="false" 
-                                                value="Laboratary Card Income Report" 
-                                                action="#{laborataryReportController.navigateToLaborataryCardIncomeReportFromLabAnalytics()}">
-                                            </p:commandButton>
-                                            <p:commandButton ajax="false" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Daily Inward Fee Summary" action="daily_inward_fee_summery?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Daily Inward Fee Summary with Counts" action="daily_inward_fee_summery_counts?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total?faces-redirect=true"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Income Summary" action="income_summery?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_incomeSummary" label="Income Summary" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report Summary Department" action="report_cashier_detailed_by_department?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_reportSummaryDepartment" label="Report Summary Department" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report Summary by day" action="report_lab_by_date_summery?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_reportSummaryByDay" label="Report Summary by day" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_investigationSummaryFeeType" label="Investigation Summary Fee Type" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_investigationSummaryRegentFee" label="Investigation Summary Regent Fee" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_investigationSummaryFeeTypeWithCredit" label="Investigation Summary Fee Type With Credit" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_investigationSummaryRegentFeeWithCredit" label="Investigation Summary Regent Fee With Credit" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_investigationSummaryRegentFeeByPayMethod" label="Investigation Summary Regent Fee By Payment Method" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton ajax="false"
+                                                                class="w-100"
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
+                                                                value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
+                                                                action="lab_daily_summary_by_department?faces-redirect=true" />
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyLabSummaryByDepartment" label="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}" category="Income" visible="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}" accordionId="accPanel" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton ajax="false"
+                                                                class="w-100"
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Optimized Method')}"
+                                                                value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)"
+                                                                action="lab_daily_summary_by_department_dto?faces-redirect=true" />
+                                                <fav:favoriteStar reportKey="labAnalytics_dailyLabSummaryByDepartmentDto" label="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)" category="Income" visible="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Optimized Method')}" accordionId="accPanel" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Laboratary Card Income Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryCardIncomeReportFromLabAnalytics()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_cardIncomeReport" label="Laboratary Card Income Report" category="Income" accordionId="accPanel" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailyOpdFeeSummary" label="Daily OPD Fee Summary" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailyOpdFeeSummaryWithCounts" label="Daily OPD Fee Summary with Counts" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily Inward Fee Summary" action="daily_inward_fee_summery?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailyInwardFeeSummary" label="Daily Inward Fee Summary" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily Inward Fee Summary with Counts" action="daily_inward_fee_summery_counts?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailyInwardFeeSummaryWithCounts" label="Daily Inward Fee Summary with Counts" category="Income" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_reportSummaryByMonthCashCredit" label="Report Summary by Month With Cash and Credit" category="Income" accordionId="accPanel" /></div>
 
                                         </div>
                                     </h:form>
@@ -139,62 +477,85 @@
                                 <p:tab title="Lab Summary" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton
-                                                class="w-100 ui-button-primary"
-                                                ajax="false"
-                                                value="Test Wise Count Report"
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report is Enabled',true)}"
-                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" />
-                                            <p:commandButton
-                                                class="w-100 ui-button-success mt-1"
-                                                ajax="false"
-                                                value="Test Wise Count Report - DTO"
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report By DTO is Enabled',true)}"
-                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
-                                            <p:commandButton
-                                                class="w-100  ui-button-success"
-                                                ajax="false"
-                                                value="Test Wise Reagent Cost Report"
-                                                action="#{laborataryReportController.navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics()}" />
-                                            <p:commandButton
-                                                ajax="false" 
-                                                value="Laboratary Income Report" 
-                                                action="#{laborataryReportController.navigateToLaborataryIncomeReportFromLabAnalytics()}">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Laboratory Order Report" 
-                                                action="#{laborataryReportController.navigateToLaborataryInwardOrderReportFromLabAnalytics}">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    class="w-100 ui-button-primary"
+                                                    ajax="false"
+                                                    value="Test Wise Count Report"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report is Enabled',true)}"
+                                                    action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" />
+                                                <fav:favoriteStar reportKey="labAnalytics_testWiseCountReport" label="Test Wise Count Report" category="Lab Summary" visible="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report is Enabled',true)}" accordionId="accPanel" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    class="w-100 ui-button-success mt-1"
+                                                    ajax="false"
+                                                    value="Test Wise Count Report - DTO"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report By DTO is Enabled',true)}"
+                                                    action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
+                                                <fav:favoriteStar reportKey="labAnalytics_testWiseCountReportDto" label="Test Wise Count Report - DTO" category="Lab Summary" visible="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report By DTO is Enabled',true)}" accordionId="accPanel" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    class="w-100 ui-button-success"
+                                                    ajax="false"
+                                                    value="Test Wise Reagent Cost Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics()}" />
+                                                <fav:favoriteStar reportKey="labAnalytics_testWiseReagentCostReport" label="Test Wise Reagent Cost Report" category="Lab Summary" accordionId="accPanel" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Laboratary Income Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryIncomeReportFromLabAnalytics()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_incomeReport" label="Laboratary Income Report" category="Lab Summary" accordionId="accPanel" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                class="w-100 ui-button-success mt-1"
-                                                value="Laboratory Summary" 
-                                                action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics}">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Laboratory Order Report"
+                                                    action="#{laborataryReportController.navigateToLaborataryInwardOrderReportFromLabAnalytics}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_orderReport" label="Laboratory Order Report" category="Lab Summary" accordionId="accPanel" />
+                                            </div>
 
-                                            <p:commandButton ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" value="Daily Summary" action="report_opd_service_summery?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Laboratory All Income Summary" action="laboratory_all_income_summary?faces-redirect=true;"/>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100 ui-button-success mt-1"
+                                                    value="Laboratory Summary"
+                                                    action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_laboratorySummary" label="Laboratory Summary" category="Lab Summary" accordionId="accPanel" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailySummaryByBillTypes" label="Daily Summary By Bill Types" category="Lab Summary" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily Summary" action="report_opd_service_summery?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailySummary" label="Daily Summary" category="Lab Summary" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailySummaryInwardOpd" label="Daily Summary Inward and Opd" category="Lab Summary" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailySummaryInwardOpdByDate" label="Daily Summary Inward and Opd by Date" category="Lab Summary" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_dailySummaryInwardOpdCount" label="Daily Summary Inward and Opd Count" category="Lab Summary" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Laboratory All Income Summary" action="laboratory_all_income_summary?faces-redirect=true;"/> <fav:favoriteStar reportKey="labAnalytics_allIncomeSummary" label="Laboratory All Income Summary" category="Lab Summary" accordionId="accPanel" /></div>
                                         </div>
                                     </h:form>
                                 </p:tab>
 
                                 <p:tab title="Auditing" >
                                     <h:form>
-                                        <h:panelGroup>
-                                            <p:commandButton 
-
-                                                ajax="false" 
-                                                value="Bills Cancelled after Approving Reports"
-                                                action="/lab/report_cancelled_bill_search?faces-redirect=true"> 
-                                            </p:commandButton>
-                                        </h:panelGroup>
+                                        <div class="d-grid gap-2">
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Bills Cancelled after Approving Reports"
+                                                    action="/lab/report_cancelled_bill_search?faces-redirect=true">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="labAnalytics_cancelledBillSearch" label="Bills Cancelled after Approving Reports" category="Auditing" accordionId="accPanel" />
+                                            </div>
+                                        </div>
                                     </h:form>
 
                                 </p:tab>
@@ -202,21 +563,25 @@
                                 <p:tab title="Clinical" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Test Results - Single" action="test_results_single?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Test Results - Single" action="test_results_single?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_testResultsSingle" label="Test Results - Single" category="Clinical" accordionId="accPanel" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false" class="w-100" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/> <fav:favoriteStar reportKey="labAnalytics_testResults" label="Test Results" category="Clinical" accordionId="accPanel" /></div>
 
-                                        </div>>
+                                        </div>
                                     </h:form>
                                 </p:tab>
 
                                 <p:tab title="Reference" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton
-                                                ajax="false"
-                                                value="Price List"
-                                                icon="fa fa-tags"
-                                                action="#{laborataryReportController.navigateToInvestigationPriceListFromLabAnalytics()}"/>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="w-100"
+                                                    value="Price List"
+                                                    icon="fa fa-tags"
+                                                    action="#{laborataryReportController.navigateToInvestigationPriceListFromLabAnalytics()}"/>
+                                                <fav:favoriteStar reportKey="labAnalytics_priceList" label="Price List" category="Reference" accordionId="accPanel" />
+                                            </div>
                                         </div>
                                     </h:form>
                                 </p:tab>
@@ -224,14 +589,14 @@
                             </p:accordionPanel>
                         </div>
 
-                        <div class="col-10">  
+                        <div class="col-10">
                             <ui:insert name="subcontent" >
 
                             </ui:insert>
                         </div>
 
                     </div>
-                </p:panel> 
+                </p:panel>
             </ui:define>
         </ui:composition>
 
