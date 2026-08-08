@@ -151,6 +151,7 @@ public class InwardSearch implements Serializable {
      * LEFT JOINs instead.
      */
     private Long appointmentReceiptBillId;
+    private InwardBillReceiptDTO appointmentBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -2422,18 +2423,24 @@ public class InwardSearch implements Serializable {
 
     public void setAppointmentReceiptBillId(Long appointmentReceiptBillId) {
         this.appointmentReceiptBillId = appointmentReceiptBillId;
+        this.appointmentBillReceipt = null;
     }
 
     /**
      * DTO for {@code /inward/inward_view_appointment_bill_receipt} — null
      * until {@link #appointmentReceiptBillId} is set by the BillSearch
-     * routing case.
+     * routing case. Lazily loaded and cached for the lifetime of this bean
+     * (the composite receipt templates dereference it many times per
+     * render); the cache is cleared by {@link #setAppointmentReceiptBillId}.
      */
     public InwardBillReceiptDTO getAppointmentBillReceipt() {
         if (appointmentReceiptBillId == null) {
             return null;
         }
-        return billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
+        if (appointmentBillReceipt == null) {
+            appointmentBillReceipt = billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
+        }
+        return appointmentBillReceipt;
     }
 
     public void markAsChecked() {

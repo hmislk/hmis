@@ -184,7 +184,7 @@ public class InwardBillReceiptDTO implements Serializable {
         } else {
             temT = "";
         }
-        return temT + " " + patientName;
+        return temT + " " + (patientName != null ? patientName : "");
     }
 
     /**
@@ -198,7 +198,7 @@ public class InwardBillReceiptDTO implements Serializable {
         } else {
             temT = "";
         }
-        return temT + " " + cashierName;
+        return temT + " " + (cashierName != null ? cashierName : "");
     }
 
     /**

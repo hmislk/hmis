@@ -763,7 +763,7 @@
                                                                         ajax="false"
                                                                         action="#{admissionController.navigateToAppointmentDepositConversion()}"
                                                                         icon="fa fa-right-left"
-                                                                        rendered="#{admissionController.current ne null and admissionController.hasPendingAppointmentDepositConversion}"
+                                                                        rendered="#{webUserController.hasPrivilege('InwardEditPaymentDetails') and admissionController.current ne null and admissionController.hasPendingAppointmentDepositConversion}"
                                                                         class="w-100">
                                                                     </p:commandButton>
                                                                 </div>
@@ -783,6 +783,7 @@
                                                                     ajax="false"
                                                                     action="#{inwardReportControllerBht.navigateToInwardPaymentBillListForDepartment()}"
                                                                     icon="fa fa-money-bill-wave"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardReport')}"
                                                                     class="w-100 ui-button-success">
                                                                 </p:commandButton>
                                                             </div>
@@ -793,7 +794,7 @@
                                                                     ajax="false"
                                                                     action="#{inwardReportControllerBht.navigateToInpatientPaymentBillListDto()}"
                                                                     icon="fa fa-file-invoice-dollar"
-                                                                    rendered="#{admissionController.current ne null}"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardReport') and admissionController.current ne null}"
                                                                     class="w-100 ui-button-success">
                                                                     <f:setPropertyActionListener
                                                                         value="#{admissionController.current}"

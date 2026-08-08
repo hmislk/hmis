@@ -2344,6 +2344,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     /** Id of the INWARD_DEPOSIT bill created by the last conversion. */
     private Long lastConversionDepositBillId;
 
+    /** Lazily-loaded, request-lifetime cache for {@link #getConversionCancelReceipt()}. */
+    private InwardBillReceiptDTO conversionCancelReceipt;
+
+    /** Lazily-loaded, request-lifetime cache for {@link #getConversionDepositReceipt()}. */
+    private InwardBillReceiptDTO conversionDepositReceipt;
+
     public Appointment getPendingAppointmentConversion() {
         return pendingAppointmentConversion;
     }
@@ -2466,7 +2472,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (lastConversionCancelBillId == null) {
             return null;
         }
-        return getBillFacade().findInwardBillReceiptDTO(lastConversionCancelBillId);
+        if (conversionCancelReceipt == null || !lastConversionCancelBillId.equals(conversionCancelReceipt.getBillId())) {
+            conversionCancelReceipt = getBillFacade().findInwardBillReceiptDTO(lastConversionCancelBillId);
+        }
+        return conversionCancelReceipt;
     }
 
     /**
@@ -2478,7 +2487,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (lastConversionDepositBillId == null) {
             return null;
         }
-        return getBillFacade().findInwardBillReceiptDTO(lastConversionDepositBillId);
+        if (conversionDepositReceipt == null || !lastConversionDepositBillId.equals(conversionDepositReceipt.getBillId())) {
+            conversionDepositReceipt = getBillFacade().findInwardBillReceiptDTO(lastConversionDepositBillId);
+        }
+        return conversionDepositReceipt;
     }
 
     /**

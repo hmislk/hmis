@@ -783,7 +783,14 @@ public class InwardReportControllerBht implements Serializable {
         params.put("toDate", toDate);
 
         if (bhtNoFilter != null && !bhtNoFilter.trim().isEmpty()) {
-            jpql += "AND pe.bhtNo LIKE :bhtNo ";
+            // pe.bhtNo alone misses INWARD_APPOINTMENT_BILL / INWARD_APPOINTMENT_CANCEL_BILL
+            // bills (their Bill.patientEncounter is always null) - fall back to the
+            // admission's BHT No via the Appointment that references this bill either
+            // as its original bill or its cancellation bill.
+            jpql += "AND (pe.bhtNo LIKE :bhtNo OR EXISTS ("
+                    + "SELECT a FROM Appointment a "
+                    + "WHERE (a.bill = b OR a.appointmentCancelBill = b) "
+                    + "AND a.patientEncounter.bhtNo LIKE :bhtNo)) ";
             params.put("bhtNo", "%" + bhtNoFilter.trim() + "%");
         }
 
