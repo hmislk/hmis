@@ -156,7 +156,7 @@ public class PurchaseOrderRequestNativeSqlService {
      * unit tested directly. AMPP items store rates per-pack on BillItemFinanceDetails
      * but per-unit on PharmaceuticalBillItem; non-AMPP items use the same rate for both.
      */
-    static final class LineValues {
+    public static final class LineValues {
         final BigDecimal qty, freeQty, purchaseRate, retailRate, unitsPerPack;
         final BigDecimal grossValue, netValue, purchaseValue, retailValue, netRate;
         final double pbiQty, pbiFreeQty, pbiPurchaseRate, pbiRetailRate;
@@ -173,7 +173,16 @@ public class PurchaseOrderRequestNativeSqlService {
         }
     }
 
-    LineValues computeLineValues(PurchaseOrderRequestLineData line) {
+    /**
+     * Public (not package-private): called cross-EJB from
+     * PurchaseOrderApprovingNativeSqlService via the injected @EJB reference.
+     * A stateless EJB's no-interface local view only exposes public methods
+     * through the container-generated proxy -- package-private access works
+     * for plain same-package Java calls but throws "Illegal non-business
+     * method access on no-interface view" when invoked through the proxy.
+     * Confirmed by a live redeploy failure; do not revert to package-private.
+     */
+    public LineValues computeLineValues(PurchaseOrderRequestLineData line) {
         BigDecimal qty = line.getQuantity() != null ? line.getQuantity() : BigDecimal.ZERO;
         BigDecimal freeQty = line.getFreeQuantity() != null ? line.getFreeQuantity() : BigDecimal.ZERO;
         BigDecimal purchaseRate = line.getPurchaseRate() != null ? line.getPurchaseRate() : BigDecimal.ZERO;
@@ -348,7 +357,13 @@ public class PurchaseOrderRequestNativeSqlService {
      * totalUnits.compareTo(BigDecimal.ZERO) <= 0 check.
      * No em access, unit tested.
      */
-    boolean isZeroQtyLine(double qty, double freeQty) {
+    /**
+     * Public (not package-private): called cross-EJB from
+     * PurchaseOrderApprovingNativeSqlService.retireZeroQtyApprovedLines() via
+     * the injected @EJB reference -- see computeLineValues()'s Javadoc above
+     * for why package-private fails through the EJB proxy.
+     */
+    public boolean isZeroQtyLine(double qty, double freeQty) {
         return (qty + freeQty) <= 0;
     }
 

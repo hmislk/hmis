@@ -14,6 +14,7 @@ import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -295,12 +296,21 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
         }
         for (BillItem bi : billItems) {
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-            if (pbi == null) {
+            if (pbi == null || bi.getBillItemFinanceDetails() == null) {
                 JsfUtil.addErrorMessage("Missing pharmaceutical details for item: " + bi.getItem().getName());
                 return;
             }
-            double totalQty = bi.getBillItemFinanceDetails().getQuantity().doubleValue()
-                    + bi.getBillItemFinanceDetails().getFreeQuantity().doubleValue();
+            // Read from BillItemFinanceDetails, not PharmaceuticalBillItem: the PBI's
+            // primitive qty/freeQty are only populated by saveApprovedLine() at persist
+            // time (see computeLineValues()) and stay 0.0 for every in-memory/unsaved
+            // line -- reading them here would always fail this check. Quantity/free
+            // quantity are BigDecimal on BillItemFinanceDetails and can be null (e.g. a
+            // requested line whose free quantity was left blank), so default like
+            // recalculateLineValues() does.
+            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+            double totalQty = (qty != null ? qty.doubleValue() : 0.0)
+                    + (freeQty != null ? freeQty.doubleValue() : 0.0);
             if (totalQty <= 0) {
                 JsfUtil.addErrorMessage("Item '" + bi.getItem().getName() + "' has zero quantity and free quantity");
                 return;
@@ -314,6 +324,22 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
 
         calculateBillTotals();
 
+        // Capture the header values the user actually entered BEFORE reloading
+        // approvedBill below -- billFacade.find() returns a fresh entity with no
+        // header fields set, and getApprovedBill() only lazily re-inits when the
+        // field is null, so reading "getApprovedBill().getX()" AFTER the
+        // reassignment would just read the reloaded (empty) object back into
+        // itself, silently discarding what the user entered. Same class of bug
+        // as Phase 1's saveRequestWithoutMessage() header-loss fix.
+        Institution toInstitution = getApprovedBill().getToInstitution();
+        PaymentMethod paymentMethod = getApprovedBill().getPaymentMethod();
+        int creditDuration = getApprovedBill().getCreditDuration();
+        boolean consignment = getApprovedBill().isConsignment();
+        DepartmentType departmentType = getApprovedBill().getDepartmentType();
+        String comments = getApprovedBill().getComments();
+        double netTotal = getApprovedBill().getNetTotal();
+        double total = getApprovedBill().getTotal();
+
         String[] billNumbers = createAndAssignBillNumber();
         long approvedBillId = purchaseOrderApprovingNativeSqlService.createApprovedBill(
                 requestedBill.getId(),
@@ -325,20 +351,20 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
                 billNumbers[0],
                 billNumbers[1]);
         approvedBill = billFacade.find(approvedBillId);
-        approvedBill.setPaymentMethod(getApprovedBill().getPaymentMethod());
-        approvedBill.setToInstitution(getApprovedBill().getToInstitution());
-        approvedBill.setCreditDuration(getApprovedBill().getCreditDuration());
-        approvedBill.setConsignment(getApprovedBill().isConsignment());
-        approvedBill.setDepartmentType(getApprovedBill().getDepartmentType());
+        approvedBill.setPaymentMethod(paymentMethod);
+        approvedBill.setToInstitution(toInstitution);
+        approvedBill.setCreditDuration(creditDuration);
+        approvedBill.setConsignment(consignment);
+        approvedBill.setDepartmentType(departmentType);
 
         purchaseOrderApprovingNativeSqlService.updateApprovedBillHeader(
                 approvedBillId,
-                approvedBill.getToInstitution() != null ? approvedBill.getToInstitution().getId() : null,
-                approvedBill.getPaymentMethod(),
-                approvedBill.getCreditDuration(),
-                approvedBill.isConsignment(),
-                approvedBill.getDepartmentType(),
-                approvedBill.getComments(),
+                toInstitution != null ? toInstitution.getId() : null,
+                paymentMethod,
+                creditDuration,
+                consignment,
+                departmentType,
+                comments,
                 sessionController.getLoggedUser().getId());
 
         for (BillItem bi : billItems) {
@@ -355,6 +381,7 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
             purchaseOrderApprovingNativeSqlService.saveApprovedLine(approvedBillId, line);
         }
 
+        purchaseOrderApprovingNativeSqlService.updateBillTotals(approvedBillId, netTotal, total);
         purchaseOrderApprovingNativeSqlService.retireZeroQtyApprovedLines(approvedBillId, sessionController.getLoggedUser().getId());
 
         approvedBill = billFacade.find(approvedBillId);

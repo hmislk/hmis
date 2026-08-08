@@ -75,40 +75,43 @@ public class PurchaseOrderApprovingNativeSqlService {
     }
 
     /**
-     * Native INSERT for the approved bill row. This row's own
-     * backwardReferenceBill_ID points at the requested bill, matching
-     * legacy's setBackwardReferenceBill(getRequestedBill()); the requested
-     * bill's own referenceBill_ID (pointing here) is written later in JPA by
-     * the controller. billClassType is BilledBill per legacy's
-     * "new BilledBill()" -- billClassType is a plain (non-discriminator)
-     * column on Bill (see Bill#billClassType), so it is written here as a
-     * literal .toString(), same as BillTypeAtomic/BillType.
+     * JPA persist for the approved bill row -- NOT native SQL. BilledBill is
+     * a single-table-inheritance subclass of Bill (discriminated by the
+     * DTYPE column), and DTYPE has no explicit @DiscriminatorColumn/
+     * @DiscriminatorValue mapping in this codebase -- EclipseLink derives and
+     * writes it automatically only through em.persist(), never through a raw
+     * native INSERT. A native INSERT here previously left DTYPE null,
+     * producing "Missing class indicator field from database row" on the
+     * very next JPA read of this bill. This is the same reason
+     * TransferIssueNativeSqlService.settle() persists its BilledBill header
+     * via JPA rather than native SQL (see its class-level Javadoc, step 1:
+     * "Persist bill header via JPA (correct DTYPE + IDENTITY PK)") --
+     * follow that established precedent here instead of reinventing it.
+     * This row's own backwardReferenceBill points at the requested bill,
+     * matching legacy's setBackwardReferenceBill(getRequestedBill()); the
+     * requested bill's own referenceBill (pointing here) is written later in
+     * JPA by the controller.
      */
     public long createApprovedBill(long requestedBillId, long departmentId, long institutionId,
             long fromDepartmentId, long fromInstitutionId, long createrId, String deptId, String insId) {
-        Date now = new Date();
-        em.createNativeQuery(
-            "INSERT INTO " + billTable()
-            + " (BILLTYPEATOMIC, billType, billClassType, department_ID, institution_ID,"
-            + " fromDepartment_ID, fromInstitution_ID, backwardReferenceBill_ID,"
-            + " creater_ID, createdAt, checked, retired, cancelled, deptId, insId, netTotal, total)"
-            + " VALUES (?,?,?,?,?,?,?,?,?,?,0,0,0,?,?,0,0)")
-            .setParameter(1, BillTypeAtomic.PHARMACY_ORDER_APPROVAL.toString())
-            .setParameter(2, BillType.PharmacyOrderApprove.toString())
-            .setParameter(3, com.divudi.core.data.BillClassType.BilledBill.toString())
-            .setParameter(4, departmentId)
-            .setParameter(5, institutionId)
-            .setParameter(6, fromDepartmentId)
-            .setParameter(7, fromInstitutionId)
-            .setParameter(8, requestedBillId)
-            .setParameter(9, createrId)
-            .setParameter(10, new Timestamp(now.getTime()))
-            .setParameter(11, deptId)
-            .setParameter(12, insId)
-            .executeUpdate();
-        long billId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+        com.divudi.core.entity.BilledBill bill = new com.divudi.core.entity.BilledBill();
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+        bill.setBillType(BillType.PharmacyOrderApprove);
+        bill.setDepartment(em.getReference(com.divudi.core.entity.Department.class, departmentId));
+        bill.setInstitution(em.getReference(com.divudi.core.entity.Institution.class, institutionId));
+        bill.setFromDepartment(em.getReference(com.divudi.core.entity.Department.class, fromDepartmentId));
+        bill.setFromInstitution(em.getReference(com.divudi.core.entity.Institution.class, fromInstitutionId));
+        bill.setBackwardReferenceBill(em.getReference(com.divudi.core.entity.Bill.class, requestedBillId));
+        bill.setCreater(em.getReference(com.divudi.core.entity.WebUser.class, createrId));
+        bill.setCreatedAt(new Date());
+        bill.setDeptId(deptId);
+        bill.setInsId(insId);
+        bill.setNetTotal(0.0);
+        bill.setTotal(0.0);
+        em.persist(bill);
+        em.flush();
         evictCache();
-        return billId;
+        return bill.getId();
     }
 
     /**
@@ -134,6 +137,17 @@ public class PurchaseOrderApprovingNativeSqlService {
             .setParameter(9, approvedBillId)
             .executeUpdate();
         evictCache();
+    }
+
+    /**
+     * Persists the approved bill's netTotal/total columns. Delegates to
+     * PurchaseOrderRequestNativeSqlService.updateBillTotals() (already public,
+     * same UPDATE shape) rather than duplicating it -- this service's own
+     * createApprovedBill()/updateApprovedBillHeader() never write these two
+     * columns, the same gap Phase 1 had before its own updateBillTotals() fix.
+     */
+    public void updateBillTotals(long billId, double netTotal, double total) {
+        purchaseOrderRequestNativeSqlService.updateBillTotals(billId, netTotal, total);
     }
 
     /**
@@ -355,10 +369,21 @@ public class PurchaseOrderApprovingNativeSqlService {
      * a live database -- flagged for confirmation during Task 6's Playwright
      * pass, per the task brief.
      */
+    /**
+     * ampp is deliberately not projected here: EclipseLink cannot resolve
+     * {@code CASE WHEN TYPE(bi.item) = <EntityClass> THEN ... END} as a
+     * SELECT NEW constructor argument (confirmed at runtime -- "state field
+     * path ... cannot be resolved to a valid type"), even though the same
+     * TYPE()-in-CASE pattern works fine as a plain SELECT/SUM operand
+     * elsewhere in this codebase. The caller (PurchaseOrderApprovingNativeSqlController
+     * .generateBillComponent()) already resolves the real Item entity via
+     * itemFacade.find(itemId) and derives ampp from that entity's own type
+     * where it's actually needed (approve()), so the projection doesn't need
+     * to carry it.
+     */
     public List<PurchaseOrderRequestLineData> loadRequestedLines(long requestedBillId) {
         String jpql = "SELECT NEW com.divudi.core.data.dto.pharmacy.PurchaseOrderRequestLineData("
                 + "bi.item.id, "
-                + "CASE WHEN TYPE(bi.item) = com.divudi.core.entity.pharmacy.Ampp THEN true ELSE false END, "
                 + "bi.billItemFinanceDetails.quantity, "
                 + "bi.billItemFinanceDetails.freeQuantity, "
                 + "bi.billItemFinanceDetails.lineGrossRate, "
