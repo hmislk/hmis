@@ -71,6 +71,18 @@ so the entire menu — including the notification bell, websocket, and remoteCom
 is absent from the page. Any Playwright check for these components will fail silently.
 Always go through the department-selection screen first.
 
+**The department gate is a hard prerequisite for every session, not a one-time
+step to satisfy and forget.** After clicking **Select** on the department
+screen, the app redirects to `home.xhtml` — that redirect (not a specific
+target page) is the real confirmation the gate passed. Only after landing on
+`home.xhtml` is it safe to `browser_navigate` straight to a specific report/page
+URL. Prefer clicking through the actual menu (Pharmacy Analytics → tab →
+Generate Report, etc.) over guessing/typing report URLs directly wherever a
+menu path is reasonably discoverable — direct URL navigation is a fallback for
+pages with no simple menu path, not the default technique, since several pages
+(e.g. Inward final-bill pages, see §17 below) rely on session-bean state that a
+URL alone won't set up correctly even post-department-selection.
+
 **A redeploy invalidates the session.** Every time the WAR is redeployed you are
 logged out and must log in again. Plan test runs so you are not mid-flow when a
 deploy lands.
@@ -1304,6 +1316,24 @@ balance locally):
   panel beforehand isn't necessary once you're driving it via JS, but doing a
   quick `browser_snapshot` after any of this is worth it to confirm the
   visible label actually changed before submitting the form.
+- Confirmed again while verifying issue #22649 (OPD Itemized Sales Summary
+  cancellation-doubling report): `itemized_sale_summary_dto.xhtml`'s From/To
+  `p:calendar` inputs silently reverted to today's date after `.fill()`, every
+  time — as soon as the *other* date field (or any other input on the page)
+  was touched next, both fields resnapped to their pre-fill value. If you'd
+  rather not reach for `browser_evaluate`/widget internals, driving the actual
+  calendar UI works just as reliably: click the input to open its popup, click
+  the "Previous"/"Next" month arrows (found via `browser_find` for the visible
+  month/year text, since the arrows' refs change every re-render) until the
+  target month is showing, then click the day-number link. This sets the
+  widget's real internal Date object (unlike a raw `.fill()`), so the value
+  survives subsequent postbacks/field changes. Note this page has no
+  `showTime`/`timeInput` attribute, so clicking a day only changes the date —
+  the time-of-day stays whatever that field's default already was (00:00:00
+  for From, 23:59:59 for To here). If a test needs the submitted range to land
+  on a specific time or cross midnight, pick the From/To *days* accordingly
+  (e.g. From = day N 00:00:00, To = day N+1 23:59:59) rather than assuming the
+  time resets.
 - Separately: local test data can have **zero** BillFee rows with
   `paidValue == feeValue` (nobody has ever settled a professional payment
   through this exact local DB copy) — check with a quick SQL count before
@@ -1434,6 +1464,110 @@ pre-bill and deducts stock — it does **not** create the final sale bill. To re
 Not Paid Tokens** → **Call Customer** → **Accept Payment** → enter Tendered amount → **Accept Payment and
 Settle**. Then from `pharmacy_search_pre_bill.xhtml` → **Search Paid Only Tokens** → **View Payment Bill**
 lands on the reprint/cancel page for that bill.
+
+## 55. `inward_bill_professional.xhtml` "Add Professional Fee" silently no-ops if the Speciality autocomplete is left empty
+
+On "Add New Professional Fees", the `+ Add Professional Fee` button is a
+`type="submit"` full postback guarded only by a JS `confirm(...)` — clicking
+it and accepting the dialog looks successful (page reloads, no visible
+error) but the row never appears in "Professional Fees for This Encounter"
+and no `BILLFEE` row is inserted, if the **Speciality** autocomplete (above
+Doctor) was left blank. This is the same zero-observable-signal
+required-field pattern as §37, just on a different page/field — the Doctor
+field alone is not enough. Fix: search and select a Speciality (e.g. type
+`PHYSICIAN`, press Enter) before Doctor/Fee Amount/Add. Confirmed via
+`mysql.general_log`: with Speciality empty, no `INSERT INTO BILLFEE`
+statement reaches the server at all; with it filled, the insert fires
+immediately. Verified while testing issue #22665.
+
+## 56. `p:datePicker timeInput="true"` — typing into the input does not commit; use the PrimeFaces widget API for non-AJAX forms
+
+On `theater/inward_timed_service_consume_surgery.xhtml`'s Start/End Time
+fields (`p:datePicker showTime="true" timeInput="true"`, no `readonlyInput`
+set — `input.readOnly` is `false`), the documented "click → Ctrl+A →
+pressSequentially → Escape" pattern (§ "p:datePicker / p:calendar") left the
+input **empty** every time: `document.getElementById(...).value` read `""`
+both before and after `Escape`, with no visible error. Root cause wasn't
+narrowed further, but the fix that reliably works is to skip DOM typing
+entirely and drive the PrimeFaces widget directly — safe here because the
+submit button (`+ Add Service`) is `ajax="false"`, so (per §29) only the
+final submitted `_input` value matters:
+```js
+Object.keys(PrimeFaces.widgets).filter(k => /starttime|endtime/i.test(k))
+// -> ["widget_form_startTime", "widget_form_endTime"]
+PrimeFaces.widgets.widget_form_startTime.setDate(new Date(2026, 7, 5, 19, 0, 0));
+```
+`setDate()` both sets the widget's internal date **and** re-serializes the
+visible `_input` text using the field's configured pattern, so a DOM read
+right after confirms the committed value. Verified end-to-end for issue #20890:
+the typed-looking string round-tripped correctly through the
+non-AJAX submit and the saved `PATIENTITEM.FROMTIME`/`TOTIME` matched. Only
+use this shortcut for non-AJAX (full-postback) submits — for an AJAX
+`p:datePicker` where the *change* event itself must fire a listener, this
+bypasses that and the real key-event pattern would still be required (untested
+here).
+
+## 57. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link
+
+`inward/nurse/index.xhtml` populates its Rooms/BHT tab lists (room and BHT
+buttons per ward) only when reached via the real PrimeFaces menu action
+(**Inward → Nursing WorkBench**, an `onclick`/`PrimeFaces.addSubmitParam`
+command link that posts a form before navigating). A `browser_navigate`
+straight to `/rh/faces/nurse/index.xhtml` — even from an already-authenticated,
+department-selected session — loads the page shell but leaves both tab panels
+empty, with no console error and no failed network request to explain it; the
+list is populated by server-side controller init tied to the menu's action
+listener, not by a `f:viewAction` or ajax poll that a plain GET would trigger.
+Same rule as the admission/final-bill pages noted in §1 §17: prefer clicking
+through the actual menu path over guessing the URL, and if a page you reached
+by URL shows a suspiciously empty list with no error, retry via the menu link
+before assuming the data itself is missing. Verified while testing issue
+`#22689`. Note: `NursingWorkBenchController.loadLists()` populates the Rooms
+and BHT tabs from the identical query (same `discharged=false /
+paymentFinalized=false / currentPatientRoom` filter) — they always list the
+same admissions, just labeled/sorted by room name vs. BHT number
+respectively. If a specific admission seems "missing" from one tab, search by
+the label that tab actually renders (BHT number on the BHT tab, room name on
+the Rooms tab), not by patient name — neither tab's buttons show it.
+
+## 58. `inward_admission.xhtml` Room No autocomplete excludes the room already reserved by the very appointment being admitted; a required-config error can look like a blocked flow
+
+While testing issue #22719 (appointment → admission → deposit conversion), two admission-form gotchas surfaced together:
+
+- **Room No autocomplete only lists currently-*available* rooms** — a room
+  already reserved for the appointment/patient being admitted (e.g. via the
+  appointment's own `Reservation`) does **not** appear in the completion list,
+  even though it's "theirs." Typing the exact room number/name returns "No
+  results found." This isn't a bug in the flow under test — just pick any
+  other available room from the list (e.g. `Room 410` instead of the
+  originally-reserved `Room 101`) to proceed; the room shown on the
+  reservation and the room picked at admission time are independent fields.
+- **A hidden `ConfigOption` boolean can block the whole Admit action with no
+  visual hint on the form.** `AdmissionController` checks
+  `"Patient Age is Required in Patient Admission"` (default `false`, but was
+  `true` on this Galle Co-op local dev DB) and rejects with "Patient Age is
+  Required" if the patient has no DOB — the message doesn't say which field
+  or where to fix it. Two related traps while fixing it:
+  - Typing into the **Years/Months/Days** age inputs on `patient_edit.xhtml`
+    looks like it commits (`textbox "Years": "30"`) but doesn't persist a DOB —
+    that widget only *computes* a DOB client-side via a JS listener that a
+    plain `fill()`/`pressSequentially()` doesn't reliably trigger. Set the
+    **Date of Birth** `p:calendar` field directly instead (click → Ctrl+A →
+    type `dd/mm/yyyy` → Escape → Save) and verify
+    `SELECT DOB FROM person WHERE ID = (SELECT PERSON_ID FROM patient WHERE ID = <patientId>)`
+    returns a non-NULL row for the specific patient under test before
+    retrying the admission — an unfiltered `SELECT DOB FROM person` returns
+    every patient in the DB and can't confirm the one that matters.
+  - To find *which* config key is blocking an error message with no field
+    reference, `grep` the exact error string in
+    `src/main/java/com/divudi/bean/inward/AdmissionController.java` to find
+    the `configOptionApplicationController.getBooleanValueByKey("...")` call,
+    then toggle it via **Admin → Manage → Application Options → List
+    Application Options → filter by key → Edit Option** (per §26 — never via
+    raw SQL, the L2 cache won't see it). If you flip a real setting to unblock
+    a test, **toggle it back afterward** and confirm via
+    `SELECT OPTIONVALUE FROM configoption WHERE OPTIONKEY = '...'` — this is
+    live config on a real hospital's local dev copy, not disposable test data.
 
 ## Quick checklist
 

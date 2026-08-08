@@ -536,10 +536,12 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash && !feeCollectedByDoctor) {
             Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
             if (userDrawer != null) {
-                double drawerBalance = userDrawer.getCashInHandValue();
+                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
                 double paymentAmount = getTotalPayingWithoutWht();
 
-                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                boolean allowNegativeDrawer = configOptionApplicationController.getBooleanValueByKey(
+                        "Inward Professional Payments - Allow Negative Drawer Balance", false);
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true) && !allowNegativeDrawer) {
                     if (drawerBalance < paymentAmount) {
                         JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
                         return;

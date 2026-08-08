@@ -280,6 +280,8 @@ public class DataAdministrationController implements Serializable {
     @EJB
     private DatabaseMigrationService databaseMigrationService;
     @EJB
+    private com.divudi.service.DatabaseMigrationVersionCheckService databaseMigrationVersionCheckService;
+    @EJB
     private DatabaseMigrationFacade databaseMigrationFacade;
     @EJB
     private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
@@ -338,7 +340,6 @@ public class DataAdministrationController implements Serializable {
     private String auditDatabaseExecutionFeedback;
 
     // Wiki DDL version tracking
-    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
     private static final String WIKI_DDL_RAW_URL = "https://raw.githubusercontent.com/wiki/hmislk/hmis/files/createDDL.sql";
     private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
     private String wikiDdlVersion;
@@ -1521,6 +1522,153 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = out.toString();
     }
 
+    /**
+     * Backfills missing BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills
+     * that have no finance data. adjustStockForDepartment() creates these bills
+     * via saveDeptStockAdjustmentBill() + saveDeptAdjustmentBillItems(), but the
+     * BillFinanceDetails attach intermittently fails to persist, leaving
+     * bill.billFinanceDetails NULL. Without BFD, F15's adjustment section (which
+     * joins on BillFinanceDetails, not bill.netTotal, per #18774/#17598/#18767)
+     * shows these bills as 0.00 even though real stock value changes occurred.
+     *
+     * billItem.qty on these bills is already the signed quantity delta
+     * (afterAdjustmentValue - beforeAdjustmentValue), matching the value
+     * saveDeptAdjustmentBillItems() intended to persist in BillFinanceDetails —
+     * so the backfill recomputes from qty * rate rather than reusing
+     * billItem.netValue/grossValue, which were computed from the target
+     * quantity before the delta reassignment and are not reliably signed.
+     *
+     * Safe to re-run: skips bills that already have a BillFinanceDetails row.
+     * Uses the date range selected at the top of the admin page.
+     *
+     * Issue #22580.
+     */
+    public void backfillBfdForStockAdjustmentBills() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        int processedBills = 0;
+        int skippedBills = 0;
+        int updatedBills = 0;
+
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types "
+                    + "AND b.billFinanceDetails IS NULL");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> candidates = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            out.append("Found ").append(candidates.size()).append(" PHARMACY_STOCK_ADJUSTMENT bills missing BFD in range.\n\n");
+
+            for (Bill candidate : candidates) {
+                processedBills++;
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null || bill.hasBillFinanceDetails()) {
+                    skippedBills++;
+                    continue;
+                }
+
+                if (bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+                    skippedBills++;
+                    continue;
+                }
+
+                BillFinanceDetails bfd = new BillFinanceDetails();
+                bfd.setBill(bill);
+                bill.setBillFinanceDetails(bfd);
+
+                BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+                BigDecimal totalCostValue = BigDecimal.ZERO;
+                BigDecimal grossTotal = BigDecimal.ZERO;
+                BigDecimal netTotal = BigDecimal.ZERO;
+                BigDecimal totalQuantity = BigDecimal.ZERO;
+                BigDecimal totalBeforeAdjustmentValue = BigDecimal.ZERO;
+                BigDecimal totalAfterAdjustmentValue = BigDecimal.ZERO;
+
+                for (BillItem bi : bill.getBillItems()) {
+                    if (bi == null || bi.getQty() == null) {
+                        continue;
+                    }
+                    PharmaceuticalBillItem pharmaItem = bi.getPharmaceuticalBillItem();
+                    if (pharmaItem == null) {
+                        continue;
+                    }
+
+                    // saveDeptAdjustmentBillItems() stores the TARGET quantity on
+                    // BillItem.qty but the signed DELTA on PharmaceuticalBillItem.qty
+                    // (afterAdjustmentValue - beforeAdjustmentValue) -- use the latter,
+                    // matching the value the original save path intended for BFD.
+                    double changingQty = pharmaItem.getQty();
+                    double retailRate = pharmaItem.getRetailRate();
+                    if (retailRate <= 0 && pharmaItem.getItemBatch() != null) {
+                        retailRate = pharmaItem.getItemBatch().getRetailsaleRate();
+                    }
+
+                    Double costRateObj = pharmaItem.getItemBatch() != null ? pharmaItem.getItemBatch().getCostRate() : null;
+                    double costRate = (costRateObj != null && costRateObj > 0)
+                            ? costRateObj
+                            : (pharmaItem.getItemBatch() != null ? pharmaItem.getItemBatch().getPurcahseRate() : 0.0);
+
+                    if (changingQty == 0 && retailRate == 0) {
+                        continue;
+                    }
+
+                    BigDecimal retailChangeValue = BigDecimal.valueOf(changingQty * retailRate);
+                    BigDecimal retailAbsChangeValue = BigDecimal.valueOf(Math.abs(changingQty * retailRate));
+                    BigDecimal costChangeValue = BigDecimal.valueOf(changingQty * costRate);
+
+                    totalRetailSaleValue = totalRetailSaleValue.add(retailChangeValue);
+                    totalCostValue = totalCostValue.add(costChangeValue);
+                    grossTotal = grossTotal.add(retailAbsChangeValue);
+                    netTotal = netTotal.add(retailChangeValue);
+                    totalQuantity = totalQuantity.add(BigDecimal.valueOf(Math.abs(changingQty)));
+
+                    double beforeQty = pharmaItem.getBeforeAdjustmentValue();
+                    double afterQty = pharmaItem.getAfterAdjustmentValue();
+                    totalBeforeAdjustmentValue = totalBeforeAdjustmentValue.add(BigDecimal.valueOf(beforeQty * retailRate));
+                    totalAfterAdjustmentValue = totalAfterAdjustmentValue.add(BigDecimal.valueOf(afterQty * retailRate));
+                }
+
+                bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+                bfd.setTotalCostValue(totalCostValue);
+                bfd.setGrossTotal(grossTotal);
+                bfd.setNetTotal(netTotal);
+                bfd.setTotalQuantity(totalQuantity);
+                bfd.setTotalBeforeAdjustmentValue(totalBeforeAdjustmentValue);
+                bfd.setTotalAfterAdjustmentValue(totalAfterAdjustmentValue);
+                bfd.setTotalPurchaseValue(BigDecimal.ZERO);
+                bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("=== Backfill Summary ===\n");
+            out.append("Processed: ").append(processedBills).append(" bills\n");
+            out.append("Updated:   ").append(updatedBills).append(" bills\n");
+            out.append("Skipped:   ").append(skippedBills).append(" bills (already had BFD or no items)\n");
+
+        } catch (Exception e) {
+            out.append("Error: ").append(getExceptionMessage(e));
+            JsfUtil.addErrorMessage("Error during stock adjustment BFD backfill: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+
+        executionFeedback = out.toString();
+    }
+
     private boolean isFinanceValueNegative(BillTypeAtomic bta) {
         switch (bta) {
             case PHARMACY_ISSUE:
@@ -2306,38 +2454,14 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Delegates to {@link com.divudi.service.DatabaseMigrationVersionCheckService},
+     * which also backs {@link DatabaseMigrationService}'s automatic
+     * post-startup check — kept as a shared method so the wiki-fetch/regex
+     * logic isn't duplicated between the manual and automatic paths.
+     */
     public String fetchWikiDdlVersion() {
-        java.net.HttpURLConnection conn = null;
-        try {
-            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
-            conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
-            int status = conn.getResponseCode();
-            if (status == 200) {
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
-                    String line;
-                    // Wiki page writes the time as HH.MM (dot); accept both dot and colon
-                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}[.:]\\d{2})");
-                    while ((line = reader.readLine()) != null) {
-                        Matcher m = versionPattern.matcher(line);
-                        if (m.find()) {
-                            return m.group(1).trim();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Network or parse failure — return null so caller falls back to legacy
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return null;
+        return databaseMigrationVersionCheckService.fetchWikiDdlVersion();
     }
 
     /**
@@ -2488,6 +2612,7 @@ public class DataAdministrationController implements Serializable {
                 configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
                 databaseMigrationService.markMigrationComplete();
                 wikiDdlVersion = version;
+                JsfUtil.addSuccessMessage("Migration applied and schema marked up to date (version " + version + ").");
             }
         } catch (Exception e) {
             // Schema operations succeeded; version tracking is secondary — swallow silently

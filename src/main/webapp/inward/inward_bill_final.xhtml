@@ -14,6 +14,7 @@
     <ui:define name="content">
 
         <h:head>
+            <h:outputScript library="js" name="custom4-paged-print.js" target="head"/>
             <h:outputStylesheet>
                 .top-aligned-grid td {
                 vertical-align: top !important;
@@ -996,6 +997,13 @@
                                         <p:printer target="finalBillOnly"/>
                                     </p:commandButton>
 
+                                    <p:commandButton value="Custom Bill 3" type="button"
+                                                     class="ui-button-info mx-1" icon="fas fa-print"
+                                                     onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('custom4BillOnly',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                    <p:commandButton value="Custom Bill 3 (Duplicate)" type="button"
+                                                     class="ui-button-info mx-1" icon="fas fa-print"
+                                                     onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('custom4BillOnlyDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+
                                     <h:panelGroup
                                         rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <p:commandButton value="Print Patient Copy" class="ui-button-info mx-1"
@@ -1085,6 +1093,18 @@
                                 </div>
                             </div>
                         </f:facet>
+
+                        <h:panelGroup id="custom4BillOnly" styleClass="noBorder">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="false" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="custom4BillOnlyDuplicate" styleClass="noBorder">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="true" showProfessional="true"/>
+                        </h:panelGroup>
 
                         <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder"
                                       rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">

@@ -107,6 +107,7 @@ public enum Privileges {
     InwardSearchAdmissionsByCurrentDepartmentAnyInstitute("Inward Search Admissions By Current Department - Any Institute"),
     InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute("Inward Search Admissions By Current Department - Logged Institute"),
     InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment("Inward Search Admissions By Current Department - Logged Department"),
+    InwardSearchAdmissionsGeneralSearch("Inward Search Admissions - General Search (Date Range)"),
     InwardSettleFinalBillUnrestricted("Inward Settle Final Bill Without Restricted"),
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
@@ -158,6 +159,7 @@ public enum Privileges {
     InwardEditPaymentDetails("Inward Edit Payment Details"),
     InwardManageAllergies("Inward Manage Allergies"),
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
+    InwardPostFinalPaymentAccess("Inward Post Final Payment Access"),
     InwardSurgeryAdd("Inward Surgery Add"),
     InwardSurgeryManage("Inward Surgery Manage"),
     InwardSurgeryValidate("Inward Surgery Validate"),
@@ -1274,6 +1276,7 @@ public enum Privileges {
             case InwardEditPaymentDetails:
             case InwardManageAllergies:
             case InwardDoctorPaymentAccess:
+            case InwardPostFinalPaymentAccess:
             case InwardSurgeryAdd:
             case InwardSurgeryManage:
             case InwardSurgeryValidate:

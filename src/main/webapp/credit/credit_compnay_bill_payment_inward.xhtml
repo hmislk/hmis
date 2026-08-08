@@ -63,10 +63,10 @@
                                             forceSelection="true"
                                             value="#{cashRecieveBillController.creditCompany}"
                                             completeMethod="#{institutionController.completeCreditCompany}"
-                                            var="cc" itemLabel="#{cc.name}" itemValue="#{cc}"
+                                            var="ccIns" itemLabel="#{ccIns.name}" itemValue="#{ccIns}"
                                             class="w-100" inputStyleClass="w-100">
                                             <p:column headerText="Company Name">
-                                                <h:outputText value="#{cc.name}" />
+                                                <h:outputText value="#{ccIns.name}" />
                                             </p:column>
                                         </p:autoComplete>
                                     </div>
