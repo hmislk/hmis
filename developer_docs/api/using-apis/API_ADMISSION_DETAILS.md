@@ -5,7 +5,7 @@ There is **no single endpoint** that returns one admission's full detail (demogr
 | Need | Endpoint | Doc |
 |---|---|---|
 | List all currently active (not-discharged) admissions, or search past/current admissions by BHT/name/MRN/phone/NIC | `GET /api/inward/admissions` | below |
-| Which admissions still owe money (financial worklist) | `GET /api/apiInward/admissions` | below |
+| Admissions needing billing attention (financial worklist) | `GET /api/apiInward/admissions` | below |
 | Find a patient's open/unpaid admission by phone | `GET /api/apiInward/admissions/byPhone/{phone}` | below |
 | Confirm a BHT number + phone combo is valid before taking payment | `GET /api/apiInward/validateAdmission/{bht_no}/{phone}` | [API_INWARD.md](API_INWARD.md) |
 | Take an online payment against a BHT | `POST /api/apiInward/payment` | [API_INWARD.md](API_INWARD.md) |
@@ -102,7 +102,7 @@ Example response:
 
 Full reference: [API_INWARD.md](API_INWARD.md). These two endpoints don't return *all* admissions — they return admissions that still need attention: not-yet-finalized/discharged admissions, plus finalized-and-discharged ones with an outstanding balance greater than 0.1 (capped at 20 of each kind, newest first).
 
-### List admissions with money owed
+### List admissions needing billing attention
 
 ```bash
 curl -H "Finance: YOUR_API_KEY" \

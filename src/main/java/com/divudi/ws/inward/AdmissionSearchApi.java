@@ -66,7 +66,7 @@ public class AdmissionSearchApi {
     private BillItemFacade billItemFacade;
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
     private static final int DEFAULT_PAGE_SIZE = 50;
     private static final int MAX_PAGE_SIZE = 200;
 
@@ -111,16 +111,23 @@ public class AdmissionSearchApi {
                     return errorResponse("fromDate and toDate must both be supplied together.", 400);
                 }
                 try {
-                    fromDate = DATE_FORMAT.parse(q.get("fromDate").trim());
-                    toDate = DATE_FORMAT.parse(q.get("toDate").trim());
+                    fromDate = new SimpleDateFormat(DATE_PATTERN).parse(q.get("fromDate").trim());
+                    toDate = new SimpleDateFormat(DATE_PATTERN).parse(q.get("toDate").trim());
                 } catch (Exception e) {
                     return errorResponse("Invalid fromDate/toDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
 
-            Long admissionTypeId = parseLongParam(q.get("admissionTypeId"));
-            Long institutionId = parseLongParam(q.get("institutionId"));
-            Long departmentId = parseLongParam(q.get("departmentId"));
+            Long admissionTypeId;
+            Long institutionId;
+            Long departmentId;
+            try {
+                admissionTypeId = parseRequiredLongParam(q.get("admissionTypeId"));
+                institutionId = parseRequiredLongParam(q.get("institutionId"));
+                departmentId = parseRequiredLongParam(q.get("departmentId"));
+            } catch (NumberFormatException e) {
+                return errorResponse("Invalid admissionTypeId/institutionId/departmentId value. Must be numeric.", 400);
+            }
 
             int page = 1;
             if (nonEmpty(q.get("page"))) {
@@ -165,7 +172,9 @@ public class AdmissionSearchApi {
 
             return successResponse(data);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            java.util.logging.Logger.getLogger(AdmissionSearchApi.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Admission search failed", e);
+            return errorResponse("An error occurred while searching admissions.", 500);
         }
     }
 
@@ -305,15 +314,16 @@ public class AdmissionSearchApi {
         return s != null && !s.trim().isEmpty();
     }
 
-    private Long parseLongParam(String s) {
+    /**
+     * Parses an optional numeric filter param. Returns null when absent/blank;
+     * throws NumberFormatException (rather than silently dropping the filter)
+     * when present but not numeric.
+     */
+    private Long parseRequiredLongParam(String s) {
         if (!nonEmpty(s)) {
             return null;
         }
-        try {
-            return Long.parseLong(s.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return Long.parseLong(s.trim());
     }
 
     private WebUser validateApiKey(String key) {

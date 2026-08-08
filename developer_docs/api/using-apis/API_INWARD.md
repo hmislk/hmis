@@ -8,9 +8,9 @@ Provides access to inpatient admission data and payment processing for admitted 
 
 ## Endpoints
 
-### GET `/api/apiInward/admissions` — List admissions with money owed
+### GET `/api/apiInward/admissions` — Financial worklist: admissions needing billing attention
 
-Returns admissions that still need to be paid: admissions that are **not yet finalized/discharged**, plus finalized-and-discharged admissions that still have an **outstanding balance > 0.1**. Not a full admission-detail record — it's a financial worklist (up to 20 of each kind, most recent first).
+Returns admissions that need billing attention: admissions that are **not yet finalized/discharged** (open, regardless of balance), plus finalized-and-discharged admissions that still have an **outstanding balance > 0.1**. Not a full admission-detail record — it's a financial worklist (up to 20 of each kind, most recent first).
 
 ```bash
 GET /api/apiInward/admissions
@@ -183,7 +183,7 @@ Header: Finance: YOUR_API_KEY
 - `bht_no` is the Bed Head Ticket number assigned at admission
 - Payment is processed as an **online settlement** — use `/api/apiInward/banks` to get valid `bank_id` values
 - It is recommended to call `/api/apiInward/validateAdmission` before processing payment as a best practice; however `POST /payment` does not enforce this as a hard precondition and will accept requests without a prior validate call
-- `/admissions` and `/admissions/byPhone/{phone}` are financial worklists (unpaid/open admissions), not general admission search or a full-detail lookup by ID — for that, use `GET /api/inward/admissions` (see [API_ADMISSION_DETAILS.md](API_ADMISSION_DETAILS.md))
+- `/admissions` and `/admissions/byPhone/{phone}` are financial worklists (unpaid/open admissions), not general admission search — `GET /api/inward/admissions` (see [API_ADMISSION_DETAILS.md](API_ADMISSION_DETAILS.md)) supports general admission list/search by BHT/name/MRN/phone/NIC/status, but it is not a full-detail lookup by admission ID either — it has no ID path parameter and does not expose every `PatientEncounter` field
 
 ## See also
 
