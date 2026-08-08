@@ -2,7 +2,11 @@
 
 ## Overview
 
-**Report Favorites** lets a logged-in user star any report button on a report/analytics index page (Asset Reports, Pharmacy Analytics, OPD Analytics, etc.) so it also appears on a pinned **⭐ Favorites** tab at the top of that page. It is self-service — no admin assignment step — and was first implemented on the main Reports page (`reports/index.xhtml`, PR #22728, spacing fix #22737/issue #22736).
+**Report Favorites** lets a logged-in user star any report button on a report/analytics index page (Asset Reports, Pharmacy Analytics, OPD Analytics, etc.) so it also appears on a pinned **⭐ Favorites** tab at the top of that *same* page. It is self-service — no admin assignment step — and was first implemented on the main Reports page (`reports/index.xhtml`, PR #22728, spacing fix #22737/issue #22736).
+
+**Each page's Favorites tab is independent and page-scoped — this is not one shared, app-wide favorites list.** Starring a report on Pharmacy Analytics adds it to Pharmacy Analytics's *own* Favorites tab only; it does not appear on the Reports page's Favorites tab, or on any other page's Favorites tab, even though all pages read from the same `USERFAVORITEREPORT` table under the hood. Every page being rolled in gets its own new Favorites tab — reports are never migrated into, or duplicated onto, the existing Reports page tab.
+
+This isolation falls out of how the Favorites tab is built (Gotcha 2): each page only duplicates *its own* report buttons into *its own* Favorites tab, each gated on *its own* prefixed `reportKey`s. A page never iterates or displays another page's favorites, so there's no separate "filtering" step needed to keep pages apart — just don't duplicate another page's rows onto this page's tab. The one place this global-vs-page-scoped distinction still bites is the empty-state message, covered in Gotcha 3.
 
 This guide is for two situations:
 
