@@ -2541,7 +2541,11 @@ public class BhtSummeryController implements Serializable {
         Map<Institution, Double> allocatedByCompany = new LinkedHashMap<>();
         if (ccBills != null) {
             for (Bill ccBill : ccBills) {
-                allocatedByCompany.put(ccBill.getCreditCompany(), ccBill.getNetTotal());
+                // Sum rather than overwrite: normally one CC bill per institution, but
+                // duplicate EncounterCreditCompany registrations for the same institution
+                // are possible via older data paths (e.g. AdmissionController), which
+                // would otherwise silently drop all but the last bill's amount here.
+                allocatedByCompany.merge(ccBill.getCreditCompany(), ccBill.getNetTotal(), Double::sum);
             }
         }
 

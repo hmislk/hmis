@@ -822,6 +822,13 @@ public class InwardSearch implements Serializable {
         return "/inward/inward_final_bill_email?faces-redirect=true";
     }
 
+    // Attachments are held Base64-encoded in this SessionScoped bean until sent —
+    // capped here (in addition to the fileUpload's client-side sizeLimit) so a
+    // careless or malicious upload can't grow session memory unbounded.
+    private static final int MAX_EMAIL_ATTACHMENTS = 5;
+    private static final long MAX_EMAIL_ATTACHMENT_FILE_BYTES = 10_000_000L;
+    private static final long MAX_EMAIL_ATTACHMENT_TOTAL_BYTES = 20_000_000L;
+
     /**
      * Adds a cashier-chosen file (e.g. a supporting document requested by the
      * credit company) to the attachment list for the email being composed.
@@ -832,8 +839,24 @@ public class InwardSearch implements Serializable {
         if (pendingEmailAttachments == null) {
             pendingEmailAttachments = new ArrayList<>();
         }
+        UploadedFile file = event.getFile();
+        if (pendingEmailAttachments.size() >= MAX_EMAIL_ATTACHMENTS) {
+            JsfUtil.addErrorMessage("Cannot attach more than " + MAX_EMAIL_ATTACHMENTS + " documents");
+            return;
+        }
+        if (file.getSize() > MAX_EMAIL_ATTACHMENT_FILE_BYTES) {
+            JsfUtil.addErrorMessage(file.getFileName() + " exceeds the 10MB attachment size limit");
+            return;
+        }
+        long attachedSoFar = 0;
+        for (EmailAttachment existing : pendingEmailAttachments) {
+            attachedSoFar += existing.getBase64Content() != null ? existing.getBase64Content().length() * 3L / 4 : 0;
+        }
+        if (attachedSoFar + file.getSize() > MAX_EMAIL_ATTACHMENT_TOTAL_BYTES) {
+            JsfUtil.addErrorMessage("Total attachments cannot exceed 20MB");
+            return;
+        }
         try {
-            UploadedFile file = event.getFile();
             EmailAttachment attachment = new EmailAttachment(
                     file.getFileName(),
                     file.getContentType(),
@@ -877,6 +900,14 @@ public class InwardSearch implements Serializable {
     private boolean emailFinalBillVersionInternal(Bill b) {
         if (b == null) {
             JsfUtil.addErrorMessage("No bill selected");
+            return false;
+        }
+        // InwardSearch.bill is shared session state set by many unrelated flows
+        // (interim estimates, staff payment cancel, etc.), and this page is reachable
+        // by direct URL — without this check, a stale/unrelated bill left over from
+        // another flow could be sent out mislabeled as a Final Bill.
+        if (b.getBillType() != BillType.InwardFinalBill) {
+            JsfUtil.addErrorMessage("Selected bill is not a Final Bill");
             return false;
         }
         if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
