@@ -2642,7 +2642,7 @@ public class SupplierPaymentController implements Serializable {
             return;
         }
         current = billService.reloadBill(current);
-        Bill newlyCreatedSupplierPaymentBill = new Bill();
+        Bill newlyCreatedSupplierPaymentBill = new BilledBill();
         newlyCreatedSupplierPaymentBill.copy(current);
         newlyCreatedSupplierPaymentBill.copyValue(current);
         newlyCreatedSupplierPaymentBill.setReferenceBill(current);
