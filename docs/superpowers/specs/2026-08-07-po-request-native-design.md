@@ -173,15 +173,20 @@ Rejected alternatives:
 
 ---
 
-## 5. Data written (native SQL)
+## 5. Data written (native SQL + JPA)
 
-Only the `bill`, `billitem`, `pharmaceuticalbillitem` tables are touched at this
-phase — there is no `billitemfinancedetails`/`billfinancedetails`/payment/stock
-involvement yet (POs don't move stock or money until GRN/approval). This is a
-narrower write surface than the retail-sale settle path.
+The `bill`, `billitem`, `pharmaceuticalbillitem` tables are written via native
+SQL. `BillItemFinanceDetails` is written via JPA persist/merge (IDENTITY PK,
+calculation-heavy — matches `RetailSaleNativeSqlService`'s split) and linked
+back to its owning `billitem` row through `BILLITEMFINANCEDETAILS_ID`. There is
+no `billfinancedetails`/payment/stock involvement yet (POs don't move stock or
+money until GRN/approval). This is a narrower write surface than the
+retail-sale settle path.
 
 After any native INSERT/UPDATE, evict from L2 cache: `Bill`, `BillItem`,
-`PharmaceuticalBillItem` (guide's common-mistake #6).
+`PharmaceuticalBillItem`, `BillItemFinanceDetails` (guide's common-mistake #6).
+When verifying a line write, check `BILLITEMFINANCEDETAILS_ID` linkage on the
+`billitem` row in addition to the native columns.
 
 ---
 

@@ -221,7 +221,28 @@ public class PurchaseOrderRequestNativeSqlService {
 
         double pbiQty = v.pbiQty, pbiFreeQty = v.pbiFreeQty, pbiPurchaseRate = v.pbiPurchaseRate, pbiRetailRate = v.pbiRetailRate;
 
-        if (line.getPharmaceuticalBillItemId() == null) {
+        // Branch on whether a PBI row already exists for this billItem_ID rather than
+        // on line.getPharmaceuticalBillItemId(): the controller never learns the
+        // generated PBI id back from an insert, so that DTO field stays null across
+        // every subsequent save of the same line and a field-based branch would insert
+        // a duplicate PHARMACEUTICALBILLITEM row on every save after the first.
+        int updated = em.createNativeQuery(
+                "UPDATE " + pharmBillItemTable()
+                + " SET qty=?, freeQty=?, purchaseRate=?, purchaseRatePack=?, purchaseValue=?,"
+                + " retailRate=?, retailRatePack=?, retailRateInUnit=?, retailValue=? WHERE billItem_ID=?")
+                .setParameter(1, pbiQty)
+                .setParameter(2, pbiFreeQty)
+                .setParameter(3, pbiPurchaseRate)
+                .setParameter(4, purchaseRate.doubleValue())
+                .setParameter(5, purchaseValue.doubleValue())
+                .setParameter(6, pbiRetailRate)
+                .setParameter(7, retailRate.doubleValue())
+                .setParameter(8, pbiRetailRate)
+                .setParameter(9, retailValue.doubleValue())
+                .setParameter(10, billItemId)
+                .executeUpdate();
+
+        if (updated == 0) {
             em.createNativeQuery(
                 "INSERT INTO " + pharmBillItemTable()
                 + " (billItem_ID, qty, freeQty, purchaseRate, purchaseRatePack, purchaseValue,"
@@ -240,22 +261,6 @@ public class PurchaseOrderRequestNativeSqlService {
                 .setParameter(10, retailValue.doubleValue())
                 .setParameter(11, new Timestamp(new Date().getTime()))
                 .setParameter(12, line.getCreaterId())
-                .executeUpdate();
-        } else {
-            em.createNativeQuery(
-                "UPDATE " + pharmBillItemTable()
-                + " SET qty=?, freeQty=?, purchaseRate=?, purchaseRatePack=?, purchaseValue=?,"
-                + " retailRate=?, retailRatePack=?, retailRateInUnit=?, retailValue=? WHERE billItem_ID=?")
-                .setParameter(1, pbiQty)
-                .setParameter(2, pbiFreeQty)
-                .setParameter(3, pbiPurchaseRate)
-                .setParameter(4, purchaseRate.doubleValue())
-                .setParameter(5, purchaseValue.doubleValue())
-                .setParameter(6, pbiRetailRate)
-                .setParameter(7, retailRate.doubleValue())
-                .setParameter(8, pbiRetailRate)
-                .setParameter(9, retailValue.doubleValue())
-                .setParameter(10, billItemId)
                 .executeUpdate();
         }
 
@@ -314,6 +319,7 @@ public class PurchaseOrderRequestNativeSqlService {
 
     private void evictLineCache() {
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
+        cache.evict(com.divudi.core.entity.Bill.class);
         cache.evict(com.divudi.core.entity.BillItem.class);
         cache.evict(com.divudi.core.entity.pharmacy.PharmaceuticalBillItem.class);
         cache.evict(BillItemFinanceDetails.class);
@@ -344,6 +350,18 @@ public class PurchaseOrderRequestNativeSqlService {
             .setParameter(6, billId)
             .executeUpdate();
         evictCache();
+    }
+
+    /**
+     * Finalizes the bill and retires zero-qty lines as one EJB call, so both
+     * native writes share the same container-managed transaction. Calling
+     * finalizeBill() and retireZeroQtyLines() as two separate EJB invocations
+     * from the controller let the first commit even if the second later
+     * failed, leaving the bill checked=1 with stale/unretired zero-qty lines.
+     */
+    public int finalizeAndRetireZeroQtyLines(long billId, long editorId) {
+        finalizeBill(billId, editorId);
+        return retireZeroQtyLines(billId, editorId);
     }
 
     /**

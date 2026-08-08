@@ -126,12 +126,27 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             return "";
         }
         resetBillValues();
-        this.billId = billId;
-        currentBill = billFacade.find(billId);
-        if (currentBill == null) {
+        Bill bill = billFacade.find(billId);
+        if (bill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return "";
         }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_ORDER_PRE
+                && bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_ORDER) {
+            JsfUtil.addErrorMessage("Bill is not a purchase order request");
+            return "";
+        }
+        if (bill.isRetired() || bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Bill is retired or cancelled");
+            return "";
+        }
+        if (bill.getDepartment() == null || sessionController.getLoggedUser() == null
+                || !bill.getDepartment().equals(sessionController.getDepartment())) {
+            JsfUtil.addErrorMessage("You are not authorized to view this purchase order request");
+            return "";
+        }
+        this.billId = billId;
+        currentBill = bill;
         billItems = loadBillItems(currentBill);
         return "/pharmacy/pharmacy_purhcase_order_request_native?faces-redirect=true";
     }
@@ -277,22 +292,22 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             return;
         }
 
-        if (currentBill.getDepartmentType() == null) {
-            currentBill.setDepartmentType(currentBillItem.getItem().getDepartmentType() != null
+        if (getCurrentBill().getDepartmentType() == null) {
+            getCurrentBill().setDepartmentType(currentBillItem.getItem().getDepartmentType() != null
                     ? currentBillItem.getItem().getDepartmentType() : DepartmentType.Pharmacy);
         }
 
         DepartmentType itemDepartmentType = currentBillItem.getItem().getDepartmentType();
-        if (itemDepartmentType != null && !itemDepartmentType.equals(currentBill.getDepartmentType())) {
+        if (itemDepartmentType != null && !itemDepartmentType.equals(getCurrentBill().getDepartmentType())) {
             JsfUtil.addErrorMessage("Cannot add items from different department types. "
-                    + "Bill is set for " + currentBill.getDepartmentType().getLabel()
+                    + "Bill is set for " + getCurrentBill().getDepartmentType().getLabel()
                     + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
             return;
         }
 
         List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
-        if (allowedTypes == null || !allowedTypes.contains(currentBill.getDepartmentType())) {
-            JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + currentBill.getDepartmentType().getLabel());
+        if (allowedTypes == null || !allowedTypes.contains(getCurrentBill().getDepartmentType())) {
+            JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getCurrentBill().getDepartmentType().getLabel());
             return;
         }
 
@@ -320,6 +335,10 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         if (currentBill == null || bi == null) {
             return;
         }
+        if (currentBill.isChecked()) {
+            JsfUtil.addErrorMessage("Cannot modify a finalized bill");
+            return;
+        }
         bi.setRetired(true);
         if (bi.getId() != null) {
             purchaseOrderRequestNativeSqlService.retireLine(bi.getId(), sessionController.getLoggedUser().getId());
@@ -339,7 +358,13 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         if (selectedBillItems == null) {
             return;
         }
-        saveRequestWithoutMessage();
+        if (currentBill != null && currentBill.isChecked()) {
+            JsfUtil.addErrorMessage("Cannot modify a finalized bill");
+            return;
+        }
+        if (!saveRequestWithoutMessage()) {
+            return;
+        }
         for (BillItem b : selectedBillItems) {
             b.setBill(null);
             b.setRetired(true);
@@ -359,7 +384,8 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     }
 
     public void onEdit(BillItem bi) {
-        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+        if (bi.getBillItemFinanceDetails() != null
+                && configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
             java.math.BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
             java.math.BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
             if (qty != null && qty.remainder(java.math.BigDecimal.ONE).compareTo(java.math.BigDecimal.ZERO) != 0) {
@@ -620,16 +646,16 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     }
 
     public void addAllSupplierItems() {
-        if (currentBill.getToInstitution() == null) {
+        if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Please Select Dealor");
             return;
         }
-        List<Item> allItems = pharmacyBillBean.getItemsForDealor(currentBill.getToInstitution());
+        List<Item> allItems = pharmacyBillBean.getItemsForDealor(getCurrentBill().getToInstitution());
         generateBillComponentsForAllSupplierItems(allItems);
     }
 
     public void addAllSupplierItemsBelowRol() {
-        if (currentBill.getToInstitution() == null) {
+        if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Please Select Dealer");
             return;
         }
@@ -642,7 +668,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                 + "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("supplier", currentBill.getToInstitution());
+        parameters.put("supplier", getCurrentBill().getToInstitution());
         parameters.put("department", sessionController.getDepartment());
         List<Item> itemsBelowReorderLevel = itemFacade.findByJpql(jpql, parameters);
 
@@ -668,14 +694,20 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     }
 
     private boolean saveRequestWithoutMessage() {
-        if (currentBill.isChecked()) {
+        if (getCurrentBill().isChecked()) {
             JsfUtil.addErrorMessage("Cannot save a finalized bill");
             return false;
         }
-        if (currentBill.getToInstitution() == null) {
+        if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a supplier");
             return false;
         }
+
+        Institution toInstitution = currentBill.getToInstitution();
+        PaymentMethod paymentMethod = currentBill.getPaymentMethod();
+        int creditDuration = currentBill.getCreditDuration();
+        boolean consignment = currentBill.isConsignment();
+        DepartmentType departmentType = currentBill.getDepartmentType();
 
         if (currentBill.getId() == null) {
             String[] billNumbers = createAndAssignBillNumber();
@@ -686,15 +718,24 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                     billNumbers[0],
                     billNumbers[1]);
             currentBill = billFacade.find(newBillId);
+            // createDraftBill() only inserts department/institution/creater/deptId/insId --
+            // toInstitution/paymentMethod/consignment/creditDuration/departmentType are not
+            // yet in the DB, so the reload above comes back with those fields null/default.
+            // Re-apply the values the user actually entered before they're used below.
+            currentBill.setToInstitution(toInstitution);
+            currentBill.setPaymentMethod(paymentMethod);
+            currentBill.setCreditDuration(creditDuration);
+            currentBill.setConsignment(consignment);
+            currentBill.setDepartmentType(departmentType);
         }
 
         purchaseOrderRequestNativeSqlService.updateDraftBillHeader(
                 currentBill.getId(),
-                currentBill.getToInstitution().getId(),
-                currentBill.getPaymentMethod(),
-                currentBill.getCreditDuration(),
-                currentBill.isConsignment(),
-                currentBill.getDepartmentType(),
+                toInstitution.getId(),
+                paymentMethod,
+                creditDuration,
+                consignment,
+                departmentType,
                 sessionController.getLoggedUser().getId());
 
         for (BillItem bi : billItems) {
@@ -761,9 +802,9 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             return;
         }
 
-        purchaseOrderRequestNativeSqlService.finalizeBill(currentBill.getId(), sessionController.getLoggedUser().getId());
-        // Per-line sweep for any zero-qty straggler that survived validation.
-        purchaseOrderRequestNativeSqlService.retireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
+        // Finalize and the per-line zero-qty sweep run as one EJB call so both
+        // native writes share a single transaction (see finalizeAndRetireZeroQtyLines).
+        purchaseOrderRequestNativeSqlService.finalizeAndRetireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
 
         currentBill = billFacade.find(currentBill.getId());
         billItems = loadBillItems(currentBill);

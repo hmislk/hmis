@@ -1078,9 +1078,19 @@ public void removeItem(BillItem bi) {
     if (currentBill == null || bi == null) {
         return;
     }
+    if (currentBill.isChecked()) {
+        JsfUtil.addErrorMessage("Cannot modify a finalized bill");
+        return;
+    }
     bi.setRetired(true);
+    if (bi.getId() != null) {
+        purchaseOrderRequestNativeSqlService.retireLine(bi.getId(), sessionController.getLoggedUser().getId());
+    }
     billItems.remove(bi);
     calculateBillTotals();
+    if (currentBill.getId() != null) {
+        purchaseOrderRequestNativeSqlService.updateBillTotals(currentBill.getId(), currentBill.getNetTotal(), currentBill.getTotal());
+    }
     itemHistoryVisible = false;
 }
 
@@ -1228,14 +1238,30 @@ public synchronized void finalizeRequest() {
         JsfUtil.addErrorMessage("Please add bill items.");
         return;
     }
-    saveRequestWithoutMessage();
-
-    purchaseOrderRequestNativeSqlService.finalizeBill(currentBill.getId(), sessionController.getLoggedUser().getId());
-    int survivingCount = purchaseOrderRequestNativeSqlService.retireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
-    if (survivingCount == 0) {
+    // Every guard below runs against the IN-MEMORY line list, before any native
+    // mutation reaches the DB. finalizeBill() sets checked=1 and promotes
+    // BILLTYPEATOMIC, and retireZeroQtyLines() retires lines -- both commit
+    // immediately. Letting them run first and only then discovering the bill had
+    // no real quantity left the bill permanently checked=1 with every line
+    // retired, and the page disables Save and Finalize once checked=true, so it
+    // could never be recovered.
+    if (!allBillItemsValid(billItems)) {
+        JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
+        return;
+    }
+    if (calculateTotalBillItemsCount(billItems) == 0) {
         JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
         return;
     }
+
+    // Validation passed -- safe to persist, then promote.
+    if (!saveRequestWithoutMessage()) {
+        return;
+    }
+
+    // Finalize and the per-line zero-qty sweep run as one EJB call so both
+    // native writes share a single transaction.
+    purchaseOrderRequestNativeSqlService.finalizeAndRetireZeroQtyLines(currentBill.getId(), sessionController.getLoggedUser().getId());
 
     currentBill = billFacade.find(currentBill.getId());
     billItems = loadBillItems(currentBill);
