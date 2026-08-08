@@ -4493,6 +4493,19 @@ public class BhtSummeryController implements Serializable {
         this.profesionallFee = profesionallFee;
     }
 
+    /**
+     * Invalidates the cached Professional Fees tab list so the next call to
+     * {@link #getProfesionallFee()} re-queries the database. This bean is
+     * @SessionScoped and many pages navigate directly to inward_bill_intrim.xhtml
+     * without calling {@link #createTables()}, so professional fees added from
+     * elsewhere (e.g. the surgery professional fee bill) would otherwise never
+     * appear until some unrelated action happened to reset the cache. See
+     * issue #20146.
+     */
+    public void refreshProfesionallFee() {
+        profesionallFee = null;
+    }
+
     public List<Bill> getPaymentBill() {
         if (paymentBill == null) {
             paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
