@@ -906,7 +906,12 @@ public class InwardSearch implements Serializable {
         // (interim estimates, staff payment cancel, etc.), and this page is reachable
         // by direct URL — without this check, a stale/unrelated bill left over from
         // another flow could be sent out mislabeled as a Final Bill.
-        if (b.getBillType() != BillType.InwardFinalBill) {
+        // billTypeAtomic is required in addition to billType: createCancelBill()
+        // copies billType=InwardFinalBill onto the cancellation record it creates
+        // (see fetchFinalBillVersions()), so billType alone would let a cancellation
+        // record through as if it were a real final bill.
+        if (b.getBillType() != BillType.InwardFinalBill
+                || b.getBillTypeAtomic() != BillTypeAtomic.INWARD_FINAL_BILL) {
             JsfUtil.addErrorMessage("Selected bill is not a Final Bill");
             return false;
         }
