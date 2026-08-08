@@ -65,6 +65,8 @@ import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.PrimeFaces;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -765,6 +767,9 @@ public class InwardSearch implements Serializable {
     }
 
     private String emailRecipient;
+    private String emailSubject;
+    private String emailBody;
+    private List<EmailAttachment> pendingEmailAttachments;
     private List<AppEmail> sentEmailsForBill;
 
     public String getEmailRecipient() {
@@ -775,11 +780,85 @@ public class InwardSearch implements Serializable {
         this.emailRecipient = emailRecipient;
     }
 
+    public String getEmailSubject() {
+        return emailSubject;
+    }
+
+    public void setEmailSubject(String emailSubject) {
+        this.emailSubject = emailSubject;
+    }
+
+    public String getEmailBody() {
+        return emailBody;
+    }
+
+    public void setEmailBody(String emailBody) {
+        this.emailBody = emailBody;
+    }
+
+    public List<EmailAttachment> getPendingEmailAttachments() {
+        return pendingEmailAttachments;
+    }
+
+    /**
+     * Navigates from the Final Bill Versions list to the email review page
+     * for {@code b}, prefilling recipient/subject/body so the cashier can
+     * check and edit them — and attach extra documents — before anything is
+     * actually sent. Replaces the old pattern of sending straight from a
+     * "Recipient + Send" dialog with no review step.
+     */
+    public String prepareEmailFinalBillVersion(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        bill = b;
+        PatientEncounter pe = b.getPatientEncounter();
+        emailRecipient = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
+                ? pe.getPatient().getPerson().getEmail() : null;
+        emailSubject = "Final Bill " + b.getDeptId();
+        emailBody = "Please find attached the final bill " + b.getDeptId() + ".";
+        pendingEmailAttachments = new ArrayList<>();
+        return "/inward/inward_final_bill_email?faces-redirect=true";
+    }
+
+    /**
+     * Adds a cashier-chosen file (e.g. a supporting document requested by the
+     * credit company) to the attachment list for the email being composed.
+     * Kept separate from the auto-generated final bill PDF, which is always
+     * attached in addition to whatever is added here.
+     */
+    public void uploadEmailAttachment(FileUploadEvent event) {
+        if (pendingEmailAttachments == null) {
+            pendingEmailAttachments = new ArrayList<>();
+        }
+        try {
+            UploadedFile file = event.getFile();
+            EmailAttachment attachment = new EmailAttachment(
+                    file.getFileName(),
+                    file.getContentType(),
+                    Base64.getEncoder().encodeToString(file.getContent()));
+            pendingEmailAttachments.add(attachment);
+            JsfUtil.addSuccessMessage("Attached " + file.getFileName());
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Failed to attach file");
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill email attachment failed", ex);
+        }
+    }
+
+    public void removeEmailAttachment(EmailAttachment attachment) {
+        if (pendingEmailAttachments != null) {
+            pendingEmailAttachments.remove(attachment);
+        }
+    }
+
     /**
      * Emails a one-page summary of the given final bill version (patient,
      * admission, and totals — not a full itemized reprint) as a PDF
-     * attachment, and logs the send via {@link AppEmail} so it shows up in
-     * the "Sent Emails" history on the view/print screen.
+     * attachment, plus any cashier-attached documents, and logs the send via
+     * {@link AppEmail} so it shows up in the "Sent Emails" history on the
+     * view/print screen.
      */
     public void emailFinalBillVersion(Bill b) {
         boolean sent = false;
@@ -809,12 +888,17 @@ public class InwardSearch implements Serializable {
             return false;
         }
 
+        String subject = (emailSubject != null && !emailSubject.trim().isEmpty())
+                ? emailSubject : "Final Bill " + b.getDeptId();
+        String body = (emailBody != null && !emailBody.trim().isEmpty())
+                ? emailBody : "Please find attached the final bill " + b.getDeptId() + ".";
+
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
         email.setCreater(sessionController.getLoggedUser());
         email.setReceipientEmail(emailRecipient);
-        email.setMessageSubject("Final Bill " + b.getDeptId());
-        email.setMessageBody("Please find attached the final bill " + b.getDeptId() + ".");
+        email.setMessageSubject(subject);
+        email.setMessageBody(body);
         email.setDepartment(b.getDepartment());
         email.setInstitution(b.getInstitution());
         email.setBill(b);
@@ -832,12 +916,18 @@ public class InwardSearch implements Serializable {
                     "application/pdf",
                     Base64.getEncoder().encodeToString(pdfBytes));
 
+            List<EmailAttachment> attachments = new ArrayList<>();
+            attachments.add(attachment);
+            if (pendingEmailAttachments != null) {
+                attachments.addAll(pendingEmailAttachments);
+            }
+
             success = emailManagerEjb.sendEmail(
                     Collections.singletonList(email.getReceipientEmail()),
                     email.getMessageBody(),
                     email.getMessageSubject(),
                     false,
-                    Collections.singletonList(attachment));
+                    attachments);
 
             if (success) {
                 email.setSentAt(new Date());
@@ -845,6 +935,7 @@ public class InwardSearch implements Serializable {
                 email.setPending(false);
                 emailFacade.edit(email);
                 JsfUtil.addSuccessMessage("Email Sent Successfully");
+                pendingEmailAttachments = new ArrayList<>();
             } else {
                 email.setPending(false);
                 emailFacade.edit(email);
