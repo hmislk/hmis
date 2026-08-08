@@ -4,6 +4,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
@@ -62,6 +63,8 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
     private ConfigOptionController configOptionController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private NotificationController notificationController;
 
     @EJB
     private PurchaseOrderApprovingNativeSqlService purchaseOrderApprovingNativeSqlService;
@@ -384,16 +387,25 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
         purchaseOrderApprovingNativeSqlService.updateBillTotals(approvedBillId, netTotal, total);
         purchaseOrderApprovingNativeSqlService.retireZeroQtyApprovedLines(approvedBillId, sessionController.getLoggedUser().getId());
 
-        approvedBill = billFacade.find(approvedBillId);
-        approvedBill.setApproveAt(new Date());
-        approvedBill.setApproveUser(sessionController.getLoggedUser());
-        billFacade.edit(approvedBill);
+        // Native UPDATE, not billFacade.edit() -- approvedBill's lines were
+        // written by saveApprovedLine() through native SQL, not through this
+        // detached entity's managed billItems collection (cascade=ALL,
+        // orphanRemoval=true). Merging the detached bill here would risk
+        // EclipseLink treating those native-written lines as absent and
+        // deleting them via orphan removal.
+        purchaseOrderApprovingNativeSqlService.approveBill(approvedBillId, sessionController.getLoggedUser().getId());
+        // Mirrors legacy's getAprovedBill().setReferenceBill(getRequestedBill()):
+        // the approved bill's own referenceBill points at the requested bill --
+        // the po.xhtml/po_custom_*.xhtml print composites read
+        // cc.attrs.bill.referenceBill.* (institution letterhead, "Prepared By",
+        // "Authorized By") off the APPROVED bill passed in as cc.attrs.bill.
+        purchaseOrderApprovingNativeSqlService.linkApprovedBillToRequest(approvedBillId, requestedBill.getId());
+        purchaseOrderApprovingNativeSqlService.linkRequestedBillToApproval(requestedBill.getId(), approvedBillId);
 
-        // The one JPA write in this phase that touches a bill this controller
-        // does not own the writes for -- required to stay JPA merge, never
-        // native SQL, per the master issue's L2-cache-coherence rule.
+        approvedBill = billFacade.find(approvedBillId);
         requestedBill.setReferenceBill(approvedBill);
-        billFacade.edit(requestedBill);
+
+        notificationController.createNotification(approvedBill);
 
         printPreview = true;
         JsfUtil.addSuccessMessage("Purchase order approved successfully.");

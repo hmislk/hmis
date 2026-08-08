@@ -151,6 +151,61 @@ public class PurchaseOrderApprovingNativeSqlService {
     }
 
     /**
+     * Native UPDATE for approveAt/approveUser_ID on the approved bill.
+     * Deliberately NOT a JPA billFacade.edit() merge: approvedBill is
+     * detached (BillFacade is @Stateless) and Bill.billItems carries
+     * cascade=ALL, orphanRemoval=true, but this bill's lines were written by
+     * saveApprovedLine() through native SQL, not through this entity's
+     * managed collection -- merging the detached bill would risk EclipseLink
+     * treating the native-written lines as absent from the in-memory
+     * collection and deleting them via orphan removal. Same reasoning as
+     * updateApprovedBillHeader() and updateBillTotals() above; see also
+     * PurchaseOrderRequestNativeSqlService's own Javadoc for the same trap.
+     */
+    public void approveBill(long approvedBillId, long approveUserId) {
+        em.createNativeQuery(
+            "UPDATE " + billTable() + " SET approveAt=?, approveUser_ID=? WHERE ID=?")
+            .setParameter(1, new Timestamp(new Date().getTime()))
+            .setParameter(2, approveUserId)
+            .setParameter(3, approvedBillId)
+            .executeUpdate();
+        evictCache();
+    }
+
+    /**
+     * Native UPDATE for the approved bill's own referenceBill_ID, pointing
+     * back at the requested bill. Mirrors legacy PurchaseOrderController
+     * .saveBill(): getAprovedBill().setReferenceBill(getRequestedBill()).
+     * The po.xhtml/po_custom_*.xhtml print composites read
+     * cc.attrs.bill.referenceBill.* (institution letterhead, "Prepared By",
+     * "Authorized By") off this same approved bill, so without this write
+     * those fields render blank (EL null-safe navigation swallows the NPE).
+     */
+    public void linkApprovedBillToRequest(long approvedBillId, long requestedBillId) {
+        em.createNativeQuery(
+            "UPDATE " + billTable() + " SET referenceBill_ID=? WHERE ID=?")
+            .setParameter(1, requestedBillId)
+            .setParameter(2, approvedBillId)
+            .executeUpdate();
+        evictCache();
+    }
+
+    /**
+     * Native UPDATE for the requested bill's forward-pointing referenceBill_ID
+     * cross-link (the approved bill's own backwardReferenceBill_ID is already
+     * set at creation in createApprovedBill()). Matches the referenceBill_ID
+     * write pattern in TransferReceiveNativeSqlService.settle().
+     */
+    public void linkRequestedBillToApproval(long requestedBillId, long approvedBillId) {
+        em.createNativeQuery(
+            "UPDATE " + billTable() + " SET referenceBill_ID=? WHERE ID=?")
+            .setParameter(1, approvedBillId)
+            .setParameter(2, requestedBillId)
+            .executeUpdate();
+        evictCache();
+    }
+
+    /**
      * Native INSERT/UPDATE for billitem + pharmaceuticalbillitem on the
      * approved bill. Delegates the line math to
      * PurchaseOrderRequestNativeSqlService.computeLineValues() (injected
