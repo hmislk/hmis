@@ -96,12 +96,12 @@ rendered="#{empty userFavoriteReportController.favorites}"
 
 `getFavorites()` returns the user's favorites **across the whole app**, not just this page. Once a second page adopts Favorites, a user whose only favorite is on that *other* page will hit this on the Reports page: `favorites` is non-empty globally, so the empty-state message won't render — but none of this page's own duplicated rows match either, so the tab renders as a blank, unexplained space instead of a helpful message.
 
-**Every new page must use a page-scoped empty check, not the raw `empty ... favorites` expression.** Add a category-scoped helper to `UserFavoriteReportController` (add once, share across all pages) instead of copy-pasting the broken pattern:
+**Every new page must use a page-scoped empty check, not the raw `empty ... favorites` expression.** Add a `reportKey`-prefix-scoped helper to `UserFavoriteReportController` (add once, in the shared prerequisite issue — see below) instead of copy-pasting the broken pattern:
 
 ```java
-public boolean hasAnyFavoriteInCategories(List<String> categories) {
+public boolean hasAnyFavoriteWithKeyPrefix(String prefix) {
     for (UserFavoriteReport f : getCachedFavorites()) {
-        if (categories.contains(f.getCategory())) {
+        if (f.getReportKey() != null && f.getReportKey().startsWith(prefix)) {
             return true;
         }
     }
@@ -109,13 +109,13 @@ public boolean hasAnyFavoriteInCategories(List<String> categories) {
 }
 ```
 
-Each page's own controller then exposes a fixed `List<String>` of its own category names (the same strings passed as `category="..."` to `<fav:favoriteStar>` on that page), and the empty-state check becomes:
+Because every page already has its own `reportKey` prefix (Gotcha 1's table), the empty-state check on each page becomes a **one-line change using a plain string literal** — no new Java, no new controller method, no dependency on any other page's code:
 
 ```xml
-rendered="#{not userFavoriteReportController.hasAnyFavoriteInCategories(pharmacyController.analyticsFavoriteCategories)}"
+rendered="#{not userFavoriteReportController.hasAnyFavoriteWithKeyPrefix('pharmacyAnalytics_')}"
 ```
 
-This is a small, one-time shared change — add it as part of whichever sub-issue is implemented first under the rollout, then every subsequent page just reuses `hasAnyFavoriteInCategories(...)`.
+**This is deliberately prefix-based rather than category-based** so that the *only* shared file in the entire rollout is `UserFavoriteReportController.java`, and only for this one method, added once in the shared prerequisite issue (#22739). Every one of the 9 per-page sub-issues after that is then a pure, single-XHTML-file change — safe to build fully in parallel with zero merge conflicts between them, as long as the prerequisite has already merged to `development` first.
 
 ---
 
@@ -139,6 +139,12 @@ This is a small, one-time shared change — add it as part of whichever sub-issu
 - [ ] Update the user-facing wiki page ([Report Favorites](https://github.com/hmislk/hmis/wiki/Report-Favorites)) to mention the new page
 
 ---
+
+## Parallelizing the rollout
+
+The 10 sub-issues under the master rollout issue target 10 completely separate XHTML files — none of them share a page, and none of the *existing* per-page controllers (`pharmacyController`, `cashierReportController`, etc.) need any Java changes, since a duplicated button in the Favorites tab just calls that controller's existing action a second time.
+
+**The only file shared across the whole rollout is `UserFavoriteReportController.java`, and only for the one `hasAnyFavoriteWithKeyPrefix` method (Gotcha 3).** Land that as its own small PR first (the shared prerequisite issue). Once it's merged to `development`, every one of the 9 per-page sub-issues is a self-contained, single-file XHTML change — safe to develop fully in parallel (separate branches/agents/PRs) with zero merge conflicts between them.
 
 ## Reference implementation
 
