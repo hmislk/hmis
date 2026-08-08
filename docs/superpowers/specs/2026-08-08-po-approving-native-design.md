@@ -44,9 +44,20 @@ Established by reading `PurchaseOrderController.java` and
   item-editing to a single `approve()` call that both saves and finalizes in
   one step. (`saveBill()` + `saveBillComponent()` are internal helpers called
   only from `approve()`, not separate page actions.)
-- Cross-link: on successful approve, `requestedBill.referenceBill = approvedBill`,
-  persisted via `billFacade.edit(requestedBill)` — **JPA merge, never native
-  SQL**, per the master issue's L2-cache-coherence rule (#22726 decisions).
+- Cross-link: on successful approve, both directions are written —
+  `approvedBill.referenceBill = requestedBill` and
+  `requestedBill.referenceBill = approvedBill`. **Superseded decision:** the
+  original design (below, §7) mandated JPA merge for the requested-bill side
+  only, per the master issue's L2-cache-coherence rule. Live testing during
+  PR review found the JPA merge on `approvedBill` for `approveAt`/
+  `approveUser` risked EclipseLink orphan-removal deleting the native-written
+  billitems on that detached entity (see the controller's `approve()`
+  comments); the same risk analysis was then applied uniformly and **both
+  cross-link writes were moved to native SQL** (`linkApprovedBillToRequest`/
+  `linkRequestedBillToApproval` in the service), confirmed working live via
+  Playwright + direct DB query. `requestedBill.setReferenceBill(approvedBill)`
+  is still set in-memory for this session's own double-approval guard, but
+  the persisted write is native, not `billFacade.edit()`.
 
 **Guards enforced before any write** (must all be replicated):
 - `navigateToPurchaseOrderApproval()`: reject if `requestedBill.getReferenceBill() != null`
@@ -188,14 +199,21 @@ unit-tests. This is safe because:
   unit tests already cover this function's edge cases (zero qty, AMPP
   pack conversion, null fields).
 
-**Decision: cross-link write stays JPA, `requestedBill` entity stays on JPA
-throughout.** Confirmed with you — only the new `approvedBill`'s own rows go
-through native SQL. `requestedBill` is loaded via `billFacade.find()` (as
-today), read for guard checks and header seeding (payment method, supplier,
-credit duration, department type, comments — all copied to `approvedBill` on
-`navigateToPurchaseOrderApproval()`, matching legacy), and the final
+**Superseded: cross-link write stays JPA, `requestedBill` entity stays on JPA
+throughout.** Originally confirmed with you — only the new `approvedBill`'s
+own rows go through native SQL, and the final
 `requestedBill.setReferenceBill(approvedBill); billFacade.edit(requestedBill)`
-happens exactly as legacy does it, in JPA. Never touched by native SQL.
+happens exactly as legacy does it, in JPA. **This decision was revisited
+during PR review** (see §2 above): the same orphan-removal risk that ruled
+out `billFacade.edit(approvedBill)` for `approveAt`/`approveUser` applies
+equally to any `billFacade.edit()` call on a bill whose lines were written by
+native SQL through a sibling EJB. Both cross-link directions are now written
+by native `UPDATE ... SET referenceBill_ID=?` (see `PurchaseOrderApprovingNativeSqlService
+.linkApprovedBillToRequest()`/`.linkRequestedBillToApproval()`), each scoped
+to touch only the FK column, not the bill's managed collections.
+`requestedBill` is still loaded via `billFacade.find()` (as today) and read
+for guard checks and header seeding, unchanged; it is simply no longer
+merged back via `billFacade.edit()`.
 
 **Decision: `updateCalculatedValues()`'s "lighter recompute" optimization is
 dropped.** Legacy has two code paths in `onEdit()` — a full
@@ -246,9 +264,12 @@ calls the single recompute helper (mirrors Phase 1's `recalculateLineValues`
   is a direct, low-risk substitution here since the read only needs the 8
   scalar fields listed in §3's `loadRequestedLines` description.
 - **Make the approved bill's cross-link write native too, with explicit cache
-  eviction to manage the risk.** Rejected — confirmed with you; goes against
-  the master issue's explicit decision and the retail-sale precedent, no
-  clear benefit.
+  eviction to manage the risk.** Originally rejected as going against the
+  master issue's explicit decision, no clear benefit. **Later adopted** (see
+  §2 and §7 above) once the orphan-removal risk on `billFacade.edit()` for a
+  natively-line-written bill was confirmed via a live runtime exception during
+  PR review — the benefit (avoiding that risk) turned out to be real, not
+  hypothetical.
 
 ---
 

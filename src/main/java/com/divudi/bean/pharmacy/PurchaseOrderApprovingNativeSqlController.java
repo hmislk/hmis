@@ -563,16 +563,24 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
                         html.append("<td style='padding: 8px;'>").append(esc(bi.getItem().getCode())).append("</td>");
                         html.append("<td style='padding: 8px;'>").append(esc(bi.getItem().getName())).append("</td>");
                         html.append("<td style='padding: 8px; text-align: right;'>");
-                        if (bi.getPharmaceuticalBillItem() != null) {
-                            html.append(String.format("%,.0f", bi.getPharmaceuticalBillItem().getQty()));
-                        }
-                        html.append("</td><td style='padding: 8px; text-align: right;'>");
-                        if (bi.getPharmaceuticalBillItem() != null) {
-                            html.append(String.format("%,.0f", bi.getPharmaceuticalBillItem().getFreeQty()));
-                        }
-                        html.append("</td><td style='padding: 8px; text-align: right;'>");
-                        if (bi.getPharmaceuticalBillItem() != null) {
-                            html.append(String.format("%,.2f", bi.getPharmaceuticalBillItem().getPurchaseRate()));
+                        // Read from BillItemFinanceDetails, not PharmaceuticalBillItem: the
+                        // PBI's primitive qty/freeQty/purchaseRate are only populated by
+                        // saveApprovedLine()'s native write at persist time and stay 0 on
+                        // this in-memory billItems list even after a successful approve()
+                        // (same reasoning as the validation loop above) -- reading them here
+                        // rendered every emailed line as 0.
+                        if (bi.getBillItemFinanceDetails() != null) {
+                            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+                            BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+                            BigDecimal rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+                            html.append(String.format("%,.0f", qty != null ? qty.doubleValue() : 0.0));
+                            html.append("</td><td style='padding: 8px; text-align: right;'>");
+                            html.append(String.format("%,.0f", freeQty != null ? freeQty.doubleValue() : 0.0));
+                            html.append("</td><td style='padding: 8px; text-align: right;'>");
+                            html.append(String.format("%,.2f", rate != null ? rate.doubleValue() : 0.0));
+                        } else {
+                            html.append("</td><td style='padding: 8px; text-align: right;'>");
+                            html.append("</td><td style='padding: 8px; text-align: right;'>");
                         }
                         html.append("</td><td style='padding: 8px; text-align: right;'>").append(String.format("%,.2f", bi.getNetValue())).append("</td>");
                         html.append("</tr>");

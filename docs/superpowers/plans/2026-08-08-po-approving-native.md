@@ -12,7 +12,8 @@ owns native INSERT/UPDATE for the approved bill's own `bill`/`billitem`/
 `pharmaceuticalbillitem` rows, reusing Phase 1's `PurchaseOrderRequestNativeSqlService`
 for line-value math and `PurchaseOrderRequestLineData` as the shared DTO shape.
 New `PurchaseOrderApprovingNativeSqlController` (`@Named @SessionScoped`) owns
-page state, guards, and the JPA-only cross-link write. New page
+page state, guards, and (as revised during PR review — see note below) the
+native cross-link write. New page
 `pharmacy_purhcase_order_approving_native.xhtml` is a 1:1 layout port.
 
 **Tech Stack:** JPA (EclipseLink) native queries via `EntityManager`, JSF/PrimeFaces, JUnit 5.
@@ -21,10 +22,18 @@ page state, guards, and the JPA-only cross-link write. New page
 
 - **Requirement: 100% functional replication.** Every button, validation
   message, and guard on the legacy page carries over.
-- **`requestedBill.referenceBill = approvedBill` cross-link write stays JPA
-  merge, never native SQL** — L2-cache-coherence rule from master issue #22726.
-- **`requestedBill` entity itself stays on JPA throughout** — only the new
-  `approvedBill`'s own rows go through native SQL.
+- **`requestedBill.referenceBill = approvedBill` cross-link write: originally
+  JPA merge only (L2-cache-coherence rule from master issue #22726),
+  superseded during PR review.** Both cross-link directions
+  (`approvedBill.referenceBill` and `requestedBill.referenceBill`) are now
+  native `UPDATE` writes — see the design spec §2/§7 for why: a
+  `billFacade.edit()` merge on a bill whose lines were written by native SQL
+  through a sibling EJB risks EclipseLink orphan-removal deleting those
+  lines, and this applies to `requestedBill`'s merge exactly as it did to
+  `approvedBill`'s. Confirmed working live via Playwright + direct DB query.
+- **`requestedBill` entity itself stays read-only via JPA for guard checks
+  and header seeding** — only its persisted cross-link write moved to native
+  SQL; it is never merged via `billFacade.edit()`.
 - **Recompute line values from 5 raw inputs, never copy legacy's ~25 BIFD
   fields verbatim.** Reuse `PurchaseOrderRequestNativeSqlService.computeLineValues()`
   and `LineValues` directly (both package-private in `com.divudi.service.pharmacy`,
