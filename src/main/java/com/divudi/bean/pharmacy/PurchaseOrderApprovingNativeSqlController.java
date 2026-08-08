@@ -40,9 +40,11 @@ import javax.inject.Named;
 
 /**
  * SessionScoped controller for the native-SQL Purchase Order Approving page.
- * Native SQL: the APPROVED bill's own create/update, billitem+PBI writes
- * (via the service). JPA (unchanged): the requested bill (read-only except
- * for the referenceBill cross-link write), rate/email infra.
+ * Native SQL: the APPROVED bill's own create/update, billitem+PBI writes,
+ * approveAt/approveUser, and both directions of the referenceBill cross-link
+ * (via the service). JPA (unchanged): the requested bill stays read-only
+ * here -- its in-memory referenceBill field is set for this session's own
+ * double-approval guard, but the persisted cross-link write is native SQL.
  * Related issue: #22738
  */
 @Named
