@@ -19,6 +19,45 @@ public class PurchaseOrderRequestLineData implements Serializable {
     private int serialNo;
     private Long createrId;
 
+    public PurchaseOrderRequestLineData() {
+    }
+
+    /**
+     * Constructor for the JPQL SELECT NEW projection used by
+     * PurchaseOrderApprovingNativeSqlService.loadRequestedLines(). Added
+     * alongside (not replacing) the existing no-arg constructor + setters,
+     * per this project's "never modify existing constructors" rule.
+     */
+    public PurchaseOrderRequestLineData(Long itemId, boolean ampp, BigDecimal quantity, BigDecimal freeQuantity,
+            BigDecimal purchaseRate, BigDecimal retailRate, BigDecimal unitsPerPack, int serialNo) {
+        this.itemId = itemId;
+        this.ampp = ampp;
+        this.quantity = quantity;
+        this.freeQuantity = freeQuantity;
+        this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+        this.unitsPerPack = unitsPerPack;
+        this.serialNo = serialNo;
+    }
+
+    /**
+     * Constructor for the JPQL SELECT NEW projection used by
+     * PurchaseOrderApprovingNativeSqlService.loadRequestedLines(), which
+     * cannot project ampp (EclipseLink rejects CASE WHEN TYPE(...) = X as a
+     * SELECT NEW constructor argument). ampp defaults to false here; callers
+     * that need it derive it separately from the resolved Item entity.
+     */
+    public PurchaseOrderRequestLineData(Long itemId, BigDecimal quantity, BigDecimal freeQuantity,
+            BigDecimal purchaseRate, BigDecimal retailRate, BigDecimal unitsPerPack, int serialNo) {
+        this.itemId = itemId;
+        this.quantity = quantity;
+        this.freeQuantity = freeQuantity;
+        this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+        this.unitsPerPack = unitsPerPack;
+        this.serialNo = serialNo;
+    }
+
     public Long getBillItemId() { return billItemId; }
     public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
 
