@@ -704,13 +704,16 @@ public class TransferReceiveCancellationController implements Serializable {
                 }
 
                 // 1. Deduct from receiving department stock.
-                // Uses the Stock+PharmaceuticalBillItem+Department overload (not the bare
-                // ItemBatch+Department one) because only that overload calls
-                // addToStockHistory() — the bare overload silently skips it, so the
-                // department's Stock total was correct but the reversal never showed up
-                // on the Bin Card (issue #19837).
+                // Uses the ItemBatch+PharmaceuticalBillItem+Department overload rather
+                // than the bare ItemBatch+Department one, because only overloads that
+                // take a PharmaceuticalBillItem call addToStockHistory() — the bare one
+                // silently skips it, so the department's Stock total was correct but the
+                // reversal never showed up on the Bin Card (issue #19837). Resolving the
+                // Stock row by batch (rather than trusting phItem.getStock(), which is
+                // just copied from the original receive item and may be stale or unset)
+                // also avoids rejecting a cancellation when department stock does exist.
                 boolean deductSuccess = pharmacyBean.deductFromStock(
-                    phItem.getStock(),
+                    phItem.getItemBatch(),
                     qtyToReverse,
                     phItem,
                     originalReceiveBill.getToDepartment()
