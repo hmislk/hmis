@@ -10732,7 +10732,7 @@ public class PharmacyReportController implements Serializable {
                 m.put("itm", item);
             }
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql += " and s.pbItem.billItem.bill.departmentType in :departmentTypes ";
+                jpql += " and s.item.departmentType in :departmentTypes ";
                 m.put("departmentTypes", selectedDepartmentTypes);
             }
 //            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
@@ -10949,7 +10949,7 @@ public class PharmacyReportController implements Serializable {
                 m.put("df", dosageForm);
             }
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append(" AND b.departmentType IN :departmentTypes");
+                jpql.append(" AND s.item.departmentType IN :departmentTypes");
                 m.put("departmentTypes", selectedDepartmentTypes);
             }
 
