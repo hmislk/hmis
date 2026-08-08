@@ -536,7 +536,7 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash && !feeCollectedByDoctor) {
             Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
             if (userDrawer != null) {
-                double drawerBalance = userDrawer.getCashInHandValue();
+                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
                 double paymentAmount = getTotalPayingWithoutWht();
 
                 boolean allowNegativeDrawer = configOptionApplicationController.getBooleanValueByKey(

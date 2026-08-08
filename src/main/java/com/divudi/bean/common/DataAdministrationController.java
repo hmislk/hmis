@@ -280,6 +280,8 @@ public class DataAdministrationController implements Serializable {
     @EJB
     private DatabaseMigrationService databaseMigrationService;
     @EJB
+    private com.divudi.service.DatabaseMigrationVersionCheckService databaseMigrationVersionCheckService;
+    @EJB
     private DatabaseMigrationFacade databaseMigrationFacade;
     @EJB
     private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
@@ -338,7 +340,6 @@ public class DataAdministrationController implements Serializable {
     private String auditDatabaseExecutionFeedback;
 
     // Wiki DDL version tracking
-    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
     private static final String WIKI_DDL_RAW_URL = "https://raw.githubusercontent.com/wiki/hmislk/hmis/files/createDDL.sql";
     private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
     private String wikiDdlVersion;
@@ -2453,38 +2454,14 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Delegates to {@link com.divudi.service.DatabaseMigrationVersionCheckService},
+     * which also backs {@link DatabaseMigrationService}'s automatic
+     * post-startup check — kept as a shared method so the wiki-fetch/regex
+     * logic isn't duplicated between the manual and automatic paths.
+     */
     public String fetchWikiDdlVersion() {
-        java.net.HttpURLConnection conn = null;
-        try {
-            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
-            conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
-            int status = conn.getResponseCode();
-            if (status == 200) {
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
-                    String line;
-                    // Wiki page writes the time as HH.MM (dot); accept both dot and colon
-                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}[.:]\\d{2})");
-                    while ((line = reader.readLine()) != null) {
-                        Matcher m = versionPattern.matcher(line);
-                        if (m.find()) {
-                            return m.group(1).trim();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Network or parse failure — return null so caller falls back to legacy
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return null;
+        return databaseMigrationVersionCheckService.fetchWikiDdlVersion();
     }
 
     /**
@@ -2635,6 +2612,7 @@ public class DataAdministrationController implements Serializable {
                 configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
                 databaseMigrationService.markMigrationComplete();
                 wikiDdlVersion = version;
+                JsfUtil.addSuccessMessage("Migration applied and schema marked up to date (version " + version + ").");
             }
         } catch (Exception e) {
             // Schema operations succeeded; version tracking is secondary — swallow silently

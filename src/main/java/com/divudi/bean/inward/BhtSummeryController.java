@@ -226,6 +226,12 @@ public class BhtSummeryController implements Serializable {
     private boolean custom2ShowPhone;
     private boolean custom2ShowGuardian;
     private boolean custom2ShowCorporateSponsor;
+    // Custom4 (Custom Bills tab - letterhead) print-format settings
+    private boolean custom4ShowAddress;
+    private boolean custom4ShowNic;
+    private boolean custom4ShowPhone;
+    private boolean custom4ShowGuardian;
+    private boolean custom4ShowCorporateSponsor;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -473,6 +479,8 @@ public class BhtSummeryController implements Serializable {
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
         custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
         custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
+        // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
+        loadCustom4Config();
     }
 
     public void saveCustom2Config() {
@@ -486,6 +494,8 @@ public class BhtSummeryController implements Serializable {
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
+            // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
+            persistCustom4Config();
             JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
             loadCustom2Config();
         } catch (Exception e) {
@@ -609,6 +619,78 @@ public class BhtSummeryController implements Serializable {
 
     public void setCustom2ShowCorporateSponsor(boolean custom2ShowCorporateSponsor) {
         this.custom2ShowCorporateSponsor = custom2ShowCorporateSponsor;
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom4 print format (letterhead)">
+    public void loadCustom4Config() {
+        custom4ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", false);
+        custom4ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", false);
+        custom4ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", false);
+        custom4ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", true);
+        custom4ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", true);
+    }
+
+    public void saveCustom4Config() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
+            return;
+        }
+        try {
+            persistCustom4Config();
+            JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
+            loadCustom4Config();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Custom Bills configuration: " + e.getMessage());
+        }
+    }
+
+    private void persistCustom4Config() {
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", custom4ShowAddress);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", custom4ShowNic);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", custom4ShowPhone);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", custom4ShowGuardian);
+        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", custom4ShowCorporateSponsor);
+    }
+
+    public boolean isCustom4ShowAddress() {
+        return custom4ShowAddress;
+    }
+
+    public void setCustom4ShowAddress(boolean custom4ShowAddress) {
+        this.custom4ShowAddress = custom4ShowAddress;
+    }
+
+    public boolean isCustom4ShowNic() {
+        return custom4ShowNic;
+    }
+
+    public void setCustom4ShowNic(boolean custom4ShowNic) {
+        this.custom4ShowNic = custom4ShowNic;
+    }
+
+    public boolean isCustom4ShowPhone() {
+        return custom4ShowPhone;
+    }
+
+    public void setCustom4ShowPhone(boolean custom4ShowPhone) {
+        this.custom4ShowPhone = custom4ShowPhone;
+    }
+
+    public boolean isCustom4ShowGuardian() {
+        return custom4ShowGuardian;
+    }
+
+    public void setCustom4ShowGuardian(boolean custom4ShowGuardian) {
+        this.custom4ShowGuardian = custom4ShowGuardian;
+    }
+
+    public boolean isCustom4ShowCorporateSponsor() {
+        return custom4ShowCorporateSponsor;
+    }
+
+    public void setCustom4ShowCorporateSponsor(boolean custom4ShowCorporateSponsor) {
+        this.custom4ShowCorporateSponsor = custom4ShowCorporateSponsor;
     }
     // </editor-fold>
 
@@ -2437,6 +2519,16 @@ public class BhtSummeryController implements Serializable {
      * commitment bills recorded against {@code sourceBill}, so a new version
      * starts from the same split rather than forcing the cashier to re-allocate
      * from scratch.
+     * <p>
+     * {@code settle()} only persists a CC bill for allocations {@code > 0}, so a
+     * company that was allocated 0.00 in the source bill has no CC bill to read
+     * back here. Every company still on the encounter (from
+     * {@link #fillCreditCompaniesByPatient}) is therefore always given a row —
+     * defaulting to 0.00 when no CC bill is found — the same way
+     * {@link #populateCreditCompanyAllocations()} always shows every company on
+     * the normal settle flow. Without this, a zero-allocated company would
+     * silently disappear from every subsequent version and could never be
+     * re-allocated to.
      */
     private List<CreditCompanyAllocation> rebuildAllocationsFromSourceBill(Bill sourceBill) {
         List<CreditCompanyAllocation> allocations = new ArrayList<>();
@@ -2446,12 +2538,36 @@ public class BhtSummeryController implements Serializable {
         params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         List<Bill> ccBills = getBillFacade().findByJpql(jpql, params);
 
-        double allocatedSoFar = 0.0;
+        Map<Institution, Double> allocatedByCompany = new LinkedHashMap<>();
         if (ccBills != null) {
             for (Bill ccBill : ccBills) {
-                allocations.add(new CreditCompanyAllocation(ccBill.getCreditCompany(), ccBill.getNetTotal()));
-                allocatedSoFar += ccBill.getNetTotal();
+                // Sum rather than overwrite: normally one CC bill per institution, but
+                // duplicate EncounterCreditCompany registrations for the same institution
+                // are possible via older data paths (e.g. AdmissionController), which
+                // would otherwise silently drop all but the last bill's amount here.
+                allocatedByCompany.merge(ccBill.getCreditCompany(), ccBill.getNetTotal(), Double::sum);
             }
+        }
+
+        double allocatedSoFar = 0.0;
+        List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(sourceBill.getPatientEncounter());
+        if (eccs != null && !eccs.isEmpty()) {
+            eccs.sort(Comparator.comparing(
+                    ecc -> ecc.getInstitution() != null ? ecc.getInstitution().getName() : "",
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+            for (EncounterCreditCompany ecc : eccs) {
+                Double amount = allocatedByCompany.remove(ecc.getInstitution());
+                double allocated = amount != null ? amount : 0.0;
+                allocations.add(new CreditCompanyAllocation(ecc, allocated));
+                allocatedSoFar += allocated;
+            }
+        }
+        // Any CC bill for a company no longer in the encounter's active list (e.g.
+        // retired since the source bill was settled) still keeps its allocated
+        // amount visible instead of silently dropping it.
+        for (Map.Entry<Institution, Double> leftover : allocatedByCompany.entrySet()) {
+            allocations.add(new CreditCompanyAllocation(leftover.getKey(), leftover.getValue()));
+            allocatedSoFar += leftover.getValue();
         }
 
         double newLiveNetDue = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
@@ -2465,11 +2581,17 @@ public class BhtSummeryController implements Serializable {
         updateTotal();
         Double due = netTotal - (paidByCompany + paidByPatient);
         List<EncounterCreditCompany> encounterCreditCompanys = fillCreditCompaniesByPatient(patientEncounter);
-        for (EncounterCreditCompany ecc : encounterCreditCompanys) {
+        for (int i = 0; i < encounterCreditCompanys.size(); i++) {
+            EncounterCreditCompany ecc = encounterCreditCompanys.get(i);
             if (due > 0) {
-                if (due > ecc.getCreditLimit()) {
-                    saveCreditBillForCreditCompany(patientEncounter, ecc, ecc.getCreditLimit());
-                    due = due - ecc.getCreditLimit();
+                boolean isLastCompany = i == encounterCreditCompanys.size() - 1;
+                // Credit limit is a guide for splitting across multiple companies, not a
+                // hard cap: the last company (or the only one, the common case) always
+                // takes whatever due remains rather than leaving it unallocated.
+                double cap = (!isLastCompany && ecc.getCreditLimit() > 0) ? ecc.getCreditLimit() : due;
+                if (due > cap) {
+                    saveCreditBillForCreditCompany(patientEncounter, ecc, cap);
+                    due = due - cap;
                 } else {
                     saveCreditBillForCreditCompany(patientEncounter, ecc, due);
                     due = due - due;
@@ -2542,9 +2664,12 @@ public class BhtSummeryController implements Serializable {
                     Comparator.nullsLast(Comparator.naturalOrder())));
             // Every registered company gets a row (0.00 when the due is already
             // covered) so the cashier can redistribute freely. Auto-split honours
-            // each company's credit limit; manual edits afterwards are not capped.
+            // each company's credit limit as a guide when one is recorded (>0);
+            // an unset/zero limit (now optional) is treated as no cap rather than
+            // always suggesting 0. Manual edits afterwards are not capped either way.
             for (EncounterCreditCompany ecc : eccs) {
-                double alloc = Math.min(Math.max(0.0, remaining), ecc.getCreditLimit());
+                double cap = ecc.getCreditLimit() > 0 ? ecc.getCreditLimit() : remaining;
+                double alloc = Math.min(Math.max(0.0, remaining), cap);
                 creditCompanyAllocations.add(new CreditCompanyAllocation(ecc, alloc));
                 remaining -= alloc;
             }
@@ -2626,10 +2751,6 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Please select a credit company");
             return false;
         }
-        if (newEncounterCreditCompany.getCreditLimit() <= 0) {
-            JsfUtil.addErrorMessage("Please enter a credit limit greater than zero");
-            return false;
-        }
         if (creditCompanyAllocations == null) {
             creditCompanyAllocations = new ArrayList<>();
         }
@@ -2666,7 +2787,13 @@ public class BhtSummeryController implements Serializable {
                 ccSum += alloc.getAllocatedAmount();
             }
         }
-        double allocatable = Math.max(0.0, Math.min(expected - ccSum, newEncounterCreditCompany.getCreditLimit()));
+        double remainingDue = expected - ccSum;
+        // Suggested amount only — the cashier can raise it further in the allocation
+        // table (checkCreditAllocationTotal doesn't cap by credit limit). A recorded
+        // limit (>0) is used as the suggestion cap; an optional/unset limit suggests
+        // the full remaining due instead of always defaulting to 0.
+        double cap = newEncounterCreditCompany.getCreditLimit() > 0 ? newEncounterCreditCompany.getCreditLimit() : remainingDue;
+        double allocatable = Math.max(0.0, Math.min(remainingDue, cap));
         creditCompanyAllocations.add(new CreditCompanyAllocation(newEncounterCreditCompany, allocatable));
         moveCompanyRowsAbovePatientRow();
         recalculatePatientPortion();
@@ -3116,6 +3243,18 @@ public class BhtSummeryController implements Serializable {
         return false;
     }
 
+    private boolean hasAnyUncheckedInwardBills() {
+        return getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)
+                || getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.StoreBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.StoreBhtPre)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardOutSideBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardPaymentBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.InwardPaymentBill);
+    }
+
     public String toSettle() {
 
         if (getPatientEncounter() == null) {
@@ -3142,10 +3281,18 @@ public class BhtSummeryController implements Serializable {
         System.out.println("Option = " + configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge"));
 
         System.out.println("Starting Bills Checking Process.... ");
-        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission && !getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
-            System.out.println("Checking.... ---> ");
-            if (checkBill()) {
-                return "";
+        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
+            if (!getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
+                System.out.println("Checking.... ---> ");
+                if (checkBill()) {
+                    return "";
+                }
+            } else if (!configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")
+                    && hasAnyUncheckedInwardBills()) {
+                JsfUtil.addWarningMessage("Settling with unchecked Inward Service / Professional / Pharmacy / Store / Payment bills. "
+                        + "Proceeding because you hold the 'Inward Bill Settle Without Check' privilege.");
+            } else {
+                System.out.println("Ignore Checking.... ---> ");
             }
         } else {
             System.out.println("Ignore Checking.... ---> ");
@@ -4380,6 +4527,19 @@ public class BhtSummeryController implements Serializable {
         this.profesionallFee = profesionallFee;
     }
 
+    /**
+     * Invalidates the cached Professional Fees tab list so the next call to
+     * {@link #getProfesionallFee()} re-queries the database. This bean is
+     * @SessionScoped and many pages navigate directly to inward_bill_intrim.xhtml
+     * without calling {@link #createTables()}, so professional fees added from
+     * elsewhere (e.g. the surgery professional fee bill) would otherwise never
+     * appear until some unrelated action happened to reset the cache. See
+     * issue #20146.
+     */
+    public void refreshProfesionallFee() {
+        profesionallFee = null;
+    }
+
     public List<Bill> getPaymentBill() {
         if (paymentBill == null) {
             paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
@@ -4847,6 +5007,17 @@ public class BhtSummeryController implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
 
+        List<BillTypeAtomic> medicineCancellationBtas = new ArrayList<>();
+        medicineCancellationBtas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+        medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
                 case AdmissionFee:
@@ -4878,6 +5049,11 @@ public class BhtSummeryController implements Serializable {
                 case Medicine:
                     if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
                         i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
+                    }
+                    break;
+                case CancelledReturnedMedicine:
+                    if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
+                        i.setTotal(getInwardBean().calCancelledCostOfIssueByBill(getPatientEncounter(), medicineCancellationBtas, childPatientEncouters));
                     }
                     break;
                 case GeneralIssuing:

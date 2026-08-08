@@ -712,12 +712,20 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Admission to edit");
             return "";
         }
+        // Re-fetch fresh from the DB. 'current' may be a stale in-memory Admission
+        // carried over from a @SessionScoped bean (e.g. admissionController) that
+        // was loaded earlier in the session, before other flows (room edits, etc.)
+        // updated related entities such as currentPatientRoom. (Issue #20463)
+        if (current.getId() != null) {
+            current = getFacade().find(current.getId());
+        }
+
         // audit: store original details
         if (current.getId() != null) {
             originalAdmission = new HashMap<>();
             admissionToAuditMap(originalAdmission, current);
         }
-        
+
         admissionController.setCurrent(current);
         createPatientRoom();
         fillCreditCompaniesByPatient();

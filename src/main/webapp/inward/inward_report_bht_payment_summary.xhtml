@@ -268,27 +268,122 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:columns
-                                value="#{bhtPaymentSummaryReportController.allPaymentMethods}"
-                                var="pm"
-                                headerText="#{pm.label}"
-                                style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.getDepositForMethod(pm)}">
+                            <p:column headerText="Deposit Cash" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.depositCash}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.getColumnTotal(pm)}">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDepositCash}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
-                            </p:columns>
+                            </p:column>
 
-                            <p:column headerText="Credit Settlement" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                            <p:column headerText="Deposit Card" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.depositCard}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDepositCard}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Deposit Other" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.depositOther}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDepositOther}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total Deposits" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                <h:outputText value="#{row.totalDeposits}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDeposits}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Post-Final Cash" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.postFinalCash}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalCash}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Post-Final Card" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.postFinalCard}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalCard}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Post-Final Other" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.postFinalOther}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalOther}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total Post-Final Payments" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                <h:outputText value="#{row.totalPostFinalPayments}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalPayments}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total Credit Billed" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.creditBilledTotal}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditBilled}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Credit Settled" style="text-align:right; white-space:nowrap;">
                                 <h:outputText value="#{row.creditSettlementTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditSettlement}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Credit Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                <h:outputText value="#{row.creditBalance}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditBalance}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
@@ -313,8 +408,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{row.balance}">
+                            <p:column headerText="Total Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                <h:outputText value="#{row.totalBalance}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">

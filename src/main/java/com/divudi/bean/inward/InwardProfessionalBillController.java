@@ -77,6 +77,8 @@ public class InwardProfessionalBillController implements Serializable {
     @Inject
     SurgeryBillController surgeryBillController;
     @Inject
+    BhtSummeryController bhtSummeryController;
+    @Inject
     ConfigOptionController configOptionController;
     ////////////////////
     @EJB
@@ -460,6 +462,14 @@ public class InwardProfessionalBillController implements Serializable {
         makeNullList();
         current = null;
         settlePreview = true;
+        surgeryBillController.refreshProEncounterComponents();
+        // The Interim Bill (BhtSummeryController) is @SessionScoped and caches its
+        // Professional Fees tab list (profesionallFee) until explicitly invalidated.
+        // Many pages navigate straight to inward_bill_intrim.xhtml without going through
+        // a BhtSummeryController navigation method that would refresh it, so without this
+        // call a surgery professional fee saved here would not show up in the Interim Bill
+        // until some unrelated action happened to reset the cache. See issue #20146.
+        bhtSummeryController.refreshProfesionallFee();
         JsfUtil.addSuccessMessage("Professional fee bill saved.");
     }
 
@@ -542,6 +552,12 @@ public class InwardProfessionalBillController implements Serializable {
         suggestions = getStaffFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
+    }
+
+    public void onDoctorSelect(AjaxBehaviorEvent event) {
+        if (currentBillFee != null && currentBillFee.getStaff() != null && currentBillFee.getStaff().getSpeciality() != null) {
+            currentBillFee.setSpeciality(currentBillFee.getStaff().getSpeciality());
+        }
     }
 
     public boolean isToClearBill() {

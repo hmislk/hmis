@@ -352,7 +352,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="finalOriginalBillPriview">
-                                                    <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
+                                                    <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /> **Hospital Bill**Original Bill**
                                                 </h:panelGroup>
 
                                             </p:panel>
@@ -606,6 +606,7 @@
                                 </p:tab>
 
                                 <p:tab title="Custom Bills">
+                                    <h:outputScript library="js" name="custom4-paged-print.js" target="head"/>
                                     <div class="d-flex justify-content-end mb-2">
                                         <p:commandButton
                                             rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
@@ -713,6 +714,53 @@
                                         </div>
                                     </div>
 
+                                    <div class="row mt-3">
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill 3"
+                                                                class="ui-button-info"
+                                                                type="button"
+                                                                onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('originalCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="originalCustom4BillPriview">
+                                                    <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill 3"
+                                                                class="ui-button-info"
+                                                                type="button"
+                                                                onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('duplicateCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="duplicateCustom4BillPriview">
+                                                    <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                    </div>
+
                                     <p:dialog id="custom2ConfigDialog"
                                               header="Custom Bills Printer Configuration"
                                               widgetVar="custom2ConfigDialog"
@@ -744,6 +792,29 @@
                                                 <div class="mb-3">
                                                     <h:selectBooleanCheckbox id="custom2ShowCorporateSponsor" value="#{bhtSummeryController.custom2ShowCorporateSponsor}" />
                                                     <h:outputLabel for="custom2ShowCorporateSponsor" value="Show Corporate Sponsor" class="ms-2" />
+                                                </div>
+
+                                                <hr/>
+                                                <h6>Custom Bill 3 (Letterhead) Settings</h6>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom4ShowAddress" value="#{bhtSummeryController.custom4ShowAddress}" />
+                                                    <h:outputLabel for="custom4ShowAddress" value="Show Patient Address" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom4ShowNic" value="#{bhtSummeryController.custom4ShowNic}" />
+                                                    <h:outputLabel for="custom4ShowNic" value="Show Patient NIC" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom4ShowPhone" value="#{bhtSummeryController.custom4ShowPhone}" />
+                                                    <h:outputLabel for="custom4ShowPhone" value="Show Patient Phone" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom4ShowGuardian" value="#{bhtSummeryController.custom4ShowGuardian}" />
+                                                    <h:outputLabel for="custom4ShowGuardian" value="Show Guardian" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom4ShowCorporateSponsor" value="#{bhtSummeryController.custom4ShowCorporateSponsor}" />
+                                                    <h:outputLabel for="custom4ShowCorporateSponsor" value="Show Corporate Sponsor" class="ms-2" />
                                                 </div>
 
                                                 <p:messages id="custom2ConfigMessages" showDetail="true" closable="true" />
