@@ -55,20 +55,21 @@ public class PurchaseOrderRequestNativeSqlService {
 
     public void updateDraftBillHeader(long billId, Long toInstitutionId, PaymentMethod paymentMethod,
                                        int creditDuration, boolean consignment, DepartmentType departmentType,
-                                       Long editorId) {
+                                       String comments, Long editorId) {
         em.createNativeQuery(
             "UPDATE " + billTable()
             + " SET toInstitution_ID=?, paymentMethod=?, creditDuration=?, consignment=?,"
-            + " departmentType=?, editor_ID=?, editedAt=?"
+            + " departmentType=?, comments=?, editor_ID=?, editedAt=?"
             + " WHERE ID=?")
             .setParameter(1, toInstitutionId)
             .setParameter(2, paymentMethod != null ? paymentMethod.toString() : null)
             .setParameter(3, creditDuration)
             .setParameter(4, consignment ? 1 : 0)
             .setParameter(5, departmentType != null ? departmentType.toString() : null)
-            .setParameter(6, editorId)
-            .setParameter(7, new Timestamp(new Date().getTime()))
-            .setParameter(8, billId)
+            .setParameter(6, comments)
+            .setParameter(7, editorId)
+            .setParameter(8, new Timestamp(new Date().getTime()))
+            .setParameter(9, billId)
             .executeUpdate();
         evictCache();
     }
@@ -90,6 +91,23 @@ public class PurchaseOrderRequestNativeSqlService {
             .setParameter(3, billId)
             .executeUpdate();
         evictCache();
+    }
+
+    /**
+     * Persists a single BillItem's renumbered searialNo. calculateBillTotals()
+     * in the controller renumbers surviving lines' serials in memory after a
+     * removal, but nothing else in the native save path wrote that column back
+     * to the DB -- a reload (loadBillItems, ordered by searialNo) could then
+     * see gaps left by the retired line, and a later-added line reusing that
+     * gap's serial would collide with a persisted survivor.
+     */
+    public void updateBillItemSerialNo(long billItemId, int serialNo) {
+        em.createNativeQuery(
+            "UPDATE " + billItemTable() + " SET searialNo=? WHERE ID=?")
+            .setParameter(1, serialNo)
+            .setParameter(2, billItemId)
+            .executeUpdate();
+        evictLineCache();
     }
 
     public boolean isBillChecked(long billId) {

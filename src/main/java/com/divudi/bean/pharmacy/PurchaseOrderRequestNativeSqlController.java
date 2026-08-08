@@ -348,6 +348,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         if (currentBill.getId() != null) {
             purchaseOrderRequestNativeSqlService.updateBillTotals(currentBill.getId(), currentBill.getNetTotal(), currentBill.getTotal());
         }
+        persistSurvivingSerialNumbers();
         itemHistoryVisible = false;
     }
 
@@ -380,7 +381,22 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         if (currentBill.getId() != null) {
             purchaseOrderRequestNativeSqlService.updateBillTotals(currentBill.getId(), currentBill.getNetTotal(), currentBill.getTotal());
         }
+        persistSurvivingSerialNumbers();
         selectedBillItems = null;
+    }
+
+    /**
+     * Persists the searialNo calculateBillTotals() just renumbered in memory,
+     * for every surviving line that's already been saved (has an id). Called
+     * after a removal, where calculateBillTotals() can shift a persisted
+     * survivor's serial to fill the gap left by a retired line.
+     */
+    private void persistSurvivingSerialNumbers() {
+        for (BillItem bi : billItems) {
+            if (bi != null && !bi.isRetired() && bi.getId() != null) {
+                purchaseOrderRequestNativeSqlService.updateBillItemSerialNo(bi.getId(), bi.getSearialNo());
+            }
+        }
     }
 
     public void onEdit(BillItem bi) {
@@ -596,9 +612,23 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         int serialStart = billItems.size();
         boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
         int skippedCount = 0;
+        int skippedDepartmentTypeCount = 0;
+
+        List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
 
         List<Item> itemsToAdd = new ArrayList<>();
         for (Item i : items) {
+            DepartmentType itemDepartmentType = i != null ? i.getDepartmentType() : null;
+            DepartmentType billDepartmentType = getCurrentBill().getDepartmentType() != null
+                    ? getCurrentBill().getDepartmentType()
+                    : (itemDepartmentType != null ? itemDepartmentType : DepartmentType.Pharmacy);
+            boolean departmentTypeMismatch = itemDepartmentType != null && !itemDepartmentType.equals(billDepartmentType);
+            boolean departmentTypeNotAllowed = allowedTypes == null || !allowedTypes.contains(billDepartmentType);
+            if (departmentTypeMismatch || departmentTypeNotAllowed) {
+                skippedDepartmentTypeCount++;
+                continue;
+            }
+
             if (preventDuplicates) {
                 boolean isDuplicate = false;
                 for (BillItem existingItem : billItems) {
@@ -614,7 +644,14 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                     continue; // Skip this item as it already exists
                 }
             }
+            if (getCurrentBill().getDepartmentType() == null) {
+                getCurrentBill().setDepartmentType(billDepartmentType);
+            }
             itemsToAdd.add(i);
+        }
+
+        if (skippedDepartmentTypeCount > 0) {
+            JsfUtil.addErrorMessage(skippedDepartmentTypeCount + " item(s) of a different or disallowed department type were skipped.");
         }
 
         Map<Long, Double> purchaseRatesByItemId = fetchLastPurchaseRatesForItems(itemsToAdd);
@@ -708,6 +745,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         int creditDuration = currentBill.getCreditDuration();
         boolean consignment = currentBill.isConsignment();
         DepartmentType departmentType = currentBill.getDepartmentType();
+        String comments = currentBill.getComments();
 
         if (currentBill.getId() == null) {
             String[] billNumbers = createAndAssignBillNumber();
@@ -719,14 +757,16 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                     billNumbers[1]);
             currentBill = billFacade.find(newBillId);
             // createDraftBill() only inserts department/institution/creater/deptId/insId --
-            // toInstitution/paymentMethod/consignment/creditDuration/departmentType are not
-            // yet in the DB, so the reload above comes back with those fields null/default.
-            // Re-apply the values the user actually entered before they're used below.
+            // toInstitution/paymentMethod/consignment/creditDuration/departmentType/comments
+            // are not yet in the DB, so the reload above comes back with those fields
+            // null/default. Re-apply the values the user actually entered before they're
+            // used below.
             currentBill.setToInstitution(toInstitution);
             currentBill.setPaymentMethod(paymentMethod);
             currentBill.setCreditDuration(creditDuration);
             currentBill.setConsignment(consignment);
             currentBill.setDepartmentType(departmentType);
+            currentBill.setComments(comments);
         }
 
         purchaseOrderRequestNativeSqlService.updateDraftBillHeader(
@@ -736,6 +776,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                 creditDuration,
                 consignment,
                 departmentType,
+                comments,
                 sessionController.getLoggedUser().getId());
 
         for (BillItem bi : billItems) {
