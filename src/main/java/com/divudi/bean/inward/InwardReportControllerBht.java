@@ -7,6 +7,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -17,6 +18,7 @@ import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.table.String1Value2;
 import com.divudi.core.data.table.String2Value4;
+import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
@@ -118,6 +120,19 @@ public class InwardReportControllerBht implements Serializable {
 
     private List<BillListReportDTO> serviceBillDtosToPatientEncounter;
     private double serviceBillDtosToPatientEncounterNetTotal;
+
+    // Issue #22783 (Part B) - encounter-scoped payment bills (deposits +
+    // appointment bills) and their cancellations.
+    private List<BillListReportDTO> paymentBillDtosToPatientEncounter;
+    private double paymentBillDtosToPatientEncounterNetTotal;
+
+    // Issue #22783 (Part C) - department-wide, date-filtered payment bills.
+    private List<BillListReportDTO> paymentBillDtosForDepartment;
+    private double paymentBillDtosForDepartmentNetTotal;
+    private Date fromDate;
+    private Date toDate;
+    private String bhtNoFilter;
+    private String patientNameFilter;
 
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
@@ -580,6 +595,211 @@ public class InwardReportControllerBht implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
         params.put("patientEncounter", patientEncounter);
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #22783 (Part B) - unlike deposit bills, INWARD_APPOINTMENT_BILL /
+    // INWARD_APPOINTMENT_CANCEL_BILL never populate Bill.patientEncounter
+    // (only Appointment.patientEncounter is set, at admission time - see
+    // BillFacade.findInwardBillReceiptDTO's javadoc, discovered while
+    // building Part A). A plain "b.patientEncounter = :patientEncounter"
+    // filter - which fetchServiceBillDtos above uses - silently excludes
+    // both the appointment bill and its cancellation. This method unions
+    // the two patterns in one query: deposit-family bills matched via
+    // Bill.patientEncounter directly, appointment-family bills matched via
+    // Appointment.patientEncounter (through Appointment.bill, and through
+    // Bill.referenceBill for the cancel bill, which points back at the
+    // original appointment bill). All patientEncounter/patient/creater
+    // navigation uses explicit LEFT JOINs rather than dot-path expressions,
+    // for the same reason: an inner-join dot-path would drop the
+    // null-patientEncounter appointment rows from the SELECT list too.
+    private List<BillListReportDTO> fetchPaymentBillDtosForEncounter(List<BillTypeAtomic> depositTypes, List<BillTypeAtomic> appointmentTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(per.name, per2.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(cr.name, ''), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.margin) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.patientEncounter pe "
+                + "LEFT JOIN pe.patient pt "
+                + "LEFT JOIN pt.person per "
+                + "LEFT JOIN b.patient pt2 "
+                + "LEFT JOIN pt2.person per2 "
+                + "LEFT JOIN b.creater cr "
+                + "WHERE b.retired = FALSE "
+                + "AND ("
+                + "  (b.billTypeAtomic IN :depositTypes AND pe = :patientEncounter) "
+                + "  OR "
+                + "  (b.billTypeAtomic IN :appointmentTypes AND ("
+                + "     b IN (SELECT a.bill FROM Appointment a WHERE a.patientEncounter = :patientEncounter) "
+                + "     OR b.referenceBill IN (SELECT a.bill FROM Appointment a WHERE a.patientEncounter = :patientEncounter)"
+                + "  ))"
+                + ") "
+                + "ORDER BY b.createdAt, b.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("depositTypes", depositTypes);
+        params.put("appointmentTypes", appointmentTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #22783 (Part B) - Encounter-scoped list of inward payment bills
+    // (deposits + appointment bills) together with their cancellations/refunds.
+    // Row-level View/Reprint action is done from the XHTML by calling the
+    // existing BillSearch#navigateToViewBillByAtomicBillTypeByBillId(billId)
+    // directly, same pattern as the service bill list (#21247).
+    public String navigateToInpatientPaymentBillListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        paymentBillDtosToPatientEncounter = new ArrayList<>();
+        paymentBillDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> depositTypes = new ArrayList<>();
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+            List<BillTypeAtomic> appointmentTypes = new ArrayList<>();
+            appointmentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+            appointmentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+
+            paymentBillDtosToPatientEncounter = fetchPaymentBillDtosForEncounter(depositTypes, appointmentTypes);
+
+            for (BillListReportDTO dto : paymentBillDtosToPatientEncounter) {
+                double netValue = dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0;
+                paymentBillDtosToPatientEncounterNetTotal += netValue;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading payment bill DTOs", e);
+            JsfUtil.addErrorMessage("Error loading payment bill data");
+            return null;
+        }
+        return "/inward/reports/inpatient_payment_bill_list_dto?faces-redirect=true";
+    }
+
+    // Issue #22783 (Part C) - Department-wide, date-filtered list of inward
+    // payment bills (deposits + appointment bills) together with their
+    // cancellations/refunds, with optional BHT No / patient name filters.
+    public String navigateToInwardPaymentBillListForDepartment() {
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("No department");
+            return null;
+        }
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        paymentBillDtosForDepartment = new ArrayList<>();
+        paymentBillDtosForDepartmentNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> paymentTypes = new ArrayList<>();
+            paymentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+            paymentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+            paymentBillDtosForDepartment = fetchPaymentBillDtosForDepartment(paymentTypes);
+
+            for (BillListReportDTO dto : paymentBillDtosForDepartment) {
+                double netValue = dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0;
+                paymentBillDtosForDepartmentNetTotal += netValue;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading department payment bill DTOs", e);
+            JsfUtil.addErrorMessage("Error loading payment bill data");
+            return null;
+        }
+        return "/inward/reports/inward_payment_bill_list_department_dto?faces-redirect=true";
+    }
+
+    private List<BillListReportDTO> fetchPaymentBillDtosForDepartment(List<BillTypeAtomic> billTypes) {
+        // Explicit LEFT JOINs throughout (not dot-path navigation) for the
+        // same reason as fetchPaymentBillDtosForEncounter above: implicit
+        // path navigation through a null Bill.patientEncounter (true for
+        // INWARD_APPOINTMENT_BILL / INWARD_APPOINTMENT_CANCEL_BILL) compiles
+        // to an INNER JOIN and silently drops those rows from the whole
+        // result set, not just the projected column. b.patient (set
+        // directly on appointment bills) is the fallback patient path.
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(per.name, per2.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(cr.name, ''), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.margin) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.patientEncounter pe "
+                + "LEFT JOIN pe.patient pt "
+                + "LEFT JOIN pt.person per "
+                + "LEFT JOIN b.patient pt2 "
+                + "LEFT JOIN pt2.person per2 "
+                + "LEFT JOIN b.creater cr "
+                + "WHERE b.department = :department "
+                + "AND b.billTypeAtomic IN :billTypeAtomics "
+                + "AND b.retired = FALSE "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("department", department);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (bhtNoFilter != null && !bhtNoFilter.trim().isEmpty()) {
+            // pe.bhtNo alone misses INWARD_APPOINTMENT_BILL / INWARD_APPOINTMENT_CANCEL_BILL
+            // bills (their Bill.patientEncounter is always null) - fall back to the
+            // admission's BHT No via the Appointment that references this bill either
+            // as its original bill or its cancellation bill.
+            jpql += "AND (pe.bhtNo LIKE :bhtNo OR EXISTS ("
+                    + "SELECT a FROM Appointment a "
+                    + "WHERE (a.bill = b OR a.appointmentCancelBill = b) "
+                    + "AND a.patientEncounter.bhtNo LIKE :bhtNo)) ";
+            params.put("bhtNo", "%" + bhtNoFilter.trim() + "%");
+        }
+
+        if (patientNameFilter != null && !patientNameFilter.trim().isEmpty()) {
+            jpql += "AND (per.name LIKE :patientName OR per2.name LIKE :patientName) ";
+            params.put("patientName", "%" + patientNameFilter.trim() + "%");
+        }
+
+        jpql += "ORDER BY b.createdAt, b.id";
 
         List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
         return result != null ? result : new ArrayList<>();
@@ -2262,5 +2482,75 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setServiceBillDtosToPatientEncounterNetTotal(double serviceBillDtosToPatientEncounterNetTotal) {
         this.serviceBillDtosToPatientEncounterNetTotal = serviceBillDtosToPatientEncounterNetTotal;
+    }
+
+    public List<BillListReportDTO> getPaymentBillDtosToPatientEncounter() {
+        return paymentBillDtosToPatientEncounter;
+    }
+
+    public void setPaymentBillDtosToPatientEncounter(List<BillListReportDTO> paymentBillDtosToPatientEncounter) {
+        this.paymentBillDtosToPatientEncounter = paymentBillDtosToPatientEncounter;
+    }
+
+    public double getPaymentBillDtosToPatientEncounterNetTotal() {
+        return paymentBillDtosToPatientEncounterNetTotal;
+    }
+
+    public void setPaymentBillDtosToPatientEncounterNetTotal(double paymentBillDtosToPatientEncounterNetTotal) {
+        this.paymentBillDtosToPatientEncounterNetTotal = paymentBillDtosToPatientEncounterNetTotal;
+    }
+
+    public List<BillListReportDTO> getPaymentBillDtosForDepartment() {
+        return paymentBillDtosForDepartment;
+    }
+
+    public void setPaymentBillDtosForDepartment(List<BillListReportDTO> paymentBillDtosForDepartment) {
+        this.paymentBillDtosForDepartment = paymentBillDtosForDepartment;
+    }
+
+    public double getPaymentBillDtosForDepartmentNetTotal() {
+        return paymentBillDtosForDepartmentNetTotal;
+    }
+
+    public void setPaymentBillDtosForDepartmentNetTotal(double paymentBillDtosForDepartmentNetTotal) {
+        this.paymentBillDtosForDepartmentNetTotal = paymentBillDtosForDepartmentNetTotal;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public String getBhtNoFilter() {
+        return bhtNoFilter;
+    }
+
+    public void setBhtNoFilter(String bhtNoFilter) {
+        this.bhtNoFilter = bhtNoFilter;
+    }
+
+    public String getPatientNameFilter() {
+        return patientNameFilter;
+    }
+
+    public void setPatientNameFilter(String patientNameFilter) {
+        this.patientNameFilter = patientNameFilter;
     }
 }
