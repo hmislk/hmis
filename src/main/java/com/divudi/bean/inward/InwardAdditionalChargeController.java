@@ -162,6 +162,14 @@ public class InwardAdditionalChargeController implements Serializable {
             return true;
         }
 
+        if (selectedItem.getInwardChargeType() == null) {
+            JsfUtil.addErrorMessage("This item has no Inward Category configured. "
+                    + "Please set an Inward Category for \"" + selectedItem.getName()
+                    + "\" under Admin > Items before billing it, otherwise this charge "
+                    + "will not appear in Inward Charge Type reports.");
+            return true;
+        }
+
         if (getCurrent().getTotal() < 1) {
             JsfUtil.addErrorMessage("Enter Added Charge Correctly");
             return true;
