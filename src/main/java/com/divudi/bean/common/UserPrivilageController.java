@@ -246,6 +246,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode searchNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearch, "Search Menu"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchServiceBill, "Search Service Bill"), searchNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsGeneralSearch, "Search Admissions - General Search (Date Range)"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchProfessionalBill, "Search Professional Bill"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchFinalBill, "Search Final Bill"), searchNode);
 

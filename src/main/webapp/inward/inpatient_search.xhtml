@@ -61,6 +61,7 @@
                                     ajax="false"
                                     value="Search"
                                     icon="fas fa-search"
+                                    rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsGeneralSearch')}"
                                     action="#{admissionController.searchAdmissions}"
                                     class="mt-2 w-100 mb-3 ui-button-warning">
                                 </p:commandButton>
