@@ -201,6 +201,7 @@ public enum Privileges {
     NursingWorkBenchPanelOperationTheatre("Nursing Workbench - Operation Theatre Panel"),
     NursingWorkBenchPanelPharmaceuticals("Nursing Workbench - Pharmaceuticals Panel"),
     NursingWorkBenchPanelReports("Nursing Workbench - Reports Panel"),
+    NursingWorkBenchPanelPayments("Nursing Workbench - Payments Panel"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
@@ -1226,6 +1227,7 @@ public enum Privileges {
             case NursingWorkBenchPanelOperationTheatre:
             case NursingWorkBenchPanelPharmaceuticals:
             case NursingWorkBenchPanelReports:
+            case NursingWorkBenchPanelPayments:
                 return "Nursing Work Bench";
 
             case WatingRoomAdmitPatient:

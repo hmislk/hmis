@@ -18,6 +18,7 @@ import com.divudi.core.data.Sex;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.data.EmailAttachment;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -139,6 +140,17 @@ public class InwardSearch implements Serializable {
      */
     private Bill bill;
     private boolean printPreview = false;
+
+    /**
+     * Bill id to render on {@code /inward/inward_view_appointment_bill_receipt}
+     * (Issue #22783 — appointment bill / appointment cancel bill view, routed
+     * from {@code BillSearch.navigateToViewBillByAtomicBillType}). Appointment
+     * bills never have {@code Bill.patientEncounter} populated, so they can't
+     * use the regular {@code inward_reprint_bill_payment} template; the DTO
+     * query behind {@link #getAppointmentBillReceipt()} handles that via
+     * LEFT JOINs instead.
+     */
+    private Long appointmentReceiptBillId;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -2402,6 +2414,26 @@ public class InwardSearch implements Serializable {
             bill = new BilledBill();
         }
         return bill;
+    }
+
+    public Long getAppointmentReceiptBillId() {
+        return appointmentReceiptBillId;
+    }
+
+    public void setAppointmentReceiptBillId(Long appointmentReceiptBillId) {
+        this.appointmentReceiptBillId = appointmentReceiptBillId;
+    }
+
+    /**
+     * DTO for {@code /inward/inward_view_appointment_bill_receipt} — null
+     * until {@link #appointmentReceiptBillId} is set by the BillSearch
+     * routing case.
+     */
+    public InwardBillReceiptDTO getAppointmentBillReceipt() {
+        if (appointmentReceiptBillId == null) {
+            return null;
+        }
+        return billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
     }
 
     public void markAsChecked() {
