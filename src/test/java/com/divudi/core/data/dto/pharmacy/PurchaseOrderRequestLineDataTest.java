@@ -3,6 +3,8 @@ package com.divudi.core.data.dto.pharmacy;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class PurchaseOrderRequestLineDataTest {
     @Test
@@ -31,5 +33,23 @@ class PurchaseOrderRequestLineDataTest {
         assertEquals(BigDecimal.valueOf(10), d.getUnitsPerPack());
         assertEquals(2, d.getSerialNo());
         assertEquals(Long.valueOf(1L), d.getCreaterId());
+    }
+
+    @Test
+    void projectionConstructorSetsOnlyProjectedFields() {
+        var d = new PurchaseOrderRequestLineData(100L, true, BigDecimal.TEN, BigDecimal.ONE,
+                BigDecimal.valueOf(12.5), BigDecimal.valueOf(15.0), BigDecimal.valueOf(10), 3);
+
+        assertEquals(Long.valueOf(100L), d.getItemId());
+        assertTrue(d.isAmpp());
+        assertEquals(BigDecimal.TEN, d.getQuantity());
+        assertEquals(BigDecimal.ONE, d.getFreeQuantity());
+        assertEquals(BigDecimal.valueOf(12.5), d.getPurchaseRate());
+        assertEquals(BigDecimal.valueOf(15.0), d.getRetailRate());
+        assertEquals(BigDecimal.valueOf(10), d.getUnitsPerPack());
+        assertEquals(3, d.getSerialNo());
+        assertNull(d.getBillItemId());
+        assertNull(d.getPharmaceuticalBillItemId());
+        assertNull(d.getCreaterId());
     }
 }
