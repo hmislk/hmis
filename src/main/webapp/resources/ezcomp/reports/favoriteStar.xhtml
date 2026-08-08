@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="reportKey" type="java.lang.String" required="true" />
+        <cc:attribute name="label" type="java.lang.String" required="true" />
+        <cc:attribute name="category" type="java.lang.String" required="true" />
+        <!-- Named "visible", not "rendered" - "rendered" is a reserved/special
+             composite-component attribute name that JSF intercepts at the
+             outer tag level before cc:attrs population, so cc.attrs.rendered
+             never reflects the caller's passed value. -->
+        <cc:attribute name="visible" type="java.lang.Boolean" default="true" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <!--
+            actionListener is defined directly here (not forwarded from a caller
+            via cc.attrs), so this composite never triggers Mojarra's composite
+            method-expression retargeting - reportKey/label/category are plain
+            String values passed as call arguments, not method references.
+        -->
+        <h:panelGroup rendered="#{cc.attrs.visible}">
+            <p:commandButton
+                ajax="true"
+                process="@this"
+                styleClass="ui-button-secondary favorite-star-btn"
+                style="flex: 0 0 auto; width: 2.4rem;"
+                icon="#{userFavoriteReportController.isFavorite(cc.attrs.reportKey) ? 'fa fa-star' : 'fa fa-star-o'}"
+                title="#{userFavoriteReportController.isFavorite(cc.attrs.reportKey) ? 'Remove from Favorites' : 'Add to Favorites'}"
+                actionListener="#{userFavoriteReportController.toggleFavorite(cc.attrs.reportKey, cc.attrs.label, cc.attrs.category)}"
+                update=":#{p:resolveFirstComponentWithId('reportsAccordion',view).clientId}" />
+        </h:panelGroup>
+    </cc:implementation>
+</html>
