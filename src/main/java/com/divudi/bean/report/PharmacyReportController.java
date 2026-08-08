@@ -10732,7 +10732,15 @@ public class PharmacyReportController implements Serializable {
                 m.put("itm", item);
             }
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql += " and s.pbItem.billItem.bill.departmentType in :departmentTypes ";
+                if (selectedDepartmentTypes.contains(DepartmentType.Pharmacy)) {
+                    // Item.getDepartmentType() defaults a null departmentType to Pharmacy for
+                    // PharmaceuticalItem, but that fallback only lives in the Java getter -
+                    // legacy items with a null departmentType column would otherwise be
+                    // silently dropped by "IN :departmentTypes" whenever Pharmacy is selected.
+                    jpql += " and (s.item.departmentType in :departmentTypes or s.item.departmentType is null) ";
+                } else {
+                    jpql += " and s.item.departmentType in :departmentTypes ";
+                }
                 m.put("departmentTypes", selectedDepartmentTypes);
             }
 //            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
@@ -10949,7 +10957,15 @@ public class PharmacyReportController implements Serializable {
                 m.put("df", dosageForm);
             }
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append(" AND b.departmentType IN :departmentTypes");
+                if (selectedDepartmentTypes.contains(DepartmentType.Pharmacy)) {
+                    // Item.getDepartmentType() defaults a null departmentType to Pharmacy for
+                    // PharmaceuticalItem, but that fallback only lives in the Java getter -
+                    // legacy items with a null departmentType column would otherwise be
+                    // silently dropped by "IN :departmentTypes" whenever Pharmacy is selected.
+                    jpql.append(" AND (s.item.departmentType IN :departmentTypes OR s.item.departmentType IS NULL)");
+                } else {
+                    jpql.append(" AND s.item.departmentType IN :departmentTypes");
+                }
                 m.put("departmentTypes", selectedDepartmentTypes);
             }
 

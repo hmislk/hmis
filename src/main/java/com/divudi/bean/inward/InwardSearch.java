@@ -18,6 +18,7 @@ import com.divudi.core.data.Sex;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.data.EmailAttachment;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -65,6 +66,8 @@ import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.PrimeFaces;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -139,6 +142,18 @@ public class InwardSearch implements Serializable {
      */
     private Bill bill;
     private boolean printPreview = false;
+
+    /**
+     * Bill id to render on {@code /inward/inward_view_appointment_bill_receipt}
+     * (Issue #22783 — appointment bill / appointment cancel bill view, routed
+     * from {@code BillSearch.navigateToViewBillByAtomicBillType}). Appointment
+     * bills never have {@code Bill.patientEncounter} populated, so they can't
+     * use the regular {@code inward_reprint_bill_payment} template; the DTO
+     * query behind {@link #getAppointmentBillReceipt()} handles that via
+     * LEFT JOINs instead.
+     */
+    private Long appointmentReceiptBillId;
+    private InwardBillReceiptDTO appointmentBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -765,6 +780,9 @@ public class InwardSearch implements Serializable {
     }
 
     private String emailRecipient;
+    private String emailSubject;
+    private String emailBody;
+    private List<EmailAttachment> pendingEmailAttachments;
     private List<AppEmail> sentEmailsForBill;
 
     public String getEmailRecipient() {
@@ -775,11 +793,108 @@ public class InwardSearch implements Serializable {
         this.emailRecipient = emailRecipient;
     }
 
+    public String getEmailSubject() {
+        return emailSubject;
+    }
+
+    public void setEmailSubject(String emailSubject) {
+        this.emailSubject = emailSubject;
+    }
+
+    public String getEmailBody() {
+        return emailBody;
+    }
+
+    public void setEmailBody(String emailBody) {
+        this.emailBody = emailBody;
+    }
+
+    public List<EmailAttachment> getPendingEmailAttachments() {
+        return pendingEmailAttachments;
+    }
+
+    /**
+     * Navigates from the Final Bill Versions list to the email review page
+     * for {@code b}, prefilling recipient/subject/body so the cashier can
+     * check and edit them — and attach extra documents — before anything is
+     * actually sent. Replaces the old pattern of sending straight from a
+     * "Recipient + Send" dialog with no review step.
+     */
+    public String prepareEmailFinalBillVersion(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        bill = b;
+        PatientEncounter pe = b.getPatientEncounter();
+        emailRecipient = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
+                ? pe.getPatient().getPerson().getEmail() : null;
+        emailSubject = "Final Bill " + b.getDeptId();
+        emailBody = "Please find attached the final bill " + b.getDeptId() + ".";
+        pendingEmailAttachments = new ArrayList<>();
+        return "/inward/inward_final_bill_email?faces-redirect=true";
+    }
+
+    // Attachments are held Base64-encoded in this SessionScoped bean until sent —
+    // capped here (in addition to the fileUpload's client-side sizeLimit) so a
+    // careless or malicious upload can't grow session memory unbounded.
+    private static final int MAX_EMAIL_ATTACHMENTS = 5;
+    private static final long MAX_EMAIL_ATTACHMENT_FILE_BYTES = 10_000_000L;
+    private static final long MAX_EMAIL_ATTACHMENT_TOTAL_BYTES = 20_000_000L;
+
+    /**
+     * Adds a cashier-chosen file (e.g. a supporting document requested by the
+     * credit company) to the attachment list for the email being composed.
+     * Kept separate from the auto-generated final bill PDF, which is always
+     * attached in addition to whatever is added here.
+     */
+    public void uploadEmailAttachment(FileUploadEvent event) {
+        if (pendingEmailAttachments == null) {
+            pendingEmailAttachments = new ArrayList<>();
+        }
+        UploadedFile file = event.getFile();
+        if (pendingEmailAttachments.size() >= MAX_EMAIL_ATTACHMENTS) {
+            JsfUtil.addErrorMessage("Cannot attach more than " + MAX_EMAIL_ATTACHMENTS + " documents");
+            return;
+        }
+        if (file.getSize() > MAX_EMAIL_ATTACHMENT_FILE_BYTES) {
+            JsfUtil.addErrorMessage(file.getFileName() + " exceeds the 10MB attachment size limit");
+            return;
+        }
+        long attachedSoFar = 0;
+        for (EmailAttachment existing : pendingEmailAttachments) {
+            attachedSoFar += existing.getBase64Content() != null ? existing.getBase64Content().length() * 3L / 4 : 0;
+        }
+        if (attachedSoFar + file.getSize() > MAX_EMAIL_ATTACHMENT_TOTAL_BYTES) {
+            JsfUtil.addErrorMessage("Total attachments cannot exceed 20MB");
+            return;
+        }
+        try {
+            EmailAttachment attachment = new EmailAttachment(
+                    file.getFileName(),
+                    file.getContentType(),
+                    Base64.getEncoder().encodeToString(file.getContent()));
+            pendingEmailAttachments.add(attachment);
+            JsfUtil.addSuccessMessage("Attached " + file.getFileName());
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Failed to attach file");
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill email attachment failed", ex);
+        }
+    }
+
+    public void removeEmailAttachment(EmailAttachment attachment) {
+        if (pendingEmailAttachments != null) {
+            pendingEmailAttachments.remove(attachment);
+        }
+    }
+
     /**
      * Emails a one-page summary of the given final bill version (patient,
      * admission, and totals — not a full itemized reprint) as a PDF
-     * attachment, and logs the send via {@link AppEmail} so it shows up in
-     * the "Sent Emails" history on the view/print screen.
+     * attachment, plus any cashier-attached documents, and logs the send via
+     * {@link AppEmail} so it shows up in the "Sent Emails" history on the
+     * view/print screen.
      */
     public void emailFinalBillVersion(Bill b) {
         boolean sent = false;
@@ -800,6 +915,19 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("No bill selected");
             return false;
         }
+        // InwardSearch.bill is shared session state set by many unrelated flows
+        // (interim estimates, staff payment cancel, etc.), and this page is reachable
+        // by direct URL — without this check, a stale/unrelated bill left over from
+        // another flow could be sent out mislabeled as a Final Bill.
+        // billTypeAtomic is required in addition to billType: createCancelBill()
+        // copies billType=InwardFinalBill onto the cancellation record it creates
+        // (see fetchFinalBillVersions()), so billType alone would let a cancellation
+        // record through as if it were a real final bill.
+        if (b.getBillType() != BillType.InwardFinalBill
+                || b.getBillTypeAtomic() != BillTypeAtomic.INWARD_FINAL_BILL) {
+            JsfUtil.addErrorMessage("Selected bill is not a Final Bill");
+            return false;
+        }
         if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
             JsfUtil.addErrorMessage("No recipient Email");
             return false;
@@ -809,12 +937,17 @@ public class InwardSearch implements Serializable {
             return false;
         }
 
+        String subject = (emailSubject != null && !emailSubject.trim().isEmpty())
+                ? emailSubject : "Final Bill " + b.getDeptId();
+        String body = (emailBody != null && !emailBody.trim().isEmpty())
+                ? emailBody : "Please find attached the final bill " + b.getDeptId() + ".";
+
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
         email.setCreater(sessionController.getLoggedUser());
         email.setReceipientEmail(emailRecipient);
-        email.setMessageSubject("Final Bill " + b.getDeptId());
-        email.setMessageBody("Please find attached the final bill " + b.getDeptId() + ".");
+        email.setMessageSubject(subject);
+        email.setMessageBody(body);
         email.setDepartment(b.getDepartment());
         email.setInstitution(b.getInstitution());
         email.setBill(b);
@@ -832,12 +965,18 @@ public class InwardSearch implements Serializable {
                     "application/pdf",
                     Base64.getEncoder().encodeToString(pdfBytes));
 
+            List<EmailAttachment> attachments = new ArrayList<>();
+            attachments.add(attachment);
+            if (pendingEmailAttachments != null) {
+                attachments.addAll(pendingEmailAttachments);
+            }
+
             success = emailManagerEjb.sendEmail(
                     Collections.singletonList(email.getReceipientEmail()),
                     email.getMessageBody(),
                     email.getMessageSubject(),
                     false,
-                    Collections.singletonList(attachment));
+                    attachments);
 
             if (success) {
                 email.setSentAt(new Date());
@@ -845,6 +984,7 @@ public class InwardSearch implements Serializable {
                 email.setPending(false);
                 emailFacade.edit(email);
                 JsfUtil.addSuccessMessage("Email Sent Successfully");
+                pendingEmailAttachments = new ArrayList<>();
             } else {
                 email.setPending(false);
                 emailFacade.edit(email);
@@ -2402,6 +2542,32 @@ public class InwardSearch implements Serializable {
             bill = new BilledBill();
         }
         return bill;
+    }
+
+    public Long getAppointmentReceiptBillId() {
+        return appointmentReceiptBillId;
+    }
+
+    public void setAppointmentReceiptBillId(Long appointmentReceiptBillId) {
+        this.appointmentReceiptBillId = appointmentReceiptBillId;
+        this.appointmentBillReceipt = null;
+    }
+
+    /**
+     * DTO for {@code /inward/inward_view_appointment_bill_receipt} — null
+     * until {@link #appointmentReceiptBillId} is set by the BillSearch
+     * routing case. Lazily loaded and cached for the lifetime of this bean
+     * (the composite receipt templates dereference it many times per
+     * render); the cache is cleared by {@link #setAppointmentReceiptBillId}.
+     */
+    public InwardBillReceiptDTO getAppointmentBillReceipt() {
+        if (appointmentReceiptBillId == null) {
+            return null;
+        }
+        if (appointmentBillReceipt == null) {
+            appointmentBillReceipt = billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
+        }
+        return appointmentBillReceipt;
     }
 
     public void markAsChecked() {

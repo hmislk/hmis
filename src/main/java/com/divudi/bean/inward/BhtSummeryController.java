@@ -2519,6 +2519,16 @@ public class BhtSummeryController implements Serializable {
      * commitment bills recorded against {@code sourceBill}, so a new version
      * starts from the same split rather than forcing the cashier to re-allocate
      * from scratch.
+     * <p>
+     * {@code settle()} only persists a CC bill for allocations {@code > 0}, so a
+     * company that was allocated 0.00 in the source bill has no CC bill to read
+     * back here. Every company still on the encounter (from
+     * {@link #fillCreditCompaniesByPatient}) is therefore always given a row —
+     * defaulting to 0.00 when no CC bill is found — the same way
+     * {@link #populateCreditCompanyAllocations()} always shows every company on
+     * the normal settle flow. Without this, a zero-allocated company would
+     * silently disappear from every subsequent version and could never be
+     * re-allocated to.
      */
     private List<CreditCompanyAllocation> rebuildAllocationsFromSourceBill(Bill sourceBill) {
         List<CreditCompanyAllocation> allocations = new ArrayList<>();
@@ -2528,12 +2538,36 @@ public class BhtSummeryController implements Serializable {
         params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         List<Bill> ccBills = getBillFacade().findByJpql(jpql, params);
 
-        double allocatedSoFar = 0.0;
+        Map<Institution, Double> allocatedByCompany = new LinkedHashMap<>();
         if (ccBills != null) {
             for (Bill ccBill : ccBills) {
-                allocations.add(new CreditCompanyAllocation(ccBill.getCreditCompany(), ccBill.getNetTotal()));
-                allocatedSoFar += ccBill.getNetTotal();
+                // Sum rather than overwrite: normally one CC bill per institution, but
+                // duplicate EncounterCreditCompany registrations for the same institution
+                // are possible via older data paths (e.g. AdmissionController), which
+                // would otherwise silently drop all but the last bill's amount here.
+                allocatedByCompany.merge(ccBill.getCreditCompany(), ccBill.getNetTotal(), Double::sum);
             }
+        }
+
+        double allocatedSoFar = 0.0;
+        List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(sourceBill.getPatientEncounter());
+        if (eccs != null && !eccs.isEmpty()) {
+            eccs.sort(Comparator.comparing(
+                    ecc -> ecc.getInstitution() != null ? ecc.getInstitution().getName() : "",
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+            for (EncounterCreditCompany ecc : eccs) {
+                Double amount = allocatedByCompany.remove(ecc.getInstitution());
+                double allocated = amount != null ? amount : 0.0;
+                allocations.add(new CreditCompanyAllocation(ecc, allocated));
+                allocatedSoFar += allocated;
+            }
+        }
+        // Any CC bill for a company no longer in the encounter's active list (e.g.
+        // retired since the source bill was settled) still keeps its allocated
+        // amount visible instead of silently dropping it.
+        for (Map.Entry<Institution, Double> leftover : allocatedByCompany.entrySet()) {
+            allocations.add(new CreditCompanyAllocation(leftover.getKey(), leftover.getValue()));
+            allocatedSoFar += leftover.getValue();
         }
 
         double newLiveNetDue = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
@@ -4491,6 +4525,19 @@ public class BhtSummeryController implements Serializable {
 
     public void setProfesionallFee(List<BillFee> profesionallFee) {
         this.profesionallFee = profesionallFee;
+    }
+
+    /**
+     * Invalidates the cached Professional Fees tab list so the next call to
+     * {@link #getProfesionallFee()} re-queries the database. This bean is
+     * @SessionScoped and many pages navigate directly to inward_bill_intrim.xhtml
+     * without calling {@link #createTables()}, so professional fees added from
+     * elsewhere (e.g. the surgery professional fee bill) would otherwise never
+     * appear until some unrelated action happened to reset the cache. See
+     * issue #20146.
+     */
+    public void refreshProfesionallFee() {
+        profesionallFee = null;
     }
 
     public List<Bill> getPaymentBill() {
