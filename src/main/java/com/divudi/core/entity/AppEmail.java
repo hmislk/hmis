@@ -63,6 +63,9 @@ public class AppEmail implements Serializable {
     private boolean pending;
 
     private String receipientEmail;
+    private String ccEmails;
+    private String bccEmails;
+    private String attachmentNames;
     private String messageSubject;
     @Lob
     private String messageBody;
@@ -216,6 +219,30 @@ public class AppEmail implements Serializable {
 
     public void setReceipientEmail(String receipientEmail) {
         this.receipientEmail = receipientEmail;
+    }
+
+    public String getCcEmails() {
+        return ccEmails;
+    }
+
+    public void setCcEmails(String ccEmails) {
+        this.ccEmails = ccEmails;
+    }
+
+    public String getBccEmails() {
+        return bccEmails;
+    }
+
+    public void setBccEmails(String bccEmails) {
+        this.bccEmails = bccEmails;
+    }
+
+    public String getAttachmentNames() {
+        return attachmentNames;
+    }
+
+    public void setAttachmentNames(String attachmentNames) {
+        this.attachmentNames = attachmentNames;
     }
 
     public String getMessageSubject() {

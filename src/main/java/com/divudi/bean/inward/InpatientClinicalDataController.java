@@ -5068,6 +5068,24 @@ public class InpatientClinicalDataController implements Serializable {
         return "";
     }
 
+    /**
+     * Builds an EmailAttachment from a generated letter/diagnosis card
+     * (ClinicalFindingValue.getLobValue() is the rendered HTML content), for
+     * use by any compose flow that needs to attach this admission's saved
+     * documents. Returns null if the letter has no rendered content.
+     */
+    public com.divudi.core.data.EmailAttachment toEmailAttachment(ClinicalFindingValue letterOrCard) {
+        if (letterOrCard == null || letterOrCard.getLobValue() == null || letterOrCard.getLobValue().isEmpty()) {
+            return null;
+        }
+        String name = letterOrCard.getStringValue() != null && !letterOrCard.getStringValue().trim().isEmpty()
+                ? letterOrCard.getStringValue().trim() : "Document";
+        return new com.divudi.core.data.EmailAttachment(
+                name + ".html",
+                "text/html",
+                java.util.Base64.getEncoder().encodeToString(letterOrCard.getLobValue().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    }
+
     public void sendDocumentEmail() {
         if (encounterReferral == null || encounterReferral.getLobValue() == null) {
             JsfUtil.addErrorMessage("No document selected or document content is empty");

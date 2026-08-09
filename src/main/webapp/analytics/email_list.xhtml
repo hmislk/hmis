@@ -29,11 +29,39 @@
                                       <h:outputText value="To Date:" />
                                   </td>
                                   <td style="padding: 4px 0;">
-                                      <p:calendar 
+                                      <p:calendar
                                           navigator="true"
-                                          value="#{emailController.toDate}" 
+                                          value="#{emailController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                                       </p:calendar>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 4px 24px 4px 0; white-space: nowrap; vertical-align: middle; font-weight: 600;">
+                                      <h:outputText value="Patient / BHT No:" />
+                                  </td>
+                                  <td style="padding: 4px 0;">
+                                      <p:inputText value="#{emailController.patientSearchTerm}" placeholder="Patient name or BHT No" title="Filter by patient name or BHT number"/>
+                                  </td>
+                              </tr>
+                              <tr>
+                                  <td style="padding: 4px 24px 4px 0; white-space: nowrap; vertical-align: middle; font-weight: 600;">
+                                      <h:outputText value="Credit Company:" />
+                                  </td>
+                                  <td style="padding: 4px 0;">
+                                      <p:autoComplete
+                                          value="#{emailController.creditCompanyFilter}"
+                                          completeMethod="#{institutionController.completeIns}"
+                                          var="cc"
+                                          itemLabel="#{cc.name}"
+                                          itemValue="#{cc}"
+                                          forceSelection="true"
+                                          readonly="true"
+                                          class="w-100 form-control"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100"
+                                          title="Filter by credit company">
+                                      </p:autoComplete>
                                   </td>
                               </tr>
                           </table>
@@ -94,6 +122,18 @@
 
                             <p:column headerText="Success"  width="6em;">
                                 <h:outputText value="#{e.sentSuccessfully ? 'Yes' : 'No'}" />
+                            </p:column>
+
+                            <p:column headerText="Action" width="6em;">
+                                <p:commandButton
+                                    value="View"
+                                    icon="pi pi-eye"
+                                    styleClass="ui-button-secondary"
+                                    action="#{emailController.navigateToEmailDetail()}"
+                                    ajax="false"
+                                    title="View this email #{e.id}">
+                                    <f:setPropertyActionListener value="#{e}" target="#{emailController.selectedEmail}" />
+                                </p:commandButton>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

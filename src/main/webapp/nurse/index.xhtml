@@ -804,6 +804,17 @@
                                                                         target="#{inwardReportControllerBht.department}" />
                                                                 </p:commandButton>
                                                             </div>
+                                                            <div class="col-6">
+                                                                <p:commandButton
+                                                                    id="btnSentEmailsReportNurse"
+                                                                    value="Sent Emails Report"
+                                                                    ajax="false"
+                                                                    action="#{emailController.navigateToEmailList()}"
+                                                                    icon="fa fa-envelope"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                                                    class="w-100 ui-button-success">
+                                                                </p:commandButton>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </p:panel>
