@@ -187,10 +187,10 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
                 BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
         );
         List<BillTypeAtomic> depositTypes = Arrays.asList(
-                BillTypeAtomic.INWARD_DEPOSIT,
-                BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
-                BillTypeAtomic.INWARD_DEPOSIT_REFUND,
-                BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION
         );
 
         String encSql = "Select pe from PatientEncounter pe"

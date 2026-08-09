@@ -2563,10 +2563,10 @@ public class QuickBookReportController implements Serializable {
 
         // Inward utilization
         List<BillTypeAtomic> inwardBtas = new ArrayList<>();
-        inwardBtas.add(BillTypeAtomic.INWARD_DEPOSIT);
-        inwardBtas.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-        inwardBtas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
-        inwardBtas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+        inwardBtas.add(BillTypeAtomic.INWARD_PAYMENT);
+        inwardBtas.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+        inwardBtas.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+        inwardBtas.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
         Map<String, Object> inwardMap = new HashMap<>();
         String inwardJpql = utilizationJpqlBase;
         if (institution != null) { inwardJpql += " and b.department.institution = :ins"; inwardMap.put("ins", institution); }

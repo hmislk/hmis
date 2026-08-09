@@ -3010,10 +3010,10 @@ public class InwardReportController1 implements Serializable {
         );
 
         List<BillTypeAtomic> depositTypes = Arrays.asList(
-                BillTypeAtomic.INWARD_DEPOSIT,
-                BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
-                BillTypeAtomic.INWARD_DEPOSIT_REFUND,
-                BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION
         );
 
         // Non-discharged patients are always filtered by admission date regardless of dateBasis

@@ -4701,7 +4701,7 @@ public class InwardReportController implements Serializable {
                 + "GROUP BY b.patientEncounter.id";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("bta", BillTypeAtomic.INWARD_PAYMENT);
         params.put("ids", encounterIds);
 
         return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));

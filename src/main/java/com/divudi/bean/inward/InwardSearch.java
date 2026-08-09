@@ -336,7 +336,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         switch (bill.getBillTypeAtomic()) {
-            case INWARD_DEPOSIT:
+            case INWARD_PAYMENT:
                 inwardDepositCancelationPaymentMethods = new ArrayList<>();
                 getInwardDepositCancelationPaymentMethods().add(PaymentMethod.Cash);
                 
@@ -351,7 +351,7 @@ public class InwardSearch implements Serializable {
                 refillPaymentDetail();
                 
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
-            case INWARD_DEPOSIT_REFUND:
+            case INWARD_PAYMENT_REFUND:
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
@@ -1813,7 +1813,7 @@ public class InwardSearch implements Serializable {
 //                return;
 //            }
             RefundBill cb = createRefundCancelBill();
-            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
             //Copy & paste
             getBillFacade().create(cb);
             cancelBillItems(cb);
@@ -2175,7 +2175,7 @@ public class InwardSearch implements Serializable {
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 //        cb.setBillType(BillType.InwardProfessional);
-        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
         return cb;
     }
 
