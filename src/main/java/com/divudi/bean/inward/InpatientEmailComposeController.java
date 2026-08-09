@@ -56,6 +56,9 @@ import java.util.Map;
 @SessionScoped
 public class InpatientEmailComposeController implements Serializable {
 
+    private static final long MANUAL_ATTACHMENT_SIZE_LIMIT = 10240000;
+    private static final String MANUAL_ATTACHMENT_ALLOWED_TYPES_REGEX = "(?i)\\.(pdf|jpeg|jpg|png)$";
+
     @Inject
     private SessionController sessionController;
     @Inject
@@ -260,6 +263,11 @@ public class InpatientEmailComposeController implements Serializable {
             if (currentEncounterCreditCompany.getInstitution() != null && currentEncounterCreditCompany.getInstitution().getName() != null) {
                 creditCompany = currentEncounterCreditCompany.getInstitution().getName();
             }
+            if (currentEncounterCreditCompany.getInstitution() != null
+                    && currentEncounterCreditCompany.getInstitution().getAddress() != null
+                    && !currentEncounterCreditCompany.getInstitution().getAddress().trim().isEmpty()) {
+                creditCompanyAddress = currentEncounterCreditCompany.getInstitution().getAddress();
+            }
             if (currentEncounterCreditCompany.getPolicyNo() != null && !currentEncounterCreditCompany.getPolicyNo().isEmpty()) {
                 policyNumber = currentEncounterCreditCompany.getPolicyNo();
             }
@@ -342,6 +350,15 @@ public class InpatientEmailComposeController implements Serializable {
             }
         }
         if (manualAttachment != null && manualAttachment.getSize() > 0) {
+            String manualFileName = manualAttachment.getFileName();
+            if (manualFileName == null || !manualFileName.matches(".*" + MANUAL_ATTACHMENT_ALLOWED_TYPES_REGEX)) {
+                JsfUtil.addErrorMessage("Invalid attached file type. Only PDF, JPEG, JPG, and PNG are allowed.");
+                return "";
+            }
+            if (manualAttachment.getSize() > MANUAL_ATTACHMENT_SIZE_LIMIT) {
+                JsfUtil.addErrorMessage("Attached file size exceeds the maximum limit of 10 MB.");
+                return "";
+            }
             try (InputStream in = manualAttachment.getInputStream()) {
                 byte[] content = IOUtils.toByteArray(in);
                 EmailAttachment a = new EmailAttachment(
@@ -389,6 +406,8 @@ public class InpatientEmailComposeController implements Serializable {
                 return "";
             }
         } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(InpatientEmailComposeController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Failed to send inpatient composed email", ex);
             emailFacade.edit(email);
             JsfUtil.addErrorMessage("Sending Email Failed");
             return "";

@@ -12,7 +12,7 @@
                     <p:panel header="Sent Email Details">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h:outputLabel value="Sent Email Details" />
+                                <h:outputText value="Sent Email Details" />
                                 <div class="d-flex gap-2">
                                     <p:commandButton
                                         value="Back to Admission Sent Emails"
@@ -74,7 +74,7 @@
                             </table>
 
                             <p:panel header="Body" styleClass="mt-3">
-                                <h:outputText value="#{emailController.selectedEmail.messageBody}" escape="false" />
+                                <h:outputText value="#{emailController.selectedEmail.messageBody}" />
                             </p:panel>
                         </h:panelGroup>
 

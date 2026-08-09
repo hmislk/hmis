@@ -10,6 +10,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -63,8 +64,11 @@ public class AppEmail implements Serializable {
     private boolean pending;
 
     private String receipientEmail;
+    @Column(length = 2000)
     private String ccEmails;
+    @Column(length = 2000)
     private String bccEmails;
+    @Column(length = 2000)
     private String attachmentNames;
     private String messageSubject;
     @Lob

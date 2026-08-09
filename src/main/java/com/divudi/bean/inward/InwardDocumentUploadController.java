@@ -327,7 +327,7 @@ public class InwardDocumentUploadController implements Serializable {
         email.setInstitution(sessionController.getLoggedUser().getInstitution());
         email.setPatientEncounter(currentEncounter);
         email.setMessageType(com.divudi.core.data.MessageType.InpatientDocumentUpload);
-        email.setAttachment1(attachment.getFileName());
+        email.setAttachmentNames(attachment.getFileName());
         email.setSentSuccessfully(false);
         email.setPending(true);
         emailFacade.create(email);

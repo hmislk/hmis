@@ -19,6 +19,7 @@ public class EmailRecipientCandidate implements Serializable {
     }
 
     public EmailRecipientCandidate(String label, String email, String sourceType) {
+        this();
         this.label = label;
         this.email = email;
         this.sourceType = sourceType;

@@ -5080,6 +5080,7 @@ public class InpatientClinicalDataController implements Serializable {
         }
         String name = letterOrCard.getStringValue() != null && !letterOrCard.getStringValue().trim().isEmpty()
                 ? letterOrCard.getStringValue().trim() : "Document";
+        name = name.replaceAll("[^a-zA-Z0-9.-]", "_");
         return new com.divudi.core.data.EmailAttachment(
                 name + ".html",
                 "text/html",
