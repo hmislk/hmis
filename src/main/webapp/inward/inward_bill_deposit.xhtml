@@ -1,0 +1,552 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+
+
+    <ui:define name="content">
+        <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
+        <h:panelGroup rendered="#{inwardDepositController.current.patientEncounter eq null}">
+            <h:form>
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
+                        <p:outputLabel value="Patient Details" class="m-2"/>
+                    </f:facet>
+
+                    <div class="d-flex gap-4">
+                        <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
+
+                        <p:autoComplete
+                            widgetVar="aPt"
+                            id="acPt"
+                            forceSelection="true"
+                            value="#{inwardDepositController.current.patientEncounter}"
+                            completeMethod="#{admissionController.completePatientAll}"
+                            var="myItem"
+                            size="60"
+                            maxResults="20"
+                            itemValue="#{myItem}"
+                            itemLabel="#{myItem.bhtNo}"
+                            style="width: 550px;"
+                            class="mx-2">
+
+                            <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{myItem.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient" style="padding: 6px; width: 15em;">
+                                <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                            <p:column headerText="Status" style="padding: 6px; width: 12em;">
+                                <div class="d-flex justify-content-center">
+                                    <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                        #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                    </span>
+                                </div>
+                            </p:column>
+                            <p:column headerText="Payment" style="padding: 6px; width: 12em;">
+                                <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                            </p:column>
+                        </p:autoComplete>
+
+                        <p:commandButton
+                            value="select"
+                            ajax="false"
+                            action="#{inwardDepositController.bhtListener}" >
+                        </p:commandButton>
+
+                        <style>
+                            .discharged-badge {
+                                background-color: #f44336;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
+
+                            .not-discharged-badge {
+                                background-color: #2196F3;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
+                        </style>
+
+                    </div>
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{inwardDepositController.current.patientEncounter ne null}">
+            <h:form  >
+
+                <p:panel header="Inward Deposit Bill" rendered="#{!inwardDepositController.printPreview}">
+                    <f:facet name="header">
+                        <div class="row">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputLabel value="Inward Deposit Bill" />
+                                </div>
+                                <div class="mx-4" >
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning"
+                                        value="Lookup"
+                                        action="#{patientController.navigateToSearchPatients()}"
+                                        >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-user"
+                                        value="Patient Profile"
+                                        class="ui-button-warning  mx-2"
+                                        action="#{patientController.navigateToOpdPatientProfile()}">
+                                        <f:setPropertyActionListener
+                                            value="#{inwardDepositController.current.patientEncounter.patient}"
+                                            target="#{patientController.current}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fas fa-id-card"
+                                        value="Inpatient Dashboard"
+                                        class="ui-button-secondary "
+                                        action="#{inwardDepositController.navigateToInpationDashbord()}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <div class="row">
+                        <div class="col-5">
+                            <p:panel header="BHT">
+                                <h:panelGroup id="panSearch2">
+                                    <in:bhtDetail admission="#{inwardDepositController.current.patientEncounter}"/>
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                        <div class="col-7">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText class="mx-4" styleClass="fas fa-money-bill-wave" />
+                                    <p:outputLabel value="&nbsp; Deposit Details" />
+                                </f:facet>
+
+                                <div class="row mt-1">
+                                    <div class="col-md-2">
+                                        <h:outputLabel value="Payment Mode" class="mt-2"/>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            autoWidth="false"
+                                            id="cmbPs"
+                                            value="#{inwardDepositController.paymentMethod}">
+                                            <f:selectItem itemLabel="Select Payment Method."/>
+                                            <f:selectItems
+                                                value="#{enumController.paymentMethodsForIwardDeposit}"
+                                                var="payment"
+                                                itemLabel="#{payment.label}"
+                                                itemValue="#{payment}"/>
+                                            <p:ajax
+                                                process="cmbPs"
+                                                update="paymentDetails notFinalized finalized"
+                                                event="change"
+                                                listener="#{inwardDepositController.updatePaymentData()}">
+                                            </p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup rendered="#{!inwardDepositController.current.patientEncounter.paymentFinalized}" id="notFinalized">
+
+                                    <div class="border border-warning rounded p-2 mb-3 shadow-sm mt-3" style="background-color:#fffdf5;">
+                                        <div class="d-flex align-items-center justify-content-center gap-2 py-2 px-3 mb-2 rounded text-white"
+                                             style="background-color:#fd7e14;">
+                                            <i class="fa fa-hourglass-half fa-lg"/>
+                                            <span class="fw-bold text-uppercase fs-6" style="letter-spacing:0.5px;">
+                                                Payment Details are not Finalized
+                                            </span>
+                                        </div>
+
+
+                                        <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                                            <span class="fw-bold text-uppercase small text-warning">
+                                                <i class="fa fa-receipt me-1"/> Last Processing Summary
+                                            </span>
+                                            <h:panelGroup rendered="#{inwardDepositController.current.patientEncounter.lastProcessAt != null}">
+                                                <p:tag value="Snapshot - Not Live" icon="fa fa-clock-rotate-left" severity="warning" class="small"/>
+                                            </h:panelGroup>
+                                        </div>
+
+                                        <h:panelGroup layout="block" rendered="#{inwardDepositController.current.patientEncounter.lastProcessAt != null}">
+                                            <div class="d-flex align-items-center py-2 px-3 mb-2 rounded shadow-sm"
+                                                 role="alert"
+                                                 style="border-left:8px solid #dc3545; background-color:#fdecea; color:#842029;">
+                                                <i class="fa fa-triangle-exclamation fa-lg me-2 text-danger"/>
+                                                <span class="fw-semibold">
+                                                    Totals are <span class="fw-bold text-danger text-decoration-underline">NOT current</span> &#8212; snapshot only. Re-process for live values.
+                                                </span>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" rendered="#{inwardDepositController.current.patientEncounter.lastProcessAt == null}">
+                                            <div class="text-center text-muted small py-2">
+                                                <i class="fa fa-circle-info me-1"/> Not processed yet
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" rendered="#{inwardDepositController.current.patientEncounter.lastProcessAt != null}">
+                                            <div class="d-flex flex-wrap justify-content-between align-items-center small mb-2 p-2 rounded border border-warning" style="background-color:#fff3cd;">
+                                                <span class="text-muted">
+                                                    <i class="fa fa-user me-1"/>
+                                                    By <span class="fw-semibold text-dark">#{inwardDepositController.current.patientEncounter.lastProcessBy.webUserPerson.nameWithTitle}</span>
+                                                </span>
+                                                <span class="d-inline-flex align-items-center fw-bold px-2 py-1 rounded text-white" style="background-color:#fd7e14;">
+                                                    <i class="fa fa-clock-rotate-left me-2"/>
+                                                    Last Processed:&nbsp;
+                                                    <h:outputText value="#{inwardDepositController.current.patientEncounter.lastProcessAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+
+                                            <div class="fst-italic" style="opacity:0.85;">
+                                                <div class="d-flex justify-content-between border-bottom py-1">
+                                                    <span class="text-muted">Total</span>
+                                                    <span class="fw-semibold">
+                                                        <h:outputText value="#{inwardDepositController.current.patientEncounter.totalAtFinalProcessing}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                                <div class="d-flex justify-content-between border-bottom py-1">
+                                                    <span class="text-muted">Discount</span>
+                                                    <span class="fw-semibold text-success">
+                                                        <h:outputText value="#{inwardDepositController.current.patientEncounter.discountAvailableAtFinalProcessing}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                                <div class="d-flex justify-content-between border-bottom py-1">
+                                                    <span class="text-muted">Patient Paid</span>
+                                                    <span class="fw-semibold">
+                                                        <h:outputText value="#{inwardDepositController.current.patientEncounter.totalPatientPaidAtFinalProcessing}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                                <div class="d-flex justify-content-between border-bottom py-1">
+                                                    <span class="text-muted">Credit Company Paid</span>
+                                                    <span class="fw-semibold">
+                                                        <h:outputText value="#{inwardDepositController.current.patientEncounter.totalCompanyPaidAtFinalProcessing}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-center mt-2 p-2 rounded border #{inwardDepositController.current.patientEncounter.amountDueAtFinalProcessing gt 0 ? 'border-danger bg-danger-subtle' : 'border-success bg-success-subtle'}">
+                                                <span class="fw-bold text-uppercase">
+                                                    <i class="fa fa-money-bill-wave me-1"/> Due Amount
+                                                </span>
+                                                <span class="fw-bold fs-5 #{inwardDepositController.current.patientEncounter.amountDueAtFinalProcessing gt 0 ? 'text-danger' : 'text-success'}">
+                                                    <h:outputText value="#{inwardDepositController.current.patientEncounter.amountDueAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{inwardDepositController.current.patientEncounter.paymentFinalized}"  id="finalized">
+                                    <div class="border border-success rounded p-2 mb-3 shadow-sm mt-3" style="background-color:#f5fff7;">
+                                        <div class="d-flex align-items-center justify-content-center gap-2 py-2 px-3 mb-2 rounded text-white"
+                                             style="background-color:#198754;">
+                                            <i class="fa fa-circle-check fa-lg"/>
+                                            <span class="fw-bold text-uppercase fs-6" style="letter-spacing:0.5px;">
+                                                Payment Details Finalized
+                                            </span>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center p-2 rounded border #{inwardDepositController.due gt 0 ? 'border-danger bg-danger-subtle' : 'border-success bg-success-subtle'}">
+                                            <span class="fw-bold text-uppercase">
+                                                <i class="fa fa-money-bill-wave me-1"/> Due
+                                            </span>
+                                            <span class="fw-bold fs-5 #{inwardDepositController.due gt 0 ? 'text-danger' : 'text-success'}">
+                                                <h:outputText value="#{inwardDepositController.due}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+
+                                <div class="row ">
+                                    <div class="col-md-8">
+                                        <h:panelGroup id="paymentDetails">
+
+                                            <h:panelGroup rendered="#{inwardDepositController.paymentMethod eq 'Cash'}">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <h:outputLabel value="Paying Amount"  class="mt-2"/>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <p:inputText class=" w-100" autocomplete="off" value="#{inwardDepositController.current.total}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardDepositController.paymentMethod ne 'Cash'}">
+                                                <div class="row">
+                                                    <div class="col-md-3"></div>
+                                                    <div class="col-md-9">
+                                                        <h:panelGroup
+                                                            id="creditCard"
+                                                            rendered="#{inwardDepositController.paymentMethod eq 'Card'}">
+                                                            <pa:creditCard paymentMethodData="#{inwardDepositController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="cheque"
+                                                            rendered="#{inwardDepositController.paymentMethod eq 'Cheque'}">
+                                                            <pa:cheque paymentMethodData="#{inwardDepositController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="slip"
+                                                            rendered="#{inwardDepositController.paymentMethod eq 'Slip'}">
+                                                            <pa:slip paymentMethodData="#{inwardDepositController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="eWallet"
+                                                            rendered="#{inwardDepositController.paymentMethod eq 'ewallet'}" >
+                                                            <pa:ewallet paymentMethodData="#{inwardDepositController.paymentMethodData}" />
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="patientDeposit"
+                                                            rendered="#{inwardDepositController.paymentMethod eq 'PatientDeposit'}" >
+                                                            <pa:patient_deposit_with_paid_value paymentMethodData="#{inwardDepositController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            id="onlinePayment"
+                                                            rendered="#{inwardDepositController.paymentMethod eq 'OnlineSettlement'}" >
+                                                            <pa:online_settlement paymentMethodData="#{inwardDepositController.paymentMethodData}"/>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Get Payment Type Instead of Comment',false)}">
+                                    <div class="row my-1 mt-3">
+                                        <div class="col-md-2">
+                                            <h:outputLabel value="Comments" class="mt-2"/>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:inputText class="w-100"  value="#{inwardDepositController.comment}" id="comment"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Get Payment Type Instead of Comment',false)}">
+                                    <div class="row my-1">
+                                        <div class="col-md-2">
+                                            <h:outputLabel value="Payment Type" class="mt-2"/>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:selectOneMenu
+                                                id="commentsMenu"
+                                                value="#{inwardDepositController.comment}"
+                                                editable="false"
+                                                filter="true"
+                                                placeholder="Select a Payment Type"
+                                                filterMatchMode="contains"
+                                                class="w-100">
+                                                <f:selectItem itemLabel="Select Payment Type" itemValue="" noSelectionOption="true"/>
+                                                <f:selectItems
+                                                    value="#{configOptionApplicationController.getListOfCustomOptions('Inward Deposit Payment Types')}"
+                                                    var="option"
+                                                    itemLabel="#{option}"
+                                                    itemValue="#{option}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="d-flex justify-content-end gap-3">
+                                    <p:commandButton
+                                        class="ui-button-success"
+                                        icon="fas fa-money-bill"
+                                        id="btnPay"
+                                        value="Pay"
+                                        style="width:250px;"
+                                        ajax="false"
+                                        action="#{inwardDepositController.pay()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-danger mx-2"
+                                        icon="fas fa-ban"
+                                        value="Clear"
+                                        ajax="false"
+                                        style="width:250px;"
+                                        action="#{inwardDepositController.makeNull}" >
+                                    </p:commandButton>
+
+                                </div>
+
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+                <p:panel rendered="#{inwardDepositController.printPreview}">
+                    <f:facet name="header">
+                        <h:outputLabel value="Inpatient Deposit Bill" class="mt-2"/>
+                        <div class="d-flex gap-2" style="float: right;">
+                            <p:commandButton
+                                value="New Deposit"
+                                icon="fa-solid fa-plus"
+                                class="ui-button-success"
+                                ajax="false"
+                                action="#{inwardDepositController.makeNull}" >
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary"
+                                type="button"
+                                onclick="PF('inwardPaymentConfigDialog').show();"/>
+                            <p:commandButton
+                                ajax="false"
+                                icon="fas fa-file-invoice-dollar"
+                                value="Interim Bill"
+                                class="ui-button-info mx-1"
+                                action="#{bhtSummeryController.navigateToIntrimBillRefresh()}"
+                                />
+                            <p:commandButton
+                                ajax="false"
+                                icon="fas fa-id-card"
+                                value="Inpatient Dashboard"
+                                class="ui-button-secondary "
+                                action="#{inwardDepositController.navigateToInpationDashbord()}"
+                                />
+                        </div>
+                    </f:facet>
+
+                    <div class="row">
+                        <h:panelGroup id="gpBillPreview">
+
+                            <div class="d-flex justify-content-center">
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
+                                    <bill:FiveFivePaymentBill bill="#{inwardDepositController.current}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
+                                    <prints:five_five_custom_3_inward_payments bill="#{inwardDepositController.current}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
+                                    <bill:A4PaperPaymentBill bill="#{inwardDepositController.current}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                    <bill:posPaperPaymentBill bill="#{inwardDepositController.current}"/>
+                                </h:panelGroup>
+
+                            </div>
+
+                        </h:panelGroup>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+        <p:dialog id="inwardPaymentConfigDialog"
+                  header="Inward Payment Bill Printer Configuration"
+                  widgetVar="inwardPaymentConfigDialog"
+                  modal="true"
+                  width="560"
+                  resizable="false"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
+            <h:form id="inwardPaymentConfigForm">
+                <div class="card config-section">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"/>
+                        <h:outputText value="Paper Format Settings"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                            <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                            <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
+                            <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                            <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <p:commandButton value="Apply &amp; Close"
+                                     icon="fas fa-save"
+                                     class="ui-button-success"
+                                     ajax="false"
+                                     action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                    <p:commandButton value="Cancel"
+                                     icon="fas fa-times"
+                                     class="ui-button-secondary"
+                                     type="button"
+                                     onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
+                </div>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
