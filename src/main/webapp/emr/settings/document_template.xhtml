@@ -51,7 +51,21 @@
                                                      title="Select the document template type">
                                         <f:selectItem itemLabel="-- Select Type --" itemValue=""/>
                                         <f:selectItems value="#{documentTemplateController.documentTemplateTypes}"/>
+                                        <p:ajax event="change" update="subjectPanel"/>
                                     </p:selectOneMenu>
+                                </h:panelGroup>
+
+                                <h:panelGroup layout="block" id="subjectPanel" styleClass="mb-3">
+                                    <h:panelGroup rendered="#{documentTemplateController.current.type == 'InpatientEmail'}">
+                                        <p:outputLabel for="subject" value="Email Subject:" styleClass="form-label fw-bold"/>
+                                        <p:inputText id="subject"
+                                                     value="#{documentTemplateController.current.subject}"
+                                                     styleClass="form-control mt-1"
+                                                     placeholder="Enter email subject"
+                                                     required="#{documentTemplateController.current.type == 'InpatientEmail'}"
+                                                     requiredMessage="Email subject is required for email templates"
+                                                     title="Subject line used when this template is selected on the Send Email page"/>
+                                    </h:panelGroup>
                                 </h:panelGroup>
 
                                 <h:panelGroup layout="block" styleClass="mb-3">

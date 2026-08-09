@@ -1230,6 +1230,26 @@
                                         class="w-100">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Send Email"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardSendEmail')}"
+                                        action="#{inpatientEmailComposeController.startComposeForAdmission(admissionController.current)}"
+                                        icon="fa fa-envelope"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Sent Emails"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardSendEmail')}"
+                                        action="#{emailController.navigateToAdmissionSentEmails(admissionController.current)}"
+                                        icon="fa fa-envelope-open-text"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
 
