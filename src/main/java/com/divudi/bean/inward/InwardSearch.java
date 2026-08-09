@@ -136,6 +136,8 @@ public class InwardSearch implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     InwardPaymentController inwardPaymentController;
+    @Inject
+    InwardDepositController inwardDepositController;
 
     /**
      * Properties
@@ -1111,6 +1113,17 @@ public class InwardSearch implements Serializable {
         } else {
             return "/inward/inward_bill_payment?faces-redirect=true";
         }
+    }
+
+    public String navigateMakeDeposit() {
+        PatientEncounter pe = inwardDepositController.getCurrent().getPatientEncounter();
+        inwardDepositController.makeNull();
+        inwardDepositController.getCurrent().setPatientEncounter(pe);
+        inwardDepositController.setPatient(pe.getPatient());
+
+        inwardDepositController.paymentListener();
+
+        return inwardDepositController.navigateToInwardDeposit();
     }
 
     public boolean calculateRefundTotal() {
