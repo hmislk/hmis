@@ -238,7 +238,6 @@ public class BhtSummeryController implements Serializable {
     private boolean showCustomBill2Format;
     private boolean showCustomBill3Format;
     private boolean showCustomBill4Format;
-    private boolean customBillFormatVisibilityLoaded;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -484,19 +483,6 @@ public class BhtSummeryController implements Serializable {
         showCustomBill2Format = configOptionController.getBooleanValueByKey("Inward Final Bill - Show Custom Bill 2 Format", true);
         showCustomBill3Format = configOptionController.getBooleanValueByKey("Inward Final Bill - Show Custom Bill 3 Format", false);
         showCustomBill4Format = configOptionController.getBooleanValueByKey("Inward Final Bill - Show Custom Bill 4 Format", false);
-        customBillFormatVisibilityLoaded = true;
-    }
-
-    // The Custom Bills tab row `rendered` attributes read the isShowCustomBillNFormat()
-    // getters on initial page render, before the Settings dialog's "open" ajax event
-    // (which normally triggers loadCustomBillFormatVisibility()) has ever fired. Without
-    // this lazy load, the @SessionScoped fields sit at Java's default `false` and no
-    // format row renders at all on first view. Loaded once per session; the Settings
-    // dialog's explicit loadCustomBillFormatVisibility() calls simply refresh it.
-    private void ensureCustomBillFormatVisibilityLoaded() {
-        if (!customBillFormatVisibilityLoaded) {
-            loadCustomBillFormatVisibility();
-        }
     }
 
     private void persistCustomBillFormatVisibility() {
@@ -656,7 +642,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public boolean isShowCustomBill2Format() {
-        ensureCustomBillFormatVisibilityLoaded();
         return showCustomBill2Format;
     }
 
@@ -665,7 +650,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public boolean isShowCustomBill3Format() {
-        ensureCustomBillFormatVisibilityLoaded();
         return showCustomBill3Format;
     }
 
@@ -674,7 +658,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public boolean isShowCustomBill4Format() {
-        ensureCustomBillFormatVisibilityLoaded();
         return showCustomBill4Format;
     }
 

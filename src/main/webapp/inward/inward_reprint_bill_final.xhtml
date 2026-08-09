@@ -610,7 +610,7 @@
                                             type="button"
                                             onclick="PF('custom2ConfigDialog').show();" />
                                     </div>
-                                    <h:panelGroup layout="block" rendered="#{bhtSummeryController.showCustomBill2Format}">
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKey('Inward Final Bill - Show Custom Bill 2 Format', true)}">
                                     <div class="row">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -661,7 +661,7 @@
                                     </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup layout="block" rendered="#{bhtSummeryController.showCustomBill3Format}">
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKey('Inward Final Bill - Show Custom Bill 3 Format', false)}">
                                     <div class="row mt-3">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -712,7 +712,7 @@
                                     </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup layout="block" rendered="#{bhtSummeryController.showCustomBill4Format}">
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKey('Inward Final Bill - Show Custom Bill 4 Format', false)}">
                                     <div class="row mt-3">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -787,7 +787,7 @@
                                                     <h:outputLabel for="showCustomBill4Format" value="Show &quot;Custom Bill 3 (Letterhead)&quot; format" class="ms-2" />
                                                 </div>
                                                 <hr/>
-                                                <h:panelGroup rendered="#{bhtSummeryController.showCustomBill2Format}">
+                                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Final Bill - Show Custom Bill 2 Format', true)}">
                                                 <div class="mb-3">
                                                     <h:selectBooleanCheckbox id="custom2ShowAddress" value="#{bhtSummeryController.custom2ShowAddress}" />
                                                     <h:outputLabel for="custom2ShowAddress" value="Show Patient Address" class="ms-2" />
@@ -810,7 +810,7 @@
                                                 </div>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{bhtSummeryController.showCustomBill4Format}">
+                                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Final Bill - Show Custom Bill 4 Format', false)}">
                                                 <hr/>
                                                 <h6>Custom Bill 3 (Letterhead) Settings</h6>
                                                 <div class="mb-3">
