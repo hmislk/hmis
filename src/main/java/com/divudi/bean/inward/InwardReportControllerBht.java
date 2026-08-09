@@ -44,12 +44,19 @@ import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
 import com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO;
 import com.divudi.core.data.dto.InpatientServiceIssueDTO;
 import com.divudi.core.data.dto.BillListReportDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionGroupDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentFeeRowDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentReportRowDTO;
 import com.divudi.core.entity.Service;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -133,6 +140,9 @@ public class InwardReportControllerBht implements Serializable {
     private Date toDate;
     private String bhtNoFilter;
     private String patientNameFilter;
+
+    // Issue #22800 - admission-grouped inpatient professional payment report.
+    private List<InwardProfessionalPaymentAdmissionGroupDTO> professionalPaymentReportGroups;
 
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
@@ -803,6 +813,208 @@ public class InwardReportControllerBht implements Serializable {
 
         List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
         return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #22800 - department-wide, date-filtered Inpatient Professional
+    // Payment Report, grouped by admission with one row per doctor+speciality.
+    public String navigateToInwardProfessionalPaymentReport() {
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("No department");
+            return null;
+        }
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        professionalPaymentReportGroups = new ArrayList<>();
+        try {
+            professionalPaymentReportGroups = fetchInwardProfessionalPaymentReportGroups();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading inpatient professional payment report", e);
+            JsfUtil.addErrorMessage("Error loading professional payment report data");
+            return null;
+        }
+        return "/inward/reports/inward_professional_payment_report_dto?faces-redirect=true";
+    }
+
+    private List<InwardProfessionalPaymentAdmissionGroupDTO> fetchInwardProfessionalPaymentReportGroups() {
+        List<InwardProfessionalPaymentAdmissionDTO> admissions = fetchProfessionalPaymentAdmissionsForDepartment();
+        List<InwardProfessionalPaymentFeeRowDTO> feeRows = fetchProfessionalFeeRowsForDepartment();
+
+        Map<Long, List<InwardProfessionalPaymentFeeRowDTO>> feeRowsByEncounter = feeRows.stream()
+                .collect(Collectors.groupingBy(InwardProfessionalPaymentFeeRowDTO::getPatientEncounterId, LinkedHashMap::new, Collectors.toList()));
+
+        List<Long> encounterIds = admissions.stream()
+                .map(InwardProfessionalPaymentAdmissionDTO::getPatientEncounterId)
+                .collect(Collectors.toList());
+        Map<Long, String> firstFinalBillNoByEncounter = fetchFirstFinalBillNumbersByEncounterIds(encounterIds);
+
+        List<InwardProfessionalPaymentAdmissionGroupDTO> groups = new ArrayList<>();
+        for (InwardProfessionalPaymentAdmissionDTO admission : admissions) {
+            InwardProfessionalPaymentAdmissionGroupDTO group = new InwardProfessionalPaymentAdmissionGroupDTO();
+            group.setBhtNo(admission.getBhtNo());
+            group.setDateOfAdmission(admission.getDateOfAdmission());
+            group.setDateOfDischarge(admission.getDateOfDischarge());
+            group.setConfirmedFinalBillNo(admission.getConfirmedFinalBillDeptId());
+            group.setFirstFinalBillNo(firstFinalBillNoByEncounter.get(admission.getPatientEncounterId()));
+
+            List<InwardProfessionalPaymentFeeRowDTO> rowsForAdmission
+                    = feeRowsByEncounter.getOrDefault(admission.getPatientEncounterId(), new ArrayList<>());
+            group.setDetailRows(groupIntoDetailRows(rowsForAdmission));
+            groups.add(group);
+        }
+        return groups;
+    }
+
+    private List<InwardProfessionalPaymentAdmissionDTO> fetchProfessionalPaymentAdmissionsForDepartment() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO("
+                + "pe.id, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "pe.dateOfAdmission, "
+                + "pe.dateOfDischarge, "
+                + "COALESCE(fb.deptId, '')) "
+                + "FROM PatientEncounter pe "
+                + "LEFT JOIN pe.finalBill fb "
+                + "WHERE pe.department = :department "
+                + "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", department);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (bhtNoFilter != null && !bhtNoFilter.trim().isEmpty()) {
+            jpql += "AND pe.bhtNo LIKE :bhtNo ";
+            params.put("bhtNo", "%" + bhtNoFilter.trim() + "%");
+        }
+
+        jpql += "ORDER BY pe.dateOfAdmission, pe.id";
+
+        List<InwardProfessionalPaymentAdmissionDTO> result = (List<InwardProfessionalPaymentAdmissionDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    private List<InwardProfessionalPaymentFeeRowDTO> fetchProfessionalFeeRowsForDepartment() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentFeeRowDTO("
+                + "pe.id, "
+                + "st.id, "
+                + "COALESCE(per.name, ''), "
+                + "sp.id, "
+                + "COALESCE(sp.name, ''), "
+                + "bf.feeValue, "
+                + "bf.paidValue, "
+                + "COALESCE(rbfBill.deptId, ''), "
+                + "rbfBill.createdAt) "
+                + "FROM BillFee bf "
+                + "JOIN bf.bill b "
+                + "JOIN b.patientEncounter pe "
+                + "LEFT JOIN bf.staff st "
+                + "LEFT JOIN st.person per "
+                + "LEFT JOIN bf.speciality sp "
+                + "LEFT JOIN bf.referenceBillFee rbf "
+                + "LEFT JOIN rbf.bill rbfBill "
+                + "WHERE bf.retired = false "
+                + "AND b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :billType "
+                + "AND pe.department = :department "
+                + "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.InwardProfessional);
+        params.put("department", department);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (bhtNoFilter != null && !bhtNoFilter.trim().isEmpty()) {
+            jpql += "AND pe.bhtNo LIKE :bhtNo ";
+            params.put("bhtNo", "%" + bhtNoFilter.trim() + "%");
+        }
+
+        jpql += "ORDER BY pe.id, st.id, sp.id";
+
+        List<InwardProfessionalPaymentFeeRowDTO> result = (List<InwardProfessionalPaymentFeeRowDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // billTypeAtomic (not just billType) excludes cancellation-copy final bill
+    // records, matching InwardSearch.fetchFinalBillVersions(). Batched across
+    // all admissions on the report to avoid one query per admission.
+    private Map<Long, String> fetchFirstFinalBillNumbersByEncounterIds(List<Long> encounterIds) {
+        Map<Long, String> result = new HashMap<>();
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return result;
+        }
+        String jpql = "SELECT b.patientEncounter.id, b.deptId, b.finalBillVersionSerial "
+                + "FROM Bill b "
+                + "WHERE b.patientEncounter.id IN :encounterIds "
+                + "AND b.billType = :billType "
+                + "AND b.billTypeAtomic = :atomic "
+                + "AND b.retired = false "
+                + "ORDER BY b.patientEncounter.id, b.finalBillVersionSerial ASC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("encounterIds", encounterIds);
+        params.put("billType", BillType.InwardFinalBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
+
+        List<Object[]> rows = billFacade.findAggregates(jpql, params, TemporalType.TIMESTAMP);
+        if (rows == null) {
+            return result;
+        }
+        for (Object[] row : rows) {
+            Long encounterId = (Long) row[0];
+            // ORDER BY finalBillVersionSerial ASC - first row seen per encounter wins.
+            if (!result.containsKey(encounterId)) {
+                result.put(encounterId, (String) row[1]);
+            }
+        }
+        return result;
+    }
+
+    // Groups charge-side BillFee rows by (staff, speciality) within one
+    // admission, summing fee/paid values and collecting the distinct payment
+    // bills that settled each doctor+speciality into comma-joined strings.
+    private List<InwardProfessionalPaymentReportRowDTO> groupIntoDetailRows(List<InwardProfessionalPaymentFeeRowDTO> rows) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        Map<String, InwardProfessionalPaymentReportRowDTO> rowsByStaffAndSpeciality = new LinkedHashMap<>();
+        Map<String, LinkedHashSet<String>> billNumbersByKey = new LinkedHashMap<>();
+        Map<String, LinkedHashSet<String>> billDatesByKey = new LinkedHashMap<>();
+
+        for (InwardProfessionalPaymentFeeRowDTO fee : rows) {
+            String key = fee.getStaffId() + "_" + fee.getSpecialityId();
+            InwardProfessionalPaymentReportRowDTO row = rowsByStaffAndSpeciality.get(key);
+            if (row == null) {
+                row = new InwardProfessionalPaymentReportRowDTO();
+                row.setConsultantName(fee.getStaffName());
+                row.setSpecialityName(fee.getSpecialityName());
+                rowsByStaffAndSpeciality.put(key, row);
+                billNumbersByKey.put(key, new LinkedHashSet<>());
+                billDatesByKey.put(key, new LinkedHashSet<>());
+            }
+            row.setSumAddedFee(row.getSumAddedFee() + (fee.getFeeValue() != null ? fee.getFeeValue() : 0.0));
+            row.setSumPaidFee(row.getSumPaidFee() + (fee.getPaidValue() != null ? fee.getPaidValue() : 0.0));
+
+            if (fee.getReferenceBillDeptId() != null && !fee.getReferenceBillDeptId().isEmpty()) {
+                billNumbersByKey.get(key).add(fee.getReferenceBillDeptId());
+            }
+            if (fee.getReferenceBillCreatedAt() != null) {
+                billDatesByKey.get(key).add(dateFormat.format(fee.getReferenceBillCreatedAt()));
+            }
+        }
+
+        List<InwardProfessionalPaymentReportRowDTO> result = new ArrayList<>();
+        for (Map.Entry<String, InwardProfessionalPaymentReportRowDTO> entry : rowsByStaffAndSpeciality.entrySet()) {
+            InwardProfessionalPaymentReportRowDTO row = entry.getValue();
+            row.setPaymentBillNumbers(String.join(", ", billNumbersByKey.get(entry.getKey())));
+            row.setPaymentDates(String.join(", ", billDatesByKey.get(entry.getKey())));
+            result.add(row);
+        }
+        return result;
     }
 
     // View button on the list row: load the bill into InwardSearch and open the
@@ -2514,6 +2726,14 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPaymentBillDtosForDepartmentNetTotal(double paymentBillDtosForDepartmentNetTotal) {
         this.paymentBillDtosForDepartmentNetTotal = paymentBillDtosForDepartmentNetTotal;
+    }
+
+    public List<InwardProfessionalPaymentAdmissionGroupDTO> getProfessionalPaymentReportGroups() {
+        return professionalPaymentReportGroups;
+    }
+
+    public void setProfessionalPaymentReportGroups(List<InwardProfessionalPaymentAdmissionGroupDTO> professionalPaymentReportGroups) {
+        this.professionalPaymentReportGroups = professionalPaymentReportGroups;
     }
 
     public Date getFromDate() {
