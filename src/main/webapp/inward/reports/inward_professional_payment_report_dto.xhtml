@@ -162,12 +162,12 @@
                                                                 <td>#{admissionRow.bhtNo}</td>
                                                                 <td>
                                                                     <h:outputText value="#{admissionRow.dateOfAdmission}">
-                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                     </h:outputText>
                                                                 </td>
                                                                 <td>
                                                                     <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
-                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                     </h:outputText>
                                                                 </td>
                                                                 <td>#{admissionRow.firstFinalBillNo}</td>
@@ -180,12 +180,12 @@
                                                                     <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">#{admissionRow.bhtNo}</td>
                                                                     <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">
                                                                         <h:outputText value="#{admissionRow.dateOfAdmission}">
-                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                         </h:outputText>
                                                                     </td>
                                                                     <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">
                                                                         <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
-                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                         </h:outputText>
                                                                     </td>
                                                                     <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">#{admissionRow.firstFinalBillNo}</td>
@@ -271,12 +271,12 @@
                                                                 <td>#{admissionRow.bhtNo}</td>
                                                                 <td>
                                                                     <h:outputText value="#{admissionRow.dateOfAdmission}">
-                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                     </h:outputText>
                                                                 </td>
                                                                 <td>
                                                                     <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
-                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                     </h:outputText>
                                                                 </td>
                                                                 <td>#{admissionRow.firstFinalBillNo}</td>
@@ -290,12 +290,12 @@
                                                                         <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">#{admissionRow.bhtNo}</td>
                                                                         <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">
                                                                             <h:outputText value="#{admissionRow.dateOfAdmission}">
-                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                             </h:outputText>
                                                                         </td>
                                                                         <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">
                                                                             <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
-                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                                             </h:outputText>
                                                                         </td>
                                                                         <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">#{admissionRow.firstFinalBillNo}</td>
@@ -306,7 +306,7 @@
                                                                     </ui:fragment>
                                                                     <td>
                                                                         <h:outputText value="#{detail.addedFeeDates[i]}" rendered="#{i lt detail.addedFeeValues.size()}">
-                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" timeZone="Asia/Colombo" />
                                                                         </h:outputText>
                                                                     </td>
                                                                     <td class="text-end">
@@ -316,7 +316,7 @@
                                                                     </td>
                                                                     <td>
                                                                         <h:outputText value="#{detail.paidFeeDates[i]}" rendered="#{i lt detail.paidFeeValues.size()}">
-                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" timeZone="Asia/Colombo" />
                                                                         </h:outputText>
                                                                     </td>
                                                                     <td>
