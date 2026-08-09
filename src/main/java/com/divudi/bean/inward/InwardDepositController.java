@@ -146,9 +146,13 @@ public class InwardDepositController implements Serializable, ControllerWithMult
      * Navigate to the inward deposit collection page, requiring an active
      * shift. If the logged user has no open shift start fund bill, show an
      * error and send them to the cashier index to start a shift first.
+     * Callers are responsible for calling makeNull() and setting up
+     * `current` (e.g. patientEncounter) before delegating to this method;
+     * this method must not reset `current` itself, or state set up by the
+     * caller (such as InwardSearch.navigateMakeDeposit()) would be lost
+     * before the deposit page ever reads it.
      */
     public String navigateToInwardDeposit() {
-        makeNull();
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
