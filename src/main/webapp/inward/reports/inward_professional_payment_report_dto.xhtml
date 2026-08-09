@@ -37,8 +37,10 @@
                                 <p:selectOneMenu id="searchMode" value="#{inwardReportControllerBht.professionalPaymentSearchMode}" class="w-100">
                                     <f:selectItem itemLabel="Date Range" itemValue="dateRange"/>
                                     <f:selectItem itemLabel="BHT Range" itemValue="bhtRange"/>
+                                    <p:ajax update="rangeInputs"/>
                                 </p:selectOneMenu>
 
+                                <h:panelGroup id="rangeInputs" layout="block">
                                 <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'dateRange'}" layout="block">
                                     <h:outputLabel value="From Date" for="fromDate" />
                                     <p:calendar
@@ -88,6 +90,7 @@
                                         class="w-100"
                                         inputStyleClass="w-100">
                                     </p:autoComplete>
+                                </h:panelGroup>
                                 </h:panelGroup>
 
                                 <h:panelGroup layout="block" styleClass="mt-2">

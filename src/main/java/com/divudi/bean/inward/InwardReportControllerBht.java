@@ -860,6 +860,16 @@ public class InwardReportControllerBht implements Serializable {
         if (toDate == null) {
             toDate = new Date();
         }
+        // Issue #22805 review - without this guard, a BHT Range search left
+        // with either endpoint unselected silently falls back to the date
+        // range query below (dead giveaway: the filter panel still says "BHT
+        // Range" but the results are date-range results).
+        if ("bhtRange".equals(professionalPaymentSearchMode)
+                && (admissionFromForProfessionalPaymentReport == null
+                || admissionToForProfessionalPaymentReport == null)) {
+            JsfUtil.addErrorMessage("Select both From BHT and To BHT for a BHT Range search");
+            return null;
+        }
         professionalPaymentReportGroups = new ArrayList<>();
         try {
             professionalPaymentReportGroups = fetchInwardProfessionalPaymentReportGroups();
@@ -964,12 +974,21 @@ public class InwardReportControllerBht implements Serializable {
                 sheet.autoSizeColumn(c);
             }
 
+            // Issue #22805 review - serialize into memory first so a POI
+            // failure can't leave a truncated file on a half-committed
+            // response (matches the PDF exporters' existing pattern below).
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+
             String filename = "Inpatient_Professional_Payment_Summary_"
                     + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            response.setContentLength(bytes.length);
             try (OutputStream out = response.getOutputStream()) {
-                workbook.write(out);
+                out.write(bytes);
             }
             facesContext.responseComplete();
         } catch (Exception e) {
@@ -1104,12 +1123,20 @@ public class InwardReportControllerBht implements Serializable {
                 sheet.autoSizeColumn(c);
             }
 
+            // Issue #22805 review - same buffer-first pattern as the Summary
+            // exporter above.
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+
             String filename = "Inpatient_Professional_Payment_Detailed_"
                     + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            response.setContentLength(bytes.length);
             try (OutputStream out = response.getOutputStream()) {
-                workbook.write(out);
+                out.write(bytes);
             }
             facesContext.responseComplete();
         } catch (Exception e) {
@@ -1256,6 +1283,10 @@ public class InwardReportControllerBht implements Serializable {
             out.flush();
             facesContext.responseComplete();
         } catch (Exception e) {
+            // Issue #22805 review - e.getMessage() is often null for runtime
+            // failures (e.g. NPE); log the stack trace too, matching the
+            // Excel exporters above.
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment summary to PDF", e);
             JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
         }
     }
@@ -1410,6 +1441,7 @@ public class InwardReportControllerBht implements Serializable {
             out.flush();
             facesContext.responseComplete();
         } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment detailed report to PDF", e);
             JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
         }
     }
@@ -1453,6 +1485,23 @@ public class InwardReportControllerBht implements Serializable {
         return groups;
     }
 
+    // Issue #22805 review - shared by both query builders below, so the
+    // BHT-range/date-range predicate can't drift between them.
+    private String appendProfessionalPaymentRangePredicate(String jpql, Map<String, Object> params) {
+        if ("bhtRange".equals(professionalPaymentSearchMode)
+                && admissionFromForProfessionalPaymentReport != null
+                && admissionToForProfessionalPaymentReport != null) {
+            long peIdFrom = Math.min(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
+            long peIdTo = Math.max(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
+            params.put("peIdFrom", peIdFrom);
+            params.put("peIdTo", peIdTo);
+            return jpql + "AND pe.id BETWEEN :peIdFrom AND :peIdTo ";
+        }
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        return jpql + "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
+    }
+
     private List<InwardProfessionalPaymentAdmissionDTO> fetchProfessionalPaymentAdmissionsForDepartment() {
         String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO("
                 + "pe.id, "
@@ -1467,19 +1516,7 @@ public class InwardReportControllerBht implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("department", department);
 
-        if ("bhtRange".equals(professionalPaymentSearchMode)
-                && admissionFromForProfessionalPaymentReport != null
-                && admissionToForProfessionalPaymentReport != null) {
-            long peIdFrom = Math.min(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
-            long peIdTo = Math.max(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
-            jpql += "AND pe.id BETWEEN :peIdFrom AND :peIdTo ";
-            params.put("peIdFrom", peIdFrom);
-            params.put("peIdTo", peIdTo);
-        } else {
-            jpql += "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-        }
+        jpql = appendProfessionalPaymentRangePredicate(jpql, params);
 
         jpql += "ORDER BY pe.dateOfAdmission, pe.id";
 
@@ -1517,19 +1554,7 @@ public class InwardReportControllerBht implements Serializable {
         params.put("billType", BillType.InwardProfessional);
         params.put("department", department);
 
-        if ("bhtRange".equals(professionalPaymentSearchMode)
-                && admissionFromForProfessionalPaymentReport != null
-                && admissionToForProfessionalPaymentReport != null) {
-            long peIdFrom = Math.min(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
-            long peIdTo = Math.max(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
-            jpql += "AND pe.id BETWEEN :peIdFrom AND :peIdTo ";
-            params.put("peIdFrom", peIdFrom);
-            params.put("peIdTo", peIdTo);
-        } else {
-            jpql += "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-        }
+        jpql = appendProfessionalPaymentRangePredicate(jpql, params);
 
         jpql += "ORDER BY pe.id, st.id, sp.id";
 
