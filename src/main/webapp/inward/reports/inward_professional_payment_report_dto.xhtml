@@ -15,22 +15,6 @@
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-user-md"></h:outputText>
                             <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Professional Payment Report" class="m-2"></p:outputLabel>
-
-                            <p:commandButton
-                                value="Download"
-                                ajax="false"
-                                class="ui-button-primary m-1"
-                                icon="fa fa-download">
-                                <p:dataExporter fileName="Inpatient Professional Payment Report" target="tbl1" type="xlsx"></p:dataExporter>
-                            </p:commandButton>
-
-                            <p:commandButton
-                                value="Print"
-                                ajax="false"
-                                class="ui-button-primary m-1"
-                                icon="fa fa-print">
-                                <p:printer target="tbl1"></p:printer>
-                            </p:commandButton>
                         </f:facet>
 
                         <style>
@@ -43,29 +27,73 @@
 
                         <div class="row">
                             <div class="col-2">
-                                <h:outputLabel value="From Date" for="fromDate" />
-                                <p:calendar
-                                    styleClass="dateTimePicker"
-                                    id="fromDate"
-                                    value="#{inwardReportControllerBht.fromDate}"
-                                    navigator="false"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    class="w-100"
-                                    inputStyleClass="w-100">
-                                </p:calendar>
+                                <h:outputLabel value="Report Type" for="reportType" />
+                                <p:selectOneMenu id="reportType" value="#{inwardReportControllerBht.professionalPaymentReportType}" class="w-100">
+                                    <f:selectItem itemLabel="Summary" itemValue="summary"/>
+                                    <f:selectItem itemLabel="Detailed" itemValue="detailed"/>
+                                </p:selectOneMenu>
 
-                                <h:outputLabel value="To Date" for="toDate" />
-                                <p:calendar
-                                    id="toDate"
-                                    value="#{inwardReportControllerBht.toDate}"
-                                    navigator="false"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    class="w-100"
-                                    inputStyleClass="w-100">
-                                </p:calendar>
+                                <h:outputLabel value="Search By" for="searchMode" class="mt-2 d-block"/>
+                                <p:selectOneMenu id="searchMode" value="#{inwardReportControllerBht.professionalPaymentSearchMode}" class="w-100">
+                                    <f:selectItem itemLabel="Date Range" itemValue="dateRange"/>
+                                    <f:selectItem itemLabel="BHT Range" itemValue="bhtRange"/>
+                                </p:selectOneMenu>
 
-                                <h:outputLabel value="BHT No" for="bhtNo" />
-                                <p:inputText id="bhtNo" autocomplete="off" value="#{inwardReportControllerBht.bhtNoFilter}" class="w-100"/>
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'dateRange'}" layout="block">
+                                    <h:outputLabel value="From Date" for="fromDate" />
+                                    <p:calendar
+                                        styleClass="dateTimePicker"
+                                        id="fromDate"
+                                        value="#{inwardReportControllerBht.fromDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:calendar>
+
+                                    <h:outputLabel value="To Date" for="toDate" />
+                                    <p:calendar
+                                        id="toDate"
+                                        value="#{inwardReportControllerBht.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:calendar>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'bhtRange'}" layout="block">
+                                    <h:outputLabel value="From BHT" for="admissionFrom" />
+                                    <p:autoComplete
+                                        id="admissionFrom"
+                                        value="#{inwardReportControllerBht.admissionFromForProfessionalPaymentReport}"
+                                        completeMethod="#{inwardReportControllerBht.completeAdmissionForProfessionalPaymentReport}"
+                                        var="apt"
+                                        itemLabel="#{apt.bhtNo}"
+                                        itemValue="#{apt}"
+                                        forceSelection="true"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:autoComplete>
+
+                                    <h:outputLabel value="To BHT" for="admissionTo" />
+                                    <p:autoComplete
+                                        id="admissionTo"
+                                        value="#{inwardReportControllerBht.admissionToForProfessionalPaymentReport}"
+                                        completeMethod="#{inwardReportControllerBht.completeAdmissionForProfessionalPaymentReport}"
+                                        var="apt"
+                                        itemLabel="#{apt.bhtNo}"
+                                        itemValue="#{apt}"
+                                        forceSelection="true"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:autoComplete>
+                                </h:panelGroup>
+
+                                <h:panelGroup layout="block" styleClass="mt-2">
+                                    <p:selectBooleanCheckbox id="onlyWithoutFees" value="#{inwardReportControllerBht.onlyAdmissionsWithoutProfessionalFees}"/>
+                                    <h:outputLabel value=" List admissions without any professional fees" for="onlyWithoutFees" class="mx-1"/>
+                                </h:panelGroup>
 
                                 <p:commandButton
                                     ajax="false"
@@ -77,88 +105,261 @@
                             </div>
 
                             <div class="col-10">
-                                <p:dataTable
-                                    id="tbl1"
-                                    value="#{inwardReportControllerBht.professionalPaymentReportGroups}"
-                                    var="admissionRow">
 
-                                    <p:columnGroup type="header">
-                                        <p:row>
-                                            <p:column headerText="Consultant" width="14em"/>
-                                            <p:column headerText="Speciality" width="10em"/>
-                                            <p:column headerText="Added Fee" width="8em" styleClass="text-end"/>
-                                            <p:column headerText="Paid Fee" width="8em" styleClass="text-end"/>
-                                            <p:column headerText="Payment Bill Numbers" width="14em"/>
-                                            <p:column headerText="Payment Dates" width="10em"/>
-                                        </p:row>
-                                    </p:columnGroup>
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentReportType eq 'summary'}" layout="block">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-user-md"></h:outputText>
+                                            <p:outputLabel value="&nbsp;&nbsp;&nbsp;Summary" class="m-2"></p:outputLabel>
 
-                                    <p:subTable value="#{admissionRow.detailRows}" var="detail">
-                                        <p:columnGroup type="header">
-                                            <p:row style="background-color: #d3dbea; font-weight: bold;">
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <h:outputText value="BHT: #{admissionRow.bhtNo}" style="font-weight: bold;"/>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <h:outputText value="Admitted: " style="font-weight: bold;"/>
-                                                        <h:outputText value="#{admissionRow.dateOfAdmission}" style="font-weight: bold;">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                        </h:outputText>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <h:outputText value="Discharged: " style="font-weight: bold;"/>
-                                                        <h:outputText value="#{admissionRow.dateOfDischarge}" style="font-weight: bold;" rendered="#{admissionRow.dateOfDischarge ne null}">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                        </h:outputText>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <h:outputText value="1st Final Bill: #{admissionRow.firstFinalBillNo}" style="font-weight: bold;"/>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <h:outputText value="Confirmed Final Bill: #{admissionRow.confirmedFinalBillNo}" style="font-weight: bold;"/>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <h:outputText value="-" style="font-weight: bold;"/>
-                                                    </f:facet>
-                                                </p:column>
-                                            </p:row>
-                                        </p:columnGroup>
+                                            <p:commandButton
+                                                value="Excel"
+                                                ajax="false"
+                                                class="ui-button-success m-1"
+                                                icon="fas fa-file-excel"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentSummaryExcel()}">
+                                            </p:commandButton>
 
-                                        <p:column>
-                                            <h:outputText value="#{detail.consultantName}" />
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputText value="#{detail.specialityName}" />
-                                        </p:column>
-                                        <p:column styleClass="text-end">
-                                            <h:outputText value="#{detail.sumAddedFee}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column styleClass="text-end">
-                                            <h:outputText value="#{detail.sumPaidFee}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputText value="#{detail.paymentBillNumbers}" />
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputText value="#{detail.paymentDates}" />
-                                        </p:column>
-                                    </p:subTable>
-                                </p:dataTable>
+                                            <p:commandButton
+                                                value="PDF"
+                                                ajax="false"
+                                                class="ui-button-danger m-1"
+                                                icon="fas fa-file-pdf"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentSummaryPdf()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                class="ui-button-primary m-1"
+                                                icon="fa fa-print">
+                                                <p:printer target="summaryTbl"></p:printer>
+                                            </p:commandButton>
+                                        </f:facet>
+
+                                        <h:panelGroup id="summaryTbl" layout="block" style="overflow-x: auto;">
+                                            <table class="table table-bordered table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>BHT Number</th>
+                                                        <th>Admitted</th>
+                                                        <th>Discharged</th>
+                                                        <th>Final Bill Number</th>
+                                                        <th>Consultant</th>
+                                                        <th>Speciality</th>
+                                                        <th class="text-end">Sum Added Fee</th>
+                                                        <th class="text-end">Sum Paid Fee</th>
+                                                        <th class="text-end">Balance to Pay</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{inwardReportControllerBht.professionalPaymentReportGroups}" var="admissionRow">
+                                                        <ui:fragment rendered="#{empty admissionRow.detailRows}">
+                                                            <tr>
+                                                                <td>#{admissionRow.bhtNo}</td>
+                                                                <td>
+                                                                    <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td>
+                                                                    <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td>#{admissionRow.firstFinalBillNo}</td>
+                                                                <td colspan="5">-</td>
+                                                            </tr>
+                                                        </ui:fragment>
+                                                        <ui:repeat value="#{admissionRow.detailRows}" var="detail" varStatus="rowStatus">
+                                                            <tr>
+                                                                <ui:fragment rendered="#{rowStatus.first}">
+                                                                    <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">#{admissionRow.bhtNo}</td>
+                                                                    <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">
+                                                                        <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">
+                                                                        <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">#{admissionRow.firstFinalBillNo}</td>
+                                                                </ui:fragment>
+                                                                <td>#{detail.consultantName}</td>
+                                                                <td>#{detail.specialityName}</td>
+                                                                <td class="text-end">
+                                                                    <h:outputText value="#{detail.sumAddedFee}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td class="text-end">
+                                                                    <h:outputText value="#{detail.sumPaidFee}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td class="text-end">
+                                                                    <h:outputText value="#{detail.sumAddedFee - detail.sumPaidFee}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </ui:repeat>
+                                                </tbody>
+                                            </table>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentReportType eq 'detailed'}" layout="block">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-user-md"></h:outputText>
+                                            <p:outputLabel value="&nbsp;&nbsp;&nbsp;Detailed" class="m-2"></p:outputLabel>
+
+                                            <p:commandButton
+                                                value="Excel"
+                                                ajax="false"
+                                                class="ui-button-success m-1"
+                                                icon="fas fa-file-excel"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentDetailedExcel()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="PDF"
+                                                ajax="false"
+                                                class="ui-button-danger m-1"
+                                                icon="fas fa-file-pdf"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentDetailedPdf()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                class="ui-button-primary m-1"
+                                                icon="fa fa-print">
+                                                <p:printer target="detailedTbl"></p:printer>
+                                            </p:commandButton>
+                                        </f:facet>
+
+                                        <h:panelGroup id="detailedTbl" layout="block" style="overflow-x: auto;">
+                                            <table class="table table-bordered table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>BHT Number</th>
+                                                        <th>Admitted</th>
+                                                        <th>Discharged</th>
+                                                        <th>Final Bill Number</th>
+                                                        <th>Consultant</th>
+                                                        <th>Speciality</th>
+                                                        <th>Added Fee Date</th>
+                                                        <th class="text-end">Added Fee Value</th>
+                                                        <th>Paid Date</th>
+                                                        <th>Paid Bill Number</th>
+                                                        <th class="text-end">Paid Fee Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{inwardReportControllerBht.professionalPaymentReportGroups}" var="admissionRow">
+                                                        <ui:fragment rendered="#{empty admissionRow.detailedRows}">
+                                                            <tr>
+                                                                <td>#{admissionRow.bhtNo}</td>
+                                                                <td>
+                                                                    <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td>
+                                                                    <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td>#{admissionRow.firstFinalBillNo}</td>
+                                                                <td colspan="7">-</td>
+                                                            </tr>
+                                                        </ui:fragment>
+                                                        <ui:repeat value="#{admissionRow.detailedRows}" var="detail" varStatus="blockStatus">
+                                                            <ui:repeat value="#{detail.indexes}" var="i" varStatus="rowStatus">
+                                                                <tr>
+                                                                    <ui:fragment rendered="#{blockStatus.first and rowStatus.first}">
+                                                                        <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">#{admissionRow.bhtNo}</td>
+                                                                        <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">
+                                                                            <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                        <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">
+                                                                            <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                        <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">#{admissionRow.firstFinalBillNo}</td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{rowStatus.first}">
+                                                                        <td rowspan="#{detail.blockRowSpan}">#{detail.consultantName}</td>
+                                                                        <td rowspan="#{detail.blockRowSpan}">#{detail.specialityName}</td>
+                                                                    </ui:fragment>
+                                                                    <td>
+                                                                        <h:outputText value="#{detail.addedFeeDates[i]}" rendered="#{i lt detail.addedFeeValues.size()}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.addedFeeValues[i]}" rendered="#{i lt detail.addedFeeValues.size()}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{detail.paidFeeDates[i]}" rendered="#{i lt detail.paidFeeValues.size()}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputText value="#{detail.paidBillNumbers[i]}" rendered="#{i lt detail.paidFeeValues.size()}"/>
+                                                                    </td>
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.paidFeeValues[i]}" rendered="#{i lt detail.paidFeeValues.size()}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:repeat>
+                                                            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                                                <td>Total</td>
+                                                                <td class="text-end">
+                                                                    <h:outputText value="#{detail.sumAddedFee}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td class="text-end">
+                                                                    <h:outputText value="#{detail.sumPaidFee}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                            <tr style="font-weight: bold;">
+                                                                <td>Balance to Pay</td>
+                                                                <td class="text-end">
+                                                                    <h:outputText value="#{detail.sumAddedFee - detail.sumPaidFee}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </ui:repeat>
+                                                </tbody>
+                                            </table>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
                             </div>
                         </div>
                     </p:panel>
