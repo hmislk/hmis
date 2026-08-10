@@ -146,7 +146,7 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
         buildAdmissionCategoryFilterJpqlNew(jpql, params);
 
-        jpql.append("ORDER BY pe.admissionType.name, pe.bhtNo ");
+        jpql.append("ORDER BY pe.bhtNo ");
 
         try {
             admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) billFacade.findLightsByJpql(
