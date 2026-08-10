@@ -759,10 +759,10 @@ public class InwardReportControllerBht implements Serializable {
             List<BillTypeAtomic> paymentTypes = new ArrayList<>();
             paymentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             paymentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
-            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
-            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
-            paymentTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
 
             paymentBillDtosForDepartment = fetchPaymentBillDtosForDepartment(paymentTypes);
 
