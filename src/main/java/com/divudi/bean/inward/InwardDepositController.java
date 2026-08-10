@@ -55,9 +55,13 @@ import javax.inject.Named;
  * deposit page can reuse the payment page's EL expressions with only the
  * managed-bean name changed. The behavioural difference is that bills created
  * here are tagged {@link BillTypeAtomic#INWARD_DEPOSIT} instead of
- * {@code INWARD_PAYMENT}, which makes
- * {@code BillBeanController.updateInwardDipositList(...)} credit the final
- * bill's {@code settledAmountByPatient}.
+ * {@code INWARD_PAYMENT}. In
+ * {@code BillBeanController.updateInwardDipositList(...)} this means a
+ * Deposit bill still updates the final bill's {@code balance} and
+ * {@code paidAmount} (those updates are unconditional), but it does
+ * <strong>not</strong> credit {@code settledAmountByPatient} — that credit is
+ * gated on {@code billTypeAtomic == INWARD_PAYMENT}, so only Payment bills
+ * trigger it.
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
  * Consultant (Health Informatics)
