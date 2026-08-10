@@ -65,6 +65,7 @@ import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.entity.Area;
 import com.divudi.core.entity.Department;
@@ -2337,6 +2338,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      */
     private Appointment pendingAppointmentConversion;
 
+    /** Id of the INWARD_APPOINTMENT_CANCEL_BILL created by the last conversion. */
+    private Long lastConversionCancelBillId;
+
+    /** Id of the INWARD_DEPOSIT bill created by the last conversion. */
+    private Long lastConversionDepositBillId;
+
+    /** Lazily-loaded, request-lifetime cache for {@link #getConversionCancelReceipt()}. */
+    private InwardBillReceiptDTO conversionCancelReceipt;
+
+    /** Lazily-loaded, request-lifetime cache for {@link #getConversionDepositReceipt()}. */
+    private InwardBillReceiptDTO conversionDepositReceipt;
+
     public Appointment getPendingAppointmentConversion() {
         return pendingAppointmentConversion;
     }
@@ -2374,6 +2387,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAppointmentDepositConversion() {
+        printPreview = false;
         if (!webUserController.hasPrivilege("InwardEditPaymentDetails")) {
             JsfUtil.addErrorMessage("You are not authorized to convert appointment deposits.");
             return "";
@@ -2423,10 +2437,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Bill originalBill = pendingAppointmentConversion.getBill();
         double amount = originalBill.getTotal();
 
-        appointmentController.cancelAppointmentBillForConversion(
+        Bill cancelBill = appointmentController.cancelAppointmentBillForConversion(
                 originalBill,
                 pendingAppointmentConversion,
                 "Converted to Inward Deposit on Admission — BHT " + getCurrent().getBhtNo());
+        lastConversionCancelBillId = cancelBill.getId();
 
         PaymentMethod appointmentPaymentMethod = originalBill.getPaymentMethod() != null
                 ? originalBill.getPaymentMethod()
@@ -2440,10 +2455,42 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getInwardPaymentController().getCurrent().setPatientEncounter(current);
         getInwardPaymentController().getCurrent().setTotal(amount);
         getInwardPaymentController().pay();
+        lastConversionDepositBillId = getInwardPaymentController().getCurrent().getId();
         getInwardPaymentController().makeNull();
 
         pendingAppointmentConversion = null;
+        printPreview = true;
         JsfUtil.addSuccessMessage("Appointment deposit converted to Inward Deposit.");
+    }
+
+    /**
+     * Print DTO for the INWARD_APPOINTMENT_CANCEL_BILL receipt from the most
+     * recent {@link #convertAppointmentDepositToInwardDeposit()} call. Null
+     * until a conversion has succeeded (see {@link #isPrintPreview()}).
+     */
+    public InwardBillReceiptDTO getConversionCancelReceipt() {
+        if (lastConversionCancelBillId == null) {
+            return null;
+        }
+        if (conversionCancelReceipt == null || !lastConversionCancelBillId.equals(conversionCancelReceipt.getBillId())) {
+            conversionCancelReceipt = getBillFacade().findInwardBillReceiptDTO(lastConversionCancelBillId);
+        }
+        return conversionCancelReceipt;
+    }
+
+    /**
+     * Print DTO for the INWARD_DEPOSIT receipt from the most recent
+     * {@link #convertAppointmentDepositToInwardDeposit()} call. Null until a
+     * conversion has succeeded (see {@link #isPrintPreview()}).
+     */
+    public InwardBillReceiptDTO getConversionDepositReceipt() {
+        if (lastConversionDepositBillId == null) {
+            return null;
+        }
+        if (conversionDepositReceipt == null || !lastConversionDepositBillId.equals(conversionDepositReceipt.getBillId())) {
+            conversionDepositReceipt = getBillFacade().findInwardBillReceiptDTO(lastConversionDepositBillId);
+        }
+        return conversionDepositReceipt;
     }
 
     /**

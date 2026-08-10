@@ -15,6 +15,12 @@ There is **no single endpoint** that returns one admission's full detail (demogr
 
 All endpoints use the `Finance` header for authentication unless noted.
 
+**Quick decision guide:**
+- Need to find/list admissions by any criteria (active patients, or search past/current by phone/MRN/BHT/name/NIC)? → **`/api/inward/admissions`** (section 1)
+- Building a payment-collection flow (unpaid admissions, take payment, validate BHT)? → **`/api/apiInward/*`** (section 2)
+- Fixing/checking the BHT number sequence itself? → **`/api/admission-numbers`** (section 3)
+- Need clinical form data (ward assessments, nursing notes) for an admission? → **`/api/forms/entries/{admissionId}`** (section 4)
+
 ---
 
 ## 1. General-purpose admission search — `AdmissionSearchApi`
@@ -95,6 +101,63 @@ Example response:
 ```
 
 `netTotal`/`paidAmount`/`balance` are only present once a final bill exists for the admission, matching `ApiInward`'s behavior. `totalCount` reflects the full matching set independent of pagination.
+
+Response fields per admission (each is `null`/omitted when the underlying relationship is empty — e.g. no `patient`, no `finalBill`):
+
+| Field | Type | Description |
+|---|---|---|
+| `patientEncounterId` | long | `PatientEncounter`/`Admission` primary key |
+| `bhtNo` | string | Bed Head Ticket number |
+| `patientMrn` | string | Patient's PHN |
+| `patientCode` | string | Patient's internal code |
+| `patientName` | string | Patient's full name |
+| `patientPhone` | string | Patient's home phone |
+| `patientMobile` | string | Patient's mobile number |
+| `patientNic` | string | Patient's NIC/passport |
+| `patientAddress` | string | Patient's address |
+| `patientArea` | string | Patient's area name |
+| `referringDoctor` | string | Referring doctor's name |
+| `admissionType` | string | Admission type name (e.g. "Ward Admission", "OPD Card") |
+| `institution` | string | Institution name |
+| `department` | string | Department name |
+| `currentRoom` | string | Current room name, if still admitted |
+| `dateOfAdmission` | string | `yyyy-MM-dd HH:mm:ss` |
+| `dateOfDischarge` | string\|null | `yyyy-MM-dd HH:mm:ss`, `null` if not discharged |
+| `discharged` | boolean | |
+| `paymentFinalized` | boolean | |
+| `netTotal` | double | Final bill net total — present only if a final bill exists |
+| `paidAmount` | double | Amount paid so far, including credit payments — present only if a final bill exists |
+| `balance` | double | `netTotal - paidAmount` — present only if a final bill exists |
+
+### Combining filters
+
+Filters are ANDed together. Example — active admissions in one department, filtered by BHT prefix:
+
+```bash
+curl -H "Finance: YOUR_API_KEY" \
+  "https://hmis.example.com/api/inward/admissions?departmentId=42&bhtNo=BHT2026"
+```
+
+### Pagination
+
+```bash
+curl -H "Finance: YOUR_API_KEY" \
+  "https://hmis.example.com/api/inward/admissions?page=2&size=20"
+```
+
+`page` starts at 1. `totalCount` in the response is the full count of matching admissions regardless of the current page, so callers can compute `Math.ceil(totalCount / size)` for the last page.
+
+### Error responses
+
+| Condition | Status | Body |
+|---|---|---|
+| Missing or invalid `Finance` key | 401 | `{"status":"error","code":401,"message":"Not a valid key"}` |
+| Unknown `status` value | 400 | `{"status":"error","code":400,"message":"Invalid status. Valid values: ..."}` |
+| `fromDate` given without `toDate` (or vice versa) | 400 | `{"status":"error","code":400,"message":"fromDate and toDate must both be supplied together."}` |
+| Unparseable `fromDate`/`toDate` | 400 | `{"status":"error","code":400,"message":"Invalid fromDate/toDate format. Expected: yyyy-MM-dd HH:mm:ss"}` |
+| Non-numeric `admissionTypeId`/`institutionId`/`departmentId` | 400 | `{"status":"error","code":400,"message":"Invalid admissionTypeId/institutionId/departmentId value. Must be numeric."}` |
+| Non-numeric `page`/`size` | 400 | `{"status":"error","code":400,"message":"Invalid page value."}` (or `"Invalid size value."`) |
+| Unexpected server error | 500 | `{"status":"error","code":500,"message":"An error occurred while searching admissions."}` — details are logged server-side, not returned to the caller |
 
 ---
 

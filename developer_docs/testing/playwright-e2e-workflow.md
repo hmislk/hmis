@@ -1569,6 +1569,43 @@ While testing issue #22719 (appointment → admission → deposit conversion), t
     `SELECT OPTIONVALUE FROM configoption WHERE OPTIONKEY = '...'` — this is
     live config on a real hospital's local dev copy, not disposable test data.
 
+## 59. `CreditCompanyBillSearch.printPreview` is a single shared flag reused for two different meanings — viewing a bill before cancelling can make the cancel form permanently unreachable via normal navigation
+
+On `credit/credit_company_bill_search.xhtml` → **View** → `inpatient_credit_company_bill_reprint.xhtml` → **To Cancel** → `inpatient_credit_company_bill_cancel.xhtml`, the cancel page conditionally
+renders either the cancel **form** (`rendered="#{!creditCompanyBillSearch.printPreview}"`) or a
+read-only "cancellation receipt" preview (`rendered="#{creditCompanyBillSearch.printPreview}"`).
+`BillSearch.navigateToViewBillByAtomicBillType()` (used by the search page's **View** button) calls
+`creditCompanyBillSearch.setBill(bill)` (which resets `printPreview=false` via `recreateModel()`)
+**immediately followed by** `creditCompanyBillSearch.setPrintPreview(true)` — by design, so the
+Reprint page shows a print preview. But `printPreview` is `@SessionScoped` and shared with the
+Cancel page, and clicking **To Cancel** is a plain outcome-string navigation (no bean method call)
+that never resets it. Result: landing on the cancel page via the only in-UI path always shows the
+receipt view instead of the cancel form — **there is no button an end user can click to actually
+reach the cancel form**, even though nothing has been cancelled yet (verify via
+`SELECT CANCELLED FROM BILL WHERE ID=...` — it's still `0`). This is a real product bug, not a
+Playwright limitation; flag/file it rather than silently building around it. Found while verifying
+issue #19931.
+
+**Workaround used only for E2E verification** (not a fix an end user has access to): reach the same
+bill via `credit/credit_company_bill_search_billItems.xhtml` → **Search BHT** → **View Bill**
+instead. That page's button does a *raw* `f:setPropertyActionListener value="#{b.bill}"
+target="#{creditCompanyBillSearch.bill}"` with no follow-up `setPrintPreview(true)`, so
+`printPreview` stays `false`. It navigates to the *generic* `credit_company_bill_reprint.xhtml`
+(whose own **To Cancel** button targets `credit_company_bill_cancel.xhtml` and the *different*
+`creditCompanyBillSearch.cancelBill()` method — **do not click that button**, it may produce the
+wrong `BillTypeAtomic` for an inpatient bill). Instead, once `creditCompanyBillSearch.bill` +
+`printPreview=false` are set, `browser_navigate` directly to
+`inpatient_credit_company_bill_cancel.xhtml` — the session-scoped bean state carries over and the
+correct cancel form (bound to `cancelCreditCompanyPaymentBill()`) renders.
+
+Separately: the cancel form's "Enter a comment" `p:inputText` is required by
+`CreditCompanyBillSearch.errorCheck()` (`"Please enter a comment"`), but that page has no visible
+`<p:messages>`/`<h:messages>` for the resulting `JsfUtil.addErrorMessage(...)` — clicking **Cancel**
+with it empty just re-renders the identical form with **zero visible feedback and zero DB change**,
+easy to mistake for the click not registering at all. Always fill the comment field first; if a
+"Cancel" (or similarly `ajax="false"`) button appears to no-op, check for this pattern before
+assuming a click/ref problem.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

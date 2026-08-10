@@ -335,8 +335,7 @@
                                                                 id="box"
                                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
                                                                 value="#{inwardSearch.withProfessionalFee}"
-                                                                itemLabel="With Professional Fee"
-                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                itemLabel="With Professional Fee">
                                                                 <p:ajax process="@this" update="finalOriginalBillPriview"/>
                                                             </p:selectBooleanCheckbox>
                                                             <p:commandButton
@@ -366,8 +365,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
-                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
-                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}">
                                                                 <p:ajax process="@this" update="finalDuplicateBillPriview"/>
                                                             </p:selectBooleanCheckbox>
                                                             <p:commandButton
@@ -402,8 +400,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
-                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
-                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}">
                                                                 <p:ajax process="@this" update="originalHospitalBillPriview"/>
                                                             </p:selectBooleanCheckbox>
                                                             <p:commandButton
@@ -432,8 +429,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
-                                                                itemLabel="With Professional Fee"
-                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                itemLabel="With Professional Fee">
                                                                 <p:ajax process="@this" update="duplicateHospitalBillPriview"/>
                                                             </p:selectBooleanCheckbox>
                                                             <p:commandButton
@@ -518,8 +514,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
-                                                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',false)}"
-                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',false)}">
                                                                 <p:ajax process="@this" update="OriginalFinalBillSummaryPriview"/>
                                                             </p:selectBooleanCheckbox>
                                                             <p:commandButton
@@ -553,8 +548,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
-                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
-                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}">
                                                                 <p:ajax process="@this" update="duplicateFinalBillSummaryPriview"/>
                                                             </p:selectBooleanCheckbox>
                                                             <p:commandButton
@@ -616,6 +610,7 @@
                                             type="button"
                                             onclick="PF('custom2ConfigDialog').show();" />
                                     </div>
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 2 Format', true)}">
                                     <div class="row">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -664,7 +659,9 @@
                                             </p:panel>
                                         </div>
                                     </div>
+                                    </h:panelGroup>
 
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 3 Format', false)}">
                                     <div class="row mt-3">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -713,7 +710,9 @@
                                             </p:panel>
                                         </div>
                                     </div>
+                                    </h:panelGroup>
 
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 4 Format', false)}">
                                     <div class="row mt-3">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -760,6 +759,7 @@
                                             </p:panel>
                                         </div>
                                     </div>
+                                    </h:panelGroup>
 
                                     <p:dialog id="custom2ConfigDialog"
                                               header="Custom Bills Printer Configuration"
@@ -773,6 +773,21 @@
 
                                         <h:form id="custom2ConfigForm" rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
                                             <div class="card-body">
+                                                <h6>Which formats print</h6>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="showCustomBill2Format" value="#{bhtSummeryController.showCustomBill2Format}" />
+                                                    <h:outputLabel for="showCustomBill2Format" value="Show &quot;Custom Bill&quot; format" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="showCustomBill3Format" value="#{bhtSummeryController.showCustomBill3Format}" />
+                                                    <h:outputLabel for="showCustomBill3Format" value="Show &quot;Custom Bill 2&quot; format" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="showCustomBill4Format" value="#{bhtSummeryController.showCustomBill4Format}" />
+                                                    <h:outputLabel for="showCustomBill4Format" value="Show &quot;Custom Bill 3 (Letterhead)&quot; format" class="ms-2" />
+                                                </div>
+                                                <hr/>
+                                                <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 2 Format', true)}">
                                                 <div class="mb-3">
                                                     <h:selectBooleanCheckbox id="custom2ShowAddress" value="#{bhtSummeryController.custom2ShowAddress}" />
                                                     <h:outputLabel for="custom2ShowAddress" value="Show Patient Address" class="ms-2" />
@@ -793,7 +808,9 @@
                                                     <h:selectBooleanCheckbox id="custom2ShowCorporateSponsor" value="#{bhtSummeryController.custom2ShowCorporateSponsor}" />
                                                     <h:outputLabel for="custom2ShowCorporateSponsor" value="Show Corporate Sponsor" class="ms-2" />
                                                 </div>
+                                                </h:panelGroup>
 
+                                                <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 4 Format', false)}">
                                                 <hr/>
                                                 <h6>Custom Bill 3 (Letterhead) Settings</h6>
                                                 <div class="mb-3">
@@ -816,6 +833,7 @@
                                                     <h:selectBooleanCheckbox id="custom4ShowCorporateSponsor" value="#{bhtSummeryController.custom4ShowCorporateSponsor}" />
                                                     <h:outputLabel for="custom4ShowCorporateSponsor" value="Show Corporate Sponsor" class="ms-2" />
                                                 </div>
+                                                </h:panelGroup>
 
                                                 <p:messages id="custom2ConfigMessages" showDetail="true" closable="true" />
 
