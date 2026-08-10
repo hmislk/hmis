@@ -5,7 +5,6 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -20,13 +19,25 @@ import javax.persistence.Query;
  * Strategy:
  *  1. Persist the Bill header via JPA (gets DTYPE, ID, all Bill fields).
  *  2. Flush to obtain the Bill ID.
- *  3. Allocate IDs for BillItems via SequenceAllocatorService (EclipseLink API).
- *  4. Bulk-insert BillItems using native SQL with explicit IDs.
- *  5. Allocate IDs for PharmaceuticalBillItems via SequenceAllocatorService.
- *  6. Bulk-insert PharmaceuticalBillItems using native SQL with explicit IDs.
+ *  3. Bulk-insert BillItems using native SQL, omitting the ID column so
+ *     MySQL AUTO_INCREMENT assigns it, then read back the batch's first
+ *     generated ID via {@code SELECT LAST_INSERT_ID()} and derive the rest
+ *     by offset.
+ *  4. Bulk-insert PharmaceuticalBillItems the same way.
  *
- * Sequence allocation uses EclipseLink's internal non-JTA sequence mechanism, which
- * keeps its in-memory cache in sync and avoids lock-wait conflicts.
+ * ID generation uses the same technique already used by the sibling
+ * {@code *NativeSqlService} classes in this package (see e.g.
+ * {@code RetailSaleNativeSqlService}): insert without specifying the ID
+ * column and read back the generated value via {@code LAST_INSERT_ID()} on
+ * the same EntityManager/connection/transaction, immediately after the
+ * INSERT. This is adapted here for multi-row batches: MySQL guarantees a
+ * single multi-row {@code INSERT ... VALUES (...),(...),...} statement gets
+ * a contiguous block of auto-increment values, and {@code LAST_INSERT_ID()}
+ * after such a statement returns the value assigned to the FIRST row of
+ * that statement — so one {@code LAST_INSERT_ID()} call per batch (not per
+ * row) yields the whole batch's IDs via {@code firstId + offsetWithinBatch}.
+ * This call is connection-scoped, so it is safe under concurrent requests
+ * from different users.
  *
  * Only used for PharmacySnapshotBill creation. All other Bill types use JPA cascade.
  */
@@ -45,9 +56,6 @@ public class StockTakePersistService {
 
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
-
-    @EJB
-    private SequenceAllocatorService sequenceAllocator;
 
     /**
      * Persist the snapshot bill header via JPA and all child rows via native SQL multi-row INSERT.
@@ -85,12 +93,10 @@ public class StockTakePersistService {
         snapshotBill.setBillItems(items);
 
         // -----------------------------------------------------------------------
-        // Step 2: Allocate IDs for BillItems (REQUIRES_NEW — commits immediately),
-        //         then bulk-insert
+        // Step 2: Bulk-insert BillItems, obtaining generated IDs via LAST_INSERT_ID()
         // -----------------------------------------------------------------------
         long t1 = System.currentTimeMillis();
-        long[] billItemIds = sequenceAllocator.allocate(items.size(), BillItem.class);
-        insertBillItemsBulk(items, billId, billItemIds);
+        long[] billItemIds = insertBillItemsBulk(items, billId);
         System.out.println("[StockTakePersist] Step2 BillItems inserted. count=" + items.size()
                 + "  ms=" + (System.currentTimeMillis() - t1));
 
@@ -100,12 +106,11 @@ public class StockTakePersistService {
         }
 
         // -----------------------------------------------------------------------
-        // Step 3: Allocate IDs for PharmaceuticalBillItems (REQUIRES_NEW — commits
-        //         immediately), then bulk-insert
+        // Step 3: Bulk-insert PharmaceuticalBillItems, obtaining generated IDs via
+        //         LAST_INSERT_ID() the same way
         // -----------------------------------------------------------------------
         long t2 = System.currentTimeMillis();
-        long[] pbIds = sequenceAllocator.allocate(items.size(), PharmaceuticalBillItem.class);
-        insertPharmBillItemsBulk(items, billItemIds, pbIds);
+        insertPharmBillItemsBulk(items, billItemIds);
         System.out.println("[StockTakePersist] Step3 PharmaceuticalBillItems inserted. count=" + items.size()
                 + "  ms=" + (System.currentTimeMillis() - t2));
 
@@ -138,29 +143,30 @@ public class StockTakePersistService {
     }
 
     /**
-     * Insert BillItems in multi-row native INSERT batches with explicit IDs.
+     * Insert BillItems in multi-row native INSERT batches, letting MySQL AUTO_INCREMENT
+     * assign IDs, and read back each batch's generated IDs via LAST_INSERT_ID().
      */
-    private void insertBillItemsBulk(List<BillItem> items, long billId, long[] ids) {
+    private long[] insertBillItemsBulk(List<BillItem> items, long billId) {
         int total = items.size();
+        long[] resultIds = new long[total];
 
         for (int start = 0; start < total; start += BATCH_SIZE) {
             int end = Math.min(start + BATCH_SIZE, total);
             List<BillItem> batch = items.subList(start, end);
 
             StringBuilder sql = new StringBuilder(
-                    "INSERT INTO " + billItemTable() + " (ID, bill_ID, item_ID, qty, descreption, netValue, "
+                    "INSERT INTO " + billItemTable() + " (bill_ID, item_ID, qty, descreption, netValue, "
                     + "catId, createdAt, creater_ID, retired, refunded, billItemRefunded, consideredForCosting) VALUES ");
 
             for (int i = 0; i < batch.size(); i++) {
                 if (i > 0) sql.append(",");
-                sql.append("(?,?,?,?,?,?,?,?,?,0,0,0,1)");
+                sql.append("(?,?,?,?,?,?,?,?,0,0,0,1)");
             }
 
             Query q = em.createNativeQuery(sql.toString());
             int p = 1;
             for (int i = 0; i < batch.size(); i++) {
                 BillItem bi = batch.get(i);
-                q.setParameter(p++, ids[start + i]);
                 q.setParameter(p++, billId);
                 q.setParameter(p++, bi.getItem() != null ? bi.getItem().getId() : null);
                 q.setParameter(p++, bi.getQty() != null ? bi.getQty() : 0.0);
@@ -172,13 +178,22 @@ public class StockTakePersistService {
                 q.setParameter(p++, bi.getCreater() != null ? bi.getCreater().getId() : null);
             }
             q.executeUpdate();
+
+            long firstIdInBatch = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+            for (int i = 0; i < batch.size(); i++) {
+                resultIds[start + i] = firstIdInBatch + i;
+            }
         }
+
+        return resultIds;
     }
 
     /**
-     * Insert PharmaceuticalBillItems in multi-row native INSERT batches with explicit IDs.
+     * Insert PharmaceuticalBillItems in multi-row native INSERT batches, letting MySQL
+     * AUTO_INCREMENT assign IDs. The generated IDs are not consumed by anything
+     * downstream, so unlike insertBillItemsBulk, no LAST_INSERT_ID() read-back is needed.
      */
-    private void insertPharmBillItemsBulk(List<BillItem> items, long[] billItemIds, long[] pbIds) {
+    private void insertPharmBillItemsBulk(List<BillItem> items, long[] billItemIds) {
         int total = items.size();
 
         for (int start = 0; start < total; start += BATCH_SIZE) {
@@ -186,7 +201,7 @@ public class StockTakePersistService {
 
             StringBuilder sql = new StringBuilder(
                     "INSERT INTO " + pharmBillItemTable()
-                    + " (ID, billItem_ID, itemBatch_ID, stock_ID, qty, stringValue, costRate, purchaseRate, retailRate, doe, description) VALUES ");
+                    + " (billItem_ID, itemBatch_ID, stock_ID, qty, stringValue, costRate, purchaseRate, retailRate, doe, description) VALUES ");
 
             List<BillItem> batchItems = items.subList(start, end);
             int rowCount = 0;
@@ -194,7 +209,7 @@ public class StockTakePersistService {
                 PharmaceuticalBillItem pbi = batchItems.get(i).getPharmaceuticalBillItem();
                 if (pbi == null) continue;
                 if (rowCount > 0) sql.append(",");
-                sql.append("(?,?,?,?,?,?,?,?,?,?,?)");
+                sql.append("(?,?,?,?,?,?,?,?,?,?)");
                 rowCount++;
             }
 
@@ -207,7 +222,6 @@ public class StockTakePersistService {
                 PharmaceuticalBillItem pbi = batchItems.get(i).getPharmaceuticalBillItem();
                 if (pbi == null) continue;
 
-                q.setParameter(p++, pbIds[globalIdx]);
                 q.setParameter(p++, billItemIds[globalIdx]);
                 q.setParameter(p++, pbi.getItemBatch() != null ? pbi.getItemBatch().getId() : null);
                 q.setParameter(p++, pbi.getStock() != null ? pbi.getStock().getId() : null);
