@@ -232,6 +232,12 @@ public class BhtSummeryController implements Serializable {
     private boolean custom4ShowPhone;
     private boolean custom4ShowGuardian;
     private boolean custom4ShowCorporateSponsor;
+    // Custom Bills tab - which custom format(s) are shown to end users.
+    // An admin flips these via the Settings dialog; end users never pick a
+    // format at print time (department-wide choice, not a per-print option).
+    private boolean showCustomBill2Format;
+    private boolean showCustomBill3Format;
+    private boolean showCustomBill4Format;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -473,7 +479,20 @@ public class BhtSummeryController implements Serializable {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom2 print format">
+    private void loadCustomBillFormatVisibility() {
+        showCustomBill2Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 2 Format", true);
+        showCustomBill3Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 3 Format", false);
+        showCustomBill4Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 4 Format", false);
+    }
+
+    private void persistCustomBillFormatVisibility() {
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 2 Format", showCustomBill2Format);
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 3 Format", showCustomBill3Format);
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 4 Format", showCustomBill4Format);
+    }
+
     public void loadCustom2Config() {
+        loadCustomBillFormatVisibility();
         custom2ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", false);
         custom2ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", false);
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
@@ -489,6 +508,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
         try {
+            persistCustomBillFormatVisibility();
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", custom2ShowAddress);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", custom2ShowNic);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
@@ -619,6 +639,30 @@ public class BhtSummeryController implements Serializable {
 
     public void setCustom2ShowCorporateSponsor(boolean custom2ShowCorporateSponsor) {
         this.custom2ShowCorporateSponsor = custom2ShowCorporateSponsor;
+    }
+
+    public boolean isShowCustomBill2Format() {
+        return showCustomBill2Format;
+    }
+
+    public void setShowCustomBill2Format(boolean showCustomBill2Format) {
+        this.showCustomBill2Format = showCustomBill2Format;
+    }
+
+    public boolean isShowCustomBill3Format() {
+        return showCustomBill3Format;
+    }
+
+    public void setShowCustomBill3Format(boolean showCustomBill3Format) {
+        this.showCustomBill3Format = showCustomBill3Format;
+    }
+
+    public boolean isShowCustomBill4Format() {
+        return showCustomBill4Format;
+    }
+
+    public void setShowCustomBill4Format(boolean showCustomBill4Format) {
+        this.showCustomBill4Format = showCustomBill4Format;
     }
     // </editor-fold>
 

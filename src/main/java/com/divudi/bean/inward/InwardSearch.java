@@ -466,15 +466,6 @@ public class InwardSearch implements Serializable {
         }
     }
 
-    public boolean showProfessionalFee() {
-        if (withProfessionalFee == true) {
-            withProfessionalFee = false;
-        } else {
-            withProfessionalFee = true;
-        }
-        return withProfessionalFee;
-    }
-
     public void edit() {
         if (getBill() == null) {
             return;
