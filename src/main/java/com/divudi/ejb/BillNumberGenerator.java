@@ -139,6 +139,26 @@ public class BillNumberGenerator {
         return institution.getId() + "-" + "null" + "-" + "null";
     }
 
+    private String getLockKey(Institution institution, BillTypeAtomic billType) {
+        String institutionId = institution != null ? institution.getId().toString() : "null";
+        String billTypeLabel = billType != null ? billType.name() : "null";
+        return institutionId + "-" + billTypeLabel;
+    }
+
+    private String getLockKey(Institution institution, BillTypeAtomic billType, AdmissionType admissionType) {
+        String institutionId = institution != null ? institution.getId().toString() : "null";
+        String billTypeLabel = billType != null ? billType.name() : "null";
+        String admissionTypeId = admissionType != null ? admissionType.getId().toString() : "null";
+        return institutionId + "-" + billTypeLabel + "-" + admissionTypeId;
+    }
+
+    private String getLockKey(Department department, BillTypeAtomic billType, AdmissionType admissionType) {
+        String departmentId = department != null ? department.getId().toString() : "null";
+        String billTypeLabel = billType != null ? billType.name() : "null";
+        String admissionTypeId = admissionType != null ? admissionType.getId().toString() : "null";
+        return departmentId + "-" + billTypeLabel + "-" + admissionTypeId;
+    }
+
     private static final int MAX_SERIAL_DIGITS = 12;
 
     private String formatSerialNumber(Long serialNumber) {
@@ -718,6 +738,45 @@ public class BillNumberGenerator {
         }
 
         return billNumber;
+    }
+
+    public BillNumber fetchLastBillNumberForYearInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType) {
+        String lockKey = getLockKey(institution, billType);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedInstitutionYearlyOnly(institution, billType);
+        } finally {
+            lock.unlock();
+            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
+        }
+    }
+
+    public BillNumber fetchLastBillNumberForYearInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType, AdmissionType admissionType) {
+        String lockKey = getLockKey(institution, billType, admissionType);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedInstitutionYearlyOnly(institution, billType, admissionType);
+        } finally {
+            lock.unlock();
+            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
+        }
+    }
+
+    public BillNumber fetchLastBillNumberForYear(Department department, BillTypeAtomic billType, AdmissionType admissionType) {
+        String lockKey = getLockKey(department, billType, admissionType);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronized(department, billType, admissionType);
+        } finally {
+            lock.unlock();
+            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
+        }
     }
 
     private BillNumber fetchLastBillNumberSynchronized(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
@@ -2736,7 +2795,7 @@ public class BillNumberGenerator {
         if (ins == null) {
             return "";
         }
-        BillNumber billNumber = fetchLastBillNumberSynchronizedInstitutionYearlyOnly(ins, billType);
+        BillNumber billNumber = fetchLastBillNumberForYearInstitutionYearlyOnly(ins, billType);
 
         Long dd = billNumber.getLastBillNumber();
         dd = dd + 1;
@@ -2766,7 +2825,7 @@ public class BillNumberGenerator {
         if (ins == null) {
             return "";
         }
-        BillNumber billNumber = fetchLastBillNumberSynchronizedInstitutionYearlyOnly(ins, billType, admissionType);
+        BillNumber billNumber = fetchLastBillNumberForYearInstitutionYearlyOnly(ins, billType, admissionType);
 
         Long dd = billNumber.getLastBillNumber();
         dd = dd + 1;
@@ -2798,7 +2857,7 @@ public class BillNumberGenerator {
         if (dep == null || dep.getInstitution() == null) {
             return "";
         }
-        BillNumber billNumber = fetchLastBillNumberSynchronized(dep, billType, admissionType);
+        BillNumber billNumber = fetchLastBillNumberForYear(dep, billType, admissionType);
 
         Long dd = billNumber.getLastBillNumber();
         dd = dd + 1;
