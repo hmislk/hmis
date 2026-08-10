@@ -113,6 +113,9 @@
                                         <p:column headerText="Bill No">
                                             <h:outputText value="#{eb.deptId}"/>
                                         </p:column>
+                                        <p:column headerText="Type">
+                                            <h:outputText value="#{inwardRefundController.getFeatureLabel(eb)}"/>
+                                        </p:column>
                                         <p:column headerText="Paid At">
                                             <h:outputText value="#{eb.createdAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
