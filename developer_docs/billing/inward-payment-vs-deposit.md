@@ -130,9 +130,10 @@ and `updateBalance(Bill, PatientDeposit)`), each `switch`ing on `BillTypeAtomic`
 Because this plan repointed Payments bills from `INWARD_DEPOSIT` to `INWARD_PAYMENT`, any inward
 payment settled via `PaymentMethod.PatientDeposit` would have hit the `default` branch and crashed
 at runtime — invisible to the compiler, since `switch` on an enum doesn't require exhaustiveness
-here. This was caught during implementation via a careful codebase sweep and fixed by adding
-`INWARD_PAYMENT` / `INWARD_PAYMENT_CANCELLATION` as fall-through cases alongside the retained
-`INWARD_DEPOSIT` / `INWARD_DEPOSIT_CANCELLATION` cases:
+here. This was caught during implementation via a careful codebase sweep and fixed **in the
+`updateBalance(Payment, PatientDeposit)` overload only** by adding `INWARD_PAYMENT` /
+`INWARD_PAYMENT_CANCELLATION` as fall-through cases alongside the retained `INWARD_DEPOSIT` /
+`INWARD_DEPOSIT_CANCELLATION` cases:
 
 ```java
 // PatientDepositService.updateBalance(Payment, PatientDeposit)
@@ -154,6 +155,13 @@ this plan (the refund atomics were never handled here, even back when `INWARD_DE
 Payments). Refunding an inward payment or deposit that was originally paid via `PaymentMethod.PatientDeposit`
 will still hit `default: throw new AssertionError()` today. Recommended as a follow-up issue —
 explicitly out of scope for this plan.
+
+Additionally, the fix above only touched `updateBalance(Payment, PatientDeposit)`. The sibling
+`updateBalance(Bill, PatientDeposit)` overload was never updated and still has no `INWARD_PAYMENT`
+/ `INWARD_DEPOSIT` (or cancellation/refund) cases at all — any code path that reaches it with an
+inward atomic will still hit `default: throw new AssertionError()`. Same class of pre-existing,
+deferred gap as the refund cases above; also recommended as a follow-up rather than something this
+plan resolves.
 
 ---
 
