@@ -376,6 +376,10 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("This bill has already been refunded and cannot be cancelled.");
             return "";
         }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.INWARD_DEPOSIT) {
+            JsfUtil.addErrorMessage("Selected bill is not an Inward Deposit bill.");
+            return "";
+        }
         inwardDepositCancelationPaymentMethods = new ArrayList<>();
         getInwardDepositCancelationPaymentMethods().add(PaymentMethod.Cash);
         if (bill.getPaymentMethod() != PaymentMethod.Cash) {
@@ -1872,6 +1876,7 @@ public class InwardSearch implements Serializable {
 
             if (dbl < getBill().getNetTotal()) {
                 JsfUtil.addErrorMessage("This Bht has No Enough Vallue To Cancel");
+                return;
             }
 
             CancelledBill cb = createCancelInwardDepositBill();
