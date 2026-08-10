@@ -1033,7 +1033,7 @@ public class InwardReportControllerBht implements Serializable {
 
             String[] headers = {"BHT Number", "Admitted", "Discharged", "Final Bill Number",
                 "Consultant", "Speciality", "Added Fee Date", "Added Fee Value", "Paid Date",
-                "Paid Bill Number", "Paid Fee Value"};
+                "Paid Bill Number", "Comments", "Paid Fee Value"};
             Row headerRow = sheet.createRow(0);
             for (int c = 0; c < headers.length; c++) {
                 Cell cell = headerRow.createCell(c);
@@ -1080,7 +1080,7 @@ public class InwardReportControllerBht implements Serializable {
                                 String paidBillNo = detail.getPaidBillNumbers().get(i);
                                 row.createCell(9).setCellValue(paidBillNo != null ? paidBillNo : "");
                                 Double paidValue = detail.getPaidFeeValues().get(i);
-                                Cell paidCell = row.createCell(10);
+                                Cell paidCell = row.createCell(11);
                                 paidCell.setCellValue(paidValue != null ? paidValue : 0.0);
                                 paidCell.setCellStyle(moneyStyle);
                             }
@@ -1093,7 +1093,7 @@ public class InwardReportControllerBht implements Serializable {
                         Cell totalAddedCell = totalRow.createCell(7);
                         totalAddedCell.setCellValue(detail.getSumAddedFee());
                         totalAddedCell.setCellStyle(boldMoneyStyle);
-                        Cell totalPaidCell = totalRow.createCell(10);
+                        Cell totalPaidCell = totalRow.createCell(11);
                         totalPaidCell.setCellValue(detail.getSumPaidFee());
                         totalPaidCell.setCellStyle(boldMoneyStyle);
 
@@ -1325,10 +1325,10 @@ public class InwardReportControllerBht implements Serializable {
 
             String[] headers = {"BHT Number", "Admitted", "Discharged", "Final Bill Number",
                 "Consultant", "Speciality", "Added Fee Date", "Added Fee Value", "Paid Date",
-                "Paid Bill Number", "Paid Fee Value"};
+                "Paid Bill Number", "Comments", "Paid Fee Value"};
             PdfPTable table = new PdfPTable(headers.length);
             table.setWidthPercentage(100);
-            float[] widths = {3f, 2.5f, 2.5f, 3f, 4f, 4f, 2.5f, 2.5f, 2.5f, 3f, 2.5f};
+            float[] widths = {3f, 2.5f, 2.5f, 3f, 4f, 4f, 2.5f, 2.5f, 2.5f, 3f, 2.5f, 2.5f};
             table.setWidths(widths);
 
             for (String h : headers) {
@@ -1358,7 +1358,7 @@ public class InwardReportControllerBht implements Serializable {
                 table.addCell(finalBillCell);
 
                 if (detailedRows == null || detailedRows.isEmpty()) {
-                    for (int i = 0; i < 7; i++) {
+                    for (int i = 0; i < 8; i++) {
                         table.addCell(new Phrase("", normalFont));
                     }
                     continue;
@@ -1394,11 +1394,13 @@ public class InwardReportControllerBht implements Serializable {
                             table.addCell(new Phrase(paidDate != null ? sdf.format(paidDate) : "", normalFont));
                             String paidBillNo = detail.getPaidBillNumbers().get(i);
                             table.addCell(new Phrase(paidBillNo != null ? paidBillNo : "", normalFont));
+                            table.addCell(new Phrase("", normalFont));
                             Double paidValue = detail.getPaidFeeValues().get(i);
                             PdfPCell paidCell = new PdfPCell(new Phrase(df.format(paidValue != null ? paidValue : 0.0), normalFont));
                             paidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                             table.addCell(paidCell);
                         } else {
+                            table.addCell(new Phrase("", normalFont));
                             table.addCell(new Phrase("", normalFont));
                             table.addCell(new Phrase("", normalFont));
                             table.addCell(new Phrase("", normalFont));
@@ -1412,6 +1414,7 @@ public class InwardReportControllerBht implements Serializable {
                     table.addCell(totalAddedCell);
                     table.addCell(new Phrase("", normalFont));
                     table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
                     PdfPCell totalPaidCell = new PdfPCell(new Phrase(df.format(detail.getSumPaidFee()), boldFont));
                     totalPaidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(totalPaidCell);
@@ -1421,6 +1424,7 @@ public class InwardReportControllerBht implements Serializable {
                     PdfPCell balanceValueCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee() - detail.getSumPaidFee()), boldFont));
                     balanceValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(balanceValueCell);
+                    table.addCell(new Phrase("", normalFont));
                     table.addCell(new Phrase("", normalFont));
                     table.addCell(new Phrase("", normalFont));
                     table.addCell(new Phrase("", normalFont));
