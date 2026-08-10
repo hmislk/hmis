@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
@@ -46,18 +45,28 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
+ * Controller for the inpatient "Make a Deposit" workflow.
+ *
+ * Mirrors {@link InwardPaymentController} in structure and public API so the
+ * deposit page can reuse the payment page's EL expressions with only the
+ * managed-bean name changed. The behavioural difference is that bills created
+ * here are tagged {@link BillTypeAtomic#INWARD_DEPOSIT} instead of
+ * {@code INWARD_PAYMENT}.
+ * {@code BillBeanController.updateInwardDipositList(...)} treats both atomics
+ * identically: {@code balance}, {@code paidAmount}, and
+ * {@code settledAmountByPatient} are all updated the same way for a Deposit
+ * bill as for a Payment bill.
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
  * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
-public class InwardPaymentController implements Serializable, ControllerWithMultiplePayments {
+public class InwardDepositController implements Serializable, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
 
@@ -79,7 +88,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     @EJB
     PatientFacade patientFacade;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private InwardBeanController inwardBean;
@@ -96,7 +105,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     @Inject
     private FinancialTransactionController financialTransactionController;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private BilledBill current;
     private boolean printPreview;
@@ -108,7 +117,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private double total;
     private Patient patient;
     private PaymentMethodData paymentMethodData;
-    /** Net total of the inward final bill; populated by bhtListener for display on the co-payment page. */
+    /** Net total of the inward final bill; populated by bhtListener for display on the deposit page. */
     private double finalBillTotal;
 
     // </editor-fold>
@@ -122,12 +131,12 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("Select BHT");
             return;
         }
-        
+
         paymentListener();
 
     }
-    
-    public void paymentListener(){
+
+    public void paymentListener() {
         due = getFinalBillDue();
         finalBillTotal = getFinalBillNetTotal();
         patient = current.getPatientEncounter().getPatient();
@@ -135,32 +144,24 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         paymentMethodData = new PaymentMethodData();
     }
 
-    /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
-    public String navigateToInwardPatientCopayment() {
-        makeNull();
-        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
-            return "/cashier/index?faces-redirect=true";
-        }
-        return "/credit/inward_patient_copay_payment?faces-redirect=true";
-    }
-
     /**
-     * Navigate to the inward deposit payment page, requiring an active shift.
-     * If the logged user has no open shift start fund bill, show an error and
-     * send them to the cashier index to start a shift first.
+     * Navigate to the inward deposit collection page, requiring an active
+     * shift. If the logged user has no open shift start fund bill, show an
+     * error and send them to the cashier index to start a shift first.
+     * Callers are responsible for calling makeNull() and setting up
+     * `current` (e.g. patientEncounter) before delegating to this method;
+     * this method must not reset `current` itself, or state set up by the
+     * caller (such as InwardSearch.navigateMakeDeposit()) would be lost
+     * before the deposit page ever reads it.
      */
-    public String navigateToInwardDepositPayment() {
-        makeNull();
+    public String navigateToInwardDeposit() {
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
             JsfUtil.addErrorMessage("Start Your Shift First !");
             return "/cashier/index?faces-redirect=true";
         }
-        return "/inward/inward_bill_payment?faces-redirect=true";
+        return "/inward/inward_bill_deposit?faces-redirect=true";
     }
 
     /** CC amount committed against this admission (sum of CC commitment bills created at finalization). */
@@ -250,11 +251,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (checkErrorsInPaymentMethod(paymentMethod, paymentMethodData)) {
             return true;
         }
-        
+
         return false;
 
     }
-    
+
     private boolean checkErrorsInPaymentMethod(PaymentMethod method, PaymentMethodData methodData) {
         if (method == null) {
             JsfUtil.addErrorMessage("Please Select a Payment Method");
@@ -685,7 +686,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient() == null
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
-    
+
     public void pay() {
         if (errorCheck()) {
             return;
@@ -705,9 +706,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
         paymentService.createPayment(
                 current,
-                current.getPaymentMethod(), 
-                paymentMethodData, 
-                sessionController.getInstitution(), 
+                current.getPaymentMethod(),
+                paymentMethodData,
+                sessionController.getInstitution(),
                 sessionController.getDepartment(),
                 sessionController.getLoggedUser());
 
@@ -720,7 +721,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
             }
         }
-        JsfUtil.addSuccessMessage("Payment Bill Saved");
+        JsfUtil.addSuccessMessage("Deposit Bill Saved");
         paymentMethod = null;
         printPreview = true;
     }
@@ -737,7 +738,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
         saveBill();
         saveBillItem();
-        JsfUtil.addSuccessMessage("Payment Bill Saved");
+        JsfUtil.addSuccessMessage("Deposit Bill Saved");
 
         Bill curr = getCurrent();
 
@@ -745,15 +746,15 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
         return curr;
     }
-    
+
     public void updatePaymentData() {
         if (current == null) {
             JsfUtil.addErrorMessage("No current bill available");
             return;
         }
-       
+
         PaymentMethod pm = getPaymentMethod();
-        
+
         if (pm != null) {
             if (pm == PaymentMethod.PatientDeposit) {
 
@@ -763,8 +764,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 }
                 if (patient.getId() == null) {
                     JsfUtil.addErrorMessage("No Patient is selected. Can't proceed with Patient Deposits");
-                    return ;
-                    
+                    return;
+
                 } else {
                     patient = patientFacade.find(patient.getId());
 
@@ -790,7 +791,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         }
     }
 
-    
     public void changePaymentMethodChange() {
         if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
@@ -870,7 +870,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT);
         getCurrent().setPaymentMethod(paymentMethod);
 
         AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null

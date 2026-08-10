@@ -199,7 +199,7 @@ public class BhtPaymentDetailReportController implements Serializable {
                 + " and p.bill.billTypeAtomic = :bta"
                 + " and p.bill.patientEncounter = :enc");
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("bta", BillTypeAtomic.INWARD_PAYMENT);
         params.put("enc", enc);
         if (paymentMethod != null) {
             jpql.append(" and p.paymentMethod = :pm");

@@ -145,7 +145,7 @@ public class InwardRefundController implements Serializable {
         }
 
         saveBill();
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_REFUND);
         getBillFacade().edit(getCurrent());
         saveBillItem();
 

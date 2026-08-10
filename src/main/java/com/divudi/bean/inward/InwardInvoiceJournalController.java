@@ -631,7 +631,7 @@ public class InwardInvoiceJournalController implements Serializable {
                 + " group by p.bill.patientEncounter.id";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("bta",  BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("bta",  BillTypeAtomic.INWARD_PAYMENT);
         params.put("encs", encounters);
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);

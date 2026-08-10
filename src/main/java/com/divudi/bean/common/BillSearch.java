@@ -5309,11 +5309,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case DRAWER_ADJUSTMENT:
                 return requestController.navigateToDrawerAdjustmentApproveByBill(bill);
 
-            case INWARD_DEPOSIT:
+            case INWARD_PAYMENT:
                 inwardSearch.setBill(bill);
                 return "/inward/inward_reprint_bill_payment?faces-redirect=true";
 
-            case INWARD_DEPOSIT_CANCELLATION: {
+            case INWARD_PAYMENT_CANCELLATION: {
                 // `bill` here is the cancellation bill itself (a CancelledBill).
                 // InwardSearch.createCancelDepositBill() links it back to the
                 // original deposit bill via billedBill, and the original bill's
@@ -5330,8 +5330,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return inwardSearch.navigateToViewInwardDepositCancellationBill(reloadedOriginalDepositBill);
             }
 
-            case INWARD_DEPOSIT_REFUND:
-            case INWARD_DEPOSIT_REFUND_CANCELLATION:
+            case INWARD_PAYMENT_REFUND:
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
                 // No dedicated view/reprint page exists yet for these two atomics.
                 // Both are still InwardPaymentBill-family bills created via
                 // Bill.copy() of the original deposit bill, so patientEncounter

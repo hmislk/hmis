@@ -142,10 +142,12 @@ public class PatientDepositService {
                 handleOutPayment(p, pd);
                 break;
 
+            case INWARD_PAYMENT:
             case INWARD_DEPOSIT:
                 handleOutPayment(p, pd);
                 break;
-                
+
+            case INWARD_PAYMENT_CANCELLATION:
             case INWARD_DEPOSIT_CANCELLATION:
                 handleInPayment(p, pd);
                 break;
