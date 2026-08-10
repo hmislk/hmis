@@ -359,7 +359,7 @@
                                              ajax="false"
                                              value="Process"
                                              action="#{admissionCategoryWiseAdmissionReportController.processAdmissionCategoryWiseAdmissionReportNew()}"/>
-                            
+
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
@@ -438,6 +438,9 @@
                                     value="#{admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionList}"
                                     var="row"
                                     rowIndexVar="n"
+                                    paginator="true"
+                                    rows="50"
+                                    rowsPerPageTemplate="25,50,100"
                                     styleClass="table-sm w-100">
 
                                     <p:column headerText="No" width="4em" styleClass="text-center">
