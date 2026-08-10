@@ -61,6 +61,7 @@
                                     ajax="false"
                                     value="Search"
                                     icon="fas fa-search"
+                                    rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsGeneralSearch')}"
                                     action="#{admissionController.searchAdmissions}"
                                     class="mt-2 w-100 mb-3 ui-button-warning">
                                 </p:commandButton>
@@ -187,20 +188,31 @@
 
 
                                 <p:outputLabel value="Occupation" ></p:outputLabel>
-                                <p:inputText
+                                <p:autoComplete
+                                    id="occupation"
                                     class="w-100"
-                                    value="#{admissionController.occupationForSearch}" >
-                                </p:inputText>
+                                    inputStyleClass="form-control"
+                                    forceSelection="true"
+                                    value="#{admissionController.occupationForSearch}"
+                                    completeMethod="#{clinicalEntityController.completeOccupation}"
+                                    var="occ"
+                                    itemLabel="#{occ.name}"
+                                    itemValue="#{occ.name}"
+                                    placeholder="Occupation"
+                                    maxResults="15"
+                                    size="10">
+                                </p:autoComplete>
 
                                 <p:outputLabel value="Insurance Company" ></p:outputLabel>
                                 <p:selectOneMenu
+                                    id="cmbCreditCompanyForSearch"
                                     class="w-100"
                                     value="#{admissionController.creditCompanyForSearch}"
                                     filter="true"
                                     autoWidth="false"
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.creditCompanies}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}" />
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="creditCompanyItem" itemLabel="#{creditCompanyItem.name}" itemValue="#{creditCompanyItem}" />
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Status" ></p:outputLabel>

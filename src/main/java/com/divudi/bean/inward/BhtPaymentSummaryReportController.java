@@ -264,8 +264,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
-     * Fetch all Payment records linked to INWARD_DEPOSIT bills for this encounter.
-     * Deposit bills link to the encounter via bill.patientEncounter directly.
+     * Fetch all Payment records linked to INWARD_PAYMENT bills for this encounter.
+     * Payment bills link to the encounter via bill.patientEncounter directly.
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         String jpql = "select p from Payment p"
@@ -275,7 +275,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + " and p.bill.billTypeAtomic = :bta"
                 + " and p.bill.patientEncounter = :enc";
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("bta", BillTypeAtomic.INWARD_PAYMENT);
         params.put("enc", enc);
         return paymentFacade.findByJpql(jpql, params);
     }

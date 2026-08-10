@@ -2317,6 +2317,16 @@ public class PharmacyController implements Serializable {
                 params.put("departmentTypes", selectedDepartmentTypes);
             }
 
+            if (category != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+                params.put("category", category);
+            }
+
+            if (dosageForm != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+                params.put("df", dosageForm);
+            }
+
             jpql += " order by b.id desc";
 
             try {
@@ -2485,7 +2495,9 @@ public class PharmacyController implements Serializable {
         filters.put("Institution", institution != null ? institution.getName() : "All");
         filters.put("Site", site != null ? site.getName() : "All");
         filters.put("Department", dept != null ? dept.getName() : "All");
-        
+        filters.put("Category", category != null ? category.getName() : "All");
+        filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
+
         filters.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All");
         filters.put("Supplier", fromInstitution != null ? fromInstitution.getName() : "All");
         filters.put("report type", reportType != null ? reportType : "All");

@@ -1214,7 +1214,38 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
             return;
         }
-        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        org.apache.poi.ss.usermodel.Workbook workbook = (org.apache.poi.ss.usermodel.Workbook) document;
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // The exported table's footer row (p:columnGroup type="footer") is not
+        // picked up by the xlsx exporter, so the Total row is built here
+        // directly instead (issue #22459).
+        int totalRowIndex = sheet.getLastRowNum() + 1;
+        Row totalRow = sheet.createRow(totalRowIndex);
+
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+
+        CellStyle totalLabelStyle = workbook.createCellStyle();
+        totalLabelStyle.setFont(boldFont);
+
+        CellStyle totalValueStyle = workbook.createCellStyle();
+        totalValueStyle.setFont(boldFont);
+        totalValueStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+        Cell totalLabelCell = totalRow.createCell(0);
+        totalLabelCell.setCellValue("Total");
+        totalLabelCell.setCellStyle(totalLabelStyle);
+        sheet.addMergedRegion(new CellRangeAddress(totalRowIndex, totalRowIndex, 0, 3));
+
+        Cell purchaseTotalCell = totalRow.createCell(4);
+        purchaseTotalCell.setCellValue(stockPurchaseValue);
+        purchaseTotalCell.setCellStyle(totalValueStyle);
+
+        Cell saleTotalCell = totalRow.createCell(5);
+        saleTotalCell.setCellValue(stockSaleValue);
+        saleTotalCell.setCellStyle(totalValueStyle);
+
         List<String[]> filterPairs = new ArrayList<>();
         filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
         filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});

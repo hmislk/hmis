@@ -173,6 +173,11 @@ public class EmailManagerEjb {
 
     private boolean sendEmailViaRestGateway(String subject, String body, List<String> recipients, boolean isHtml,
             List<EmailAttachment> attachments) {
+        return sendEmailViaRestGateway(subject, body, recipients, null, null, isHtml, attachments);
+    }
+
+    private boolean sendEmailViaRestGateway(String subject, String body, List<String> recipients,
+            List<String> cc, List<String> bcc, boolean isHtml, List<EmailAttachment> attachments) {
         String messengerServiceURL = configOptionApplicationController.getShortTextValueByKey("Email Gateway - URL", "");
 
         if (messengerServiceURL == null || messengerServiceURL.trim().isEmpty()) {
@@ -182,7 +187,7 @@ public class EmailManagerEjb {
 
         HttpURLConnection connection = null;
         try {
-            JSONObject payload = buildEmailJsonPayload(subject, body, recipients, isHtml, attachments);
+            JSONObject payload = buildEmailJsonPayload(subject, body, recipients, cc, bcc, isHtml, attachments);
 
             URL url = new URL(messengerServiceURL);
             connection = (HttpURLConnection) url.openConnection();
@@ -239,6 +244,11 @@ public class EmailManagerEjb {
 
     private JSONObject buildEmailJsonPayload(String subject, String body, List<String> recipients, boolean isHtml,
             List<EmailAttachment> attachments) {
+        return buildEmailJsonPayload(subject, body, recipients, null, null, isHtml, attachments);
+    }
+
+    private JSONObject buildEmailJsonPayload(String subject, String body, List<String> recipients,
+            List<String> cc, List<String> bcc, boolean isHtml, List<EmailAttachment> attachments) {
         final String username = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Username", "");
         final String password = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Password", "");
         final String smtpHost = configOptionApplicationController.getShortTextValueByKey("Email Gateway - SMTP Host", "");
@@ -255,6 +265,23 @@ public class EmailManagerEjb {
             recipientArray.put(recipient);
         }
         payload.put("recipients", recipientArray);
+
+        // Only include cc/bcc when present so older messenger deployments
+        // (and existing single-recipient callers) keep working unchanged.
+        if (cc != null && !cc.isEmpty()) {
+            JSONArray ccArray = new JSONArray();
+            for (String address : cc) {
+                ccArray.put(address);
+            }
+            payload.put("cc", ccArray);
+        }
+        if (bcc != null && !bcc.isEmpty()) {
+            JSONArray bccArray = new JSONArray();
+            for (String address : bcc) {
+                bccArray.put(address);
+            }
+            payload.put("bcc", bccArray);
+        }
 
         // Only include the key when attachments exist so older messenger
         // deployments keep accepting attachment-less payloads unchanged.
@@ -409,6 +436,20 @@ public class EmailManagerEjb {
             final List<EmailAttachment> attachments) {
         try {
             return sendEmailViaRestGateway(subject, body, recipients, isHtml, attachments);
+        } catch (Exception e) {
+            Logger.getLogger(EmailManagerEjb.class.getName()).log(Level.SEVERE, "Failed to send email: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Sends an email with To/CC/BCC and optional attachments. Requires a
+     * messenger deployment that supports the "cc"/"bcc" payload fields.
+     */
+    public boolean sendEmail(final List<String> recipients, final List<String> cc, final List<String> bcc,
+            final String body, final String subject, final boolean isHtml, final List<EmailAttachment> attachments) {
+        try {
+            return sendEmailViaRestGateway(subject, body, recipients, cc, bcc, isHtml, attachments);
         } catch (Exception e) {
             Logger.getLogger(EmailManagerEjb.class.getName()).log(Level.SEVERE, "Failed to send email: " + e.getMessage(), e);
             return false;

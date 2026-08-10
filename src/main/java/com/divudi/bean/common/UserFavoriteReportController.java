@@ -71,6 +71,32 @@ public class UserFavoriteReportController implements Serializable {
     }
 
     /**
+     * True if the current logged-in user has any non-retired favorite whose
+     * reportKey starts with the given prefix. Lets each report/analytics
+     * index page (e.g. Pharmacy Analytics, using the "pharmacyAnalytics_"
+     * reportKey prefix) show its own page-scoped "no favorites yet"
+     * empty-state message, instead of {@link #getFavorites()}, which
+     * returns favorites across the whole app and would incorrectly suppress
+     * the message on a page where the user has no favorites of their own,
+     * just because they have a favorite on a different page. See
+     * developer_docs/feature/report-favorites.md - Gotcha 3.
+     */
+    public boolean hasAnyFavoriteWithKeyPrefix(String prefix) {
+        if (sessionController == null || sessionController.getLoggedUser() == null) {
+            return false;
+        }
+        if (prefix == null) {
+            return false;
+        }
+        for (UserFavoriteReport f : getCachedFavorites()) {
+            if (f.getReportKey() != null && f.getReportKey().startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Toggles the favorite state of a report for the current logged-in
      * user: retires the existing favorite (soft-delete) if one exists,
      * otherwise creates a new one. Refreshes the cached list afterwards so
