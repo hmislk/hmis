@@ -1357,6 +1357,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                     : (bf.getFeeValue() - bf.getPaidValue());
             BillItem i = saveBillItemForPaymentBill(b, bf, amountPaidNow);
             bf.setPaidValue(bf.getPaidValue() + amountPaidNow);
+            bf.setSettleValue(bf.getSettleValue() + amountPaidNow);
             getBillFeeFacade().edit(bf);
             BillFee nbf = new BillFee();
             nbf.setBillItem(i);
