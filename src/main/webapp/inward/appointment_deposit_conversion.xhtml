@@ -5,7 +5,8 @@
                  xmlns:h="http://xmlns.jcp.org/jsf/html"
                  xmlns:p="http://primefaces.org/ui"
                  xmlns:f="http://xmlns.jcp.org/jsf/core"
-                 xmlns="http://www.w3.org/1999/xhtml">
+                 xmlns="http://www.w3.org/1999/xhtml"
+                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment">
 
     <!-- Issue #22719: explicit, user-triggered conversion of an appointment's
          deposit bill (INWARD_APPOINTMENT_BILL) into this admission's Inward
@@ -17,7 +18,8 @@
 
             <p:panel>
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <!-- LEFT: title + patient badge -->
                         <div class="d-flex align-items-center">
                             <i class="fa-solid fa-money-bill-transfer fa-lg text-warning me-3"></i>
                             <div>
@@ -31,25 +33,38 @@
                                 </h:panelGroup>
                             </div>
                         </div>
+
+                        <!-- CENTER: entity-level navigation -->
                         <div class="d-flex gap-2">
                             <p:commandButton
-                                value="Back to Dashboard"
+                                value="Inpatient Dashboard"
                                 ajax="false"
                                 action="#{admissionController.navigateToAdmissionProfilePage()}"
                                 icon="fa fa-arrow-left"
-                                class="ui-button-secondary"/>
+                                styleClass="ui-button-info ui-button-outlined"/>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                <p:commandButton
+                                    value="Nursing WorkBench"
+                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                    ajax="false"
+                                    icon="fa fa-arrow-left"
+                                    styleClass="ui-button-info ui-button-outlined"/>
+                            </h:panelGroup>
                         </div>
+
+                        <!-- RIGHT: page actions (none beyond navigation on this page) -->
+                        <div class="d-flex gap-2 align-items-center"></div>
                     </div>
                 </f:facet>
 
-                <h:panelGroup rendered="#{admissionController.pendingAppointmentConversion eq null}" layout="block">
+                <h:panelGroup rendered="#{!admissionController.printPreview and admissionController.pendingAppointmentConversion eq null}" layout="block">
                     <div class="text-center py-5">
                         <i class="fa-solid fa-check-circle fa-3x text-success mb-3"></i>
                         <p class="text-muted">No pending appointment deposit conversion for this admission.</p>
                     </div>
                 </h:panelGroup>
 
-                <h:panelGroup rendered="#{admissionController.pendingAppointmentConversion ne null}" layout="block">
+                <h:panelGroup rendered="#{!admissionController.printPreview and admissionController.pendingAppointmentConversion ne null}" layout="block">
                     <div class="alert alert-info" role="alert">
                         <h:outputText styleClass="fas fa-circle-info me-2"/>
                         <h:outputText value="This patient paid a deposit at the time of the appointment. Converting it will cancel the original appointment bill (offsetting it correctly in reports) and create a new Inward Deposit for the admission, for the same amount."/>
@@ -98,7 +113,156 @@
                             class="ui-button-warning"/>
                     </div>
                 </h:panelGroup>
+
+                <!-- Issue #22783 Part A: print-preview receipts shown right after a
+                     successful conversion — the cancellation receipt for the original
+                     appointment deposit bill, and the deposit receipt for the new
+                     Inward Deposit bill. -->
+                <h:panelGroup layout="block" rendered="#{admissionController.printPreview}">
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h:outputText value="Appointment Deposit Cancellation Receipt"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                id="btnCancelReceiptSettings"
+                                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                value="Settings"
+                                                icon="fas fa-cog"
+                                                styleClass="ui-button-secondary"
+                                                type="button"
+                                                title="Configure cancellation receipt paper"
+                                                onclick="PF('inwardPaymentConfigDialog').show();"/>
+                                            <p:commandButton
+                                                id="btnPrintCancelReceipt"
+                                                value="Print"
+                                                styleClass="ui-button-info"
+                                                icon="fas fa-print"
+                                                title="Print cancellation receipt">
+                                                <p:printer target="gpCancelReceiptPreview"/>
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <h:panelGroup id="gpCancelReceiptPreview">
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
+                                            <bill:FiveFiveCancellationReceipt receipt="#{admissionController.conversionCancelReceipt}" duplicate="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
+                                            <bill:A4PaperCancellationReceipt receipt="#{admissionController.conversionCancelReceipt}" duplicate="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                            <bill:PosPaperCancellationReceipt receipt="#{admissionController.conversionCancelReceipt}" duplicate="false"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
+                            </p:panel>
+                        </div>
+
+                        <div class="col-6">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h:outputText value="New Inpatient Deposit Receipt"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                id="btnDepositReceiptSettings"
+                                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                value="Settings"
+                                                icon="fas fa-cog"
+                                                styleClass="ui-button-secondary"
+                                                type="button"
+                                                title="Configure deposit receipt paper"
+                                                onclick="PF('inwardPaymentConfigDialog').show();"/>
+                                            <p:commandButton
+                                                id="btnPrintDepositReceipt"
+                                                value="Print"
+                                                styleClass="ui-button-info"
+                                                icon="fas fa-print"
+                                                title="Print deposit receipt">
+                                                <p:printer target="gpDepositReceiptPreview"/>
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <h:panelGroup id="gpDepositReceiptPreview">
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
+                                            <bill:FiveFiveDepositReceipt receipt="#{admissionController.conversionDepositReceipt}" duplicate="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
+                                            <bill:A4PaperDepositReceipt receipt="#{admissionController.conversionDepositReceipt}" duplicate="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                            <bill:PosPaperDepositReceipt receipt="#{admissionController.conversionDepositReceipt}" duplicate="false"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </div>
+                </h:panelGroup>
             </p:panel>
         </h:form>
+
+        <!-- Shared printer paper-format dialog for both receipts above (same
+             widgetVar/config bean as the Inward Payment Bill and Inward
+             Deposit Cancellation Bill print flows) -->
+        <p:dialog id="inwardPaymentConfigDialog"
+                  header="Inward Payment Bill Printer Configuration"
+                  widgetVar="inwardPaymentConfigDialog"
+                  modal="true"
+                  width="560"
+                  resizable="false"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
+            <h:form id="inwardPaymentConfigForm">
+                <div class="card config-section">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"/>
+                        <h:outputText value="Paper Format Settings"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                            <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                            <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
+                            <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                            <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <p:commandButton value="Apply &amp; Close"
+                                     icon="fas fa-save"
+                                     class="ui-button-success"
+                                     ajax="false"
+                                     action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                    <p:commandButton value="Cancel"
+                                     icon="fas fa-times"
+                                     class="ui-button-secondary"
+                                     type="button"
+                                     onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
+                </div>
+            </h:form>
+        </p:dialog>
     </ui:define>
 </ui:composition>

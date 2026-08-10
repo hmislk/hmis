@@ -232,6 +232,12 @@ public class BhtSummeryController implements Serializable {
     private boolean custom4ShowPhone;
     private boolean custom4ShowGuardian;
     private boolean custom4ShowCorporateSponsor;
+    // Custom Bills tab - which custom format(s) are shown to end users.
+    // An admin flips these via the Settings dialog; end users never pick a
+    // format at print time (department-wide choice, not a per-print option).
+    private boolean showCustomBill2Format;
+    private boolean showCustomBill3Format;
+    private boolean showCustomBill4Format;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -473,7 +479,20 @@ public class BhtSummeryController implements Serializable {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom2 print format">
+    private void loadCustomBillFormatVisibility() {
+        showCustomBill2Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 2 Format", true);
+        showCustomBill3Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 3 Format", false);
+        showCustomBill4Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 4 Format", false);
+    }
+
+    private void persistCustomBillFormatVisibility() {
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 2 Format", showCustomBill2Format);
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 3 Format", showCustomBill3Format);
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 4 Format", showCustomBill4Format);
+    }
+
     public void loadCustom2Config() {
+        loadCustomBillFormatVisibility();
         custom2ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", false);
         custom2ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", false);
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
@@ -489,6 +508,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
         try {
+            persistCustomBillFormatVisibility();
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", custom2ShowAddress);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", custom2ShowNic);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
@@ -619,6 +639,30 @@ public class BhtSummeryController implements Serializable {
 
     public void setCustom2ShowCorporateSponsor(boolean custom2ShowCorporateSponsor) {
         this.custom2ShowCorporateSponsor = custom2ShowCorporateSponsor;
+    }
+
+    public boolean isShowCustomBill2Format() {
+        return showCustomBill2Format;
+    }
+
+    public void setShowCustomBill2Format(boolean showCustomBill2Format) {
+        this.showCustomBill2Format = showCustomBill2Format;
+    }
+
+    public boolean isShowCustomBill3Format() {
+        return showCustomBill3Format;
+    }
+
+    public void setShowCustomBill3Format(boolean showCustomBill3Format) {
+        this.showCustomBill3Format = showCustomBill3Format;
+    }
+
+    public boolean isShowCustomBill4Format() {
+        return showCustomBill4Format;
+    }
+
+    public void setShowCustomBill4Format(boolean showCustomBill4Format) {
+        this.showCustomBill4Format = showCustomBill4Format;
     }
     // </editor-fold>
 
@@ -2519,6 +2563,16 @@ public class BhtSummeryController implements Serializable {
      * commitment bills recorded against {@code sourceBill}, so a new version
      * starts from the same split rather than forcing the cashier to re-allocate
      * from scratch.
+     * <p>
+     * {@code settle()} only persists a CC bill for allocations {@code > 0}, so a
+     * company that was allocated 0.00 in the source bill has no CC bill to read
+     * back here. Every company still on the encounter (from
+     * {@link #fillCreditCompaniesByPatient}) is therefore always given a row —
+     * defaulting to 0.00 when no CC bill is found — the same way
+     * {@link #populateCreditCompanyAllocations()} always shows every company on
+     * the normal settle flow. Without this, a zero-allocated company would
+     * silently disappear from every subsequent version and could never be
+     * re-allocated to.
      */
     private List<CreditCompanyAllocation> rebuildAllocationsFromSourceBill(Bill sourceBill) {
         List<CreditCompanyAllocation> allocations = new ArrayList<>();
@@ -2528,12 +2582,36 @@ public class BhtSummeryController implements Serializable {
         params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         List<Bill> ccBills = getBillFacade().findByJpql(jpql, params);
 
-        double allocatedSoFar = 0.0;
+        Map<Institution, Double> allocatedByCompany = new LinkedHashMap<>();
         if (ccBills != null) {
             for (Bill ccBill : ccBills) {
-                allocations.add(new CreditCompanyAllocation(ccBill.getCreditCompany(), ccBill.getNetTotal()));
-                allocatedSoFar += ccBill.getNetTotal();
+                // Sum rather than overwrite: normally one CC bill per institution, but
+                // duplicate EncounterCreditCompany registrations for the same institution
+                // are possible via older data paths (e.g. AdmissionController), which
+                // would otherwise silently drop all but the last bill's amount here.
+                allocatedByCompany.merge(ccBill.getCreditCompany(), ccBill.getNetTotal(), Double::sum);
             }
+        }
+
+        double allocatedSoFar = 0.0;
+        List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(sourceBill.getPatientEncounter());
+        if (eccs != null && !eccs.isEmpty()) {
+            eccs.sort(Comparator.comparing(
+                    ecc -> ecc.getInstitution() != null ? ecc.getInstitution().getName() : "",
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+            for (EncounterCreditCompany ecc : eccs) {
+                Double amount = allocatedByCompany.remove(ecc.getInstitution());
+                double allocated = amount != null ? amount : 0.0;
+                allocations.add(new CreditCompanyAllocation(ecc, allocated));
+                allocatedSoFar += allocated;
+            }
+        }
+        // Any CC bill for a company no longer in the encounter's active list (e.g.
+        // retired since the source bill was settled) still keeps its allocated
+        // amount visible instead of silently dropping it.
+        for (Map.Entry<Institution, Double> leftover : allocatedByCompany.entrySet()) {
+            allocations.add(new CreditCompanyAllocation(leftover.getKey(), leftover.getValue()));
+            allocatedSoFar += leftover.getValue();
         }
 
         double newLiveNetDue = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
@@ -4491,6 +4569,19 @@ public class BhtSummeryController implements Serializable {
 
     public void setProfesionallFee(List<BillFee> profesionallFee) {
         this.profesionallFee = profesionallFee;
+    }
+
+    /**
+     * Invalidates the cached Professional Fees tab list so the next call to
+     * {@link #getProfesionallFee()} re-queries the database. This bean is
+     * @SessionScoped and many pages navigate directly to inward_bill_intrim.xhtml
+     * without calling {@link #createTables()}, so professional fees added from
+     * elsewhere (e.g. the surgery professional fee bill) would otherwise never
+     * appear until some unrelated action happened to reset the cache. See
+     * issue #20146.
+     */
+    public void refreshProfesionallFee() {
+        profesionallFee = null;
     }
 
     public List<Bill> getPaymentBill() {

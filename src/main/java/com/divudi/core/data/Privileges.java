@@ -107,6 +107,7 @@ public enum Privileges {
     InwardSearchAdmissionsByCurrentDepartmentAnyInstitute("Inward Search Admissions By Current Department - Any Institute"),
     InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute("Inward Search Admissions By Current Department - Logged Institute"),
     InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment("Inward Search Admissions By Current Department - Logged Department"),
+    InwardSearchAdmissionsGeneralSearch("Inward Search Admissions - General Search (Date Range)"),
     InwardSettleFinalBillUnrestricted("Inward Settle Final Bill Without Restricted"),
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
@@ -152,12 +153,14 @@ public enum Privileges {
     InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
+    InwardSendEmail("Inward Send Email"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
     InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
     InwardEditPaymentDetails("Inward Edit Payment Details"),
     InwardManageAllergies("Inward Manage Allergies"),
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
+    InwardMakeDepositAccess("Inward Make Deposit Access"),
     InwardPostFinalPaymentAccess("Inward Post Final Payment Access"),
     InwardSurgeryAdd("Inward Surgery Add"),
     InwardSurgeryManage("Inward Surgery Manage"),
@@ -200,6 +203,7 @@ public enum Privileges {
     NursingWorkBenchPanelOperationTheatre("Nursing Workbench - Operation Theatre Panel"),
     NursingWorkBenchPanelPharmaceuticals("Nursing Workbench - Pharmaceuticals Panel"),
     NursingWorkBenchPanelReports("Nursing Workbench - Reports Panel"),
+    NursingWorkBenchPanelPayments("Nursing Workbench - Payments Panel"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
@@ -1225,6 +1229,7 @@ public enum Privileges {
             case NursingWorkBenchPanelOperationTheatre:
             case NursingWorkBenchPanelPharmaceuticals:
             case NursingWorkBenchPanelReports:
+            case NursingWorkBenchPanelPayments:
                 return "Nursing Work Bench";
 
             case WatingRoomAdmitPatient:
@@ -1242,6 +1247,7 @@ public enum Privileges {
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
             case InpatientLetter:
+            case InwardSendEmail:
             case InwardPackageAdministration:
             case InwardPackageAdmission:
             case InwardFormTemplateAdmin:
@@ -1275,6 +1281,7 @@ public enum Privileges {
             case InwardEditPaymentDetails:
             case InwardManageAllergies:
             case InwardDoctorPaymentAccess:
+            case InwardMakeDepositAccess:
             case InwardPostFinalPaymentAccess:
             case InwardSurgeryAdd:
             case InwardSurgeryManage:

@@ -206,6 +206,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillReportEdit, "Edit Patient Name After Payment Finalized"), inwardBillingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDoctorPaymentAccess, "Doctor Payment Access"), inwardBillingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPostFinalPaymentAccess, "Post Final Payment Access"), inwardBillingNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardMakeDepositAccess, "Make Deposit Access"), inwardBillingNode);
 
         TreeNode dashboardPanelsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inpatient Dashboard Panels"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelAdmission, "Admission Panel"), dashboardPanelsNode);
@@ -246,6 +247,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode searchNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearch, "Search Menu"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchServiceBill, "Search Service Bill"), searchNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsGeneralSearch, "Search Admissions - General Search (Date Range)"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchProfessionalBill, "Search Professional Bill"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchFinalBill, "Search Final Bill"), searchNode);
 
@@ -278,6 +280,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPhysicalDischarge, "Physical Discharge"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDocumentUpload, "Document Upload"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientLetter, "Generate Inpatient Letters"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSendEmail, "Send Email"), inwardClinicalNode);
 
         TreeNode inwardPackageNode = new DefaultTreeNode(new PrivilegeHolder(null, "Packages"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPackageAdministration, "Manage Inpatient Packages"), inwardPackageNode);
@@ -1011,6 +1014,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelOperationTheatre, "Operation Theatre Panel"), nursingWorkBenchPanelsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelPharmaceuticals, "Pharmaceuticals Panel"), nursingWorkBenchPanelsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelReports, "Reports Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelPayments, "Payments Panel"), nursingWorkBenchPanelsNode);
 
         // Admin Privileges
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);
