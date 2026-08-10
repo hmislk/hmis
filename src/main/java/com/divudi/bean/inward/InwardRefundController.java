@@ -18,6 +18,7 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -57,6 +58,10 @@ public class InwardRefundController implements Serializable {
     private SessionController sessionController;
     @Inject
     private FinancialTransactionController financialTransactionController;
+    @Inject
+    private AdmissionController admissionController;
+    @Inject
+    private BhtSummeryController bhtSummeryController;
     private double paidAmount;
     double netTotal;
     private Bill current;
@@ -129,6 +134,15 @@ public class InwardRefundController implements Serializable {
     }
 
     public String navigateToInpationDashbord() {
+        if (getCurrent() == null || getCurrent().getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        PatientEncounter pe = getCurrent().getPatientEncounter();
+        bhtSummeryController.setPatientEncounter(pe);
+        if (pe instanceof Admission) {
+            admissionController.setCurrent((Admission) pe);
+        }
         return "/inward/admission_profile?faces-redirect=true";
     }
 
