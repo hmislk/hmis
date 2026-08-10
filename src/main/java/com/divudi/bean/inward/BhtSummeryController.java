@@ -167,6 +167,8 @@ public class BhtSummeryController implements Serializable {
     AdmissionController admissionController;
     @Inject
     InwardPaymentController inwardPaymentController;
+    @Inject
+    InwardRefundController inwardRefundController;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
@@ -4149,6 +4151,16 @@ public class BhtSummeryController implements Serializable {
         if (inwardPaymentController.getCurrent() != null
                 && inwardPaymentController.getCurrent().getPatientEncounter() != null) {
             this.patientEncounter = inwardPaymentController.getCurrent().getPatientEncounter();
+        }
+        childPatientEncouters = null;
+        createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
+    }
+
+    public String navigateToIntrimBillRefreshFromRefund() {
+        if (inwardRefundController.getCurrent() != null
+                && inwardRefundController.getCurrent().getPatientEncounter() != null) {
+            this.patientEncounter = inwardRefundController.getCurrent().getPatientEncounter();
         }
         childPatientEncouters = null;
         createTables();
