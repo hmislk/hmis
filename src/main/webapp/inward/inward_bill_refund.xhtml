@@ -216,7 +216,23 @@
                     </p:panel>
                 </h:panelGroup>
                 <p:panel rendered="#{inwardRefundController.printPreview}">
-                    <p:commandButton ajax="false" value="New Bill" class="ui-button-success mb-3" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
+                    <div class="d-flex gap-2 mb-3">
+                        <p:commandButton ajax="false" value="New Bill" class="ui-button-success" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
+                        <p:commandButton
+                            ajax="false"
+                            icon="fas fa-file-invoice-dollar"
+                            value="Interim Bill"
+                            class="ui-button-info mx-1"
+                            action="#{bhtSummeryController.navigateToIntrimBillRefreshFromRefund()}"
+                            />
+                        <p:commandButton
+                            ajax="false"
+                            icon="fas fa-id-card"
+                            value="Inpatient Dashboard"
+                            class="ui-button-secondary "
+                            action="#{inwardRefundController.navigateToInpationDashbord()}"
+                            />
+                    </div>
                     <bill:paymentRefund_1 bill="#{inwardRefundController.current}"/>
                 </p:panel>
 

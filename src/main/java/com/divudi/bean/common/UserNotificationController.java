@@ -543,18 +543,31 @@ public class UserNotificationController implements Serializable {
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     String number = u.getWebUserPerson().getMobile();
                     //TODo
                 }
                 break;
             case SMS:
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     String number = u.getWebUserPerson().getMobile();
                     sendSmsForUserSubscriptions(number);
                 }
                 break;
             case SYSTEM_NOTIFICATION:
+                // Defensive null-check kept as a second line of defense: even though
+                // fillSubscribedUsersByDepartment now resolves role-based subscriptions
+                // to real users, a future gap of this kind should degrade to "one user
+                // doesn't get notified" instead of crashing the whole action (issue #22791).
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     UserNotification nun = new UserNotification();
                     nun.setNotification(n);
                     nun.setWebUser(u);

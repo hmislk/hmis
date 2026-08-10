@@ -12,7 +12,6 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
-import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
@@ -20,7 +19,6 @@ import com.divudi.core.data.Title;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.SurgeryBillType;
-import com.divudi.core.entity.AppEmail;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
@@ -58,9 +56,7 @@ import com.divudi.core.facade.EmailFacade;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.service.AuditService;
-import java.util.Collections;
 import java.util.Map;
-import org.apache.commons.lang3.time.DateFormatUtils;
 
 /**
  *
@@ -85,6 +81,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private AdmissionController admissionController;
+    @Inject
+    private InpatientEmailComposeController inpatientEmailComposeController;
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
     @Inject
@@ -111,8 +109,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     @EJB
     EmailFacade emailFacade;
     @EJB
-    private EmailManagerEjb emailManagerEjb;
-    @EJB
     AuditService auditService;
     // </editor-fold>
 
@@ -129,10 +125,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     String selectText = "";
     String comment;
 
-    private Institution currentCompany;
     private Institution institution;
-    private String subject;
-    private String emailBoday;
 
     YearMonthDay yearMonthDay;
     private PaymentMethod paymentMethod;
@@ -146,8 +139,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
     private Long patientAllergiesLoadedForPatientId;
-    private EncounterCreditCompany currecntEncounterCreditCompany;
-    
     Map<String, Object> originalAdmission;
     Map<String, Object> updatedAdmission;
     // </editor-fold>
@@ -712,12 +703,20 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Admission to edit");
             return "";
         }
+        // Re-fetch fresh from the DB. 'current' may be a stale in-memory Admission
+        // carried over from a @SessionScoped bean (e.g. admissionController) that
+        // was loaded earlier in the session, before other flows (room edits, etc.)
+        // updated related entities such as currentPatientRoom. (Issue #20463)
+        if (current.getId() != null) {
+            current = getFacade().find(current.getId());
+        }
+
         // audit: store original details
         if (current.getId() != null) {
             originalAdmission = new HashMap<>();
             admissionToAuditMap(originalAdmission, current);
         }
-        
+
         admissionController.setCurrent(current);
         createPatientRoom();
         fillCreditCompaniesByPatient();
@@ -759,119 +758,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToSendMailToCompany(EncounterCreditCompany ecc) {
-        if (ecc == null) {
-            JsfUtil.addErrorMessage("No Admission to edit");
-            return "";
-        }
-
-        setCurrecntEncounterCreditCompany(ecc);
-        setCurrentCompany(ecc.getInstitution());
-        setSubject("");
-        String text = configOptionApplicationController.getLongTextValueByKey("Email Body for Inward BHT Confermation to Company", "");
-
-        emailBoday = replaseDataToTemplate(text, ecc);
-
-        return "/inward/send_confermation_mail_to_company?faces-redirect=true";
-    }
-
-    public String replaseDataToTemplate(String body, EncounterCreditCompany ecc) {
-
-        String patientName = ecc.getPatientEncounter().getPatient().getPerson().getNameWithTitle() == null || ecc.getPatientEncounter().getPatient().getPerson().getNameWithTitle().isEmpty() ? "N/A" : ecc.getPatientEncounter().getPatient().getPerson().getNameWithTitle();
-        String patientNic = ecc.getPatientEncounter().getPatient().getPerson().getNic() == null || ecc.getPatientEncounter().getPatient().getPerson().getNic().isEmpty() ? "N/A" : ecc.getPatientEncounter().getPatient().getPerson().getNic();
-        String creditCompany = ecc.getInstitution().getName() == null || ecc.getInstitution().getName().isEmpty() ? "N/A" : ecc.getInstitution().getName();
-        String creditLimit = String.format("%.2f", ecc.getCreditLimit());
-        String policyNumber = ecc.getPolicyNo() == null || ecc.getPolicyNo().isEmpty() ? "N/A" : ecc.getPolicyNo();
-        String referenceNumber = ecc.getReferanceNo() == null || ecc.getReferanceNo().isEmpty() ? "N/A" : ecc.getReferanceNo();
-        String bht = ecc.getPatientEncounter().getBhtNo() == null || ecc.getPatientEncounter().getBhtNo().isEmpty() ? "N/A" : ecc.getPatientEncounter().getBhtNo();
-
-        String admitionDate = ecc.getPatientEncounter().getDateOfAdmission() == null ? "N/A" : DateFormatUtils.format(ecc.getPatientEncounter().getDateOfAdmission(), "yyyy-MM-dd HH:mm:ss");
-
-        String hospitalName = sessionController.getInstitution().getName();
-        String wardName = sessionController.getDepartment().getName();
-
-        return body
-                .replace("{patient_name}", patientName)
-                .replace("{patient_nic}", patientNic)
-                .replace("{credit_company}", creditCompany)
-                .replace("{credit_limit}", creditLimit)
-                .replace("{policy_number}", policyNumber)
-                .replace("{reference_number}", referenceNumber)
-                .replace("{bht}", bht)
-                .replace("{admition_date}", admitionDate)
-                .replace("{hospital_name}", hospitalName)
-                .replace("{ward_name}", wardName);
-    }
-
-    public String sendEmailToCompany() {
-        if (getCurrentCompany() == null) {
-            JsfUtil.addErrorMessage("No Credit Company");
-            return "";
-        }
-        if (getSubject() == null || getSubject().trim().equalsIgnoreCase("")) {
-            JsfUtil.addErrorMessage("Email Subject Missing");
-            return "";
-        }
-        if (getEmailBoday() == null || getEmailBoday().trim().equalsIgnoreCase("")) {
-            JsfUtil.addErrorMessage("Message is Missing");
-            return "";
-        }
-        if (getCurrecntEncounterCreditCompany().getPatientEncounter() == null) {
-            JsfUtil.addErrorMessage("BHT is Missing");
-            return "";
-        }
-        
-        if (getCurrentCompany().getContactPerson() == null) {
-            JsfUtil.addErrorMessage("Company Contact Person is Missing");
-            return "";
-        }
-
-        if (getCurrentCompany().getContactPerson().getEmail() == null || getCurrentCompany().getContactPerson().getEmail().trim().equalsIgnoreCase("")) {
-            JsfUtil.addErrorMessage("Company Email is Missing");
-            return "";
-        }
-
-        AppEmail email = new AppEmail();
-        email.setCreatedAt(new Date());
-        email.setCreater(sessionController.getLoggedUser());
-        email.setReceipientEmail(getCurrentCompany().getContactPerson().getEmail());
-        email.setMessageSubject(getSubject());
-        email.setMessageBody(getEmailBoday());
-        email.setDepartment(sessionController.getLoggedUser().getDepartment());
-        email.setInstitution(sessionController.getLoggedUser().getInstitution());
-        email.setEncounterCreditCompany(getCurrecntEncounterCreditCompany());
-        email.setMessageType(MessageType.ConfirmationEmail);
-        email.setSentSuccessfully(false);
-        email.setPending(true);
-        emailFacade.create(email);
-
-        if (email.getSentSuccessfully() == false) {
-            try {
-                boolean success = emailManagerEjb.sendEmail(
-                        Collections.singletonList(email.getReceipientEmail()),
-                        email.getMessageBody(),
-                        email.getMessageSubject(),
-                        true
-                );
-                email.setSentSuccessfully(success);
-                email.setPending(!success);
-                if (success) {
-                    email.setSentAt(new Date());
-                    emailFacade.edit(email);
-                    FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                    JsfUtil.addSuccessMessage("Email Sent Successfully");
-                    return "/inward/inward_edit_bht?faces-redirect=true";
-                } else {
-                    JsfUtil.addErrorMessage("Sending Email Failed");
-                    return "";
-                }
-            } catch (Exception ex) {
-                JsfUtil.addErrorMessage("Sending Email Failed");
-                return "";
-            }
-        } else {
-            JsfUtil.addErrorMessage("Email has Already Been Sent");
-            return "";
-        }
+        return inpatientEmailComposeController.startComposeForCreditCompany(ecc);
     }
 
     private void createPatientRoom() {
@@ -1115,37 +1002,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         this.currentPatientAllergy = currentPatientAllergy;
     }
 
-    public Institution getCurrentCompany() {
-        return currentCompany;
-    }
-
-    public void setCurrentCompany(Institution currentCompany) {
-        this.currentCompany = currentCompany;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-
-    public String getEmailBoday() {
-        return emailBoday;
-    }
-
-    public void setEmailBoday(String emailBoday) {
-        this.emailBoday = emailBoday;
-    }
-
-    public EncounterCreditCompany getCurrecntEncounterCreditCompany() {
-        return currecntEncounterCreditCompany;
-    }
-
-    public void setCurrecntEncounterCreditCompany(EncounterCreditCompany currecntEncounterCreditCompany) {
-        this.currecntEncounterCreditCompany = currecntEncounterCreditCompany;
-    }
     // </editor-fold>
     
     @Override

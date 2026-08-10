@@ -95,8 +95,41 @@ public class InwardRefundController implements Serializable {
         return "/inward/inward_bill_refund?faces-redirect=true";
     }
 
+    /**
+     * Navigate to the inward deposit refund page with a specific payment bill
+     * pre-selected, for the "Refund" button on the Payment Reprint view page
+     * (issue #22820). Reuses the same eligibility filtering as the manual
+     * bill picker (loadEligiblePaymentBills()) so this can't be tricked into
+     * pre-selecting an ineligible (cancelled / fully refunded) bill.
+     */
+    public String navigateToRefundFromPaymentBill(Bill originPaymentBill) {
+        makeNull();
+        if (originPaymentBill == null || originPaymentBill.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        getCurrent().setPatientEncounter(originPaymentBill.getPatientEncounter());
+        loadEligiblePaymentBills();
+        if (!getEligiblePaymentBills().contains(originPaymentBill)) {
+            JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
+            return "";
+        }
+        originalBillToRefund = originPaymentBill;
+        selectBillToRefundListener();
+        return "/inward/inward_bill_refund?faces-redirect=true";
+    }
+
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
+    }
+
+    public String navigateToInpationDashbord() {
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     @Inject
@@ -110,6 +143,11 @@ public class InwardRefundController implements Serializable {
 
         if (getOriginalBillToRefund() == null) {
             JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return true;
+        }
+
+        if (getOriginalBillToRefund().isCancelled()) {
+            JsfUtil.addErrorMessage("This bill has been cancelled and cannot be refunded.");
             return true;
         }
 
@@ -145,11 +183,12 @@ public class InwardRefundController implements Serializable {
         }
 
         saveBill();
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_REFUND);
         getBillFacade().edit(getCurrent());
         saveBillItem();
 
         getOriginalBillToRefund().setRefunded(true);
+        getOriginalBillToRefund().setRefundedBill(getCurrent());
         getBillFacade().edit(getOriginalBillToRefund());
 
         printPreview = true;

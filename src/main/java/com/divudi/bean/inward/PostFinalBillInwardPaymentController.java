@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -32,6 +33,7 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -96,6 +98,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     private PaymentSchemeController paymentSchemeController;
     @Inject
     private FinancialTransactionController financialTransactionController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -627,8 +631,19 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         getCurrent().setBillType(BillType.PostFinalBillInwardPayment);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
         getCurrent().setPaymentMethod(paymentMethod);
-        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP));
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP));
+
+        AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
+                ? getCurrent().getPatientEncounter().getAdmissionType() : null;
+        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        if (uniqueSerialPerAdmissionType) {
+            getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP, admissionTypeForBillNumber));
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP, admissionTypeForBillNumber));
+        } else {
+            getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP));
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP));
+        }
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
         getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
@@ -764,6 +779,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         saveRefundBillItem();
 
         getOriginalBillToRefund().setRefunded(true);
+        getOriginalBillToRefund().setRefundedBill(getRefundCurrent());
         getBillFacade().edit(getOriginalBillToRefund());
 
         printPreview = true;
@@ -792,6 +808,38 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             JsfUtil.addErrorMessage("Start Your Shift First !");
             return "/cashier/index?faces-redirect=true";
         }
+        return "/inward/inward_bill_post_final_payment_refund?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the post final bill inward payment refund page with a
+     * specific payment bill pre-selected, for the "Refund" button on the
+     * Post Final Bill Payment Reprint view page (issue #22820).
+     */
+    public String navigateToRefundFromPostFinalPaymentBill(Bill originPaymentBill) {
+        refundCurrent = null;
+        paidAmount = 0.0;
+        printPreview = false;
+        eligiblePostFinalPaymentBills = null;
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = null;
+        if (originPaymentBill == null || originPaymentBill.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        getRefundCurrent().setPatientEncounter(originPaymentBill.getPatientEncounter());
+        loadEligiblePostFinalPaymentBills();
+        if (!getEligiblePostFinalPaymentBills().contains(originPaymentBill)) {
+            JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
+            return "";
+        }
+        originalBillToRefund = originPaymentBill;
+        selectBillToRefundListener();
         return "/inward/inward_bill_post_final_payment_refund?faces-redirect=true";
     }
 
@@ -914,6 +962,11 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
 
         if (getOriginalBillToRefund() == null) {
             JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return true;
+        }
+
+        if (getOriginalBillToRefund().isCancelled()) {
+            JsfUtil.addErrorMessage("This bill has been cancelled and cannot be refunded.");
             return true;
         }
 

@@ -320,4 +320,21 @@ public class ClinicalEntityController implements Serializable {
             }
         }
     }
+    
+    public List<ClinicalEntity> completeOccupation(String qry) {
+        List<ClinicalEntity> list;
+        Map m = new HashMap();
+        m.put("t", SymanticType.Employment);
+        m.put("q", "%" + qry + "%");
+        String jpql = "select c from ClinicalEntity c "
+                + " where c.retired=false "
+                + " and c.symanticType=:t "
+                + " and c.name like :q "
+                + " order by c.name";
+        list = getFacade().findByJpql(jpql, m);
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        return list;
+    }
 }
