@@ -964,7 +964,7 @@
                                     </p:commandButton>
                                 </h:panelGroup>
                                 
-                                <h:panelGroup id="patientDetailsUpdateRequerdNotice" class="w-100" rendered="#{!patientReportController.currentPatientReport.approved and patientReportController.patientDetailsMismatched}">
+                                <h:panelGroup id="patientDetailsUpdateRequerdNotice" class="w-100" rendered="#{!patientReportController.currentPatientReport.approved and patientReportController.patientDetailsMismatched and configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Display Patient Details Mismatch Warning', false)}">
                                     <div class="alert alert-danger w-100 mb-3 text-center" role="alert" style="border-left: 4px solid #c0392b;">
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size: 32px; color: #c0392b;"></i>
