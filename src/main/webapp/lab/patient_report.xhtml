@@ -993,7 +993,7 @@
                                                     <div class="col-md-7">
                                                         <p:inputText
                                                             id="PatientName"
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', false)}"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
                                                             value="#{patientReportController.currentPatientReport.patientName}"
                                                             class="w-100">
                                                         </p:inputText>
@@ -1007,7 +1007,7 @@
                                                     <div class="col-md-7">
                                                         <p:inputText
                                                             id="PatientAge"
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', false)}"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
                                                             value="#{patientReportController.currentPatientReport.patientAge}"
                                                             class="w-100">
                                                         </p:inputText>
@@ -1021,7 +1021,7 @@
                                                     <div class="col-md-7">
                                                         <p:inputText
                                                             id="PatientGender"
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', false)}"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
                                                             value="#{patientReportController.currentPatientReport.patientGender}"
                                                             class="w-100">
                                                         </p:inputText>
