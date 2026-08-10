@@ -963,6 +963,36 @@
                                         action="#{laboratoryManagementController.navigateToOtherPatientReport(patientReportController.currentPatientReport.patientInvestigation.billItem.bill)}">
                                     </p:commandButton>
                                 </h:panelGroup>
+                                
+                                <h:panelGroup id="patientDetailsUpdateRequerdNotice" class="w-100" rendered="#{!patientReportController.currentPatientReport.approved and patientReportController.patientDetailsMismatched}">
+                                    <div class="alert alert-danger w-100 mb-3 text-center" role="alert" style="border-left: 4px solid #c0392b;">
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size: 32px; color: #c0392b;"></i>
+                                            <strong style="font-size: 22px; background-color: #c0392b; color: #ffffff; padding: 2px 12px; border-radius: 4px;">Patient Details Mismatch</strong>
+                                        </div>
+                                        <h:panelGroup rendered="#{patientReportController.patientNameMismatched}">
+                                            <div class="mt-1">
+                                                Name: <strong>"#{patientReportController.currentPatientReport.patientName}"</strong>
+                                                vs Registered: <strong>"#{patientReportController.registeredPatientName}"</strong>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{patientReportController.patientAgeMismatched}">
+                                            <div class="mt-1">
+                                                Age: <strong>"#{patientReportController.currentPatientReport.patientAge}"</strong>
+                                                vs Registered: <strong>"#{patientReportController.registeredPatientAge}"</strong>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{patientReportController.patientGenderMismatched}">
+                                            <div class="mt-1">
+                                                Gender: <strong>"#{patientReportController.currentPatientReport.patientGender}"</strong>
+                                                vs Registered: <strong>"#{patientReportController.registeredPatientGender}"</strong>
+                                            </div>
+                                        </h:panelGroup>
+                                        <div class="mt-1" style="font-size: 18px; color: #c0392b;">
+                                            <strong>Please verify.</strong>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
 
                                 <div class="mb-1 row w-100" >
                                     <div class="col-md-5">

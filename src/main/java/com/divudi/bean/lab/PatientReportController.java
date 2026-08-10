@@ -310,6 +310,79 @@ public class PatientReportController implements Serializable {
 
     }
 
+    public boolean isPatientNameMismatched() {
+        String registeredName = getRegisteredPatientName();
+        String reportName = currentPatientReport == null ? null : currentPatientReport.getPatientName();
+
+        if (reportName == null || registeredName == null) {
+            return false;
+        }
+
+        return !reportName.trim().equals(registeredName.trim());
+    }
+
+    public boolean isPatientAgeMismatched() {
+        String registeredAge = getRegisteredPatientAge();
+        String reportAge = currentPatientReport == null ? null : currentPatientReport.getPatientAge();
+
+        if (reportAge == null || registeredAge == null) {
+            return false;
+        }
+
+        return !reportAge.trim().equals(registeredAge.trim());
+    }
+
+    public boolean isPatientGenderMismatched() {
+        String registeredGender = getRegisteredPatientGender();
+        String reportGender = currentPatientReport == null ? null : currentPatientReport.getPatientGender();
+
+        if (reportGender == null || registeredGender == null) {
+            return false;
+        }
+
+        return !reportGender.trim().equals(registeredGender.trim());
+    }
+
+    public boolean isPatientDetailsMismatched() {
+        return isPatientNameMismatched() || isPatientAgeMismatched() || isPatientGenderMismatched();
+    }
+
+    public String getRegisteredPatientName() {
+        if (currentPatientReport == null
+                || currentPatientReport.getPatientInvestigation() == null
+                || currentPatientReport.getPatientInvestigation().getPatient() == null
+                || currentPatientReport.getPatientInvestigation().getPatient().getPerson() == null) {
+            return null;
+        }
+
+        return currentPatientReport.getPatientInvestigation().getPatient().getPerson().getNameWithTitle();
+    }
+
+    public String getRegisteredPatientAge() {
+        if (currentPatientReport == null
+                || currentPatientReport.getPatientInvestigation() == null
+                || currentPatientReport.getPatientInvestigation().getPatient() == null
+                || currentPatientReport.getPatientInvestigation().getBillItem() == null
+                || currentPatientReport.getPatientInvestigation().getBillItem().getBill() == null) {
+            return null;
+        }
+
+        return currentPatientReport.getPatientInvestigation().getPatient()
+                .getAgeOnBilledDate(currentPatientReport.getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+    }
+
+    public String getRegisteredPatientGender() {
+        if (currentPatientReport == null
+                || currentPatientReport.getPatientInvestigation() == null
+                || currentPatientReport.getPatientInvestigation().getPatient() == null
+                || currentPatientReport.getPatientInvestigation().getPatient().getPerson() == null
+                || currentPatientReport.getPatientInvestigation().getPatient().getPerson().getSex() == null) {
+            return null;
+        }
+
+        return currentPatientReport.getPatientInvestigation().getPatient().getPerson().getSex().getLabel();
+    }
+
     public String navigateToPrintPatientReport(PatientReport pr) {
         if (pr == null) {
             JsfUtil.addErrorMessage("No Select Patient Report");
