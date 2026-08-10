@@ -50,7 +50,7 @@
                                 </div>
                                 <p:datePicker
                                     id="admissionFromDate"
-                                    value="#{inwardReportController.fromDate}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.fromDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     showTime="true"
                                     timeInput="true"
@@ -70,7 +70,7 @@
                                 </div>
                                 <p:datePicker
                                     id="admissionToDate"
-                                    value="#{inwardReportController.toDate}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.toDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     showTime="true"
                                     timeInput="true"
@@ -87,7 +87,7 @@
                                     <h:outputText styleClass="fa fa-list" />
                                     <span>Admission Category</span>
                                 </div>
-                                <p:selectOneMenu id="admissionCat" value="#{inwardReportController.admissionType}" filter="true" styleClass="w-100">
+                                <p:selectOneMenu id="admissionCat" value="#{admissionCategoryWiseAdmissionReportController.admissionType}" filter="true" styleClass="w-100">
                                     <f:selectItem itemLabel="All"/>
                                     <f:selectItems value="#{admissionTypeController.items}" var="myItem"
                                                    itemValue="#{myItem}" itemLabel="#{myItem.name}"/>
@@ -102,7 +102,7 @@
                                 </div>
                                 <p:datePicker
                                     id="dischargeFromDate"
-                                    value="#{inwardReportController.dischargeFromDate}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.dischargeFromDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     showTime="true"
                                     timeInput="true"
@@ -121,7 +121,7 @@
                                 </div>
                                 <p:datePicker
                                     id="dischargeToDate"
-                                    value="#{inwardReportController.dischargeToDate}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.dischargeToDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     showTime="true"
                                     timeInput="true"
@@ -138,7 +138,7 @@
                                     <h:outputText styleClass="fa fa-medkit" />
                                     <span>Discharge Type</span>
                                 </div>
-                                <p:selectOneMenu value="#{inwardReportController.dischargeType}" filter="true" styleClass="w-100">
+                                <p:selectOneMenu value="#{admissionCategoryWiseAdmissionReportController.dischargeType}" filter="true" styleClass="w-100">
                                     <f:selectItem itemLabel="All"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
@@ -151,7 +151,7 @@
                                 </div>
                                 <p:datePicker
                                     id="approvedFromDate"
-                                    value="#{inwardReportController.invoiceApprovedFromDate}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.invoiceApprovedFromDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     showTime="true"
                                     timeInput="true"
@@ -170,7 +170,7 @@
                                 </div>
                                 <p:datePicker
                                     id="approvedToDate"
-                                    value="#{inwardReportController.invoiceApprovedToDate}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.invoiceApprovedToDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     showTime="true"
                                     timeInput="true"
@@ -187,7 +187,7 @@
                                     <h:outputText styleClass="fa fa-user" />
                                     <span>Patient Category</span>
                                 </div>
-                                <p:selectOneMenu value="#{inwardReportController.patientCategory}" filter="true" styleClass="w-100">
+                                <p:selectOneMenu value="#{admissionCategoryWiseAdmissionReportController.patientCategory}" filter="true" styleClass="w-100">
                                     <f:selectItem itemLabel="All Categories"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
@@ -201,7 +201,7 @@
                                 <p:selectOneMenu
                                     id="phmIns"
                                     styleClass="w-100"
-                                    value="#{inwardReportController.institution}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.institution}"
                                     filter="true">
                                     <f:selectItem itemLabel="All Institutions"/>
                                     <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
@@ -219,7 +219,7 @@
                                 <p:selectOneMenu
                                     id="phmSite"
                                     styleClass="w-100"
-                                    value="#{inwardReportController.site}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.site}"
                                     filter="true">
                                     <f:selectItem itemLabel="All Sites"/>
                                     <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
@@ -236,8 +236,8 @@
                                 </div>
                                 <h:panelGroup id="phmDept" layout="block">
                                     <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
-                                        value="#{inwardReportController.department}"
+                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution eq null and admissionCategoryWiseAdmissionReportController.site eq null}"
+                                        value="#{admissionCategoryWiseAdmissionReportController.department}"
                                         filterMatchMode="contains"
                                         filter="true"
                                         styleClass="w-100">
@@ -249,40 +249,40 @@
                                             itemValue="#{dept}"/>
                                     </p:selectOneMenu>
                                     <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
-                                        value="#{inwardReportController.department}"
+                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution eq null and admissionCategoryWiseAdmissionReportController.site ne null}"
+                                        value="#{admissionCategoryWiseAdmissionReportController.department}"
                                         filterMatchMode="contains"
                                         filter="true"
                                         styleClass="w-100">
                                         <f:selectItem itemLabel="All Departments"/>
                                         <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionCategoryWiseAdmissionReportController.site)}"
                                             var="dept"
                                             itemLabel="#{dept.name}"
                                             itemValue="#{dept}"/>
                                     </p:selectOneMenu>
                                     <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
-                                        value="#{inwardReportController.department}"
+                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution ne null and admissionCategoryWiseAdmissionReportController.site eq null}"
+                                        value="#{admissionCategoryWiseAdmissionReportController.department}"
                                         filterMatchMode="contains"
                                         filter="true"
                                         styleClass="w-100">
                                         <f:selectItem itemLabel="All Departments"/>
                                         <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution)}"
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionCategoryWiseAdmissionReportController.institution)}"
                                             var="dept"
                                             itemLabel="#{dept.name}"
                                             itemValue="#{dept}"/>
                                     </p:selectOneMenu>
                                     <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
-                                        value="#{inwardReportController.department}"
+                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution ne null and admissionCategoryWiseAdmissionReportController.site ne null}"
+                                        value="#{admissionCategoryWiseAdmissionReportController.department}"
                                         filterMatchMode="contains"
                                         filter="true"
                                         styleClass="w-100">
                                         <f:selectItem itemLabel="All Departments"/>
                                         <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionCategoryWiseAdmissionReportController.institution, admissionCategoryWiseAdmissionReportController.site)}"
                                             var="dept"
                                             itemLabel="#{dept.name}"
                                             itemValue="#{dept}"/>
@@ -298,7 +298,7 @@
                                 </div>
                                 <p:autoComplete
                                     forceSelection="true"
-                                    value="#{inwardReportController.consultant}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.consultant}"
                                     completeMethod="#{consultantController.completeConsultant}"
                                     var="mysp"
                                     itemLabel="#{mysp.person.nameWithTitle}"
@@ -316,7 +316,7 @@
                                     <h:outputText styleClass="fa fa-user" />
                                     <span>Sponsor</span>
                                 </div>
-                                <p:selectOneMenu value="#{inwardReportController.sponsor}" filter="true" styleClass="w-100">
+                                <p:selectOneMenu value="#{admissionCategoryWiseAdmissionReportController.sponsor}" filter="true" styleClass="w-100">
                                     <f:selectItem itemLabel="All Sponsors"/>
                                     <f:selectItems value="#{creditCompanyController.creditCompanies}" var="s"
                                                    itemValue="#{s}" itemLabel="#{s.name}"/>
@@ -329,7 +329,7 @@
                                     <h:outputText styleClass="fa fa-credit-card" />
                                     <span>Payment</span>
                                 </div>
-                                <p:selectOneMenu value="#{inwardReportController.paymentMethod}" filter="true" styleClass="w-100">
+                                <p:selectOneMenu value="#{admissionCategoryWiseAdmissionReportController.paymentMethod}" filter="true" styleClass="w-100">
                                     <f:selectItem itemLabel="All"/>
                                     <f:selectItems value="#{enumController.paymentMethodsForIpReports}" var="myItem"
                                                    itemValue="#{myItem}" itemLabel="#{myItem.label}"/>
@@ -342,7 +342,7 @@
                                     <h:outputText styleClass="fa fa-info-circle" />
                                     <span>Admission Status</span>
                                 </div>
-                                <p:selectOneMenu value="#{inwardReportController.admissionStatus}" filter="true" styleClass="w-100">
+                                <p:selectOneMenu value="#{admissionCategoryWiseAdmissionReportController.admissionStatus}" filter="true" styleClass="w-100">
                                     <f:selectItem itemLabel="All Admission Statuses"/>
                                     <f:selectItems value="#{enumController.admissionStatuses}"
                                                    var="status"
@@ -358,7 +358,7 @@
                                              icon="fas fa-cogs"
                                              ajax="false"
                                              value="Process"
-                                             action="#{inwardReportController.processAdmissionCategoryWiseAdmissionReportNew()}"/>
+                                             action="#{admissionCategoryWiseAdmissionReportController.processAdmissionCategoryWiseAdmissionReportNew()}"/>
                             
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
@@ -371,7 +371,7 @@
                                              icon="fas fa-file-excel"
                                              ajax="false"
                                              value="Download Excel">
-                                <p:fileDownload value="#{inwardReportController.admissionCategoryWiseAdmissionExcel}" />
+                                <p:fileDownload value="#{admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionExcel}" />
                             </p:commandButton>
 
 
@@ -379,7 +379,7 @@
                                              icon="fas fa-file-pdf"
                                              ajax="false"
                                              value="PDF"
-                                             action="#{inwardReportController.downloadAdmissionCategoryWiseAdmissionPdf}" />
+                                             action="#{admissionCategoryWiseAdmissionReportController.downloadAdmissionCategoryWiseAdmissionPdf}" />
 
                         </div>
 
@@ -391,31 +391,31 @@
                                     <tr>
                                         <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000; width: 30%;">Institution</td>
                                         <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
-                                            <h:outputText value="#{inwardReportController.institution eq null ? 'All Institutions' : inwardReportController.institution.name}" />
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.institution eq null ? 'All Institutions' : admissionCategoryWiseAdmissionReportController.institution.name}" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000;">Site</td>
                                         <td style="padding: 8px; border: 1px solid #000000;">
-                                            <h:outputText value="#{inwardReportController.site eq null ? 'All Sites' : inwardReportController.site.name}" />
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.site eq null ? 'All Sites' : admissionCategoryWiseAdmissionReportController.site.name}" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000;">Department</td>
                                         <td style="padding: 8px; border: 1px solid #000000;">
-                                            <h:outputText value="#{inwardReportController.department eq null ? 'All Departments' : inwardReportController.department.name}" />
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.department eq null ? 'All Departments' : admissionCategoryWiseAdmissionReportController.department.name}" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000;">Admission Category</td>
                                         <td style="padding: 8px; border: 1px solid #000000;">
-                                            <h:outputText value="#{inwardReportController.admissionType eq null ? 'All' : inwardReportController.admissionType.name}" />
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.admissionType eq null ? 'All' : admissionCategoryWiseAdmissionReportController.admissionType.name}" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000;">From Date</td>
                                         <td style="padding: 8px; border: 1px solid #000000;">
-                                            <h:outputText value="#{inwardReportController.fromDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.fromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </td>
@@ -423,7 +423,7 @@
                                     <tr>
                                         <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000;">To Date</td>
                                         <td style="padding: 8px; border: 1px solid #000000;">
-                                            <h:outputText value="#{inwardReportController.toDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.toDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </td>
@@ -435,7 +435,7 @@
                             <div class="mt-3 mb-5">
                                 <p:dataTable
                                     id="tbl"
-                                    value="#{inwardReportController.admissionCategoryWiseAdmissionList}"
+                                    value="#{admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionList}"
                                     var="row"
                                     rowIndexVar="n"
                                     styleClass="table-sm w-100">

@@ -76,72 +76,72 @@
 
                                             <!-- Row 1 -->
                                             <h:outputText value="Admission From Date:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.fromDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.fromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
 
                                             <h:outputText value="Admission To Date:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.toDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.toDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
 
                                             <h:outputText value="Admission Category:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.admissionType eq null ? 'All' : inwardReportController.admissionType.name}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.admissionType eq null ? 'All' : admissionCategoryWiseAdmissionReportController.admissionType.name}"/>
 
                                             <!-- Row 2 -->
                                             <h:outputText value="Discharge From Date:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.dischargeFromDate eq null ? 'N/A' : inwardReportController.dischargeFromDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.dischargeFromDate eq null ? 'N/A' : admissionCategoryWiseAdmissionReportController.dischargeFromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
 
                                             <h:outputText value="Discharge To Date:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.dischargeToDate eq null ? 'N/A' : inwardReportController.dischargeToDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.dischargeToDate eq null ? 'N/A' : admissionCategoryWiseAdmissionReportController.dischargeToDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
 
                                             <h:outputText value="Admission Status:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.admissionStatus eq null ? 'All' : inwardReportController.admissionStatus.label}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.admissionStatus eq null ? 'All' : admissionCategoryWiseAdmissionReportController.admissionStatus.label}"/>
 
                                             <!-- Row 3 -->
                                             <h:outputText value="Institution:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.institution eq null ? 'All Institutions' : inwardReportController.institution.name}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.institution eq null ? 'All Institutions' : admissionCategoryWiseAdmissionReportController.institution.name}"/>
 
                                             <h:outputText value="Site:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.site eq null ? 'All Sites' : inwardReportController.site.name}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.site eq null ? 'All Sites' : admissionCategoryWiseAdmissionReportController.site.name}"/>
 
                                             <h:outputText value="Department:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.department eq null ? 'All Departments' : inwardReportController.department.name}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.department eq null ? 'All Departments' : admissionCategoryWiseAdmissionReportController.department.name}"/>
 
                                             <!-- Row 4 -->
                                             <h:outputText value="Consultant:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.consultant eq null ? 'All' : inwardReportController.consultant.person.nameWithTitle}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.consultant eq null ? 'All' : admissionCategoryWiseAdmissionReportController.consultant.person.nameWithTitle}"/>
 
                                             <h:outputText value="Sponsor:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.sponsor eq null ? 'All Sponsors' : inwardReportController.sponsor.name}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.sponsor eq null ? 'All Sponsors' : admissionCategoryWiseAdmissionReportController.sponsor.name}"/>
 
                                             <h:outputText value="Payment Method:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.paymentMethod eq null ? 'All' : inwardReportController.paymentMethod.label}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.paymentMethod eq null ? 'All' : admissionCategoryWiseAdmissionReportController.paymentMethod.label}"/>
 
                                             <!-- Row 5 -->
                                             <h:outputText value="Invoice Approved From:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.invoiceApprovedFromDate eq null ? 'N/A' : inwardReportController.invoiceApprovedFromDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.invoiceApprovedFromDate eq null ? 'N/A' : admissionCategoryWiseAdmissionReportController.invoiceApprovedFromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
 
                                             <h:outputText value="Invoice Approved To:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.invoiceApprovedToDate eq null ? 'N/A' : inwardReportController.invoiceApprovedToDate}">
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.invoiceApprovedToDate eq null ? 'N/A' : admissionCategoryWiseAdmissionReportController.invoiceApprovedToDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
 
                                             <h:outputText value="Total Records:" styleClass="label"/>
-                                            <h:outputText value="#{inwardReportController.admissionCategoryWiseAdmissionList.size()}"/>
+                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionList.size()}"/>
 
                                         </h:panelGrid>
                                     </div>
                                 </div>
 
                                 <p:dataTable id="tbl"
-                                             value="#{inwardReportController.admissionCategoryWiseAdmissionList}"
+                                             value="#{admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionList}"
                                              var="row"
                                              rowIndexVar="n"
                                              styleClass="table"
