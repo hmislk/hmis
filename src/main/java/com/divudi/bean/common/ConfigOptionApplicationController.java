@@ -118,7 +118,7 @@ public class ConfigOptionApplicationController implements Serializable {
         loadApplicationOptions();
     }
 
-    public void loadApplicationOptions() {
+    public synchronized void loadApplicationOptions() {
         isLoadingApplicationOptions = true;
         try {
             applicationOptions = new HashMap<>();
@@ -1213,7 +1213,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getIntegerValueByKey("StockHistory Archive - Max Batches Per Run", 50);
     }
 
-    public ConfigOption getApplicationOption(String key) {
+    public synchronized ConfigOption getApplicationOption(String key) {
         if (applicationOptions == null) {
             loadApplicationOptions();
         }
