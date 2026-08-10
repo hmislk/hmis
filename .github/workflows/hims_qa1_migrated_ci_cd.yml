@@ -139,7 +139,13 @@ jobs:
               echo "JNDI resource $j not found."
               echo "Run: ansible-playbook site.yml --limit vm-hmis-qa01 --tags payara_datasources"
               exit 1; }
-            pool=$($ASADMIN get "resources.jdbc-resource.${j}.pool-name" | tail -1 | cut -d= -f2 | tr -d '\r')
+            # `asadmin get` prints "<name>=<value>" followed by
+            # "Command get executed successfully." — tail -1 grabs the success
+            # message, not the value. Match the name line explicitly.
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$($ASADMIN get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "could not resolve pool behind $j"; exit 1; }
             $ASADMIN ping-connection-pool "$pool" || {
               echo "pool $pool (behind $j) is not reachable"; exit 1; }
           done
