@@ -35,9 +35,13 @@ import javax.persistence.Query;
  * a contiguous block of auto-increment values, and {@code LAST_INSERT_ID()}
  * after such a statement returns the value assigned to the FIRST row of
  * that statement — so one {@code LAST_INSERT_ID()} call per batch (not per
- * row) yields the whole batch's IDs via {@code firstId + offsetWithinBatch}.
- * This call is connection-scoped, so it is safe under concurrent requests
- * from different users.
+ * row) yields the whole batch's IDs via {@code firstId + offsetWithinBatch *
+ * autoIncrementIncrement}. The increment (usually 1, but can be greater on
+ * replicated/multi-master deployments) is read from
+ * {@code @@SESSION.auto_increment_increment} rather than assumed, so
+ * PharmaceuticalBillItem rows always link to the correct BillItem.
+ * {@code LAST_INSERT_ID()} is connection-scoped, so it is safe under
+ * concurrent requests from different users.
  *
  * Only used for PharmacySnapshotBill creation. All other Bill types use JPA cascade.
  */
@@ -53,6 +57,10 @@ public class StockTakePersistService {
      *  MySQL installations (lower_case_table_names=0) where table names may be upper or lower case. */
     private volatile String resolvedBillItemTable = null;
     private volatile String resolvedPharmBillItemTable = null;
+
+    /** Cached MySQL auto_increment_increment for this connection — batch ID derivation
+     *  must account for this being &gt;1 on replicated/multi-master deployments. */
+    private volatile Long autoIncrementIncrement = null;
 
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
@@ -143,6 +151,20 @@ public class StockTakePersistService {
     }
 
     /**
+     * MySQL's auto_increment_increment (usually 1, but can be &gt;1 on replicated/
+     * multi-master setups). Batch ID derivation from LAST_INSERT_ID() must offset by
+     * this step, not by a hardcoded 1, or PharmaceuticalBillItem rows can be linked to
+     * the wrong BillItem.
+     */
+    private long autoIncrementIncrement() {
+        if (autoIncrementIncrement == null) {
+            Number val = (Number) em.createNativeQuery("SELECT @@SESSION.auto_increment_increment").getSingleResult();
+            autoIncrementIncrement = val.longValue();
+        }
+        return autoIncrementIncrement;
+    }
+
+    /**
      * Insert BillItems in multi-row native INSERT batches, letting MySQL AUTO_INCREMENT
      * assign IDs, and read back each batch's generated IDs via LAST_INSERT_ID().
      */
@@ -180,8 +202,9 @@ public class StockTakePersistService {
             q.executeUpdate();
 
             long firstIdInBatch = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+            long increment = autoIncrementIncrement();
             for (int i = 0; i < batch.size(); i++) {
-                resultIds[start + i] = firstIdInBatch + i;
+                resultIds[start + i] = firstIdInBatch + (i * increment);
             }
         }
 
