@@ -347,40 +347,56 @@ public class PatientReportController implements Serializable {
         return isPatientNameMismatched() || isPatientAgeMismatched() || isPatientGenderMismatched();
     }
 
-    public String getRegisteredPatientName() {
+    private Patient freshRegisteredPatient;
+    private Long freshRegisteredPatientId;
+
+    private Patient getFreshRegisteredPatient() {
         if (currentPatientReport == null
                 || currentPatientReport.getPatientInvestigation() == null
-                || currentPatientReport.getPatientInvestigation().getPatient() == null
-                || currentPatientReport.getPatientInvestigation().getPatient().getPerson() == null) {
+                || currentPatientReport.getPatientInvestigation().getPatient() == null) {
             return null;
         }
 
-        return currentPatientReport.getPatientInvestigation().getPatient().getPerson().getNameWithTitle();
+        Long patientId = currentPatientReport.getPatientInvestigation().getPatient().getId();
+        if (patientId == null) {
+            return null;
+        }
+
+        if (freshRegisteredPatient == null || !patientId.equals(freshRegisteredPatientId)) {
+            freshRegisteredPatient = patientFacade.findWithoutCache(patientId);
+            freshRegisteredPatientId = patientId;
+        }
+
+        return freshRegisteredPatient;
+    }
+
+    public String getRegisteredPatientName() {
+        Patient pt = getFreshRegisteredPatient();
+        if (pt == null || pt.getPerson() == null) {
+            return null;
+        }
+
+        return pt.getPerson().getNameWithTitle();
     }
 
     public String getRegisteredPatientAge() {
-        if (currentPatientReport == null
-                || currentPatientReport.getPatientInvestigation() == null
-                || currentPatientReport.getPatientInvestigation().getPatient() == null
+        Patient pt = getFreshRegisteredPatient();
+        if (pt == null
                 || currentPatientReport.getPatientInvestigation().getBillItem() == null
                 || currentPatientReport.getPatientInvestigation().getBillItem().getBill() == null) {
             return null;
         }
 
-        return currentPatientReport.getPatientInvestigation().getPatient()
-                .getAgeOnBilledDate(currentPatientReport.getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+        return pt.getAgeOnBilledDate(currentPatientReport.getPatientInvestigation().getBillItem().getBill().getCreatedAt());
     }
 
     public String getRegisteredPatientGender() {
-        if (currentPatientReport == null
-                || currentPatientReport.getPatientInvestigation() == null
-                || currentPatientReport.getPatientInvestigation().getPatient() == null
-                || currentPatientReport.getPatientInvestigation().getPatient().getPerson() == null
-                || currentPatientReport.getPatientInvestigation().getPatient().getPerson().getSex() == null) {
+        Patient pt = getFreshRegisteredPatient();
+        if (pt == null || pt.getPerson() == null || pt.getPerson().getSex() == null) {
             return null;
         }
 
-        return currentPatientReport.getPatientInvestigation().getPatient().getPerson().getSex().getLabel();
+        return pt.getPerson().getSex().getLabel();
     }
 
     public String navigateToPrintPatientReport(PatientReport pr) {
