@@ -205,13 +205,14 @@
 
                                 <p:outputLabel value="Insurance Company" ></p:outputLabel>
                                 <p:selectOneMenu
+                                    id="cmbCreditCompanyForSearch"
                                     class="w-100"
                                     value="#{admissionController.creditCompanyForSearch}"
                                     filter="true"
                                     autoWidth="false"
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.creditCompanies}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}" />
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="creditCompanyItem" itemLabel="#{creditCompanyItem.name}" itemValue="#{creditCompanyItem}" />
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Status" ></p:outputLabel>

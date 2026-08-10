@@ -18,6 +18,7 @@ import com.divudi.core.data.Sex;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.data.EmailAttachment;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -135,12 +136,26 @@ public class InwardSearch implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     InwardPaymentController inwardPaymentController;
+    @Inject
+    InwardDepositController inwardDepositController;
 
     /**
      * Properties
      */
     private Bill bill;
     private boolean printPreview = false;
+
+    /**
+     * Bill id to render on {@code /inward/inward_view_appointment_bill_receipt}
+     * (Issue #22783 — appointment bill / appointment cancel bill view, routed
+     * from {@code BillSearch.navigateToViewBillByAtomicBillType}). Appointment
+     * bills never have {@code Bill.patientEncounter} populated, so they can't
+     * use the regular {@code inward_reprint_bill_payment} template; the DTO
+     * query behind {@link #getAppointmentBillReceipt()} handles that via
+     * LEFT JOINs instead.
+     */
+    private Long appointmentReceiptBillId;
+    private InwardBillReceiptDTO appointmentBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -321,7 +336,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         switch (bill.getBillTypeAtomic()) {
-            case INWARD_DEPOSIT:
+            case INWARD_PAYMENT:
                 inwardDepositCancelationPaymentMethods = new ArrayList<>();
                 getInwardDepositCancelationPaymentMethods().add(PaymentMethod.Cash);
                 
@@ -336,7 +351,7 @@ public class InwardSearch implements Serializable {
                 refillPaymentDetail();
                 
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
-            case INWARD_DEPOSIT_REFUND:
+            case INWARD_PAYMENT_REFUND:
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
@@ -1100,6 +1115,17 @@ public class InwardSearch implements Serializable {
         }
     }
 
+    public String navigateMakeDeposit() {
+        PatientEncounter pe = inwardDepositController.getCurrent().getPatientEncounter();
+        inwardDepositController.makeNull();
+        inwardDepositController.getCurrent().setPatientEncounter(pe);
+        inwardDepositController.setPatient(pe.getPatient());
+
+        inwardDepositController.paymentListener();
+
+        return inwardDepositController.navigateToInwardDeposit();
+    }
+
     public boolean calculateRefundTotal() {
         Double d = 0.0;
         //billItems=null;
@@ -1787,7 +1813,7 @@ public class InwardSearch implements Serializable {
 //                return;
 //            }
             RefundBill cb = createRefundCancelBill();
-            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
             //Copy & paste
             getBillFacade().create(cb);
             cancelBillItems(cb);
@@ -2149,7 +2175,7 @@ public class InwardSearch implements Serializable {
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 //        cb.setBillType(BillType.InwardProfessional);
-        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
         return cb;
     }
 
@@ -2529,6 +2555,32 @@ public class InwardSearch implements Serializable {
             bill = new BilledBill();
         }
         return bill;
+    }
+
+    public Long getAppointmentReceiptBillId() {
+        return appointmentReceiptBillId;
+    }
+
+    public void setAppointmentReceiptBillId(Long appointmentReceiptBillId) {
+        this.appointmentReceiptBillId = appointmentReceiptBillId;
+        this.appointmentBillReceipt = null;
+    }
+
+    /**
+     * DTO for {@code /inward/inward_view_appointment_bill_receipt} — null
+     * until {@link #appointmentReceiptBillId} is set by the BillSearch
+     * routing case. Lazily loaded and cached for the lifetime of this bean
+     * (the composite receipt templates dereference it many times per
+     * render); the cache is cleared by {@link #setAppointmentReceiptBillId}.
+     */
+    public InwardBillReceiptDTO getAppointmentBillReceipt() {
+        if (appointmentReceiptBillId == null) {
+            return null;
+        }
+        if (appointmentBillReceipt == null) {
+            appointmentBillReceipt = billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
+        }
+        return appointmentBillReceipt;
     }
 
     public void markAsChecked() {
