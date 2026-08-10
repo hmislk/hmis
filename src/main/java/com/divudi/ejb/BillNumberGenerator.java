@@ -620,7 +620,14 @@ public class BillNumberGenerator {
                 dd = 0L;
             }
             billNumber.setLastBillNumber(dd);
-            billNumberFacade.create(billNumber);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
         }
 
         return billNumber;
@@ -677,7 +684,14 @@ public class BillNumberGenerator {
                 dd = 0L;
             }
             billNumber.setLastBillNumber(dd);
-            billNumberFacade.create(billNumber);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
         }
 
         return billNumber;
@@ -734,48 +748,79 @@ public class BillNumberGenerator {
                 dd = 0L;
             }
             billNumber.setLastBillNumber(dd);
-            billNumberFacade.create(billNumber);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
         }
 
         return billNumber;
     }
 
-    public BillNumber fetchLastBillNumberForYearInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType) {
+    // Fetches, increments, and flushes the counter inside the caller's lock, so
+    // concurrent callers cannot read the same lastBillNumber before it is persisted.
+    private Long incrementAndFlushInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType) {
+        BillNumber billNumber = fetchLastBillNumberSynchronizedInstitutionYearlyOnly(institution, billType);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
+    private Long incrementAndFlushInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType, AdmissionType admissionType) {
+        BillNumber billNumber = fetchLastBillNumberSynchronizedInstitutionYearlyOnly(institution, billType, admissionType);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
+    private Long incrementAndFlushDepartmentYearly(Department department, BillTypeAtomic billType, AdmissionType admissionType) {
+        BillNumber billNumber = fetchLastBillNumberSynchronized(department, billType, admissionType);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
+    // Returns the next serial number, with the increment and flush performed inside the lock.
+    public Long fetchNextSerialForYearInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType) {
         String lockKey = getLockKey(institution, billType);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 
         lock.lock();
         try {
-            return fetchLastBillNumberSynchronizedInstitutionYearlyOnly(institution, billType);
+            return incrementAndFlushInstitutionYearlyOnly(institution, billType);
         } finally {
             lock.unlock();
-            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
         }
     }
 
-    public BillNumber fetchLastBillNumberForYearInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType, AdmissionType admissionType) {
+    public Long fetchNextSerialForYearInstitutionYearlyOnly(Institution institution, BillTypeAtomic billType, AdmissionType admissionType) {
         String lockKey = getLockKey(institution, billType, admissionType);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 
         lock.lock();
         try {
-            return fetchLastBillNumberSynchronizedInstitutionYearlyOnly(institution, billType, admissionType);
+            return incrementAndFlushInstitutionYearlyOnly(institution, billType, admissionType);
         } finally {
             lock.unlock();
-            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
         }
     }
 
-    public BillNumber fetchLastBillNumberForYear(Department department, BillTypeAtomic billType, AdmissionType admissionType) {
+    public Long fetchNextSerialForYear(Department department, BillTypeAtomic billType, AdmissionType admissionType) {
         String lockKey = getLockKey(department, billType, admissionType);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 
         lock.lock();
         try {
-            return fetchLastBillNumberSynchronized(department, billType, admissionType);
+            return incrementAndFlushDepartmentYearly(department, billType, admissionType);
         } finally {
             lock.unlock();
-            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
         }
     }
 
@@ -2795,12 +2840,7 @@ public class BillNumberGenerator {
         if (ins == null) {
             return "";
         }
-        BillNumber billNumber = fetchLastBillNumberForYearInstitutionYearlyOnly(ins, billType);
-
-        Long dd = billNumber.getLastBillNumber();
-        dd = dd + 1;
-        billNumber.setLastBillNumber(dd);
-        billNumberFacade.edit(billNumber);
+        Long dd = fetchNextSerialForYearInstitutionYearlyOnly(ins, billType);
 
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
@@ -2825,12 +2865,7 @@ public class BillNumberGenerator {
         if (ins == null) {
             return "";
         }
-        BillNumber billNumber = fetchLastBillNumberForYearInstitutionYearlyOnly(ins, billType, admissionType);
-
-        Long dd = billNumber.getLastBillNumber();
-        dd = dd + 1;
-        billNumber.setLastBillNumber(dd);
-        billNumberFacade.edit(billNumber);
+        Long dd = fetchNextSerialForYearInstitutionYearlyOnly(ins, billType, admissionType);
 
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
@@ -2857,12 +2892,7 @@ public class BillNumberGenerator {
         if (dep == null || dep.getInstitution() == null) {
             return "";
         }
-        BillNumber billNumber = fetchLastBillNumberForYear(dep, billType, admissionType);
-
-        Long dd = billNumber.getLastBillNumber();
-        dd = dd + 1;
-        billNumber.setLastBillNumber(dd);
-        billNumberFacade.edit(billNumber);
+        Long dd = fetchNextSerialForYear(dep, billType, admissionType);
 
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
