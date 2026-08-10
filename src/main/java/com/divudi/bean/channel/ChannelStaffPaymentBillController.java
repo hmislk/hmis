@@ -534,6 +534,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
         nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
 
+        for (BillFee bf : dueBillFees) {
+            bf.setPayingAmount(bf.getFeeValue() - bf.getPaidValue());
+        }
+
     }
 
     public void calculateSessionDueFees() {
@@ -759,7 +763,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public void calculateTotalPay() {
         totalPaying = 0;
         for (BillFee f : payingBillFees) {
-            totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
+            double amountToPay = f.getPayingAmount() != null
+                    ? f.getPayingAmount()
+                    : (f.getFeeValue() - f.getPaidValue());
+            totalPaying = totalPaying + amountToPay;
         }
     }
 
@@ -972,6 +979,18 @@ public class ChannelStaffPaymentBillController implements Serializable {
         if (checkBillFeeValue()) {
             JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
+        }
+
+        for (BillFee bf : getPayingBillFees()) {
+            double outstanding = bf.getFeeValue() - bf.getPaidValue();
+            if (bf.getPayingAmount() == null || bf.getPayingAmount() <= 0) {
+                JsfUtil.addErrorMessage("Please enter a valid paying amount for all selected fees");
+                return true;
+            }
+            if (bf.getPayingAmount() - outstanding > 0.1) {
+                JsfUtil.addErrorMessage("Paying amount cannot exceed the due amount for a fee");
+                return true;
+            }
         }
 
         performCalculations();
@@ -1333,21 +1352,24 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private List<BillItem> saveBillItemsAndFees(Bill b) {
         List<BillItem> bis = new ArrayList<>();
         for (BillFee bf : getPayingBillFees()) {
-            BillItem i = saveBillItemForPaymentBill(b, bf);
-            bf.setPaidValue(bf.getFeeValue());
+            double amountPaidNow = bf.getPayingAmount() != null
+                    ? bf.getPayingAmount()
+                    : (bf.getFeeValue() - bf.getPaidValue());
+            BillItem i = saveBillItemForPaymentBill(b, bf, amountPaidNow);
+            bf.setPaidValue(bf.getPaidValue() + amountPaidNow);
             getBillFeeFacade().edit(bf);
             BillFee nbf = new BillFee();
             nbf.setBillItem(i);
             nbf.setBill(b);
             nbf.setReferenceBillFee(bf);
-            nbf.setFeeValue(bf.getFeeValue());
+            nbf.setFeeValue(amountPaidNow);
             billFeeFacade.create(nbf);
             bis.add(i);
         }
         return bis;
     }
 
-    private BillItem saveBillItemForPaymentBill(Bill b, BillFee bf) {
+    private BillItem saveBillItemForPaymentBill(Bill b, BillFee bf, double amountPaidNow) {
         BillItem i = new BillItem();
         i.setReferanceBillItem(bf.getBillItem());
         i.setReferenceBill(bf.getBill());
@@ -1356,10 +1378,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
         i.setCreatedAt(Calendar.getInstance().getTime());
         i.setCreater(getSessionController().getLoggedUser());
         i.setDiscount(0.0);
-        i.setGrossValue(bf.getFeeValue());
-        i.setNetValue(bf.getFeeValue());
+        i.setGrossValue(amountPaidNow);
+        i.setNetValue(amountPaidNow);
         i.setQty(1.0);
-        i.setRate(bf.getFeeValue());
+        i.setRate(amountPaidNow);
         getBillItemFacade().create(i);
         b.getBillItems().add(i);
         return i;
