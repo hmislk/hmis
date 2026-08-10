@@ -1342,6 +1342,12 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
+                                            <h:panelGroup rendered="#{p.refunded}" class="d-flex gap-2">
+                                                <h:outputLabel style="color: red;" value="Refunded at " />
+                                                <h:outputLabel style="color: red;" value="#{p.refundedBill.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </p:column>
 
                                         <p:column headerText="Added User">
@@ -1349,8 +1355,14 @@
                                             <br/>
                                             <h:panelGroup rendered="#{p.cancelled}" class="d-flex gap-2">
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                <h:outputLabel 
+                                                <h:outputLabel
                                                     style="color: red;" value="#{p.cancelledBill.creater.webUserPerson.nameWithTitle}" >
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{p.refunded}" class="d-flex gap-2">
+                                                <h:outputLabel style="color: red;" value="Refunded By " />
+                                                <h:outputLabel
+                                                    style="color: red;" value="#{p.refundedBill.creater.webUserPerson.nameWithTitle}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
@@ -1407,6 +1419,12 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
+                                            <h:panelGroup rendered="#{p.refunded}" class="d-flex gap-2">
+                                                <h:outputLabel style="color: red;" value="Refunded at " />
+                                                <h:outputLabel style="color: red;" value="#{p.refundedBill.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </p:column>
 
                                         <p:column headerText="Added User">
@@ -1416,6 +1434,12 @@
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
                                                 <h:outputLabel
                                                     style="color: red;" value="#{p.cancelledBill.creater.webUserPerson.nameWithTitle}" >
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{p.refunded}" class="d-flex gap-2">
+                                                <h:outputLabel style="color: red;" value="Refunded By " />
+                                                <h:outputLabel
+                                                    style="color: red;" value="#{p.refundedBill.creater.webUserPerson.nameWithTitle}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>

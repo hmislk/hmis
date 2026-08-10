@@ -335,6 +335,10 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
             return "";
         }
+        if (bill.isRefunded()) {
+            JsfUtil.addErrorMessage("This bill has already been refunded and cannot be cancelled.");
+            return "";
+        }
         switch (bill.getBillTypeAtomic()) {
             case INWARD_PAYMENT:
                 inwardDepositCancelationPaymentMethods = new ArrayList<>();
@@ -1726,6 +1730,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getCheckedBy() != null) {
                 JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+
+            if (getBill().isRefunded()) {
+                JsfUtil.addErrorMessage("This bill has already been refunded and cannot be cancelled.");
                 return;
             }
 
