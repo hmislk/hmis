@@ -41,6 +41,11 @@ INWARD_PAYMENT_REFUND_CANCELLATION("Inward Payment Refund Cancellation", BillCat
 `INWARD_DEPOSIT`'s 4-member family already existed before this plan (it just had nothing genuine
 pointing at it). `INWARD_PAYMENT`'s 4-member family was created fresh, mirroring it exactly.
 
+`BillBeanController.updateInwardDipositList(...)` treats both atomics identically once a bill
+reaches a finalized encounter: `balance`, `paidAmount`, and `settledAmountByPatient` are all
+updated the same way for a Deposit bill as for a Payment bill — money paid via either path counts
+as settled by the patient.
+
 ### Historical data note — not a bug
 
 Any bill dated **before 2026-08-10** with `BILLTYPEATOMIC='INWARD_DEPOSIT'` under the
