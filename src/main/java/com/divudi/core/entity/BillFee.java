@@ -96,6 +96,12 @@ public class BillFee implements Serializable, RetirableEntity {
     @Transient
     private boolean userChangedTheGrossValueTransient;
 
+    // Amount the cashier is choosing to pay for this fee right now, editable in
+    // professional-payment settlement screens to support partial payment (#22821).
+    // Defaults to the full outstanding balance (feeValue - paidValue).
+    @Transient
+    private Double payingAmount;
+
     double feeMargin;
     double feeAdjusted;
 
@@ -919,6 +925,14 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setUserChangedTheGrossValueTransient(boolean userChangedTheGrossValueTransient) {
         this.userChangedTheGrossValueTransient = userChangedTheGrossValueTransient;
+    }
+
+    public Double getPayingAmount() {
+        return payingAmount;
+    }
+
+    public void setPayingAmount(Double payingAmount) {
+        this.payingAmount = payingAmount;
     }
 
     public boolean isFeeCollectedByDoctor() {
