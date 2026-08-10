@@ -79,6 +79,20 @@
                                         actionListener="#{bhtSummeryController.createTables()}"
                                         >
                                     </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnInpatientDashboard"
+                                        ajax="false"
+                                        icon="fas fa-id-card"
+                                        class="ui-button-secondary "
+                                        value="Inpatient Dashboard"
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                        >
+                                        <f:setPropertyActionListener
+                                            value="#{bhtSummeryController.patientEncounter}"
+                                            target="#{admissionController.current}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
