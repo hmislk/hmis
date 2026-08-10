@@ -128,6 +128,10 @@ public class InwardRefundController implements Serializable {
         return PaymentMethod.values();
     }
 
+    public String navigateToInpationDashbord() {
+        return "/inward/admission_profile?faces-redirect=true";
+    }
+
     @Inject
     private PaymentSchemeController paymentSchemeController;
 
