@@ -46,10 +46,14 @@ import com.divudi.core.data.dto.InpatientServiceIssueDTO;
 import com.divudi.core.data.dto.BillListReportDTO;
 import com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO;
 import com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionGroupDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentDetailRowDTO;
 import com.divudi.core.data.dto.InwardProfessionalPaymentFeeRowDTO;
 import com.divudi.core.data.dto.InwardProfessionalPaymentReportRowDTO;
 import com.divudi.core.entity.Service;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +70,23 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import com.lowagie.text.Element;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+// NOTE: com.lowagie.text.Document/Font are used fully-qualified in the PDF
+// export methods below (not imported) - org.apache.poi.ss.usermodel.Font
+// (pulled in by the wildcard import) would otherwise collide with the
+// same-named PDF class.
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -143,6 +163,15 @@ public class InwardReportControllerBht implements Serializable {
 
     // Issue #22800 - admission-grouped inpatient professional payment report.
     private List<InwardProfessionalPaymentAdmissionGroupDTO> professionalPaymentReportGroups;
+
+    // Issue #22803 - Summary vs Detailed report type, BHT-range search mode
+    // (admission-to-admission instead of a date range), and a filter to show
+    // only admissions that never got any professional fee added.
+    private String professionalPaymentReportType = "summary"; // "summary" | "detailed"
+    private String professionalPaymentSearchMode = "dateRange"; // "dateRange" | "bhtRange"
+    private PatientEncounter admissionFromForProfessionalPaymentReport;
+    private PatientEncounter admissionToForProfessionalPaymentReport;
+    private boolean onlyAdmissionsWithoutProfessionalFees;
 
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
@@ -831,6 +860,16 @@ public class InwardReportControllerBht implements Serializable {
         if (toDate == null) {
             toDate = new Date();
         }
+        // Issue #22805 review - without this guard, a BHT Range search left
+        // with either endpoint unselected silently falls back to the date
+        // range query below (dead giveaway: the filter panel still says "BHT
+        // Range" but the results are date-range results).
+        if ("bhtRange".equals(professionalPaymentSearchMode)
+                && (admissionFromForProfessionalPaymentReport == null
+                || admissionToForProfessionalPaymentReport == null)) {
+            JsfUtil.addErrorMessage("Select both From BHT and To BHT for a BHT Range search");
+            return null;
+        }
         professionalPaymentReportGroups = new ArrayList<>();
         try {
             professionalPaymentReportGroups = fetchInwardProfessionalPaymentReportGroups();
@@ -840,6 +879,571 @@ public class InwardReportControllerBht implements Serializable {
             return null;
         }
         return "/inward/reports/inward_professional_payment_report_dto?faces-redirect=true";
+    }
+
+    // Issue #22803 - row-span helpers shared by the Excel and PDF exporters,
+    // delegating to the same DTO getters the xhtml view binds `rowspan` to
+    // (InwardProfessionalPaymentAdmissionGroupDTO.getSummaryAdmissionRowSpan/
+    // getDetailedAdmissionRowSpan, InwardProfessionalPaymentDetailRowDTO.
+    // getBlockRowSpan) so the export layout can never drift from the on-screen one.
+    private int summaryAdmissionRowSpan(InwardProfessionalPaymentAdmissionGroupDTO group) {
+        return group.getSummaryAdmissionRowSpan();
+    }
+
+    private int detailedConsultantBlockRowSpan(InwardProfessionalPaymentDetailRowDTO detail) {
+        return detail.getBlockRowSpan();
+    }
+
+    private int detailedAdmissionRowSpan(InwardProfessionalPaymentAdmissionGroupDTO group) {
+        return group.getDetailedAdmissionRowSpan();
+    }
+
+    // Issue #22803 - Excel export for the Summary report.
+    public void downloadProfessionalPaymentSummaryExcel() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("Professional Payment Summary");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            DataFormat dataFormat = workbook.createDataFormat();
+            CellStyle moneyStyle = workbook.createCellStyle();
+            moneyStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            String[] headers = {"BHT Number", "Admitted", "Discharged", "Final Bill Number",
+                "Consultant", "Speciality", "Sum Added Fee", "Sum Paid Fee", "Balance to Pay"};
+            Row headerRow = sheet.createRow(0);
+            for (int c = 0; c < headers.length; c++) {
+                Cell cell = headerRow.createCell(c);
+                cell.setCellValue(headers[c]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int span = summaryAdmissionRowSpan(group);
+                int admissionStartRow = rowIdx;
+                List<InwardProfessionalPaymentReportRowDTO> detailRows = group.getDetailRows();
+
+                for (int i = 0; i < span; i++) {
+                    Row row = sheet.createRow(rowIdx++);
+                    if (i == 0) {
+                        row.createCell(0).setCellValue(group.getBhtNo() != null ? group.getBhtNo() : "");
+                        row.createCell(1).setCellValue(group.getDateOfAdmission() != null ? dateFormat.format(group.getDateOfAdmission()) : "");
+                        row.createCell(2).setCellValue(group.getDateOfDischarge() != null ? dateFormat.format(group.getDateOfDischarge()) : "");
+                        row.createCell(3).setCellValue(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "");
+                    }
+                    if (detailRows != null && i < detailRows.size()) {
+                        InwardProfessionalPaymentReportRowDTO detail = detailRows.get(i);
+                        row.createCell(4).setCellValue(detail.getConsultantName() != null ? detail.getConsultantName() : "");
+                        row.createCell(5).setCellValue(detail.getSpecialityName() != null ? detail.getSpecialityName() : "");
+                        Cell addedCell = row.createCell(6);
+                        addedCell.setCellValue(detail.getSumAddedFee());
+                        addedCell.setCellStyle(moneyStyle);
+                        Cell paidCell = row.createCell(7);
+                        paidCell.setCellValue(detail.getSumPaidFee());
+                        paidCell.setCellStyle(moneyStyle);
+                        Cell balanceCell = row.createCell(8);
+                        balanceCell.setCellValue(detail.getSumAddedFee() - detail.getSumPaidFee());
+                        balanceCell.setCellStyle(moneyStyle);
+                    }
+                }
+
+                if (span > 1) {
+                    for (int c = 0; c <= 3; c++) {
+                        sheet.addMergedRegion(new CellRangeAddress(admissionStartRow, rowIdx - 1, c, c));
+                    }
+                }
+            }
+
+            for (int c = 0; c < headers.length; c++) {
+                sheet.autoSizeColumn(c);
+            }
+
+            // Issue #22805 review - serialize into memory first so a POI
+            // failure can't leave a truncated file on a half-committed
+            // response (matches the PDF exporters' existing pattern below).
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+
+            String filename = "Inpatient_Professional_Payment_Summary_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            response.setContentLength(bytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
+            }
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment summary to Excel", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+        }
+    }
+
+    // Issue #22803 - Excel export for the Detailed report.
+    public void downloadProfessionalPaymentDetailedExcel() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("Professional Payment Detailed");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            DataFormat poiDataFormat = workbook.createDataFormat();
+            CellStyle moneyStyle = workbook.createCellStyle();
+            moneyStyle.setDataFormat(poiDataFormat.getFormat("#,##0.00"));
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+            CellStyle boldMoneyStyle = workbook.createCellStyle();
+            boldMoneyStyle.setFont(boldFont);
+            boldMoneyStyle.setDataFormat(poiDataFormat.getFormat("#,##0.00"));
+
+            String[] headers = {"BHT Number", "Admitted", "Discharged", "Final Bill Number",
+                "Consultant", "Speciality", "Added Fee Date", "Added Fee Value", "Paid Date",
+                "Paid Bill Number", "Paid Fee Value"};
+            Row headerRow = sheet.createRow(0);
+            for (int c = 0; c < headers.length; c++) {
+                Cell cell = headerRow.createCell(c);
+                cell.setCellValue(headers[c]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int admissionStartRow = rowIdx;
+                List<InwardProfessionalPaymentDetailRowDTO> detailedRows = group.getDetailedRows();
+                boolean admissionInfoWritten = false;
+
+                if (detailedRows == null || detailedRows.isEmpty()) {
+                    Row row = sheet.createRow(rowIdx++);
+                    writeDetailedAdmissionCells(row, group, dateFormat);
+                    admissionInfoWritten = true;
+                } else {
+                    for (InwardProfessionalPaymentDetailRowDTO detail : detailedRows) {
+                        int consultantStartRow = rowIdx;
+                        int dataRows = Math.max(detail.rowCount(), 1);
+
+                        for (int i = 0; i < dataRows; i++) {
+                            Row row = sheet.createRow(rowIdx++);
+                            if (!admissionInfoWritten) {
+                                writeDetailedAdmissionCells(row, group, dateFormat);
+                                admissionInfoWritten = true;
+                            }
+                            if (i == 0) {
+                                row.createCell(4).setCellValue(detail.getConsultantName() != null ? detail.getConsultantName() : "");
+                                row.createCell(5).setCellValue(detail.getSpecialityName() != null ? detail.getSpecialityName() : "");
+                            }
+                            if (i < detail.getAddedFeeValues().size()) {
+                                Date addedDate = detail.getAddedFeeDates().get(i);
+                                row.createCell(6).setCellValue(addedDate != null ? dateFormat.format(addedDate) : "");
+                                Double addedValue = detail.getAddedFeeValues().get(i);
+                                Cell addedCell = row.createCell(7);
+                                addedCell.setCellValue(addedValue != null ? addedValue : 0.0);
+                                addedCell.setCellStyle(moneyStyle);
+                            }
+                            if (i < detail.getPaidFeeValues().size()) {
+                                Date paidDate = detail.getPaidFeeDates().get(i);
+                                row.createCell(8).setCellValue(paidDate != null ? dateFormat.format(paidDate) : "");
+                                String paidBillNo = detail.getPaidBillNumbers().get(i);
+                                row.createCell(9).setCellValue(paidBillNo != null ? paidBillNo : "");
+                                Double paidValue = detail.getPaidFeeValues().get(i);
+                                Cell paidCell = row.createCell(10);
+                                paidCell.setCellValue(paidValue != null ? paidValue : 0.0);
+                                paidCell.setCellStyle(moneyStyle);
+                            }
+                        }
+
+                        Row totalRow = sheet.createRow(rowIdx++);
+                        Cell totalLabelCell = totalRow.createCell(6);
+                        totalLabelCell.setCellValue("Total");
+                        totalLabelCell.setCellStyle(boldStyle);
+                        Cell totalAddedCell = totalRow.createCell(7);
+                        totalAddedCell.setCellValue(detail.getSumAddedFee());
+                        totalAddedCell.setCellStyle(boldMoneyStyle);
+                        Cell totalPaidCell = totalRow.createCell(10);
+                        totalPaidCell.setCellValue(detail.getSumPaidFee());
+                        totalPaidCell.setCellStyle(boldMoneyStyle);
+
+                        Row balanceRow = sheet.createRow(rowIdx++);
+                        Cell balanceLabelCell = balanceRow.createCell(6);
+                        balanceLabelCell.setCellValue("Balance to Pay");
+                        balanceLabelCell.setCellStyle(boldStyle);
+                        Cell balanceValueCell = balanceRow.createCell(7);
+                        balanceValueCell.setCellValue(detail.getSumAddedFee() - detail.getSumPaidFee());
+                        balanceValueCell.setCellStyle(boldMoneyStyle);
+
+                        if (rowIdx - 1 > consultantStartRow) {
+                            sheet.addMergedRegion(new CellRangeAddress(consultantStartRow, rowIdx - 1, 4, 4));
+                            sheet.addMergedRegion(new CellRangeAddress(consultantStartRow, rowIdx - 1, 5, 5));
+                        }
+                    }
+                }
+
+                if (rowIdx - 1 > admissionStartRow) {
+                    for (int c = 0; c <= 3; c++) {
+                        sheet.addMergedRegion(new CellRangeAddress(admissionStartRow, rowIdx - 1, c, c));
+                    }
+                }
+            }
+
+            for (int c = 0; c < headers.length; c++) {
+                sheet.autoSizeColumn(c);
+            }
+
+            // Issue #22805 review - same buffer-first pattern as the Summary
+            // exporter above.
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+
+            String filename = "Inpatient_Professional_Payment_Detailed_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            response.setContentLength(bytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
+            }
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment detailed report to Excel", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+        }
+    }
+
+    private void writeDetailedAdmissionCells(Row row, InwardProfessionalPaymentAdmissionGroupDTO group, SimpleDateFormat dateFormat) {
+        row.createCell(0).setCellValue(group.getBhtNo() != null ? group.getBhtNo() : "");
+        row.createCell(1).setCellValue(group.getDateOfAdmission() != null ? dateFormat.format(group.getDateOfAdmission()) : "");
+        row.createCell(2).setCellValue(group.getDateOfDischarge() != null ? dateFormat.format(group.getDateOfDischarge()) : "");
+        row.createCell(3).setCellValue(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "");
+    }
+
+    // Issue #22803 - PDF export for the Summary report. Mirrors
+    // InwardReportController.downloadSurgeryCostEstimationPdf()'s structure
+    // (OpenPDF PdfPTable/PdfPCell, direct HttpServletResponse write via
+    // ExternalContext).
+    public void downloadProfessionalPaymentSummaryPdf() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+
+            String fileName = "Inpatient_Professional_Payment_Summary_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+
+            com.lowagie.text.Document document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A4.rotate(), 15, 15, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            com.lowagie.text.Paragraph titlePara = new com.lowagie.text.Paragraph("Inpatient Professional Payment Report - Summary", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(10);
+            document.add(titlePara);
+
+            String[] headers = {"BHT Number", "Admitted", "Discharged", "Final Bill Number",
+                "Consultant", "Speciality", "Sum Added Fee", "Sum Paid Fee", "Balance to Pay"};
+            PdfPTable table = new PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            float[] widths = {3f, 3f, 3f, 3f, 4f, 4f, 3f, 3f, 3f};
+            table.setWidths(widths);
+
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            double grandAdded = 0;
+            double grandPaid = 0;
+
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int span = summaryAdmissionRowSpan(group);
+                List<InwardProfessionalPaymentReportRowDTO> detailRows = group.getDetailRows();
+
+                PdfPCell bhtCell = new PdfPCell(new Phrase(group.getBhtNo() != null ? group.getBhtNo() : "", normalFont));
+                bhtCell.setRowspan(span);
+                table.addCell(bhtCell);
+
+                PdfPCell admittedCell = new PdfPCell(new Phrase(group.getDateOfAdmission() != null ? sdf.format(group.getDateOfAdmission()) : "", normalFont));
+                admittedCell.setRowspan(span);
+                table.addCell(admittedCell);
+
+                PdfPCell dischargedCell = new PdfPCell(new Phrase(group.getDateOfDischarge() != null ? sdf.format(group.getDateOfDischarge()) : "", normalFont));
+                dischargedCell.setRowspan(span);
+                table.addCell(dischargedCell);
+
+                PdfPCell finalBillCell = new PdfPCell(new Phrase(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "", normalFont));
+                finalBillCell.setRowspan(span);
+                table.addCell(finalBillCell);
+
+                if (detailRows == null || detailRows.isEmpty()) {
+                    table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
+                } else {
+                    for (InwardProfessionalPaymentReportRowDTO detail : detailRows) {
+                        table.addCell(new Phrase(detail.getConsultantName() != null ? detail.getConsultantName() : "", normalFont));
+                        table.addCell(new Phrase(detail.getSpecialityName() != null ? detail.getSpecialityName() : "", normalFont));
+
+                        PdfPCell addedCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee()), normalFont));
+                        addedCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        table.addCell(addedCell);
+
+                        PdfPCell paidCell = new PdfPCell(new Phrase(df.format(detail.getSumPaidFee()), normalFont));
+                        paidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        table.addCell(paidCell);
+
+                        PdfPCell balanceCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee() - detail.getSumPaidFee()), normalFont));
+                        balanceCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        table.addCell(balanceCell);
+
+                        grandAdded += detail.getSumAddedFee();
+                        grandPaid += detail.getSumPaidFee();
+                    }
+                }
+            }
+
+            PdfPCell totalLblCell = new PdfPCell(new Phrase("Grand Total", boldFont));
+            totalLblCell.setColspan(6);
+            totalLblCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            table.addCell(totalLblCell);
+
+            PdfPCell tgAdded = new PdfPCell(new Phrase(df.format(grandAdded), boldFont));
+            tgAdded.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgAdded);
+
+            PdfPCell tgPaid = new PdfPCell(new Phrase(df.format(grandPaid), boldFont));
+            tgPaid.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgPaid);
+
+            PdfPCell tgBalance = new PdfPCell(new Phrase(df.format(grandAdded - grandPaid), boldFont));
+            tgBalance.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgBalance);
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            // Issue #22805 review - e.getMessage() is often null for runtime
+            // failures (e.g. NPE); log the stack trace too, matching the
+            // Excel exporters above.
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment summary to PDF", e);
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+
+    // Issue #22803 - PDF export for the Detailed report.
+    public void downloadProfessionalPaymentDetailedPdf() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+
+            String fileName = "Inpatient_Professional_Payment_Detailed_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+
+            com.lowagie.text.Document document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 15, 15, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            com.lowagie.text.Paragraph titlePara = new com.lowagie.text.Paragraph("Inpatient Professional Payment Report - Detailed", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(10);
+            document.add(titlePara);
+
+            String[] headers = {"BHT Number", "Admitted", "Discharged", "Final Bill Number",
+                "Consultant", "Speciality", "Added Fee Date", "Added Fee Value", "Paid Date",
+                "Paid Bill Number", "Paid Fee Value"};
+            PdfPTable table = new PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            float[] widths = {3f, 2.5f, 2.5f, 3f, 4f, 4f, 2.5f, 2.5f, 2.5f, 3f, 2.5f};
+            table.setWidths(widths);
+
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int admissionSpan = detailedAdmissionRowSpan(group);
+                List<InwardProfessionalPaymentDetailRowDTO> detailedRows = group.getDetailedRows();
+
+                PdfPCell bhtCell = new PdfPCell(new Phrase(group.getBhtNo() != null ? group.getBhtNo() : "", normalFont));
+                bhtCell.setRowspan(admissionSpan);
+                table.addCell(bhtCell);
+
+                PdfPCell admittedCell = new PdfPCell(new Phrase(group.getDateOfAdmission() != null ? sdf.format(group.getDateOfAdmission()) : "", normalFont));
+                admittedCell.setRowspan(admissionSpan);
+                table.addCell(admittedCell);
+
+                PdfPCell dischargedCell = new PdfPCell(new Phrase(group.getDateOfDischarge() != null ? sdf.format(group.getDateOfDischarge()) : "", normalFont));
+                dischargedCell.setRowspan(admissionSpan);
+                table.addCell(dischargedCell);
+
+                PdfPCell finalBillCell = new PdfPCell(new Phrase(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "", normalFont));
+                finalBillCell.setRowspan(admissionSpan);
+                table.addCell(finalBillCell);
+
+                if (detailedRows == null || detailedRows.isEmpty()) {
+                    for (int i = 0; i < 7; i++) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    continue;
+                }
+
+                for (InwardProfessionalPaymentDetailRowDTO detail : detailedRows) {
+                    int blockSpan = detailedConsultantBlockRowSpan(detail);
+                    int dataRows = Math.max(detail.rowCount(), 1);
+
+                    PdfPCell consultantCell = new PdfPCell(new Phrase(detail.getConsultantName() != null ? detail.getConsultantName() : "", normalFont));
+                    consultantCell.setRowspan(blockSpan);
+                    table.addCell(consultantCell);
+
+                    PdfPCell specialityCell = new PdfPCell(new Phrase(detail.getSpecialityName() != null ? detail.getSpecialityName() : "", normalFont));
+                    specialityCell.setRowspan(blockSpan);
+                    table.addCell(specialityCell);
+
+                    for (int i = 0; i < dataRows; i++) {
+                        if (i < detail.getAddedFeeValues().size()) {
+                            Date addedDate = detail.getAddedFeeDates().get(i);
+                            table.addCell(new Phrase(addedDate != null ? sdf.format(addedDate) : "", normalFont));
+                            Double addedValue = detail.getAddedFeeValues().get(i);
+                            PdfPCell addedCell = new PdfPCell(new Phrase(df.format(addedValue != null ? addedValue : 0.0), normalFont));
+                            addedCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(addedCell);
+                        } else {
+                            table.addCell(new Phrase("", normalFont));
+                            table.addCell(new Phrase("", normalFont));
+                        }
+
+                        if (i < detail.getPaidFeeValues().size()) {
+                            Date paidDate = detail.getPaidFeeDates().get(i);
+                            table.addCell(new Phrase(paidDate != null ? sdf.format(paidDate) : "", normalFont));
+                            String paidBillNo = detail.getPaidBillNumbers().get(i);
+                            table.addCell(new Phrase(paidBillNo != null ? paidBillNo : "", normalFont));
+                            Double paidValue = detail.getPaidFeeValues().get(i);
+                            PdfPCell paidCell = new PdfPCell(new Phrase(df.format(paidValue != null ? paidValue : 0.0), normalFont));
+                            paidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(paidCell);
+                        } else {
+                            table.addCell(new Phrase("", normalFont));
+                            table.addCell(new Phrase("", normalFont));
+                            table.addCell(new Phrase("", normalFont));
+                        }
+                    }
+
+                    PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", boldFont));
+                    table.addCell(totalLabelCell);
+                    PdfPCell totalAddedCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee()), boldFont));
+                    totalAddedCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(totalAddedCell);
+                    table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
+                    PdfPCell totalPaidCell = new PdfPCell(new Phrase(df.format(detail.getSumPaidFee()), boldFont));
+                    totalPaidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(totalPaidCell);
+
+                    PdfPCell balanceLabelCell = new PdfPCell(new Phrase("Balance to Pay", boldFont));
+                    table.addCell(balanceLabelCell);
+                    PdfPCell balanceValueCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee() - detail.getSumPaidFee()), boldFont));
+                    balanceValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(balanceValueCell);
+                    table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
+                    table.addCell(new Phrase("", normalFont));
+                }
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment detailed report to PDF", e);
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        }
     }
 
     private List<InwardProfessionalPaymentAdmissionGroupDTO> fetchInwardProfessionalPaymentReportGroups() {
@@ -860,15 +1464,42 @@ public class InwardReportControllerBht implements Serializable {
             group.setBhtNo(admission.getBhtNo());
             group.setDateOfAdmission(admission.getDateOfAdmission());
             group.setDateOfDischarge(admission.getDateOfDischarge());
-            group.setConfirmedFinalBillNo(admission.getConfirmedFinalBillDeptId());
             group.setFirstFinalBillNo(firstFinalBillNoByEncounter.get(admission.getPatientEncounterId()));
 
             List<InwardProfessionalPaymentFeeRowDTO> rowsForAdmission
                     = feeRowsByEncounter.getOrDefault(admission.getPatientEncounterId(), new ArrayList<>());
             group.setDetailRows(groupIntoDetailRows(rowsForAdmission));
+            group.setDetailedRows(groupIntoDetailedRows(rowsForAdmission));
             groups.add(group);
         }
+
+        // Issue #22803 - "admissions without professional fees" filter.
+        // detailRows/detailedRows are always empty/non-empty together, since
+        // both are derived from the same feeRowsByEncounter map.
+        if (onlyAdmissionsWithoutProfessionalFees) {
+            groups = groups.stream()
+                    .filter(g -> g.getDetailRows() == null || g.getDetailRows().isEmpty())
+                    .collect(Collectors.toList());
+        }
+
         return groups;
+    }
+
+    // Issue #22805 review - shared by both query builders below, so the
+    // BHT-range/date-range predicate can't drift between them.
+    private String appendProfessionalPaymentRangePredicate(String jpql, Map<String, Object> params) {
+        if ("bhtRange".equals(professionalPaymentSearchMode)
+                && admissionFromForProfessionalPaymentReport != null
+                && admissionToForProfessionalPaymentReport != null) {
+            long peIdFrom = Math.min(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
+            long peIdTo = Math.max(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
+            params.put("peIdFrom", peIdFrom);
+            params.put("peIdTo", peIdTo);
+            return jpql + "AND pe.id BETWEEN :peIdFrom AND :peIdTo ";
+        }
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        return jpql + "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
     }
 
     private List<InwardProfessionalPaymentAdmissionDTO> fetchProfessionalPaymentAdmissionsForDepartment() {
@@ -880,18 +1511,12 @@ public class InwardReportControllerBht implements Serializable {
                 + "COALESCE(fb.deptId, '')) "
                 + "FROM PatientEncounter pe "
                 + "LEFT JOIN pe.finalBill fb "
-                + "WHERE pe.department = :department "
-                + "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
+                + "WHERE pe.department = :department ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("department", department);
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
 
-        if (bhtNoFilter != null && !bhtNoFilter.trim().isEmpty()) {
-            jpql += "AND pe.bhtNo LIKE :bhtNo ";
-            params.put("bhtNo", "%" + bhtNoFilter.trim() + "%");
-        }
+        jpql = appendProfessionalPaymentRangePredicate(jpql, params);
 
         jpql += "ORDER BY pe.dateOfAdmission, pe.id";
 
@@ -909,7 +1534,8 @@ public class InwardReportControllerBht implements Serializable {
                 + "bf.feeValue, "
                 + "bf.paidValue, "
                 + "COALESCE(rbfBill.deptId, ''), "
-                + "rbfBill.createdAt) "
+                + "rbfBill.createdAt, "
+                + "bf.createdAt) "
                 + "FROM BillFee bf "
                 + "JOIN bf.bill b "
                 + "JOIN b.patientEncounter pe "
@@ -922,19 +1548,13 @@ public class InwardReportControllerBht implements Serializable {
                 + "AND b.retired = false "
                 + "AND b.cancelled = false "
                 + "AND b.billType = :billType "
-                + "AND pe.department = :department "
-                + "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
+                + "AND pe.department = :department ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);
         params.put("department", department);
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
 
-        if (bhtNoFilter != null && !bhtNoFilter.trim().isEmpty()) {
-            jpql += "AND pe.bhtNo LIKE :bhtNo ";
-            params.put("bhtNo", "%" + bhtNoFilter.trim() + "%");
-        }
+        jpql = appendProfessionalPaymentRangePredicate(jpql, params);
 
         jpql += "ORDER BY pe.id, st.id, sp.id";
 
@@ -1015,6 +1635,67 @@ public class InwardReportControllerBht implements Serializable {
             result.add(row);
         }
         return result;
+    }
+
+    // Issue #22803 - Detailed report grouping. Same (staff, speciality) key
+    // as groupIntoDetailRows above, but keeps every individual fee row's
+    // Added/Paid values and dates (rather than aggregating into one summary
+    // row + comma-joined strings), for the Detailed report's per-consultant
+    // block layout. Settlement in this codebase is always full-value per fee
+    // (see InwardStaffPaymentBillController.saveBillCompo/
+    // saveBillItemForPaymentBill) - paidValue is either 0 or equal to
+    // feeValue - so a paid entry is only appended when paidValue > 0.
+    private List<InwardProfessionalPaymentDetailRowDTO> groupIntoDetailedRows(List<InwardProfessionalPaymentFeeRowDTO> rows) {
+        Map<String, InwardProfessionalPaymentDetailRowDTO> rowsByStaffAndSpeciality = new LinkedHashMap<>();
+
+        for (InwardProfessionalPaymentFeeRowDTO fee : rows) {
+            String key = fee.getStaffId() + "_" + fee.getSpecialityId();
+            InwardProfessionalPaymentDetailRowDTO row = rowsByStaffAndSpeciality.get(key);
+            if (row == null) {
+                row = new InwardProfessionalPaymentDetailRowDTO();
+                row.setConsultantName(fee.getStaffName());
+                row.setSpecialityName(fee.getSpecialityName());
+                rowsByStaffAndSpeciality.put(key, row);
+            }
+
+            double feeValue = fee.getFeeValue() != null ? fee.getFeeValue() : 0.0;
+            row.getAddedFeeValues().add(feeValue);
+            row.getAddedFeeDates().add(fee.getAddedFeeDate());
+            row.setSumAddedFee(row.getSumAddedFee() + feeValue);
+
+            if (fee.getPaidValue() != null && fee.getPaidValue() > 0) {
+                row.getPaidFeeValues().add(fee.getPaidValue());
+                row.getPaidFeeDates().add(fee.getReferenceBillCreatedAt());
+                row.getPaidBillNumbers().add(fee.getReferenceBillDeptId());
+                row.setSumPaidFee(row.getSumPaidFee() + fee.getPaidValue());
+            }
+        }
+
+        return new ArrayList<>(rowsByStaffAndSpeciality.values());
+    }
+
+    // Issue #22803 - Department-scoped BHT-range autocomplete for the
+    // "Admission From" / "Admission To" fields (BHT-range search mode).
+    // Deliberately not reusing AdmissionController.completeBht /
+    // completePatientEncounter - both are unfiltered by department and use a
+    // broken "c.patient" alias.
+    public List<PatientEncounter> completeAdmissionForProfessionalPaymentReport(String query) {
+        Department dept = department != null ? department : sessionController.getDepartment();
+        if (dept == null || query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT pe FROM PatientEncounter pe "
+                + "WHERE pe.department = :department "
+                + "AND pe.retired = false "
+                + "AND pe.bhtNo LIKE :bhtNo "
+                + "ORDER BY pe.bhtNo";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", dept);
+        params.put("bhtNo", "%" + query.trim() + "%");
+
+        List<PatientEncounter> result = (List<PatientEncounter>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 20);
+        return result != null ? result : new ArrayList<>();
     }
 
     // View button on the list row: load the bill into InwardSearch and open the
@@ -2772,5 +3453,45 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPatientNameFilter(String patientNameFilter) {
         this.patientNameFilter = patientNameFilter;
+    }
+
+    public String getProfessionalPaymentReportType() {
+        return professionalPaymentReportType;
+    }
+
+    public void setProfessionalPaymentReportType(String professionalPaymentReportType) {
+        this.professionalPaymentReportType = professionalPaymentReportType;
+    }
+
+    public String getProfessionalPaymentSearchMode() {
+        return professionalPaymentSearchMode;
+    }
+
+    public void setProfessionalPaymentSearchMode(String professionalPaymentSearchMode) {
+        this.professionalPaymentSearchMode = professionalPaymentSearchMode;
+    }
+
+    public PatientEncounter getAdmissionFromForProfessionalPaymentReport() {
+        return admissionFromForProfessionalPaymentReport;
+    }
+
+    public void setAdmissionFromForProfessionalPaymentReport(PatientEncounter admissionFromForProfessionalPaymentReport) {
+        this.admissionFromForProfessionalPaymentReport = admissionFromForProfessionalPaymentReport;
+    }
+
+    public PatientEncounter getAdmissionToForProfessionalPaymentReport() {
+        return admissionToForProfessionalPaymentReport;
+    }
+
+    public void setAdmissionToForProfessionalPaymentReport(PatientEncounter admissionToForProfessionalPaymentReport) {
+        this.admissionToForProfessionalPaymentReport = admissionToForProfessionalPaymentReport;
+    }
+
+    public boolean isOnlyAdmissionsWithoutProfessionalFees() {
+        return onlyAdmissionsWithoutProfessionalFees;
+    }
+
+    public void setOnlyAdmissionsWithoutProfessionalFees(boolean onlyAdmissionsWithoutProfessionalFees) {
+        this.onlyAdmissionsWithoutProfessionalFees = onlyAdmissionsWithoutProfessionalFees;
     }
 }

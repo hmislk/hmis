@@ -20,6 +20,7 @@ public class InwardProfessionalPaymentFeeRowDTO implements Serializable {
     private Double paidValue;
     private String referenceBillDeptId;
     private Date referenceBillCreatedAt;
+    private Date addedFeeDate;
 
     public InwardProfessionalPaymentFeeRowDTO() {
     }
@@ -36,6 +37,18 @@ public class InwardProfessionalPaymentFeeRowDTO implements Serializable {
         this.paidValue = paidValue;
         this.referenceBillDeptId = referenceBillDeptId;
         this.referenceBillCreatedAt = referenceBillCreatedAt;
+    }
+
+    // Issue #22803 - Detailed report needs the charge-side BillFee.createdAt
+    // (when the professional fee was added) alongside everything the
+    // existing constructor already carries. New constructor only - the one
+    // above stays for backward compatibility.
+    public InwardProfessionalPaymentFeeRowDTO(Long patientEncounterId, Long staffId, String staffName,
+            Long specialityId, String specialityName, Double feeValue, Double paidValue,
+            String referenceBillDeptId, Date referenceBillCreatedAt, Date addedFeeDate) {
+        this(patientEncounterId, staffId, staffName, specialityId, specialityName, feeValue, paidValue,
+                referenceBillDeptId, referenceBillCreatedAt);
+        this.addedFeeDate = addedFeeDate;
     }
 
     public Long getPatientEncounterId() {
@@ -108,5 +121,13 @@ public class InwardProfessionalPaymentFeeRowDTO implements Serializable {
 
     public void setReferenceBillCreatedAt(Date referenceBillCreatedAt) {
         this.referenceBillCreatedAt = referenceBillCreatedAt;
+    }
+
+    public Date getAddedFeeDate() {
+        return addedFeeDate;
+    }
+
+    public void setAddedFeeDate(Date addedFeeDate) {
+        this.addedFeeDate = addedFeeDate;
     }
 }

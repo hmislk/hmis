@@ -17,8 +17,11 @@ public class InwardProfessionalPaymentAdmissionGroupDTO implements Serializable 
     private Date dateOfAdmission;
     private Date dateOfDischarge;
     private String firstFinalBillNo;
-    private String confirmedFinalBillNo;
     private List<InwardProfessionalPaymentReportRowDTO> detailRows = new ArrayList<>();
+    // Issue #22803 - per-consultant blocks (with per-fee-row detail) for the
+    // Detailed report; independent of detailRows above, which keeps feeding
+    // the Summary report.
+    private List<InwardProfessionalPaymentDetailRowDTO> detailedRows = new ArrayList<>();
 
     public InwardProfessionalPaymentAdmissionGroupDTO() {
     }
@@ -55,19 +58,41 @@ public class InwardProfessionalPaymentAdmissionGroupDTO implements Serializable 
         this.firstFinalBillNo = firstFinalBillNo;
     }
 
-    public String getConfirmedFinalBillNo() {
-        return confirmedFinalBillNo;
-    }
-
-    public void setConfirmedFinalBillNo(String confirmedFinalBillNo) {
-        this.confirmedFinalBillNo = confirmedFinalBillNo;
-    }
-
     public List<InwardProfessionalPaymentReportRowDTO> getDetailRows() {
         return detailRows;
     }
 
     public void setDetailRows(List<InwardProfessionalPaymentReportRowDTO> detailRows) {
         this.detailRows = detailRows;
+    }
+
+    public List<InwardProfessionalPaymentDetailRowDTO> getDetailedRows() {
+        return detailedRows;
+    }
+
+    public void setDetailedRows(List<InwardProfessionalPaymentDetailRowDTO> detailedRows) {
+        this.detailedRows = detailedRows;
+    }
+
+    // Issue #22803 - rowspan for the Summary table's shared admission columns
+    // (BHT/Admitted/Discharged/Final Bill Number): one row per consultant, or
+    // 1 for a bare admission with no professional fees.
+    public int getSummaryAdmissionRowSpan() {
+        return detailRows == null || detailRows.isEmpty() ? 1 : detailRows.size();
+    }
+
+    // Issue #22803 - rowspan for the Detailed table's shared admission
+    // columns: sum of every consultant block's own span (see
+    // InwardProfessionalPaymentDetailRowDTO.getBlockRowSpan()), or 1 for a
+    // bare admission with no professional fees.
+    public int getDetailedAdmissionRowSpan() {
+        if (detailedRows == null || detailedRows.isEmpty()) {
+            return 1;
+        }
+        int total = 0;
+        for (InwardProfessionalPaymentDetailRowDTO detail : detailedRows) {
+            total += detail.getBlockRowSpan();
+        }
+        return total;
     }
 }
