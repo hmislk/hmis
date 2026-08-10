@@ -1460,6 +1460,19 @@ public class SurgeryBillController implements Serializable {
         this.departmentBillItems = departmentBillItems;
     }
 
+    /**
+     * Invalidates the cached Services tab data (Surgery Workbench's
+     * departmentBillItems, and its surgery_bill_summary.xhtml twin
+     * surgeryServiceDepartmentItems) so the next getter re-fetches from the
+     * DB. Both are derived from the same forwardReferenceBill-scoped Service
+     * BillItems, so they go stale together whenever a Service/Investigation
+     * is settled from the separate BillBhtController bean.
+     */
+    public void refreshSurgeryServiceDepartmentItems() {
+        departmentBillItems = null;
+        surgeryServiceDepartmentItems = null;
+    }
+
     public List<BillItem> getPharmacyIssues() {
         return pharmacyIssues;
     }
