@@ -358,7 +358,14 @@
                                              icon="fas fa-cogs"
                                              ajax="false"
                                              value="Process"
-                                             action="#{inwardReportController.processAdmissionCategoryWiseAdmissionReport()}"/>
+                                             action="#{inwardReportController.processAdmissionCategoryWiseAdmissionReportNew()}"/>
+                            
+                            <p:commandButton class="ui-button-primary mx-1"
+                                             icon="fas fa-print"
+                                             ajax="false"
+                                             value="To Print"
+                                             action="admission_category_wise_admission_print_view?faces-redirect=true">
+                            </p:commandButton>
 
                             <p:commandButton class="ui-button-success mx-1"
                                              icon="fas fa-file-excel"
@@ -367,12 +374,6 @@
                                 <p:fileDownload value="#{inwardReportController.admissionCategoryWiseAdmissionExcel}" />
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-primary mx-1"
-                                             icon="fas fa-print"
-                                             ajax="false"
-                                             value="To Print"
-                                             action="admission_category_wise_admission_print_view?faces-redirect=true">
-                            </p:commandButton>
 
                             <p:commandButton class="ui-button-danger mx-1"
                                              icon="fas fa-file-pdf"

@@ -4450,7 +4450,7 @@ public class InwardReportController implements Serializable {
         return result;
     }
 
-    public void processAdmissionCategoryWiseAdmissionReport() {
+    public void processAdmissionCategoryWiseAdmissionReportNew() {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Admission From Date and Admission To Date are required.");
             admissionCategoryWiseAdmissionList = new ArrayList<>();
@@ -4461,99 +4461,36 @@ public class InwardReportController implements Serializable {
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("SELECT new com.divudi.core.data.dto.AdmissionCategoryWiseAdmissionDTO(")
-                .append("ad.id, ")
-                .append("ad.bhtNo, ")
-                .append("ad.patient.person.name, ")
-                .append("ad.patient.person.title, ")
-                .append("ad.admissionType, ")
-                .append("ad.paymentMethod, ")
-                .append("ad.paymentFinalized")
-                .append(") FROM Admission ad ");
+                .append("pe.id, ")
+                .append("pe.bhtNo, ")
+                .append("COALESCE(per.name, ''), ")
+                .append("per.title, ")
+                .append("pe.admissionType, ")
+                .append("pe.paymentMethod, ")
+                .append("pe.paymentFinalized")
+                .append(") FROM Bill b ")
+                .append("LEFT JOIN b.patientEncounter pe ")
+                .append("LEFT JOIN pe.patient pt ")
+                .append("LEFT JOIN pt.person per ")
+                .append("WHERE b.billType = :billType ")
+                .append("AND b.id = pe.finalBill.id ")
+                .append("AND b.retired = :ret ")
+                .append("AND b.cancelled = :can ")
+                .append("AND pe.id IS NOT NULL ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
-        if (roomCategory != null) {
-            jpql.append("LEFT JOIN ad.currentPatientRoom room ")
-                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
-        }
-
-        jpql.append("WHERE ad.retired = :ret ")
-                .append("AND ad.dateOfAdmission BETWEEN :fd AND :td ");
-
+        params.put("billType", BillType.InwardFinalBill);
         params.put("ret", false);
-        params.put("fd", fromDate);
-        params.put("td", toDate);
+        params.put("can", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
 
-        if (dischargeFromDate != null && dischargeToDate != null) {
-            jpql.append("AND ad.dateOfDischarge BETWEEN :dfd AND :dtd ");
-            params.put("dfd", dischargeFromDate);
-            params.put("dtd", dischargeToDate);
-        }
+        buildAdmissionCategoryFilterJpqlNew(jpql, params);
 
-        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
-            jpql.append("AND ad.finalBill IS NOT NULL ")
-                    .append("AND ad.finalBill.createdAt BETWEEN :iafd AND :iatd ");
-            params.put("iafd", invoiceApprovedFromDate);
-            params.put("iatd", invoiceApprovedToDate);
-        }
-
-        if (institution != null) {
-            jpql.append("AND ad.institution = :inst ");
-            params.put("inst", institution);
-        }
-        if (site != null) {
-            jpql.append("AND ad.department.site = :site ");
-            params.put("site", site);
-        }
-        if (department != null) {
-            jpql.append("AND ad.department = :dept ");
-            params.put("dept", department);
-        }
-        if (consultant != null) {
-            jpql.append("AND ad.referringConsultant = :cons ");
-            params.put("cons", consultant);
-        }
-        if (serviceCenter != null) {
-            jpql.append("AND ad.department = :sc ");
-            params.put("sc", serviceCenter);
-        }
-        if (sponsor != null) {
-            jpql.append("AND ad.creditCompany = :sponsor ");
-            params.put("sponsor", sponsor);
-        }
-        if (admissionType != null) {
-            jpql.append("AND ad.admissionType = :at ");
-            params.put("at", admissionType);
-        }
-        if (paymentMethod != null) {
-            jpql.append("AND ad.paymentMethod = :pm ");
-            params.put("pm", paymentMethod);
-        }
-        if (roomCategory != null) {
-            jpql.append("AND rfc.roomCategory = :rc ");
-            params.put("rc", roomCategory);
-        }
-        if (admissionStatus != null && admissionStatus != ANY_STATUS) {
-            switch (admissionStatus) {
-                case ADMITTED_BUT_NOT_DISCHARGED:
-                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = FALSE ");
-                    params.put("dis", false);
-                    break;
-                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = FALSE ");
-                    params.put("dis", true);
-                    break;
-                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = TRUE ");
-                    params.put("dis", true);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        jpql.append("ORDER BY ad.admissionType.name, ad.bhtNo ");
+        jpql.append("ORDER BY pe.admissionType.name, pe.bhtNo ");
 
         try {
-            admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) peFacade.findLightsByJpql(
+            admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) billFacade.findLightsByJpql(
                     jpql.toString(), params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading admission category wise report: " + e.getMessage());
@@ -4566,40 +4503,88 @@ public class InwardReportController implements Serializable {
             return;
         }
 
-        enrichAdmissionCategoryWiseFinancials(admissionCategoryWiseAdmissionList);
+        enrichAdmissionCategoryWiseFinancialsFast(admissionCategoryWiseAdmissionList);
     }
 
-    private void enrichAdmissionCategoryWiseFinancials(List<AdmissionCategoryWiseAdmissionDTO> rows) {
+
+    private void buildAdmissionCategoryFilterJpqlNew(StringBuilder jpql, Map<String, Object> params) {
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            // b IS the confirmed final bill (confirmedFinalBill = true above),
+            // so its own createdAt is the invoice-approved timestamp - no
+            // separate ad.finalBill hop needed here.
+            jpql.append("AND b.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+        if (consultant != null) {
+            jpql.append("AND pe.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+        if (sponsor != null) {
+            jpql.append("AND pe.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+        if (admissionType != null) {
+            jpql.append("AND pe.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            jpql.append("AND pe.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+        if (admissionStatus != null && admissionStatus != ANY_STATUS) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+
+    private void enrichAdmissionCategoryWiseFinancialsFast(List<AdmissionCategoryWiseAdmissionDTO> rows) {
         List<Long> encounterIds = rows.stream()
                 .filter(dto -> dto != null && dto.getAdmissionId() != null)
                 .map(AdmissionCategoryWiseAdmissionDTO::getAdmissionId)
+                .distinct()
                 .collect(Collectors.toList());
 
         if (encounterIds.isEmpty()) {
             return;
         }
 
-        List<PatientEncounter> encounters = peFacade.findByJpql(
-                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
-                Collections.singletonMap("ids", encounterIds));
-
-        Map<Long, PatientEncounter> encounterById = (encounters == null)
-                ? Collections.emptyMap()
-                : encounters.stream().collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
-
-        List<PatientEncounter> allChildren = peFacade.findByJpql(
-                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter.id IN :ids AND pe.retired = false",
-                Collections.singletonMap("ids", encounterIds));
-        Map<Long, List<PatientEncounter>> childrenByParentId = (allChildren == null)
-                ? Collections.emptyMap()
-                : allChildren.stream()
-                        .filter(pe -> pe.getParentEncounter() != null)
-                        .collect(Collectors.groupingBy(pe -> pe.getParentEncounter().getId()));
-
-        Map<Long, Bill> finalBillByEncounterId = batchFetchFinalBillsByEncounterIds(encounterIds);
+        Map<Long, FinalBillChargeSummary> chargeSummaryByEncounterId = batchFetchFinalBillChargeSummaryByEncounterIds(encounterIds);
         Map<Long, Double> depositByEncounterId = batchFetchDepositTotalsByEncounterIds(encounterIds);
-        Map<Long, Double> paidByCompanyByEncounterId = batchFetchPaidByCompanyByEncounterIds(encounterIds);
-        Map<Long, Double> paidByPatientByEncounterId = batchFetchPaidByPatientByEncounterIds(encounterIds);
 
         for (AdmissionCategoryWiseAdmissionDTO dto : rows) {
             if (dto == null || dto.getAdmissionId() == null) {
@@ -4607,43 +4592,15 @@ public class InwardReportController implements Serializable {
             }
 
             Long id = dto.getAdmissionId();
-            PatientEncounter pe = encounterById.get(id);
-            Bill finalBill = finalBillByEncounterId.get(id);
-            List<PatientEncounter> children = childrenByParentId.getOrDefault(id, Collections.emptyList());
-
-            double invoiceAmount;
-            double professionalFees = 0.0;
-            double hospitalAmount = 0.0;
-            double discount = 0.0;
-            double sponsorAmount = 0.0;
-            double patientAmount = 0.0;
-
-            if (finalBill != null) {
-                invoiceAmount = finalBill.getNetTotal();
-                professionalFees = finalBill.getProfessionalFee();
-                hospitalAmount = finalBill.getHospitalFee();
-                discount = finalBill.getDiscount();
-                sponsorAmount = finalBill.getSettledAmountBySponsor();
-                patientAmount = finalBill.getSettledAmountByPatient();
-            } else if (pe != null) {
-                invoiceAmount = inwardBeanController.calculateInwardTotal(pe, children);
-                discount = pe.getDiscount();
-            } else {
-                invoiceAmount = 0.0;
-            }
-
-            if (sponsorAmount == 0.0 && patientAmount == 0.0 && invoiceAmount > 0.0) {
-                if (dto.getPaymentMethod() == PaymentMethod.Credit) {
-                    sponsorAmount = invoiceAmount;
-                } else {
-                    patientAmount = invoiceAmount;
-                }
-            }
-
+            FinalBillChargeSummary chargeSummary = chargeSummaryByEncounterId.get(id);
             double advance = depositByEncounterId.getOrDefault(id, 0.0);
-            double paidByCompany = paidByCompanyByEncounterId.getOrDefault(id, 0.0);
-            double paidByPatient = paidByPatientByEncounterId.getOrDefault(id, 0.0);
-            double totalCollected = advance + paidByCompany;
+
+            double invoiceAmount = chargeSummary != null ? chargeSummary.netTotal : 0.0;
+            double discount = chargeSummary != null ? chargeSummary.discount : 0.0;
+            double sponsorAmount = chargeSummary != null ? chargeSummary.sponsorAmount : 0.0;
+            double patientAmount = chargeSummary != null ? chargeSummary.patientAmount : 0.0;
+            double professionalFees = chargeSummary != null ? chargeSummary.professionalFee : 0.0;
+            double hospitalAmount = chargeSummary != null ? chargeSummary.hospitalFee : 0.0;
 
             dto.setAdvance(advance);
             dto.setProfessionalFees(professionalFees);
@@ -4652,34 +4609,64 @@ public class InwardReportController implements Serializable {
             dto.setPatientAmount(patientAmount);
             dto.setDiscount(discount);
             dto.setInvoiceAmount(invoiceAmount);
-            dto.setBillBalance(Math.max(0.0, invoiceAmount - totalCollected));
-            dto.setPatientBalance(Math.max(0.0, patientAmount - paidByPatient));
+            dto.setBillBalance(Math.max(0.0, invoiceAmount - (sponsorAmount + patientAmount)));
+            dto.setPatientBalance(Math.max(0.0, patientAmount - advance));
         }
     }
 
-    private Map<Long, Bill> batchFetchFinalBillsByEncounterIds(List<Long> encounterIds) {
+    private static final class FinalBillChargeSummary {
+
+        double netTotal;
+        double discount;
+        double sponsorAmount;
+        double patientAmount;
+        double professionalFee;
+        double hospitalFee;
+    }
+
+    private Map<Long, FinalBillChargeSummary> batchFetchFinalBillChargeSummaryByEncounterIds(List<Long> encounterIds) {
         if (encounterIds == null || encounterIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        String jpql = "SELECT b FROM BilledBill b "
+        String jpql = "SELECT b.patientEncounter.id, b.netTotal, b.discount, b.settledAmountBySponsor, "
+                + "b.settledAmountByPatient, bi.inwardChargeType, SUM(bi.netValue) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.billItems bi "
                 + "WHERE b.retired = false "
                 + "AND b.cancelled = false "
                 + "AND b.billType = :bt "
-                + "AND b.confirmedFinalBill = true "
-                + "AND b.patientEncounter.id IN :ids";
+                + "AND b.id = b.patientEncounter.finalBill.id "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id, b.netTotal, b.discount, b.settledAmountBySponsor, "
+                + "b.settledAmountByPatient, bi.inwardChargeType";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.InwardFinalBill);
         params.put("ids", encounterIds);
 
-        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        Map<Long, Bill> result = new HashMap<>();
-        if (bills != null) {
-            for (Bill bill : bills) {
-                if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getId() != null) {
-                    result.put(bill.getPatientEncounter().getId(), bill);
-                }
+        List<Object[]> rows = billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        Map<Long, FinalBillChargeSummary> result = new HashMap<>();
+        if (rows == null) {
+            return result;
+        }
+        for (Object[] row : rows) {
+            if (row == null || row.length < 7 || row[0] == null) {
+                continue;
+            }
+            Long id = ((Number) row[0]).longValue();
+            FinalBillChargeSummary summary = result.computeIfAbsent(id, k -> new FinalBillChargeSummary());
+            summary.netTotal = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+            summary.discount = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+            summary.sponsorAmount = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+            summary.patientAmount = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
+
+            InwardChargeType chargeType = (InwardChargeType) row[5];
+            double net = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
+            if (chargeType == InwardChargeType.ProfessionalCharge || chargeType == InwardChargeType.DoctorAndNurses) {
+                summary.professionalFee += net;
+            } else if (chargeType != null) {
+                summary.hospitalFee += net;
             }
         }
         return result;
@@ -4707,51 +4694,7 @@ public class InwardReportController implements Serializable {
         return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
     }
 
-    private Map<Long, Double> batchFetchPaidByCompanyByEncounterIds(List<Long> encounterIds) {
-        if (encounterIds == null || encounterIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
-                + "FROM Bill b "
-                + "WHERE b.retired = false "
-                + "AND b.cancelled = false "
-                + "AND b.billTypeAtomic IN :bts "
-                + "AND b.patientEncounter.id IN :ids "
-                + "GROUP BY b.patientEncounter.id";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("bts", Arrays.asList(
-                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED,
-                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION));
-        params.put("ids", encounterIds);
-
-        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
-    }
-
-    private Map<Long, Double> batchFetchPaidByPatientByEncounterIds(List<Long> encounterIds) {
-        if (encounterIds == null || encounterIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
-                + "FROM Bill b "
-                + "WHERE b.retired = false "
-                + "AND b.cancelled = false "
-                + "AND b.billType = :btp "
-                + "AND b.paymentMethod <> :pm "
-                + "AND b.patientEncounter.id IN :ids "
-                + "GROUP BY b.patientEncounter.id";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("btp", BillType.InwardPaymentBill);
-        params.put("pm", PaymentMethod.Credit);
-        params.put("ids", encounterIds);
-
-        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
-    }
-
-    private Map<Long, Double> mapEncounterDoubleAggregate(List<Object[]> rows) {
+        private Map<Long, Double> mapEncounterDoubleAggregate(List<Object[]> rows) {
         Map<Long, Double> result = new HashMap<>();
         if (rows == null) {
             return result;
@@ -4778,11 +4721,11 @@ public class InwardReportController implements Serializable {
 
             int rowNum = 0;
             SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
-            
+
             Row filterRow1 = sheet.createRow(rowNum++);
             filterRow1.createCell(0).setCellValue("Institution:");
             filterRow1.createCell(1).setCellValue(institution != null ? institution.getName() : "All");
-            
+
             Row filterRow2 = sheet.createRow(rowNum++);
             filterRow2.createCell(0).setCellValue("Site:");
             filterRow2.createCell(1).setCellValue(site != null ? site.getName() : "All");
@@ -4979,17 +4922,35 @@ public class InwardReportController implements Serializable {
         table.addCell(new Phrase(nullSafe(row.getBhtNo()), normal));
         table.addCell(new Phrase(nullSafe(row.getPatientName()), normal));
         table.addCell(new Phrase(nullSafe(row.getCategoryName()), normal));
-        
+
         PdfPCell c;
-        c = new PdfPCell(new Phrase(formatAmount(row.getAdvance()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getProfessionalFees()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getHospitalAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getSponsorAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getPatientAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getDiscount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getInvoiceAmount()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getBillBalance()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
-        c = new PdfPCell(new Phrase(formatAmount(row.getPatientBalance()), normal)); c.setHorizontalAlignment(Element.ALIGN_RIGHT); table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getAdvance()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getProfessionalFees()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getHospitalAmount()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getSponsorAmount()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getPatientAmount()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getDiscount()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getInvoiceAmount()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getBillBalance()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
+        c = new PdfPCell(new Phrase(formatAmount(row.getPatientBalance()), normal));
+        c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(c);
     }
 
     public void downloadIpUnsettledInvoicesPdf() {
