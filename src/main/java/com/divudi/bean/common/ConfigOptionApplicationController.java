@@ -1499,6 +1499,23 @@ public class ConfigOptionApplicationController implements Serializable {
         return Boolean.parseBoolean(option.getOptionValue());
     }
 
+    /**
+     * Read-only variant of {@link #getBooleanValueByKey(String, boolean)} —
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist. Use this for {@code rendered="..."}
+     * gates and other pure reads that must not silently create configuration
+     * rows just because a page was viewed; reserve the mutating
+     * {@code getBooleanValueByKey} for paths that are meant to seed a
+     * default the first time a key is consulted (e.g. an explicit save).
+     */
+    public boolean getBooleanValueByKeyReadOnly(String key, boolean defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(option.getOptionValue());
+    }
+
     public void setBooleanValueByKey(String key, boolean value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {

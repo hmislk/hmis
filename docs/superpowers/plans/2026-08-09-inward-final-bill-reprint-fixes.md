@@ -14,7 +14,7 @@
 - JPQL first, native SQL last — not applicable here (no queries added).
 - Restore local JNDI in `persistence.xml` after every push (already project convention, unrelated to this change but keep in mind before any `git push`).
 - Follow JSF conventions: use `h:panelGroup` (never `ui:fragment`) for conditional rendering; `layout="block"` renders as `<div>`, plain `h:panelGroup` renders as `<span>`.
-- Prefer `h:selectBooleanCheckbox` over `p:selectBooleanCheckbox` for configuration-dialog checkboxes (documented reliability reason in `developer_docs/configuration/printer-configuration-system.md`) — the two NEW checkboxes added in Task 3 follow this; the existing checkboxes touched in Task 1 are print-preview toggles, not config-dialog toggles, so they stay `p:selectBooleanCheckbox`.
+- Prefer `h:selectBooleanCheckbox` over `p:selectBooleanCheckbox` for configuration-dialog checkboxes (documented reliability reason in `developer_docs/configuration/printer-configuration-system.md`) — the three NEW checkboxes added in Task 3 follow this; the existing checkboxes touched in Task 1 are print-preview toggles, not config-dialog toggles, so they stay `p:selectBooleanCheckbox`.
 - Reference spec: `docs/superpowers/specs/2026-08-09-inward-final-bill-reprint-fixes-design.md`.
 
 ---
@@ -501,7 +501,7 @@ Find (opening boundary):
 Replace with:
 
 ```xml
-                                    <h:panelGroup layout="block" rendered="#{bhtSummeryController.showCustomBill2Format}">
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 2 Format', true)}">
                                     <div class="row">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -565,7 +565,7 @@ Find (opening boundary):
 Replace with:
 
 ```xml
-                                    <h:panelGroup layout="block" rendered="#{bhtSummeryController.showCustomBill3Format}">
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 3 Format', false)}">
                                     <div class="row mt-3">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -629,7 +629,7 @@ Find (opening boundary):
 Replace with:
 
 ```xml
-                                    <h:panelGroup layout="block" rendered="#{bhtSummeryController.showCustomBill4Format}">
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 4 Format', false)}">
                                     <div class="row mt-3">
                                         <div class="col-lg-6">
                                             <p:panel>
@@ -704,7 +704,7 @@ Replace with:
                                                     <h:outputLabel for="showCustomBill4Format" value="Show &quot;Custom Bill 3 (Letterhead)&quot; format" class="ms-2" />
                                                 </div>
                                                 <hr/>
-                                                <h:panelGroup rendered="#{bhtSummeryController.showCustomBill2Format}">
+                                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 2 Format', true)}">
                                                 <div class="mb-3">
                                                     <h:selectBooleanCheckbox id="custom2ShowAddress" value="#{bhtSummeryController.custom2ShowAddress}" />
                                                     <h:outputLabel for="custom2ShowAddress" value="Show Patient Address" class="ms-2" />
@@ -738,7 +738,7 @@ Replace with:
                                                 </div>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{bhtSummeryController.showCustomBill4Format}">
+                                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 4 Format', false)}">
                                                 <hr/>
                                                 <h6>Custom Bill 3 (Letterhead) Settings</h6>
                                                 <div class="mb-3">
@@ -778,7 +778,7 @@ Run:
 ```bash
 xmllint --noout src/main/webapp/inward/inward_reprint_bill_final.xhtml
 ```
-Expected: no output (no unclosed-tag errors). If `xmllint` is not installed, instead visually recount: every `<h:panelGroup ...>` opened in Steps 1-6 must have exactly one matching `</h:panelGroup>` — 6 new panelGroups added total (3 format rows + 2 preference blocks... wait, that's 5: 3 row wraps from Steps 1-3, plus the Custom2-preferences wrap opened in Step 4/closed in Step 5, plus the Custom4-preferences wrap opened in Step 5/closed in Step 6 — 5 new open/close pairs in total).
+Expected: no output (no unclosed-tag errors). If `xmllint` is not installed, instead visually recount: every `<h:panelGroup ...>` opened in Steps 1-6 must have exactly one matching `</h:panelGroup>` — 5 new open/close pairs in total (3 row wraps from Steps 1-3, plus the Custom2-preferences wrap opened in Step 4/closed in Step 5, plus the Custom4-preferences wrap opened in Step 5/closed in Step 6).
 
 - [ ] **Step 8: Rebuild, redeploy, and verify in Playwright**
 

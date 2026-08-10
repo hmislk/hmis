@@ -480,9 +480,9 @@ public class BhtSummeryController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom2 print format">
     private void loadCustomBillFormatVisibility() {
-        showCustomBill2Format = configOptionController.getBooleanValueByKey("Inward Final Bill - Show Custom Bill 2 Format", true);
-        showCustomBill3Format = configOptionController.getBooleanValueByKey("Inward Final Bill - Show Custom Bill 3 Format", false);
-        showCustomBill4Format = configOptionController.getBooleanValueByKey("Inward Final Bill - Show Custom Bill 4 Format", false);
+        showCustomBill2Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 2 Format", true);
+        showCustomBill3Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 3 Format", false);
+        showCustomBill4Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 4 Format", false);
     }
 
     private void persistCustomBillFormatVisibility() {
