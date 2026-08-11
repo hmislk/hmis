@@ -261,6 +261,7 @@
                                                         <th class="text-end">Added Fee Value</th>
                                                         <th>Paid Date</th>
                                                         <th>Paid Bill Number</th>
+                                                        <th>Comments</th>
                                                         <th class="text-end">Paid Fee Value</th>
                                                     </tr>
                                                 </thead>
@@ -280,7 +281,7 @@
                                                                     </h:outputText>
                                                                 </td>
                                                                 <td>#{admissionRow.firstFinalBillNo}</td>
-                                                                <td colspan="7">-</td>
+                                                                <td colspan="8">-</td>
                                                             </tr>
                                                         </ui:fragment>
                                                         <ui:repeat value="#{admissionRow.detailedRows}" var="detail" varStatus="blockStatus">
@@ -322,6 +323,7 @@
                                                                     <td>
                                                                         <h:outputText value="#{detail.paidBillNumbers[i]}" rendered="#{i lt detail.paidFeeValues.size()}"/>
                                                                     </td>
+                                                                    <td></td>
                                                                     <td class="text-end">
                                                                         <h:outputText value="#{detail.paidFeeValues[i]}" rendered="#{i lt detail.paidFeeValues.size()}">
                                                                             <f:convertNumber pattern="#,##0.00"/>
@@ -338,6 +340,7 @@
                                                                 </td>
                                                                 <td></td>
                                                                 <td></td>
+                                                                <td></td>
                                                                 <td class="text-end">
                                                                     <h:outputText value="#{detail.sumPaidFee}">
                                                                         <f:convertNumber pattern="#,##0.00"/>
@@ -351,6 +354,7 @@
                                                                         <f:convertNumber pattern="#,##0.00"/>
                                                                     </h:outputText>
                                                                 </td>
+                                                                <td></td>
                                                                 <td></td>
                                                                 <td></td>
                                                                 <td></td>

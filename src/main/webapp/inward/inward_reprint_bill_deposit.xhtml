@@ -7,7 +7,8 @@
       xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
-      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <h:body>
 
@@ -18,7 +19,7 @@
                     <p:panel>
                         <f:facet name="header" >
                             <div class=" d-flex justify-content-between ">
-                                <div><h:outputLabel value="Post Final Bill Payment Reprint" class="mt-2"></h:outputLabel></div>
+                                <div><h:outputLabel value="Deposit Reprint" class="mt-2"></h:outputLabel></div>
                                 <div class="d-flex gap-2">
 
                                     <p:commandButton
@@ -26,9 +27,8 @@
                                         ajax="false" value="To Cancel"
                                         class="ui-button-danger"
                                         icon="fa fa-ban"
-                                        onclick="if (!confirm('Cancel this post-final payment?')) return false;"
-                                        action="#{postFinalBillInwardPaymentController.cancelPostFinalPayment()}"
-                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.current.refunded}"  >
+                                        action="#{inwardSearch.navigateToDepositBillCancellation()}"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded}"  >
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -36,8 +36,8 @@
                                         ajax="false" value="Refund"
                                         class="ui-button-warning"
                                         icon="fa fa-money-bill-transfer"
-                                        action="#{postFinalBillInwardPaymentController.navigateToRefundFromPostFinalPaymentBill(postFinalBillInwardPaymentController.current)}"
-                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.current.refunded}"  >
+                                        action="#{inwardRefundController.navigateToRefundFromDepositBill(inwardSearch.bill)}"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded}"  >
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -51,6 +51,26 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        id="btnMarkAsChecked"
+                                        ajax="false"
+                                        value="Mark As Checked"
+                                        icon="fa fa-check-square"
+                                        class="ui-button-success"
+                                        action="#{inwardSearch.markAsChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardCheck')}"  >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnMarkAsUnChecked"
+                                        ajax="false"
+                                        value="Mark As Un Check"
+                                        icon="fa fa-square"
+                                        class="ui-button-warning"
+                                        action="#{inwardSearch.markAsUnChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  >
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         id="btnBackToInterim"
                                         ajax="false"
                                         value="Back To Interim"
@@ -58,24 +78,6 @@
                                         action="/inward/inward_bill_intrim?faces-redirect=true"
                                         actionListener="#{bhtSummeryController.createTables()}"
                                         >
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        id="btnInpatientDashboard"
-                                        ajax="false"
-                                        icon="fas fa-id-card"
-                                        class="ui-button-secondary "
-                                        value="Inpatient Dashboard"
-                                        action="#{bhtSummeryController.navigateToInpatientProfile()}"
-                                        >
-                                        <f:setPropertyActionListener
-                                            value="#{postFinalBillInwardPaymentController.current.patientEncounter}"
-                                            target="#{bhtSummeryController.patientEncounter}" >
-                                        </f:setPropertyActionListener>
-                                        <f:setPropertyActionListener
-                                            value="#{bhtSummeryController.patientEncounter}"
-                                            target="#{admissionController.current}" >
-                                        </f:setPropertyActionListener>
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -88,12 +90,34 @@
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <in:bhtDetail admission="#{postFinalBillInwardPaymentController.current.patientEncounter}"/>
+                                        <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
                                     </p:panel>
 
                                 </h:panelGroup>
                             </div>
                             <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:dataTable rowIndexVar="rowIndex"
+                                                 value="#{inwardSearch.billItems}" var="bip" >
+                                        <p:column>
+                                            <f:facet name="header">No</f:facet>
+                                            <h:outputLabel value="#{rowIndex+1}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="header">Fee</f:facet>
+                                            <h:outputLabel value="#{bip.netValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:panel>
+
                                 <p:panel class="mt-2">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-comment-dots"></h:outputText>
@@ -101,11 +125,21 @@
                                     </f:facet>
 
                                     <div class="d-flex gap-2 justify-content-between">
-                                        <h:outputText
+                                        <p:inputText
                                             id="billComment"
                                             class="w-100"
-                                            value="#{postFinalBillInwardPaymentController.current.comments}">
-                                        </h:outputText>
+                                            value="#{inwardSearch.bill.comments}">
+                                        </p:inputText>
+
+                                        <p:commandButton
+                                            id="saveBillComment"
+                                            value="Save Comment"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            style="width: 200px;"
+                                            action="#{inwardSearch.updateBillComments()}"
+                                            update="billComment gpBillPreview">
+                                        </p:commandButton>
                                     </div>
                                 </p:panel>
 
@@ -123,7 +157,7 @@
                                             icon="fas fa-cog"
                                             class="ui-button-secondary"
                                             type="button"
-                                            onclick="PF('postFinalPaymentConfigDialog').show();"/>
+                                            onclick="PF('inwardPaymentConfigDialog').show();"/>
                                     </div>
                                 </div>
                             </f:facet>
@@ -132,19 +166,19 @@
                                 <h:panelGroup id="gpBillPreview" >
 
                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
-                                        <bill:A4PaperPostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" duplicate="true"/>
+                                        <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
-                                        <bill:FiveFivePostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" duplicate="true" />
+                                        <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true" />
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
-                                        <bill:posPaperPostFinalPaymentBill bill="#{postFinalBillInwardPaymentController.current}" duplicate="true"/>
+                                        <bill:posPaperPaymentBill bill="#{inwardSearch.bill}"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
-                                        <prints:five_five_custom_3_post_final_payments bill="#{postFinalBillInwardPaymentController.current}" duplicate="true" />
+                                        <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
                                     </h:panelGroup>
 
                                 </h:panelGroup>
@@ -153,15 +187,15 @@
                     </p:panel>
                 </h:form>
 
-                <p:dialog id="postFinalPaymentConfigDialog"
+                <p:dialog id="inwardPaymentConfigDialog"
                           header="Inward Payment Bill Printer Configuration"
-                          widgetVar="postFinalPaymentConfigDialog"
+                          widgetVar="inwardPaymentConfigDialog"
                           modal="true"
                           width="560"
                           resizable="false"
                           closeOnEscape="true">
-                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="postFinalPaymentConfigForm"/>
-                    <h:form id="postFinalPaymentConfigForm">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
+                    <h:form id="inwardPaymentConfigForm">
                         <div class="card config-section">
                             <div class="card-header">
                                 <i class="fas fa-file-alt me-2"/>
@@ -175,6 +209,10 @@
                                 <div class="mb-3">
                                     <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
                                     <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
                                 </div>
                                 <div class="mb-3">
                                     <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
@@ -192,7 +230,7 @@
                                              icon="fas fa-times"
                                              class="ui-button-secondary"
                                              type="button"
-                                             onclick="PF('postFinalPaymentConfigDialog').hide(); return false;"/>
+                                             onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
                         </div>
                     </h:form>
                 </p:dialog>
