@@ -10629,21 +10629,27 @@ public class PharmacyController implements Serializable {
         double total = 0.0;
 
         for (Bill b : bills) {
-            if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
+            BillTypeAtomic bta = b.getBillTypeAtomic();
+            if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN))) {
                 total -= b.getNetTotal();
-            } else if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)) {
+            } else if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))) {
                 total -= b.getNetTotal();
-            } else if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
+            } else if (bta != null && bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
                 // Direct purchases have no separate PO, so use the bill's own net total
                 total += b.getNetTotal();
             } else {
-                total += b.getReferenceBill().getNetTotal();
+                total += (b.getReferenceBill() != null ? b.getReferenceBill().getNetTotal() : 0);
             }
         }
         return total;
     }
 
    public void exportGRNAndDirectPurchaseDetailReportToExcel() {
+    if (bills == null || bills.isEmpty()) {
+        JsfUtil.addErrorMessage("No data available to export");
+        return;
+    }
+
     FacesContext context = FacesContext.getCurrentInstance();
     HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -10734,8 +10740,9 @@ public class PharmacyController implements Serializable {
             emptyRow.createCell(16).setCellValue("-");
             emptyRow.createCell(17).setCellValue("-");
             emptyRow.createCell(18).setCellValue("-");
-            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic() != null
+                    && (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN))
                     ? -1 *(bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 )  : (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 ));
             emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
@@ -10770,11 +10777,27 @@ public class PharmacyController implements Serializable {
                         (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
                         && billItem.getItem().getMeasurementUnit().getName() != null)
                         ? billItem.getItem().getMeasurementUnit().getName() : "-");
-                emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
-                emptyInnerRow.createCell(12).setCellValue(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                emptyInnerRow.createCell(13).setCellValue(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
+                } else {
+                    emptyInnerRow.createCell(11).setCellValue("-");
+                }
+                emptyInnerRow.createCell(12).setCellValue(
+                        billItem.getPharmaceuticalBillItem() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null
+                        ? billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "-");
+                emptyInnerRow.createCell(13).setCellValue(
+                        billItem.getPharmaceuticalBillItem() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire() != null
+                        ? sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()) : "-");
                 emptyInnerRow.createCell(14).setCellValue("-");
-                emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                } else {
+                    emptyInnerRow.createCell(15).setCellValue("-");
+                }
                 emptyInnerRow.createCell(16).setCellValue(billItem.getDiscount());
                 emptyInnerRow.createCell(17).setCellValue(billItem.getNetValue());
                 emptyInnerRow.createCell(18).setCellValue(billItem.getBill().getNetTotal());
@@ -10809,7 +10832,8 @@ public class PharmacyController implements Serializable {
         context.responseComplete();
 
     } catch (Exception e) {
-        e.printStackTrace();
+        Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating GRN/Direct Purchase detail Excel report", e);
+        context.responseComplete();
     }
 }
 
