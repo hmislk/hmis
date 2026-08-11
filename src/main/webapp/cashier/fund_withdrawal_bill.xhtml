@@ -17,15 +17,10 @@
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
                             <p:outputLabel value="Fund Withdrawal Bill" class="mx-2 mt-2"></p:outputLabel>
-                            <p:commandButton 
-                                icon="fa-solid fa-check"
-                                class="ui-button-success"
-                                style="float: right;"
-                                value="Withdraw" 
-                                ajax="false" 
-                                action="#{financialTransactionController.settleWithdrawalFundBill()}" >
-                            </p:commandButton>
                         </f:facet>
+
+                        <div class="row">
+                        <div class="col-8">
                         <p:panel header="Add Withdrawal" >
 
                             <div class="row">
@@ -162,6 +157,66 @@
                             </p:dataTable>
 
                         </p:panel>
+                        </div>
+
+                        <div class="col-4">
+                            <p:panelGrid
+                                columns="2"
+                                class="w-100 m-1"
+                                layout="tabular"
+                                columnClasses="custom-col-28, custom-col-68">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Withdraw From"/>
+                                    <p:commandButton
+                                        icon="fa-solid fa-check"
+                                        class="ui-button-success float-end"
+                                        style="float: right;"
+                                        value="Withdraw"
+                                        ajax="false"
+                                        action="#{financialTransactionController.settleWithdrawalFundBill()}">
+                                    </p:commandButton>
+                                </f:facet>
+
+                                <p:outputLabel value="Cashbook"/>
+                                <p:autoComplete
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{cashBookController.completeCashBook}"
+                                    value="#{financialTransactionController.withdrawalCashBook}"
+                                    var="cb"
+                                    forceSelection="true"
+                                    itemLabel="#{cashBookController.getCashBookLabel(cb)}"
+                                    itemValue="#{cb}"
+                                    required="true"
+                                    requiredMessage="Please select a cashbook"/>
+
+                                <p:outputLabel value="Bank/Safe"/>
+                                <p:autoComplete
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{bankAccountController.completeBankAccount}"
+                                    value="#{financialTransactionController.currentBill.bankAccount}"
+                                    var="account"
+                                    forceSelection="true"
+                                    itemLabel="#{account.accountName}"
+                                    itemValue="#{account}"/>
+
+                                <p:outputLabel value="Comments"/>
+                                <p:inputTextarea
+                                    class="w-100"
+                                    rows="3"
+                                    value="#{financialTransactionController.currentBill.comments}"/>
+
+                                <p:outputLabel value="Total Withdrawal Value"/>
+                                <p:inputText
+                                    id="txtTotalWithdrawalValue"
+                                    class="w-100 text-end"
+                                    readonly="true"
+                                    value="#{financialTransactionController.currentBill.netTotal}"/>
+                            </p:panelGrid>
+                        </div>
+
+                        </div>
                     </p:panel>
                     </h:form>
                 </ui:define>
