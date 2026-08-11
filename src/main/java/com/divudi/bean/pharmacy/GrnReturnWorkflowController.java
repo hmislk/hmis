@@ -876,14 +876,22 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if the original GRN is fully returned and mark it as fullReturned
+        // Update the original GRN's refundAmount so Supplier Payment screens
+        // (SupplierPaymentController) settle on the net-of-return amount
+        // instead of the full original GRN amount (hmislk/hmis#18280).
+        // Also check if the original GRN is now fully returned.
         Bill originalGrnBill = currentBill.getReferenceBill();
-        if (originalGrnBill != null && isGrnFullyReturned(originalGrnBill)) {
-            originalGrnBill.setFullReturned(true);
-            originalGrnBill.setFullReturnedBy(sessionController.getLoggedUser());
-            originalGrnBill.setFullReturnedAt(new Date());
+        if (originalGrnBill != null) {
+            originalGrnBill.setRefundAmount(Math.abs(originalGrnBill.getRefundAmount()) + Math.abs(currentBill.getNetTotal()));
+            if (isGrnFullyReturned(originalGrnBill)) {
+                originalGrnBill.setFullReturned(true);
+                originalGrnBill.setFullReturnedBy(sessionController.getLoggedUser());
+                originalGrnBill.setFullReturnedAt(new Date());
+            }
             billFacade.edit(originalGrnBill);
-            JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
+            if (originalGrnBill.isFullReturned()) {
+                JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
+            }
         }
 
         // Reload via billService to show items in print preview without
