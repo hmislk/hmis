@@ -3741,6 +3741,15 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        if (withdrawalCashBook == null) {
+            JsfUtil.addErrorMessage("Please select a cashbook for this withdrawal");
+            return "";
+        }
+        if (getCurrentBillPayments() == null || getCurrentBillPayments().isEmpty()) {
+            JsfUtil.addErrorMessage("At least one withdrawal payment must be added before settlement");
+            return "";
+        }
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -3752,12 +3761,6 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDeptId(deptId);
 
         Double netTotal = currentBill.getNetTotal();
-
-        if (withdrawalCashBook == null) {
-            JsfUtil.addErrorMessage("Please select a cashbook for this withdrawal");
-            return "";
-        }
-
         currentBill.setNetTotal(Math.abs(netTotal));
         currentBill.setTotal(Math.abs(netTotal));
         billController.save(currentBill);

@@ -107,7 +107,7 @@
                                         icon="fa fa-plus"
                                         class="ui-button-success"
                                         process="btnAdd cmdPayment paymentDetails"
-                                        update="tblPayments totals cmdPayment paymentDetails"
+                                        update="tblPayments totals cmdPayment paymentDetails txtTotalWithdrawalValue"
                                         action="#{financialTransactionController.addPaymentToWithdrawalFundBill()}" >
                                     </p:commandButton>
                                 </div>
@@ -149,7 +149,7 @@
                                         value="Remove" 
                                         action="#{financialTransactionController.removePayment}" 
                                         process="btnRemove tblPayments"
-                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
+                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId} :#{p:resolveFirstComponentWithId('txtTotalWithdrawalValue',view).clientId}"
                                         >
                                         <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
                                     </p:commandButton>
