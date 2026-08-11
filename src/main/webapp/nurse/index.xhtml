@@ -484,7 +484,7 @@
                                                             value="Add Surgeries"
                                                             icon="fa fa-clock"
                                                             ajax="false"
-                                                            rendered="#{admissionController.current ne null and not admissionController.current.paymentFinalized and webUserController.hasPrivilege('InwardSurgeryAdd')}"
+                                                            rendered="#{admissionController.current ne null and admissionController.current.id ne null and not admissionController.current.paymentFinalized and webUserController.hasPrivilege('InwardSurgeryAdd')}"
                                                             action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                                             class="w-100">
                                                             <f:setPropertyActionListener
@@ -497,7 +497,7 @@
                                                             value="Manage Surgeries"
                                                             icon="fa fa-list"
                                                             ajax="false"
-                                                            rendered="#{webUserController.hasPrivilege('InwardSurgeryManage')}"
+                                                            rendered="#{admissionController.current ne null and admissionController.current.id ne null and webUserController.hasPrivilege('InwardSurgeryManage')}"
                                                             action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}"
                                                             class="w-100">
                                                             <f:setPropertyActionListener
