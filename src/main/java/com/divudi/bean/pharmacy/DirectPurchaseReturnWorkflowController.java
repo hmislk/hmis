@@ -2403,8 +2403,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
     /**
      * Calculates the net value adjustment based on actual net value entered by
-     * user Adjustment = Net Total (calculated) - Actual Net Value Positive
-     * adjustment means calculated is higher than actual Negative adjustment
+     * user Adjustment = |Net Total (calculated)| - |Actual Net Value|
+     * netTotal follows the return sign convention (negative = value returning to
+     * supplier); actualNetValue is entered by staff as the physical counted amount,
+     * always a positive magnitude. Comparing absolute values keeps the result
+     * correct regardless of netTotal's sign, so equal amounts net to zero.
+     * Positive adjustment means calculated is higher than actual Negative adjustment
      * means calculated is lower than actual
      */
     public void calculateNetValueAdjustment() {
@@ -2418,7 +2422,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         BigDecimal netTotal = bfd.getNetTotal();
 
         if (actualNetValue != null && netTotal != null) {
-            BigDecimal adjustment = netTotal.subtract(actualNetValue);
+            BigDecimal adjustment = netTotal.abs().subtract(actualNetValue.abs());
             bfd.setNetValueAdjustment(adjustment);
         } else {
             bfd.setNetValueAdjustment(null);
