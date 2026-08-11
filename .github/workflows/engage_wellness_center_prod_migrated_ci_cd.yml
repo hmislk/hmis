@@ -1,0 +1,170 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  ewc — shared4 — new Azure estate (East Asia)
+#
+#  Copy to  hmis/.github/workflows/engage_wellness_center_prod_migrated_ci_cd.yml
+#  Branch:  engagewellness-prod-migrated
+#  Serves:  https://ewc-migrated.carecode.org/ewc
+#
+#  Differs from engage_wellness_center_prod_ci_cd.yml only in the branch, the secrets and the
+#  health URL. The JNDI names are IDENTICAL to the old workflow — several
+#  hospitals in this estate are deployed by hand-copied WAR, so renaming a
+#  datasource would break them.
+# ═══════════════════════════════════════════════════════════════════════════
+name: "ewc shared4 migrated CI/CD"
+
+on:
+  push:
+    branches: [engagewellness-prod-migrated]
+  workflow_dispatch:
+
+concurrency:
+  # One Payara domain per VM. Two asadmin deploys at once against the same
+  # domain gives you a half-deployed app and a confusing 404.
+  group: payara-shared4-migrated
+  cancel-in-progress: false
+
+env:
+  APP:        ewc
+  JNDI_MAIN:  jdbc/ewc
+  JNDI_AUDIT: jdbc/ewcAudit
+  HEALTH_URL: https://ewc-migrated.carecode.org/ewc/faces/index1.xhtml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      # JDBC pools live in Payara, not in the WAR. These names must match
+      # ansible/host_vars/vm-hmis-shared4.yml exactly.
+      - name: Substitute datasource JNDI names
+        run: |
+          set -euo pipefail
+          PU=src/main/resources/META-INF/persistence.xml
+          test -f "$PU" || { echo "::error::$PU not found"; exit 1; }
+
+          sed -i "s|[$][{]JDBC_DATASOURCE[}]|${JNDI_MAIN}|g"        "$PU"
+          sed -i "s|[$][{]JDBC_AUDIT_DATASOURCE[}]|${JNDI_AUDIT}|g" "$PU"
+
+          echo "--- resolved ---"; grep -E 'jta-data-source' "$PU"
+
+          if grep -q 'JDBC_DATASOURCE\|JDBC_AUDIT_DATASOURCE' "$PU"; then
+            echo "::error::unsubstituted placeholder remains"; exit 1; fi
+          for want in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            grep -q "<[a-z-]*jta-data-source>${want}</" "$PU" || {
+              echo "::error::$PU does not reference ${want} — branch may have a hardcoded datasource"
+              grep -E 'jta-data-source' "$PU"; exit 1; }
+          done
+
+      - name: Build
+        run: mvn -B -ntp clean package -DskipTests
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          war=$(find target -maxdepth 1 -name '*.war' | head -1)
+          test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
+          mv "$war" "target/${APP}.war"; ls -la "target/${APP}.war"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ewc-war
+          path: target/ewc.war
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: prod-migrated        # add a required reviewer here to gate it
+    env:
+      APP:        ewc
+      JNDI_MAIN:  jdbc/ewc
+      JNDI_AUDIT: jdbc/ewcAudit
+      HEALTH_URL: https://ewc-migrated.carecode.org/ewc/faces/index1.xhtml
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ewc-war
+          path: ./artifact
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.PROD_SHARED4_IP }}" >> ~/.ssh/known_hosts
+
+      - name: Upload WAR
+        run: |
+          set -euo pipefail
+          rsync -az -e "ssh -i ~/.ssh/id_deploy" "./artifact/ewc.war" \
+            "${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ secrets.PROD_SHARED4_IP }}:/home/appuser/app/latest/"
+
+      - name: Deploy to Payara
+        env:
+          TARGET: ${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ secrets.PROD_SHARED4_IP }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy "$TARGET" \
+              APP="ewc" JNDI_MAIN="jdbc/ewc" JNDI_AUDIT="jdbc/ewcAudit" \
+              'bash -euo pipefail -s' <<'REMOTE'
+          PAYARA=/opt/payara5
+          WAR="/home/appuser/app/latest/${APP}.war"
+          ASADMIN="sudo -u appuser $PAYARA/glassfish/bin/asadmin --user admin --passwordfile $PAYARA/.asadminpass"
+
+          # A first deploy runs EclipseLink metadata build and schema migration
+          # against a large production schema. asadmin gives up after 600 s by
+          # default and the job goes red while the server carries on deploying.
+          export AS_ADMIN_READTIMEOUT=1800000
+
+          test -f "$WAR" || { echo "WAR missing: $WAR"; exit 1; }
+
+          if [ -f "/home/appuser/app/latest/${APP}.war.deployed" ]; then
+            sudo cp "/home/appuser/app/latest/${APP}.war.deployed" \
+                    "/home/appuser/app/latest/${APP}.war.previous"
+          fi
+
+          # Verify the datasources resolve BEFORE undeploying the working copy.
+          # Failing here leaves the hospital running.
+          for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            $ASADMIN list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
+              echo "JNDI resource $j not found."
+              echo "Run: ansible-playbook site.yml -i inventory/prod.yml --limit <vm> --tags payara_datasources"
+              exit 1; }
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$($ASADMIN get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "could not resolve the pool behind $j"; exit 1; }
+            $ASADMIN ping-connection-pool "$pool" || {
+              echo "pool $pool (behind $j) is not reachable"; exit 1; }
+          done
+
+          $ASADMIN undeploy "$APP" 2>/dev/null || echo "not previously deployed"
+          $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true "$WAR"
+
+          sudo cp "$WAR" "/home/appuser/app/latest/${APP}.war.deployed"
+          $ASADMIN list-applications
+          REMOTE
+
+      - name: Health check
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && { echo "healthy"; exit 0; }
+            sleep 10
+          done
+          echo "::error::ewc did not become healthy at $HEALTH_URL"; exit 1
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy
