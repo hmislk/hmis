@@ -1,0 +1,201 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  HMIS QA3 — new Azure estate (East Asia)
+#
+#  Copy to  hmis/.github/workflows/hims_qa3_migrated_ci_cd.yml
+#  Branch:  hims-qa3-migrated
+#  Serves:  https://qa-migrated.carecode.org/qa3
+#
+#  Differs from the existing hims_qa3_ci_cd.yml in three ways only:
+#    1. triggers on hims-qa3-migrated instead of the old QA branch
+#    2. uses QA_MIGRATED_* secrets (new VM, new key, new admin password)
+#    3. health-checks qa-migrated.carecode.org
+#
+#  Secrets are shared across qa1-qa4 because all four run on ONE VM in ONE
+#  Payara domain. The existing per-client convention (<CLIENT>_<ENV>_SERVER_IP)
+#  would mean four identical copies of the same four values.
+# ═══════════════════════════════════════════════════════════════════════════
+name: HIMS QA3 Migrated CI/CD
+
+on:
+  push:
+    branches: [hims-qa3-migrated]
+  workflow_dispatch:
+
+concurrency:
+  # All four apps share one Payara domain. Two asadmin deploys at once against
+  # the same domain is how you get a half-deployed app and a confusing 404.
+  group: payara-qa-migrated
+  cancel-in-progress: false
+
+env:
+  APP_NAME:     qa3
+  CONTEXT_ROOT: qa3
+  JNDI_MAIN:    jdbc/qa3
+  JNDI_AUDIT:   jdbc/qa3Audit
+  HEALTH_URL:   https://qa-migrated.carecode.org/qa3/faces/index1.xhtml
+  WAR_DIR:      /home/appuser/app/latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      # JDBC pools live in Payara, not in the WAR. This substitution is the
+      # contract between the build and the Ansible-managed datasources. If
+      # these names drift from host_vars/vm-hmis-qa01.yml the app deploys
+      # cleanly and then throws NameNotFoundException at runtime.
+      - name: Substitute datasource JNDI names
+        run: |
+          set -euo pipefail
+          PU=src/main/resources/META-INF/persistence.xml
+          test -f "$PU" || { echo "::error::$PU not found"; exit 1; }
+
+          sed -i "s|[$][{]JDBC_DATASOURCE[}]|${JNDI_MAIN}|g"        "$PU"
+          sed -i "s|[$][{]JDBC_AUDIT_DATASOURCE[}]|${JNDI_AUDIT}|g" "$PU"
+
+          echo "--- resolved datasources ---"
+          grep -E 'jta-data-source|non-jta-data-source' "$PU"
+
+          # Two failure modes, both silent without these checks:
+          #   a) the placeholder was never substituted
+          #   b) the branch has a HARDCODED datasource committed, so sed matched
+          #      nothing and the app deploys pointing at the wrong database
+          if grep -q 'JDBC_DATASOURCE\|JDBC_AUDIT_DATASOURCE' "$PU"; then
+            echo "::error::unsubstituted JDBC placeholder remains in $PU"
+            exit 1
+          fi
+
+          for want in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            grep -q "<[a-z-]*jta-data-source>${want}</" "$PU" || {
+              echo "::error::$PU does not reference ${want}."
+              echo "The branch probably has a hardcoded datasource committed."
+              echo "Found instead:"
+              grep -E 'jta-data-source' "$PU"
+              exit 1; }
+          done
+          echo "datasources verified: $JNDI_MAIN, $JNDI_AUDIT"
+
+      - name: Build
+        run: mvn -B -ntp clean package -DskipTests
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          war=$(find target -maxdepth 1 -name '*.war' | head -1)
+          test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
+          mv "$war" "target/${APP_NAME}.war"
+          ls -la "target/${APP_NAME}.war"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qa3-war
+          path: target/qa3.war
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: qa-migrated      # add a required reviewer here to gate deploys
+    env:
+      APP_NAME:   qa3
+      JNDI_MAIN:  jdbc/qa3
+      JNDI_AUDIT: jdbc/qa3Audit
+      HEALTH_URL: https://qa-migrated.carecode.org/qa3/faces/index1.xhtml
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: qa3-war
+          path: ./artifact
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.QA_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.QA_MIGRATED_SERVER_IP }}" >> ~/.ssh/known_hosts
+
+      - name: Upload WAR
+        run: |
+          set -euo pipefail
+          rsync -az -e "ssh -i ~/.ssh/id_deploy" \
+            "./artifact/qa3.war" \
+            "${{ secrets.QA_MIGRATED_SERVER_USER }}@${{ secrets.QA_MIGRATED_SERVER_IP }}:/home/appuser/app/latest/"
+
+      - name: Deploy to Payara
+        env:
+          TARGET: ${{ secrets.QA_MIGRATED_SERVER_USER }}@${{ secrets.QA_MIGRATED_SERVER_IP }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy "$TARGET" \
+              APP="qa3" JNDI_MAIN="jdbc/qa3" JNDI_AUDIT="jdbc/qa3Audit" \
+              'bash -euo pipefail -s' <<'REMOTE'
+          PAYARA=/opt/payara5
+          WAR="/home/appuser/app/latest/${APP}.war"
+
+          # asadmin gives up on the Domain Admin Server after 600 000 ms by
+          # default. A first deploy of a ~134 MB WAR that runs EclipseLink
+          # schema validation and @Startup DatabaseMigrationService against a
+          # 200+ table schema legitimately takes longer than that. The client
+          # timing out does NOT stop the server-side deploy — it just leaves
+          # the job red while the app quietly finishes, which is worse than
+          # waiting. 30 minutes.
+          export AS_ADMIN_READTIMEOUT=1800000
+          ASADMIN="sudo -u appuser $PAYARA/glassfish/bin/asadmin --user admin --passwordfile $PAYARA/.asadminpass"
+
+          test -f "$WAR" || { echo "WAR missing: $WAR"; exit 1; }
+
+          # Keep a rollback copy before touching the running app.
+          if [ -f "/home/appuser/app/latest/${APP}.war.deployed" ]; then
+            sudo cp "/home/appuser/app/latest/${APP}.war.deployed" \
+                    "/home/appuser/app/latest/${APP}.war.previous"
+          fi
+
+          # Verify the datasources exist and the databases answer BEFORE
+          # undeploying the working copy. Failing here leaves QA up.
+          for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            $ASADMIN list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
+              echo "JNDI resource $j not found."
+              echo "Run: ansible-playbook site.yml --limit vm-hmis-qa01 --tags payara_datasources"
+              exit 1; }
+            # `asadmin get` prints "<name>=<value>" followed by
+            # "Command get executed successfully." — tail -1 grabs the success
+            # message, not the value. Match the name line explicitly.
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$($ASADMIN get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "could not resolve pool behind $j"; exit 1; }
+            $ASADMIN ping-connection-pool "$pool" || {
+              echo "pool $pool (behind $j) is not reachable"; exit 1; }
+          done
+
+          $ASADMIN undeploy "$APP" 2>/dev/null || echo "not previously deployed"
+          $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true "$WAR"
+
+          sudo cp "$WAR" "/home/appuser/app/latest/${APP}.war.deployed"
+          $ASADMIN list-applications
+          REMOTE
+
+      - name: Health check
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && { echo "healthy"; exit 0; }
+            sleep 10
+          done
+          echo "::error::qa3 did not become healthy at $HEALTH_URL"
+          exit 1
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy
