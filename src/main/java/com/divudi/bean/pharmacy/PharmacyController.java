@@ -10777,9 +10777,11 @@ public class PharmacyController implements Serializable {
                         (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
                         && billItem.getItem().getMeasurementUnit().getName() != null)
                         ? billItem.getItem().getMeasurementUnit().getName() : "-");
-                emptyInnerRow.createCell(11).setCellValue(
-                        billItem.getPharmaceuticalBillItem() != null
-                        ? billItem.getPharmaceuticalBillItem().getPurchaseRate() : 0.0);
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
+                } else {
+                    emptyInnerRow.createCell(11).setCellValue("-");
+                }
                 emptyInnerRow.createCell(12).setCellValue(
                         billItem.getPharmaceuticalBillItem() != null
                         && billItem.getPharmaceuticalBillItem().getItemBatch() != null
@@ -10791,9 +10793,11 @@ public class PharmacyController implements Serializable {
                         && billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire() != null
                         ? sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()) : "-");
                 emptyInnerRow.createCell(14).setCellValue("-");
-                emptyInnerRow.createCell(15).setCellValue(
-                        billItem.getPharmaceuticalBillItem() != null
-                        ? billItem.getPharmaceuticalBillItem().getRetailRate() : 0.0);
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                } else {
+                    emptyInnerRow.createCell(15).setCellValue("-");
+                }
                 emptyInnerRow.createCell(16).setCellValue(billItem.getDiscount());
                 emptyInnerRow.createCell(17).setCellValue(billItem.getNetValue());
                 emptyInnerRow.createCell(18).setCellValue(billItem.getBill().getNetTotal());
