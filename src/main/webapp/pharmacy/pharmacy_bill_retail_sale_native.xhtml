@@ -30,7 +30,7 @@
                                 <div class="row w-100 align-items-center">
                                     <div class="col-4">
                                         <h:outputText styleClass="fas fa-mortar-pestle" />
-                                        <h:outputLabel value="Pharmacy Retail Sale" class="mx-2" />
+                                        <h:outputLabel value="Pharmacy Retail Sale (Sale 1)" class="mx-2" />
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 value="Config"
@@ -66,6 +66,46 @@
                                             action="pharmacy_bill_retail_sale_native"
                                             class="ui-button-warning"
                                             actionListener="#{retailSaleNativeSqlController.resetAll()}" />
+                                    </div>
+                                </div>
+                                <div class="row w-100 align-items-center">
+                                    <div class="col-12 text-center">
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 1"
+                                            title="Sale window 1"
+                                            ajax="false" disabled="true"
+                                            action="pharmacy_bill_retail_sale_native?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 2"
+                                            title="Sale window 2"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native_1?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController1.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 3"
+                                            title="Sale window 3"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native_2?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController2.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 4"
+                                            title="Sale window 4"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native_3?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController3.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
                                     </div>
                                 </div>
                             </f:facet>
@@ -820,6 +860,47 @@
                             </div>
                         </div>
 
+                        <div class="row w-100 align-items-center">
+                            <div class="col-12 text-center">
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 1"
+                                    title="Sale window 1"
+                                    ajax="false" disabled="true"
+                                    action="pharmacy_bill_retail_sale_native?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 2"
+                                    title="Sale window 2"
+                                    ajax="false"
+                                    action="pharmacy_bill_retail_sale_native_1?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController1.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 3"
+                                    title="Sale window 3"
+                                    ajax="false"
+                                    action="pharmacy_bill_retail_sale_native_2?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController2.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 4"
+                                    title="Sale window 4"
+                                    ajax="false"
+                                    action="pharmacy_bill_retail_sale_native_3?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController3.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            </div>
+                        </div>
+
                         <h:panelGroup id="gpBillPreview">
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper', true)}">
 <!--                                <phi:saleBill_without_item_native
@@ -840,7 +921,7 @@
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS paper with header', true)}">
-                                <phi:saleBill_Header_Inward_native
+                                <phi:saleBill_Header_native
                                     bill="#{retailSaleNativeSqlController.printBill}"
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
@@ -855,7 +936,7 @@
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper', false)}">
-                                <phi:saleBill_Header_Inward_native
+                                <phi:saleBill_Header_native
                                     bill="#{retailSaleNativeSqlController.printBill}"
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>

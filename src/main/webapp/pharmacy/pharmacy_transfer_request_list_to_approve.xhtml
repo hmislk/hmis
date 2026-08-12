@@ -31,7 +31,7 @@
                         <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.department}"/>
                     </div>
                     <div class="col-md-10">
-                        <p:dataTable value="#{searchController.bills}" var="b" rows="10"
+                        <p:dataTable value="#{searchController.transferRequestsToApproveDtos}" var="b" rows="10"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15" paginatorPosition="bottom">
@@ -39,7 +39,7 @@
                                 <h:outputLabel value="#{b.deptId}"/>
                             </p:column>
                             <p:column headerText="To Department" >
-                                <h:outputLabel value="#{b.toDepartment.name}"/>
+                                <h:outputLabel value="#{b.toDepartmentName}"/>
                             </p:column>
                             <p:column headerText="Requested At" >
                                 <h:outputLabel value="#{b.createdAt}">
@@ -75,9 +75,10 @@
                                     value="Approve Request"
                                     title="Approve Request"
                                     icon="fas fa-check-double" styleClass="ui-button-stage-approve mx-2"
-                                    action="#{transferRequestController.navigateToApproveRequest}"
+                                    action="#{transferRequestController.navigateToApproveRequestById}"
+                                    onclick="return confirm('Proceed to review and approve this transfer request?');"
                                     disabled="#{b.cancelled eq true}">
-                                    <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
+                                    <f:setPropertyActionListener target="#{transferRequestController.billId}" value="#{b.billId}"/>
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>

@@ -42,10 +42,17 @@
                                     <p:inputText autocomplete="off"  value="#{institutionController.current.code}"  style="width: 650px">
                                     </p:inputText> 
 
-                                    <h:outputText value="Bill Prefix" >                                        
+                                    <h:outputText value="Bill Prefix" >
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}" style="width: 650px" >
-                                    </p:inputText> 
+                                    </p:inputText>
+
+                                    <h:outputText id="lblDefaultInstitution" value="Default Institution" ></h:outputText>
+                                    <h:panelGroup style="width: 650px">
+                                        <p:selectBooleanCheckbox id="chkDefaultInstitution" value="#{institutionController.current.defaultInstitution}">
+                                        </p:selectBooleanCheckbox>
+                                        <h:outputText value=" (shown on the Client Portal landing page)" style="color: #777; font-size: 0.85em; margin-left: 6px;"></h:outputText>
+                                    </h:panelGroup>
 
                                     <h:outputText id="lblParent" value="Parent" ></h:outputText>
                                     <p:autoComplete value="#{institutionController.current.parentInstitution}"

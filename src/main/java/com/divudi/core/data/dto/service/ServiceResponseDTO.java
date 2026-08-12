@@ -31,6 +31,8 @@ public class ServiceResponseDTO {
     private boolean marginNotAllowed;
     private boolean requestForQuentity;
     private boolean patientNotRequired;
+    private boolean vatable;
+    private double vatPercentage;
     private String inwardChargeType;
     private Long categoryId;
     private String categoryName;
@@ -171,6 +173,22 @@ public class ServiceResponseDTO {
 
     public void setPatientNotRequired(boolean patientNotRequired) {
         this.patientNotRequired = patientNotRequired;
+    }
+
+    public boolean isVatable() {
+        return vatable;
+    }
+
+    public void setVatable(boolean vatable) {
+        this.vatable = vatable;
+    }
+
+    public double getVatPercentage() {
+        return vatPercentage;
+    }
+
+    public void setVatPercentage(double vatPercentage) {
+        this.vatPercentage = vatPercentage;
     }
 
     public String getInwardChargeType() {

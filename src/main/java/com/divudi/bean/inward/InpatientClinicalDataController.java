@@ -12,6 +12,7 @@ import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
@@ -121,6 +122,8 @@ public class InpatientClinicalDataController implements Serializable {
      * EJBs
      */
     @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
     private PatientEncounterFacade ejbFacade;
     @EJB
     ClinicalEntityFacade clinicalFindingItemFacade;
@@ -173,6 +176,8 @@ public class InpatientClinicalDataController implements Serializable {
     com.divudi.bean.common.NotificationController notificationController;
     @Inject
     private MedicationAdministrationController medicationAdministrationController;
+    @Inject
+    private WebUserController webUserController;
 
     /**
      * Properties
@@ -2954,12 +2959,30 @@ public class InpatientClinicalDataController implements Serializable {
             return;
         }
         saveClinicalDischarge();
+        java.util.Map<String, Object> before = clinicalDischargeStateMap();
         parentAdmission.setClinicallyDischarged(Boolean.TRUE);
         parentAdmission.setClinicalDischargeDateTime(new Date());
         parentAdmission.setClinicalDischargedBy(sessionController.getLoggedUser());
         getFacade().edit(parentAdmission);
+        auditService.logEncounterAudit(parentAdmission, "Clinical Discharge",
+                before, clinicalDischargeStateMap(), sessionController.getLoggedUser());
         notificationController.createNotification(parentAdmission, "ClinicalDischarge");
         JsfUtil.addSuccessMessage("Clinical discharge confirmed.");
+    }
+
+    /**
+     * Snapshot of the clinical discharge flags for audit events (#22236).
+     */
+    private java.util.Map<String, Object> clinicalDischargeStateMap() {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (parentAdmission == null) {
+            return m;
+        }
+        m.put("clinicallyDischarged", parentAdmission.isClinicallyDischarged());
+        m.put("clinicalDischargeDateTime", parentAdmission.getClinicalDischargeDateTime());
+        m.put("clinicalDischargedBy", parentAdmission.getClinicalDischargedBy() != null
+                ? parentAdmission.getClinicalDischargedBy().getName() : null);
+        return m;
     }
 
     public void cancelClinicalDischarge() {
@@ -2967,10 +2990,13 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("No admission found.");
             return;
         }
+        java.util.Map<String, Object> before = clinicalDischargeStateMap();
         parentAdmission.setClinicallyDischarged(Boolean.FALSE);
         parentAdmission.setClinicalDischargeDateTime(null);
         parentAdmission.setClinicalDischargedBy(null);
         getFacade().edit(parentAdmission);
+        auditService.logEncounterAudit(parentAdmission, "Clinical Discharge Cancelled",
+                before, clinicalDischargeStateMap(), sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Clinical discharge cancelled.");
     }
 
@@ -3214,6 +3240,12 @@ public class InpatientClinicalDataController implements Serializable {
     public void addEncounterMedicine() {
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
+            return;
+        }
+        boolean nursingDischarged = current.isNursingDischarged()
+                || (current.getParentEncounter() != null && current.getParentEncounter().isNursingDischarged());
+        if (nursingDischarged && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return;
         }
         if (getEncounterMedicine().getPrescription().getItem() == null) {
@@ -5034,6 +5066,25 @@ public class InpatientClinicalDataController implements Serializable {
             return current.getGuardian().getEmail().trim();
         }
         return "";
+    }
+
+    /**
+     * Builds an EmailAttachment from a generated letter/diagnosis card
+     * (ClinicalFindingValue.getLobValue() is the rendered HTML content), for
+     * use by any compose flow that needs to attach this admission's saved
+     * documents. Returns null if the letter has no rendered content.
+     */
+    public com.divudi.core.data.EmailAttachment toEmailAttachment(ClinicalFindingValue letterOrCard) {
+        if (letterOrCard == null || letterOrCard.getLobValue() == null || letterOrCard.getLobValue().isEmpty()) {
+            return null;
+        }
+        String name = letterOrCard.getStringValue() != null && !letterOrCard.getStringValue().trim().isEmpty()
+                ? letterOrCard.getStringValue().trim() : "Document";
+        name = name.replaceAll("[^a-zA-Z0-9.-]", "_");
+        return new com.divudi.core.data.EmailAttachment(
+                name + ".html",
+                "text/html",
+                java.util.Base64.getEncoder().encodeToString(letterOrCard.getLobValue().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }
 
     public void sendDocumentEmail() {

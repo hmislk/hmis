@@ -6,10 +6,12 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -31,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -82,6 +86,7 @@ import javax.transaction.Transactional;
 public class TransferIssueCancellationController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(TransferIssueCancellationController.class.getName());
 
     // EJB Dependencies
     @EJB
@@ -104,6 +109,8 @@ public class TransferIssueCancellationController implements Serializable {
     private UserStockController userStockController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private WebUserController webUserController;
 
     // Properties
     private Bill originalBill;
@@ -253,6 +260,13 @@ public class TransferIssueCancellationController implements Serializable {
         cancellationBill.setToDepartment(originalBill.getToDepartment());
         cancellationBill.setToInstitution(originalBill.getToInstitution());
         cancellationBill.setToStaff(originalBill.getToStaff());
+        cancellationBill.setDepartmentType(originalBill.getDepartmentType());
+        if (cancellationBill.getDepartmentType() == null) {
+            // Legacy issue bills predate departmentType stamping (#22056);
+            // derive from the original items so the cancellation stays visible
+            // in department-type-filtered reports.
+            cancellationBill.setDepartmentType(singleDepartmentTypeOfItems(originalBill.getBillItems()));
+        }
 
         // Set audit fields
         cancellationBill.setCreater(sessionController.getLoggedUser());
@@ -268,6 +282,26 @@ public class TransferIssueCancellationController implements Serializable {
         // Initialize collections
         cancellationBill.setBillItems(new ArrayList<>());
         cancellationBill.setBilledBill(originalBill);
+    }
+
+    // Returns the department type shared by all non-null item types, or null
+    // when items are mixed/untyped — never guess from a partial match (#22056).
+    private DepartmentType singleDepartmentTypeOfItems(List<BillItem> items) {
+        if (items == null) {
+            return null;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : items) {
+            if (bi.isRetired() || bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return null;
+            }
+        }
+        return found;
     }
 
     /**
@@ -532,6 +566,9 @@ public class TransferIssueCancellationController implements Serializable {
      */
     @Transactional
     public void confirmCancellation() {
+        if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         try {
             // Validation: Check cancellation reason
             if (cancellationReason == null || cancellationReason.trim().isEmpty()) {
@@ -764,5 +801,34 @@ public class TransferIssueCancellationController implements Serializable {
 
     public UserStockController getUserStockController() {
         return userStockController;
+    }
+
+    /**
+     * Authorization helper method to check Transfer Issue Cancellation
+     * privileges and audit denied access.
+     *
+     * @param action The action being attempted (CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, originalBillId});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Issue Cancellation access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, originalBillId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer issue requests.");
+            return false;
+        }
+
+        return true;
     }
 }

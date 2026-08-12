@@ -171,7 +171,19 @@
                         <p:panel>
                             <f:facet name="header">
                                 <h:outputLabel value="Cancel Bill Preview" class="mt-2"/>
-                                <p:commandButton 
+                                <p:commandButton
+                                    ajax="false"
+                                    immediate="true"
+                                    value="Inpatient Dashboard"
+                                    icon="fas fa-id-card"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    style="float: right;"
+                                    action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                    <f:setPropertyActionListener
+                                        value="#{inwardSearch.bill.patientEncounter}"
+                                        target="#{admissionController.current}"/>
+                                </p:commandButton>
+                                <p:commandButton
                                     icon="fa fa-print"
                                     class="ui-button-info"
                                     style="float: right;"

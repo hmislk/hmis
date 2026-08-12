@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -327,7 +328,7 @@
                          top: 45%;
                          font-size:12px!important;" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
-                            <h:column>
+                            <h:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                 <f:facet name="header">
                                     <h:outputText value=" Amount" />
                                 </f:facet>
@@ -365,16 +366,18 @@
                                     <br/>
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="text-align: left; min-width: 3cm;">
-                                    <h:outputLabel value="TOTAL" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;"/>
-                                </td>
-                                <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total+cc.attrs.bill.vat}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                <tr>
+                                    <td style="text-align: left; min-width: 3cm;">
+                                        <h:outputLabel value="TOTAL" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;"/>
+                                    </td>
+                                    <td style="text-align: right!important; ">
+                                        <h:outputLabel value="#{cc.attrs.bill.total+cc.attrs.bill.vat}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
 
                             <!--                             <tr>
                                                             <td style="text-align: left; min-width: 3cm;">
@@ -397,40 +400,42 @@
                                                             </td>
                                                         </tr>-->
 
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style="font-weight: bold ; text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
-                                </td>
-                                <td style="text-align: right!important; ">
-                                    <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}" value="#{cc.attrs.bill.discount}"  style="font-weight: bold ; text-align: right!important;  font-size: 15px!important;   ">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                            <!--                            <tr>
-                                                            <td style="text-align: left; min-width: 3cm;">
-                                                                <h:outputLabel value="VAT (15%)" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}"/>
-                                                            </td>
-                                                            <td style="text-align: right!important; ">
-                                                                <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputLabel>
-                                                            </td>
-                                                        </tr>-->
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
-                                    <!--<h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>-->
-                                </td>
-                                <td style="text-align: right!important; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-<!--                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>-->
-                                </td>
-                            </tr>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                <tr>
+                                    <td style="text-align: left;">
+                                        <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style="font-weight: bold ; text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
+                                    </td>
+                                    <td style="text-align: right!important; ">
+                                        <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}" value="#{cc.attrs.bill.discount}"  style="font-weight: bold ; text-align: right!important;  font-size: 15px!important;   ">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+                            <ui:fragment rendered="#{webUserController.hasPrivilege('ShowServiceCharges') and cc.attrs.bill.vat ne 0.0}">
+                                <tr>
+                                    <td style="text-align: left; min-width: 3cm;">
+                                        <h:outputText value="VAT" style="text-align: right!important; font-size: 12px!important;"/>
+                                    </td>
+                                    <td style="text-align: right!important; ">
+                                        <h:outputText value="#{cc.attrs.bill.vat}" style="text-align: right!important; font-size: 12px!important;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{webUserController.hasPrivilege('ShowServiceCharges') and (cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0)}">
+                                <tr>
+                                    <td style="text-align: left;">
+                                        <h:outputText value="Net Total + VAT" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                    </td>
+                                    <td style="text-align: right!important; ">
+                                        <h:outputText value="#{cc.attrs.bill.vatPlusNetTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:fragment>
 
 
 

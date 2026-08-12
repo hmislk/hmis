@@ -56,6 +56,8 @@ public class InwardPriceAdjustmntController implements Serializable {
     @Inject
     PharmaceuticalItemCategoryController pharmaceuticalItemCategoryController;
     @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
     private PriceMatrixFacade ejbFacade;
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
@@ -73,6 +75,7 @@ public class InwardPriceAdjustmntController implements Serializable {
     private Category roomLocation;
     private Institution creditCompany;
     private AdmissionType admissionType;
+    private Category roomCategory;
 
     private void recreateModel() {
         fromPrice = toPrice + 1;
@@ -80,7 +83,36 @@ public class InwardPriceAdjustmntController implements Serializable {
         margin = 0;
         creditCompany = null;
         admissionType = null;
+        roomCategory = null;
         items = null;
+    }
+
+    /**
+     * Snapshot of an inward price adjustment (PriceMatrix) for audit events
+     * (#22238). Price adjustments are institution-level master data, so the
+     * event is not linked to a patient encounter.
+     */
+    private java.util.Map<String, Object> priceAdjustmentAuditMap(PriceMatrix a) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (a == null) {
+            return m;
+        }
+        m.put("department", a.getDepartment() != null ? a.getDepartment().getName() : null);
+        m.put("category", a.getCategory() != null ? a.getCategory().getName() : null);
+        m.put("roomCategory", a.getRoomCategory() != null ? a.getRoomCategory().getName() : null);
+        m.put("paymentMethod", a.getPaymentMethod());
+        m.put("admissionType", a.getAdmissionType() != null ? a.getAdmissionType().getName() : null);
+        m.put("creditCompany", a.getCreditCompany() != null ? a.getCreditCompany().getName() : null);
+        m.put("fromPrice", a.getFromPrice());
+        m.put("toPrice", a.getToPrice());
+        m.put("margin", a.getMargin());
+        return m;
+    }
+
+    private void auditPriceAdjustmentAdded(PriceMatrix a) {
+        auditService.logEncounterAudit(null, "Inward Price Adjustment Added",
+                null, priceAdjustmentAuditMap(a), getSessionController().getLoggedUser(),
+                "PriceMatrix", a.getId());
     }
 
     public void preparedAdd() {
@@ -89,6 +121,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         margin = 0;
         creditCompany = null;
         admissionType = null;
+        roomCategory = null;
         items = null;
     }
 
@@ -157,14 +190,64 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setMargin(margin);
         a.setCreditCompany(creditCompany);
         a.setAdmissionType(admissionType);
+        a.setRoomCategory(roomCategory);
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
-            getFacade().create(a);
+            getFacade().createAndFlush(a);
+            auditPriceAdjustmentAdded(a);
         }
         JsfUtil.addSuccessMessage("Saved Successfully");
         recreateModel();
 //        createItems();
+    }
+    
+    public void savePriceMetrixforRoomCategory() {
+
+        if (fromPrice == toPrice) {
+            JsfUtil.addErrorMessage("Check prices");
+            return;
+        }
+        if (toPrice == 0) {
+            JsfUtil.addErrorMessage("Check prices");
+            return;
+        }
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        if (roomCategory == null) {
+            JsfUtil.addErrorMessage("Please select a Room Category");
+            return;
+        }
+
+        PriceMatrix a = new InwardPriceAdjustment();
+
+        a.setInstitution(department.getInstitution());
+        a.setDepartment(department);
+        a.setAdmissionType(admissionType);
+        a.setRoomCategory(roomCategory);
+        a.setPaymentMethod(paymentMethod);
+        a.setFromPrice(fromPrice);
+        a.setToPrice(toPrice);
+        a.setMargin(margin);
+        a.setCreatedAt(new Date());
+        a.setCreater(getSessionController().getLoggedUser());
+        if (a.getId() == null) {
+            getFacade().createAndFlush(a);
+            auditPriceAdjustmentAdded(a);
+        }
+        JsfUtil.addSuccessMessage("Saved Successfully");
+        recreateModel();
+        fillPriceMetrixforRoomCategory();
+
+    }
+
+    public void prepareRoomCategoryPriceMatrixPage() {
+        preparedAdd();
+        fillPriceMetrixforRoomCategory();
     }
 
     public void addForAllCategory() {
@@ -195,10 +278,12 @@ public class InwardPriceAdjustmntController implements Serializable {
             a.setMargin(margin);
             a.setCreditCompany(creditCompany);
             a.setAdmissionType(admissionType);
+            a.setRoomCategory(roomCategory);
             a.setCreatedAt(new Date());
             a.setCreater(getSessionController().getLoggedUser());
             if (a.getId() == null) {
-                getFacade().create(a);
+                getFacade().createAndFlush(a);
+                auditPriceAdjustmentAdded(a);
             }
         }
 
@@ -360,6 +445,18 @@ public class InwardPriceAdjustmntController implements Serializable {
         items = getFacade().findByJpql(sql, hm);
 
     }
+    
+    public void fillPriceMetrixforRoomCategory() {
+        filterItems = null;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select a from InwardPriceAdjustment a"
+                + " where a.retired=false "
+                + " and a.category is null "
+                + " and a.roomCategory is not null "
+                + " order by a.department.name,a.fromPrice";
+        items = getFacade().findByJpql(sql, hm);
+    }
 
     public void createCategroyServicePharmacy() {
         filterItems = null;
@@ -488,6 +585,14 @@ public class InwardPriceAdjustmntController implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public Category getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(Category roomCategory) {
+        this.roomCategory = roomCategory;
     }
 
     /**

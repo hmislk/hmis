@@ -163,6 +163,29 @@ public class ConfigOptionController implements Serializable {
         }
     }
 
+    /**
+     * Read-only variant of {@link #getBooleanValueByKey(String, boolean)} —
+     * resolves the same department-scoped-key-first lookup, but never
+     * persists a new ConfigOption row for either the department-scoped or
+     * the plain key when neither exists yet. Use this for {@code rendered}
+     * gates and other pure reads; use the mutating method only where reading
+     * a not-yet-configured key is meant to seed its default value.
+     */
+    public boolean getBooleanValueByKeyReadOnly(String key, boolean defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getBooleanValueByKeyReadOnly(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.BOOLEAN) {
+            defaultValue = configOptionApplicationController.getBooleanValueByKeyReadOnly(key, defaultValue);
+        }
+        return configOptionApplicationController.getBooleanValueByKeyReadOnly(deptKey, defaultValue);
+    }
+
     public String navigateToDepartmentOptions() {
         institution = null;
         department = sessionController.getDepartment();

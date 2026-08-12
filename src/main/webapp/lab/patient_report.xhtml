@@ -16,6 +16,15 @@
                 <h:form>
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
 
+                    <style>
+                        /* Preserve consecutive spaces typed into the microbiology
+                           memo Text Editor (Quill), so extra in-line spacing is
+                           not collapsed while entering the result. */
+                        .micMemoEditor .ql-editor {
+                            white-space: pre-wrap;
+                        }
+                    </style>
+
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js" integrity="sha512-pdCVFUWsxl1A4g0uV6fyJ3nrnTGeWnZN2Tl/56j45UvZ1OMdm9CIbctuIHj+yBIRTUUyv6I9+OivXj4i0LPEYA==" crossorigin="anonymous"></script>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js" integrity="sha512-VKjwFVu/mmKGk0Z0BxgDzmn10e590qk3ou/jkmRugAkSTMSIRkd4nEnk+n7r5WBbJquusQEQjBidrBD3IQQISQ==" crossorigin="anonymous"></script>
 
@@ -479,145 +488,165 @@
                                     header="Microbiology"    
                                     id="panelDataEntryForMicrobiology"
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
-                                        <h:panelGroup >
-                                            <table class="w-100">
-                                                <ui:repeat id="tblMicValsExceptAntibiotics"
+                                    <h:panelGroup >
+                                        <table class="w-100">
+                                            <ui:repeat id="tblMicValsExceptAntibiotics"
+                                                       value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
+                                                       var="pvm"   
+                                                       >
+                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value'}" >
+                                                    <tr>
+                                                        <td  style="width: 280px!important;">
+                                                            <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
+                                                        </td>
+                                                        <td >
+                                                            <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                                <p:textEditor
+                                                                    id="txtMicMemoVal"
+                                                                    class="w-100 mt-1 micMemoEditor"
+                                                                    secure="false"
+                                                                    allowFormatting="true"
+                                                                    allowBlocks="true"
+                                                                    allowStyles="true"
+                                                                    disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                    value="#{pvm.lobValue}" >
+                                                                    <f:facet name="toolbar">
+                                                                        <span class="ql-formats">
+                                                                            <button class="ql-bold"></button>
+                                                                            <button class="ql-italic"></button>
+                                                                            <button class="ql-underline"></button>
+                                                                            <button class="ql-strike"></button>
+                                                                        </span>
+
+                                                                        <span class="ql-formats">
+                                                                            <select class="ql-font"></select>
+                                                                            <select class="ql-size"></select>
+                                                                        </span>
+
+                                                                        <span class="ql-formats">
+                                                                            <button class="ql-script" value="sub"></button>
+                                                                            <button class="ql-script" value="super"></button>
+                                                                        </span>
+
+                                                                        <span class="ql-formats">
+                                                                            <button class="ql-list" value="ordered"></button>
+                                                                            <button class="ql-list" value="bullet"></button>
+                                                                            <button class="ql-indent" value="-1"></button>
+                                                                            <button class="ql-indent" value="+1"></button>
+                                                                        </span>
+
+                                                                        <span class="ql-formats">
+                                                                            <select class="ql-align"></select>
+                                                                        </span>
+
+                                                                    </f:facet>
+                                                                    <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
+                                                                </p:textEditor>
+                                                            </h:panelGroup>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+                                        </table>
+                                    </h:panelGroup>
+
+                                    <p:divider>
+                                        <div class="d-flex justify-content-center">
+                                            <b>Add Antibiotic Group</b>
+                                        </div>
+                                    </p:divider>
+                                    <div class="d-flex gap-3 justify-content-between">
+                                        <p:outputLabel 
+                                            for="txtGroupName"
+                                            class="mt-2"
+                                            value="Group Name" >
+                                        </p:outputLabel>
+                                        <p:inputText
+                                            id="txtGroupName"
+                                            class="w-50"
+                                            value="#{patientReportController.groupName}" >
+                                        </p:inputText>
+                                        <p:commandButton
+                                            id="btnAddPatientReportGroupForMicrobiology"
+                                            value="Add Group"
+                                            icon="fa fa-plus"
+                                            process="@this txtGroupName"
+                                            update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId}"
+                                            class="ui-button-warning"
+                                            action="#{patientReportController.addPatientReportGroupForMicrobiology()}">
+                                        </p:commandButton>
+                                    </div>
+
+                                    <p:divider />
+
+                                    <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
+                                        <table >
+
+                                            <ui:repeat 
+                                                id="tblMicValsGroupes" 
+                                                value="#{patientReportController.currentPatientReport.patientReportGroups}"  
+                                                var="group"   
+                                                >
+                                                <tr>
+                                                    <td  colspan="3">
+                                                        <h:outputText 
+                                                            escape="false"
+                                                            class="h4"
+                                                            value="#{group.groupName}" >
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+
+                                                <ui:repeat id="tblMicValsGrouped" 
                                                            value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                            var="pvm"   
                                                            >
-                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value'}" >
-                                                        <tr>
-                                                            <td  style="width: 280px!important;">
-                                                                <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
-                                                            </td>
-                                                            <td >
-                                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                    <p:textEditor
-                                                                        id="txtMicMemoVal"
-                                                                        class="w-100 mt-1"
-                                                                        secure="false"
-                                                                        allowFormatting="true"
-                                                                        disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                        value="#{pvm.lobValue}" >
-                                                                        <f:facet name="toolbar">
-                                                                            <span class="ql-formats">
-                                                                                <button class="ql-bold"></button>
-                                                                                <button class="ql-italic"></button>
-                                                                                <button class="ql-underline"></button>
-                                                                                <button class="ql-strike"></button>
-                                                                            </span>
-                                                                            <span class="ql-formats">
-                                                                                <select class="ql-font"></select>
-                                                                                <select class="ql-size"></select>
-                                                                            </span>
-                                                                        </f:facet>
-                                                                        <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                    </p:textEditor>
-                                                                </h:panelGroup>
-                                                            </td>
-                                                        </tr>
+                                                    <h:panelGroup 
+                                                        rendered="#{pvm.patientReportGroup.groupName eq group.groupName}" >
+
+                                                        <h:panelGroup 
+                                                            rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
+                                                            <tr>
+                                                                <td  style="min-width: 280px!important;">
+                                                                    <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
+                                                                </td>
+                                                                <td >
+                                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                                        <p:inputTextarea 
+                                                                            rendered="true" 
+                                                                            id="txtMicMemoValGrouped" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
+                                                                            completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                            value="#{pvm.lobValue}" >
+                                                                            <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
+                                                                        </p:inputTextarea>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
+                                                                        <p:selectOneMenu 
+                                                                            id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                            <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
+                                                                            <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
+                                                                            <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
+                                                                            <f:ajax event="change"  execute="@this" 
+                                                                                    listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
+                                                                        </p:selectOneMenu>
+                                                                    </h:panelGroup>
+
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
+
                                                     </h:panelGroup>
                                                 </ui:repeat>
-                                            </table>
-                                        </h:panelGroup>
 
-                                        <p:divider>
-                                            <div class="d-flex justify-content-center">
-                                                <b>Add Antibiotic Group</b>
-                                            </div>
-                                        </p:divider>
-                                        <div class="d-flex gap-3 justify-content-between">
-                                            <p:outputLabel 
-                                                for="txtGroupName"
-                                                class="mt-2"
-                                                value="Group Name" >
-                                            </p:outputLabel>
-                                            <p:inputText
-                                                id="txtGroupName"
-                                                class="w-50"
-                                                value="#{patientReportController.groupName}" >
-                                            </p:inputText>
-                                            <p:commandButton
-                                                id="btnAddPatientReportGroupForMicrobiology"
-                                                value="Add Group"
-                                                icon="fa fa-plus"
-                                                process="@this txtGroupName"
-                                                update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId}"
-                                                class="ui-button-warning"
-                                                action="#{patientReportController.addPatientReportGroupForMicrobiology()}">
-                                            </p:commandButton>
-                                        </div>
+                                                <tr>
+                                                    <td colspan="4">
+                                                        <p:divider />
+                                                    </td>
+                                                </tr>
 
-                                        <p:divider />
-
-                                        <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
-                                            <table >
-
-                                                <ui:repeat 
-                                                    id="tblMicValsGroupes" 
-                                                    value="#{patientReportController.currentPatientReport.patientReportGroups}"  
-                                                    var="group"   
-                                                    >
-                                                    <tr>
-                                                        <td  colspan="3">
-                                                            <h:outputText 
-                                                                escape="false"
-                                                                class="h4"
-                                                                value="#{group.groupName}" >
-                                                            </h:outputText>
-                                                        </td>
-                                                    </tr>
-
-                                                    <ui:repeat id="tblMicValsGrouped" 
-                                                               value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
-                                                               var="pvm"   
-                                                               >
-                                                        <h:panelGroup 
-                                                            rendered="#{pvm.patientReportGroup.groupName eq group.groupName}" >
-
-                                                            <h:panelGroup 
-                                                                rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
-                                                                <tr>
-                                                                    <td  style="min-width: 280px!important;">
-                                                                        <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
-                                                                    </td>
-                                                                    <td >
-                                                                        <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                            <p:inputTextarea 
-                                                                                rendered="true" 
-                                                                                id="txtMicMemoValGrouped" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
-                                                                                completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                                value="#{pvm.lobValue}" >
-                                                                                <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                            </p:inputTextarea>
-                                                                        </h:panelGroup>
-                                                                        <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
-                                                                            <p:selectOneMenu 
-                                                                                id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                                                <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
-                                                                                <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
-                                                                                <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
-                                                                                <f:ajax event="change"  execute="@this" 
-                                                                                        listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
-                                                                            </p:selectOneMenu>
-                                                                        </h:panelGroup>
-
-                                                                    </td>
-                                                                </tr>
-                                                            </h:panelGroup>
-
-                                                        </h:panelGroup>
-                                                    </ui:repeat>
-
-                                                    <tr>
-                                                        <td colspan="4">
-                                                            <p:divider />
-                                                        </td>
-                                                    </tr>
-
-                                                </ui:repeat>
-                                            </table>
-                                        </h:panelGroup>
+                                            </ui:repeat>
+                                        </table>
+                                    </h:panelGroup>
 
                                 </p:panel>
 
@@ -962,24 +991,24 @@
                                                         <p:outputLabel for="PatientName" value="Patient Name"  class="mt-2"></p:outputLabel>
                                                     </div>
                                                     <div class="col-md-7">
-                                                        <p:inputText 
-                                                            id="PatientName" 
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                            value="#{patientReportController.currentPatientReport.patientName}" 
+                                                        <p:inputText
+                                                            id="PatientName"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientName}"
                                                             class="w-100">
                                                         </p:inputText>
                                                     </div>
                                                 </div>
-
+                                               
                                                 <div class="row my-2">
                                                     <div class="col-md-5">
                                                         <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" class="mt-2"></p:outputLabel>
                                                     </div>
                                                     <div class="col-md-7">
-                                                        <p:inputText 
-                                                            id="PatientAge" 
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                            value="#{patientReportController.currentPatientReport.patientAge}" 
+                                                        <p:inputText
+                                                            id="PatientAge"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientAge}"
                                                             class="w-100">
                                                         </p:inputText>
                                                     </div>
@@ -990,10 +1019,10 @@
                                                         <p:outputLabel for="PatientGender" value="Patient Gender"  class="mt-2"></p:outputLabel>
                                                     </div>
                                                     <div class="col-md-7">
-                                                        <p:inputText 
-                                                            id="PatientGender" 
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                            value="#{patientReportController.currentPatientReport.patientGender}" 
+                                                        <p:inputText
+                                                            id="PatientGender"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientGender}"
                                                             class="w-100">
                                                         </p:inputText>
                                                     </div>

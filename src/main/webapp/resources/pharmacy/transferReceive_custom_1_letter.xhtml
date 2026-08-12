@@ -97,7 +97,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="rowIndex">
+                        <ui:repeat value="#{cc.attrs.bill.activeBillItems}" var="bip" varStatus="rowIndex">
                             <tr>
                                 <!-- No -->
                                 <td class="left-col">#{rowIndex.index + 1}</td>

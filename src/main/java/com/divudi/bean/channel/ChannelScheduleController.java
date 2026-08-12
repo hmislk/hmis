@@ -1304,6 +1304,7 @@ public class ChannelScheduleController implements Serializable {
             fc.getFee().setStaff(null);
             fc.getFee().setSpeciality(null);
             fc.getFee().setServiceSession(null);
+            fc.getFee().setItem(null);
             fc.setFeeChangeType(FeeChangeType.Channel);
             fc.setDone(false);
             feeChanges.add(fc);
@@ -1351,9 +1352,9 @@ public class ChannelScheduleController implements Serializable {
             if (changes.size() > 0) {
                 for (FeeChange c : changes) {
                     if ((fc.getFee().getFeeType() == c.getFee().getFeeType())
-                            && (fc.getFee().getName().equals(c.getFee().getName()))
-                            && (fc.getFee().getStaff().equals(c.getFee().getStaff()))
-                            && (fc.getFee().getSpeciality().equals(c.getFee().getSpeciality()))
+                            && java.util.Objects.equals(fc.getFee().getName(), c.getFee().getName())
+                            && java.util.Objects.equals(fc.getFee().getStaff(), c.getFee().getStaff())
+                            && java.util.Objects.equals(fc.getFee().getSpeciality(), c.getFee().getSpeciality())
                             && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {

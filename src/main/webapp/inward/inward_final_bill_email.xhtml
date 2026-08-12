@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form id="formEmailFinalBill" enctype="multipart/form-data">
+
+                    <p:panel rendered="#{webUserController.hasPrivilege('InwardFinalBillEmail') and inwardSearch.bill ne null and inwardSearch.bill.billType eq 'InwardFinalBill' and inwardSearch.bill.billTypeAtomic eq 'INWARD_FINAL_BILL'}">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex">
+                                    <h:outputText styleClass="fas fa-envelope"></h:outputText>
+                                    <h:outputLabel value="Email Final Bill" class="mx-4"></h:outputLabel>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fas fa-list"
+                                        class="ui-button-secondary"
+                                        value="Back to Final Bill Versions"
+                                        action="#{inwardSearch.navigateToManageFinalBills()}"
+                                        title="Back to Final Bill Versions">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <p:messages id="emailFormMessages" showDetail="true" closable="true" />
+
+                        <h:panelGrid columns="2" cellpadding="6" style="width:100%;max-width:800px;">
+
+                            <p:outputLabel value="Bill Number" />
+                            <h:outputText id="txtBillNumber" value="#{inwardSearch.bill.deptId}" />
+
+                            <p:outputLabel value="Patient" />
+                            <h:outputText id="txtPatientName" value="#{inwardSearch.bill.patientEncounter.patient.person.nameWithTitle}" />
+
+                            <p:outputLabel for="txtEmailRecipient" value="Recipient Email" />
+                            <p:inputText id="txtEmailRecipient" value="#{inwardSearch.emailRecipient}" style="width:100%;" title="Recipient Email" />
+
+                            <p:outputLabel for="txtEmailSubject" value="Subject" />
+                            <p:inputText id="txtEmailSubject" value="#{inwardSearch.emailSubject}" style="width:100%;" title="Email Subject" />
+
+                            <p:outputLabel for="txtEmailBody" value="Message" />
+                            <p:inputTextarea id="txtEmailBody" value="#{inwardSearch.emailBody}" style="width:100%;" rows="6" title="Email Message Body" />
+
+                        </h:panelGrid>
+
+                        <p:panel class="mt-3">
+                            <f:facet name="header">
+                                <h:outputLabel value="Attachments"></h:outputLabel>
+                            </f:facet>
+
+                            <p:outputLabel value="The final bill (PDF) is always attached automatically. Add any additional supporting documents below." styleClass="text-muted" />
+
+                            <div class="mt-2">
+                                <p:fileUpload
+                                    id="fileUploadEmailAttachment"
+                                    mode="advanced"
+                                    dragDropSupport="true"
+                                    multiple="true"
+                                    auto="true"
+                                    sizeLimit="10000000"
+                                    update="tblEmailAttachments emailFormMessages"
+                                    listener="#{inwardSearch.uploadEmailAttachment}"
+                                    label="Choose File"
+                                    title="Attach Document" />
+                            </div>
+
+                            <p:dataTable
+                                id="tblEmailAttachments"
+                                widgetVar="wTblEmailAttachments"
+                                rowKey="#{attachment.fileName}"
+                                value="#{inwardSearch.pendingEmailAttachments}"
+                                var="attachment"
+                                emptyMessage="No additional documents attached."
+                                class="w-100 mt-2">
+
+                                <p:column headerText="File Name">
+                                    <h:outputText value="#{attachment.fileName}" />
+                                </p:column>
+
+                                <p:column headerText="Type">
+                                    <h:outputText value="#{attachment.contentType}" />
+                                </p:column>
+
+                                <p:column headerText="Actions" width="100">
+                                    <p:commandButton
+                                        ajax="true"
+                                        icon="fa fa-trash"
+                                        class="ui-button-danger"
+                                        title="Remove #{attachment.fileName}"
+                                        update="tblEmailAttachments"
+                                        actionListener="#{inwardSearch.removeEmailAttachment(attachment)}" />
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+
+                        <div class="mt-3">
+                            <p:commandButton
+                                ajax="true"
+                                icon="fa fa-envelope"
+                                class="ui-button-help"
+                                value="Send Email"
+                                title="Send Email"
+                                update=":growl emailFormMessages tblEmailAttachments"
+                                actionListener="#{inwardSearch.emailFinalBillVersion(inwardSearch.bill)}" />
+                        </div>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

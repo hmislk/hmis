@@ -81,6 +81,27 @@ When a page is reached via an external URL with query parameters (lab result lin
 
 ---
 
+## 🚨 `@ViewScoped` + `f:setPropertyActionListener` + `faces-redirect=true` = lost state
+
+A common new-page pattern in this project: a button on page A sets a property on a target controller via `f:setPropertyActionListener`, then navigates (`ajax="false"`, `faces-redirect=true`) to page B, whose controller reads that property to fetch its data.
+
+```xhtml
+<!-- page A -->
+<p:commandButton value="View Report" action="#{reportController.navigateToReport()}" ajax="false">
+    <f:setPropertyActionListener value="#{admissionController.current}" target="#{reportController.patientEncounter}" />
+</p:commandButton>
+```
+
+**If `reportController` is `@ViewScoped`, this silently fails.** `faces-redirect=true` is a full browser redirect to a brand-new JSF view. A `@ViewScoped` bean's lifetime is tied to the *view* (`javax.faces.ViewState`) it was created for — navigating to a different view destroys the old instance and constructs a fresh one for the new view. The `patientEncounter` set moments earlier on page A's request is gone; `reportController.navigateToReport()` sees whatever field defaults to (usually `null`), and any query gated on `patientEncounter == null` either silently returns empty or bails with an error message that never renders (because the redirect already moved past that request).
+
+Symptoms are easy to misattribute to a data or JPQL bug: the query "looks right," the DB has matching rows, but the page shows nothing — because the bean holding the query's parameter isn't the same instance that had the parameter set.
+
+**Fix:** use `@SessionScoped` (or `@ApplicationScoped` for pure lookups) for any controller reached this way, matching `InwardReportControllerBht` and the majority pattern in this codebase. Reserve `@ViewScoped` for beans that are only ever populated by their own page's initial render (e.g. via `f:viewAction`/`f:viewParam`, case 1 above) and never receive state from a *different* page's button click.
+
+Found and fixed in issue #21852 (`InwardPharmacyEncounterReportController` — three new encounter-scoped report pages appeared to load with `patientEncounter` set from the dashboard, but returned zero rows and the "back to dashboard" button also failed, both traced to this same root cause).
+
+---
+
 ## `f:event type="preRenderView"` — same rules apply
 
 `f:event type="preRenderView"` fires on **every render**, including postbacks (form submissions), not just on initial GET. This makes it even more aggressive than `f:viewAction`. It is only legitimate in the same two cases above, and even then `f:viewAction` is preferred as it fires only on GET by default.

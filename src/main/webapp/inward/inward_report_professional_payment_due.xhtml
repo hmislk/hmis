@@ -127,6 +127,9 @@
                                 <h:outputLabel value="#{searchController.toDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
+                                <h:outputLabel value=" | Payable: #{searchController.total}"/>
+                                <h:outputLabel value=" | On Hold: #{searchController.totalOnHold}" styleClass="text-danger"
+                                               rendered="#{searchController.totalOnHold gt 0}"/>
                             </f:facet>
 
                             <p:column headerText="No" styleClass="alignTop">
@@ -204,6 +207,21 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
 
+                            </p:column>
+
+                            <!-- Hold status, so this report agrees with the payment pages
+                                 and the Professional Payments Report (#22483) -->
+                            <p:column headerText="Hold Status">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Hold Status"/>
+                                </f:facet>
+                                <h:panelGroup layout="block" rendered="#{bf.professionalPaymentHeld}">
+                                    <span class="ui-tag ui-tag-danger"
+                                          title="#{bf.professionalPaymentHoldDetails}">#{bf.professionalPaymentHoldStatus}</span>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{not bf.professionalPaymentHeld}">
+                                    <span class="ui-tag ui-tag-success">Payable</span>
+                                </h:panelGroup>
                             </p:column>
 
                         </p:dataTable>

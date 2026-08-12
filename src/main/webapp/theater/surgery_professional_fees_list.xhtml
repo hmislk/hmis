@@ -110,6 +110,13 @@
                                             target="#{admissionController.current}"/>
                                     </p:commandButton>
                                 </h:panelGroup>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}">
+                                    <p:commandButton id="btnProfessionalFeeHold" value="Professional Payments Report" icon="fa fa-list-check"
+                                                     ajax="false" immediate="true"
+                                                     title="Report and per-item hold/unhold of professional payments for this admission"
+                                                     action="#{professionalFeeHoldController.navigateToProfessionalFeeHold(inwardProfessionalBillController.selectedSurgeryBill.patientEncounter)}"
+                                                     styleClass="ui-button-info ui-button-outlined"/>
+                                </h:panelGroup>
                             </div>
 
                             <!-- RIGHT: actions, left=least important → right=primary -->

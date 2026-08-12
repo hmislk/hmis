@@ -65,6 +65,10 @@ public class OpdBillItemDTO implements Serializable {
 
     // Navigation IDs
     private Long backwardReferenceBillId;
+    private Long patientId;
+
+    // Set after fetch via a single batched query — not part of any constructor projection
+    private Boolean approvedAnyTest = false;
 
     public OpdBillItemDTO() {
     }
@@ -130,6 +134,48 @@ public class OpdBillItemDTO implements Serializable {
         this.doctorName = doctorName;
         this.doctorTitle = doctorTitle;
         this.backwardReferenceBillId = backwardReferenceBillId;
+    }
+
+    // Adds patientId for navigation (e.g. lab bill item search "view patient" link) — issue #17635
+    public OpdBillItemDTO(
+            Long billItemId,
+            Long billId,
+            String deptId,
+            BillTypeAtomic billTypeAtomic,
+            BillClassType billClassType,
+            Date billedAt,
+            Boolean cancelled,
+            Boolean refunded,
+            PaymentMethod paymentMethod,
+            String paymentSchemeName,
+            String toInstitutionName,
+            String creditCompanyName,
+            String patientName,
+            Object patientTitle,
+            Date patientDob,
+            Object patientSex,
+            String patientPhone,
+            String categoryName,
+            String itemName,
+            String billedByName,
+            Date cancelledAt,
+            String cancelledByName,
+            Date refundedAt,
+            String refundedByName,
+            Double grossValue,
+            Double discount,
+            Double netValue,
+            String doctorName,
+            Object doctorTitle,
+            Long backwardReferenceBillId,
+            Long patientId) {
+        this(billItemId, billId, deptId, billTypeAtomic, billClassType, billedAt,
+                cancelled, refunded, paymentMethod, paymentSchemeName, toInstitutionName,
+                creditCompanyName, patientName, patientTitle, patientDob, patientSex, patientPhone,
+                categoryName, itemName, billedByName, cancelledAt, cancelledByName,
+                refundedAt, refundedByName, grossValue, discount, netValue,
+                doctorName, doctorTitle, backwardReferenceBillId);
+        this.patientId = patientId;
     }
 
     // Convenience display methods (non-JPQL, safe in XHTML)
@@ -256,4 +302,10 @@ public class OpdBillItemDTO implements Serializable {
 
     public Long getBackwardReferenceBillId() { return backwardReferenceBillId; }
     public void setBackwardReferenceBillId(Long backwardReferenceBillId) { this.backwardReferenceBillId = backwardReferenceBillId; }
+
+    public Long getPatientId() { return patientId; }
+    public void setPatientId(Long patientId) { this.patientId = patientId; }
+
+    public Boolean getApprovedAnyTest() { return approvedAnyTest != null && approvedAnyTest; }
+    public void setApprovedAnyTest(Boolean approvedAnyTest) { this.approvedAnyTest = approvedAnyTest; }
 }

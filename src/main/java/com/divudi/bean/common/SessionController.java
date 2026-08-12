@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookController;
 import com.divudi.bean.cashTransaction.DenominationController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
@@ -19,6 +20,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Icon;
 import com.divudi.core.data.IconGroup;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.LoginPage;
 import com.divudi.core.data.UserIconGroup;
 import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
@@ -41,6 +43,7 @@ import com.divudi.core.entity.UserIcon;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.WebUserDashboard;
+import com.divudi.core.entity.WebUserDefaultLoginPage;
 import com.divudi.core.entity.WebUserDepartment;
 import com.divudi.core.entity.WebUserPrivilege;
 import com.divudi.core.entity.WebUserRole;
@@ -50,6 +53,7 @@ import com.divudi.core.facade.LoginsFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.UserPreferenceFacade;
 import com.divudi.core.facade.WebUserDashboardFacade;
+import com.divudi.core.facade.WebUserDefaultLoginPageFacade;
 import com.divudi.core.facade.WebUserDepartmentFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
@@ -79,6 +83,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import javax.faces.context.FacesContext;
@@ -126,8 +131,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     WebUserRoleFacade rFacade;
     @EJB
     private WebUserPasswordHistoryFacade webUserPasswordHistoryFacade;
+    @EJB
+    private WebUserDefaultLoginPageFacade webUserDefaultLoginPageFacade;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SecurityController securityController;
@@ -163,6 +170,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private DrawerController drawerController;
     @Inject
     private PharmacySaleController pharmacySaleController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
@@ -344,6 +353,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        thisLogin = null;
     }
 
     @Override
@@ -1287,6 +1298,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
+                    if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
+                        JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
+                        return false;
+                    }
                     if (!canLogToDept(u, department)) {
                         JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
@@ -1509,6 +1524,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
                 if (passwordIsOk) {
+                    if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
+                        JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
+                        return false;
+                    }
                     System.out.println("DEBUG: Password verification successful, loading departments...");
                     long deptStartTime = System.currentTimeMillis();
                     departments = listLoggableDepts(u);
@@ -1788,14 +1807,23 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         // Check password expiration
         if (enablePasswordExpiration) {
+            // Use the raw (non-self-initializing) accessor - getLastPasswordResetAt()
+            // silently sets the field to "now" when null, which would make a null
+            // check here always false and defeat the expiration check entirely.
+            Date lastPasswordResetAt = loggedUser.getLastPasswordResetAtRaw();
+            if (lastPasswordResetAt == null) {
+                // No recorded password change (e.g. account predates this feature) -
+                // treat as an unknown-age, expired password rather than silently exempting it.
+                passwordRequirementMessage = "Password has expired. Please reset your password.";
+                JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
+                return false;
+            }
             long expirationMillis = passwordExpirationPeriod * 24L * 60 * 60 * 1000; // Convert days to milliseconds
-            if (loggedUser.getLastPasswordResetAt() != null) {
-                long timeSinceLastReset = System.currentTimeMillis() - loggedUser.getLastPasswordResetAt().getTime();
-                if (timeSinceLastReset > expirationMillis) {
-                    passwordRequirementMessage = "Password has expired. Please reset your password.";
-                    JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
-                    return false;
-                }
+            long timeSinceLastReset = System.currentTimeMillis() - lastPasswordResetAt.getTime();
+            if (timeSinceLastReset > expirationMillis) {
+                passwordRequirementMessage = "Password has expired. Please reset your password.";
+                JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
+                return false;
             }
         }
 
@@ -1835,14 +1863,38 @@ public class SessionController implements Serializable, HttpSessionListener {
         return true;
     }
 
+    /**
+     * Resolves the login page to navigate to: an active per-user-per-department
+     * {@link WebUserDefaultLoginPage} row takes priority, then the legacy
+     * {@link WebUser#getLoginPage()} value, then HOME.
+     */
+    private LoginPage resolveLoginPage() {
+        if (loggedUser == null) {
+            return LoginPage.HOME;
+        }
+        if (department != null) {
+            Map m = new HashMap();
+            m.put("user", loggedUser);
+            m.put("dept", department);
+            WebUserDefaultLoginPage wuLp = webUserDefaultLoginPageFacade.findFirstByJpql(
+                    "select w from WebUserDefaultLoginPage w where w.webUser=:user and w.department=:dept and w.retired=false order by w.id desc",
+                    m);
+            if (wuLp != null && wuLp.getLoginPage() != null) {
+                return wuLp.getLoginPage();
+            }
+        }
+        if (loggedUser.getLoginPage() != null) {
+            return loggedUser.getLoginPage();
+        }
+        return LoginPage.HOME;
+    }
+
     public String navigateToLoginPageByUsersDefaultLoginPage() {
         if (loggedUser == null) {
             return null;
         }
-        if (loggedUser.getLoginPage() == null) {
-            return "/home?faces-redirect=true";
-        }
-        switch (loggedUser.getLoginPage()) {
+        LoginPage resolvedLoginPage = resolveLoginPage();
+        switch (resolvedLoginPage) {
             case CHANNELLING_QUEUE_PAGE:
                 return bookingController.navigateToChannelQueueFromMenu();
             case CHANNELLING_TV_DISPLAY:
@@ -2128,6 +2180,41 @@ public class SessionController implements Serializable, HttpSessionListener {
         pharmacyBillingAfterShiftStart = null;
         paymentManagementAfterShiftStart = null;
         availableDepartmentTypesForPharmacyTransactions = null;
+        financialTransactionController.resetForLogout();
+        invalidateHttpSession();
+    }
+
+    /**
+     * Invalidates the underlying HttpSession so all @SessionScoped beans
+     * (including their cached reference lists, e.g. #22509) are destroyed
+     * on logout instead of surviving into the next login on the same
+     * browser session (#22508).
+     *
+     * Skips the redirect when already on logout.xhtml (session-timeout
+     * flow) so that page's own "session timed out, please log in again"
+     * message and Login button still render instead of being bounced
+     * straight to the index page.
+     */
+    private void invalidateHttpSession() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            return;
+        }
+        Object session = ctx.getExternalContext().getSession(false);
+        if (session instanceof HttpSession) {
+            ((HttpSession) session).invalidate();
+        }
+        String viewId = ctx.getViewRoot() != null ? ctx.getViewRoot().getViewId() : null;
+        if (viewId != null && viewId.contains("logout.xhtml")) {
+            return;
+        }
+        try {
+            String redirectUrl = ctx.getExternalContext().getRequestContextPath() + "/faces/index.xhtml";
+            ctx.getExternalContext().redirect(redirectUrl);
+            ctx.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public WebUser getCurrent() {

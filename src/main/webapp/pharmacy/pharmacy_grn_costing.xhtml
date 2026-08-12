@@ -20,7 +20,7 @@
                         <h:outputLabel value="Goods Receive" />
                         <p:commandButton
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                             actionListener="#{searchController.makeListNull()}"
                             class="ui-button-warning"
                             icon="fa fa-arrow-left"
@@ -33,6 +33,7 @@
                             class="ui-button-success"
                             icon="fas fa-check"
                             ajax="false"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}"
                             style="float: right;">
                         </p:commandButton>
                     </f:facet>
@@ -382,9 +383,9 @@
                                         </div>
                                     </div>
                                 </h:panelGroup>
-                                <p:dataTable 
+                                <p:dataTable
                                     id="tblExpenses"
-                                    value="#{grnCostingController.billExpenses}" 
+                                    value="#{grnCostingController.grnBill.billExpenses}"
                                     var="be"
                                     class="w-100"
                                     emptyMessage="No Bill Expenses" >
@@ -644,7 +645,7 @@
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                     ajax="false"
-                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-warning"
                                     icon="fa fa-arrow-left"

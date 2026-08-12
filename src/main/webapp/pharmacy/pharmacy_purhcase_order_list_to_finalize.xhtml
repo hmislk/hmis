@@ -281,10 +281,9 @@
                                                 icon="fas #{b.cancelled eq true ? 'fa-ban' : 'fa-clipboard-check'}"
                                                 class="#{b.cancelled eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success'}"
                                                 value="#{b.cancelled eq true ? 'Cancelled' : 'Finalize'}"
-                                                action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
+                                                action="#{purchaseOrderRequestNativeSqlController.navigateToUpdatePurchaseOrder(b.billId)}"
                                                 disabled="#{b.cancelled eq true}"
                                                 style="min-width: 100px;">
-                                                <f:setPropertyActionListener target="#{purchaseOrderRequestController.billId}" value="#{b.billId}"/>
                                             </p:commandButton>
 
                                             <!-- Status indicators below button -->

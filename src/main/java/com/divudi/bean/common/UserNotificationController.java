@@ -20,7 +20,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.Notification;
-import com.divudi.bean.inward.BhtSummeryController;
+import com.divudi.bean.inward.AdmissionController;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Sms;
@@ -84,7 +85,7 @@ public class UserNotificationController implements Serializable {
     @Inject
     NotificationPushService notificationPushService;
     @Inject
-    BhtSummeryController bhtSummeryController;
+    AdmissionController admissionController;
     private Date date;
     // Notification list filters
     private boolean todayNotification;
@@ -398,16 +399,14 @@ public class UserNotificationController implements Serializable {
         if (un.getNotification().getPatientRoom() != null) {
             PatientRoom pr = un.getNotification().getPatientRoom();
             if (pr.getPatientEncounter() != null) {
-                bhtSummeryController.setPatientEncounter(pr.getPatientEncounter());
-                return bhtSummeryController.navigateToInpatientProfile();
+                return navigateToAdmissionProfileFor(pr.getPatientEncounter());
             }
             return "";
         }
 
         // Handle PatientEncounter-based notifications
         if (un.getNotification().getPatientEncounter() != null) {
-            bhtSummeryController.setPatientEncounter(un.getNotification().getPatientEncounter());
-            return bhtSummeryController.navigateToInpatientProfile();
+            return navigateToAdmissionProfileFor(un.getNotification().getPatientEncounter());
         }
 
         if (un.getNotification().getBill() == null) {
@@ -464,6 +463,23 @@ public class UserNotificationController implements Serializable {
                 return "";
         }
 
+    }
+
+    /**
+     * admission_profile.xhtml reads admissionController.current (an
+     * Admission), not bhtSummeryController.patientEncounter. The normal
+     * "Inpatient Dashboard" button sets both together via
+     * AdmissionController.navigateToAdmissionProfilePage(); this mirrors
+     * that so a notification click doesn't leave admissionController.current
+     * pointing at whichever admission was last viewed through the normal
+     * flow (issue #21538).
+     */
+    private String navigateToAdmissionProfileFor(PatientEncounter patientEncounter) {
+        if (!(patientEncounter instanceof Admission)) {
+            return "";
+        }
+        admissionController.setCurrent((Admission) patientEncounter);
+        return admissionController.navigateToAdmissionProfilePage();
     }
 
     public void createUserNotifications(Notification notification) {
@@ -527,18 +543,31 @@ public class UserNotificationController implements Serializable {
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     String number = u.getWebUserPerson().getMobile();
                     //TODo
                 }
                 break;
             case SMS:
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     String number = u.getWebUserPerson().getMobile();
                     sendSmsForUserSubscriptions(number);
                 }
                 break;
             case SYSTEM_NOTIFICATION:
+                // Defensive null-check kept as a second line of defense: even though
+                // fillSubscribedUsersByDepartment now resolves role-based subscriptions
+                // to real users, a future gap of this kind should degrade to "one user
+                // doesn't get notified" instead of crashing the whole action (issue #22791).
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     UserNotification nun = new UserNotification();
                     nun.setNotification(n);
                     nun.setWebUser(u);
