@@ -548,7 +548,8 @@ public class StaffPaymentBillController implements Serializable {
         calculateTotalDue();
         calculatePaymentsSelected();
 
-        switch (withholdingTaxCalculationStatus) {
+        String status = withholdingTaxCalculationStatus != null ? withholdingTaxCalculationStatus : "Depending On Payments";
+        switch (status) {
             case "Depending On Payments":
                 calculateWithholdingTaxDependingOnPayments();
                 break;
@@ -695,12 +696,21 @@ public class StaffPaymentBillController implements Serializable {
         currentStaff = s;
         speciality = s.getSpeciality();
         calculateDueFeesOpdForSelectedPeriod();
+        initializeWithholdingTaxOptions();
         return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
 
     public String navigateToViewOpdPayProfessionalPayments() {
         recreateModel();
+        initializeWithholdingTaxOptions();
+        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
+    }
 
+    // Shared by both navigation entry points into payment_staff_bill.xhtml (this bean is
+    // @SessionScoped, so withholdingTaxCalculationStatus must be set here, not left to
+    // navigateToViewOpdPayProfessionalPayments alone, or performCalculations() NPEs on a
+    // session that only ever reached the page via navigateToStaffPaymentFromDuePayment).
+    private void initializeWithholdingTaxOptions() {
         allowUserToSelectPayWithholdingTaxDuringProfessionalPayments
                 = configOptionApplicationController.getBooleanValueByKey(
                         "Allow User To Select Whether To Pay Withholding Tax During Professional Payments", true);
@@ -724,8 +734,6 @@ public class StaffPaymentBillController implements Serializable {
         } else {
             withholdingTaxCalculationStatus = "Depending On Payments";  // Default to "Depending On Payments"
         }
-
-        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
 
     private boolean errorCheck() {
