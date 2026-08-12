@@ -2413,6 +2413,18 @@ public class GrnCostingNativeSqlController implements Serializable {
             return "";
         }
 
+        // Aggregate THIS GRN's own lines by PO item first. A single PO line can
+        // be split/duplicated across multiple GRN lines for the same item, and
+        // each line individually staying under the remaining qty does not
+        // guarantee their SUM does -- checking line-by-line against
+        // "previously received (other GRNs) + this one line" let an aggregate
+        // over-receipt slip through silently (#22893: 20 received against 15
+        // ordered, split across 2 duplicate lines, no validation error).
+        Map<Long, Double> currentGrnQtyByPoItem = new HashMap<>();
+        Map<Long, Double> currentGrnFreeQtyByPoItem = new HashMap<>();
+        Map<Long, PharmaceuticalBillItem> poItemById = new HashMap<>();
+        Map<Long, String> itemNameByPoItem = new HashMap<>();
+
         for (BillItem grnItem : billItems) {
             if (grnItem.getReferanceBillItem() == null || grnItem.getPharmaceuticalBillItem() == null) {
                 continue;
@@ -2421,32 +2433,41 @@ public class GrnCostingNativeSqlController implements Serializable {
             BillItem purchaseOrderItem = grnItem.getReferanceBillItem();
             PharmaceuticalBillItem poItem = purchaseOrderItem.getPharmaceuticalBillItem();
 
-            if (poItem == null) {
+            if (poItem == null || poItem.getId() == null) {
                 continue;
             }
 
             PharmaceuticalBillItem currentGrnPbi = grnItem.getPharmaceuticalBillItem();
 
+            Long poItemId = poItem.getId();
+            currentGrnQtyByPoItem.merge(poItemId, currentGrnPbi.getQty(), Double::sum);
+            currentGrnFreeQtyByPoItem.merge(poItemId, currentGrnPbi.getFreeQty(), Double::sum);
+            poItemById.putIfAbsent(poItemId, poItem);
+            itemNameByPoItem.putIfAbsent(poItemId, grnItem.getItem() != null ? grnItem.getItem().getName() : "Unknown Item");
+        }
+
+        boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
+
+        for (Map.Entry<Long, PharmaceuticalBillItem> e : poItemById.entrySet()) {
+            Long poItemId = e.getKey();
+            PharmaceuticalBillItem poItem = e.getValue();
+
             double orderedQty = poItem.getQty();
             double orderedFreeQty = poItem.getFreeQty();
-            double currentGrnQty = currentGrnPbi.getQty();
-            double currentGrnFreeQty = currentGrnPbi.getFreeQty();
+            double currentGrnQty = currentGrnQtyByPoItem.getOrDefault(poItemId, 0.0);
+            double currentGrnFreeQty = currentGrnFreeQtyByPoItem.getOrDefault(poItemId, 0.0);
 
-            double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
-            double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
-
-            double previouslyReceivedQty = totalReceivedFromAllGrns;
-            double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns;
+            double previouslyReceivedQty = calculateRemainigQtyFromOrder(poItem);
+            double previouslyReceivedFreeQty = calculateRemainingFreeQtyFromOrder(poItem);
 
             if (orderedQty < previouslyReceivedQty + currentGrnQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty
+                return "Item " + itemNameByPoItem.get(poItemId) + " cannot receive " + currentGrnQty
                         + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
                         + ", Remaining: " + (orderedQty - previouslyReceivedQty);
             }
 
-            boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
             if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
+                return "Item " + itemNameByPoItem.get(poItemId) + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
                         + ", Already received free: " + previouslyReceivedFreeQty
                         + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
