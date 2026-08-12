@@ -57,6 +57,11 @@ public class GrnLineData {
     private double valueAtCostRate;
     private double totalCostRate;
 
+    // Used only by expense lines (GrnCostingNativeSqlService.saveExpenseLine) --
+    // mirrors BillItem.consideredForCosting, whether this expense feeds the
+    // bill-level cost-rate distribution or is display-only.
+    private boolean consideredForCosting = true;
+
     public Long getBillItemId() {
         return billItemId;
     }
@@ -295,5 +300,13 @@ public class GrnLineData {
 
     public void setTotalCostRate(double totalCostRate) {
         this.totalCostRate = totalCostRate;
+    }
+
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
+
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
     }
 }

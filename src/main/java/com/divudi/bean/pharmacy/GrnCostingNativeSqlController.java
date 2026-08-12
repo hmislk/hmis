@@ -491,8 +491,17 @@ public class GrnCostingNativeSqlController implements Serializable {
                 continue;
             }
             GrnLineData line = toLineData(i);
-            long billItemId = grnCostingNativeSqlService.saveLine(billId, line);
-            i.setId(billItemId);
+            GrnCostingNativeSqlService.SavedLineIds ids = grnCostingNativeSqlService.saveLine(billId, line);
+            i.setId(ids.billItemId);
+            // Native INSERT never reports its generated PK back onto a JPA
+            // entity the way em.persist() does -- without this, a same-session
+            // Save immediately followed by Approve (no DB reload in between)
+            // would build GrnApproveLineData with pharmaceuticalBillItemId
+            // null, silently skipping the stock/ItemBatch link and
+            // StockHistory row at Approve time.
+            if (i.getPharmaceuticalBillItem() != null) {
+                i.getPharmaceuticalBillItem().setId(ids.pharmaceuticalBillItemId);
+            }
         }
 
         if (getCurrentGrnBillPre().getBillExpenses() != null) {
@@ -708,7 +717,16 @@ public class GrnCostingNativeSqlController implements Serializable {
         // StockHistory, bill-header promotion, payment, PO decrement/fully-issued,
         // orphan-PRE retirement) atomically. See GrnApprovingNativeSqlService's class
         // Javadoc for why this must be one EJB call rather than a per-item loop here.
-        grnApprovingNativeSqlService.approveGrn(request);
+        try {
+            grnApprovingNativeSqlService.approveGrn(request);
+        } catch (IllegalStateException ex) {
+            // Last-resort race guard inside approveGrn() itself -- the
+            // billTypeAtomic==PHARMACY_GRN check above already blocks the
+            // normal double-click case, this only fires for a genuine
+            // concurrent-session race.
+            JsfUtil.addErrorMessage("This GRN was already approved by another session. Please refresh.");
+            return;
+        }
 
         reloadCurrentGrnBillPreAfterApprove();
 
@@ -850,6 +868,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setLineNetRate(expense.getNetRate());
         line.setLineGrossTotal(expense.getGrossValue());
         line.setLineNetTotal(expense.getNetValue());
+        line.setConsideredForCosting(expense.isConsideredForCosting());
         return line;
     }
 

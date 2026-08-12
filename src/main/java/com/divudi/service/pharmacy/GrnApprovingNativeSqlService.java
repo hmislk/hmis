@@ -85,6 +85,25 @@ public class GrnApprovingNativeSqlService {
     // -----------------------------------------------------------------------
 
     public void approveGrn(GrnApproveRequest request) {
+        // Claim the bill by flipping it out of PHARMACY_GRN_PRE atomically,
+        // before any stock write. If no row changes, another approve call
+        // already ran (double-click, or two sessions on the same saved GRN)
+        // -- without this, the stock-mutating loop below would run twice,
+        // doubling Stock/StockHistory rows and the PO remaining-qty
+        // decrement, since approveBillHeader() unconditionally overwrites
+        // BILLTYPEATOMIC rather than gating on it. Same technique already
+        // used by markPurchaseOrderFullyIssued() below.
+        int claimed = em.createNativeQuery(
+                "UPDATE " + billTable() + " SET BILLTYPEATOMIC=? WHERE ID=? AND BILLTYPEATOMIC=?")
+                .setParameter(1, BillTypeAtomic.PHARMACY_GRN.toString())
+                .setParameter(2, request.getBillId())
+                .setParameter(3, BillTypeAtomic.PHARMACY_GRN_PRE.toString())
+                .executeUpdate();
+        if (claimed == 0) {
+            throw new IllegalStateException(
+                    "GRN approve: bill " + request.getBillId() + " is not in PHARMACY_GRN_PRE state (already approved or invalid).");
+        }
+
         updateBillNumbers(request.getBillId(), request.getDeptId(), request.getInsId());
 
         List<GrnApproveLineData> lines = request.getLines();

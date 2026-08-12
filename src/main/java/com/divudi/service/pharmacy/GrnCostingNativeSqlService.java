@@ -133,11 +133,31 @@ public class GrnCostingNativeSqlService {
     }
 
     /**
-     * Upserts a single GRN line's billitem + pharmaceuticalbillitem rows,
-     * then its BillItemFinanceDetails. Returns the billItemId so the
-     * controller can track it back onto its in-memory model.
+     * Carries back both generated/resolved primary keys from {@link #saveLine}
+     * so the caller can set them on its in-memory BillItem AND
+     * PharmaceuticalBillItem entities -- a native INSERT never reports a
+     * generated PK back onto the JPA entity object the way em.persist() does,
+     * so without this, a caller that reads pharmaceuticalBillItem.getId()
+     * later in the same session (e.g. building GrnApproveLineData for
+     * Approve, before any DB reload happens) would silently see null.
      */
-    public long saveLine(long billId, GrnLineData line) {
+    public static final class SavedLineIds {
+        public final long billItemId;
+        public final long pharmaceuticalBillItemId;
+
+        public SavedLineIds(long billItemId, long pharmaceuticalBillItemId) {
+            this.billItemId = billItemId;
+            this.pharmaceuticalBillItemId = pharmaceuticalBillItemId;
+        }
+    }
+
+    /**
+     * Upserts a single GRN line's billitem + pharmaceuticalbillitem rows,
+     * then its BillItemFinanceDetails. Returns both the billItemId and the
+     * pharmaceuticalbillitem id so the controller can track them back onto
+     * its in-memory model (see {@link SavedLineIds}).
+     */
+    public SavedLineIds saveLine(long billId, GrnLineData line) {
         long billItemId;
         if (line.getBillItemId() == null) {
             em.createNativeQuery(
@@ -210,6 +230,7 @@ public class GrnCostingNativeSqlService {
                 .setParameter(11, billItemId)
                 .executeUpdate();
 
+        long pharmaceuticalBillItemId;
         if (updated == 0) {
             em.createNativeQuery(
                 "INSERT INTO " + pharmBillItemTable()
@@ -231,12 +252,21 @@ public class GrnCostingNativeSqlService {
                 .setParameter(12, new Timestamp(new Date().getTime()))
                 .setParameter(13, line.getCreaterId())
                 .executeUpdate();
+            pharmaceuticalBillItemId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+        } else {
+            // The UPDATE above doesn't tell us the row's own PK -- resolve it
+            // explicitly so the caller can set it on the in-memory
+            // PharmaceuticalBillItem entity (see SavedLineIds).
+            pharmaceuticalBillItemId = ((Number) em.createNativeQuery(
+                    "SELECT ID FROM " + pharmBillItemTable() + " WHERE billItem_ID=?")
+                    .setParameter(1, billItemId)
+                    .getSingleResult()).longValue();
         }
 
         saveBillItemFinanceDetails(billItemId, line);
 
         evictLineCache();
-        return billItemId;
+        return new SavedLineIds(billItemId, pharmaceuticalBillItemId);
     }
 
     private double divide(double value, double divisor) {
@@ -250,16 +280,18 @@ public class GrnCostingNativeSqlService {
      * PurchaseOrderRequestNativeSqlService.saveBillItemFinanceDetails().
      */
     private void saveBillItemFinanceDetails(long billItemId, GrnLineData line) {
-        BillItemFinanceDetails bifd;
-        if (line.getBillItemId() != null) {
-            String jpql = "SELECT bi.billItemFinanceDetails FROM BillItem bi WHERE bi.id = :id";
-            List<BillItemFinanceDetails> existing = em.createQuery(jpql, BillItemFinanceDetails.class)
-                    .setParameter("id", billItemId)
-                    .getResultList();
-            bifd = (existing != null && !existing.isEmpty() && existing.get(0) != null) ? existing.get(0) : new BillItemFinanceDetails();
-        } else {
-            bifd = new BillItemFinanceDetails();
-        }
+        // Key the existing-row lookup on the resolved billItemId parameter,
+        // not line.getBillItemId() -- the DTO field is unset on a first-ever
+        // save (correctly falls through to "new" below either way), but a
+        // future caller passing a resolved billItemId with an unset DTO
+        // field would otherwise create and re-link a duplicate BIFD row.
+        String jpql = "SELECT bi.billItemFinanceDetails FROM BillItem bi WHERE bi.id = :id";
+        List<BillItemFinanceDetails> existing = em.createQuery(jpql, BillItemFinanceDetails.class)
+                .setParameter("id", billItemId)
+                .getResultList();
+        BillItemFinanceDetails bifd = (existing != null && !existing.isEmpty() && existing.get(0) != null)
+                ? existing.get(0)
+                : new BillItemFinanceDetails();
 
         bifd.setLineGrossRate(BigDecimal.valueOf(line.getLineGrossRate()));
         bifd.setLineDiscountRate(BigDecimal.valueOf(line.getLineDiscountRate()));
@@ -316,7 +348,7 @@ public class GrnCostingNativeSqlService {
                 + " (expenseBill_ID, item_ID, qty, netValue, grossValue, Rate, netRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, searialNo)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,?)")
+                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
                 .setParameter(1, billId)
                 .setParameter(2, expenseLine.getItemId())
                 .setParameter(3, expenseLine.getQuantity())
@@ -326,14 +358,15 @@ public class GrnCostingNativeSqlService {
                 .setParameter(7, expenseLine.getLineNetRate())
                 .setParameter(8, new Timestamp(new Date().getTime()))
                 .setParameter(9, expenseLine.getCreaterId())
-                .setParameter(10, expenseLine.getSerialNo())
+                .setParameter(10, expenseLine.isConsideredForCosting() ? 1 : 0)
+                .setParameter(11, expenseLine.getSerialNo())
                 .executeUpdate();
             billItemId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
         } else {
             billItemId = expenseLine.getBillItemId();
             em.createNativeQuery(
                 "UPDATE " + billItemTable()
-                + " SET item_ID=?, qty=?, netValue=?, grossValue=?, Rate=?, netRate=?, searialNo=?"
+                + " SET item_ID=?, qty=?, netValue=?, grossValue=?, Rate=?, netRate=?, consideredForCosting=?, searialNo=?"
                 + " WHERE ID=?")
                 .setParameter(1, expenseLine.getItemId())
                 .setParameter(2, expenseLine.getQuantity())
@@ -341,8 +374,9 @@ public class GrnCostingNativeSqlService {
                 .setParameter(4, expenseLine.getLineGrossTotal())
                 .setParameter(5, expenseLine.getLineGrossRate())
                 .setParameter(6, expenseLine.getLineNetRate())
-                .setParameter(7, expenseLine.getSerialNo())
-                .setParameter(8, billItemId)
+                .setParameter(7, expenseLine.isConsideredForCosting() ? 1 : 0)
+                .setParameter(8, expenseLine.getSerialNo())
+                .setParameter(9, billItemId)
                 .executeUpdate();
         }
         evictLineCache();
