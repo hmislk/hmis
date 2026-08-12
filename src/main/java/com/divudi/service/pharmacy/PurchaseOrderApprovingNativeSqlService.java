@@ -265,7 +265,7 @@ public class PurchaseOrderApprovingNativeSqlService {
         int updated = em.createNativeQuery(
                 "UPDATE " + pharmBillItemTable()
                 + " SET qty=?, freeQty=?, purchaseRate=?, purchaseRatePack=?, purchaseValue=?,"
-                + " retailRate=?, retailRatePack=?, retailRateInUnit=?, retailValue=?,"
+                + " retailRate=?, retailRatePack=?, retailValue=?,"
                 + " remainingQty=?, remainingFreeQty=? WHERE billItem_ID=?")
                 .setParameter(1, pbiQty)
                 .setParameter(2, pbiFreeQty)
@@ -274,20 +274,19 @@ public class PurchaseOrderApprovingNativeSqlService {
                 .setParameter(5, purchaseValue.doubleValue())
                 .setParameter(6, pbiRetailRate)
                 .setParameter(7, retailRate.doubleValue())
-                .setParameter(8, pbiRetailRate)
-                .setParameter(9, retailValue.doubleValue())
-                .setParameter(10, pbiQty)
-                .setParameter(11, pbiFreeQty)
-                .setParameter(12, billItemId)
+                .setParameter(8, retailValue.doubleValue())
+                .setParameter(9, pbiQty)
+                .setParameter(10, pbiFreeQty)
+                .setParameter(11, billItemId)
                 .executeUpdate();
 
         if (updated == 0) {
             em.createNativeQuery(
                 "INSERT INTO " + pharmBillItemTable()
                 + " (billItem_ID, qty, freeQty, purchaseRate, purchaseRatePack, purchaseValue,"
-                + " retailRate, retailRatePack, retailRateInUnit, retailValue, remainingQty, remainingFreeQty,"
+                + " retailRate, retailRatePack, retailValue, remainingQty, remainingFreeQty,"
                 + " costRate, costRatePack, costValue, createdAt, creater_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
                 .setParameter(1, billItemId)
                 .setParameter(2, pbiQty)
                 .setParameter(3, pbiFreeQty)
@@ -296,12 +295,11 @@ public class PurchaseOrderApprovingNativeSqlService {
                 .setParameter(6, purchaseValue.doubleValue())
                 .setParameter(7, pbiRetailRate)
                 .setParameter(8, retailRate.doubleValue())
-                .setParameter(9, pbiRetailRate)
-                .setParameter(10, retailValue.doubleValue())
-                .setParameter(11, pbiQty)
-                .setParameter(12, pbiFreeQty)
-                .setParameter(13, new Timestamp(new Date().getTime()))
-                .setParameter(14, line.getCreaterId())
+                .setParameter(9, retailValue.doubleValue())
+                .setParameter(10, pbiQty)
+                .setParameter(11, pbiFreeQty)
+                .setParameter(12, new Timestamp(new Date().getTime()))
+                .setParameter(13, line.getCreaterId())
                 .executeUpdate();
         }
 

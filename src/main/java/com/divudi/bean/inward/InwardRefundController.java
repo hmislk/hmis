@@ -10,7 +10,9 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.*;
@@ -18,6 +20,7 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -57,6 +60,10 @@ public class InwardRefundController implements Serializable {
     private SessionController sessionController;
     @Inject
     private FinancialTransactionController financialTransactionController;
+    @Inject
+    private AdmissionController admissionController;
+    @Inject
+    private BhtSummeryController bhtSummeryController;
     private double paidAmount;
     double netTotal;
     private Bill current;
@@ -66,6 +73,8 @@ public class InwardRefundController implements Serializable {
     private boolean printPreview;
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     private List<Bill> eligiblePaymentBills;
     private Bill originalBillToRefund;
     private Map<Long, Double> remainingRefundableAmountCache;
@@ -124,8 +133,50 @@ public class InwardRefundController implements Serializable {
         return "/inward/inward_bill_refund?faces-redirect=true";
     }
 
+    /**
+     * Navigate to the inward deposit refund page with a specific deposit bill
+     * pre-selected, for the "Refund" button on the Deposit Reprint view page
+     * (issue #22826). Reuses the same eligibility filtering as the manual
+     * bill picker (loadEligiblePaymentBills()) so this can't be tricked into
+     * pre-selecting an ineligible (cancelled / fully refunded) bill.
+     */
+    public String navigateToRefundFromDepositBill(Bill originDepositBill) {
+        makeNull();
+        if (originDepositBill == null || originDepositBill.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        getCurrent().setPatientEncounter(originDepositBill.getPatientEncounter());
+        loadEligiblePaymentBills();
+        if (!getEligiblePaymentBills().contains(originDepositBill)) {
+            JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
+            return "";
+        }
+        originalBillToRefund = originDepositBill;
+        selectBillToRefundListener();
+        return "/inward/inward_bill_refund?faces-redirect=true";
+    }
+
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
+    }
+
+    public String navigateToInpationDashbord() {
+        if (getCurrent() == null || getCurrent().getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        PatientEncounter pe = getCurrent().getPatientEncounter();
+        bhtSummeryController.setPatientEncounter(pe);
+        if (pe instanceof Admission) {
+            admissionController.setCurrent((Admission) pe);
+        }
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     @Inject
@@ -179,7 +230,6 @@ public class InwardRefundController implements Serializable {
         }
 
         saveBill();
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_REFUND);
         getBillFacade().edit(getCurrent());
         saveBillItem();
 
@@ -217,8 +267,24 @@ public class InwardRefundController implements Serializable {
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setReferenceBill(getOriginalBillToRefund());
-        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
+
+        BillTypeAtomic refundAtomic = getOriginalBillToRefund().getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT
+                ? BillTypeAtomic.INWARD_DEPOSIT_REFUND
+                : BillTypeAtomic.INWARD_PAYMENT_REFUND;
+        getCurrent().setBillTypeAtomic(refundAtomic);
+
+        AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
+                ? getCurrent().getPatientEncounter().getAdmissionType() : null;
+        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        if (uniqueSerialPerAdmissionType) {
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), refundAtomic, admissionTypeForBillNumber));
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), refundAtomic, admissionTypeForBillNumber));
+        } else {
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), refundAtomic));
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), refundAtomic));
+        }
 
         double dbl = Math.abs(getCurrent().getTotal());
 
@@ -418,6 +484,13 @@ public class InwardRefundController implements Serializable {
 
     public void setOriginalBillToRefund(Bill originalBillToRefund) {
         this.originalBillToRefund = originalBillToRefund;
+    }
+
+    public String getFeatureLabel(Bill b) {
+        if (b == null || b.getBillTypeAtomic() == null) {
+            return "";
+        }
+        return b.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT ? "Deposit" : "Payment";
     }
 
     public void calculteFinalBillMax() {
