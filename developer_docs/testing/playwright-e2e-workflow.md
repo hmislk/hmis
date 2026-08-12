@@ -1465,6 +1465,199 @@ Not Paid Tokens** → **Call Customer** → **Accept Payment** → enter Tendere
 Settle**. Then from `pharmacy_search_pre_bill.xhtml` → **Search Paid Only Tokens** → **View Payment Bill**
 lands on the reprint/cancel page for that bill.
 
+## 55. `inward_bill_professional.xhtml` "Add Professional Fee" silently no-ops if the Speciality autocomplete is left empty
+
+On "Add New Professional Fees", the `+ Add Professional Fee` button is a
+`type="submit"` full postback guarded only by a JS `confirm(...)` — clicking
+it and accepting the dialog looks successful (page reloads, no visible
+error) but the row never appears in "Professional Fees for This Encounter"
+and no `BILLFEE` row is inserted, if the **Speciality** autocomplete (above
+Doctor) was left blank. This is the same zero-observable-signal
+required-field pattern as §37, just on a different page/field — the Doctor
+field alone is not enough. Fix: search and select a Speciality (e.g. type
+`PHYSICIAN`, press Enter) before Doctor/Fee Amount/Add. Confirmed via
+`mysql.general_log`: with Speciality empty, no `INSERT INTO BILLFEE`
+statement reaches the server at all; with it filled, the insert fires
+immediately. Verified while testing issue #22665.
+
+## 56. `p:datePicker timeInput="true"` — typing into the input does not commit; use the PrimeFaces widget API for non-AJAX forms
+
+On `theater/inward_timed_service_consume_surgery.xhtml`'s Start/End Time
+fields (`p:datePicker showTime="true" timeInput="true"`, no `readonlyInput`
+set — `input.readOnly` is `false`), the documented "click → Ctrl+A →
+pressSequentially → Escape" pattern (§ "p:datePicker / p:calendar") left the
+input **empty** every time: `document.getElementById(...).value` read `""`
+both before and after `Escape`, with no visible error. Root cause wasn't
+narrowed further, but the fix that reliably works is to skip DOM typing
+entirely and drive the PrimeFaces widget directly — safe here because the
+submit button (`+ Add Service`) is `ajax="false"`, so (per §29) only the
+final submitted `_input` value matters:
+```js
+Object.keys(PrimeFaces.widgets).filter(k => /starttime|endtime/i.test(k))
+// -> ["widget_form_startTime", "widget_form_endTime"]
+PrimeFaces.widgets.widget_form_startTime.setDate(new Date(2026, 7, 5, 19, 0, 0));
+```
+`setDate()` both sets the widget's internal date **and** re-serializes the
+visible `_input` text using the field's configured pattern, so a DOM read
+right after confirms the committed value. Verified end-to-end for issue #20890:
+the typed-looking string round-tripped correctly through the
+non-AJAX submit and the saved `PATIENTITEM.FROMTIME`/`TOTIME` matched. Only
+use this shortcut for non-AJAX (full-postback) submits — for an AJAX
+`p:datePicker` where the *change* event itself must fire a listener, this
+bypasses that and the real key-event pattern would still be required (untested
+here).
+
+## 57. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link
+
+`inward/nurse/index.xhtml` populates its Rooms/BHT tab lists (room and BHT
+buttons per ward) only when reached via the real PrimeFaces menu action
+(**Inward → Nursing WorkBench**, an `onclick`/`PrimeFaces.addSubmitParam`
+command link that posts a form before navigating). A `browser_navigate`
+straight to `/rh/faces/nurse/index.xhtml` — even from an already-authenticated,
+department-selected session — loads the page shell but leaves both tab panels
+empty, with no console error and no failed network request to explain it; the
+list is populated by server-side controller init tied to the menu's action
+listener, not by a `f:viewAction` or ajax poll that a plain GET would trigger.
+Same rule as the admission/final-bill pages noted in §1 §17: prefer clicking
+through the actual menu path over guessing the URL, and if a page you reached
+by URL shows a suspiciously empty list with no error, retry via the menu link
+before assuming the data itself is missing. Verified while testing issue
+`#22689`. Note: `NursingWorkBenchController.loadLists()` populates the Rooms
+and BHT tabs from the identical query (same `discharged=false /
+paymentFinalized=false / currentPatientRoom` filter) — they always list the
+same admissions, just labeled/sorted by room name vs. BHT number
+respectively. If a specific admission seems "missing" from one tab, search by
+the label that tab actually renders (BHT number on the BHT tab, room name on
+the Rooms tab), not by patient name — neither tab's buttons show it.
+
+## 58. `inward_admission.xhtml` Room No autocomplete excludes the room already reserved by the very appointment being admitted; a required-config error can look like a blocked flow
+
+While testing issue #22719 (appointment → admission → deposit conversion), two admission-form gotchas surfaced together:
+
+- **Room No autocomplete only lists currently-*available* rooms** — a room
+  already reserved for the appointment/patient being admitted (e.g. via the
+  appointment's own `Reservation`) does **not** appear in the completion list,
+  even though it's "theirs." Typing the exact room number/name returns "No
+  results found." This isn't a bug in the flow under test — just pick any
+  other available room from the list (e.g. `Room 410` instead of the
+  originally-reserved `Room 101`) to proceed; the room shown on the
+  reservation and the room picked at admission time are independent fields.
+- **A hidden `ConfigOption` boolean can block the whole Admit action with no
+  visual hint on the form.** `AdmissionController` checks
+  `"Patient Age is Required in Patient Admission"` (default `false`, but was
+  `true` on this Galle Co-op local dev DB) and rejects with "Patient Age is
+  Required" if the patient has no DOB — the message doesn't say which field
+  or where to fix it. Two related traps while fixing it:
+  - Typing into the **Years/Months/Days** age inputs on `patient_edit.xhtml`
+    looks like it commits (`textbox "Years": "30"`) but doesn't persist a DOB —
+    that widget only *computes* a DOB client-side via a JS listener that a
+    plain `fill()`/`pressSequentially()` doesn't reliably trigger. Set the
+    **Date of Birth** `p:calendar` field directly instead (click → Ctrl+A →
+    type `dd/mm/yyyy` → Escape → Save) and verify
+    `SELECT DOB FROM person WHERE ID = (SELECT PERSON_ID FROM patient WHERE ID = <patientId>)`
+    returns a non-NULL row for the specific patient under test before
+    retrying the admission — an unfiltered `SELECT DOB FROM person` returns
+    every patient in the DB and can't confirm the one that matters.
+  - To find *which* config key is blocking an error message with no field
+    reference, `grep` the exact error string in
+    `src/main/java/com/divudi/bean/inward/AdmissionController.java` to find
+    the `configOptionApplicationController.getBooleanValueByKey("...")` call,
+    then toggle it via **Admin → Manage → Application Options → List
+    Application Options → filter by key → Edit Option** (per §26 — never via
+    raw SQL, the L2 cache won't see it). If you flip a real setting to unblock
+    a test, **toggle it back afterward** and confirm via
+    `SELECT OPTIONVALUE FROM configoption WHERE OPTIONKEY = '...'` — this is
+    live config on a real hospital's local dev copy, not disposable test data.
+
+## 59. `CreditCompanyBillSearch.printPreview` is a single shared flag reused for two different meanings — viewing a bill before cancelling can make the cancel form permanently unreachable via normal navigation
+
+On `credit/credit_company_bill_search.xhtml` → **View** → `inpatient_credit_company_bill_reprint.xhtml` → **To Cancel** → `inpatient_credit_company_bill_cancel.xhtml`, the cancel page conditionally
+renders either the cancel **form** (`rendered="#{!creditCompanyBillSearch.printPreview}"`) or a
+read-only "cancellation receipt" preview (`rendered="#{creditCompanyBillSearch.printPreview}"`).
+`BillSearch.navigateToViewBillByAtomicBillType()` (used by the search page's **View** button) calls
+`creditCompanyBillSearch.setBill(bill)` (which resets `printPreview=false` via `recreateModel()`)
+**immediately followed by** `creditCompanyBillSearch.setPrintPreview(true)` — by design, so the
+Reprint page shows a print preview. But `printPreview` is `@SessionScoped` and shared with the
+Cancel page, and clicking **To Cancel** is a plain outcome-string navigation (no bean method call)
+that never resets it. Result: landing on the cancel page via the only in-UI path always shows the
+receipt view instead of the cancel form — **there is no button an end user can click to actually
+reach the cancel form**, even though nothing has been cancelled yet (verify via
+`SELECT CANCELLED FROM BILL WHERE ID=...` — it's still `0`). This is a real product bug, not a
+Playwright limitation; flag/file it rather than silently building around it. Found while verifying
+issue #19931.
+
+**Workaround used only for E2E verification** (not a fix an end user has access to): reach the same
+bill via `credit/credit_company_bill_search_billItems.xhtml` → **Search BHT** → **View Bill**
+instead. That page's button does a *raw* `f:setPropertyActionListener value="#{b.bill}"
+target="#{creditCompanyBillSearch.bill}"` with no follow-up `setPrintPreview(true)`, so
+`printPreview` stays `false`. It navigates to the *generic* `credit_company_bill_reprint.xhtml`
+(whose own **To Cancel** button targets `credit_company_bill_cancel.xhtml` and the *different*
+`creditCompanyBillSearch.cancelBill()` method — **do not click that button**, it may produce the
+wrong `BillTypeAtomic` for an inpatient bill). Instead, once `creditCompanyBillSearch.bill` +
+`printPreview=false` are set, `browser_navigate` directly to
+`inpatient_credit_company_bill_cancel.xhtml` — the session-scoped bean state carries over and the
+correct cancel form (bound to `cancelCreditCompanyPaymentBill()`) renders.
+
+Separately: the cancel form's "Enter a comment" `p:inputText` is required by
+`CreditCompanyBillSearch.errorCheck()` (`"Please enter a comment"`), but that page has no visible
+`<p:messages>`/`<h:messages>` for the resulting `JsfUtil.addErrorMessage(...)` — clicking **Cancel**
+with it empty just re-renders the identical form with **zero visible feedback and zero DB change**,
+easy to mistake for the click not registering at all. Always fill the comment field first; if a
+"Cancel" (or similarly `ajax="false"`) button appears to no-op, check for this pattern before
+assuming a click/ref problem.
+
+## 60. GRN receive/approve `Invoice Total` resets to 0.00 on every page (re)load and needs a *real* blur, not just `fill()`, to pass the "invoice does not match" check
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` (both the initial Finalize and the separate
+Approve page load), `Invoice Total` starts blank/0.00 every time the page is (re)rendered —
+including the second time you land on the same GRN for the Approve step, even though you already
+filled it once during Finalize. Two gotchas stack here:
+
+1. **It must be re-filled at every stage** (Finalize *and* Approve) — don't assume a value entered
+   once persists across the finalize→approve navigation.
+2. **A plain `browser_type`/`.fill()` + `Tab` does not reliably commit it** — the page kept
+   re-showing `Difference: -<amount>` (computed server-side from the *old* 0.00) and Finalize
+   failed with "The invoice does not match..! Check again" even though the input visibly showed
+   the typed value. The fix: `browser_click` into the field, `Control+a`, `browser_type` with
+   `slowly: true`, then an explicit `browser_click` on an unrelated static element (e.g. the page
+   heading) to force a real blur — only then does `Difference` recompute to `0.00` and
+   Finalize/Approve succeed. Verify via `browser_find` on "Difference" before clicking
+   Finalize/Approve, not just by eyeballing the Invoice Total box.
+
+Found while verifying issue #18280 (GRN Return refundAmount fix).
+
+## 61. "Generate Supplier Payments" only lists Credit-payment-method GRNs — a Cash GRN's return never shows up there, by design
+
+`SupplierPaymentController.fillUnsettledCreditPharmacyBills()` (and the sibling return-bills
+method) hard-filter on `PaymentMethod.Credit`. A GRN received with Payment Method = **Cash** will
+never appear on `list_bills_to_generate_supplier_payments.xhtml` or `list_all_grns.xhtml`'s
+"Prepare Payment" flow, no matter its return/refund state — there's nothing owed to the supplier
+for a bill already settled in cash at receipt, so this is correct behavior, not a bug. If a test
+needs to reach the actual Supplier Payment screen (`generate_supplier_payment.xhtml`), the GRN
+**must** be created with Payment Method = **Credit** at receive time; a Cash-paid test GRN is only
+verifiable at the DB level (`BILL.REFUNDAMOUNT`/`PAIDAMOUNT`/`NETTOTAL`), not through this UI path.
+Found while verifying issue #18280.
+
+## 62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback
+
+On `cashier/fund_withdrawal_bill.xhtml` (and the same pattern likely applies
+to `deposit_funds.xhtml` and other `FinancialTransactionController` fund-bill
+pages), navigating straight to the page URL skips the menu action method
+(`navigateToCreateNewFundWithdrawalBill()` → `prepareToAddNewWithdrawalProcessingBill()`)
+that initializes the `@SessionScoped` bean's `currentBill`/`currentBillPayments`.
+The page still renders fully — Payment Method dropdown, Value field, "+Add"
+button all present and clickable — but `addPaymentToWithdrawalFundBill()`
+starts with `if (currentBill == null) { JsfUtil.addErrorMessage("Error"); return; }`,
+and the page has no `<p:messages>`/`<h:messages>` bound, so the growl error
+never renders. Clicking "+Add" just re-shows the same empty payment fields
+with **no error, no added row, no total change** — indistinguishable from a
+Playwright click/ref problem unless you check the "Withdrawal List" /
+"Deposits to Submit" table state after the click. Fix: always reach these
+pages via **Drawer tab → Withdrawals/Deposit to Safe/Bank button**, not
+`browser_navigate` to the URL directly — same root cause as §57, but here the
+consequence is a silent no-op rather than an empty page. Found while
+verifying issue #22870.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

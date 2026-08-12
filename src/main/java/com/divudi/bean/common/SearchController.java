@@ -4968,6 +4968,18 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // GrnPaymentPre: use lightweight DTO query (issue #20523).
+        if (billType == BillType.GrnPaymentPre) {
+            pharmacyBillSearch.fetchGrnPaymentSearchDtos(maxResult);
+            return;
+        }
+
+        // PurchaseReturn: use lightweight DTO query (issue #20523).
+        if (billType == BillType.PurchaseReturn) {
+            pharmacyBillSearch.fetchPurchaseReturnSearchDtos(maxResult);
+            return;
+        }
+
         String jpql = "select b from Bill b where b.retired=false and "
                 + " (type(b)=:class1 or type(b)=:class2) "
                 + " and b.department=:dep and b.billType = :billType "
@@ -16575,6 +16587,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where"
                 + " b.billType = :billType "
+                + " and b.billTypeAtomic = :bta "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
@@ -16611,6 +16624,59 @@ public class SearchController implements Serializable {
         sql += " order by b.deptId desc  ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("bta", BillTypeAtomic.INWARD_PAYMENT);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+
+    public void createInwardDepositBills() {
+        Date startTime = new Date();
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where"
+                + " b.billType = :billType "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) = :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.deptId desc  ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
@@ -18539,7 +18605,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
-            inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_PAYMENT);
             inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
@@ -18549,7 +18615,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
-            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
@@ -18559,7 +18625,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Refund and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsRefund = new ArrayList<>();
-            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
@@ -18995,7 +19061,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
-            inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_PAYMENT);
             inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
@@ -19005,7 +19071,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
-            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
@@ -19015,7 +19081,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Refund and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsRefund = new ArrayList<>();
-            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
@@ -21244,14 +21310,14 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generateInwardPatientDepositPayments() {
         try {
-            // Get specific inward deposit bill types only
+            // Get specific inward payment bill types only
             List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
-                    BillTypeAtomic.INWARD_DEPOSIT,
+                    BillTypeAtomic.INWARD_PAYMENT,
                     BillTypeAtomic.INWARD_APPOINTMENT_BILL,
-                    BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                    BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
                     BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL,
-                    BillTypeAtomic.INWARD_DEPOSIT_REFUND,
-                    BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
+                    BillTypeAtomic.INWARD_PAYMENT_REFUND,
+                    BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION
             );
 
             // Use payment report method with bill type filtering

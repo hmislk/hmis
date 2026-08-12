@@ -144,16 +144,13 @@
                                     </p:commandButton>
 
                                     <p:commandButton
-                                        ajax="true"
+                                        ajax="false"
                                         icon="fa fa-envelope"
                                         class="ui-button-help"
                                         value="Email"
                                         title="Email #{b.deptId}"
-                                        update=":formFinalBillVersions:emailDialog"
-                                        oncomplete="PF('wEmailDialog').show()"
+                                        action="#{inwardSearch.prepareEmailFinalBillVersion(b)}"
                                         rendered="#{webUserController.hasPrivilege('InwardFinalBillEmail')}">
-                                        <f:setPropertyActionListener value="#{b}" target="#{inwardSearch.bill}"/>
-                                        <f:setPropertyActionListener value="#{b.patientEncounter.patient.person.email}" target="#{inwardSearch.emailRecipient}"/>
                                     </p:commandButton>
 
                                 </p:column>
@@ -163,22 +160,6 @@
                         </p:panel>
 
                     </p:panel>
-
-                    <p:dialog id="emailDialog" widgetVar="wEmailDialog" header="Email Final Bill" modal="true" width="420">
-                        <h:panelGrid columns="1" style="width:100%;">
-                            <p:outputLabel value="Bill Number: #{inwardSearch.bill.deptId}" rendered="#{inwardSearch.bill ne null}" />
-                            <p:outputLabel for="txtEmailRecipient" value="Recipient Email" />
-                            <p:inputText id="txtEmailRecipient" value="#{inwardSearch.emailRecipient}" style="width:100%;" />
-                            <p:commandButton
-                                ajax="true"
-                                icon="fa fa-envelope"
-                                class="ui-button-help"
-                                value="Send"
-                                update=":growl"
-                                oncomplete="if (args &amp;&amp; args.emailSent) { PF('wEmailDialog').hide(); }"
-                                actionListener="#{inwardSearch.emailFinalBillVersion(inwardSearch.bill)}" />
-                        </h:panelGrid>
-                    </p:dialog>
 
                     <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
                         <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-success" icon="pi pi-check" />

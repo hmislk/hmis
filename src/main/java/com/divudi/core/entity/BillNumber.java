@@ -11,6 +11,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.RequestType;
+import com.divudi.core.entity.inward.AdmissionType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -65,7 +66,9 @@ public class BillNumber implements Serializable {
     private RequestType requestType;
     @Enumerated(EnumType.STRING)
     private AppointmentType appointmentType;
-    
+    @ManyToOne
+    private AdmissionType admissionType;
+
 
     public boolean isRetired() {
         return retired;
@@ -260,6 +263,14 @@ public class BillNumber implements Serializable {
 
     public void setAppointmentType(AppointmentType appointmentType) {
         this.appointmentType = appointmentType;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
     }
 
 }

@@ -106,6 +106,30 @@ Do NOT add new print pages using this pattern:
 - `Pharmacy Transfer Receive Receipt is A4 Custom 1`
 - `Pharmacy Transfer Receive Receipt is A4 Custom 2`
 
+### Inward Final Bill - Custom Bills Configuration
+
+**Page:** `inward/inward_reprint_bill_final.xhtml` (Custom Bills tab)
+**Controller:** `BhtSummeryController`
+
+⚠️ **Key numbering is offset by one from the UI labels** — the composite
+component names (`finalBillCustom2`/`3`/`4`) predate the config keys, and
+the keys inherited that numbering. Anyone editing `CONFIGOPTION` rows
+directly should use this table, not guess from the on-screen label:
+
+| UI label (Custom Bills tab) | Composite component | Config key |
+|---|---|---|
+| "Custom Bill" | `finalBillCustom2` | `Inward Final Bill - Show Custom Bill 2 Format` |
+| "Custom Bill 2" | `finalBillCustom3` | `Inward Final Bill - Show Custom Bill 3 Format` |
+| "Custom Bill 3 (Letterhead)" | `finalBillCustom4` | `Inward Final Bill - Show Custom Bill 4 Format` |
+
+All three default `false` except `Show Custom Bill 2 Format` (default
+`true`), so a fresh department sees only "Custom Bill" until an admin
+opts into the others via the tab's Settings dialog. Unlike the samples
+above, these gate whole print *formats* rather than paper sizes for one
+format — only the format(s) switched on actually render on the page;
+the rest are absent from the DOM entirely (`h:panelGroup rendered="..."`),
+not merely hidden.
+
 
 ## Implementation Guide
 

@@ -315,7 +315,7 @@
                                                     maxResults="20"
                                                     itemLabel="#{mys.person.nameWithTitle}" 
                                                     itemValue="#{mys}">
-                                                    <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails" />
+                                                    <f:ajax event="itemSelect" execute="scStaff" listener="#{inwardProfessionalBillController.onDoctorSelect}" render="pIxAdd pBillDetails" />
                                                     <p:column headerText="Doctor Name" style="padding: 5px;">
                                                         <h:outputLabel value="#{mys.person.nameWithTitle}" styleClass="fw-bold" />
                                                     </p:column>

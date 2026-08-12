@@ -4570,7 +4570,8 @@ public class BookKeepingSummery implements Serializable {
                 + "SUM(bi.netValue), "
                 + "COUNT(DISTINCT b.id)) "
                 + "FROM BillItem bi JOIN bi.bill b "
-                + "LEFT JOIN bi.item.category c "
+                + "LEFT JOIN bi.item it "
+                + "LEFT JOIN it.category c "
                 + "WHERE b.billType IN :billTypes "
                 + "AND b.institution = :ins "
                 + "AND b.createdAt BETWEEN :fd AND :td "
@@ -4580,7 +4581,7 @@ public class BookKeepingSummery implements Serializable {
                 + "ORDER BY c.name";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("billTypes", Arrays.asList(BillType.InwardBill, BillType.InwardPaymentBill));
+        params.put("billTypes", Arrays.asList(BillType.InwardPaymentBill));
         params.put("ins", institution);
         params.put("fd", fromDate);
         params.put("td", toDate);
