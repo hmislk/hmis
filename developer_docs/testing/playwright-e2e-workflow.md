@@ -1687,8 +1687,7 @@ subsequent GET showed stale/empty state instead). Instead, once the click has al
 stay on the page and retry `browser_snapshot` after a real wait (`sleep 20` via Bash, not a tool
 `time` argument — those get capped short); the page does eventually render with results. Narrowing
 the date range and adding a name filter before clicking Search avoids the slow path entirely and
-should be preferred when the target staff/date are already known. Found while verifying issue
-#22860.
+should be preferred when the target staff/date are already known. Found while verifying issue #22860.
 
 ## Quick checklist
 

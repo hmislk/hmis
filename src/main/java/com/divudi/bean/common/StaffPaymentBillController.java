@@ -707,9 +707,10 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     // Shared by both navigation entry points into payment_staff_bill.xhtml (this bean is
-    // @SessionScoped, so withholdingTaxCalculationStatus must be set here, not left to
-    // navigateToViewOpdPayProfessionalPayments alone, or performCalculations() NPEs on a
-    // session that only ever reached the page via navigateToStaffPaymentFromDuePayment).
+    // @SessionScoped, so withholdingTaxCalculationStatus must be set here for either path
+    // to get a config-driven default; performCalculations() falls back to "Depending On
+    // Payments" if this was ever skipped, but that fallback ignores this installation's
+    // configured WHT default).
     private void initializeWithholdingTaxOptions() {
         allowUserToSelectPayWithholdingTaxDuringProfessionalPayments
                 = configOptionApplicationController.getBooleanValueByKey(
