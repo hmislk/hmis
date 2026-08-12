@@ -594,14 +594,22 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if the original Direct Purchase is fully returned and mark it as fullReturned
+        // Update the original Direct Purchase's refundAmount so Supplier Payment
+        // screens (SupplierPaymentController) settle on the net-of-return amount
+        // instead of the full original Direct Purchase amount (hmislk/hmis#18280).
+        // Also check if the original Direct Purchase is now fully returned.
         Bill originalDirectPurchaseBill = currentBill.getReferenceBill();
-        if (originalDirectPurchaseBill != null && isDirectPurchaseFullyReturned(originalDirectPurchaseBill)) {
-            originalDirectPurchaseBill.setFullReturned(true);
-            originalDirectPurchaseBill.setFullReturnedBy(sessionController.getLoggedUser());
-            originalDirectPurchaseBill.setFullReturnedAt(new Date());
+        if (originalDirectPurchaseBill != null) {
+            originalDirectPurchaseBill.setRefundAmount(Math.abs(originalDirectPurchaseBill.getRefundAmount()) + Math.abs(currentBill.getNetTotal()));
+            if (isDirectPurchaseFullyReturned(originalDirectPurchaseBill)) {
+                originalDirectPurchaseBill.setFullReturned(true);
+                originalDirectPurchaseBill.setFullReturnedBy(sessionController.getLoggedUser());
+                originalDirectPurchaseBill.setFullReturnedAt(new Date());
+            }
             billFacade.edit(originalDirectPurchaseBill);
-            JsfUtil.addSuccessMessage("Original Direct Purchase has been fully returned and marked as complete.");
+            if (originalDirectPurchaseBill.isFullReturned()) {
+                JsfUtil.addSuccessMessage("Original Direct Purchase has been fully returned and marked as complete.");
+            }
         }
 
         // Reload via billService to show items in print preview without

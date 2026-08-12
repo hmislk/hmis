@@ -1606,6 +1606,58 @@ easy to mistake for the click not registering at all. Always fill the comment fi
 "Cancel" (or similarly `ajax="false"`) button appears to no-op, check for this pattern before
 assuming a click/ref problem.
 
+## 60. GRN receive/approve `Invoice Total` resets to 0.00 on every page (re)load and needs a *real* blur, not just `fill()`, to pass the "invoice does not match" check
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` (both the initial Finalize and the separate
+Approve page load), `Invoice Total` starts blank/0.00 every time the page is (re)rendered —
+including the second time you land on the same GRN for the Approve step, even though you already
+filled it once during Finalize. Two gotchas stack here:
+
+1. **It must be re-filled at every stage** (Finalize *and* Approve) — don't assume a value entered
+   once persists across the finalize→approve navigation.
+2. **A plain `browser_type`/`.fill()` + `Tab` does not reliably commit it** — the page kept
+   re-showing `Difference: -<amount>` (computed server-side from the *old* 0.00) and Finalize
+   failed with "The invoice does not match..! Check again" even though the input visibly showed
+   the typed value. The fix: `browser_click` into the field, `Control+a`, `browser_type` with
+   `slowly: true`, then an explicit `browser_click` on an unrelated static element (e.g. the page
+   heading) to force a real blur — only then does `Difference` recompute to `0.00` and
+   Finalize/Approve succeed. Verify via `browser_find` on "Difference" before clicking
+   Finalize/Approve, not just by eyeballing the Invoice Total box.
+
+Found while verifying issue #18280 (GRN Return refundAmount fix).
+
+## 61. "Generate Supplier Payments" only lists Credit-payment-method GRNs — a Cash GRN's return never shows up there, by design
+
+`SupplierPaymentController.fillUnsettledCreditPharmacyBills()` (and the sibling return-bills
+method) hard-filter on `PaymentMethod.Credit`. A GRN received with Payment Method = **Cash** will
+never appear on `list_bills_to_generate_supplier_payments.xhtml` or `list_all_grns.xhtml`'s
+"Prepare Payment" flow, no matter its return/refund state — there's nothing owed to the supplier
+for a bill already settled in cash at receipt, so this is correct behavior, not a bug. If a test
+needs to reach the actual Supplier Payment screen (`generate_supplier_payment.xhtml`), the GRN
+**must** be created with Payment Method = **Credit** at receive time; a Cash-paid test GRN is only
+verifiable at the DB level (`BILL.REFUNDAMOUNT`/`PAIDAMOUNT`/`NETTOTAL`), not through this UI path.
+Found while verifying issue #18280.
+
+## 62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback
+
+On `cashier/fund_withdrawal_bill.xhtml` (and the same pattern likely applies
+to `deposit_funds.xhtml` and other `FinancialTransactionController` fund-bill
+pages), navigating straight to the page URL skips the menu action method
+(`navigateToCreateNewFundWithdrawalBill()` → `prepareToAddNewWithdrawalProcessingBill()`)
+that initializes the `@SessionScoped` bean's `currentBill`/`currentBillPayments`.
+The page still renders fully — Payment Method dropdown, Value field, "+Add"
+button all present and clickable — but `addPaymentToWithdrawalFundBill()`
+starts with `if (currentBill == null) { JsfUtil.addErrorMessage("Error"); return; }`,
+and the page has no `<p:messages>`/`<h:messages>` bound, so the growl error
+never renders. Clicking "+Add" just re-shows the same empty payment fields
+with **no error, no added row, no total change** — indistinguishable from a
+Playwright click/ref problem unless you check the "Withdrawal List" /
+"Deposits to Submit" table state after the click. Fix: always reach these
+pages via **Drawer tab → Withdrawals/Deposit to Safe/Bank button**, not
+`browser_navigate` to the URL directly — same root cause as §57, but here the
+consequence is a silent no-op rather than an empty page. Found while
+verifying issue #22870.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
