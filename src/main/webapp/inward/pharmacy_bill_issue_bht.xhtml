@@ -93,7 +93,8 @@
                                                     minQueryLength="2"
                                                     maxResults="20"
                                                     style="width: 100%;"
-                                                    inputStyleClass="form-control form-control-lg">
+                                                    inputStyleClass="form-control form-control-lg"
+                                                    onkeydown="if(event.which===13){var w=PF('aPtNative');if(!w.panel||!w.panel.is(':visible')){event.preventDefault();document.getElementById('bill:btnSelect').click();}}">
                                                     <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
                                                         <div class="d-flex align-items-center">
                                                             <i class="fa-solid fa-id-card me-2 text-info"></i>

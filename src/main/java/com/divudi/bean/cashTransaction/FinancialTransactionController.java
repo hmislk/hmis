@@ -287,6 +287,7 @@ public class FinancialTransactionController implements Serializable {
     private List<Payment> fundTransferAvailablePayments;
     private List<Payment> depositableNonCashPayments;
     private CashBook depositCashBook;
+    private CashBook withdrawalCashBook;
 
     // Shortage Bill Cancellation Properties
     private String shortageCancellationComment;
@@ -3301,6 +3302,14 @@ public class FinancialTransactionController implements Serializable {
         this.depositCashBook = depositCashBook;
     }
 
+    public CashBook getWithdrawalCashBook() {
+        return withdrawalCashBook;
+    }
+
+    public void setWithdrawalCashBook(CashBook withdrawalCashBook) {
+        this.withdrawalCashBook = withdrawalCashBook;
+    }
+
     public void addPaymentToShiftEndFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -3732,19 +3741,37 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        if (withdrawalCashBook == null) {
+            JsfUtil.addErrorMessage("Please select a cashbook for this withdrawal");
+            return "";
+        }
+        if (getCurrentBillPayments() == null || getCurrentBillPayments().isEmpty()) {
+            JsfUtil.addErrorMessage("At least one withdrawal payment must be added before settlement");
+            return "";
+        }
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_WITHDRAWAL_BILL);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
+        currentBill.setInsId(deptId);
+        currentBill.setDeptId(deptId);
 
+        Double netTotal = currentBill.getNetTotal();
+        currentBill.setNetTotal(Math.abs(netTotal));
+        currentBill.setTotal(Math.abs(netTotal));
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
+            p.setPaidValue(Math.abs(p.getPaidValue()));
             paymentController.save(p);
+            drawerController.updateDrawerForIns(p);
+            cashBookEntryController.writeCashBookEntryAtBankDeposit(p, withdrawalCashBook, currentBill);
         }
         return "/cashier/fund_withdrawal_bill_print?faces-redirect=true";
     }
@@ -9078,6 +9105,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.WithdrawalFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        withdrawalCashBook = null;
     }
 
     //Damith
