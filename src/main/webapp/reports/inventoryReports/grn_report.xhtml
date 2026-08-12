@@ -63,8 +63,6 @@
                                 <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
                             </h:panelGroup>
 
-                            <p:spacer width="20"/>
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-tags ml-5"/>
                                 <p:outputLabel value="Category" for="phmCategory" class="mx-3">
@@ -100,6 +98,8 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5"/>
@@ -130,8 +130,8 @@
                                                itemValue="#{site}"/>
                                 <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
-                            
-                             <p:spacer width="20"/>
+
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group ">
                                 <h:outputText styleClass="fa fa-building ml-5"/>
@@ -146,8 +146,6 @@
                                     value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}"
                                     var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                             </p:selectOneMenu>
-
-                           
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-credit-card ml-5"/>
@@ -178,8 +176,8 @@
                                 completeMethod="#{dealerController.completeDealor}"
                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
                             </p:autoComplete>
-                            
-                             <p:spacer width="20"/>
+
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group ">
                                 <h:outputText styleClass="fa fa-list-alt ml-5"/>

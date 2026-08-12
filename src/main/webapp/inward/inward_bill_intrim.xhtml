@@ -1329,6 +1329,7 @@
                                                          (p.refundedBill eq null and p.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}" >
                                         <p:column headerText="Bill No">
                                             #{p.deptId}
+                                            <h:outputLabel value="Deposit" rendered="#{p.billTypeAtomic eq 'INWARD_DEPOSIT' or p.billTypeAtomic eq 'INWARD_DEPOSIT_REFUND'}" style="color: blue;" class="mx-1"/>
                                         </p:column>
 
                                         <p:column headerText="Paid At">
@@ -1388,8 +1389,7 @@
                                         </p:column>
 
                                         <p:column headerText="Action" width="6em;">
-                                            <p:commandButton ajax="false" action="inward_reprint_bill_payment?faces-redirect=true" value="View Bill" >
-                                                <f:setPropertyActionListener value="#{p}" target="#{inwardSearch.bill}"/>
+                                            <p:commandButton ajax="false" action="#{inwardSearch.navigateToPaymentOrDepositReprint(p)}" value="View Bill" >
                                             </p:commandButton>
                                         </p:column>
                                     </p:dataTable>

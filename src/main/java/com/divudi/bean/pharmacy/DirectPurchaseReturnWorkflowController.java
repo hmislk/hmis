@@ -594,14 +594,22 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if the original Direct Purchase is fully returned and mark it as fullReturned
+        // Update the original Direct Purchase's refundAmount so Supplier Payment
+        // screens (SupplierPaymentController) settle on the net-of-return amount
+        // instead of the full original Direct Purchase amount (hmislk/hmis#18280).
+        // Also check if the original Direct Purchase is now fully returned.
         Bill originalDirectPurchaseBill = currentBill.getReferenceBill();
-        if (originalDirectPurchaseBill != null && isDirectPurchaseFullyReturned(originalDirectPurchaseBill)) {
-            originalDirectPurchaseBill.setFullReturned(true);
-            originalDirectPurchaseBill.setFullReturnedBy(sessionController.getLoggedUser());
-            originalDirectPurchaseBill.setFullReturnedAt(new Date());
+        if (originalDirectPurchaseBill != null) {
+            originalDirectPurchaseBill.setRefundAmount(Math.abs(originalDirectPurchaseBill.getRefundAmount()) + Math.abs(currentBill.getNetTotal()));
+            if (isDirectPurchaseFullyReturned(originalDirectPurchaseBill)) {
+                originalDirectPurchaseBill.setFullReturned(true);
+                originalDirectPurchaseBill.setFullReturnedBy(sessionController.getLoggedUser());
+                originalDirectPurchaseBill.setFullReturnedAt(new Date());
+            }
             billFacade.edit(originalDirectPurchaseBill);
-            JsfUtil.addSuccessMessage("Original Direct Purchase has been fully returned and marked as complete.");
+            if (originalDirectPurchaseBill.isFullReturned()) {
+                JsfUtil.addSuccessMessage("Original Direct Purchase has been fully returned and marked as complete.");
+            }
         }
 
         // Reload via billService to show items in print preview without
@@ -2403,8 +2411,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
     /**
      * Calculates the net value adjustment based on actual net value entered by
-     * user Adjustment = Net Total (calculated) - Actual Net Value Positive
-     * adjustment means calculated is higher than actual Negative adjustment
+     * user Adjustment = |Net Total (calculated)| - |Actual Net Value|
+     * netTotal follows the return sign convention (negative = value returning to
+     * supplier); actualNetValue is entered by staff as the physical counted amount,
+     * always a positive magnitude. Comparing absolute values keeps the result
+     * correct regardless of netTotal's sign, so equal amounts net to zero.
+     * Positive adjustment means calculated is higher than actual Negative adjustment
      * means calculated is lower than actual
      */
     public void calculateNetValueAdjustment() {
@@ -2418,7 +2430,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         BigDecimal netTotal = bfd.getNetTotal();
 
         if (actualNetValue != null && netTotal != null) {
-            BigDecimal adjustment = netTotal.subtract(actualNetValue);
+            BigDecimal adjustment = netTotal.abs().subtract(actualNetValue.abs());
             bfd.setNetValueAdjustment(adjustment);
         } else {
             bfd.setNetValueAdjustment(null);

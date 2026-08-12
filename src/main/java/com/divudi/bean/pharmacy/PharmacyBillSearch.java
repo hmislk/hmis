@@ -159,6 +159,8 @@ public class PharmacyBillSearch implements Serializable {
     @Inject
     GrnCostingController grnCostingController;
     @Inject
+    GrnCostingNativeSqlController grnCostingNativeSqlController;
+    @Inject
     SearchController searchController;
     @Inject
     PreReturnController preReturnController;
@@ -1612,6 +1614,46 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         return navigateToEditSavedGrnCosting();
+    }
+
+    /**
+     * Native-SQL sibling of navigateToEditSavedGrnCosting() -- routes into
+     * GrnCostingNativeSqlController/pharmacy_grn_costing_native.xhtml instead
+     * of the legacy GrnCostingController/pharmacy_grn_costing_with_save_approve.xhtml.
+     * The legacy pair above is left untouched so the "Legacy View" fallback
+     * keeps working (issue #22874, mirrors the #22872 lesson on preserving
+     * legacy reachability during a native-SQL conversion).
+     */
+    public String navigateToEditSavedGrnCostingNative() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_GRN_PRE) {
+            JsfUtil.addErrorMessage("Selected bill is not a saved GRN (PRE).");
+            return null;
+        }
+        bill = billService.reloadBill(bill);
+        grnCostingNativeSqlController.setCurrentGrnBillPre(bill);
+        return grnCostingNativeSqlController.navigateToEditGrnCosting();
+    }
+
+    /**
+     * Id-based counterpart of navigateToEditSavedGrnCostingNative(), for
+     * pages that only carry a lightweight GRN summary DTO rather than a
+     * preloaded Bill entity (same rationale as navigateToEditSavedGrnCostingByBillId()).
+     */
+    public String navigateToEditSavedGrnCostingNativeByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        return navigateToEditSavedGrnCostingNative();
     }
 
 //    public String navigateToApproveGrn() {

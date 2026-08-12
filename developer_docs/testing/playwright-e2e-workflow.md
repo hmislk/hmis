@@ -1606,6 +1606,89 @@ easy to mistake for the click not registering at all. Always fill the comment fi
 "Cancel" (or similarly `ajax="false"`) button appears to no-op, check for this pattern before
 assuming a click/ref problem.
 
+## 60. GRN receive/approve `Invoice Total` resets to 0.00 on every page (re)load and needs a *real* blur, not just `fill()`, to pass the "invoice does not match" check
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` (both the initial Finalize and the separate
+Approve page load), `Invoice Total` starts blank/0.00 every time the page is (re)rendered —
+including the second time you land on the same GRN for the Approve step, even though you already
+filled it once during Finalize. Two gotchas stack here:
+
+1. **It must be re-filled at every stage** (Finalize *and* Approve) — don't assume a value entered
+   once persists across the finalize→approve navigation.
+2. **A plain `browser_type`/`.fill()` + `Tab` does not reliably commit it** — the page kept
+   re-showing `Difference: -<amount>` (computed server-side from the *old* 0.00) and Finalize
+   failed with "The invoice does not match..! Check again" even though the input visibly showed
+   the typed value. The fix: `browser_click` into the field, `Control+a`, `browser_type` with
+   `slowly: true`, then an explicit `browser_click` on an unrelated static element (e.g. the page
+   heading) to force a real blur — only then does `Difference` recompute to `0.00` and
+   Finalize/Approve succeed. Verify via `browser_find` on "Difference" before clicking
+   Finalize/Approve, not just by eyeballing the Invoice Total box.
+
+Found while verifying issue #18280 (GRN Return refundAmount fix).
+
+## 61. "Generate Supplier Payments" only lists Credit-payment-method GRNs — a Cash GRN's return never shows up there, by design
+
+`SupplierPaymentController.fillUnsettledCreditPharmacyBills()` (and the sibling return-bills
+method) hard-filter on `PaymentMethod.Credit`. A GRN received with Payment Method = **Cash** will
+never appear on `list_bills_to_generate_supplier_payments.xhtml` or `list_all_grns.xhtml`'s
+"Prepare Payment" flow, no matter its return/refund state — there's nothing owed to the supplier
+for a bill already settled in cash at receipt, so this is correct behavior, not a bug. If a test
+needs to reach the actual Supplier Payment screen (`generate_supplier_payment.xhtml`), the GRN
+**must** be created with Payment Method = **Credit** at receive time; a Cash-paid test GRN is only
+verifiable at the DB level (`BILL.REFUNDAMOUNT`/`PAIDAMOUNT`/`NETTOTAL`), not through this UI path.
+Found while verifying issue #18280.
+
+## 62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback
+
+On `cashier/fund_withdrawal_bill.xhtml` (and the same pattern likely applies
+to `deposit_funds.xhtml` and other `FinancialTransactionController` fund-bill
+pages), navigating straight to the page URL skips the menu action method
+(`navigateToCreateNewFundWithdrawalBill()` → `prepareToAddNewWithdrawalProcessingBill()`)
+that initializes the `@SessionScoped` bean's `currentBill`/`currentBillPayments`.
+The page still renders fully — Payment Method dropdown, Value field, "+Add"
+button all present and clickable — but `addPaymentToWithdrawalFundBill()`
+starts with `if (currentBill == null) { JsfUtil.addErrorMessage("Error"); return; }`,
+and the page has no `<p:messages>`/`<h:messages>` bound, so the growl error
+never renders. Clicking "+Add" just re-shows the same empty payment fields
+with **no error, no added row, no total change** — indistinguishable from a
+Playwright click/ref problem unless you check the "Withdrawal List" /
+"Deposits to Submit" table state after the click. Fix: always reach these
+pages via **Drawer tab → Withdrawals/Deposit to Safe/Bank button**, not
+`browser_navigate` to the URL directly — same root cause as §57, but here the
+consequence is a silent no-op rather than an empty page. Found while
+verifying issue #22870.
+
+## 63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name
+
+When hand-writing a verification/candidate-finding query against `billfee.staff_id`, do **not**
+join it directly to `PERSON.ID` — `Staff` is its own entity with its own `ID`, related to `Person`
+via `STAFF.PERSON_ID`. `billfee.staff_id JOIN person ON billfee.staff_id = person.id` silently
+returns a row (some unrelated person whose `ID` happens to equal the staff's `ID`) instead of an
+empty result, so the query looks correct but reports the wrong doctor's name for the due-payment
+total. Always go through the extra hop: `JOIN staff s ON bf.staff_id = s.id JOIN person p ON
+s.person_id = p.id`. Found while picking Playwright test data for issue #22860 — the initial
+candidate list mislabeled staff ID 11865 as "N H W Mahinda" when the correct name (still under the
+same ID, same due-fee totals) was "A K Liyanage"; the ID itself was fine to test with, only the
+display name was wrong.
+
+## 64. A slow, unfiltered `p:dataTable` search can make *every* subsequent Playwright tool call time out — don't `browser_navigate` away to "recover", just wait longer
+
+On `opd_search_professional_payment_due.xhtml` ("OPD Payments Due Search"), the `ajax="false"`
+Search button runs an unindexed JPQL join across `BILLFEE`/`BILL`/`STAFF`/`PERSON` with no
+department scoping. A wide date range with no name filter can run long enough that
+`browser_click`'s "waiting for scheduled navigations to finish" times out (5s), and every
+following `browser_snapshot`/`browser_wait_for` also times out (30s) because the page is still
+mid-navigation — this looks identical to a wedged browser session. **Do not `browser_navigate` away
+to recover in this situation**: a plain GET reload creates a fresh request and abandons whatever
+the slow POST was about to render, so the search results are lost even though the query eventually
+would have completed server-side (confirmed via `mysql.general_log` — the correct query, with the
+correct bind parameters, executed and matched rows, but the client never saw the response and a
+subsequent GET showed stale/empty state instead). Instead, once the click has already timed out,
+stay on the page and retry `browser_snapshot` after a real wait (`sleep 20` via Bash, not a tool
+`time` argument — those get capped short); the page does eventually render with results. Narrowing
+the date range and adding a name filter before clicking Search avoids the slow path entirely and
+should be preferred when the target staff/date are already known. Found while verifying issue #22860.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
