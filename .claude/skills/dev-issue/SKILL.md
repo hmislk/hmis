@@ -43,17 +43,26 @@ Skip this step for feature/enhancement issues, and for bug issues where step
 Run it when the issue is a bug and step 2 left the cause unconfirmed or
 unfound:
 
+- Prefer reproducing against existing data first (read-only navigation or
+  API `GET`s). If reproduction requires creating or modifying a record,
+  confirm the target department/record with the user first
+  (`AskUserQuestion`, same pattern as step 4) rather than picking one
+  unilaterally.
 - Reproduce live against local Payara — the `playwright-e2e` skill for
   UI-facing bugs, or direct REST calls (per `api-development`) for API-only
   ones.
 - Save "before" evidence into the project `tmp/` folder: screenshots for UI
-  bugs, request/response bodies for API bugs.
+  bugs, request/response bodies for API bugs. Redact patient identifiers,
+  credentials, tokens, cookies, and other sensitive fields from any saved
+  API body before it leaves `tmp/`.
   - If it reproduces, this evidence proves the bug and becomes the "before"
     half of the before/after comparison published in step 10.
-  - If it does **not** reproduce, this evidence proves that instead — stop
-    here, post the finding to the issue, and confirm with the user whether to
-    still proceed (per CLAUDE.md "discuss uncertainties") rather than
-    guessing at a fix for a bug you couldn't observe.
+  - If it does **not** reproduce, record that — under the tested
+    environment, data, and inputs — the bug did not reproduce; that is not
+    proof the bug is absent. Stop here, post the finding to the issue, and
+    confirm with the user whether to still proceed (per CLAUDE.md "discuss
+    uncertainties") rather than guessing at a fix for a bug you couldn't
+    observe.
 
 ## 3. Discuss the approach (Plan Mode)
 
@@ -122,9 +131,11 @@ Run the `playwright-e2e` skill workflow:
 - **Take screenshots** (`browser_take_screenshot`) into the project `tmp/`
   folder at each meaningful stage (before/after states, confirmation dialogs,
   final result) — per playwright-e2e §0. These double as evidence for the
-  issue/PR and wiki in step 10. For bug issues, capture the same view/state
-  that step 2a reproduced, so it pairs cleanly as the "after" half of that
-  before/after comparison.
+  issue/PR and wiki in step 10. For bug issues where step 2a ran, capture the
+  same view/state it reproduced, so it pairs cleanly as the "after" half of
+  that before/after comparison. For API-only bugs, replay the same sanitized
+  request from step 2a instead, and save the response status/body (redacted,
+  same rule as step 2a) as the "after" evidence.
 - Verify the result in the local DB (credentials: see the
   `local_mysql_credentials.md` memory)
 
@@ -148,16 +159,24 @@ Follow playwright-e2e
 [§8a Before/after pairing](../../../developer_docs/testing/playwright-e2e-workflow.md#8a-bug-fixes-pair-before-and-after-evidence)):
 
 1. Review the screenshots from steps 2a and 7 and discard/crop any that
-   expose patient data, credentials, or other sensitive information.
+   expose patient data, credentials, or other sensitive information. For API
+   evidence, redact patient identifiers, credentials, tokens, cookies, and
+   other sensitive fields from the request/response bodies before they leave
+   `tmp/`.
 2. Copy the durable, non-sensitive screenshots into `../hmis.wiki/images/`,
-   then commit and push the wiki from `../hmis.wiki`.
+   then commit and push the wiki from `../hmis.wiki`. Redacted API
+   request/response snippets aren't images — post them as fenced code blocks
+   directly in the issue comment/PR instead of adding them to the wiki.
 3. Add a comment (or update the description) on issue `$0`, embedding the
    wiki images via their raw URLs
-   (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`).
-   For bug issues, label and pair the step 2a "before" evidence with the
-   step 7 "after" evidence so the fix is visible as a comparison, not just a
-   final-state screenshot.
-4. Remove the temporary screenshots from the project `tmp/` folder.
+   (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`)
+   or the redacted API snippets as code blocks. For bug issues where step 2a
+   ran, label and pair the step 2a "before" evidence with the step 7 "after"
+   evidence so the fix is visible as a comparison. For bug issues where step
+   2a was skipped (root cause already confirmed by reading code), there is
+   no "before" evidence — publish only the step 7 confirmation, with no
+   comparison implied.
+4. Remove the temporary screenshots/evidence from the project `tmp/` folder.
 
 These wiki image URLs are reused in the PR description in step 13.
 
