@@ -1638,6 +1638,26 @@ needs to reach the actual Supplier Payment screen (`generate_supplier_payment.xh
 verifiable at the DB level (`BILL.REFUNDAMOUNT`/`PAIDAMOUNT`/`NETTOTAL`), not through this UI path.
 Found while verifying issue #18280.
 
+## 62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback
+
+On `cashier/fund_withdrawal_bill.xhtml` (and the same pattern likely applies
+to `deposit_funds.xhtml` and other `FinancialTransactionController` fund-bill
+pages), navigating straight to the page URL skips the menu action method
+(`navigateToCreateNewFundWithdrawalBill()` → `prepareToAddNewWithdrawalProcessingBill()`)
+that initializes the `@SessionScoped` bean's `currentBill`/`currentBillPayments`.
+The page still renders fully — Payment Method dropdown, Value field, "+Add"
+button all present and clickable — but `addPaymentToWithdrawalFundBill()`
+starts with `if (currentBill == null) { JsfUtil.addErrorMessage("Error"); return; }`,
+and the page has no `<p:messages>`/`<h:messages>` bound, so the growl error
+never renders. Clicking "+Add" just re-shows the same empty payment fields
+with **no error, no added row, no total change** — indistinguishable from a
+Playwright click/ref problem unless you check the "Withdrawal List" /
+"Deposits to Submit" table state after the click. Fix: always reach these
+pages via **Drawer tab → Withdrawals/Deposit to Safe/Bank button**, not
+`browser_navigate` to the URL directly — same root cause as §57, but here the
+consequence is a silent no-op rather than an empty page. Found while
+verifying issue #22870.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
