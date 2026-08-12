@@ -186,7 +186,7 @@
                                 value="Use Selected Table's DDL"
                                 ajax="true"
                                 process="@this wikiTableSelect"
-                                update="createdSqlArea growl"
+                                update="createdSqlArea :growl"
                                 action="#{dataAdministrationController.loadCreateStatementForSelectedTable}"
                                 styleClass="ui-button-info"
                                 title="Fills 'Data table Create SQL statement' below with this table's CREATE TABLE statement from the fetched DDL"/>
