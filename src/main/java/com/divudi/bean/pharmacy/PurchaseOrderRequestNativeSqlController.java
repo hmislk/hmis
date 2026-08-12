@@ -1617,6 +1617,16 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                 "Controls access to the entire purchase order request page"
         ));
         metadata.addPrivilege(new PrivilegeInfo(
+                "PurchaseOrderSave",
+                "Permission to save purchase order requests",
+                "Controls the Save button and Remove Selected action"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PurchaseOrderFinalize",
+                "Permission to finalize purchase order requests",
+                "Controls the Finalize button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
                 "Developers",
                 "Developer-only features",
                 "Controls visibility of item ID column in autocomplete"
