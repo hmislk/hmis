@@ -6,6 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:bic="http://xmlns.jcp.org/jsf/composite/bill"
       >
 
     <h:body>
@@ -110,14 +111,14 @@
                                 var="bf" 
                                 rowKey="#{bf.id}" >
 
-                                <p:ajax  event="rowSelectCheckbox" process="tblFee" listener="#{inwardStaffPaymentBillController.performCalculations()}"   
-                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
+                                <p:ajax  event="rowSelectCheckbox" process="tblFee" listener="#{inwardStaffPaymentBillController.onSelectionChanged()}"
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId} :#{p:resolveFirstComponentWithId('pnlHoldOverride',view).clientId}"  />
 
-                                <p:ajax  event="rowUnselectCheckbox" process="tblFee" listener="#{inwardStaffPaymentBillController.performCalculations()}"   
-                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
+                                <p:ajax  event="rowUnselectCheckbox" process="tblFee" listener="#{inwardStaffPaymentBillController.onSelectionChanged()}"
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId} :#{p:resolveFirstComponentWithId('pnlHoldOverride',view).clientId}"  />
 
-                                <p:ajax  event="toggleSelect" process="tblFee" listener="#{inwardStaffPaymentBillController.performCalculations()}"   
-                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
+                                <p:ajax  event="toggleSelect" process="tblFee" listener="#{inwardStaffPaymentBillController.onSelectionChanged()}"
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId} :#{p:resolveFirstComponentWithId('pnlHoldOverride',view).clientId}"  />
 
                                 <p:column selectionBox="true" width="20"></p:column>
 
@@ -141,7 +142,7 @@
                                 <p:column headerText="BHT No" filterBy="#{bf.bill.patientEncounter.bhtNo}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
-                                    </f:facet>                                        
+                                    </f:facet>
                                     <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
                                     </h:outputLabel>
                                 </p:column>
@@ -149,13 +150,75 @@
                                 <p:column headerText="Charge" width="7em;" class="text-end">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge"/>
-                                    </f:facet>    
+                                    </f:facet>
                                     <h:outputLabel value="#{bf.feeValue}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column headerText="Amount to Pay" width="9em;" class="text-end">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Amount to Pay"/>
+                                    </f:facet>
+                                    <p:inputNumber value="#{bf.payingAmount}" decimalPlaces="2" class="w-100">
+                                        <p:ajax event="blur" process="@this"
+                                                listener="#{inwardStaffPaymentBillController.onSelectionChanged()}"
+                                                update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId} :#{p:resolveFirstComponentWithId('pnlHoldOverride',view).clientId}" />
+                                    </p:inputNumber>
+                                </p:column>
+
+                                <p:column headerText="Hold Status" width="14em;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Hold Status"/>
+                                    </f:facet>
+                                    <h:panelGroup layout="block" rendered="#{bf.professionalPaymentHeld}">
+                                        <span class="ui-tag ui-tag-danger"
+                                              title="#{bf.professionalPaymentHoldDetails}">#{bf.professionalPaymentHoldStatus}</span>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{not bf.professionalPaymentHeld}">
+                                        <span class="ui-tag ui-tag-success">Payable</span>
+                                    </h:panelGroup>
+                                </p:column>
+
                             </p:dataTable>
+
+                            <!-- Professional payment hold: block, or require an explicit override (#22483) -->
+                            <h:panelGroup id="pnlHoldOverride" layout="block">
+                                <h:panelGroup layout="block" rendered="#{inwardStaffPaymentBillController.selectionContainsHeldFees}">
+                                    <p:panel styleClass="w-100 m-1 ui-state-error">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Professional Payments On Hold Selected" />
+                                        </f:facet>
+
+                                        <h:outputText
+                                            value="#{inwardStaffPaymentBillController.heldFeesSelected.size()} of the selected professional payment(s) are on hold (#{inwardStaffPaymentBillController.heldFeesSelectedBhtNumbers})."
+                                            styleClass="fw-bold" />
+
+                                        <h:panelGroup layout="block" styleClass="mt-2"
+                                                      rendered="#{not inwardStaffPaymentBillController.canOverrideHold}">
+                                            <h:outputText value="These payments cannot be settled. Release the hold first, or ask a user with the 'Pay Professional Fees While On Hold' privilege." />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" styleClass="mt-2"
+                                                      rendered="#{inwardStaffPaymentBillController.canOverrideHold}">
+                                            <p:selectBooleanCheckbox
+                                                id="chkHoldOverride"
+                                                widgetVar="chkHoldOverride"
+                                                value="#{inwardStaffPaymentBillController.holdOverrideAcknowledged}"
+                                                itemLabel="I am authorised to pay these professional payments while they are on hold" />
+                                            <p:outputLabel for="txtHoldOverrideReason" value="Reason for the override" styleClass="d-block mt-2 fw-bold" />
+                                            <p:inputTextarea
+                                                id="txtHoldOverrideReason"
+                                                widgetVar="txtHoldOverrideReason"
+                                                value="#{inwardStaffPaymentBillController.holdOverrideReason}"
+                                                class="w-100"
+                                                autoResize="true"
+                                                rows="2"
+                                                placeholder="Why is this held payment being paid now? Recorded on the payment bill and in the admission's audit trail." />
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </h:panelGroup>
 
                             <p:panel   >
                                 <f:facet name="header">
@@ -224,8 +287,12 @@
                                         <p:panelGrid 
                                             id="pTotals"
                                             columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
-                                            <h:outputLabel value="Total Due" ></h:outputLabel>
+                                            <h:outputLabel value="Total Due (Payable)" ></h:outputLabel>
                                             <h:outputLabel id="lblDue" value="#{inwardStaffPaymentBillController.totalDue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Total On Hold" styleClass="text-danger" ></h:outputLabel>
+                                            <h:outputLabel id="lblOnHold" value="#{inwardStaffPaymentBillController.totalOnHold}" styleClass="text-danger" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                             <h:outputLabel value="Paying This time" ></h:outputLabel>
@@ -266,12 +333,21 @@
                                         class="ui-button-success"
                                         action="#{inwardStaffPaymentBillController.navigateToInwardPayStaff()}"  >
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        value="Print" 
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        value="Print"
                                         icon="fa fa-print"
                                         class="ui-button-info"
                                         ajax="false" action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnPrintIndividual"
+                                        value="Print Individual"
+                                        icon="fa fa-print"
+                                        class="ui-button-danger"
+                                        ajax="false" action="#" >
+                                        <p:printer target="gpIndividualPreview" ></p:printer>
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -282,9 +358,24 @@
                             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
                                 <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
                             </h:panelGroup>
+                            
+                            <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 Custom 1 paper.', false)}">
+                                <bi:staffBillCustom1 bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                            </h:panelGroup>
 
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
                                 <bi:staff_payment_five_five_paper_with_headings controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Individual per-BHT vouchers -->
+                        <h:panelGroup id="gpIndividualPreview">
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
+                                <bic:staff_payment_individual_a4 controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
+                                <bic:staff_payment_individual_five_five controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
                             </h:panelGroup>
                         </h:panelGroup>
 

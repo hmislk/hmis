@@ -102,6 +102,7 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE:
+            case PHARMACY_WHOLESALE:
                 handleOutPayment(p, pd);
                 break;
 
@@ -110,12 +111,14 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE_CANCELLED:
+            case PHARMACY_WHOLESALE_CANCELLED:
                 handleInPayment(p, pd);
                 break;
 
             case PHARMACY_RETAIL_SALE_REFUND:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
+            case PHARMACY_WHOLESALE_REFUND:
                 handleInPayment(p, pd);
                 break;
 
@@ -139,10 +142,16 @@ public class PatientDepositService {
                 handleOutPayment(p, pd);
                 break;
 
+            case INWARD_PAYMENT:
             case INWARD_DEPOSIT:
                 handleOutPayment(p, pd);
                 break;
 
+            case INWARD_PAYMENT_CANCELLATION:
+            case INWARD_DEPOSIT_CANCELLATION:
+                handleInPayment(p, pd);
+                break;
+                
             default:
                 throw new AssertionError();
         }
@@ -164,6 +173,7 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE:
+            case PHARMACY_WHOLESALE:
                 handleOPDBill(b, pd);
                 break;
 
@@ -172,10 +182,12 @@ public class PatientDepositService {
                 break;
 
             case PHARMACY_RETAIL_SALE_CANCELLED:
+            case PHARMACY_WHOLESALE_CANCELLED:
                 handleOPDBillCancel(b, pd);
                 break;
 
             case PHARMACY_RETAIL_SALE_REFUND:
+            case PHARMACY_WHOLESALE_REFUND:
                 handleOPDBillCancel(b, pd);
                 break;
 

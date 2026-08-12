@@ -17,83 +17,108 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <div class=" d-flex justify-content-between ">
-                                <div><h:outputLabel value="Reprint BHT Issue" class="mt-2"></h:outputLabel></div>
+                            <div class="d-flex justify-content-between align-items-center w-100">
+
+                                <!-- LEFT: title + print config -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputLabel value="Manage Direct Issue to BHT"></h:outputLabel>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        icon="fas fa-cog"
+                                        styleClass="ui-button-secondary ui-button-outlined"
+                                        type="button"
+                                        title="Print Format Settings"
+                                        onclick="PF('reprintBhtIssuePaperConfigDialog').show();" />
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        icon="fas fa-cog"
+                                        styleClass="ui-button-secondary ui-button-outlined"
+                                        type="button"
+                                        title="Service Charge Print Format Settings"
+                                        onclick="PF('idiBillPaperConfigDialog').show();" />
+                                </div>
+
+                                <!-- CENTER: Back to Interim -->
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        value="Reprint" 
-                                        class="ui-button-info"
-                                        ajax="false" 
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Interim"
+                                        icon="fa fa-backward"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        action="/inward/inward_bill_intrim" />
+                                    <p:commandButton ajax="false" value="Back to Surgery Summary"
+                                                      action="#{surgeryBillController.navigateToSurgeryBillSummary(pharmacyBillSearch.bill.forwardReferenceBill)}"
+                                                      rendered="#{pharmacyBillSearch.bill.forwardReferenceBill ne null and pharmacyBillSearch.bill.forwardReferenceBill.billType eq 'SurgeryBill'}"
+                                                      icon="fa fa-backward"
+                                                      styleClass="ui-button-info ui-button-outlined"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Inpatient Dashboard"
+                                        icon="fas fa-id-card"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}"
+                                        rendered="#{pharmacyBillSearch.bill.patientEncounter ne null}">
+                                        <f:setPropertyActionListener
+                                            value="#{pharmacyBillSearch.bill.patientEncounter}"
+                                            target="#{admissionController.current}" />
+                                    </p:commandButton>
+                                </div>
+
+                                <!-- RIGHT: actions, left=least important -> right=primary -->
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Mark As Checked"
+                                        action="#{pharmacyBillSearch.markAsChecked()}"
+                                        icon="fa fa-check-square"
+                                        styleClass="ui-button-success"
+                                        rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Mark As Un Check"
+                                        icon="fa fa-square"
+                                        styleClass="ui-button-warning"
+                                        action="#{pharmacyBillSearch.markAsUnChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="To Return Item"
+                                        action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients()}"
+                                        icon="fa fa-undo"
+                                        styleClass="ui-button-warning"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >
+                                        <f:setPropertyActionListener
+                                            value="#{pharmacyBillSearch.bill}"
+                                            target="#{bhtIssueReturnController.bill}"  />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="To Cancel"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"
+                                        styleClass="ui-button-danger"
+                                        icon="fa fa-ban"
+                                        action="#{pharmacyBillSearch.navigateToCancelPharmacyDirectIssueToInpatients}" >
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Excel"
+                                        styleClass="noPrintButton ui-button-secondary"
+                                        icon="fa-solid fa-file-excel">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Reprint"
+                                        styleClass="ui-button-success"
+                                        style="min-width:120px"
+                                        ajax="false"
                                         icon="fa-solid fa-print">
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="To Cancel" 
-                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}"
-                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}" 
-                                        class="ui-button-danger"
-                                        icon="fa fa-ban"
-                                        action="#{pharmacyBillSearch.navigateToCancelPharmacyDirectIssueToInpatients}" >                           
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="To Return Item" 
-                                        action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients()}"   
-                                        icon="fa fa-undo"
-                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >                                
-                                        <f:setPropertyActionListener 
-                                            value="#{pharmacyBillSearch.bill}" 
-                                            target="#{bhtIssueReturnController.bill}"  />
-                                    </p:commandButton>
-
-<!--                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="Reverse Bill" 
-                                        class="ui-button-warning"
-                                        icon="fa fa-exchange-alt"
-                                        action="#{pharmacyBillSearch.navigateToReversePharmacyDirectIssueToInpatients}"
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
-                                        title="Create a reverse bill with negative quantities"  >                           
-                                    </p:commandButton>-->
-
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="Excel" 
-                                        styleClass="noPrintButton" 
-                                        icon="fa-solid fa-file-excel" 
-                                        class="ui-button-success">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
-                                    </p:commandButton> 
                                 </div>
                             </div>
 
                         </f:facet>
-
-                        <div class=" d-flex justify-content-end">
-                            <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Mark As Checked"
-                                    action="#{pharmacyBillSearch.markAsChecked()}"
-                                    icon="fa fa-check-square"
-                                    class="ui-button-success"
-                                    rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Mark As Un Check"
-                                    icon="fa fa-square"
-                                    class="ui-button-warning"
-                                    action="#{pharmacyBillSearch.markAsUnChecked()}"
-                                    rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Back To Interim"
-                                    icon="fa fa-backward"
-                                    class=""
-                                    action="/inward/inward_bill_intrim"  />
-                            </div>
-                        </div>
 
                         <div class="row mt-3">
                             <div class="col-md-4">
@@ -155,7 +180,18 @@
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
                                             style="text-align: right;">
                                             <f:facet name="header">
-                                                <h:outputLabel value="Matrix Value"/>
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Service Charge"/>
                                             </f:facet>
                                             <h:outputLabel value="#{bip.marginValue}">
                                                 <f:convertNumber pattern="#0.00" />
@@ -168,16 +204,16 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                            <h:outputLabel value="#{bip.netValue}">
                                                 <f:convertNumber pattern="#0.00" />
                                             </h:outputLabel>
                                         </p:column>
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column 
+                                                <p:column
                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
-                                                    style="text-align: right;" colspan="4">
+                                                    style="text-align: right;" colspan="5">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
@@ -212,30 +248,33 @@
                                         </div>
                                     </f:facet>
 
-                                    <div class="d-flex  justify-content-end">
-                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
-                                            <f:selectItem itemLabel="Please Select Paper Type" />
-                                            <f:selectItems value="#{enumController.paperTypes}" />
-                                        </p:selectOneMenu>
-                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                                    </div>
+                                    <h:panelGroup   id="gpBillPreview" class="mt-2">
 
-                                    <h:panelGroup   id="gpBillPreview" class="mt-2"> 
-
-                                        <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                        <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                             <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                             <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                        </h:panelGroup>        
+                                        </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                        <h:panelGroup id="gpBillPreviewA4Sc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false)}">
+                                            <phi:inward_direct_issue_bill_a4 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewFiveFiveSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true)}">
+                                            <phi:inward_direct_issue_bill_five_five_sc bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewPosSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
+                                            <phi:inward_direct_issue_bill_pos bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',false)}">
                                             <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
                                             <phi:saleBill_Header_Inward bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                         </h:panelGroup>
 
@@ -246,6 +285,75 @@
 
                     </p:panel>
                 </h:form>
+
+                <p:dialog id="reprintBhtIssuePaperConfigDialog"
+                          header="Reprint BHT Issue - Print Format Settings"
+                          widgetVar="reprintBhtIssuePaperConfigDialog"
+                          modal="true"
+                          width="500"
+                          resizable="false"
+                          closeOnEscape="true">
+                    <h:form id="reprintBhtIssuePaperConfigForm">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox
+                                id="cbPosPaper"
+                                value="#{pharmacyBillSearch.reprintBhtIssuePosPaper}" />
+                            <h:outputLabel for="cbPosPaper" value="POS Paper" class="ms-2" />
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox
+                                id="cbFiveFivePaper"
+                                value="#{pharmacyBillSearch.reprintBhtIssueFiveFivePaper}" />
+                            <h:outputLabel for="cbFiveFivePaper" value="5 x 5 Paper" class="ms-2" />
+                        </div>
+                        <p:messages showDetail="true" closable="true" />
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Apply &amp; Close"
+                                    icon="fas fa-save"
+                                    styleClass="ui-button-success"
+                                    ajax="false"
+                                    action="#{pharmacyBillSearch.saveReprintBhtIssuePaperConfig}" />
+                                <p:commandButton
+                                    value="Cancel"
+                                    icon="fas fa-times"
+                                    styleClass="ui-button-secondary"
+                                    onclick="PF('reprintBhtIssuePaperConfigDialog').hide(); return false;"
+                                    type="button" />
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="idiBillPaperConfigDialog"
+                          header="Direct Issue Bill - Print Format Settings"
+                          widgetVar="idiBillPaperConfigDialog"
+                          modal="true" width="500" resizable="false" closeOnEscape="true">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiBillPaperConfigForm" />
+                    <h:form id="idiBillPaperConfigForm">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="cbA4" value="#{pharmacyConfigController.inwardDirectIssueBillA4}" />
+                            <h:outputLabel for="cbA4" value="A4 Paper" class="ms-2" />
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="cbFiveFive" value="#{pharmacyConfigController.inwardDirectIssueBillFiveFive}" />
+                            <h:outputLabel for="cbFiveFive" value="5 x 5 Paper" class="ms-2" />
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="cbPos" value="#{pharmacyConfigController.inwardDirectIssueBillPos}" />
+                            <h:outputLabel for="cbPos" value="POS Paper" class="ms-2" />
+                        </div>
+                        <p:messages showDetail="true" closable="true" />
+                        <div class="d-flex gap-2">
+                            <p:commandButton value="Apply &amp; Close" icon="fas fa-save"
+                                             styleClass="ui-button-success" ajax="false"
+                                             action="#{pharmacyConfigController.saveInwardDirectIssueBillPaperConfig}" />
+                            <p:commandButton value="Cancel" icon="fas fa-times" styleClass="ui-button-secondary"
+                                             onclick="PF('idiBillPaperConfigDialog').hide(); return false;" type="button" />
+                        </div>
+                    </h:form>
+                </p:dialog>
             </ui:define>
         </ui:composition>
     </h:body>

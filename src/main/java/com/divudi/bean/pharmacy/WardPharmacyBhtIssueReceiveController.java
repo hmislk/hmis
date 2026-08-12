@@ -1,17 +1,21 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -42,6 +46,8 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
 
     @EJB
     private BillFacade billFacade;
@@ -62,6 +68,11 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
     private boolean printPreview;
     private boolean settling;
 
+    private Date fromDate;
+    private Date toDate;
+    private PatientEncounter admissionPatientEncounter;
+    private boolean admissionScoped;
+
     public void makeNull() {
         issuedBill = null;
         receivedBill = null;
@@ -70,14 +81,23 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
 
     public String navigateToPendingList() {
         makeNull();
+        admissionScoped = false;
+        admissionPatientEncounter = null;
         loadPendingIssueBills();
         return "/ward/ward_pharmacy_bht_issue_receive_list?faces-redirect=true";
     }
 
     public void loadPendingIssueBills() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -7L));
+        }
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
         String jpql = "SELECT b FROM Bill b WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
                 + "AND b.patientEncounter.currentPatientRoom.roomFacilityCharge.department = :dept "
                 + "AND b.cancelled = false "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND NOT EXISTS (SELECT r FROM Bill r WHERE r.backwardReferenceBill = b "
                 + "AND r.billTypeAtomic = :acceptBta AND r.cancelled = false) "
                 + "ORDER BY b.createdAt DESC";
@@ -85,6 +105,36 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
         params.put("bt", BillType.PharmacyBhtPre);
         params.put("bta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         params.put("dept", sessionController.getDepartment());
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        pendingIssueBills = billFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * Admission-scoped counterpart of {@link #navigateToPendingList()} for the
+     * Inpatient Dashboard entry point - lists pending receipts for just this
+     * admission, with no date filter, since the set is inherently small.
+     */
+    public String navigateToPendingListForAdmission(PatientEncounter encounter) {
+        makeNull();
+        admissionScoped = true;
+        admissionPatientEncounter = encounter;
+        loadPendingIssueBillsForAdmission(encounter);
+        return "/ward/ward_pharmacy_bht_issue_receive_list_for_admission?faces-redirect=true";
+    }
+
+    private void loadPendingIssueBillsForAdmission(PatientEncounter encounter) {
+        String jpql = "SELECT b FROM Bill b WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
+                + "AND b.patientEncounter = :encounter "
+                + "AND b.cancelled = false "
+                + "AND NOT EXISTS (SELECT r FROM Bill r WHERE r.backwardReferenceBill = b "
+                + "AND r.billTypeAtomic = :acceptBta AND r.cancelled = false) "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyBhtPre);
+        params.put("bta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        params.put("encounter", encounter);
         params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
         pendingIssueBills = billFacade.findByJpql(jpql, params);
     }
@@ -155,6 +205,10 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
     }
 
     public void settle() {
+        if (!webUserController.hasPrivilege(Privileges.InwardPharmacyBhtReceive.name())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to receive this issue.");
+            return;
+        }
         if (settling) {
             return;
         }
@@ -286,8 +340,10 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
     }
 
     public String navigateBackToPendingList() {
-        makeNull();
-        return "/ward/ward_pharmacy_bht_issue_receive_list?faces-redirect=true";
+        if (admissionScoped && admissionPatientEncounter != null) {
+            return navigateToPendingListForAdmission(admissionPatientEncounter);
+        }
+        return navigateToPendingList();
     }
 
     public Bill getIssuedBill() {
@@ -326,5 +382,37 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public PatientEncounter getAdmissionPatientEncounter() {
+        return admissionPatientEncounter;
+    }
+
+    public void setAdmissionPatientEncounter(PatientEncounter admissionPatientEncounter) {
+        this.admissionPatientEncounter = admissionPatientEncounter;
+    }
+
+    public boolean isAdmissionScoped() {
+        return admissionScoped;
+    }
+
+    public void setAdmissionScoped(boolean admissionScoped) {
+        this.admissionScoped = admissionScoped;
     }
 }

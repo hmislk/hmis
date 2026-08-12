@@ -146,6 +146,19 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Admission Number Counters", "/api/admission-numbers",
+                        "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
+                        "API Key (Finance header)", "GET", "PUT"))
+                .add(resource("Admission Search", "/api/inward/admissions",
+                        "General-purpose admission search — list all currently active (not-discharged) "
+                        + "admissions, or search past or current admissions by BHT no, patient name, "
+                        + "MRN/PHN, phone, or NIC. Unlike /api/apiInward/admissions this is not scoped to "
+                        + "unpaid/open admissions and has no row cap (paginated via page/size). "
+                        + "Params: status (ADMITTED_BUT_NOT_DISCHARGED default, "
+                        + "DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED, DISCHARGED_AND_FINAL_BILL_COMPLETED, "
+                        + "ANY_STATUS), bhtNo, patientName, mrn, phone, nic, admissionTypeId, institutionId, "
+                        + "departmentId, fromDate, toDate, page, size.",
+                        "API Key (Finance header)", "GET"))
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
@@ -212,6 +225,16 @@ public class CapabilityStatementResource {
                         + "timedItemFeeDurationDaysForMoCharge.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Item Requests", "/api/itemrequests",
+                        "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as "
+                        + "InwardService items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's "
+                        + "active BHT. Requests are saved Pending (no charge, no stock movement) and routed to a "
+                        + "target department's in-app approval queue. A department user approves (charges the BHT and "
+                        + "deducts stock atomically, failing the whole approval if any line has insufficient stock) or "
+                        + "rejects (records a reason) the request via the JSF approval page — this API does not expose "
+                        + "approve/reject. External systems poll GET /{id} for status: PENDING, APPROVED, REJECTED, CANCELLED.",
+                        "API Key",
+                        "GET", "POST", "PUT"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
@@ -261,10 +284,40 @@ public class CapabilityStatementResource {
                         + "for strength-ratio based dispensing substitution.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Pharmacy Items", "/api/pharmacy/items",
+                        "Create, search, update, and retire dispensable pharmacy PharmaceuticalItem records used by pharmacy billing and dispensing. "
+                        + "POST/PUT fields include name, code, categoryId, dosageFormId, ampId, institutionId, departmentId, retailRate, allowFractions, discountAllowed. "
+                        + "GET /search supports query, institutionId, departmentId, size.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
-                        "Pharmacy stock and adjustment operations",
+                        "Pharmacy stock and adjustment operations. "
+                        + "POST /backfill_finance_details is an admin-only, idempotent backfill: recomputes "
+                        + "BillFinanceDetails + bill totals for adjustment bills created before this fix existed, "
+                        + "using each bill's own stored before/after audit values. Bills that already have "
+                        + "BillFinanceDetails are skipped, not overwritten. Body: departmentId, fromDate, toDate "
+                        + "(yyyy-MM-dd), apply (false = dry run).",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Pharmacy Discounts", "/api/pharmacy/discounts",
+                        "Manage PaymentSchemeDiscount rows that control per-category discount percentages "
+                        + "applied during pharmacy billing for a given payment scheme. "
+                        + "POST /api/pharmacy/discounts/bulk creates or updates a discount % across "
+                        + "all pharmacy item categories at once (idempotent). "
+                        + "GET lists rows (filter: paymentSchemeId, paymentSchemeName, billType, limit). "
+                        + "POST creates a single row. PUT /{id} updates discountPercent. DELETE /{id} soft-retires.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Payment Schemes", "/api/payment-scheme",
+                        "List and update PaymentScheme records. "
+                        + "GET lists all active schemes (optional ?query=name-filter&limit=). "
+                        + "Response includes all billing-scope flags: validForInpatientBills, validForPharmacy, "
+                        + "validForBilledBills, validForChanneling, and eligibility flags "
+                        + "(staffMemberRequired, membershipRequired, staffRequired, staffOrFamilyRequired, "
+                        + "memberRequired, memberOrFamilyRequired, seniorCitizenRequired, pregnantMotherRequired). "
+                        + "PUT /{id} performs a partial update — only fields present in the request body are changed.",
+                        "API Key (Finance header)",
+                        "GET", "PUT"))
                 .add(resource("Pharmacy Search", "/api/pharmacy_adjustments/search",
                         "Pharmacy stock search",
                         "API Key",
@@ -286,13 +339,47 @@ public class CapabilityStatementResource {
                         + "Also exposes /api/logins/last-per-user for the most recent login per unique user in a department.",
                         "API Key",
                         "GET"))
+                .add(resource("Staff", "/api/staff",
+                        "Staff CRUD. GET lists active staff (supports ?query=&departmentId=&size=). "
+                        + "GET /{id} returns a single staff record including personId, code, designation, and department. "
+                        + "POST creates a new staff member (required: name; optional: code, designation (string label), departmentId, institutionId). "
+                        + "Creates a linked Person automatically. "
+                        + "PUT /{id} updates name, code, designation, departmentId, or institutionId (partial update — only supplied fields change). "
+                        + "DELETE /{id}?retireComments=reason soft-retires a staff record. "
+                        + "Link an existing Staff to a WebUser via PUT /api/users/{id}/staff with body {staffId}. "
+                        + "POST /api/users supports optional staffId field to pre-link staff at user creation. "
+                        + "POST /api/users/{id}/privileges/all with optional body {departmentIds:[...]} assigns every privilege across specified (or all loggable) departments; "
+                        + "returns {privilegesAdded, privilegesSkipped, departments:[{departmentId, added, skipped}]}.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Users", "/api/users",
                         "User CRUD, password reset/change, loggable department assignment, "
                         + "and per-user privilege assignment with department scope. "
+                        + "Create/update accepts optional loginPage and optional staffId. "
+                        + "POST /{id}/privileges requires departmentId. "
+                        + "POST /{id}/departments/{departmentId}/privileges/category assigns all privileges from named categories. "
+                        + "POST /{id}/privileges/all with optional body {departmentIds:[...]} assigns every privilege across specified or all loggable departments. "
+                        + "PUT /{id}/staff with body {staffId} links a Staff record to the user. "
                         + "Supports filtering by departmentId and query string. "
                         + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
                         + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
-                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department.",
+                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department. "
+                        + "Role-template operations (roles are admin-time templates; runtime reads user-level records only): "
+                        + "POST /{id}/role/reset resets a user's records for the given aspects/departments to a role template "
+                        + "(roleId optional — defaults to the user's own role; body: {roleId?, departmentIds[], aspects[]?, updateUserRole?, preview?}). "
+                        + "POST /{id}/role/expand and POST /{id}/role/narrow add/strip a role template's records "
+                        + "(body: {roleId, departmentIds[], aspects[]?, preview?}; roleId required). "
+                        + "aspects values: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE (default [\"PRIVILEGES\"]). "
+                        + "preview=true returns counts without writing. "
+                        + "POST /bulk/role-operations applies RESET/EXPAND/NARROW to many users at once (explicit userIds or a role/department filter); "
+                        + "for safety it requires preview=true first, then confirm=true to actually apply. "
+                        + "GET /roles lists active roles with template summary counts (privileges/icons/subscriptions) and template login page. "
+                        + "PUT /{id}/login-page (body: {departmentId, loginPage}) and DELETE /{id}/login-page/{departmentId} manage the "
+                        + "per-user-per-department default login page override. "
+                        + "POST /{id}/force-password-reset flags needToResetPassword=true without requiring a new password value "
+                        + "(distinct from /reset-password, which sets an actual password). "
+                        + "GET /password-status (optional ?from=&to=, yyyy-MM-dd) reports lastPasswordResetAt and needToResetPassword "
+                        + "per active user; omitted range returns all users including those who have never reset.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",
@@ -321,7 +408,10 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
-                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows. "
+                        + "Category/sample/container(tube)/analyzer(machine) can each be set via an ID referencing an existing row "
+                        + "(categoryId, sampleId, containerId, analyzerId — errors if not found) or a name "
+                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
@@ -331,8 +421,44 @@ public class CapabilityStatementResource {
                         + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
+                        "Manage InvestigationComponent groupings used to organize report items within an investigation's format "
+                        + "(componentName only). GET lists components for the investigation. POST creates one. "
+                        + "PUT /{componentId} renames one. DELETE /{componentId} permanently removes one — rejected with an error "
+                        + "if any report item (InvestigationItem) still references it.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Fees", "/api/investigations/{investigationId}/fees",
+                        "Manage investigation pricing (ItemFee), mirroring the Services /fees sub-resource. "
+                        + "GET lists non-retired fees for the investigation. POST adds a fee "
+                        + "(body: name, feeType, fee, ffee, discountAllowed, institutionId, departmentId, specialityId, staffId). "
+                        + "PUT /{feeId} updates a fee (only non-null fields are applied). "
+                        + "DELETE /{feeId} soft-deletes (retires) a fee. All mutations recalculate the investigation's "
+                        + "total/totalForForeigner and are rejected against a retired investigation.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Validators", "/api/investigations/{investigationId}/validators",
+                        "Manage InvestigationValidator result-range checks (name, maximumValue, minimumValue) for an "
+                        + "investigation. GET lists non-retired validators. POST creates one. "
+                        + "PUT /{validatorId} updates one (only non-null/non-blank fields are applied). "
+                        + "DELETE /{validatorId} soft-deletes (retires) one. All mutations are rejected against a "
+                        + "retired investigation. Note: the legacy InvestigationValidaterComponent relation is dead "
+                        + "code in the app today and is intentionally not exposed by this API.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Full Definition", "/api/investigations/{investigationId}/full",
+                        "Read-only aggregation of an investigation's complete definition into one nested JSON "
+                        + "document: metadata (incl. category/sample/container/analyzer), components, report "
+                        + "format (items, item values, calculations, flags, dynamic labels), validators, and fees. "
+                        + "Pure composition over the other investigation sub-resources — no new mutation logic. "
+                        + "Supersedes the old 'Export Investigation as JSON' idea (#458).",
+                        "API Key",
+                        "GET"))
                 .add(resource("Services", "/api/services",
-                        "OPD and Inward service management including fees and categories",
+                        "OPD and Inward service management including fees and categories. "
+                        + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
+                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on fees in a category). "
+                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Timed Items", "/api/timed-items",
@@ -340,6 +466,7 @@ public class CapabilityStatementResource {
                         + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
                         + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
                         + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "Sub-resource: /timed-items/categories for TimedItemCategory CRUD (GET list, GET /{id}, POST, PUT /{id}, DELETE /{id}). "
                         + "PATCH /activate and /deactivate control availability without retiring.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))

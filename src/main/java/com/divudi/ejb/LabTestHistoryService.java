@@ -216,6 +216,14 @@ public class LabTestHistoryService {
     public void addExportPDFReportHistory(PatientInvestigation pi, PatientReport pr, Institution institution, Department department, WebUser createdBy) {
         addNewHistoryWithUser(TestHistoryType.REPORT_EXPORT_AS_PDF, null, null, pi, pr, null, null, null, null, null, null, null, null, institution, department, createdBy);
     }
+
+    public void addUnapprovedReportPrintHistory(PatientInvestigation pi, PatientReport pr, Institution institution, Department department, WebUser createdBy) {
+        addNewHistoryWithUser(TestHistoryType.UNAPPROVED_REPORT_PRINTED, null, null, pi, pr, null, null, null, null, null, null, null, null, institution, department, createdBy);
+    }
+
+    public void addUnapprovedReportExportPDFHistory(PatientInvestigation pi, PatientReport pr, Institution institution, Department department, WebUser createdBy) {
+        addNewHistoryWithUser(TestHistoryType.UNAPPROVED_REPORT_EXPORT_AS_PDF, null, null, pi, pr, null, null, null, null, null, null, null, null, institution, department, createdBy);
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Data Receive from Analyzer">

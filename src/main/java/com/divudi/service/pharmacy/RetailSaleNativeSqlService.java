@@ -6,6 +6,7 @@
 package com.divudi.service.pharmacy;
 
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
 import com.divudi.core.data.dto.PrintBillData;
@@ -72,7 +73,7 @@ public class RetailSaleNativeSqlService {
     // -----------------------------------------------------------------------
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Payment settle(PreBill preBill, BilledBill saleBill, List<BillItemData> items,
+    public List<Payment> settle(PreBill preBill, BilledBill saleBill, List<BillItemData> items,
                           PaymentMethod paymentMethod, PaymentMethodData paymentMethodData,
                           PaymentScheme paymentScheme) {
         if (items == null || items.isEmpty()) {
@@ -117,19 +118,24 @@ public class RetailSaleNativeSqlService {
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
-                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, Rate, netRate,"
+                + " discount, discountRate, marginValue,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
                 .setParameter(1, preBillId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
                 .setParameter(4, d.getDescription())
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
-                .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
+                .setParameter(7, d.getRate())
+                .setParameter(8, netRate)
+                .setParameter(9, d.getDiscountValue())
+                .setParameter(10, absQty > 0 ? (d.getDiscountValue() / absQty) : 0.0)
+                .setParameter(11, d.getMarginValue())
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
                 .executeUpdate();
             biPreIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -170,19 +176,24 @@ public class RetailSaleNativeSqlService {
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
-                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, Rate, netRate,"
+                + " discount, discountRate, marginValue,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
                 .setParameter(4, d.getDescription())
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
-                .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
+                .setParameter(7, d.getRate())
+                .setParameter(8, netRate)
+                .setParameter(9, d.getDiscountValue())
+                .setParameter(10, absQty > 0 ? (d.getDiscountValue() / absQty) : 0.0)
+                .setParameter(11, d.getMarginValue())
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -255,22 +266,42 @@ public class RetailSaleNativeSqlService {
                 .setParameter(5, billId)
                 .executeUpdate();
 
-        // Step 6: Insert Payment record against BilledBill
-        Payment payment = insertPayment(saleBill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
+        // Step 6: Insert Payment record(s) against BilledBill. A single payment
+        // for ordinary methods; one Payment per component for MultiplePaymentMethods.
+        List<Payment> payments = insertPayment(saleBill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
+
+        // Both bills were persisted with billItems nulled (steps 1a/1b) because the items are
+        // inserted natively, so the in-memory entities claim they have none — and
+        // Bill.getBillItems() hands out an empty list rather than a lazy one. Anything that
+        // later merges these instances writes that empty collection into the shared cache, so
+        // every subsequent read of the bill shows a bill with no items (a reprint printing
+        // "No of Items: 0" while the total is correct). Issue #22511, same cause as #22506.
+        // Refreshing rebuilds the lazy collections from the rows just written, and also picks
+        // up the totals updated above.
+        em.refresh(preBill);
+        em.refresh(saleBill);
 
         LOGGER.log(Level.INFO, "[RetailNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
 
-        return payment;
+        return payments;
     }
 
     // -----------------------------------------------------------------------
     // Payment
     // -----------------------------------------------------------------------
 
-    private Payment insertPayment(Bill bill, long billId, double netTotal,
+    private List<Payment> insertPayment(Bill bill, long billId, double netTotal,
                                    PaymentMethod paymentMethod, PaymentMethodData pmd,
                                    PaymentScheme paymentScheme) {
+        // MultiplePaymentMethods: persist one Payment per component (Cash, Card,
+        // Cheque, ...), each carrying its own entered value and reference fields.
+        // Mirrors PharmacySaleController.createMultiplePayments for parity with
+        // the legacy retail sale page.
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            return insertMultiplePayments(bill, billId, pmd);
+        }
+
         Payment p = new Payment();
         p.setBill(em.getReference(Bill.class, billId));
         p.setInstitution(bill.getInstitution());
@@ -342,7 +373,130 @@ public class RetailSaleNativeSqlService {
 
         em.persist(p);
         em.flush();
-        return p;
+        List<Payment> result = new ArrayList<>();
+        result.add(p);
+        return result;
+    }
+
+    /**
+     * Persists one {@link Payment} per selected component of a
+     * MultiplePaymentMethods bill. Each component's own entered value and
+     * method-specific reference fields are copied onto its Payment, mirroring
+     * {@code PharmacySaleController.createMultiplePayments}. Components with no
+     * payment method or no data are skipped.
+     */
+    private List<Payment> insertMultiplePayments(Bill bill, long billId, PaymentMethodData pmd) {
+        List<Payment> result = new ArrayList<>();
+        if (pmd == null
+                || pmd.getPaymentMethodMultiple() == null
+                || pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return result;
+        }
+        for (ComponentDetail cd : pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            if (cd == null || cd.getPaymentMethod() == null || cd.getPaymentMethodData() == null) {
+                continue;
+            }
+            Payment p = new Payment();
+            p.setBill(em.getReference(Bill.class, billId));
+            p.setInstitution(bill.getInstitution());
+            p.setDepartment(bill.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(bill.getCreater());
+            p.setPaymentMethod(cd.getPaymentMethod());
+
+            PaymentMethodData cpmd = cd.getPaymentMethodData();
+            switch (cd.getPaymentMethod()) {
+                case Card:
+                    p.setBank(cpmd.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(cpmd.getCreditCard().getNo());
+                    p.setPaidValue(cpmd.getCreditCard().getTotalValue());
+                    p.setComments(cpmd.getCreditCard().getComment());
+                    break;
+                case Cheque:
+                    p.setChequeDate(cpmd.getCheque().getDate());
+                    p.setChequeRefNo(cpmd.getCheque().getNo());
+                    p.setBank(cpmd.getCheque().getInstitution());
+                    p.setPaidValue(cpmd.getCheque().getTotalValue());
+                    p.setComments(cpmd.getCheque().getComment());
+                    break;
+                case Cash:
+                    p.setPaidValue(cpmd.getCash().getTotalValue());
+                    break;
+                case ewallet:
+                    p.setPaidValue(cpmd.getEwallet().getTotalValue());
+                    p.setPolicyNo(cpmd.getEwallet().getReferralNo());
+                    p.setComments(cpmd.getEwallet().getComment());
+                    p.setReferenceNo(cpmd.getEwallet().getReferenceNo());
+                    p.setBank(cpmd.getEwallet().getInstitution());
+                    break;
+                case Agent:
+                case PatientDeposit:
+                    p.setPaidValue(cpmd.getPatient_deposit().getTotalValue());
+                    break;
+                case Credit:
+                    p.setPolicyNo(cpmd.getCredit().getReferralNo());
+                    p.setReferenceNo(cpmd.getCredit().getReferenceNo());
+                    p.setCreditCompany(cpmd.getCredit().getInstitution());
+                    p.setPaidValue(cpmd.getCredit().getTotalValue());
+                    p.setComments(cpmd.getCredit().getComment());
+                    break;
+                case Slip:
+                    p.setPaidValue(cpmd.getSlip().getTotalValue());
+                    p.setBank(cpmd.getSlip().getInstitution());
+                    p.setRealizedAt(cpmd.getSlip().getDate());
+                    p.setPaymentDate(cpmd.getSlip().getDate());
+                    p.setComments(cpmd.getSlip().getComment());
+                    p.setReferenceNo(cpmd.getSlip().getReferenceNo());
+                    break;
+                case OnlineSettlement:
+                    p.setPaidValue(cpmd.getOnlineSettlement().getTotalValue());
+                    p.setBank(cpmd.getOnlineSettlement().getInstitution());
+                    p.setRealizedAt(cpmd.getOnlineSettlement().getDate());
+                    p.setPaymentDate(cpmd.getOnlineSettlement().getDate());
+                    p.setReferenceNo(cpmd.getOnlineSettlement().getReferenceNo());
+                    p.setComments(cpmd.getOnlineSettlement().getComment());
+                    break;
+                case IOU:
+                    p.setPaidValue(cpmd.getIou().getTotalValue());
+                    p.setBank(cpmd.getIou().getInstitution());
+                    p.setRealizedAt(cpmd.getIou().getDate());
+                    p.setPaymentDate(cpmd.getIou().getDate());
+                    p.setReferenceNo(cpmd.getIou().getReferenceNo());
+                    p.setComments(cpmd.getIou().getComment());
+                    break;
+                case Staff:
+                    p.setPaidValue(cpmd.getStaffCredit().getTotalValue());
+                    if (cpmd.getStaffCredit().getToStaff() != null) {
+                        p.setToStaff(cpmd.getStaffCredit().getToStaff());
+                        if (bill.getToStaff() == null) {
+                            bill.setToStaff(cpmd.getStaffCredit().getToStaff());
+                        }
+                    }
+                    break;
+                case Staff_Welfare:
+                    p.setPaidValue(cpmd.getStaffWelfare().getTotalValue());
+                    if (cpmd.getStaffWelfare().getToStaff() != null) {
+                        p.setToStaff(cpmd.getStaffWelfare().getToStaff());
+                        if (bill.getToStaff() == null) {
+                            bill.setToStaff(cpmd.getStaffWelfare().getToStaff());
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            // Skip components with no entered value — the controller has already
+            // validated that the selected components cover the net total, so a
+            // zero here is an unfilled row that should not create a Payment.
+            if (p.getPaidValue() <= 0.0) {
+                continue;
+            }
+            em.persist(p);
+            result.add(p);
+        }
+        em.flush();
+        return result;
     }
 
     // -----------------------------------------------------------------------
@@ -769,8 +923,30 @@ public class RetailSaleNativeSqlService {
         pbd.setTotal(gross);
         pbd.setDiscount(disc);
         pbd.setDiscountPercentPharmacy(gross > 0 ? (disc / gross) * 100.0 : 0.0);
-        pbd.setCashPaid(bill.getCashPaid());
-        pbd.setBalance(bill.getCashPaid() - net);
+
+        // For Multiple Payment Methods, bill.cashPaid stays 0 and the methods are
+        // recorded as individual Payment rows. Rebuild the itemised payment lines
+        // (and derive the amount paid from their sum) so reprinted/reopened bills
+        // match what the settle-time printout shows.
+        double cashPaid = bill.getCashPaid();
+        double balance = cashPaid - net;
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            List<PrintBillData.PaymentLine> lines = buildPrintPaymentLinesFromPersisted(bill);
+            pbd.setPayments(lines);
+            cashPaid = 0.0;
+            for (PrintBillData.PaymentLine line : lines) {
+                cashPaid += line.getValue();
+            }
+            // The split is accepted at settle when within 1.0 of the net total;
+            // clamp the reprinted balance to zero within the same tolerance so a
+            // settled bill never shows a residual balance.
+            balance = cashPaid - net;
+            if (Math.abs(balance) <= 1.0) {
+                balance = 0.0;
+            }
+        }
+        pbd.setCashPaid(cashPaid);
+        pbd.setBalance(balance);
 
         // Items are on the BilledBill. For legacy plain-Bill records (pre two-bill structure)
         // or PreBill IDs passed in, fall back to referenceBill if the bill has no items.
@@ -806,5 +982,47 @@ public class RetailSaleNativeSqlService {
         }
 
         return new Object[]{pbd, itemList};
+    }
+
+    /**
+     * Rebuilds the itemised payment lines for a reprinted/reopened Multiple
+     * Payment Methods bill from the persisted {@link Payment} rows. Each line
+     * carries the method label, paid value and a method-specific reference
+     * (card/cheque/slip/ewallet/online/credit reference) when available.
+     */
+    private List<PrintBillData.PaymentLine> buildPrintPaymentLinesFromPersisted(Bill bill) {
+        List<PrintBillData.PaymentLine> lines = new ArrayList<>();
+        List<Payment> payments = em.createQuery(
+                "select p from Payment p where p.bill = :bill"
+                + " and p.retired = false"
+                + " order by p.id", Payment.class)
+                .setParameter("bill", bill)
+                .getResultList();
+        for (Payment p : payments) {
+            if (p.getPaymentMethod() == null || p.getPaidValue() <= 0.0) {
+                continue;
+            }
+            String reference = "";
+            switch (p.getPaymentMethod()) {
+                case Card:
+                    reference = safeStr(p.getCreditCardRefNo());
+                    break;
+                case Cheque:
+                    reference = safeStr(p.getChequeRefNo());
+                    break;
+                case ewallet:
+                case Slip:
+                case OnlineSettlement:
+                case IOU:
+                case Credit:
+                    reference = safeStr(p.getReferenceNo());
+                    break;
+                default:
+                    break;
+            }
+            lines.add(new PrintBillData.PaymentLine(
+                    p.getPaymentMethod().getLabel(), p.getPaidValue(), reference));
+        }
+        return lines;
     }
 }

@@ -199,10 +199,22 @@
                             <div>
                                 <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" />
                                 <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('inward/inward_bill_service')}"
+                                        ajax="false"
+                                        immediate="true"
+                                        styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                                        style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
                             <div class="d-flex gap-2">
                                 <p:commandButton
-                                    class="ui-button-warning"
+                                    class="ui-button-primary"
                                     action="#{billBhtController.resetBillData}"
                                     icon="fa fa-plus"
                                     ajax="false"
@@ -210,10 +222,10 @@
                                 </p:commandButton>
 
                                 <p:commandButton
-                                    class="ui-button-secondary"
+                                    class="ui-button-info ui-button-outlined"
                                     value="Go To Add Outside"
                                     ajax="false"
-                                    icon="fa fa-plus"
+                                    icon="fa fa-arrow-right"
                                     action="/inward/inward_bill_outside_charge?faces-redirect=true" >
                                 </p:commandButton>
 
@@ -223,7 +235,7 @@
                                             ajax="false"
                                             value="Search Patients"
                                             icon="fa fa-search"
-                                            class="ui-button-warning "
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToSearchPatients()}"
                                             >
                                         </p:commandButton>
@@ -231,7 +243,7 @@
                                             ajax="false"
                                             value="Patient Profile"
                                             icon="fa fa-user"
-                                            class="ui-button-success"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToOpdPatientProfile()}"
                                             >
                                             <f:setPropertyActionListener
@@ -243,7 +255,7 @@
                                             ajax="false"
                                             value="Inpatient Dashboard"
                                             icon="fa fa-id-card"
-                                            class="ui-button-secondary"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}"
                                             >
                                             <f:setPropertyActionListener
@@ -424,7 +436,7 @@
                                                                 <p:column>
                                                                     <h:outputLabel value="#{t.departmentName}"/>
                                                                 </p:column>
-                                                                <p:column>
+                                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                                     <h:outputLabel value="#{t.total}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
@@ -579,8 +591,14 @@
                                                             </p:selectOneMenu>
 
                                                         </p:column>
+                                                        
+                                                        <p:column width="8em">
+                                                            <f:facet name="header">Comment</f:facet>
+                                                            <h:outputLabel value="#{bi.billItem.descreption}"/>
+                                                        </p:column>
 
-                                                        <p:column width="7em" class="text-end">
+                                                        <p:column width="7em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Rate</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.rate}">
                                                                 <f:convertNumber pattern="#,##0.00" />
@@ -594,30 +612,42 @@
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Gross Value</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.grossValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Discount</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.discount}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Service Charge</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.marginValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Net Value</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.netValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                            <f:facet name="header">VAT</f:facet>
+                                                            <h:outputLabel value="#{bi.billItem.vat}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
@@ -657,10 +687,7 @@
                                                         value="#{billBhtController.lstBillFees}"
                                                         var="bif"
                                                         rowKey="#{bif.id}"
-                                                        rowExpandMode="single"
-                                                        rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward)
-                                                                         or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                         ? '':'noDisplayRow'}">
+                                                        rowExpandMode="single">
                                                         <p:column width="2em">
                                                             <f:facet name="header"> </f:facet>
                                                             <p:rowToggler />
@@ -675,7 +702,8 @@
                                                             <h:outputLabel value="#{bif.billItem.item.name}"/>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Unit Rate</f:facet>
                                                             <h:outputLabel value="#{bif.feeUnitGrossValue}">
                                                                 <f:convertNumber pattern="#,##0.00" />
@@ -689,7 +717,8 @@
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="10em" class="text-end">
+                                                        <p:column width="10em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Total Gross</f:facet>
                                                             <p:inputText
                                                                 class="text-end w-100"
@@ -707,14 +736,16 @@
                                                             </p:inputText>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Discount</f:facet>
                                                             <h:outputLabel value="#{bif.feeDiscount}" class="text-end w-100">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Service Charge</f:facet>
                                                             <h:outputLabel
                                                                 id="matrix"
@@ -724,12 +755,21 @@
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="8em" class="text-end">
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <f:facet name="header">Net Total</f:facet>
                                                             <h:outputLabel
                                                                 id="feeValue"
                                                                 value="#{bif.feeValue}"
                                                                 class="text-end w-100">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                            <f:facet name="header">VAT</f:facet>
+                                                            <h:outputLabel value="#{bif.feeVat}" class="text-end w-100">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
@@ -751,7 +791,7 @@
                                                             </p:selectOneMenu>
                                                         </p:column>
 
-                                                        <p:rowExpansion>
+                                                        <p:rowExpansion rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                             <div class="p-3 ms-4 border-start border-primary" style="background-color: #f0f4ff;">
                                                                 <div class="row g-3">
 
@@ -824,7 +864,8 @@
                                             </p:tabView>
                                         </p:panel>
                                     </div>
-                                    <div class="col-3">
+                                    <h:panelGroup layout="block" styleClass="col-3"
+                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                         <p:panel header="Bill Details" id="details"  >
                                             <div class="card">
                                                 <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
@@ -858,8 +899,24 @@
                                                     </h:outputLabel>
                                                 </div>
                                             </div>
+                                            <div class="card my-2">
+                                                <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
+                                                    <h:outputLabel value="VAT" ></h:outputLabel>
+                                                    <h:outputLabel value="#{billBhtController.vat}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
+                                                    <h:outputLabel value="Net Total + VAT" ></h:outputLabel>
+                                                    <h:outputLabel value="#{billBhtController.vatPlusNetTotal}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
+                                            </div>
                                         </p:panel>
-                                    </div>
+                                    </h:panelGroup>
                                 </div>
 
                             </h:panelGroup>
@@ -872,7 +929,7 @@
                                             <f:selectItem itemLabel="Select Format" />
                                             <f:selectItems value="#{enumController.paperTypes}" var="pt" itemLabel="#{pt.label}" itemValue="#{pt}" />
                                         </p:selectOneMenu>
-                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button-warning" title="Redraw Bill"></p:commandButton>
                                     </div>
                                     <p:commandButton
                                         value="Print"
@@ -1009,21 +1066,24 @@
                                                 </p:column>
                                                 <p:column headerText="Gross Total"
                                                           styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
-                                                          class="text-end">
+                                                          class="text-end"
+                                                          rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                     <h:outputText value="#{b.total}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Discount"
                                                           styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
-                                                          class="text-end">
+                                                          class="text-end"
+                                                          rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                     <h:outputText value="#{b.discount}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Net Total"
                                                           styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
-                                                          class="text-end">
+                                                          class="text-end"
+                                                          rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                     <h:outputText value="#{b.netTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
@@ -1044,8 +1104,7 @@
                                                         title="Manage Bill"
                                                         class="ui-button-warning m-1"
                                                         icon="fa fa-file-invoice"
-                                                        action="#{billSearch.navigateToInwardSearchService()}">
-                                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                                        action="#{billSearch.navigateToManageBillByAtomicBillTypeByBillId(b.id)}">
                                                     </p:commandButton>
                                                     <p:commandButton
                                                         title="To Sample Management"

@@ -12,6 +12,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -61,6 +62,8 @@ public class InwardServiceRefundController implements Serializable {
     private BillController billController;
     @Inject
     private AdmissionController admissionController;
+    @Inject
+    private WebUserController webUserController;
 
     private List<BillItem> refundingItems;
     private String comment;
@@ -124,6 +127,15 @@ public class InwardServiceRefundController implements Serializable {
         Bill bill = billFacade.find(sessionBill.getId());
         if (bill == null || bill.isRetired()) {
             JsfUtil.addErrorMessage("Bill not available");
+            return null;
+        }
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot return services: nursing discharge has been confirmed for this patient.");
+            return null;
+        }
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
             return null;
         }
         inwardSearch.setBill(bill);

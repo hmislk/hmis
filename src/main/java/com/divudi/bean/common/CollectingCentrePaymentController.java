@@ -64,6 +64,8 @@ public class CollectingCentrePaymentController implements Serializable {
     SessionController sessionController;
     @Inject
     AgentAndCcApplicationController agentAndCcApplicationController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -568,6 +570,14 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setTotal(payingBalanceAcodingToCCBalabce);
         ccAgentPaymentBill.setPaidAmount(payingBalanceAcodingToCCBalabce);
 
+        // Record the CC repayment voucher figures so the voucher can be reprinted later.
+        ccAgentPaymentBill.setCcBalanceBeforeTransaction(startingBalanseInCC);
+        ccAgentPaymentBill.setCcBalanceAfterTransaction(finalEndingBalanseInCC);
+        ccAgentPaymentBill.setCcTotalReceived(totalCCReceiveAmount);
+        ccAgentPaymentBill.setCcTransactionAmount(totalHospitalAmount);
+        ccAgentPaymentBill.setCcTotalCenterValue(totalCCAmount);
+        ccAgentPaymentBill.setCcExcessAmount(payingBalanceAcodingToCCBalabce);
+
         ccAgentPaymentBill.setFromDate(fromDate);
         ccAgentPaymentBill.setToDate(toDate);
 
@@ -587,6 +597,9 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
+        if (configOptionApplicationController.getBooleanValueByKey("Collecting Centre Agent Payment - Skip Payment Record", true)) {
+            return null;
+        }
         Payment p = new Payment();
         p.setBill(bill);
         setPaymentMethodData(p, pm);

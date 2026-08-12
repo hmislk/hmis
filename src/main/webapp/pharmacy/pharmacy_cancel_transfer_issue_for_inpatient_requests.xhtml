@@ -23,8 +23,9 @@
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyTransferIssueInpatientCancel()}" >
-                                    </p:commandButton>  
+                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyTransferIssueInpatientCancel()}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyTransferIssueCancel')}" >
+                                    </p:commandButton>
                                 </h:panelGrid>
 
                             </f:facet>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gdwt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shdwt" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#ECFDF5"/>
+  <g filter="url(#shdwt)">
+
+    <circle cx="100" cy="100" r="58" fill="none" stroke="url(#gdwt)" stroke-width="9"/>
+    <line x1="100" y1="100" x2="100" y2="54" stroke="#059669" stroke-width="8" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="133" y2="110" stroke="#10B981" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="6" fill="#059669"/>
+    <circle cx="100" cy="46" r="5" fill="#059669"/>
+    <circle cx="154" cy="100" r="5" fill="#059669"/>
+    <circle cx="100" cy="154" r="5" fill="#059669"/>
+    <circle cx="46" cy="100" r="5" fill="#059669"/>
+    <line x1="130" y1="54" x2="125" y2="63" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+    <line x1="146" y1="70" x2="137" y2="75" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+    <line x1="70" y1="54" x2="75" y2="63" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+    <line x1="54" y1="70" x2="63" y2="75" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+
+  </g>
+</svg>

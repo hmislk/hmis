@@ -40,7 +40,10 @@
             <p:remoteCommand name="refreshNotifications"
                              update="notCount notificationGrowl"
                              action="#{userNotificationController.onPushRefreshNotifications}" />
-            <p:growl id="notificationGrowl" life="6000" showDetail="true" />
+            <h:panelGroup id="notificationGrowl">
+                <p:growl life="6000" showDetail="true"
+                         rendered="#{facesContext.partialViewContext.ajaxRequest}" />
+            </h:panelGroup>
             <div id="notifFloatBar">
                 <h:panelGroup id="notCount">
                     <p:badge id="bdgeNotiCount"
@@ -434,6 +437,13 @@
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
+                            value="Package Admission"
+                            action="#{inpatientPackageAdmissionController.navigateToPackageAdmitFromMenu()}"
+                            icon="fa fa-box-archive"
+                            rendered="#{webUserController.hasPrivilege('InwardPackageAdmission')}">
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
                             value="Manage Appointment"
                             actionListener="#{appointmentController.makeNull()}" 
                             action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}"
@@ -612,12 +622,12 @@
                             value="Direct Issue to BHTs"
                             icon="fa fa-capsules"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
-                            actionListener="#{pharmacySaleBhtController.resetAll()}">
+                            actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}">
                         </p:menuitem>
 
                         <p:menuitem
                             ajax="false"
-                            action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             value="Direct Issue to BHTs (Native SQL)"
                             icon="fa fa-bolt"
                             rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
@@ -696,11 +706,29 @@
 
                     </p:submenu>
 
-                    <p:menuitem  
-                        ajax="false"  
-                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" 
-                        value="Investigation Trace" 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{itemRequestApprovalController.navigateToPendingRequests()}"
+                        value="Service/Item Requests"
+                        icon="fa fa-clipboard-check"
+                        rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') or webUserController.hasPrivilege('InwardServiceItemRequestRejection')}">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true"
+                        value="Investigation Trace"
                         icon="fa fa-search">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        id="smInwardLaboratory"
+                        value="Laboratory Dashboard"
+                        title="Inpatient Laboratory Dashboard"
+                        icon="fa fa-fw fa-vials"
+                        rendered="#{webUserController.hasPrivilege('InwardLaboratory')}"
+                        action="#{inwardLaboratoryController.navigateToInwardLaboratoryDashboard()}">
                     </p:menuitem>
 
                     <p:menuitem
@@ -1026,11 +1054,13 @@
                             ajax="false"
                             action="/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true"
                             actionListener="#{retailSaleNativeSqlController.resetAll()}"
-                            value="Sale"
+                            value="Retail Sale"
                             icon="fas fa-mortar-pestle"
                             style="font-weight: bold;"
                             styleClass="menu-item-optimised"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                        <!-- Sale 2, 3 and 4 are the same feature's parallel windows. They are
+                             reached from the Sale 1 page's window-switch row, not from the menu. -->
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"
@@ -1063,10 +1093,17 @@
                         <p:separator />
                         <p:menuitem
                             ajax="false"
-                            action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashierFromMenu()}"
+                            action="#{retailSaleForCashierNativeSqlController.navigateToPharmacyBillForCashierNativeFromMenu()}"
                             value="Sale for cashier"
                             icon="fas fa-cash-register"
+                            styleClass="menu-item-optimised"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashierFromMenu()}"
+                            value="Sale for cashier (Legacy)"
+                            icon="fas fa-cash-register"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier') and configOptionApplicationController.getBooleanValueByKey('Legacy Functions Allowed', false)}" ></p:menuitem>
                         <p:menuitem
                             ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true"
                             value="Search Sale for Cashier Bills"
@@ -1109,11 +1146,12 @@
 
                     </p:submenu>
 
-                    <p:submenu label="Wholesale Transactions" icon="fas fa-truck-loading" rendered="#{webUserController.hasPrivilege('PharmacyWholeSaleTransactionMenue')}">
-                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"
-                                     value="Sale" icon="fas fa-shopping-cart" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"
-                                     value="Sale for cashier" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSaleForCashier')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
+                    <p:submenu label="Wholesale Transactions" icon="fas fa-truck-loading" rendered="#{webUserController.hasPrivilege('PharmacyWholeSaleTransactionMenue') and configOptionApplicationController.getBooleanValueByKey('Enable Wholesale Pharmacy Transactions', false)}">
+                        <p:menuitem ajax="false"
+                                    action="/pharmacy/pharmacy_bill_wholesale_sale_native?faces-redirect=true"
+                                    actionListener="#{wholesaleSaleNativeSqlController.resetAll()}"
+                                    value="Sale" icon="fas fa-shopping-cart"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"
                                      value="Search Sale Bill" icon="fas fa-search-dollar"
                                      actionListener="#{searchController.makeListNull}"
@@ -1153,8 +1191,8 @@
                         <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                     value="Direct Issue to BHTs" icon="fas fa-prescription-bottle-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
-                                    actionListener="#{pharmacySaleBhtController.resetAll()}"/>
-                        <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
+                        <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                     value="Direct Issue to BHTs (Native SQL)" icon="fa fa-bolt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                     actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
@@ -1170,6 +1208,13 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"
@@ -1196,7 +1241,7 @@
                     <p:menuitem
                         ajax="false"
                         action="/pharmacy/disposal_index?faces-redirect=true"
-                        value="Disposal"
+                        value="Consumption"
                         rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}"
                         icon="fas fa-trash-alt" />
 
@@ -1235,12 +1280,13 @@
                         <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>-->
                     </p:menuitem>
 
-                    <p:menuitem  
+                    <p:menuitem
                         id="mnuReturnsAndCancellations"
-                        ajax="false" 
-                        action="/pharmacy/returns_and_cancellations_index?faces-redirect=true"  
-                        value="Returns and Cancellations" 
+                        ajax="false"
+                        action="/pharmacy/returns_and_cancellations_index?faces-redirect=true"
+                        value="Returns and Cancellations"
                         title="Manage Returns and Cancellations"
+                        rendered="#{webUserController.hasPrivilege('CreateGrnReturn') or webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('ApproveGrnReturn') or webUserController.hasPrivilege('CreateDisposalReturn') or webUserController.hasPrivilege('FinalizeDisposalReturn') or webUserController.hasPrivilege('ApproveDisposalReturn')}"
                         icon="fas fa-undo-alt">
                     </p:menuitem>
 
@@ -1830,6 +1876,7 @@
                 <p:menuitem
                     ajax="false"
                     title="Request Manager"
+                    rendered="#{webUserController.hasPrivilege('RequestManager')}"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
                     icon="fa-solid fa-envelope">
@@ -1909,7 +1956,7 @@
                     <p:menuitem  ajax="false"  action="/revenue_reports/index?faces-redirect=true" value="Revenue Reports"   icon="fa fa-chart-area" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_referrals_index?faces-redirect=true" value="Referral Reports"   icon="fa fa-user-friends" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/reportLab/report_lab?faces-redirect=true" value="Lab Report"   icon="fa fa-vials" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/credit/index_inward_due_acces?faces-redirect=trues" value="Inward Dues and Access"   icon="fa fa-bed" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/credit/index_inward_due_access?faces-redirect=true" value="Inward Dues and Access"   icon="fa fa-bed" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/credit/index_opd_due_access?faces-redirect=true" value="Opd Dues and Access"   icon="fa fa-hospital-user" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Pharmacy Dues and Access"   icon="fa fa-pills" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/dataAdmin/report_entered_data?faces-redirect=true" value="Check Entered Data"   icon="fa fa-search" ></p:menuitem>
@@ -1986,9 +2033,16 @@
                         icon="fa fa-users"
                         rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
                     </p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        action="#{institutionController.toAdminManageInstitutions()}" 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{clientPortalStaffRegistrationController.navigateToStaffAssistedRegistration()}"
+                        value="Create Client Portal Account"
+                        icon="fa fa-id-card"
+                        rendered="#{webUserController.hasPrivilege('ClientPortalCreateAccount')}" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{institutionController.toAdminManageInstitutions()}"
                         value="Manage Institutions" 
                         icon="fa fa-hospital"
                         rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" >
@@ -2027,15 +2081,22 @@
                         icon="fa fa-list"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
-                    <p:menuitem  
+                    <p:menuitem
                         rendered="#{webUserController.hasPrivilege('InwardAdministration')}"
-                        ajax="false"  
-                        action="/inward/inward_administration?faces-redirect=true" 
-                        value="Manage Inpatient Services" 
+                        ajax="false"
+                        action="/inward/inward_administration?faces-redirect=true"
+                        value="Manage Inpatient Services"
                         icon="fa fa-bed" >
                     </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        value="Manage Inpatient Packages"
+                        action="#{inpatientPackageController.navigateToManageInpatientPackagesFromMenu()}"
+                        icon="fa fa-box-archive"
+                        rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}">
+                    </p:menuitem>
 
-                    <p:menuitem  
+                    <p:menuitem
                         ajax="false"  
                         action="#{pharmacyController.navigateToManagePharmaceuticals}" 
                         value="Pharmaceutical Management" 
@@ -2047,7 +2108,7 @@
                         action="/store/store_admin?faces-redirect=true"  
                         value="Manage Store" 
                         icon="fa fa-fw fa-store"
-                        rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
+                        rendered="#{webUserController.hasPrivilege('Store') and webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 

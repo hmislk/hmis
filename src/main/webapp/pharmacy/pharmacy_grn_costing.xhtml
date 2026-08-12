@@ -20,7 +20,7 @@
                         <h:outputLabel value="Goods Receive" />
                         <p:commandButton
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                             actionListener="#{searchController.makeListNull()}"
                             class="ui-button-warning"
                             icon="fa fa-arrow-left"
@@ -33,6 +33,7 @@
                             class="ui-button-success"
                             icon="fas fa-check"
                             ajax="false"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}"
                             style="float: right;">
                         </p:commandButton>
                     </f:facet>
@@ -205,9 +206,27 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </p:column>
+                                <p:column
+                                    headerText="Wholesale Rate"
+                                    width="8em"
+                                    styleClass="text-end">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        id="wRate"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.wholesaleRate}"
+                                        onfocus="this.select()">
+                                        <f:ajax
+                                            event="blur"
+                                            execute="wRate"
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                            listener="#{grnCostingController.wholesaleRateChangedListner(bi)}"></f:ajax>
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </p:column>
 
-                                <p:column 
-                                    headerText="Line Net Total" 
+                                <p:column
+                                    headerText="Line Net Total"
                                     width="8em"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:panelGroup id="total">
@@ -364,9 +383,9 @@
                                         </div>
                                     </div>
                                 </h:panelGroup>
-                                <p:dataTable 
+                                <p:dataTable
                                     id="tblExpenses"
-                                    value="#{grnCostingController.billExpenses}" 
+                                    value="#{grnCostingController.grnBill.billExpenses}"
                                     var="be"
                                     class="w-100"
                                     emptyMessage="No Bill Expenses" >
@@ -626,7 +645,7 @@
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                     ajax="false"
-                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-warning"
                                     icon="fa fa-arrow-left"

@@ -8,6 +8,7 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.*;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -39,6 +40,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.service.BillService;
+import com.divudi.service.StockService;
 
 import java.text.DecimalFormat;
 import java.util.logging.Level;
@@ -54,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -93,11 +96,15 @@ public class TransferRequestController implements Serializable {
     private DepartmentFacade departmentFacade;
     @EJB
     BillService billService;
+    @EJB
+    private StockService stockService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private PharmacyCalculation pharmacyBillBean;
     @Inject
@@ -115,6 +122,9 @@ public class TransferRequestController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill bill;
     private Bill transferRequestBillPre;
+    // Bill id used for navigation from DTO-driven tables (issue #22567) that
+    // only have the bill id available, not the full Bill entity.
+    private Long billId;
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
@@ -317,6 +327,28 @@ public class TransferRequestController implements Serializable {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
 
+    private final Map<BillItem, Double> availableQtyAtOrderingStoreCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getItem() == null || getToDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtOrderingStoreCache.computeIfAbsent(bi, this::calculateAvailableQtyAtOrderingStore);
+    }
+
+    private double calculateAvailableQtyAtOrderingStore(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(getToDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
+    public boolean isAvailableQtyShortAtOrderingStore(BillItem bi) {
+        return getAvailableQtyAtOrderingStore(bi) < bi.getQty();
+    }
+
     public void saveBill() {
         if (getBill().getId() == null) {
 
@@ -330,7 +362,20 @@ public class TransferRequestController implements Serializable {
 
     }
 
-    public void approveTransferRequestBill() {
+    // synchronized: defense in depth alongside navigateToApproveRequest() — serializes
+    // the final persist step on this session-scoped bean so a racing double-submit
+    // can't write the (already duplicated) billItems list twice.
+    public synchronized void approveTransferRequestBill() {
+        if (!isAuthorized("APPROVE_REQUEST", "PharmacyDisbursementRequestApproval")) {
+            return;
+        }
+        // Check if the pre-bill is already approved to prevent a queued double-submit
+        // (blocked on the synchronized lock above) from creating a second approved bill
+        // once the first call has finished.
+        if (transferRequestBillPre != null && transferRequestBillPre.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This transfer request is already approved");
+            return;
+        }
         if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
@@ -344,7 +389,9 @@ public class TransferRequestController implements Serializable {
         printPreview = true;
     }
 
-    public Bill createNewApprovedTransferRequestBill(Bill preBillToCreateApprovedBill, List<BillItem> transferRequestPreBillItems, Bill newApprovedBill) {
+    // synchronized: same re-entrancy guard as approveTransferRequestBill()/
+    // navigateToApproveRequest() above, applied at the actual persist step.
+    public synchronized Bill createNewApprovedTransferRequestBill(Bill preBillToCreateApprovedBill, List<BillItem> transferRequestPreBillItems, Bill newApprovedBill) {
         if (transferRequestPreBillItems == null || transferRequestPreBillItems.isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return null;
@@ -364,6 +411,16 @@ public class TransferRequestController implements Serializable {
         newApprovedBill.setFromInstitution(preBillToCreateApprovedBill.getFromInstitution());
         newApprovedBill.setToDepartment(preBillToCreateApprovedBill.getToDepartment());
         newApprovedBill.setToInstitution(preBillToCreateApprovedBill.getToInstitution());
+        // Bill.copy() above does not carry departmentType — stamp it explicitly so the
+        // approved request bill doesn't lose the type the PRE bill already had (#22146).
+        if (preBillToCreateApprovedBill.getDepartmentType() != null) {
+            newApprovedBill.setDepartmentType(preBillToCreateApprovedBill.getDepartmentType());
+        } else if (!transferRequestPreBillItems.isEmpty() && transferRequestPreBillItems.get(0).getItem() != null) {
+            DepartmentType firstItemType = transferRequestPreBillItems.get(0).getItem().getDepartmentType();
+            newApprovedBill.setDepartmentType(firstItemType != null ? firstItemType : DepartmentType.Pharmacy);
+        } else {
+            newApprovedBill.setDepartmentType(DepartmentType.Pharmacy);
+        }
 
         newApprovedBill.setCreatedAt(new Date());
         newApprovedBill.setCreater(sessionController.getLoggedUser());
@@ -648,6 +705,9 @@ public class TransferRequestController implements Serializable {
     }
 
     public void saveTranserRequestPreBill() {
+        if (!isAuthorized("REQUEST", "PharmacyDisbursementRequest")) {
+            return;
+        }
         if (errorsPresent()) {
             return;
         }
@@ -674,7 +734,13 @@ public class TransferRequestController implements Serializable {
     
     
 
-    public String navigateToApproveRequest() {
+    // synchronized: the Approve Request button on the transfer-request-list-to-approve
+    // page has no double-click guard. This method clears and repopulates the
+    // session-scoped billItems field from the pre-bill's items; a double-click raced
+    // two concurrent calls through this clear-then-repopulate step, leaving billItems
+    // holding every line twice (issue: duplicate items on TREQ/RH/GRO/26/00074, same
+    // bug class as #21417/#21815/PR #22101, tracked generically under #22102).
+    public synchronized String navigateToApproveRequest() {
         Bill transferRequestBillTemp = transferRequestBillPre;
         recreate();
         transferRequestBillPre = transferRequestBillTemp;
@@ -716,7 +782,47 @@ public class TransferRequestController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
 
+    /**
+     * Navigation helper for DTO-driven tables that only have the bill id
+     * (not the full entity) available.
+     */
+    public String navigateToEditRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToEditRequest();
+    }
+
+    // synchronized for the same double-click defense-in-depth reason as navigateToApproveRequest()
+    public synchronized String navigateToApproveRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToApproveRequest();
+    }
+
+    public String navigateToViewApprovedRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Selected bill is no longer available");
+            return "";
+        }
+        printPreview = true;
+        return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
+    }
+
     public void finalizeTranserRequestPreBill() {
+        if (!isAuthorized("FINALIZE_REQUEST", "PharmacyDisbursementFinalizeRequest")) {
+            return;
+        }
         if (errorsPresent()) {
             return;
         }
@@ -861,6 +967,14 @@ public class TransferRequestController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     public BillItemFacade getBillItemFacade() {
@@ -1891,6 +2005,36 @@ public class TransferRequestController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(requestListMetadata);
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Transfer Request
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. REQUEST, FINALIZE_REQUEST, APPROVE_REQUEST)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, bill != null ? bill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = bill != null ? bill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Transfer Request access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer requests.");
+            return false;
+        }
+
+        return true;
     }
 
 }

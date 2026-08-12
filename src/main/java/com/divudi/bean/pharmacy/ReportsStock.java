@@ -175,6 +175,8 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     SessionController sessionController;
     @Inject
     ItemController itemController;
+    @Inject
+    com.divudi.bean.common.ExcelController excelController;
     /**
      * EJBs
      */
@@ -230,6 +232,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         return "/pharmacy/pharmacy_report_department_vice_stock?faces-redirect=true";
     }
 
+    public String navigateToShortExpiryByAmpPeriod() {
+        stockDtos = new ArrayList<>();
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockCostValue = 0.0;
+        return "/pharmacy/pharmacy_report_short_expiry_by_amp_period?faces-redirect=true";
+    }
+
     /**
      * Methods
      */
@@ -275,6 +285,25 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                     .sum();
             Date afterCal = new Date();
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Batch"
+     * (Developers) page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockByBatchDevelopers(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
+        filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 12;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Batch", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void fillDepartmentStockDtos() {
@@ -535,6 +564,18 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             totalSale.setCellValue(stockSaleValue);
             totalSale.setCellStyle(formatStyle);
 
+            // =========================
+            // Printed By / Printed At
+            // =========================
+            rowIndex++;
+            Row printedRow = sheet.createRow(rowIndex++);
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            SimpleDateFormat printedSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+            Cell printedByCell = printedRow.createCell(0);
+            printedByCell.setCellValue("Printed by: " + userName);
+            Cell printedAtCell = printedRow.createCell(4);
+            printedAtCell.setCellValue("Printed at: " + printedSdf.format(new Date()));
+
             // Auto size
             for (int i = 0; i < totalColumns; i++) {
                 sheet.autoSizeColumn(i);
@@ -709,6 +750,25 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             table.addCell(retailValueTotalCell);
 
             document.add(table);
+
+            // =========================
+            // Printed By / Printed At
+            // =========================
+            document.add(new Paragraph(" "));
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            SimpleDateFormat printedSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+            PdfPTable printedTable = new PdfPTable(2);
+            printedTable.setWidthPercentage(100);
+            PdfPCell printedByCell = new PdfPCell(new Phrase("Printed by: " + userName, filterFont));
+            printedByCell.setBorder(Rectangle.NO_BORDER);
+            printedByCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            printedTable.addCell(printedByCell);
+            PdfPCell printedAtCell = new PdfPCell(new Phrase("Printed at: " + printedSdf.format(new Date()), filterFont));
+            printedAtCell.setBorder(Rectangle.NO_BORDER);
+            printedAtCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            printedTable.addCell(printedAtCell);
+            document.add(printedTable);
+
             document.close();
             context.responseComplete();
 
@@ -752,6 +812,24 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             stocks = getStockFacade().findByJpql(jpql.toString(), parameters);
 
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Batch
+     * for Export" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockByBatchForExport(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Include Zero Stocks", includeZeroStock ? "Yes" : "No"});
+        int mergeCol = 18;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Batch for Export", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void fillDepartmentStocksOfMedicines() {
@@ -1127,6 +1205,251 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         this.stockReportByItemDTOS = stockReportByItemDTOS;
     }
 
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Item"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportByItem(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Workbook workbook = (org.apache.poi.ss.usermodel.Workbook) document;
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // The exported table's footer row (p:columnGroup type="footer") is not
+        // picked up by the xlsx exporter, so the Total row is built here
+        // directly instead (issue #22459).
+        int totalRowIndex = sheet.getLastRowNum() + 1;
+        Row totalRow = sheet.createRow(totalRowIndex);
+
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+
+        CellStyle totalLabelStyle = workbook.createCellStyle();
+        totalLabelStyle.setFont(boldFont);
+
+        CellStyle totalValueStyle = workbook.createCellStyle();
+        totalValueStyle.setFont(boldFont);
+        totalValueStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+        Cell totalLabelCell = totalRow.createCell(0);
+        totalLabelCell.setCellValue("Total");
+        totalLabelCell.setCellStyle(totalLabelStyle);
+        sheet.addMergedRegion(new CellRangeAddress(totalRowIndex, totalRowIndex, 0, 3));
+
+        Cell purchaseTotalCell = totalRow.createCell(4);
+        purchaseTotalCell.setCellValue(stockPurchaseValue);
+        purchaseTotalCell.setCellStyle(totalValueStyle);
+
+        Cell saleTotalCell = totalRow.createCell(5);
+        saleTotalCell.setCellValue(stockSaleValue);
+        saleTotalCell.setCellStyle(totalValueStyle);
+
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
+        filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        filterPairs.add(new String[]{"Dosage Form", dosageForm != null ? dosageForm.getName() : "All"});
+        filterPairs.add(new String[]{"Department Types", getSelectedDepartmentTypesPrintDisplay()});
+        filterPairs.add(new String[]{"Include Zero Stock", includeZeroStock ? "Yes" : "No"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Item", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * Human-readable label for the "Filter Type" radio selection on the
+     * Before Stock Taking Report (issue #17615).
+     */
+    public String getReportKeyWordFilterTypeLabel() {
+        String code = getReportKeyWord().getString();
+        if (code == null) {
+            return "All Batch";
+        }
+        switch (code) {
+            case "1":
+                return "Only Item";
+            case "2":
+                return "Item By Sale Rate";
+            case "3":
+                return "Extra Medicine";
+            case "4":
+                return "Extra Note";
+            default:
+                return "All Batch";
+        }
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Before Stock Taking
+     * Report" page - adds the report title, active filters, and a Printed
+     * By/At footer around the exported table (issue #17615). The column
+     * count on this report varies with the selected filter type, so the
+     * merge column is derived from the exported header row instead of a
+     * fixed constant.
+     */
+    public void postProcessXLSBeforeStockTaking(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        filterPairs.add(new String[]{"Filter Type", getReportKeyWordFilterTypeLabel()});
+        excelController.insertExcelReportHeader(sheet, "Before Stock Taking Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "After Stock Taking
+     * Report" page - adds the report title, active filters, and a Printed
+     * By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSAfterStockTaking(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        excelController.insertExcelReportHeader(sheet, "After Stock Taking Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Category Stock Report"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSCategoryStockByBatch(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        int mergeCol = 8;
+        excelController.insertExcelReportHeader(sheet, "Category Stock Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Category Stock Summary"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSCategoryStockByCategory(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 1;
+        excelController.insertExcelReportHeader(sheet, "Category Stock Summary", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Product"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportByProduct(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Product", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report of Single
+     * Product" page - adds the report title, active filters, and a Printed
+     * By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportOfSingleProduct(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Product", vmp != null ? vmp.getName() : "All"});
+        int mergeCol = 9;
+        excelController.insertExcelReportHeader(sheet, "Stock Report of Single Product", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Item -
+     * Order by VMP" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportByItemOrderByVmp(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 6;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Item - Order by VMP", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Supplier Stock Report"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSSupplierStockByBatch(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Supplier", institution != null ? institution.getName() : "All"});
+        int mergeCol = 8;
+        excelController.insertExcelReportHeader(sheet, "Supplier Stock Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Suppliers Stock Summary"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSAllSupplierStock(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Suppliers Stock Summary", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
     // Department Vice Stock Report fields
     private List<DepartmentViceStockDTO> departmentViceStockDtos;
     private double totalDepartmentViceStockQuantity;
@@ -1212,6 +1535,25 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
     }
 
+    /**
+     * {@code p:dataExporter} postProcessor for the "Zero Stock Item Report"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSZeroStockItem(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
+        filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 2;
+        excelController.insertExcelReportHeader(sheet, "Zero Stock Item Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
     public void fillDepartmentStockByItemOrderByVmp() {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
@@ -1287,6 +1629,63 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
             departmentViceStockDtos = dtos;
         }, PharmacyReports.DEPARTMENT_VICE_STOCK_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Department Vice Stock
+     * Report" xlsx export - adds the report title and a Printed By/At footer
+     * around the exported table (issue #17615). This report has no
+     * institution/site/department filter UI (it always aggregates across all
+     * departments), so no filter row is added.
+     */
+    public void postProcessXLSDepartmentViceStock(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 8;
+        excelController.insertExcelReportHeader(sheet, "Department Vice Stock Report", new ArrayList<>(), mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} preProcessor for the "Department Vice Stock
+     * Report" pdf export - opens the PDF document and adds a centered report
+     * title before the table is written (issue #17615).
+     *
+     * Note: the PrimeFaces PDF exporter (14.x) uses the OpenPDF
+     * ({@code com.lowagie.text}) library, which is a different class
+     * hierarchy from the iText5 ({@code com.itextpdf.text}) classes already
+     * wildcard-imported in this file (see {@link #exportCurrentStockByBatchToPDF()}).
+     * Fully-qualified names are used throughout to avoid binding to the
+     * wrong "Document"/"Font"/etc type.
+     */
+    public void preProcessPdfDepartmentViceStock(Object document) throws com.lowagie.text.DocumentException {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        pdf.setPageSize(com.lowagie.text.PageSize.A4.rotate());
+        pdf.setMargins(20f, 20f, 20f, 20f);
+        pdf.open();
+
+        com.lowagie.text.Font titleFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA_BOLD, 16);
+        com.lowagie.text.Paragraph titlePara = new com.lowagie.text.Paragraph("Department Vice Stock Report", titleFont);
+        titlePara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+        titlePara.setSpacingAfter(12f);
+        pdf.add(titlePara);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Department Vice Stock
+     * Report" pdf export - appends a Printed By/At footer line after the
+     * table, before the document is closed (issue #17615).
+     */
+    public void postProcessPdfDepartmentViceStock(Object document) throws com.lowagie.text.DocumentException {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        com.lowagie.text.Font footerFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA, 9);
+        String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+        String printedTime = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(new Date());
+        com.lowagie.text.Paragraph footerPara = new com.lowagie.text.Paragraph("Printed by: " + userName + "     Printed at: " + printedTime, footerFont);
+        footerPara.setSpacingBefore(10f);
+        pdf.add(footerPara);
     }
 
     public void fillDepartmentInventryStocks() {
@@ -1611,6 +2010,82 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
     }
 
+    public void fillShortExpiryByAmpPeriod() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
+            jpql.append("s.id, ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("s.itemBatch.item.code, ");
+            jpql.append("s.itemBatch.dateOfExpire, ");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where s.stock > 0");
+            jpql.append(" and type(s.itemBatch.item) = Amp");
+            jpql.append(" and treat(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary > 0");
+            jpql.append(" and FUNCTION('DATEDIFF', s.itemBatch.dateOfExpire, CURRENT_DATE) <= treat(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary");
+
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" order by s.itemBatch.dateOfExpire");
+
+            stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            stockPurchaseValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double pr = s.getPurchaseRate();
+                        Double qty = s.getStockQty();
+                        return (pr == null ? 0.0 : pr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockSaleValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double rr = s.getRetailRate();
+                        Double qty = s.getStockQty();
+                        return (rr == null ? 0.0 : rr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockCostValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getCostRate();
+                        Double qty = s.getStockQty();
+                        return (cr == null ? 0.0 : cr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
+    }
+
     public void addComment(Stock st) {
         if (st != null) {
             getStockFacade().edit(st);
@@ -1743,6 +2218,27 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }
     }
 
+    /**
+     * {@code p:dataExporter} postProcessor for the "Staff Stock" report -
+     * adds the report title, active filters, and a Printed By/At footer
+     * around the exported table (issue #17615).
+     */
+    public void postProcessXLSStaffStock(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Staff", staff != null ? staff.getPerson().getName() : "All"});
+        filterPairs.add(new String[]{"Item", item != null ? item.getName() : "All"});
+        excelController.insertExcelReportHeader(sheet, "Staff Stock Inventory Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
     public void clearFilters() {
         staff = null;
         itemController.setCurrent(null);
@@ -1873,6 +2369,24 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }
 
         return "/pharmacy/pharmacy_report_stock_report_with_supplier?faces-redirect=true";
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report (with
+     * Suppliers)" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportWithSupplier(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Supplier", institution != null ? institution.getName() : "All"});
+        int mergeCol = 9;
+        excelController.insertExcelReportHeader(sheet, "Stock Report (with Suppliers)", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void fillCategoryStocks() {
@@ -2137,6 +2651,23 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             }
         }
 
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Summary (with
+     * Suppliers)" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockSummaryWithSupplier(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Stock Summary (with Suppliers)", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     /**

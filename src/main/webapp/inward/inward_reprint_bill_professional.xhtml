@@ -26,7 +26,7 @@
                                         icon="fa fa-cancel"
                                         class="ui-button-danger mx-1"
                                         rendered="#{inwardSearch.bill.billClass ne 'class com.divudi.core.entity.CancelledBill'}"
-                                        action="inward_cancel_bill_professional"  
+                                        action="#{inwardSearch.navigateToCancelInwardProfessionalBill()}"
                                         disabled="#{inwardSearch.bill.cancelled}"  >                           
                                     </p:commandButton>
                                     <p:commandButton 
@@ -41,13 +41,18 @@
                                         class="ui-button-warning mx-1" 
                                         icon="fa fa-square"
                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false" value="Back To Interim"
                                         action="/inward/inward_bill_intrim"
                                         class="mx-1 ui-button-info"
                                         icon="fa fa-backward"
                                         actionListener="#{bhtSummeryController.createTables()}"
                                         />
+                                    <p:commandButton ajax="false" value="Back to Surgery Summary"
+                                                      action="#{surgeryBillController.navigateToSurgeryBillSummary(inwardSearch.bill.forwardReferenceBill)}"
+                                                      rendered="#{inwardSearch.bill.forwardReferenceBill ne null and inwardSearch.bill.forwardReferenceBill.billType eq 'SurgeryBill'}"
+                                                      class="mx-1 ui-button-info"
+                                                      icon="fa fa-backward"/>
                                 </div>
                             </div>
                         </f:facet>       
@@ -126,10 +131,11 @@
                                             <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
                                         </f:facet>  
                                         <f:facet name="input">  
-                                            <p:autoComplete value="#{bip.staff}" 
-                                                            disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}"
+                                            <p:autoComplete value="#{bip.staff}"
+                                                            disabled="#{bip.paidValue!=0 or bip.fromPackage or !webUserController.hasPrivilege('ChangeProfessionalFee')}"
                                                             completeMethod="#{inwardProfessionalBillController.completeStaff}"
-                                                            var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" 
+                                                            var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}"
+                                                            maxResults="20"
                                                             forceSelection="true"/>
 
                                         </f:facet>  

@@ -145,6 +145,25 @@ This two-step process ensures:
 3. **Approval Hierarchy**: Multi-level approval for high-value POs
 4. **Dashboard**: Real-time PO status dashboard
 
+## Receiving Department Scoping (issue #21848)
+
+By default, `SearchController.createPoTable(...)` / `createPoTablePharmacyDto()`
+(backing `pharmacy_purchase_order_list_for_recieve.xhtml` and its
+wholesale/with-approval/DTO variants) restrict the PO receive-list query to
+`b.department = sessionController.getDepartment()` — a PO only appears to
+users working in the same department that created it.
+
+RMH Hambantota needs POs created in Pharmacy to be received (GRN'd) from
+Store. The `Pharmacy - Allow Cross-Department PO Receiving` config option
+(default `false`, see
+[Application Options](configuration/application-options.md#pharmacy-procurement))
+drops that department clause while keeping `b.referenceBill.institution = :ins`
+unconditional, so the relaxation never crosses institution boundaries.
+GRN creation itself is unaffected — `GrnController.createGrn()` already
+assigns the new GRN's department from the current session context, not
+copied from the PO, so the received stock correctly lands in whichever
+department the user is working in when they receive it.
+
 ---
 
 **Resolution Date**: August 19, 2025  

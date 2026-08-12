@@ -1756,14 +1756,24 @@ public class BillBeanController implements Serializable {
     public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution, BillType billType) {
         PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
 
+        // Sum from the child Payment rows (p.paidValue) instead of filtering whole bills by the
+        // bill-level paymentMethod. A bill settled with more than one method has
+        // bill.paymentMethod = MultiplePaymentMethods; filtering on the bill-level method dropped
+        // such bills entirely, even though their actual payments were Cash/Card/Cheque/Slip. The
+        // Daily Return report sums child payments and therefore counts them, which caused the QB
+        // Import figure to fall short. Filtering on p.paymentMethod captures the individual
+        // components of split-payment bills while still excluding credit/deposit portions.
+        // See hmislk/hmis#21639.
         String sql = "Select b.referenceBill.department,"
-                + " sum(b.netTotal) "
-                + " from Bill b "
+                + " sum(p.paidValue) "
+                + " from Payment p "
+                + " join p.bill b "
                 + " where b.retired=false"
+                + " and p.retired=false"
                 + " and  b.billType=:bType"
                 + " and b.referenceBill.department.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
-                + " and b.paymentMethod in :pm"
+                + " and p.paymentMethod in :pm"
                 + " and type(b)!=:cl "
                 + " group by b.referenceBill.department"
                 + " order by b.referenceBill.department.name";
@@ -2449,7 +2459,8 @@ public class BillBeanController implements Serializable {
                     patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
                     patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
 
-                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
+                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
+                            || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
                         patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
                         patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() + bill.getNetTotal());
@@ -4223,6 +4234,17 @@ public class BillBeanController implements Serializable {
 
         b.setNetTotal(val);
 
+        sql = "SELECT sum(b.feeVat)"
+                + " FROM BillFee b "
+                + " WHERE b.retired=false"
+                + " and b.bill=:bill ";
+        hm = new HashMap();
+        hm.put("bill", b);
+        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+
+        b.setVat(val);
+        b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
+
         getBillFacade().edit(b);
     }
 
@@ -4470,6 +4492,17 @@ public class BillBeanController implements Serializable {
         val = getBillFeeFacade().findDoubleByJpql(sql, hm);
 
         billItem.setDiscount(val);
+
+        sql = "SELECT sum(b.feeVat) "
+                + " FROM BillFee b "
+                + " WHERE b.retired=false "
+                + " and b.billItem=:bItm ";
+        hm = new HashMap();
+        hm.put("bItm", billItem);
+        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+
+        billItem.setVat(val);
+        billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
 //
 //        billItem.setEditedAt(new Date());
 //        billItem.setEditor(webUser);

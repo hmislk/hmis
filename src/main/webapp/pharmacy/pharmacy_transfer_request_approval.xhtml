@@ -34,8 +34,10 @@
                                     value="Approve"
                                     action="#{transferRequestController.approveTransferRequestBill}"
                                     ajax="false"
-                                    icon="fas fa-check"
-                                    class="mx-1 ui-button-success">
+                                    icon="fas fa-check-double"
+                                    styleClass="mx-1 ui-button-stage-approve"
+                                    onclick="return confirm('Are you sure you want to approve this transfer request?');"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -91,6 +93,14 @@
                                                 update="itemList requestTotals" 
                                                 listener="#{transferRequestController.onEdit(bi)}"/>
                                         </p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Available Qty (Ordering Store)" class="text-end" width="10em">
+                                        <h:outputText
+                                            value="#{transferRequestController.getAvailableQtyAtOrderingStore(bi)}"
+                                            styleClass="#{transferRequestController.isAvailableQtyShortAtOrderingStore(bi) ? 'text-danger fw-bold' : ''}">
+                                            <f:convertNumber pattern="#,##0.#"/>
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Transfer Rate" class="text-end" width="8em">

@@ -68,11 +68,30 @@
                                      <f:facet name="header">
                                         <h:outputLabel value="Bed Occupency Analysis Chart" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
                                     </f:facet>
-                                    <p:panel rendered="#{inwardReportDashboardController.bedOccupancyChart ne null}">
+                                     <p:panel rendered="#{inwardReportDashboardController.bedOccupancyChart ne null}">
                                         <div class="w-100 d-flex justify-content-center align-items-center">
                                            <div style="width: 90%; max-width: 600px; height: 90%; min-height: 400px;">
                                                <p:pieChart model="#{inwardReportDashboardController.bedOccupancyChart}"/>
                                            </div>
+                                        </div>
+                                        <p:spacer height="20" />
+                                        <div class="d-flex justify-content-center">
+                                            <div style="width: 90%; max-width: 600px;">
+                                                <p:dataTable value="#{inwardReportDashboardController.bedOccupancySummary}" var="sum">
+                                                    <p:column headerText="Status">
+                                                        <h:outputText value="#{sum.status}" />
+                                                    </p:column>
+                                                    <p:column headerText="Count" style="text-align: right;">
+                                                        <h:outputText value="#{sum.count}" />
+                                                    </p:column>
+                                                    <p:columnGroup type="footer">
+                                                        <p:row>
+                                                            <p:column footerText="Total Beds:" style="text-align:right" />
+                                                            <p:column footerText="#{inwardReportDashboardController.totalRooms}" style="text-align:right" />
+                                                        </p:row>
+                                                    </p:columnGroup>
+                                                </p:dataTable>
+                                            </div>
                                         </div>
                                     </p:panel>
                                 </p:panel>

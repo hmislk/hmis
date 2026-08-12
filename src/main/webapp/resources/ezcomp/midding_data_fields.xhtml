@@ -8,27 +8,41 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="fullAccess" type="boolean" default="true"
+                      shortDescription="When false, exposes a single combined view (no tabs) with just the DDL-load-and-run and Fix AUTO_INCREMENT actions — for the unauthenticated mf.xhtml migration-pending page. When true (default), exposes the full four-tab admin toolset."/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form >
 
-            <p:accordionPanel 
-                activeIndex="#{dataAdministrationController.tabIndexMissingFields}">
+            <p:accordionPanel
+                activeIndex="#{dataAdministrationController.tabIndexMissingFields}"
+                rendered="#{cc.attrs.fullAccess}">
                 <p:ajax process="@this" ></p:ajax>
 
                 <p:tab
                     title="Add All Tables using create ddl file contents"  >
 
-                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
+                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;" rendered="#{cc.attrs.fullAccess}">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
                             <h:outputLabel value="Update Database by DDL File" class="mx-2"/>
                         </f:facet>
 
                         <p:outputLabel value="Instructions" />
-                        <p>To generate the DDL file, replace the contents of your persistence.xml with the configuration from persistence_for_database_generation_script.xml. Adjust the output file path accordingly. Run the application to generate the DDL file. Then copy its contents and paste into the field below. Click 'Update Database' to apply all missing tables and fields. The latest version of the DDL file is available at <a href="https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide" target="_blank">Database Schema DDL Generation Guide</a>. </p>
+                        <p>Click 'Load Latest DDL from Wiki' to let the server download the current full DDL script directly, then click 'Update Database'. This is the recommended path: the full script is ~650 KB, and pasting it into the field below can exceed the server's maximum POST size ("Post too large" error). Use the paste field only for small hand-written DDL snippets. The guide is at <a href="https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide" target="_blank">Database Schema DDL Generation Guide</a>. </p>
+
+                        <p:outputLabel value="Load from Wiki" />
+                        <h:panelGroup layout="block" class="d-flex align-items-center">
+                            <p:commandButton
+                                value="Load Latest DDL from Wiki"
+                                ajax="false"
+                                action="#{dataAdministrationController.loadDdlFromWiki}"
+                                styleClass="ui-button-success mr-3"
+                                title="Server downloads the full DDL script from the wiki — avoids pasting a huge script into the form"/>
+                            <h:outputText value="#{dataAdministrationController.wikiFetchedDdlInfo}" />
+                        </h:panelGroup>
 
                         <p:outputLabel value="Database Selection" />
                         <h:panelGroup layout="block" class="d-flex">
@@ -42,11 +56,12 @@
                             <h:outputText value="Audit Database (hmisAuditPU)"/>
                         </h:panelGroup>
 
-                        <p:outputLabel value="DDL Content" />
+                        <p:outputLabel value="DDL Content (small snippets only)" />
                         <p:inputTextarea
                             rows="6"
                             autoResize="false"
                             value="#{dataAdministrationController.allCreateStetements}"
+                            title="Leave empty to use the wiki-loaded DDL. Pasting the full ~650 KB script here will exceed the server's POST size limit."
                             class="w-100" />
 
                         <p:spacer />
@@ -73,7 +88,7 @@
                     </p:panelGrid>
 
                 </p:tab>
-                <p:tab title="Check Missing Fields and Add Fields" >
+                <p:tab title="Check Missing Fields and Add Fields" rendered="#{cc.attrs.fullAccess}" >
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
@@ -197,7 +212,58 @@
 
                 </p:tab>
 
-                <p:tab title="Run Custom SQL Commands" >
+                <p:tab title="Fix Missing AUTO_INCREMENT" >
+                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
+                        <f:facet name="header">
+                            <i class="fa fa-search"/>
+                            <h:outputLabel value="Fix Missing AUTO_INCREMENT" class="mx-2"/>
+                            <p:spacer height="2" width="20" ></p:spacer>
+                            <p:commandButton
+                                ajax="false"
+                                action="#{dataAdministrationController.fixMissingAutoIncrement()}"
+                                value="Fix AUTO_INCREMENT"
+                                styleClass="ui-button-success w-25 ml-2"
+                                title="Scans every table for a BIGINT ID primary key missing AUTO_INCREMENT and re-adds it. Safe to run repeatedly — a no-op on a healthy database."
+                                />
+                        </f:facet>
+
+                        <p:outputLabel value="Instructions" />
+                        <p>A database restored from a dump can lose the AUTO_INCREMENT attribute on ID primary keys, which makes every INSERT into the affected table fail with MySQL error 1364 ("Field 'ID' doesn't have a default value") — including the login-audit insert, which blocks login itself. Click "Fix AUTO_INCREMENT" to scan and repair every affected table on the selected database(s) below.</p>
+
+                        <p:outputLabel value="Database Selection" />
+                        <h:panelGroup layout="block" class="d-flex">
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnMainDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Main Database (hmisPU)" class="mr-3"/>
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnAuditDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Audit Database (hmisAuditPU)"/>
+                        </h:panelGroup>
+
+                        <p:outputLabel value="Main Database Results" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                        <p:inputTextarea
+                            value="#{dataAdministrationController.mainDatabaseExecutionFeedback}"
+                            readonly="true"
+                            rows="4"
+                            autoResize="false"
+                            class="w-100"
+                            rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+
+                        <p:outputLabel value="Audit Database Results" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                        <p:inputTextarea
+                            value="#{dataAdministrationController.auditDatabaseExecutionFeedback}"
+                            readonly="true"
+                            rows="4"
+                            autoResize="false"
+                            class="w-100"
+                            rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                    </p:panelGrid>
+
+                </p:tab>
+
+                <p:tab title="Run Custom SQL Commands" rendered="#{cc.attrs.fullAccess}" >
 
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
@@ -252,6 +318,67 @@
                 </p:tab>
 
             </p:accordionPanel>
+
+            <!-- Reduced toolset for the unauthenticated mf.xhtml migration-pending page:
+                 both actions in a single view, no tabs — see fullAccess attribute above. -->
+            <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;" rendered="#{not cc.attrs.fullAccess}">
+                <f:facet name="header">
+                    <i class="fa fa-search"/>
+                    <h:outputLabel value="Database Migration" class="mx-2"/>
+                </f:facet>
+
+                <p:outputLabel value="Instructions" />
+                <p>Click 'Load Latest DDL from Wiki and Update Both Databases' to download the current full DDL script and apply it to both the main and audit databases. If the database was restored from a dump and INSERTs are failing with a missing default value on the ID column, click 'Fix AUTO_INCREMENT' as well. The guide is at <a href="https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide" target="_blank">Database Schema DDL Generation Guide</a>.</p>
+
+                <p:outputLabel value="Database Selection" />
+                <h:panelGroup layout="block" class="d-flex">
+                    <p:selectBooleanCheckbox
+                        value="#{dataAdministrationController.runOnMainDatabase}"
+                        class="mr-2"/>
+                    <h:outputText value="Main Database (hmisPU)" class="mr-3"/>
+                    <p:selectBooleanCheckbox
+                        value="#{dataAdministrationController.runOnAuditDatabase}"
+                        class="mr-2"/>
+                    <h:outputText value="Audit Database (hmisAuditPU)"/>
+                </h:panelGroup>
+
+                <p:outputLabel value="Actions" />
+                <h:panelGroup layout="block" class="d-flex flex-wrap">
+                    <p:commandButton
+                        value="Load Latest DDL from Wiki and Update Both Databases"
+                        ajax="false"
+                        action="#{dataAdministrationController.loadDdlFromWikiAndUpdateBothDatabases}"
+                        styleClass="ui-button-success me-2"
+                        icon="fa fa-download"
+                        title="Downloads the full DDL script from the wiki and applies it to the main (hmisPU) and audit (hmisAuditPU) databases"/>
+                    <p:commandButton
+                        value="Fix AUTO_INCREMENT"
+                        ajax="false"
+                        action="#{dataAdministrationController.fixMissingAutoIncrement()}"
+                        styleClass="ui-button-warning"
+                        icon="fa fa-wrench"
+                        title="Scans every table for a BIGINT ID primary key missing AUTO_INCREMENT and re-adds it. Safe to run repeatedly — a no-op on a healthy database."/>
+                </h:panelGroup>
+
+                <p:outputLabel value="Execution Feedback" rendered="#{not empty dataAdministrationController.executionFeedback}"/>
+                <h:panelGroup layout="block" styleClass="p-2 border rounded bg-light w-100" style="white-space: pre-wrap;"
+                              rendered="#{not empty dataAdministrationController.executionFeedback}">
+                    #{dataAdministrationController.executionFeedback}
+                </h:panelGroup>
+
+                <p:outputLabel value="Main Database Results" rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                <h:panelGroup layout="block" styleClass="p-2 border rounded bg-light w-100" style="white-space: pre-wrap;"
+                              rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
+                    #{dataAdministrationController.mainDatabaseExecutionFeedback}
+                </h:panelGroup>
+
+                <p:outputLabel value="Audit Database Results" rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                <h:panelGroup layout="block" styleClass="p-2 border rounded bg-light w-100" style="white-space: pre-wrap;"
+                              rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
+                    #{dataAdministrationController.auditDatabaseExecutionFeedback}
+                </h:panelGroup>
+            </p:panelGrid>
+
         </h:form>
 
     </cc:implementation>

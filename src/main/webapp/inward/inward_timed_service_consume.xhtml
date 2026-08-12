@@ -10,7 +10,7 @@
 
 
     <ui:define name="content">
-        <h:form>    
+        <h:form id="formTimedServiceConsume" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
             <h:panelGroup class="row" rendered="#{inwardTimedItemController.current.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
@@ -218,9 +218,35 @@
                                                 <h:outputLabel  value="#{ix.total}" ></h:outputLabel>
                                             </p:column>
 
+                                            <p:ajax event="itemSelect"
+                                                    listener="#{inwardTimedItemController.serviceSelectListener}"
+                                                    update="serviceDepartment"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
+
+                                <div class="row m-1">
+                                    <div class="col-4">
+                                        <p:outputLabel value="Service Department"
+                                                       for="serviceDepartment"
+                                                       title="Where the service is given. Defaults to the service's own department."/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="mx-2"
+                                            id="serviceDepartment"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            value="#{inwardTimedItemController.fromDepartment}">
+                                            <f:selectItem itemLabel="Select Department" noSelectionOption="true"/>
+                                            <f:selectItems value="#{departmentController.items}"
+                                                           var="dep"
+                                                           itemLabel="#{dep.name}"
+                                                           itemValue="#{dep}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
                                 <div class="row m-1">
                                     <div class="col-4">
                                         <p:outputLabel value="Start Time"/>
@@ -238,12 +264,28 @@
                                     </div>
                                 </div>
 
+                                <div class="row m-1">
+                                    <div class="col-4">
+                                        <p:outputLabel value="Comment"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:inputTextarea
+                                            class="mx-2 w-100"
+                                            id="itemComment"
+                                            rows="2"
+                                            value="#{inwardTimedItemController.current.comment}">
+                                        </p:inputTextarea>
+                                    </div>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-4">
-                                        <p:commandButton 
-                                            class="mx-2 ui-button-success" 
-                                            value="Add Service" 
+                                        <p:commandButton
+                                            id="btnAddTimedService"
+                                            class="mx-2 ui-button-success"
+                                            value="Add Service"
                                             ajax="false"
+                                            onclick="if(this.alreadyClicked) return false; this.alreadyClicked=true; var btn=this; setTimeout(function(){ btn.alreadyClicked=false; }, 5000);"
                                             action="#{inwardTimedItemController.save}">
                                         </p:commandButton>
                                     </div>
@@ -259,49 +301,70 @@
                         <h:outputLabel value="Consumed Timed Service" class="mx-4"></h:outputLabel>
                     </f:facet>
 
-                    <p:dataTable id="list" class="w-100" value="#{inwardTimedItemController.items}" var="ti">
-                        <p:column headerText="Service Name">
+                    <p:dataTable 
+                        id="list" 
+                        class="w-100" 
+                        value="#{inwardTimedItemController.items}" 
+                        var="ti">
+                        
+                        <p:column headerText="Service Name" style="padding: 8px;">
                             #{ti.item.name}
                         </p:column>
-                        <p:column headerText="Start Time">
-                            <p:datePicker 
-                                showTime="true"
-                                timeInput="true" 
-                                value="#{ti.fromTime}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:datePicker>      
 
-                        </p:column>                               
-                        <p:column headerText="Stopped Time">
-                            <p:datePicker 
-                                showTime="true"
-                                timeInput="true"  
-                                value="#{ti.toTime}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:datePicker> 
+                        <p:column headerText="Service Department" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.bill.fromDepartment.name}"/>
                         </p:column>
-                        <p:column headerText="Total" styleClass="averageNumericColumn">
+
+                        <p:column headerText="Billed Department" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.bill.toDepartment.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Start Time" style="padding: 8px;">
+                            <p:datePicker
+                                showTime="true"
+                                timeInput="true"
+                                value="#{ti.fromTime}"
+                                disabled="#{ti.billItem.fromPackage}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            </p:datePicker>
+                        </p:column>
+                        
+                        <p:column headerText="Stopped Time" style="padding: 8px;">
+                            <p:datePicker
+                                showTime="true"
+                                timeInput="true"
+                                value="#{ti.toTime}"
+                                disabled="#{ti.billItem.fromPackage}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            </p:datePicker>
+                        </p:column>
+
+                        <p:column headerText="Comments" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.comment}" />
+                        </p:column>
+                        
+                        <p:column headerText="Added By" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.creater.webUserPerson.nameWithTitle}"/><br/>
+                            <h:outputLabel value="#{ti.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Total Charges" styleClass="averageNumericColumn" rendered="#{webUserController.hasPrivilege('ShowTimeServiceCharges')}"  style="padding: 8px;">
                             <h:outputLabel  value="#{ti.serviceValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Comments">
-                            <h:outputLabel value="Added by #{ti.creater.webUserPerson.name}"/>     
-                            <br/>
-                            <h:panelGroup rendered="#{ti.retired}" >
-                                <h:outputLabel style="color: red;" value="Deleted By " />
-                                <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}"  class="mx-1">                                       
-                                </h:outputLabel>
-                            </h:panelGroup>
-                        </p:column>     
-                        <p:column headerText="Action" >
+
+                        <p:column headerText="Action" width="14em;" style="padding: 8px;">
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    value="Update" 
+                                <p:commandButton
+                                    value="Update"
                                     class="ui-button-warning"
                                     icon="fa fa-pencil"
-                                    ajax="false" 
-                                    action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
+                                    ajax="false"
+                                    action="#{inwardTimedItemController.finalizeService(ti)}"
+                                    rendered="#{not ti.billItem.fromPackage}" >
                                 </p:commandButton>
                                 <p:commandButton
                                     icon="fa-solid fa-trash"
@@ -309,7 +372,8 @@
                                     ajax="false"
                                     value="Remove"
                                     action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
+                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}"
+                                    rendered="#{not ti.billItem.fromPackage}" >
                                 </p:commandButton>
                             </div>
 

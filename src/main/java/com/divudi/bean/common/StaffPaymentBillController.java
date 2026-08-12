@@ -53,6 +53,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.text.DecimalFormat;
@@ -112,6 +113,8 @@ public class StaffPaymentBillController implements Serializable {
     private Date toDate;
     List<Bill> selectedItems;
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
     String selectText = "";
     private String withholdingTaxCalculationStatus;
@@ -418,6 +421,7 @@ public class StaffPaymentBillController implements Serializable {
             }
             dueBillFees.removeAll(removeingBillFees);
         }
+        initializePayingAmounts(dueBillFees);
         calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution();
         performCalculations();
     }
@@ -465,6 +469,7 @@ public class StaffPaymentBillController implements Serializable {
                 dueBillFees.removeAll(removeingBillFees);
             }
 
+            initializePayingAmounts(dueBillFees);
         }
     }
 
@@ -514,6 +519,7 @@ public class StaffPaymentBillController implements Serializable {
                 dueBillFees.removeAll(removeingBillFees);
             }
 
+            initializePayingAmounts(dueBillFees);
         }
     }
 
@@ -521,6 +527,20 @@ public class StaffPaymentBillController implements Serializable {
         totalDue = 0;
         for (BillFee f : dueBillFees) {
             totalDue = totalDue + f.getFeeValue() - f.getPaidValue();
+        }
+    }
+
+    /**
+     * Defaults the UI-only, transient payingAmount for each due BillFee to
+     * the full outstanding balance (feeValue - paidValue). The cashier can
+     * then reduce this amount on the UI to make a partial payment.
+     */
+    private void initializePayingAmounts(List<BillFee> fees) {
+        if (fees == null) {
+            return;
+        }
+        for (BillFee bf : fees) {
+            bf.setPayingAmount(bf.getFeeValue() - bf.getPaidValue());
         }
     }
 
@@ -546,7 +566,9 @@ public class StaffPaymentBillController implements Serializable {
     public void calculatePaymentsSelected() {
         totalPaying = 0;
         for (BillFee f : payingBillFees) {
-            totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
+            double outstanding = f.getFeeValue() - f.getPaidValue();
+            double amount = f.getPayingAmount() != null ? f.getPayingAmount() : outstanding;
+            totalPaying = totalPaying + amount;
         }
     }
 
@@ -715,6 +737,19 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
+        if (payingBillFees != null) {
+            for (BillFee f : payingBillFees) {
+                double outstanding = f.getFeeValue() - f.getPaidValue();
+                if (f.getPayingAmount() == null || f.getPayingAmount() <= 0) {
+                    JsfUtil.addErrorMessage("Please enter a valid paying amount for all selected fees");
+                    return true;
+                }
+                if (f.getPayingAmount() - outstanding > 0.1) {
+                    JsfUtil.addErrorMessage("Paying amount cannot exceed the outstanding due amount");
+                    return true;
+                }
+            }
+        }
         performCalculations();
         if (totalPaying == 0) {
             JsfUtil.addErrorMessage("Please select payments to update");
@@ -769,11 +804,14 @@ public class StaffPaymentBillController implements Serializable {
 
     private void saveBillCompo(Bill paymentBill, Payment paymentBillPayment) {
         for (BillFee originalBillFee : getPayingBillFees()) {
+            double amountPaidNow = originalBillFee.getPayingAmount() != null
+                    ? originalBillFee.getPayingAmount()
+                    : (originalBillFee.getFeeValue() - originalBillFee.getPaidValue());
 //            saveBillItemForPaymentBill(b, bf); //for create bill fees and billfee payments
-            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment);
+            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment, amountPaidNow);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
-            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
-            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
+            originalBillFee.setPaidValue(originalBillFee.getPaidValue() + amountPaidNow);
+            originalBillFee.setSettleValue(originalBillFee.getSettleValue() + amountPaidNow);
             getBillFeeFacade().edit(originalBillFee);
             //////// // System.out.println("marking as paid");
         }
@@ -799,7 +837,7 @@ public class StaffPaymentBillController implements Serializable {
         b.getBillItems().add(i);
     }
 
-    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p) {
+    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p, double amountPaidNow) {
         BillItem newlyCreatedPayingBillItem = new BillItem();
         newlyCreatedPayingBillItem.setReferanceBillItem(originalBillFee.getBillItem());
         newlyCreatedPayingBillItem.setReferenceBill(originalBillFee.getBill());
@@ -808,10 +846,10 @@ public class StaffPaymentBillController implements Serializable {
         newlyCreatedPayingBillItem.setCreatedAt(Calendar.getInstance().getTime());
         newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
         newlyCreatedPayingBillItem.setDiscount(0.0);
-        newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
-        newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setGrossValue(amountPaidNow);
+        newlyCreatedPayingBillItem.setNetValue(amountPaidNow);
         newlyCreatedPayingBillItem.setQty(1.0);
-        newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setRate(amountPaidNow);
         getBillItemFacade().create(newlyCreatedPayingBillItem);
 
         BillFee newlyCreatedBillFee = saveBillFee(newlyCreatedPayingBillItem, p);
@@ -850,6 +888,15 @@ public class StaffPaymentBillController implements Serializable {
             current = new BilledBill();
         }
         return current;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
     }
 
     public void prepareToInitializeNewProfessionalPayment() {

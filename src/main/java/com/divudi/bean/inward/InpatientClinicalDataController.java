@@ -12,6 +12,7 @@ import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
@@ -69,7 +70,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -118,6 +121,8 @@ public class InpatientClinicalDataController implements Serializable {
     /**
      * EJBs
      */
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @EJB
     private PatientEncounterFacade ejbFacade;
     @EJB
@@ -171,6 +176,8 @@ public class InpatientClinicalDataController implements Serializable {
     com.divudi.bean.common.NotificationController notificationController;
     @Inject
     private MedicationAdministrationController medicationAdministrationController;
+    @Inject
+    private WebUserController webUserController;
 
     /**
      * Properties
@@ -2376,6 +2383,74 @@ public class InpatientClinicalDataController implements Serializable {
         }
     }
 
+    /**
+     * Returns a warning string if the given item matches any recorded patient
+     * allergy, or null if no match. Allergies are recorded at VTM level; the
+     * prescribed item may be an AMP/VMP whose VTM is reached through the
+     * AMP -> VMP -> VTM chain (AMP creation only sets {@code vmp}, so an AMP's
+     * own {@code vtm} is often null). A direct match (item == allergy item) is
+     * also caught.
+     * <p>
+     * The {@link #patientAllergies} session list is refreshed for the current
+     * {@link #patient} when it is empty, because some navigation paths (e.g. the
+     * ward-medicine page) set the patient without reloading allergies.
+     */
+    private String getAllergyWarning(Item prescribedItem) {
+        if (prescribedItem == null) {
+            return null;
+        }
+        List<ClinicalFindingValue> allergies = patientAllergies;
+        if ((allergies == null || allergies.isEmpty()) && patient != null) {
+            allergies = fillPatientAllergies(patient);
+            patientAllergies = allergies;
+        }
+        if (allergies == null || allergies.isEmpty()) {
+            return null;
+        }
+        Set<Long> prescribedVtmIds = collectVtmIds(prescribedItem);
+        for (ClinicalFindingValue allergy : allergies) {
+            if (allergy == null || allergy.getItemValue() == null) {
+                continue;
+            }
+            Item allergen = allergy.getItemValue();
+            if (allergen.getId() == null) {
+                continue;
+            }
+            // Direct match: the exact item is recorded as an allergy.
+            if (allergen.getId().equals(prescribedItem.getId())) {
+                return prescribedItem.getName() + " matches recorded allergy: " + allergen.getName();
+            }
+            // VTM-level match: any VTM the prescribed item resolves to is the allergen.
+            if (prescribedVtmIds.contains(allergen.getId())) {
+                return prescribedItem.getName() + " matches recorded allergy: " + allergen.getName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Collects the VTM ids a prescribed item resolves to: its own
+     * {@code vtm}, and — for an AMP — the VTM of its VMP
+     * ({@code amp.getVmp().getVtm()}), since AMPs link to their VTM through the
+     * VMP rather than directly.
+     */
+    private Set<Long> collectVtmIds(Item prescribedItem) {
+        Set<Long> vtmIds = new HashSet<>();
+        if (prescribedItem == null) {
+            return vtmIds;
+        }
+        if (prescribedItem.getVtm() != null && prescribedItem.getVtm().getId() != null) {
+            vtmIds.add(prescribedItem.getVtm().getId());
+        }
+        if (prescribedItem instanceof Amp) {
+            Vmp vmp = ((Amp) prescribedItem).getVmp();
+            if (vmp != null && vmp.getVtm() != null && vmp.getVtm().getId() != null) {
+                vtmIds.add(vmp.getVtm().getId());
+            }
+        }
+        return vtmIds;
+    }
+
     public void addAdmissionWardMedicine() {
         if (parentAdmission == null || parentAdmission.getId() == null) {
             JsfUtil.addErrorMessage("No admission selected.");
@@ -2384,6 +2459,10 @@ public class InpatientClinicalDataController implements Serializable {
         if (getAdmissionWardMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
+        }
+        String allergyWarning = getAllergyWarning(getAdmissionWardMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
         Prescription rx = getAdmissionWardMedicine().getPrescription();
         rx.setEncounter(parentAdmission);
@@ -2880,12 +2959,30 @@ public class InpatientClinicalDataController implements Serializable {
             return;
         }
         saveClinicalDischarge();
+        java.util.Map<String, Object> before = clinicalDischargeStateMap();
         parentAdmission.setClinicallyDischarged(Boolean.TRUE);
         parentAdmission.setClinicalDischargeDateTime(new Date());
         parentAdmission.setClinicalDischargedBy(sessionController.getLoggedUser());
         getFacade().edit(parentAdmission);
+        auditService.logEncounterAudit(parentAdmission, "Clinical Discharge",
+                before, clinicalDischargeStateMap(), sessionController.getLoggedUser());
         notificationController.createNotification(parentAdmission, "ClinicalDischarge");
         JsfUtil.addSuccessMessage("Clinical discharge confirmed.");
+    }
+
+    /**
+     * Snapshot of the clinical discharge flags for audit events (#22236).
+     */
+    private java.util.Map<String, Object> clinicalDischargeStateMap() {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (parentAdmission == null) {
+            return m;
+        }
+        m.put("clinicallyDischarged", parentAdmission.isClinicallyDischarged());
+        m.put("clinicalDischargeDateTime", parentAdmission.getClinicalDischargeDateTime());
+        m.put("clinicalDischargedBy", parentAdmission.getClinicalDischargedBy() != null
+                ? parentAdmission.getClinicalDischargedBy().getName() : null);
+        return m;
     }
 
     public void cancelClinicalDischarge() {
@@ -2893,10 +2990,13 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("No admission found.");
             return;
         }
+        java.util.Map<String, Object> before = clinicalDischargeStateMap();
         parentAdmission.setClinicallyDischarged(Boolean.FALSE);
         parentAdmission.setClinicalDischargeDateTime(null);
         parentAdmission.setClinicalDischargedBy(null);
         getFacade().edit(parentAdmission);
+        auditService.logEncounterAudit(parentAdmission, "Clinical Discharge Cancelled",
+                before, clinicalDischargeStateMap(), sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Clinical discharge cancelled.");
     }
 
@@ -3124,6 +3224,10 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
+        String allergyWarning = getAllergyWarning(getPatientMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
+        }
         getPatientMedicine().setPatient(patient);
         getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
         prescriptionFacade.create(getPatientMedicine().getPrescription());
@@ -3138,9 +3242,19 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
             return;
         }
+        boolean nursingDischarged = current.isNursingDischarged()
+                || (current.getParentEncounter() != null && current.getParentEncounter().isNursingDischarged());
+        if (nursingDischarged && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return;
+        }
         if (getEncounterMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
+        }
+        String allergyWarning = getAllergyWarning(getEncounterMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
         getEncounterMedicine().setEncounter(current);
         getEncounterMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
@@ -4952,6 +5066,25 @@ public class InpatientClinicalDataController implements Serializable {
             return current.getGuardian().getEmail().trim();
         }
         return "";
+    }
+
+    /**
+     * Builds an EmailAttachment from a generated letter/diagnosis card
+     * (ClinicalFindingValue.getLobValue() is the rendered HTML content), for
+     * use by any compose flow that needs to attach this admission's saved
+     * documents. Returns null if the letter has no rendered content.
+     */
+    public com.divudi.core.data.EmailAttachment toEmailAttachment(ClinicalFindingValue letterOrCard) {
+        if (letterOrCard == null || letterOrCard.getLobValue() == null || letterOrCard.getLobValue().isEmpty()) {
+            return null;
+        }
+        String name = letterOrCard.getStringValue() != null && !letterOrCard.getStringValue().trim().isEmpty()
+                ? letterOrCard.getStringValue().trim() : "Document";
+        name = name.replaceAll("[^a-zA-Z0-9.-]", "_");
+        return new com.divudi.core.data.EmailAttachment(
+                name + ".html",
+                "text/html",
+                java.util.Base64.getEncoder().encodeToString(letterOrCard.getLobValue().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }
 
     public void sendDocumentEmail() {

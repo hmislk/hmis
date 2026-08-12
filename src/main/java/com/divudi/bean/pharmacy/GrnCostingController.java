@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
@@ -51,6 +52,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -79,8 +82,12 @@ public class GrnCostingController implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final int PRICE_SCALE = 6;
 
+    private static final Logger LOGGER = Logger.getLogger(GrnCostingController.class.getName());
+
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     private BilledBill bill;
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -151,6 +158,7 @@ public class GrnCostingController implements Serializable {
     private Institution fromInstitution;
     private Institution referenceInstitution;
     BillItem currentExpense;
+    private Item freeItemToAdd;
 
     public double calDifference() {
         double netTotal = getGrnBill().getNetTotal();
@@ -159,17 +167,20 @@ public class GrnCostingController implements Serializable {
     }
 
     public String navigateToResiveCosting() {
-        // Check if there are existing unapproved GRNs for this purchase order
-        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
-            for (Bill existingGrn : getApproveBill().getListOfBill()) {
-                if (existingGrn != null
-                        && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
-                        && !existingGrn.isRetired()
-                        && !existingGrn.isCancelled()) {
-                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
-                    return "";
-                }
+        // Guard against orphan PRE bills. The @Transient getListOfBill() is empty
+        // whenever the session was cleared or the user navigated directly, so a
+        // direct DB count is the only reliable check. (Issue #21579)
+        if (getApproveBill() != null && getApproveBill().getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("po", getApproveBill());
+            params.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            long orphanCount = getBillFacade().findLongByJpql(
+                    "SELECT COUNT(b) FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false AND b.cancelled = false",
+                    params, TemporalType.TIMESTAMP);
+            if (orphanCount > 0) {
+                JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or cancel the existing GRN before creating a new one.");
+                return "";
             }
         }
 
@@ -261,6 +272,10 @@ public class GrnCostingController implements Serializable {
         if (originalBillItemToDuplicate == null) {
             return;
         }
+        if (originalBillItemToDuplicate.getReferanceBillItem() == null) {
+            JsfUtil.addInfoMessage("Cannot duplicate an ad-hoc free item line");
+            return;
+        }
         BigDecimal totalQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
         BigDecimal totalFreeQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
 
@@ -313,6 +328,69 @@ public class GrnCostingController implements Serializable {
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         recalculateProfitMarginsForAllItems();
         calDifference();
+    }
+
+    public void addFreeItemNotInPo() {
+        if (!configOptionApplicationController.getBooleanValueByKey("GRN - Allow Free Items Not in Purchase Order", false)) {
+            JsfUtil.addErrorMessage("Adding free items not in the purchase order is not enabled.");
+            return;
+        }
+        if (freeItemToAdd == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
+        }
+
+        List<Item> singleItemList = new ArrayList<>();
+        singleItemList.add(freeItemToAdd);
+        Map<Long, double[]> lastRatesMap = buildLastRatesMap(singleItemList);
+        double[] rates = lastRatesMap.get(freeItemToAdd.getId());
+        double lastPr = rates != null ? rates[0] : 0.0;
+        double lastRr = rates != null ? rates[1] : 0.0;
+
+        BillItem freeBillItem = new BillItem();
+        freeBillItem.setSearialNo(getBillItems().size());
+        freeBillItem.setItem(freeItemToAdd);
+        freeBillItem.setReferanceBillItem(null);
+        freeBillItem.setQty(0.0);
+        freeBillItem.setTmpQty(0.0);
+        freeBillItem.setTmpFreeQty(0.0);
+
+        PharmaceuticalBillItem freePbi = new PharmaceuticalBillItem();
+        freePbi.setBillItem(freeBillItem);
+        freePbi.setQty(0.0);
+        freePbi.setQtyInUnit(0.0);
+        freePbi.setFreeQty(0.0);
+        freePbi.setFreeQtyInUnit(0.0);
+        freePbi.setPurchaseRate(0.0);
+        freePbi.setRetailRate(lastRr);
+
+        freeBillItem.setPharmaceuticalBillItem(freePbi);
+
+        BillItemFinanceDetails fd = new BillItemFinanceDetails(freeBillItem);
+        fd.setQuantity(BigDecimal.ZERO);
+        fd.setFreeQuantity(BigDecimal.ZERO);
+        fd.setLineGrossRate(BigDecimal.ZERO);
+        fd.setLineDiscountRate(BigDecimal.ZERO);
+        fd.setLineNetRate(BigDecimal.ZERO);
+        fd.setRetailSaleRate(BigDecimal.valueOf(lastRr));
+
+        freeBillItem.setBillItemFinanceDetails(fd);
+        recalculateFinancialsBeforeAddingBillItem(fd);
+
+        freePbi.setLastPurchaseRate(lastPr);
+        freePbi.setLastPurchaseRateInUnit(lastPr);
+        freePbi.setLastPurchaseRatePack(lastPr * fd.getUnitsPerPack().doubleValue());
+
+        getBillItems().add(freeBillItem);
+
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        calDifference();
+        recalculateProfitMarginsForAllItems();
+
+        freeItemToAdd = null;
+        JsfUtil.addSuccessMessage("Free item added. Enter the received free quantity.");
     }
 
     public void removeSelected() {
@@ -473,6 +551,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void requestFinalize() {
+        if (!isAuthorized("REQUEST_FINALIZE", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
@@ -543,6 +624,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void settle() {
+        if (!isAuthorized("SETTLE", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (!validateInputs()) {
             return;
         }
@@ -747,7 +831,7 @@ public class GrnCostingController implements Serializable {
     }
 
     private void saveGrnBill() {
-        saveBill();
+        doSaveBill();
     }
 
     private void distributeValuesToItems() {
@@ -1038,6 +1122,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void finalizeBill() {
+        if (!isAuthorized("FINALIZE_BILL", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (currentGrnBillPre == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;
@@ -1055,6 +1142,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void saveGrnPreBill() {
+        if (!isAuthorized("SAVE_GRN_PRE_BILL", "PharmacyGrnSave")) {
+            return;
+        }
         getCurrentGrnBillPre().setBillDate(new Date());
         getCurrentGrnBillPre().setBillTime(new Date());
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -1091,6 +1181,20 @@ public class GrnCostingController implements Serializable {
     }
 
     public void saveBill() {
+        if (!isAuthorized("SAVE_BILL", "PharmacyGrnSave")) {
+            return;
+        }
+        doSaveBill();
+    }
+
+    /**
+     * Unguarded core of {@link #saveBill()}. Called directly (bypassing the
+     * PharmacyGrnSave check) by {@link #saveGrnBill()}, which is invoked from
+     * {@link #settle()} — a single-step create+finalize action already
+     * authorized under PharmacyGrnFinalize. A user with only the Finalize
+     * privilege must still be able to settle a brand new GRN in one step.
+     */
+    private void doSaveBill() {
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
 //        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -1121,6 +1225,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void saveWholesaleBill() {
+        if (!isAuthorized("SAVE_WHOLESALE_BILL", "PharmacyGrnSave")) {
+            return;
+        }
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -1729,6 +1836,9 @@ public class GrnCostingController implements Serializable {
     }
 
     private double getRetailPrice(BillItem billItem) {
+        if (billItem == null || billItem.getReferanceBillItem() == null) {
+            return 0;
+        }
         String sql = "select (p.retailRate) from PharmaceuticalBillItem p where p.billItem=:b";
         HashMap hm = new HashMap();
         hm.put("b", billItem.getReferanceBillItem());
@@ -1798,6 +1908,9 @@ public class GrnCostingController implements Serializable {
             pbi.setRetailRatePack(Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
 
+            pbi.setWholesaleRate(Optional.ofNullable(f.getWholesaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
+            pbi.setWholesaleRatePack(Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO).doubleValue());
+
             // Update BillItem quantity and rate in packs
             bi.setQty(qtyPacks.doubleValue());
             bi.setRate(pbi.getPurchaseRatePack());
@@ -1825,6 +1938,10 @@ public class GrnCostingController implements Serializable {
             pbi.setRetailRatePack(r);
             pbi.setRetailRateInUnit(r);
 
+            double wr = Optional.ofNullable(f.getWholesaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue();
+            pbi.setWholesaleRate(wr);
+            pbi.setWholesaleRatePack(wr);
+
             // Update BillItem quantity and rate in units
             bi.setQty(qty.doubleValue());
             bi.setRate(pbi.getPurchaseRate());
@@ -1850,18 +1967,34 @@ public class GrnCostingController implements Serializable {
         onEdit(bi);
     }
 
+    /**
+     * Clamps a bill item's quantity down to the PO's remaining orderable
+     * qty and surfaces an error message when it's over. Shared by both
+     * onEdit() (Purchase Rate blur) and qtyChangedListner() (Qty field's
+     * own blur) so the rule is enforced - and visible - no matter which
+     * field the user edits. See issue #22681: previously only onEdit() had
+     * this check, and its f:ajax render list didn't include the Qty field
+     * or the messages panel, so the clamp silently corrected the saved qty
+     * while the screen kept showing the rejected value.
+     */
+    private void clampQuantityToRemaining(BillItem tmp, BillItemFinanceDetails f) {
+        if (tmp.getReferanceBillItem() != null) {
+            double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
+            if (remains < f.getQuantity().doubleValue()) {
+                f.setQuantity(java.math.BigDecimal.valueOf(remains));
+                tmp.setTmpQty(remains);
+                JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
+            }
+        }
+    }
+
     public void onEdit(BillItem tmp) {
         setBatch(tmp);
         BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
         if (f == null) {
             return;
         }
-        double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
-        if (remains < f.getQuantity().doubleValue()) {
-            f.setQuantity(java.math.BigDecimal.valueOf(remains));
-            tmp.setTmpQty(remains);
-            JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
-        }
+        clampQuantityToRemaining(tmp, f);
 
         if (f.getLineGrossRate().compareTo(f.getRetailSaleRatePerUnit()) > 0) {
             f.setRetailSaleRatePerUnit(f.getLineGrossRate());
@@ -1897,6 +2030,21 @@ public class GrnCostingController implements Serializable {
         recalculateFinancialsBeforeAddingBillItem(f);
 
         // Redistribute bill discount after retail rate changes (even if discount is 0 to clear previous distributions)
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
+        calDifference();
+    }
+
+    public void wholesaleRateChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        recalculateFinancialsBeforeAddingBillItem(f);
+
+        // Redistribute bill discount after wholesale rate changes (even if discount is 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
@@ -1957,6 +2105,8 @@ public class GrnCostingController implements Serializable {
                 return;
             }
         }
+
+        clampQuantityToRemaining(tmp, f);
 
         recalculateFinancialsBeforeAddingBillItem(f);
 
@@ -2513,6 +2663,14 @@ public class GrnCostingController implements Serializable {
         this.selectedBillItems = selectedBillItems;
     }
 
+    public Item getFreeItemToAdd() {
+        return freeItemToAdd;
+    }
+
+    public void setFreeItemToAdd(Item freeItemToAdd) {
+        this.freeItemToAdd = freeItemToAdd;
+    }
+
     public SearchKeyword getSearchKeyword() {
         if (searchKeyword == null) {
             searchKeyword = new SearchKeyword();
@@ -2633,17 +2791,20 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        // Check if there are existing unapproved GRNs for this purchase order
-        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
-            for (Bill existingGrn : getApproveBill().getListOfBill()) {
-                if (existingGrn != null
-                        && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
-                        && !existingGrn.isRetired()
-                        && !existingGrn.isCancelled()) {
-                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
-                    return "";
-                }
+        // Guard against orphan PRE bills. The @Transient getListOfBill() is empty
+        // whenever the session was cleared or the user navigated directly, so a
+        // direct DB count is the only reliable check. (Issue #21579)
+        if (getApproveBill() != null && getApproveBill().getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("po", getApproveBill());
+            params.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            long orphanCount = getBillFacade().findLongByJpql(
+                    "SELECT COUNT(b) FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false AND b.cancelled = false",
+                    params, TemporalType.TIMESTAMP);
+            if (orphanCount > 0) {
+                JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or cancel the existing GRN before creating a new one.");
+                return "";
             }
         }
 
@@ -2794,6 +2955,21 @@ public class GrnCostingController implements Serializable {
     }
 
     public void requestWithSaveApprove() {
+        if (!isAuthorized("REQUEST_WITH_SAVE_APPROVE", "PharmacyGrnSave")) {
+            return;
+        }
+        doRequestWithSaveApprove();
+    }
+
+    /**
+     * Unguarded core of {@link #requestWithSaveApprove()}. Called directly
+     * (bypassing the PharmacyGrnSave check) by
+     * {@link #finalizeGrnWithSaveApprove()} and
+     * {@link #approveGrnWithSaveApprove()}, which auto-save a not-yet-
+     * persisted draft as part of a Finalize/Approve action that has already
+     * been authorized under its own privilege.
+     */
+    private void doRequestWithSaveApprove() {
         // Simple save method for costing save/approve workflow
         // Allow saving with incomplete data - no validation required
 
@@ -2890,7 +3066,23 @@ public class GrnCostingController implements Serializable {
         JsfUtil.addSuccessMessage("GRN Saved");
     }
 
-    public void finalizeGrnWithSaveApprove() {
+    // synchronized: the Finalize button on pharmacy_grn_costing_with_save_approve.xhtml
+    // has only a confirm() dialog and a rendered="#{!completed}" button-hide that depends
+    // on a full-page re-render to take effect - it does not stop a fast double-click before
+    // the re-render lands. A double-click raced two calls through this session-scoped bean
+    // before either had persisted the completed flag, duplicating the GRN save/finalize
+    // (same bug class as PurchaseOrderController.approve() / TransferRequestController
+    // .approveTransferRequestBill(), issue #22194).
+    public synchronized void finalizeGrnWithSaveApprove() {
+        if (!isAuthorized("FINALIZE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnFinalize")) {
+            return;
+        }
+        // Check if this GRN is already finalized to prevent a queued double-submit
+        // (blocked on the synchronized lock above) from finalizing it a second time.
+        if (getCurrentGrnBillPre().isCompleted()) {
+            JsfUtil.addErrorMessage("This GRN is already finalized");
+            return;
+        }
         // Apply same validations as authorize button
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
@@ -2933,7 +3125,7 @@ public class GrnCostingController implements Serializable {
         }
 
         // First perform the save operation
-        requestWithSaveApprove();
+        doRequestWithSaveApprove();
 
         // Mark the bill as completed
         getCurrentGrnBillPre().setCompleted(true);
@@ -2985,7 +3177,41 @@ public class GrnCostingController implements Serializable {
             msg = quantityValidationMsg;
         }
 
+        // Discount Rate is a per-unit discount amount, not a percentage. Nothing
+        // upstream clamps it against the Purchase Rate, so a discount larger than
+        // the purchase rate silently drives the line's net rate (and therefore the
+        // whole GRN) negative - i.e. the pharmacy would be "receiving" stock at a
+        // negative cost. Block finalization instead of persisting that nonsensical
+        // value (found during legacy-vs-DTO GRN QA, issue #22595).
+        String discountValidationMsg = validateLineDiscountRates(billItems);
+        if (!discountValidationMsg.isEmpty()) {
+            msg = discountValidationMsg;
+        }
+
         return msg;
+    }
+
+    private String validateLineDiscountRates(List<BillItem> billItems) {
+        for (BillItem bi : billItems) {
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+            if (f == null) {
+                continue;
+            }
+            // Compare the raw discount/gross rates directly rather than the derived
+            // lineNetRate, which recalculateFinancialsBeforeAddingBillItem() rounds to
+            // 4 decimal places - a discount only fractionally above the gross rate
+            // could otherwise round down to 0.0000 and slip past a >= 0 check.
+            BigDecimal grossRate = f.getLineGrossRate();
+            BigDecimal discountRate = f.getLineDiscountRate();
+            if (grossRate == null || discountRate == null) {
+                continue;
+            }
+            if (discountRate.compareTo(grossRate) > 0) {
+                String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown Item";
+                return "Item " + itemName + ": Discount Rate cannot exceed Purchase Rate (results in a negative net rate)";
+            }
+        }
+        return "";
     }
 
     private String validateGrnQuantities(List<BillItem> billItems) {
@@ -3048,21 +3274,35 @@ public class GrnCostingController implements Serializable {
             if (ph == null) {
                 continue;
             }
-            if (ph.getQty() != 0.0) {
-                if (ph.getDoe() == null || ph.getStringValue().trim().isEmpty()) {
+            if (ph.getQty() != 0.0 || ph.getFreeQty() != 0.0) {
+                if (ph.getDoe() == null || ph.getStringValue() == null || ph.getStringValue().trim().isEmpty()) {
                     return true;
                 }
-                if (ph.getPurchaseRate() > ph.getRetailRate()) {
-                    return true;
-                }
-
+            }
+            if (ph.getQty() != 0.0 && ph.getPurchaseRate() > ph.getRetailRate()) {
+                return true;
             }
 
         }
         return false;
     }
 
-    public void approveGrnWithSaveApprove() {
+    // synchronized: the Approve button on pharmacy_grn_costing_with_save_approve.xhtml
+    // has only a confirm() dialog, no double-click guard. A double-click raced two calls
+    // through this session-scoped bean before either had persisted billTypeAtomic as
+    // PHARMACY_GRN, duplicating the GRN item batch/stock creation (same bug class as
+    // PurchaseOrderController.approve() / TransferRequestController
+    // .approveTransferRequestBill(), issue #22194).
+    public synchronized void approveGrnWithSaveApprove() {
+        if (!isAuthorized("APPROVE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnApprove")) {
+            return;
+        }
+        // Check if this GRN is already approved to prevent a queued double-submit
+        // (blocked on the synchronized lock above) from approving it a second time.
+        if (getCurrentGrnBillPre().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+            JsfUtil.addErrorMessage("This GRN is already approved");
+            return;
+        }
         // Always use bill's invoice number, ignore controller reference
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
@@ -3089,7 +3329,7 @@ public class GrnCostingController implements Serializable {
 
         // First ensure the bill is saved
         if (getCurrentGrnBillPre().getId() == null) {
-            requestWithSaveApprove(); // Save first if not already saved
+            doRequestWithSaveApprove(); // Save first if not already saved
         }
 
         // Ensure bill discount distribution and calculate totals BEFORE processing items
@@ -3097,6 +3337,63 @@ public class GrnCostingController implements Serializable {
         ensureBillDiscountSynchronization();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+
+        // Generate the bill number BEFORE the stock-mutating item loop below. This method
+        // has no surrounding transaction of its own (GrnCostingController is a plain CDI
+        // bean, not an EJB), so each Facade edit/create call below commits independently.
+        // Bill number generation depends on config lookups and can fail for reasons
+        // unrelated to the GRN itself (e.g. a missing DB column from an out-of-sync
+        // schema, as happened live during QA - issue #22595). If that failure happened
+        // AFTER the stock/batch loop had already run, the stock addition would remain
+        // committed even though the GRN never became PHARMACY_GRN, and a retry would
+        // silently double the stock. Doing this first keeps the risky, config-driven
+        // work outside the item loop's blast radius.
+        // Check if bill number suffix is configured, if not set default "GRN" for Pharmacy GRN
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Set default suffix for Pharmacy GRN if not configured
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "GRN");
+        }
+
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        // Handle Department ID generation
+        String deptId;
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else {
+            // Default behavior - use the original method
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
+        }
+
+        // Handle Institution ID generation separately
+        String insId;
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(),
+                    BillTypeAtomic.PHARMACY_GRN
+            );
+        } else {
+            // Default behavior - use the department ID for institution ID or original method
+            if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+                insId = deptId;
+            } else {
+                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN);
+            }
+        }
+
+        getCurrentGrnBillPre().setDeptId(deptId);
+        getCurrentGrnBillPre().setInsId(insId);
 
         // Process bill items for finalization with full stock management
         for (BillItem grnBillItem : getBillItems()) {
@@ -3151,53 +3448,6 @@ public class GrnCostingController implements Serializable {
 
         }
 
-        // Check if bill number suffix is configured, if not set default "GRN" for Pharmacy GRN
-        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "");
-        if (billSuffix == null || billSuffix.trim().isEmpty()) {
-            // Set default suffix for Pharmacy GRN if not configured
-            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "GRN");
-        }
-
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
-        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
-
-        // Handle Department ID generation
-        String deptId;
-        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_GRN
-            );
-        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_GRN
-            );
-        } else {
-            // Default behavior - use the original method
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
-        }
-
-        // Handle Institution ID generation separately
-        String insId;
-        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_GRN
-            );
-        } else {
-            // Default behavior - use the department ID for institution ID or original method
-            if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
-                insId = deptId;
-            } else {
-                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN);
-            }
-        }
-
-        getCurrentGrnBillPre().setDeptId(deptId);
-        getCurrentGrnBillPre().setInsId(insId);
-
         // Set finalization timestamps and user
         getCurrentGrnBillPre().setEditedAt(new Date());
         getCurrentGrnBillPre().setEditor(sessionController.getLoggedUser());
@@ -3241,6 +3491,27 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setTotal(-Math.abs(getCurrentGrnBillPre().getTotal()));
         getCurrentGrnBillPre().setNetTotal(-Math.abs(getCurrentGrnBillPre().getNetTotal()));
         getBillFacade().edit(getCurrentGrnBillPre());
+
+        // Retire any surviving orphan PREs for the same PO that were left behind
+        // by previous interrupted sessions. The current bill is already PHARMACY_GRN
+        // so the type filter excludes it, but the id guard adds extra safety. (#21579)
+        if (getCurrentGrnBillPre().getReferenceBill() != null
+                && getCurrentGrnBillPre().getId() != null) {
+            Map<String, Object> orphanParams = new HashMap<>();
+            orphanParams.put("po", getCurrentGrnBillPre().getReferenceBill());
+            orphanParams.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            orphanParams.put("currentId", getCurrentGrnBillPre().getId());
+            List<Bill> orphanPres = getBillFacade().findByJpql(
+                    "SELECT b FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false "
+                    + "AND b.id != :currentId",
+                    orphanParams, TemporalType.TIMESTAMP);
+            for (Bill orphan : orphanPres) {
+                orphan.setRetired(true);
+                orphan.setRetiredAt(new Date());
+                getBillFacade().edit(orphan);
+            }
+        }
 
         JsfUtil.addSuccessMessage("GRN Finalized");
         printPreview = true;
@@ -3564,6 +3835,14 @@ public class GrnCostingController implements Serializable {
         billItemFinanceDetails.setRetailSaleRatePerUnit(
                 BigDecimalUtil.isPositive(unitsPerPack)
                 ? retailRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO
+        );
+
+        // Re-derive wholesaleRatePerUnit from a user-edited wholesaleRate, mirroring retail above
+        BigDecimal wholesaleRate = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getWholesaleRate());
+        billItemFinanceDetails.setWholesaleRatePerUnit(
+                BigDecimalUtil.isPositive(unitsPerPack)
+                ? wholesaleRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO
         );
 
@@ -4325,9 +4604,11 @@ public class GrnCostingController implements Serializable {
                 return null;
             }
 
-            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineNetRate();
+            BigDecimal prGiven = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getLineNetRate());
 
-            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getUnitsPerPack());
             if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
                 unitsPerPack = BigDecimal.ONE;
             }
@@ -4339,8 +4620,17 @@ public class GrnCostingController implements Serializable {
             );
 
             purchaseRatePerUnit = prPerUnit.doubleValue();
-            retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
-            costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+            BigDecimal rawRetailPerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
+            if (rawRetailPerUnit == null || rawRetailPerUnit.compareTo(BigDecimal.ZERO) == 0) {
+                BigDecimal packRetail = BigDecimalUtil.valueOrZero(
+                        inputBillItem.getBillItemFinanceDetails().getRetailSaleRate());
+                rawRetailPerUnit = packRetail.divide(unitsPerPack, PRICE_SCALE, RoundingMode.HALF_EVEN);
+            }
+            retailRatePerUnit = rawRetailPerUnit.doubleValue();
+            wholesaleRate = Optional.ofNullable(inputBillItem.getBillItemFinanceDetails().getWholesaleRatePerUnit())
+                    .orElse(BigDecimal.ZERO).doubleValue();
+            costRatePerUnit = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getTotalCostRate()).doubleValue();
 
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
         } else {
@@ -4366,6 +4656,8 @@ public class GrnCostingController implements Serializable {
 
             getItemBatchFacade().create(itemBatch);
         } else {
+            itemBatch.setWholesaleRate(wholesaleRate);
+            getItemBatchFacade().edit(itemBatch);
         }
 
         return itemBatch;
@@ -4383,6 +4675,41 @@ public class GrnCostingController implements Serializable {
     
     public String convertToWord(Double d) {
         return d == null ? "" : CommonFunctions.convertToWord(d);
+    }
+
+    /**
+     * Authorization helper method to check GRN Costing privileges and audit
+     * denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    action);
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = null;
+            if (currentGrnBillPre != null) {
+                billId = currentGrnBillPre.getId();
+            } else if (approveBill != null) {
+                billId = approveBill.getId();
+            }
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN Costing access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " GRN.");
+            return false;
+        }
+
+        return true;
     }
 
 }
