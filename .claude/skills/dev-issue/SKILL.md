@@ -133,9 +133,13 @@ Run the `playwright-e2e` skill workflow:
   final result) — per playwright-e2e §0. These double as evidence for the
   issue/PR and wiki in step 10. For bug issues where step 2a ran, capture the
   same view/state it reproduced, so it pairs cleanly as the "after" half of
-  that before/after comparison. For API-only bugs, replay the same sanitized
-  request from step 2a instead, and save the response status/body (redacted,
-  same rule as step 2a) as the "after" evidence.
+  that before/after comparison. For API-only bugs, replay the original
+  request (the actual parameters, not the redacted evidence artifact)
+  against the same confirmed target instead. If that request mutates state,
+  reuse a resettable/disposable target or get the user's confirmation again
+  before replaying it — don't apply a write twice against real data just to
+  capture evidence. Save the response status/body (redacted, same rule as
+  step 2a) as the "after" evidence.
 - Verify the result in the local DB (credentials: see the
   `local_mysql_credentials.md` memory)
 
