@@ -6401,22 +6401,10 @@ public class PharmacyController implements Serializable {
         return data;
     }
 
-    public boolean isInvalidFilter() {
-        if (item != null && (reportType.equals("summeryReport") || reportType.equals("byBill"))) {
-            return true;
-        }
-        return false;
-    }
-
     public void createStockTransferReport() {
         reportTimerController.trackReportExecution(() -> {
             resetFields();
 //            BillType bt;
-
-            if (isInvalidFilter()) {
-                JsfUtil.addErrorMessage("Item filter cannot be applied for 'Summary' or 'Bill' report types. Please remove the item filter or choose a 'Detail' Report.");
-                return;
-            }
 
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             if ("issue".equals(transferType)) {
@@ -6937,6 +6925,10 @@ public class PharmacyController implements Serializable {
         if (dosageForm != null) {
             sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df) ");
             parameters.put("df", dosageForm);
+        }
+        if (item != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item) ");
+            parameters.put("item", item);
         }
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             sql.append(" AND b.departmentType IN :departmentTypes ");
