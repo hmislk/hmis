@@ -14,8 +14,8 @@ argument-hint: "<issue-number>"
 # Full Issue Lifecycle (HMIS)
 
 Invoking this skill is the explicit authorization for every commit/push/PR
-step below — do not re-ask before each one. Discussion gates (steps 3, 4, 14)
-are the points where you pause for the user.
+step below — do not re-ask before each one. Discussion gates (steps 2a
+non-repro case, 3, 4, 14) are the points where you pause for the user.
 
 ## 1. Setup
 
@@ -31,11 +31,34 @@ issue, sets the project board status to In Progress.
 - Identify: which entities/services/JSF pages are involved, which existing
   patterns to follow (DTOs, privileges, AJAX), and what's actually broken or
   missing.
+- **If the issue is a bug report**, try to pin down the root cause by reading
+  code first. Note explicitly whether this succeeded — that decides whether
+  step 2a runs.
+
+## 2a. Reproduce the bug (bug issues only)
+
+Skip this step for feature/enhancement issues, and for bug issues where step
+2's code reading already found a clear, confirmed root cause.
+
+Run it when the issue is a bug and step 2 left the cause unconfirmed or
+unfound:
+
+- Reproduce live against local Payara — the `playwright-e2e` skill for
+  UI-facing bugs, or direct REST calls (per `api-development`) for API-only
+  ones.
+- Save "before" evidence into the project `tmp/` folder: screenshots for UI
+  bugs, request/response bodies for API bugs.
+  - If it reproduces, this evidence proves the bug and becomes the "before"
+    half of the before/after comparison published in step 10.
+  - If it does **not** reproduce, this evidence proves that instead — stop
+    here, post the finding to the issue, and confirm with the user whether to
+    still proceed (per CLAUDE.md "discuss uncertainties") rather than
+    guessing at a fix for a bug you couldn't observe.
 
 ## 3. Discuss the approach (Plan Mode)
 
 Enter Plan Mode. Present:
-- What you found in step 2
+- What you found in step 2 (and step 2a's reproduction evidence, for bugs)
 - The proposed change (files to touch, approach)
 - Anything uncertain (per CLAUDE.md rule "discuss uncertainties")
 
@@ -99,7 +122,9 @@ Run the `playwright-e2e` skill workflow:
 - **Take screenshots** (`browser_take_screenshot`) into the project `tmp/`
   folder at each meaningful stage (before/after states, confirmation dialogs,
   final result) — per playwright-e2e §0. These double as evidence for the
-  issue/PR and wiki in step 10.
+  issue/PR and wiki in step 10. For bug issues, capture the same view/state
+  that step 2a reproduced, so it pairs cleanly as the "after" half of that
+  before/after comparison.
 - Verify the result in the local DB (credentials: see the
   `local_mysql_credentials.md` memory)
 
@@ -118,15 +143,20 @@ quirk, a new accessibility gap, a new verification pattern), append it to
 ## 10. Publish evidence (wiki, issue, PR)
 
 Follow playwright-e2e
-[§8 Publishing screenshot evidence](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence):
+[§8 Publishing screenshot evidence](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence)
+(and, for bug issues,
+[§8a Before/after pairing](../../../developer_docs/testing/playwright-e2e-workflow.md#8a-bug-fixes-pair-before-and-after-evidence)):
 
-1. Review the screenshots from step 7 and discard/crop any that expose
-   patient data, credentials, or other sensitive information.
+1. Review the screenshots from steps 2a and 7 and discard/crop any that
+   expose patient data, credentials, or other sensitive information.
 2. Copy the durable, non-sensitive screenshots into `../hmis.wiki/images/`,
    then commit and push the wiki from `../hmis.wiki`.
-3. Add a comment (or update the description) on issue `$0` showing the
-   verified before/after flow, embedding the wiki images via their raw URLs
+3. Add a comment (or update the description) on issue `$0`, embedding the
+   wiki images via their raw URLs
    (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`).
+   For bug issues, label and pair the step 2a "before" evidence with the
+   step 7 "after" evidence so the fix is visible as a comparison, not just a
+   final-state screenshot.
 4. Remove the temporary screenshots from the project `tmp/` folder.
 
 These wiki image URLs are reused in the PR description in step 13.
