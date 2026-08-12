@@ -326,6 +326,33 @@ gh issue comment 21364 --repo hmislk/hmis --body "Verified with Playwright.
 Remove temporary screenshots from the main repository after copying the durable
 ones into the wiki so they are not accidentally committed with application code.
 
+### 8a. Bug fixes: pair "before" and "after" evidence
+
+When the underlying issue is a bug report **and reproducing it required a
+live check** (the root cause wasn't already confirmed by reading code),
+capture evidence at **two** points instead of one, and publish them together
+as a comparison rather than as a single final-state screenshot:
+
+1. **Before** — during reproduction (before any fix is written), capture the
+   broken state: a screenshot for UI bugs, or the raw request/response for
+   API-only bugs. This is also the evidence that the bug is real if the
+   report turns out to be stale — save it even when the answer turns out to
+   be "does not reproduce" (record that it didn't reproduce under the tested
+   environment/data/inputs — that is not proof the bug is absent).
+2. **After** — once the fix is deployed, capture the same view/state again
+   (or replay the same request, for API-only bugs) showing correct behavior.
+3. Redact patient identifiers, credentials, tokens, cookies, and other
+   sensitive fields from any API request/response snippet before it leaves
+   `tmp/` or is published — the same sanitization rule §8 applies to
+   screenshots.
+4. Place both images (or both sanitized response snippets) in the same issue
+   comment / PR description, labeled "Before" and "After", so a reviewer can
+   see the fix without redeploying locally.
+
+If the root cause was already confirmed by reading code (no live
+reproduction needed), there is no "before" evidence — publish only the
+post-fix confirmation, without implying a comparison.
+
 ---
 
 ## 9. Interacting with non-accessible canvas widgets (e.g. `p:timeline` / vis-timeline)
