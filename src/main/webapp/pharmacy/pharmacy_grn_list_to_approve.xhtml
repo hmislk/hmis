@@ -180,7 +180,7 @@
                                         title="Edit and Approve GRN with Costing" 
                                         ajax="false"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                        action="#{pharmacyBillSearch.navigateToEditSavedGrnCosting()}"
+                                        action="#{pharmacyBillSearch.navigateToEditSavedGrnCostingNative()}"
                                         style="min-width: 80px;">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
                                     </p:commandButton>

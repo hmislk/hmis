@@ -280,6 +280,8 @@ public class DataAdministrationController implements Serializable {
     @EJB
     private DatabaseMigrationService databaseMigrationService;
     @EJB
+    private com.divudi.service.DatabaseMigrationVersionCheckService databaseMigrationVersionCheckService;
+    @EJB
     private DatabaseMigrationFacade databaseMigrationFacade;
     @EJB
     private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
@@ -338,7 +340,6 @@ public class DataAdministrationController implements Serializable {
     private String auditDatabaseExecutionFeedback;
 
     // Wiki DDL version tracking
-    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
     private static final String WIKI_DDL_RAW_URL = "https://raw.githubusercontent.com/wiki/hmislk/hmis/files/createDDL.sql";
     private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
     private String wikiDdlVersion;
@@ -348,6 +349,10 @@ public class DataAdministrationController implements Serializable {
     // never be rendered into a textarea that a full-form submit would echo back.
     private String wikiFetchedDdl;
     private String wikiFetchedDdlInfo;
+    // Table picked by the admin on the "Check Missing Fields and Add Fields"
+    // tab to extract that table's CREATE TABLE statement out of wikiFetchedDdl
+    // into createdSql, instead of requiring it to be hand-pasted.
+    private String selectedWikiTableName;
 
     Date fromDate;
     Date toDate;
@@ -2453,38 +2458,14 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Delegates to {@link com.divudi.service.DatabaseMigrationVersionCheckService},
+     * which also backs {@link DatabaseMigrationService}'s automatic
+     * post-startup check — kept as a shared method so the wiki-fetch/regex
+     * logic isn't duplicated between the manual and automatic paths.
+     */
     public String fetchWikiDdlVersion() {
-        java.net.HttpURLConnection conn = null;
-        try {
-            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
-            conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
-            int status = conn.getResponseCode();
-            if (status == 200) {
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
-                    String line;
-                    // Wiki page writes the time as HH.MM (dot); accept both dot and colon
-                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}[.:]\\d{2})");
-                    while ((line = reader.readLine()) != null) {
-                        Matcher m = versionPattern.matcher(line);
-                        if (m.find()) {
-                            return m.group(1).trim();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Network or parse failure — return null so caller falls back to legacy
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return null;
+        return databaseMigrationVersionCheckService.fetchWikiDdlVersion();
     }
 
     /**
@@ -2581,6 +2562,65 @@ public class DataAdministrationController implements Serializable {
 
     public String getWikiFetchedDdlInfo() {
         return wikiFetchedDdlInfo;
+    }
+
+    /**
+     * Table names parsed out of {@link #wikiFetchedDdl} (populated by
+     * {@link #loadDdlFromWiki()}), for the "Check Missing Fields and Add
+     * Fields" tab's table picker. Uses the same split-by-"CREATE TABLE"
+     * approach as {@link #createTablesOnDatabase}, so the list always
+     * matches what that execution path would actually operate on.
+     */
+    public List<String> getWikiTableNames() {
+        List<String> tableNames = new ArrayList<>();
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            return tableNames;
+        }
+        String[] rawParts = wikiFetchedDdl.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+            String tableName = extractTableName("CREATE TABLE " + part);
+            if (tableName != null && !tableName.isEmpty()) {
+                tableNames.add(tableName);
+            }
+        }
+        Collections.sort(tableNames);
+        return tableNames;
+    }
+
+    /**
+     * Extracts the CREATE TABLE statement for {@link #selectedWikiTableName}
+     * out of {@link #wikiFetchedDdl} and places it in {@link #createdSql},
+     * so the admin doesn't need to already know and hand-paste it before
+     * clicking "Generate Alter Statements".
+     */
+    public void loadCreateStatementForSelectedTable() {
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Load the latest DDL from wiki first.");
+            return;
+        }
+        if (selectedWikiTableName == null || selectedWikiTableName.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Select a table first.");
+            return;
+        }
+        String[] rawParts = wikiFetchedDdl.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+            String createStatement = "CREATE TABLE " + part;
+            String tableName = extractTableName(createStatement);
+            if (selectedWikiTableName.equals(tableName)) {
+                createdSql = createStatement;
+                JsfUtil.addSuccessMessage("Loaded CREATE TABLE statement for '" + tableName + "'. Click 'Generate Alter Statements' to continue.");
+                return;
+            }
+        }
+        JsfUtil.addErrorMessage("Table '" + selectedWikiTableName + "' not found in the fetched DDL.");
     }
 
     public void checkMissingFields() {
@@ -4696,6 +4736,14 @@ public class DataAdministrationController implements Serializable {
 
     public void setCreatedSql(String createdSql) {
         this.createdSql = createdSql;
+    }
+
+    public String getSelectedWikiTableName() {
+        return selectedWikiTableName;
+    }
+
+    public void setSelectedWikiTableName(String selectedWikiTableName) {
+        this.selectedWikiTableName = selectedWikiTableName;
     }
 
     public String getAlterSql() {

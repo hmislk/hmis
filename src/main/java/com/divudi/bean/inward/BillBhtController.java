@@ -312,7 +312,61 @@ public class BillBhtController implements Serializable {
         resetBillData();
         batchBill = surgeryBill;
         patientEncounter = surgeryBill.getPatientEncounter();
+        loadExistingSurgeryServiceEntries(surgeryBill);
         return "/theater/inward_bill_surgery_service?faces-redirect=true";
+    }
+
+    /**
+     * Rebuilds {@link #lstBillEntries} (the "Item Requests" / Bill Items cart
+     * shown in inward_bill_surgery_service.xhtml) from the surgery service
+     * BillItems already saved to the DB against this surgery bill.
+     *
+     * Each time the surgery service cart is settled, settleBillSurgery() ->
+     * saveBill() creates one or more Service sub-bills whose
+     * forwardReferenceBill points back at the surgery bill (see
+     * BillBeanController.setSurgeryData). resetBillData() clears
+     * lstBillEntries on every navigation into this page, so without this,
+     * previously requested/billed items never reappear (issue #20893).
+     */
+    private void loadExistingSurgeryServiceEntries(Bill surgeryBill) {
+        lstBillEntries = new ArrayList<>();
+        if (surgeryBill == null) {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("surgeryBill", surgeryBill);
+        params.put("surgeryBillType", SurgeryBillType.Service);
+        String jpql = "select bi from BillItem bi "
+                + "where bi.bill.forwardReferenceBill = :surgeryBill "
+                + "and bi.bill.surgeryBillType = :surgeryBillType "
+                + "and bi.retired = false "
+                + "and bi.bill.retired = false "
+                + "order by bi.id";
+        List<BillItem> existingBillItems = billItemFacade.findByJpql(jpql, params);
+        if (existingBillItems == null) {
+            return;
+        }
+        for (BillItem bItem : existingBillItems) {
+            BillEntry entry = new BillEntry();
+            entry.setBillItem(bItem);
+            entry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
+            entry.setLstBillFees(existingBillFeesForBillItem(bItem));
+            entry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
+            lstBillEntries.add(entry);
+        }
+    }
+
+    /**
+     * Fetches the BillFees already persisted for a previously-billed BillItem,
+     * so re-displaying the item shows the fees actually charged rather than
+     * recomputing them against the current price matrix.
+     */
+    private List<BillFee> existingBillFeesForBillItem(BillItem bItem) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("billItem", bItem);
+        String jpql = "select bf from BillFee bf where bf.billItem = :billItem and bf.retired = false order by bf.id";
+        List<BillFee> fees = billFeeFacade.findByJpql(jpql, params);
+        return fees != null ? fees : new ArrayList<>();
     }
 
     public String navigateToPrintLabelsForInvestigations() {
@@ -438,6 +492,7 @@ public class BillBhtController implements Serializable {
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
+        loadExistingSurgeryServiceEntries(getBatchBill());
     }
 
     public String navigateToAddServicesFromAdmissionProfile() {
@@ -834,6 +889,10 @@ public class BillBhtController implements Serializable {
 
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
+
+        if (batchBill.getBillType() == BillType.SurgeryBill) {
+            surgeryBillController.refreshSurgeryServiceDepartmentItems();
+        }
 
     }
 
