@@ -49,8 +49,8 @@ verifying a fix, taking screenshots), always default to **Playwright** —
 see the `playwright-e2e` skill. Playwright is cheaper on tokens, fully
 scriptable, and doesn't depend on any particular device being connected.
 
-Claude-in-Chrome tools (`list_connected_browsers`, `select_browser` /
-`switch_browser`, `javascript_tool` against a live tab) should only be used
+Claude-in-Chrome tools (`list_connected_browsers`, `select_browser`,
+`javascript_tool` against a live tab) should only be used
 when the task specifically requires interacting with the user's own
 already-open, already-paired physical browser session. Device
 identification is that exception by nature: Playwright launches its own
@@ -75,15 +75,22 @@ automates the loop that used to be done by hand:
 2. Call `list_connected_browsers` and diff against the known map to find
    new/unidentified `deviceId`s.
 3. For each unidentified device:
-   a. `select_browser` (or `switch_browser`) to make it active.
+   a. `select_browser` to make it active — not `switch_browser`, which
+      broadcasts a pairing prompt to every connected device instead of
+      targeting one by `deviceId`.
    b. Open a tab and inject a full-width banner via `javascript_tool`
       showing the raw `deviceId` as plain text on the page.
    c. Ask the user to physically check that screen and confirm which real
       device it is and what name to give it.
-   d. Record `{deviceId, name, osPlatform, isLocal, firstIdentified,
-      lastConfirmed}` into the mapping.
-4. Write the updated mapping back to the local file (see below).
+   d. Record `{deviceId, name, osPlatform, isLocal, identifiedUnderAccount,
+      firstIdentified, lastConfirmed}` into the mapping.
+4. Write the updated mapping back to the local file via a temp file +
+   atomic rename (see below), re-reading first in case another run added
+   entries since step 1.
 5. Print a summary table of `deviceId -> name` to the user.
+
+Already-identified devices are skipped by default on later runs; the user
+can ask to re-verify a device (or all of them) to refresh `lastConfirmed`.
 
 Repeat the whole pass once per Claude account — `list_connected_browsers`
 only sees devices connected under the account driving the current session.
@@ -110,12 +117,21 @@ used for MySQL credentials in the `database-guide` skill.
       "name": "Example Laptop",
       "osPlatform": "windows",
       "isLocal": true,
+      "identifiedUnderAccount": "you@example.com",
       "firstIdentified": "2026-08-13",
       "lastConfirmed": "2026-08-13"
     }
   ]
 }
 ```
+
+`identifiedUnderAccount` records which Claude account was active when the
+device was identified. Anthropic's docs don't state whether `deviceId` is
+guaranteed globally unique across different Claude accounts (only that
+`list_connected_browsers` visibility is account-scoped) — if the same
+`deviceId` ever turns up under two accounts with different names, treat
+that as a signal to double-check before trusting the entry, rather than
+assuming it's a safe collision-free key.
 
 No Google Doc mirror or auto-memory pointer entry is required — the single
 file is the source of truth. If a developer wants a personal backup copy
