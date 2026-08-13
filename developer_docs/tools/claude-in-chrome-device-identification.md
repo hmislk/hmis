@@ -59,6 +59,11 @@ cannot select among, a user's existing Claude-in-Chrome-paired devices.
 Outside of that kind of case, reach for Claude-in-Chrome only when the user
 explicitly asks for it.
 
+For the full pros/cons comparison, safety notes (including why Claude in
+Chrome must never be pointed at real patient data), and how-to guidance for
+both tools, see
+[claude-in-chrome-vs-playwright.md](claude-in-chrome-vs-playwright.md).
+
 ## Workflow
 
 Run the `identify-chrome-devices` skill (`.claude/skills/identify-chrome-devices/`)
