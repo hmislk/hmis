@@ -329,7 +329,14 @@ public class GrnCostingNativeSqlController implements Serializable {
         setCurrentExpense(null);
 
         if (getCurrentGrnBillPre().getId() != null) {
-            String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId ORDER BY bi.searialNo";
+            // bi.retired = false is required here (#22891): without it, a
+            // line removed during an earlier Save (soft-retired via
+            // "Remove Selected") reappears as an active, editable row on
+            // every fresh reload -- reached from both the "To Finalize
+            // GRNs" and "To Approve GRNs" lists, which both route through
+            // this same method. Matches the pattern already used by
+            // reloadCurrentGrnBillPreAfterApprove()'s query below.
+            String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false ORDER BY bi.searialNo";
             Map<String, Object> params = new HashMap<>();
             params.put("billId", getCurrentGrnBillPre().getId());
             List<BillItem> loadedItems = billItemFacade.findByJpql(jpql, params);
