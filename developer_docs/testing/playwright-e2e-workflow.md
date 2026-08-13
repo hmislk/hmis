@@ -326,6 +326,33 @@ gh issue comment 21364 --repo hmislk/hmis --body "Verified with Playwright.
 Remove temporary screenshots from the main repository after copying the durable
 ones into the wiki so they are not accidentally committed with application code.
 
+### 8a. Bug fixes: pair "before" and "after" evidence
+
+When the underlying issue is a bug report **and reproducing it required a
+live check** (the root cause wasn't already confirmed by reading code),
+capture evidence at **two** points instead of one, and publish them together
+as a comparison rather than as a single final-state screenshot:
+
+1. **Before** — during reproduction (before any fix is written), capture the
+   broken state: a screenshot for UI bugs, or the raw request/response for
+   API-only bugs. This is also the evidence that the bug is real if the
+   report turns out to be stale — save it even when the answer turns out to
+   be "does not reproduce" (record that it didn't reproduce under the tested
+   environment/data/inputs — that is not proof the bug is absent).
+2. **After** — once the fix is deployed, capture the same view/state again
+   (or replay the same request, for API-only bugs) showing correct behavior.
+3. Redact patient identifiers, credentials, tokens, cookies, and other
+   sensitive fields from any API request/response snippet before it leaves
+   `tmp/` or is published — the same sanitization rule §8 applies to
+   screenshots.
+4. Place both images (or both sanitized response snippets) in the same issue
+   comment / PR description, labeled "Before" and "After", so a reviewer can
+   see the fix without redeploying locally.
+
+If the root cause was already confirmed by reading code (no live
+reproduction needed), there is no "before" evidence — publish only the
+post-fix confirmation, without implying a comparison.
+
 ---
 
 ## 9. Interacting with non-accessible canvas widgets (e.g. `p:timeline` / vis-timeline)
@@ -1657,6 +1684,37 @@ pages via **Drawer tab → Withdrawals/Deposit to Safe/Bank button**, not
 `browser_navigate` to the URL directly — same root cause as §57, but here the
 consequence is a silent no-op rather than an empty page. Found while
 verifying issue #22870.
+
+## 63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name
+
+When hand-writing a verification/candidate-finding query against `billfee.staff_id`, do **not**
+join it directly to `PERSON.ID` — `Staff` is its own entity with its own `ID`, related to `Person`
+via `STAFF.PERSON_ID`. `billfee.staff_id JOIN person ON billfee.staff_id = person.id` silently
+returns a row (some unrelated person whose `ID` happens to equal the staff's `ID`) instead of an
+empty result, so the query looks correct but reports the wrong doctor's name for the due-payment
+total. Always go through the extra hop: `JOIN staff s ON bf.staff_id = s.id JOIN person p ON
+s.person_id = p.id`. Found while picking Playwright test data for issue #22860 — the initial
+candidate list mislabeled staff ID 11865 as "N H W Mahinda" when the correct name (still under the
+same ID, same due-fee totals) was "A K Liyanage"; the ID itself was fine to test with, only the
+display name was wrong.
+
+## 64. A slow, unfiltered `p:dataTable` search can make *every* subsequent Playwright tool call time out — don't `browser_navigate` away to "recover", just wait longer
+
+On `opd_search_professional_payment_due.xhtml` ("OPD Payments Due Search"), the `ajax="false"`
+Search button runs an unindexed JPQL join across `BILLFEE`/`BILL`/`STAFF`/`PERSON` with no
+department scoping. A wide date range with no name filter can run long enough that
+`browser_click`'s "waiting for scheduled navigations to finish" times out (5s), and every
+following `browser_snapshot`/`browser_wait_for` also times out (30s) because the page is still
+mid-navigation — this looks identical to a wedged browser session. **Do not `browser_navigate` away
+to recover in this situation**: a plain GET reload creates a fresh request and abandons whatever
+the slow POST was about to render, so the search results are lost even though the query eventually
+would have completed server-side (confirmed via `mysql.general_log` — the correct query, with the
+correct bind parameters, executed and matched rows, but the client never saw the response and a
+subsequent GET showed stale/empty state instead). Instead, once the click has already timed out,
+stay on the page and retry `browser_snapshot` after a real wait (`sleep 20` via Bash, not a tool
+`time` argument — those get capped short); the page does eventually render with results. Narrowing
+the date range and adding a name filter before clicking Search avoids the slow path entirely and
+should be preferred when the target staff/date are already known. Found while verifying issue #22860.
 
 ## Quick checklist
 
