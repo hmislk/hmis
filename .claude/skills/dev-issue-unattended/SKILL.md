@@ -32,7 +32,8 @@ and end the run — do not guess.
 
 - Never merge a PR, and never push directly to `development`, `master`, or
   any production branch — everything goes through a PR.
-- Never touch anything outside this repo, the local Payara/MySQL dev
+- Never touch anything outside this repo (plus its `../hmis.wiki` sibling,
+  needed for step 10's documentation publishing), the local Payara/MySQL dev
   environment, and the GitHub API for this repo — no remote/production hosts.
 - Never write a security-privilege or access-control change autonomously.
 - Never write a database schema/migration change autonomously — if the fix
@@ -40,7 +41,10 @@ and end the run — do not guess.
   unsupervised. (Regenerating DDL for a column that's a direct, evidence-backed
   part of the approved fix per step 5a is fine; *designing* new schema from
   ambiguous requirements is not.)
-- Never leave a self-created test fixture in the database — see step 4.
+- Never create test data with a direct database write (`INSERT`/`UPDATE`).
+  Same rule as `playwright-e2e`
+  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
+  generate it through the app, or stop — see step 4.
 - Never put institution names, patient/doctor names, or credentials in any
   GitHub issue, PR, or comment (same rule as `dev-issue`, non-negotiable here
   too since there's no human proofreading before it posts).
@@ -59,7 +63,9 @@ duplicate. If none exists, file the issue yourself with `gh issue create` —
 structure it like a normal bug/feature issue (Problem / Root cause found /
 Proposed fix / Acceptance criteria), then run `start-issue` on the number you
 just created. Filing the issue is not optional busywork — it's what makes the
-rest of this run auditable later.
+rest of this run auditable later. **Redact before filing** — the supplied
+problem description may itself contain an institution/patient name; strip it
+per the hard limit below before it becomes the public issue body.
 
 ## 2. Investigate
 
@@ -79,8 +85,8 @@ confirmed root cause from code + history alone.
   against existing data.
 - If reproduction needs a record that doesn't exist in the local DB, **do
   not** ask which one to use — auto-discover the closest real match with a
-  read-only query, and only fall back to creating minimal test fixture data
-  (see step 4) if nothing suitable exists.
+  read-only query, and only fall back to generating one through the app (see
+  step 4) if nothing suitable exists.
 - If it still doesn't reproduce under a reasonable, documented attempt: stop,
   post the finding to the issue (what was tried, what didn't reproduce), and
   end the run rather than guessing at a fix for a bug you couldn't observe.
@@ -118,13 +124,18 @@ ORDER BY <recency> LIMIT 5;
 
 - Prefer an existing record over creating one — it's already representative
   and needs no cleanup.
-- If nothing suitable exists, create the minimum test fixture needed
-  directly (SQL insert, matching the same query criteria the feature's own
-  guard/service uses — read that code first, don't guess at columns), with a
-  clearly identifying marker (e.g. a `COMMENTS`/description field reading
-  `TEST FIXTURE for issue #N — safe to delete`). **Delete it again once
-  verification is done** (step 7/8) — this is a hard limit, not cleanup
-  best-effort.
+- If nothing suitable exists, **generate it through the app** (per
+  `playwright-e2e`
+  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
+  create a purchase before a return, a shift-start before a shift-end, etc.)
+  instead of asking which record to use.
+- If the app itself can't produce what's needed either (e.g. the only path
+  to the required state is blocked by unrelated broken data, or requires a
+  second user session you don't have credentials for): this is a hard-limit
+  stop, same as an unreproducible bug in step 2a — post what was tried and
+  why it didn't work, and end the run. Do not paper over it with a direct
+  database write; a fixture that skips the app's own validation/business
+  logic can pass a test while proving nothing real.
 - Environment is local Payara unless the issue explicitly requires otherwise
   — never assume a remote/production environment unattended (hard limit).
 
@@ -150,9 +161,9 @@ Check the server log for deploy errors before moving on.
 
 Same as `dev-issue` step 7: exercise the feature with the department/records
 from step 4, screenshot each meaningful stage into `tmp/`, verify in the DB.
-If step 4 created a test fixture, this is also where you confirm the fix's
-actual effect on it (e.g. confirm a bypassed guard left the fixture row
-untouched rather than silently resolving it) before deleting it.
+If step 4 generated new records through the app, this is also where you
+confirm the fix's actual effect on them (e.g. confirm a bypassed guard left
+a pending record untouched rather than silently resolving it).
 
 ## 8. Iterate
 
@@ -184,13 +195,16 @@ staging.
 Same as `dev-issue` step 12 (commit format per
 [Commit Conventions](../../../developer_docs/git/commit-conventions.md),
 restore local JNDI unstaged after push) — and fold step 3's documented
-reasoning into the commit body so it's not only in the PR description.
+reasoning into the commit body so it's not only in the PR description. A
+commit body is published the moment it's pushed: redact it per the hard
+limit above before writing it, same as an issue or PR body.
 
 ## 13. Create the PR
 
 Same as `dev-issue` step 13, plus a **"Decisions made without approval"**
 section up front listing every step-3 judgment call in one place, so the
-user can scan exactly what to double-check first.
+user can scan exactly what to double-check first. Redact this body per the
+hard limit above too — same as every other publication point.
 
 ## 14. Review loop (until mergeable) — waiting without the user present
 
@@ -205,7 +219,14 @@ Repeat, up to **3 cycles**:
    documented false-positive/valid-fix patterns.
 4. A genuinely ambiguous review comment is a hard-limit stop, same as step 3
    — post your assessment as a reply and end the run rather than guess.
-5. Checks green, no unresolved comments → done.
+5. Checks passing and no unresolved comments are necessary but not
+   sufficient. Confirm mergeability itself:
+   `gh pr view <PR#> --json mergeable,mergeStateStatus,isDraft,reviewDecision`
+   — done only once `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`,
+   `isDraft: false`, and `reviewDecision` isn't blocking (e.g. not
+   `CHANGES_REQUESTED`). A required-approval `reviewDecision` with no
+   reviewer assigned isn't something this skill can resolve — that's normal
+   (a human still has to approve/merge, see step 15), not a stop condition.
 
 3 cycles without convergence → stop, summarize the sticking point, end the
 run (same as `dev-issue`).
