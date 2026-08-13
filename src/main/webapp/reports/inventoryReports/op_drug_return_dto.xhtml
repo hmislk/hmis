@@ -6,6 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
+        <h:outputScript library="primefaces" name="printer/printer.js" target="head"/>
         <style type="text/css">
             .op-drug-return-cancellation-row td {
                 background-color: #fdecea;
@@ -21,12 +22,12 @@
 
                         <h:panelGrid columns="8" class="w-100">
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <h:panelGroup layout="block" class="form-group">
+                                <h:outputText value="&#xf073;" class="fa mr-2"/>
                                 <p:outputLabel value="From Date" for="fromDate" class="m-3"/>
                             </h:panelGroup>
                             <p:calendar
-                                styleClass="w-100"
+                                class="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
                                 value="#{pharmacyReportController.fromDate}"
@@ -35,12 +36,12 @@
 
                             <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <h:panelGroup layout="block" class="form-group">
+                                <h:outputText value="&#xf073;" class="fa mr-2"/>
                                 <p:outputLabel value="To Date" for="toDate" class="m-3"/>
                             </h:panelGroup>
                             <p:calendar
-                                styleClass="w-100"
+                                class="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
                                 value="#{pharmacyReportController.toDate}"
@@ -49,11 +50,11 @@
 
                             <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2"/>
+                            <h:panelGroup layout="block" class="form-group">
+                                <h:outputText class="fa fa-building mr-2"/>
                                 <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
                             </h:panelGroup>
-                            <h:panelGroup layout="block" styleClass="form-group">
+                            <h:panelGroup layout="block" class="form-group">
                                 <p:selectCheckboxMenu
                                     id="departmentTypeFilter"
                                     value="#{pharmacyReportController.selectedDepartmentTypes}"
@@ -74,8 +75,8 @@
                                 <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
                             </h:panelGroup>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2"/>
+                            <h:panelGroup layout="block" class="form-group">
+                                <h:outputText class="fa fa-university mr-2"/>
                                 <p:outputLabel value="Institution" for="phmIns" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
@@ -90,8 +91,8 @@
 
                             <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                            <h:panelGroup layout="block" class="form-group">
+                                <h:outputText class="fa fa-map-marker-alt mr-2"/>
                                 <p:outputLabel value="Site" for="phmSite" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
@@ -106,8 +107,8 @@
 
                             <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2"/>
+                            <h:panelGroup layout="block" class="form-group">
+                                <h:outputText class="fa fa-building mr-2"/>
                                 <p:outputLabel value="Department" for="phmDept" class="m-3"/>
                             </h:panelGroup>
                             <h:panelGroup id="phmDept">
@@ -115,7 +116,7 @@
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
+                                    class="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
@@ -130,7 +131,7 @@
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
+                                    class="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
@@ -145,7 +146,7 @@
                                 <!-- Component 3: With Institution Only -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
+                                    class="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
@@ -160,7 +161,7 @@
                                 <!-- Component 4: With Both Institution and Site -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
+                                    class="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
@@ -190,14 +191,21 @@
                                 value="Process"
                                 action="#{pharmacyReportController.processOpDrugReturnDto()}"/>
 
+                            <p:remoteCommand name="rcExpandOpDrugReturnForPrint"
+                                             update="tblDto"
+                                             actionListener="#{pharmacyReportController.enableOpDrugReturnPrintAll()}"
+                                             oncomplete="printOpDrugReturnAfterExpand()"/>
+
+                            <p:remoteCommand name="rcRestoreOpDrugReturnPaging"
+                                             update="tblDto"
+                                             actionListener="#{pharmacyReportController.disableOpDrugReturnPrintAll()}"/>
+
                             <p:commandButton
-                                class="ui-button- mx-1"
+                                class="ui-button-secondary mx-1"
                                 icon="fas fa-print"
-                                ajax="false"
+                                type="button"
                                 value="Print"
-                                onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="tblDto" oncomplete="restorePaginatorAfterPrint()"/>
-                            </p:commandButton>
+                                onclick="preparePrintOpDrugReturn()"/>
 
                             <p:commandButton
                                 class="ui-button-success mx-1"
@@ -236,6 +244,21 @@
                                 paginators.forEach(el => el.style.display = '');
                             }
                             window.onafterprint = function () { restorePaginatorAfterPrint(); };
+
+                            // tblDto is paginated, so p:printer (which just clones the current
+                            // DOM) would only capture the visible page. rcExpandOpDrugReturnForPrint
+                            // re-renders the table with every row before we clone it for print.
+                            function preparePrintOpDrugReturn() {
+                                hidePaginatorBeforePrint();
+                                rcExpandOpDrugReturnForPrint();
+                            }
+                            function printOpDrugReturnAfterExpand() {
+                                PrimeFaces.expressions.SearchExpressionFacade
+                                    .resolveComponentsAsSelector(document.body, 'tblDto')
+                                    .print({globalStyles: true});
+                                restorePaginatorAfterPrint();
+                                rcRestoreOpDrugReturnPaging();
+                            }
                         </h:outputScript>
 
                         <p:dataTable id="tblDto"
@@ -243,9 +266,9 @@
                                      var="f"
                                      rowIndexVar="n"
                                      rowKey="#{f.billItemId}"
-                                     paginator="true"
+                                     paginator="#{!pharmacyReportController.opDrugReturnPrintAll}"
                                      paginatorPosition="bottom"
-                                     rows="10"
+                                     rows="#{pharmacyReportController.opDrugReturnPrintAll ? (empty pharmacyReportController.opDrugReturnRowDtos ? 1 : pharmacyReportController.opDrugReturnRowDtos.size()) : 10}"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000"

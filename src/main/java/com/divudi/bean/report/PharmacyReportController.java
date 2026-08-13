@@ -402,6 +402,10 @@ public class PharmacyReportController implements Serializable {
     private double dtoOpDrugReturnCostTotal;
     private double dtoOpDrugReturnRetailTotal;
     private double dtoOpDrugReturnTotal;
+    // Toggled around printing so the paginated tblDto table renders every row into the
+    // DOM before p:printer clones it - p:printer only captures whatever is currently
+    // rendered, so a paginated table would otherwise print just the current page.
+    private boolean opDrugReturnPrintAll;
 
     // Maps to store remaining quantities and values for Good In Transit report
     private Map<Long, Double> billItemRemainingQuantities = new HashMap<>();
@@ -4963,7 +4967,7 @@ public class PharmacyReportController implements Serializable {
                     .append("ib.costRate, pbi.qty * COALESCE(ib.costRate, 0.0), ")
                     .append("ib.purcahseRate, pbi.qty * ib.purcahseRate, ")
                     .append("ib.retailsaleRate, pbi.qty * ib.retailsaleRate, ")
-                    .append("b.paymentMethod, bi.discount, bi.rate * bi.qty) ")
+                    .append("b.paymentMethod, bi.discount, bi.Rate * bi.qty) ")
                     .append("FROM BillItem bi ")
                     .append("JOIN bi.bill b ")
                     .append("JOIN bi.pharmaceuticalBillItem pbi ")
@@ -19082,5 +19086,21 @@ public class PharmacyReportController implements Serializable {
 
     public void setDtoOpDrugReturnTotal(double dtoOpDrugReturnTotal) {
         this.dtoOpDrugReturnTotal = dtoOpDrugReturnTotal;
+    }
+
+    public boolean isOpDrugReturnPrintAll() {
+        return opDrugReturnPrintAll;
+    }
+
+    public void setOpDrugReturnPrintAll(boolean opDrugReturnPrintAll) {
+        this.opDrugReturnPrintAll = opDrugReturnPrintAll;
+    }
+
+    public void enableOpDrugReturnPrintAll() {
+        opDrugReturnPrintAll = true;
+    }
+
+    public void disableOpDrugReturnPrintAll() {
+        opDrugReturnPrintAll = false;
     }
 }
