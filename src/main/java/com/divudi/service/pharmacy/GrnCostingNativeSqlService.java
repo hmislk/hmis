@@ -96,23 +96,31 @@ public class GrnCostingNativeSqlService {
      * which only ever calls getChequeRefNo()/setChequeRefNo()). bankRefNo is
      * accepted here to satisfy the intended controller call shape but is not
      * written to any column; only chequeRefNo is persisted.
+     * <p>
+     * invoiceDate added for #22892: this method previously never wrote it at
+     * all (Bill.invoiceDate is a real column; it was simply missing from
+     * this UPDATE), so it reverted to blank on every reload -- same root
+     * cause shape as the Batch No/Date of Expiry fix in saveLine() above.
+     * This method has exactly one caller (GrnCostingNativeSqlController),
+     * so extending the signature directly is safe.
      */
-    public void updateDraftBillHeader(long billId, String invoiceNumber, String paymentMethod, Integer creditDuration,
+    public void updateDraftBillHeader(long billId, String invoiceNumber, Date invoiceDate, String paymentMethod, Integer creditDuration,
                                        String bankRefNo, String chequeRefNo, String comments, String departmentType,
                                        double discount, long editorId) {
         em.createNativeQuery(
             "UPDATE " + billTable()
-            + " SET invoiceNumber=?, paymentMethod=?, creditDuration=?, chequeRefNo=?,"
+            + " SET invoiceNumber=?, invoiceDate=?, paymentMethod=?, creditDuration=?, chequeRefNo=?,"
             + " comments=?, departmentType=?, discount=?, editor_ID=?, editedAt=NOW() WHERE ID=?")
             .setParameter(1, invoiceNumber)
-            .setParameter(2, paymentMethod)
-            .setParameter(3, creditDuration != null ? creditDuration : 0)
-            .setParameter(4, chequeRefNo)
-            .setParameter(5, comments)
-            .setParameter(6, departmentType)
-            .setParameter(7, discount)
-            .setParameter(8, editorId)
-            .setParameter(9, billId)
+            .setParameter(2, invoiceDate)
+            .setParameter(3, paymentMethod)
+            .setParameter(4, creditDuration != null ? creditDuration : 0)
+            .setParameter(5, chequeRefNo)
+            .setParameter(6, comments)
+            .setParameter(7, departmentType)
+            .setParameter(8, discount)
+            .setParameter(9, editorId)
+            .setParameter(10, billId)
             .executeUpdate();
         evictCache();
     }
@@ -215,7 +223,12 @@ public class GrnCostingNativeSqlService {
         int updated = em.createNativeQuery(
                 "UPDATE " + pharmBillItemTable()
                 + " SET qty=?, freeQty=?, purchaseRate=?, purchaseRatePack=?, purchaseValue=?,"
-                + " retailRate=?, retailRatePack=?, retailValue=?, wholesaleRate=?, wholesaleRatePack=?"
+                + " retailRate=?, retailRatePack=?, retailValue=?, wholesaleRate=?, wholesaleRatePack=?,"
+                // doe/stringValue (Batch No / Date of Expiry) were the missing
+                // columns behind #22892 -- entered here at Save time but never
+                // written, so they silently reverted to blank on any reload
+                // before Finalize/Approve.
+                + " doe=?, stringValue=?"
                 + " WHERE billItem_ID=?")
                 .setParameter(1, line.getQuantityByUnits())
                 .setParameter(2, line.getFreeQuantityByUnits())
@@ -227,7 +240,9 @@ public class GrnCostingNativeSqlService {
                 .setParameter(8, line.getValueAtRetailRate())
                 .setParameter(9, line.isAmpp() ? divide(line.getWholesaleRate(), line.getUnitsPerPack()) : line.getWholesaleRate())
                 .setParameter(10, line.getWholesaleRate())
-                .setParameter(11, billItemId)
+                .setParameter(11, line.getDoe())
+                .setParameter(12, line.getBatchNumber())
+                .setParameter(13, billItemId)
                 .executeUpdate();
 
         long pharmaceuticalBillItemId;
@@ -236,8 +251,9 @@ public class GrnCostingNativeSqlService {
                 "INSERT INTO " + pharmBillItemTable()
                 + " (billItem_ID, qty, freeQty, purchaseRate, purchaseRatePack, purchaseValue,"
                 + " retailRate, retailRatePack, retailValue, wholesaleRate, wholesaleRatePack,"
+                + " doe, stringValue,"
                 + " costRate, costRatePack, costValue, createdAt, creater_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
                 .setParameter(1, billItemId)
                 .setParameter(2, line.getQuantityByUnits())
                 .setParameter(3, line.getFreeQuantityByUnits())
@@ -249,8 +265,10 @@ public class GrnCostingNativeSqlService {
                 .setParameter(9, line.getValueAtRetailRate())
                 .setParameter(10, line.isAmpp() ? divide(line.getWholesaleRate(), line.getUnitsPerPack()) : line.getWholesaleRate())
                 .setParameter(11, line.getWholesaleRate())
-                .setParameter(12, new Timestamp(new Date().getTime()))
-                .setParameter(13, line.getCreaterId())
+                .setParameter(12, line.getDoe())
+                .setParameter(13, line.getBatchNumber())
+                .setParameter(14, new Timestamp(new Date().getTime()))
+                .setParameter(15, line.getCreaterId())
                 .executeUpdate();
             pharmaceuticalBillItemId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
         } else {
