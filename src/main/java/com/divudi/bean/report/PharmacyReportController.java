@@ -4825,14 +4825,75 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    /**
+     * Drill-down data source for the "Drug Return Op" COGS row (see
+     * calculateDrugReturnOp()). Uses the same GREATEST(createdAt, completedAt,
+     * checkeAt) stock-movement date basis as retrievePurchaseAndCostValues() so
+     * this drill-down reconciles with the row total - a plain b.createdAt filter
+     * (as used by the generic retrieveBillItems()) picks up cancellation bills
+     * whose stock-movement date falls outside the selected period, inflating the
+     * drill-down far beyond the COGS row it's supposed to explain.
+     */
     public void processOpDrugReturn() {
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
-                BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
-        );
-        retrieveBillItems("b.billTypeAtomic", billTypes);
+        try {
+            List<BillTypeAtomic> billTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                    BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
+            );
+
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+            resetFinanceTotals();
+
+            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
+                    + "LEFT JOIN FETCH bi.item "
+                    + "LEFT JOIN FETCH bi.bill b "
+                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
+                    + "LEFT JOIN FETCH pbi.itemBatch "
+                    + "WHERE bi.retired = false "
+                    + "AND b.billTypeAtomic IN :billTypes "
+                    + "AND FUNCTION('GREATEST', b.createdAt, COALESCE(b.completedAt, b.createdAt), COALESCE(b.checkeAt, b.createdAt)) BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypes", billTypes);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            if (item != null) {
+                if (item instanceof Amp) {
+                    jpql.append("AND (bi.item = :itm OR bi.item.amp = :itm) ");
+                    params.put("itm", item);
+                } else {
+                    addFilter(jpql, params, "bi.item", "itm", item);
+                }
+            }
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            netTotal = billItems.stream()
+                    .map(BillItem::getBill)
+                    .distinct()
+                    .mapToDouble(Bill::getNetTotal)
+                    .sum();
+
+            computeBillItemFinanceTotals();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+            resetFinanceTotals();
+        }
     }
 
     public void processPurchaseReturn() {
