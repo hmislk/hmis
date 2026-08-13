@@ -1,0 +1,232 @@
+name: "Restart a migrated service"
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to restart"
+        required: true
+        type: choice
+        default: hospital
+        options: [hospital, payara, vm]
+
+      vm_target:
+        description: "VM — used for `payara` and `vm` only"
+        required: false
+        type: choice
+        default: vm-hmis-shared1-prod
+        options:
+          - vm-hmis-shared1-prod
+          - vm-hmis-shared2-prod
+          - vm-hmis-shared3-prod
+          - vm-hmis-shared4-prod
+          - vm-hmis-staging-prod
+          - vm-hmis-qa01-qa
+
+      hospital_target:
+        description: "Hospital — used for `hospital` only"
+        required: false
+        type: choice
+        default: ewc
+        options:
+          - suwani
+          - asiripharmacy
+          - rh-hrt
+          - southernlanka
+          - digasiri
+          - horizon
+          - ruhunu
+          - mp
+          - rmh
+          - coop
+          - mpold
+          - roseth
+          - rhdrawer
+          - ewc
+          - bms
+          - messenger2
+          - stg-rh
+          - stg-rmh
+          - stg-coop
+          - stg-southernlanka
+          - qa1
+          - qa2
+          - qa3
+          - qa4
+
+      confirm:
+        description: "Type the target name again to confirm"
+        required: true
+        type: string
+
+concurrency:
+  group: restart-${{ inputs.vm_target }}-${{ inputs.hospital_target }}
+  cancel-in-progress: false
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    environment: prod-migrated      # add a required reviewer here to gate it
+    steps:
+      # ── resolve target -> VM, IP secret, key, context root ──────────────
+      - name: Work out what is being restarted
+        id: t
+        run: |
+          set -euo pipefail
+          ACTION="${{ inputs.action }}"
+
+          if [ "$ACTION" = "hospital" ]; then
+            TARGET="${{ inputs.hospital_target }}"
+            # Context roots are NOT always the hospital name: ruhunu serves /rh,
+            # rhdrawer serves /drawer. asadmin needs the context root.
+            case "$TARGET" in
+              suwani)            VM=shared1; CTX=suwani ;;
+              asiripharmacy)     VM=shared1; CTX=asiripharmacy ;;
+              rh-hrt)            VM=shared1; CTX=rh-hrt ;;
+              southernlanka)     VM=shared1; CTX=southernlanka ;;
+              digasiri)          VM=shared1; CTX=digasiri ;;
+              horizon)           VM=shared1; CTX=horizon ;;
+              ruhunu)            VM=shared2; CTX=rh ;;
+              mp)                VM=shared2; CTX=mp ;;
+              rmh)               VM=shared2; CTX=rmh ;;
+              messenger2)        VM=shared2; CTX=messenger2 ;;
+              coop)              VM=shared3; CTX=coop ;;
+              mpold)             VM=shared3; CTX=mpold ;;
+              roseth)            VM=shared3; CTX=roseth ;;
+              rhdrawer)          VM=shared3; CTX=drawer ;;
+              ewc)               VM=shared4; CTX=ewc ;;
+              bms)               VM=shared4; CTX=bms ;;
+              stg-rh)            VM=staging; CTX=rh ;;
+              stg-rmh)           VM=staging; CTX=rmh ;;
+              stg-coop)          VM=staging; CTX=coop ;;
+              stg-southernlanka) VM=staging; CTX=southernlanka ;;
+              qa1|qa2|qa3|qa4)   VM=qa01;    CTX="$TARGET" ;;
+              *) echo "::error::unknown hospital $TARGET"; exit 1 ;;
+            esac
+          else
+            TARGET="${{ inputs.vm_target }}"
+            case "$TARGET" in
+              vm-hmis-shared1-prod) VM=shared1 ;;
+              vm-hmis-shared2-prod) VM=shared2 ;;
+              vm-hmis-shared3-prod) VM=shared3 ;;
+              vm-hmis-shared4-prod) VM=shared4 ;;
+              vm-hmis-staging-prod) VM=staging ;;
+              vm-hmis-qa01-qa)      VM=qa01 ;;
+              *) echo "::error::unknown VM $TARGET"; exit 1 ;;
+            esac
+            CTX=""
+          fi
+
+          # Typing the name again is the only thing standing between a stray
+          # click and six hospitals going down at once.
+          if [ "${{ inputs.confirm }}" != "$TARGET" ]; then
+            echo "::error::confirm was '${{ inputs.confirm }}' but the target is '$TARGET'"
+            exit 1
+          fi
+
+          case "$VM" in
+            shared1) IP='${{ secrets.PROD_SHARED1_IP }}'; ENVN=prod; AZ=vm-hmis-shared1-prod ;;
+            shared2) IP='${{ secrets.PROD_SHARED2_IP }}'; ENVN=prod; AZ=vm-hmis-shared2-prod ;;
+            shared3) IP='${{ secrets.PROD_SHARED3_IP }}'; ENVN=prod; AZ=vm-hmis-shared3-prod ;;
+            shared4) IP='${{ secrets.PROD_SHARED4_IP }}'; ENVN=prod; AZ=vm-hmis-shared4-prod ;;
+            staging) IP='${{ secrets.PROD_STAGING_IP }}'; ENVN=prod; AZ=vm-hmis-staging-prod ;;
+            qa01)    IP='${{ secrets.QA_MIGRATED_SERVER_IP }}'; ENVN=qa; AZ=vm-hmis-qa01-qa ;;
+          esac
+          [ -n "$IP" ] || { echo "::error::no IP secret set for $VM"; exit 1; }
+
+          {
+            echo "action=$ACTION"; echo "target=$TARGET"; echo "vm=$VM"
+            echo "ctx=$CTX"; echo "ip=$IP"; echo "envn=$ENVN"; echo "az=$AZ"
+            echo "rg=$([ "$ENVN" = qa ] && echo rg-hmis-qa-eastasia || echo rg-hmis-prod-eastasia)"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "### Restarting" >> "$GITHUB_STEP_SUMMARY"
+          echo "| field | value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| action | \`$ACTION\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| target | \`$TARGET\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| VM | \`$AZ\` |" >> "$GITHUB_STEP_SUMMARY"
+          [ -n "$CTX" ] && echo "| context root | \`/$CTX\` |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install the SSH key
+        if: inputs.action != 'vm'
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          if [ "${{ steps.t.outputs.envn }}" = "qa" ]; then
+            echo "${{ secrets.QA_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id
+          else
+            echo "${{ secrets.PROD_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id
+          fi
+          chmod 600 ~/.ssh/id
+          ssh-keyscan -H "${{ steps.t.outputs.ip }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      # ── hospital: disable + enable one application ──────────────────────
+      - name: Restart the application
+        if: inputs.action == 'hospital'
+        env:
+          USER_: ${{ secrets.PROD_MIGRATED_SERVER_USER }}
+          IP:    ${{ steps.t.outputs.ip }}
+          CTX:   ${{ steps.t.outputs.ctx }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id "${USER_:-appadmin}@$IP" "bash -euo pipefail -s" <<REMOTE
+          AS="sudo -u appuser /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /opt/payara5/.asadminpass"
+          echo "before:"; \$AS show-component-status $CTX || true
+          \$AS disable $CTX
+          \$AS enable  $CTX
+          echo "after:";  \$AS show-component-status $CTX
+          REMOTE
+
+      # ── payara: restart the domain on one VM ────────────────────────────
+      - name: Restart Payara (every application on this VM)
+        if: inputs.action == 'payara'
+        env:
+          USER_: ${{ secrets.PROD_MIGRATED_SERVER_USER }}
+          IP:    ${{ steps.t.outputs.ip }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id "${USER_:-appadmin}@$IP" "bash -euo pipefail -s" <<'REMOTE'
+          AS="sudo -u appuser /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /opt/payara5/.asadminpass"
+          echo "these applications are about to stop:"; $AS list-applications
+          sudo systemctl restart payara_domain1
+          for i in $(seq 1 60); do
+            (echo > /dev/tcp/127.0.0.1/4848) >/dev/null 2>&1 && break
+            sleep 5
+          done
+          echo "back up:"; $AS list-applications
+          ps -eo args | grep '[g]lassfish.jar' | tr ' ' '\n' | grep '^-Xm'
+          REMOTE
+
+      # ── vm: restart the machine ─────────────────────────────────────────
+      - name: Azure login
+        if: inputs.action == 'vm'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Restart the VM
+        if: inputs.action == 'vm'
+        run: |
+          set -euo pipefail
+          az vm restart -g "${{ steps.t.outputs.rg }}" -n "${{ steps.t.outputs.az }}"
+          echo "waiting for the machine to answer again"
+          for i in $(seq 1 60); do
+            nc -z -w3 "${{ steps.t.outputs.ip }}" 22 && { echo "SSH is up"; break; }
+            sleep 10
+          done
+
+      # ── prove it came back ──────────────────────────────────────────────
+      - name: Confirm it is serving
+        if: always() && inputs.action != 'vm'
+        env:
+          IP:  ${{ steps.t.outputs.ip }}
+          CTX: ${{ steps.t.outputs.ctx }}
+        run: |
+          set +e
+          ssh -i ~/.ssh/id "${{ secrets.PROD_MIGRATED_SERVER_USER }}@$IP" \
+            "curl -s -o /dev/null -w 'local Payara /%s -> %{http_code}\n' http://localhost:8080/${CTX:-}/" \
+            2>/dev/null || echo "could not reach the VM to confirm"
+
+      - name: Clean up
+        if: always()
+        run: rm -f ~/.ssh/id
