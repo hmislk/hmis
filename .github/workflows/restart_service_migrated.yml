@@ -146,7 +146,12 @@ jobs:
           echo "| action | \`$ACTION\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| target | \`$TARGET\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| VM | \`$AZ\` |" >> "$GITHUB_STEP_SUMMARY"
-          [ -n "$CTX" ] && echo "| context root | \`/$CTX\` |" >> "$GITHUB_STEP_SUMMARY"
+          # `[ test ] && cmd` returns the test's status. As the last command in
+          # a `set -e` step, a false test exits 1 — which is what made this fail
+          # for `payara` and `vm`, where CTX is empty. Use if/fi.
+          if [ -n "$CTX" ]; then
+            echo "| context root | \`/$CTX\` |" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Install the SSH key
         if: inputs.action != 'vm'
@@ -211,7 +216,7 @@ jobs:
           az vm restart -g "${{ steps.t.outputs.rg }}" -n "${{ steps.t.outputs.az }}"
           echo "waiting for the machine to answer again"
           for i in $(seq 1 60); do
-            nc -z -w3 "${{ steps.t.outputs.ip }}" 22 && { echo "SSH is up"; break; }
+            if nc -z -w3 "${{ steps.t.outputs.ip }}" 22; then echo "SSH is up"; break; fi
             sleep 10
           done
 
