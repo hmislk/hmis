@@ -34,6 +34,7 @@ import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.CostOfGoodSoldBillDTO;
 import com.divudi.core.data.dto.StockConsumptionItemDto;
+import com.divudi.core.data.dto.OpDrugReturnRowDto;
 import com.divudi.core.data.dto.ExpiryItemListDto;
 import com.divudi.core.data.dto.ExpiryItemStockListDto;
 import com.divudi.core.data.dto.StockLedgerDTO;
@@ -395,6 +396,12 @@ public class PharmacyReportController implements Serializable {
     private double dtoStockConsumptionPurchaseTotal;
     private double dtoStockConsumptionCostTotal;
     private double dtoStockConsumptionRetailTotal;
+
+    private List<OpDrugReturnRowDto> opDrugReturnRowDtos;
+    private double dtoOpDrugReturnPurchaseTotal;
+    private double dtoOpDrugReturnCostTotal;
+    private double dtoOpDrugReturnRetailTotal;
+    private double dtoOpDrugReturnTotal;
 
     // Maps to store remaining quantities and values for Good In Transit report
     private Map<Long, Double> billItemRemainingQuantities = new HashMap<>();
@@ -4915,6 +4922,94 @@ public class PharmacyReportController implements Serializable {
             billItems = new ArrayList<>();
             netTotal = 0.0;
             resetFinanceTotals();
+        }
+    }
+
+    /**
+     * DTO-based drill-down for the "Drug Return Op" COGS row (see
+     * calculateDrugReturnOp() / retrievePurchaseAndCostValues()). Unlike
+     * processOpDrugReturn() this populates every displayed field - including
+     * the cost/purchase/MRP values - directly in a single JPQL {@code SELECT
+     * NEW} constructor query, so there is exactly one place computing the
+     * valuation (qty * current ItemBatch rate), matching the COGS row instead
+     * of being re-derived separately for the table, the Excel export, and the
+     * PDF export. See #22919.
+     */
+    public void processOpDrugReturnDto() {
+        opDrugReturnRowDtos = new ArrayList<>();
+        dtoOpDrugReturnPurchaseTotal = 0.0;
+        dtoOpDrugReturnCostTotal = 0.0;
+        dtoOpDrugReturnRetailTotal = 0.0;
+        dtoOpDrugReturnTotal = 0.0;
+        try {
+            List<BillTypeAtomic> billTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                    BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
+            );
+
+            // rb1/rb2/rb3 replicate the legacy op_drug_return.xhtml's Ref Doc No
+            // lookup: a "return items and payments" bill's reference chain is
+            // three hops back to the original sale (return-items-and-payments ->
+            // return-items-only -> sale), while every other return type here
+            // points straight at its reference bill.
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT NEW com.divudi.core.data.dto.OpDrugReturnRowDto(")
+                    .append("bi.id, b.id, b.deptId, b.billTypeAtomic, ")
+                    .append("CASE WHEN b.billTypeAtomic = :chainedReturnType THEN rb3.id ELSE rb1.id END, ")
+                    .append("CASE WHEN b.billTypeAtomic = :chainedReturnType THEN rb3.deptId ELSE rb1.deptId END, ")
+                    .append("bi.createdAt, batchItem.name, batchItem.code, pbi.qty, ")
+                    .append("ib.costRate, pbi.qty * COALESCE(ib.costRate, 0.0), ")
+                    .append("ib.purcahseRate, pbi.qty * ib.purcahseRate, ")
+                    .append("ib.retailsaleRate, pbi.qty * ib.retailsaleRate, ")
+                    .append("b.paymentMethod, bi.discount, bi.rate * bi.qty) ")
+                    .append("FROM BillItem bi ")
+                    .append("JOIN bi.bill b ")
+                    .append("JOIN bi.pharmaceuticalBillItem pbi ")
+                    .append("JOIN pbi.itemBatch ib ")
+                    .append("JOIN ib.item batchItem ")
+                    .append("LEFT JOIN b.referenceBill rb1 ")
+                    .append("LEFT JOIN rb1.referenceBill rb2 ")
+                    .append("LEFT JOIN rb2.referenceBill rb3 ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND b.billTypeAtomic IN :billTypes ")
+                    // Same GREATEST(createdAt, completedAt, checkeAt) stock-movement date
+                    // basis as retrievePurchaseAndCostValues() - see processOpDrugReturn().
+                    .append("AND FUNCTION('GREATEST', b.createdAt, COALESCE(b.completedAt, b.createdAt), COALESCE(b.checkeAt, b.createdAt)) BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypes", billTypes);
+            params.put("chainedReturnType", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+            // Same item join path as the COGS row (pharmaceuticalBillItem.itemBatch.item),
+            // not bi.item/Amp - see processOpDrugReturn().
+            addFilter(jpql, params, "batchItem", "itm", item);
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            jpql.append("ORDER BY bi.createdAt");
+
+            opDrugReturnRowDtos = (List<OpDrugReturnRowDto>) billItemFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            for (OpDrugReturnRowDto dto : opDrugReturnRowDtos) {
+                dtoOpDrugReturnPurchaseTotal += dto.getPurchaseValue() != null ? dto.getPurchaseValue() : 0.0;
+                dtoOpDrugReturnCostTotal += dto.getCostValue() != null ? dto.getCostValue() : 0.0;
+                dtoOpDrugReturnRetailTotal += dto.getMrpValue() != null ? dto.getMrpValue() : 0.0;
+                dtoOpDrugReturnTotal += dto.getTotal() != null ? dto.getTotal() : 0.0;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating Op Drug Return DTO report", e);
+            JsfUtil.addErrorMessage(e, "Failed to generate Drug Return Op DTO report.");
+            opDrugReturnRowDtos = new ArrayList<>();
         }
     }
 
@@ -18947,5 +19042,45 @@ public class PharmacyReportController implements Serializable {
 
     public void setDtoStockConsumptionRetailTotal(double dtoStockConsumptionRetailTotal) {
         this.dtoStockConsumptionRetailTotal = dtoStockConsumptionRetailTotal;
+    }
+
+    public List<OpDrugReturnRowDto> getOpDrugReturnRowDtos() {
+        return opDrugReturnRowDtos;
+    }
+
+    public void setOpDrugReturnRowDtos(List<OpDrugReturnRowDto> opDrugReturnRowDtos) {
+        this.opDrugReturnRowDtos = opDrugReturnRowDtos;
+    }
+
+    public double getDtoOpDrugReturnPurchaseTotal() {
+        return dtoOpDrugReturnPurchaseTotal;
+    }
+
+    public void setDtoOpDrugReturnPurchaseTotal(double dtoOpDrugReturnPurchaseTotal) {
+        this.dtoOpDrugReturnPurchaseTotal = dtoOpDrugReturnPurchaseTotal;
+    }
+
+    public double getDtoOpDrugReturnCostTotal() {
+        return dtoOpDrugReturnCostTotal;
+    }
+
+    public void setDtoOpDrugReturnCostTotal(double dtoOpDrugReturnCostTotal) {
+        this.dtoOpDrugReturnCostTotal = dtoOpDrugReturnCostTotal;
+    }
+
+    public double getDtoOpDrugReturnRetailTotal() {
+        return dtoOpDrugReturnRetailTotal;
+    }
+
+    public void setDtoOpDrugReturnRetailTotal(double dtoOpDrugReturnRetailTotal) {
+        this.dtoOpDrugReturnRetailTotal = dtoOpDrugReturnRetailTotal;
+    }
+
+    public double getDtoOpDrugReturnTotal() {
+        return dtoOpDrugReturnTotal;
+    }
+
+    public void setDtoOpDrugReturnTotal(double dtoOpDrugReturnTotal) {
+        this.dtoOpDrugReturnTotal = dtoOpDrugReturnTotal;
     }
 }
