@@ -618,9 +618,24 @@ public class GrnCostingNativeSqlController implements Serializable {
         if (!isAuthorized("APPROVE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnApprove")) {
             return;
         }
-        if (getCurrentGrnBillPre().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
-            JsfUtil.addErrorMessage("This GRN is already approved");
-            return;
+        // A fresh DB read, not the in-memory currentGrnBillPre.getBillTypeAtomic()
+        // (#22894): this bean is @SessionScoped, and approveGrn() below sets
+        // billTypeAtomic=PHARMACY_GRN on the in-memory entity for immediate UI
+        // feedback (see the end of this method). If that mutated reference --
+        // or any other staleness in this session across two sequential GRN
+        // approvals -- ever leaked into a later read, the in-memory check could
+        // false-positive on a bill the DB still has as PHARMACY_GRN_PRE, blocking
+        // a genuinely first-time approval. The DB is the only source of truth
+        // this guard should trust; a real double-approve is still correctly
+        // blocked since a truly-approved bill reads back PHARMACY_GRN here too.
+        // Skipped for a bill with no id yet -- it cannot possibly be already
+        // approved if it has never been persisted.
+        if (getCurrentGrnBillPre().getId() != null) {
+            Bill freshBillState = billFacade.findWithoutCache(getCurrentGrnBillPre().getId());
+            if (freshBillState != null && freshBillState.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                JsfUtil.addErrorMessage("This GRN is already approved");
+                return;
+            }
         }
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
