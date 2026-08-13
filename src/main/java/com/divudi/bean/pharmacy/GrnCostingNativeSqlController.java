@@ -526,6 +526,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         grnCostingNativeSqlService.updateDraftBillHeader(
                 billId,
                 getCurrentGrnBillPre().getInvoiceNumber(),
+                getCurrentGrnBillPre().getInvoiceDate(),
                 getCurrentGrnBillPre().getPaymentMethod() != null ? getCurrentGrnBillPre().getPaymentMethod().name() : null,
                 getCurrentGrnBillPre().getCreditDuration(),
                 null,
@@ -870,6 +871,18 @@ public class GrnCostingNativeSqlController implements Serializable {
     private GrnLineData toLineData(BillItem bi) {
         GrnLineData line = new GrnLineData();
         populateLineData(line, bi);
+
+        // Batch No / Date of Expiry, entered on this page pre-Finalize --
+        // read here (Save-stage) so GrnCostingNativeSqlService.saveLine()
+        // can persist them to pharmaceuticalbillitem.doe/stringValue. Without
+        // this, they only ever existed in-memory and were silently dropped
+        // on any fresh page reload before Finalize/Approve (#22892).
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+        if (pbi != null) {
+            line.setDoe(pbi.getDoe());
+            line.setBatchNumber(pbi.getStringValue());
+        }
+
         return line;
     }
 
