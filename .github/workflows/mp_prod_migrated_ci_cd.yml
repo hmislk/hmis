@@ -27,7 +27,7 @@ env:
   APP:        mp
   JNDI_MAIN:  jdbc/mp
   JNDI_AUDIT: jdbc/mpAudit
-  HEALTH_URL: https://mp-migrated.carecode.org/mp/faces/index1.xhtml
+  HEALTH_URL: https://mp.carecode.org/mp/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        mp
       JNDI_MAIN:  jdbc/mp
       JNDI_AUDIT: jdbc/mpAudit
-      HEALTH_URL: https://mp-migrated.carecode.org/mp/faces/index1.xhtml
+      HEALTH_URL: https://mp.carecode.org/mp/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
