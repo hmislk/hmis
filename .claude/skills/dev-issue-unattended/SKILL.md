@@ -36,11 +36,14 @@ and end the run — do not guess.
   needed for step 10's documentation publishing), the local Payara/MySQL dev
   environment, and the GitHub API for this repo — no remote/production hosts.
 - Never write a security-privilege or access-control change autonomously.
-- Never write a database schema/migration change autonomously — if the fix
-  needs one, stop and describe what's needed instead of designing it
-  unsupervised. (Regenerating DDL for a column that's a direct, evidence-backed
-  part of the approved fix per step 5a is fine; *designing* new schema from
-  ambiguous requirements is not.)
+- Never write, apply, or execute a database schema/migration change
+  autonomously — if the fix needs one, stop and describe what's needed
+  instead of designing it unsupervised. Step 5a's DDL regeneration is the one
+  narrow exception, and only as far as `generate-ddl` itself goes:
+  generating the `tmp/createDDL.jdbc` artifact for a column that's a direct,
+  evidence-backed part of the approved fix. Applying that DDL to any
+  database — even local — stays a human's call via the admin UI's "Add
+  Missing..." page, same as it always is; this skill never runs it.
 - Never create test data with a direct database write (`INSERT`/`UPDATE`).
   Same rule as `playwright-e2e`
   [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
@@ -147,8 +150,9 @@ Same as `dev-issue` step 5 — delegate by file type (`java-backend-developer`,
 ## 5a. Regenerate the DDL if the schema changed
 
 Same as `dev-issue` step 5a — but see the hard limit above: this covers
-regenerating DDL for a column that's a direct, already-decided part of the
-fix, not designing new schema unsupervised.
+*generating* DDL for a column that's a direct, already-decided part of the
+fix, not designing new schema unsupervised and not applying/executing the
+generated script against any database.
 
 ## 6. Build and local redeploy
 
