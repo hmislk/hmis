@@ -4829,7 +4829,8 @@ public class PharmacyReportController implements Serializable {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
         );
         retrieveBillItems("b.billTypeAtomic", billTypes);
     }

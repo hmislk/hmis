@@ -1716,6 +1716,20 @@ stay on the page and retry `browser_snapshot` after a real wait (`sleep 20` via 
 the date range and adding a name filter before clicking Search avoids the slow path entirely and
 should be preferred when the target staff/date are already known. Found while verifying issue #22860.
 
+## 65. Theatre "Add New Surgery" — the Surgery Name autocomplete is `Item` rows (`DTYPE='ClinicalEntity'`), not a dedicated table
+
+On `theater/patient_surgery.xhtml`'s "Add Surgery" panel, the "Surgery Name" `p:autoComplete`
+(`ProcedureController.completeProcedures`) queries `ClinicalEntity` — which is a
+`SINGLE_TABLE`-inheritance subclass of `Item` (discriminator `DTYPE='ClinicalEntity'`), not its
+own table. There is no `CLINICALENTITY` table to query directly; look up seed rows with:
+```sql
+SELECT ID, NAME FROM ITEM WHERE DTYPE='ClinicalEntity' AND SYMANTICTYPE='Therapeutic_Procedure' AND RETIRED=0;
+```
+A query for an item name absent from that set (e.g. "Appendec" typo, or a name that isn't seeded)
+silently returns "No results found" with no error — this looks like a missing feature but is just
+an empty/mistyped query. Confirmed working seed name: "Appendicectomy". Verified while testing
+issue #20891.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
