@@ -13224,7 +13224,7 @@ public class PharmacyReportController implements Serializable {
             XSSFSheet sheet = workbook.createSheet("OP Drug Return");
 
             int rowIndex = 0;
-            int totalColumns = 15;
+            int totalColumns = 16;
 
             // =========================
             // STYLES
@@ -13328,6 +13328,7 @@ public class PharmacyReportController implements Serializable {
 
             String[] headers = {
                 "Date",
+                "Bill Type",
                 "Item Name",
                 "Code",
                 "Doc No",
@@ -13362,63 +13363,67 @@ public class PharmacyReportController implements Serializable {
                         sdf.format(bi.getCreatedAt()));
                 d0.setCellStyle(dataStyle);
 
-                Cell d1 = row.createCell(1);
+                Cell billType = row.createCell(1);
+                billType.setCellValue(bi.getBill().getBillTypeAtomic().getLabel());
+                billType.setCellStyle(dataStyle);
+
+                Cell d1 = row.createCell(2);
                 d1.setCellValue(bi.getItem().getName());
                 d1.setCellStyle(dataStyle);
 
-                Cell d2 = row.createCell(2);
+                Cell d2 = row.createCell(3);
                 d2.setCellValue(bi.getItem().getCode());
                 d2.setCellStyle(dataStyle);
 
-                Cell d3 = row.createCell(3);
+                Cell d3 = row.createCell(4);
                 d3.setCellValue(bi.getBill().getDeptId());
                 d3.setCellStyle(dataStyle);
 
-                Cell d4 = row.createCell(4);
+                Cell d4 = row.createCell(5);
                 d4.setCellValue(bi.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
                         ? bi.getBill().getReferenceBill().getReferenceBill().getReferenceBill().getDeptId()
                         : bi.getBill().getReferenceBill().getDeptId());
                 d4.setCellStyle(dataStyle);
 
-                Cell d5 = row.createCell(5);
+                Cell d5 = row.createCell(6);
                 d5.setCellValue(
                         bi.getQty());
                 d5.setCellStyle(dataStyle);
 
-                Cell costRate = row.createCell(6);
+                Cell costRate = row.createCell(7);
                 costRate.setCellValue(
                         bi.getPharmaceuticalBillItem().getItemBatch().getCostRate());
                 costRate.setCellStyle(numberStyle);
 
-                Cell costValue = row.createCell(7);
+                Cell costValue = row.createCell(8);
                 costValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty());
                 costValue.setCellStyle(numberStyle);
 
-                Cell purchaseRate = row.createCell(8);
+                Cell purchaseRate = row.createCell(9);
                 purchaseRate.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
                 purchaseRate.setCellStyle(numberStyle);
 
-                Cell purchaseValue = row.createCell(9);
+                Cell purchaseValue = row.createCell(10);
                 purchaseValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty());
                 purchaseValue.setCellStyle(numberStyle);
 
-                Cell mrp = row.createCell(10);
+                Cell mrp = row.createCell(11);
                 mrp.setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
                 mrp.setCellStyle(numberStyle);
 
-                Cell mrpValue = row.createCell(11);
+                Cell mrpValue = row.createCell(12);
                 mrpValue.setCellValue(bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty());
                 mrpValue.setCellStyle(numberStyle);
 
-                Cell paymentM = row.createCell(12);
+                Cell paymentM = row.createCell(13);
                 paymentM.setCellValue(bi.getBill().getPaymentMethod().getLabel());
                 paymentM.setCellStyle(dataStyle);
 
-                Cell disc = row.createCell(13);
+                Cell disc = row.createCell(14);
                 disc.setCellValue(bi.getDiscount());
                 disc.setCellStyle(numberStyle);
 
-                Cell netT = row.createCell(14);
+                Cell netT = row.createCell(15);
                 netT.setCellValue(bi.getRate() * bi.getQty());
                 netT.setCellStyle(numberStyle);
 
@@ -13433,19 +13438,19 @@ public class PharmacyReportController implements Serializable {
             totalLabel.setCellValue("Net Amount");
             totalLabel.setCellStyle(headerStyle);
 
-            Cell totalCValue = totalRow.createCell(7);
+            Cell totalCValue = totalRow.createCell(8);
             totalCValue.setCellValue(totalCostValue);
             totalCValue.setCellStyle(numberStyle);
 
-            Cell totalPValue = totalRow.createCell(9);
+            Cell totalPValue = totalRow.createCell(10);
             totalPValue.setCellValue(totalPurchaseValue);
             totalPValue.setCellStyle(numberStyle);
 
-            Cell totalNetValue = totalRow.createCell(11);
+            Cell totalNetValue = totalRow.createCell(12);
             totalNetValue.setCellValue(totalRetailValue);
             totalNetValue.setCellStyle(numberStyle);
 
-            Cell totalRValue = totalRow.createCell(14);
+            Cell totalRValue = totalRow.createCell(15);
             totalRValue.setCellValue(netTotal);
             totalRValue.setCellStyle(numberStyle);
 
