@@ -27,7 +27,7 @@ env:
   APP:        mpold
   JNDI_MAIN:  jdbc/mpOld
   JNDI_AUDIT: jdbc/mpOldAudit
-  HEALTH_URL: https://mpold-migrated.carecode.org/mpold/faces/index1.xhtml
+  HEALTH_URL: https://mpold.carecode.org/mpold/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        mpold
       JNDI_MAIN:  jdbc/mpOld
       JNDI_AUDIT: jdbc/mpOldAudit
-      HEALTH_URL: https://mpold-migrated.carecode.org/mpold/faces/index1.xhtml
+      HEALTH_URL: https://mpold.carecode.org/mpold/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
