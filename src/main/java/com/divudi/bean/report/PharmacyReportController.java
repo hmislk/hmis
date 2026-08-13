@@ -4864,15 +4864,9 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.institution", "ins", institution);
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
-
-            if (item != null) {
-                if (item instanceof Amp) {
-                    jpql.append("AND (bi.item = :itm OR bi.item.amp = :itm) ");
-                    params.put("itm", item);
-                } else {
-                    addFilter(jpql, params, "bi.item", "itm", item);
-                }
-            }
+            // Match the main COGS row's item filter (against the batch's item), not bi.item/Amp -
+            // see retrieveBhtIssueBillItems() for the same requirement on the BHT Issue drill-down.
+            addFilter(jpql, params, "pbi.itemBatch.item", "itm", item);
 
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 jpql.append("AND b.departmentType IN :departmentTypes ");
@@ -4886,7 +4880,35 @@ public class PharmacyReportController implements Serializable {
                     .mapToDouble(Bill::getNetTotal)
                     .sum();
 
-            computeBillItemFinanceTotals();
+            // Recompute totals directly from qty * current ItemBatch rates, matching the COGS
+            // row's retrievePurchaseAndCostValues() valuation. computeBillItemFinanceTotals()
+            // prefers persisted BillItemFinanceDetails.valueAtXxxRate (which can reflect
+            // historical rates) over current ItemBatch rates, which would let this total drift
+            // from the COGS row after a rate adjustment - see retrieveBhtIssueBillItems() for
+            // the same requirement on the BHT Issue drill-down.
+            double purchaseValue = 0.0;
+            double costValue = 0.0;
+            double retailValue = 0.0;
+            for (BillItem bi : billItems) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi == null) {
+                    continue;
+                }
+                ItemBatch itemBatch = pbi.getItemBatch();
+                if (itemBatch == null) {
+                    continue;
+                }
+                double qty = pbi.getQty();
+                Double costRateBoxed = itemBatch.getCostRate();
+                double costRate = costRateBoxed != null ? costRateBoxed : 0.0;
+                purchaseValue += qty * itemBatch.getPurcahseRate();
+                costValue += qty * costRate;
+                retailValue += qty * itemBatch.getRetailsaleRate();
+            }
+            totalPurchaseValue = purchaseValue;
+            totalCostValue = costValue;
+            totalRetailValue = retailValue;
+            costValueTotal = totalCostValue;
 
         } catch (Exception e) {
             e.printStackTrace();
