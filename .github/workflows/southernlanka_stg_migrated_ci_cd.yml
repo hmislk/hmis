@@ -27,7 +27,7 @@ env:
   APP:        southernlanka
   JNDI_MAIN:  jdbc/SouthernlankaStg
   JNDI_AUDIT: jdbc/SouthernlankaStgAudit
-  HEALTH_URL: https://slh-stg-migrated.carecode.org/southernlanka/faces/index1.xhtml
+  HEALTH_URL: https://stg-migrated.carecode.org/southernlanka/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        southernlanka
       JNDI_MAIN:  jdbc/SouthernlankaStg
       JNDI_AUDIT: jdbc/SouthernlankaStgAudit
-      HEALTH_URL: https://slh-stg-migrated.carecode.org/southernlanka/faces/index1.xhtml
+      HEALTH_URL: https://stg-migrated.carecode.org/southernlanka/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
