@@ -3,7 +3,7 @@
 #
 #  Copy to  hmis/.github/workflows/asiripharmacy_prod_migrated_ci_cd.yml
 #  Branch:  asiripharmacy-prod-migrated
-#  Serves:  https://asiripharmacy-migrated.carecode.org/asiripharmacy
+#  Serves:  https://asiripharmacy.carecode.org/asiripharmacy
 #
 #  Differs from asiripharmacy_prod_ci_cd.yml only in the branch, the secrets and the
 #  health URL. The JNDI names are IDENTICAL to the old workflow — several
@@ -27,7 +27,7 @@ env:
   APP:        asiripharmacy
   JNDI_MAIN:  jdbc/asiri
   JNDI_AUDIT: jdbc/asiriaudit
-  HEALTH_URL: https://asiripharmacy-migrated.carecode.org/asiripharmacy/faces/index1.xhtml
+  HEALTH_URL: https://asiripharmacy.carecode.org/asiripharmacy/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        asiripharmacy
       JNDI_MAIN:  jdbc/asiri
       JNDI_AUDIT: jdbc/asiriaudit
-      HEALTH_URL: https://asiripharmacy-migrated.carecode.org/asiripharmacy/faces/index1.xhtml
+      HEALTH_URL: https://asiripharmacy.carecode.org/asiripharmacy/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
