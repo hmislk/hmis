@@ -55,6 +55,10 @@
                                     action="#{bhtSummeryController.navigateToInpatientProfile()}"
                                     >
                                     <f:setPropertyActionListener
+                                        value="#{inwardSearch.bill.patientEncounter}"
+                                        target="#{bhtSummeryController.patientEncounter}" >
+                                    </f:setPropertyActionListener>
+                                    <f:setPropertyActionListener
                                         value="#{bhtSummeryController.patientEncounter}"
                                         target="#{admissionController.current}" >
                                     </f:setPropertyActionListener>
