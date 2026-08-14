@@ -795,34 +795,75 @@ public class TransferIssueForRequestsController implements Serializable {
     }
 
     /**
-     * Retires the in-progress issue Bill and any BillItems already persisted
-     * earlier in the current settle() call (including the item that just
-     * failed, which is not yet added to bill.getBillItems() at the point of
-     * failure), so a mid-loop stock-movement failure does not leave an
-     * orphaned partial bill (mirrors
-     * OpdBillController.retirePartialBillOnSettlementFailure(), #22399/#22938).
+     * Aggregates requested qty per Stock row across ALL lines in this settle()
+     * call and validates each Stock's live DB quantity can cover the combined
+     * total - not just each line checked independently against the same
+     * stale-relative-to-each-other snapshot. Closes the gap where two lines
+     * drawing from the same batch each pass an individual check but together
+     * exceed what is available (#22938: this is what let bill TI/COOP/26/000488
+     * persist a 141-unit line against a batch that only had 140 in stock).
+     *
+     * Runs entirely before any Bill/BillItem/PharmaceuticalBillItem is
+     * created, so on failure there is nothing to roll back - just an error
+     * message. A concurrent transaction consuming stock in the tiny window
+     * between this check and the per-item deductFromStock() calls further
+     * down is still possible (true TOCTOU); that residual race is handled by
+     * logging a reconciliation alert rather than attempting a multi-entity
+     * rollback (Bill/BillItem/PharmaceuticalBillItem/Stock/StockHistory/
+     * StaffStock/originalOrderItem) after the fact.
+     *
+     * @return null if all stock is sufficient, otherwise a user-facing error message
      */
-    private void retirePartialIssueOnSettlementFailure(BillItem failedItem) {
-        Bill bill = getIssuedBill();
-        if (bill == null || bill.getId() == null) {
-            return;
+    private String findInsufficientStockError() {
+        Map<Long, Double> requestedByStockId = new HashMap<>();
+        Map<Long, String> itemNameByStockId = new HashMap<>();
+        for (BillItem bi : getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+                continue;
+            }
+            Long stockId = pbi.getStock().getId();
+            double qty = Math.abs(pbi.getQty());
+            requestedByStockId.merge(stockId, qty, Double::sum);
+            itemNameByStockId.putIfAbsent(stockId,
+                    bi.getItem() != null ? bi.getItem().getName() : "one of the items");
         }
-        List<BillItem> toRetire = new ArrayList<>(bill.getBillItems());
-        if (failedItem != null && failedItem.getId() != null) {
-            toRetire.add(failedItem);
-        }
-        for (BillItem bi : toRetire) {
-            if (bi != null && bi.getId() != null && !bi.isRetired()) {
-                bi.setRetired(true);
-                bi.setRetireComments("Transfer issue settlement aborted: insufficient stock mid-settlement");
-                getBillItemFacade().edit(bi);
+        for (Map.Entry<Long, Double> entry : requestedByStockId.entrySet()) {
+            Stock liveStock = stockFacade.find(entry.getKey());
+            if (liveStock == null || liveStock.getStock() < entry.getValue()) {
+                double available = liveStock == null ? 0.0 : liveStock.getStock();
+                return "Insufficient stock to issue " + itemNameByStockId.get(entry.getKey())
+                        + " (requested " + entry.getValue() + ", available " + available + "). "
+                        + "Stock levels may have changed since this page was loaded. "
+                        + "Please refresh and try again.";
             }
         }
-        if (!bill.isRetired()) {
-            bill.setRetired(true);
-            bill.setRetireComments("Transfer issue settlement aborted: insufficient stock mid-settlement");
-            getBillFacade().edit(bill);
-        }
+        return null;
+    }
+
+    /**
+     * Last-resort handler for the residual TOCTOU race: findInsufficientStockError()
+     * passed, but a concurrent transaction consumed the same stock before this
+     * item's deductFromStock() ran. By this point the current item's Bill/
+     * BillItem/PharmaceuticalBillItem (and possibly earlier items' full stock
+     * movements) are already committed, so a clean rollback is not attempted -
+     * log loudly for manual reconciliation via BillDataCorrectionApi/
+     * PharmacyAdjustmentApi (the same tools used for #22938) instead of
+     * silently continuing.
+     */
+    private void logResidualStockRace(BillItem failedItem) {
+        Bill bill = getIssuedBill();
+        String itemName = failedItem != null && failedItem.getItem() != null
+                ? failedItem.getItem().getName() : "unknown item";
+        LOGGER.log(Level.SEVERE,
+                "Transfer Issue settle() stock race: bill {0} (billItem {1}) failed deductFromStock "
+                + "after passing the pre-loop aggregate stock check - concurrent stock consumption "
+                + "during settle(). Needs manual reconciliation (see #22938). Item: {2}",
+                new Object[]{bill != null ? bill.getId() : null,
+                    failedItem != null ? failedItem.getId() : null, itemName});
+        JsfUtil.addErrorMessage("Insufficient stock to issue " + itemName + " - stock changed while this "
+                + "transfer was being processed. This has been logged for review. Some earlier items in "
+                + "this transfer may have already been issued; please check the transfer before retrying.");
     }
 
     public synchronized void settle() {
@@ -871,16 +912,6 @@ public class TransferIssueForRequestsController implements Serializable {
                     JsfUtil.addErrorMessage(name + " is not available in the stock.");
                     return;
                 }
-            } else {
-                if (pbi.getStock() != null && pbi.getStock().getId() != null) {
-                    Stock liveStock = stockFacade.find(pbi.getStock().getId());
-                    if (liveStock == null || liveStock.getStock() < pbi.getQty()) {
-                        JsfUtil.addErrorMessage("Insufficient stock for one or more items. "
-                                + "Stock levels may have changed since this page was loaded. "
-                                + "Please refresh and try again.");
-                        return;
-                    }
-                }
             }
 
             double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
@@ -907,6 +938,17 @@ public class TransferIssueForRequestsController implements Serializable {
 
         if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
+            return;
+        }
+
+        // Aggregate stock check across all lines in this settle() call, run last
+        // (right before any persistence) so it reflects exactly what is about to
+        // be issued. Catches two-or-more lines drawing from the same Stock row
+        // that would each pass an individual per-line check but together exceed
+        // what is available (#22938).
+        String stockError = findInsufficientStockError();
+        if (stockError != null) {
+            JsfUtil.addErrorMessage(stockError);
             return;
         }
 
@@ -983,19 +1025,16 @@ public class TransferIssueForRequestsController implements Serializable {
                 getBillItemFacade().edit(billItemsInIssue);
                 getBillItemFacade().edit(originalOrderItem);
             } else {
-                // Stock dropped below the requested qty between the pre-loop live check
-                // and this item's turn in the loop (e.g. another line in the same settle()
-                // call consumed the same batch). deductFromStock() did NOT move any stock
-                // or write StockHistory here - continuing would leave this BillItem/
-                // PharmaceuticalBillItem persisted with a qty that was never actually
-                // transferred (coop production, TI/COOP/26/000488, Evion 400mg capsule,
-                // #22938). Abort and retire whatever this settle() already persisted
-                // instead of silently keeping a phantom line.
-                String name = billItemsInIssue.getItem() != null ? billItemsInIssue.getItem().getName() : "one of the items";
-                retirePartialIssueOnSettlementFailure(billItemsInIssue);
-                JsfUtil.addErrorMessage("Insufficient stock to issue " + name + ". "
-                        + "Stock levels may have changed since this page was loaded. "
-                        + "No items were issued - please refresh and try again.");
+                // findInsufficientStockError() already validated aggregate stock for
+                // this whole settle() call before any persistence started - reaching
+                // here means a concurrent transaction consumed the same stock in the
+                // narrow window since that check. deductFromStock() did NOT move any
+                // stock or write StockHistory for this item. This BillItem/
+                // PharmaceuticalBillItem is already committed, and earlier items in
+                // this loop may have already moved real stock, so a clean rollback
+                // is not attempted here - log for manual reconciliation instead of
+                // silently keeping a phantom line (#22938).
+                logResidualStockRace(billItemsInIssue);
                 return;
             }
 
