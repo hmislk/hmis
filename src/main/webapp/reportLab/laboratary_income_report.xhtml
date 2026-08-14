@@ -279,11 +279,9 @@
                             </p:commandButton>
                         </div>
 
-
-
                         <p:dataTable
                             id="tbl"
-                            style="padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: #{laborataryReportController.fontSizeForScreen}!important; zoom: 1.6;" 
+                            style="width: 2000px; padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: #{laborataryReportController.fontSizeForScreen}!important; zoom: 1.6;" 
                             styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                             value="#{laborataryReportController.bundle.rows}" 
                             var="row"
@@ -349,8 +347,18 @@
                                 <h:outputText value="#{row.bill.deptId}"  style="padding: 2px!important; margin: 0px!important;" />
                             </p:column>
 
-                            <p:column headerText="Patient"  style="padding: 2px!important; margin: 0px!important;" >
+                            <p:column headerText="Patient" width="20em" style="padding: 2px!important; margin: 0px!important;" >
                                 <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 2px!important; margin: 0px!important;" />
+                            </p:column>
+                            
+                            <p:column headerText="Route Name" width="10em" style="padding: 2px!important; margin: 0px!important;"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Laboratory Income Report - Show Route Name Column',false)}">
+                                <h:outputText value="#{row.bill.collectingCentre.route.name}"  style="padding: 2px!important; margin: 0px!important;" />
+                            </p:column>
+
+                            <p:column headerText="Collecting Centre" width="20em" style="padding: 2px!important; margin: 0px!important;"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Laboratory Income Report - Show Collecting Centre Column',false)}">
+                                <h:outputText value="#{row.bill.collectingCentre.name}"  style="padding: 2px!important; margin: 0px!important;" />
                             </p:column>
 
                             <p:column headerText="Date"   width="8em" style="padding: 2px!important; margin: 0px!important;">
@@ -435,6 +443,18 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:column headerText="Agent Commission"   width="9em"  class="text-end light-grey-background"  style="padding: 2px!important; margin: 0px!important;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Laboratory Income Report - Show Agent Commission Column',false)}">
+                                <h:outputText value="#{row.bill.totalCenterFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.ccTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
                             <p:column headerText="Discount" width="8em"  class="text-end" style="padding: 2px!important; margin: 0px!important;" >
                                 <h:outputText value="#{row.discount}" >
@@ -481,6 +501,7 @@
                             </p:column>
 
                         </p:dataTable>
+
                     </p:panel>
                 </h:form>
 
