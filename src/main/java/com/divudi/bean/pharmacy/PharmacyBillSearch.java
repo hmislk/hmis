@@ -1866,6 +1866,7 @@ public class PharmacyBillSearch implements Serializable {
         printPreview = false;
         tempbillItems = null;
         //  comment = null;
+        printBhtIssueBillWithRate = false;
     }
 
     private boolean checkPaid() {

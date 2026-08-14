@@ -195,6 +195,11 @@
                         <td style="width:55%!important;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
+                        <ui:fragment rendered="#{cc.attrs.bill.margin ne 0.0 and !cc.attrs.showRate}">
+                            <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
+                                <h:outputLabel value="QTY"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
+                            </td>
+                        </ui:fragment>
                         <ui:fragment rendered="#{cc.attrs.showRate}">
                             <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
                                 <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
