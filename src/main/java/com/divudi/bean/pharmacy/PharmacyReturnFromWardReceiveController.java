@@ -419,6 +419,11 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
             JsfUtil.addErrorMessage("This return has no carrying staff (porter) recorded - cannot receive. Please contact the returning ward.");
             return;
         }
+        if (returnedBill.getPatientEncounter() != null
+                && returnedBill.getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return;
+        }
 
         boolean forceComplete = completed && webUserController.hasPrivilege(Privileges.PharmacyReturnFromWardForceComplete.toString());
 

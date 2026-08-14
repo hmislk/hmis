@@ -1796,11 +1796,13 @@ public class CashBookEntryController implements Serializable {
         newCbEntry.setCashBook(cb);
         updateBalances(p.getPaymentMethod(), p.getPaidValue(), newCbEntry);
 
+        // Persist before merging the Payment - see writeCashBookEntryAtBankDeposit
+        // for why merging a Payment whose cashbookEntry is still transient causes
+        // EclipseLink to implicitly cascade-insert a duplicate row (issue #20963).
+        cashbookEntryFacade.create(newCbEntry);
         p.setCashbook(cb);
         p.setCashbookEntry(newCbEntry);
         paymentFacade.edit(p);
-        cashbookEntryFacade.create(newCbEntry);
-
     }
 
     public void writeCashBookEntryAtBankDeposit(Payment p, CashBook cb, Bill depositBill) {
@@ -1824,10 +1826,19 @@ public class CashBookEntryController implements Serializable {
         newCbEntry.setBill(depositBill);
         newCbEntry.setCashBook(cb);
         updateBalances(p.getPaymentMethod(), p.getPaidValue(), newCbEntry);
+        // Persist the CashBookEntry BEFORE merging the Payment that references it.
+        // Payment.cashbookEntry has no cascade, but handing em.merge() a Payment
+        // whose cashbookEntry is still transient makes EclipseLink implicitly
+        // cascade-insert an orphaned copy of it (no cascade needed to trigger this -
+        // it's merge's default handling of a new related entity), so the explicit
+        // create() below used to insert a SECOND row for the same entry - the
+        // duplicate Cash Book entry reported in issue #20963. Persisting first means
+        // paymentFacade.edit(p) merges a Payment pointing at an already-managed,
+        // real CashBookEntry row instead of a transient one.
+        cashbookEntryFacade.create(newCbEntry);
         p.setCashbook(cb);
         p.setCashbookEntry(newCbEntry);
         paymentFacade.edit(p);
-        cashbookEntryFacade.create(newCbEntry);
     }
 
     public void updateBalances(PaymentMethod pm, Double Value, CashBookEntry cbe) {

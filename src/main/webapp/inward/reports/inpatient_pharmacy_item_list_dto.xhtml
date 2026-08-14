@@ -196,7 +196,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value" />
                                     </f:facet>
@@ -210,7 +210,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount" />
                                     </f:facet>
@@ -224,7 +224,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Service Charge" />
                                     </f:facet>

@@ -253,12 +253,20 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             JsfUtil.addErrorMessage("Cancelled Bills CAN NOT BE returned");
             return null;
         }
+
+        // Resolve the actual sale/settlement bill regardless of whether the
+        // loaded bill is a PreBill or the completed sale bill, so validation
+        // below is consistent no matter which navigation path was used.
+        Bill paymentBill = getOriginalPaymentBill();
+        if (paymentBill == null) {
+            JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
+            return null;
+        }
+
         // Check if credit has been partially or fully settled
-        if (bill.getPaymentMethod() == PaymentMethod.Credit){
-            if (bill.getPaidAmount() > 0) {
-                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
-                return null;
-            }
+        if (isCreditSettled(paymentBill)) {
+            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+            return null;
         }
 
         String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
@@ -278,52 +286,15 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         generateBillComponent();
 
-        List<Payment> originalPayments;
-        Bill paymentBill = null;
-
-        //PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-        if (bill.getBillTypeAtomic() == null) {
-            JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-            return null;
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE) {
-            paymentBill = bill;
-            bill.getReferenceBill();
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE) {
-            paymentBill = bill.getReferenceBill();
-            if (paymentBill.getBillTypeAtomic() == null) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
-            paymentBill = bill.getReferenceBill();
-            if (paymentBill.getBillTypeAtomic() == null) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER) {
-            paymentBill = bill;
-        } else {
-            JsfUtil.addErrorMessage("Programming Error. Not a suitable bill type atomic. Inform the system administrator.");
-            return null;
-        }
-
         // Fetch and initialize payment data from original bill
-        originalPayments = billService.fetchBillPayments(paymentBill);
+        List<Payment> originalPayments = billService.fetchBillPayments(paymentBill);
 
         if (originalPayments != null && !originalPayments.isEmpty()) {
             // Initialize payment method data based on original payments
             initializeRefundPaymentFromOriginalPayments(originalPayments);
         } else {
             // Fallback: just set payment method enum if no payment details found
-            returnPaymentMethod = bill.getPaymentMethod();
+            returnPaymentMethod = paymentBill.getPaymentMethod();
         }
 
         return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
@@ -694,27 +665,32 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     /**
-     * Validates if the credit bill has been fully or partially settled.
+     * Validates if a bill has been fully or partially settled as credit.
      * Prevents returns for bills where credit companies have already made payments.
+     * The entry bill loaded into this controller can be either a PreBill or the
+     * actual completed sale/settlement bill depending on which navigation path
+     * was used, and the settlement fields are only ever populated on the actual
+     * sale/settlement bill — so callers must pass the bill resolved via
+     * {@link #getOriginalPaymentBill()}, not necessarily {@code getBill()}.
      *
      * @return true if credit is settled (validation fails), false if not settled (validation passes)
      */
-    private boolean isCreditSettled() {
-        if (getBill() == null) {
+    private boolean isCreditSettled(Bill billToCheck) {
+        if (billToCheck == null) {
             return false; // No bill to validate
         }
 
         // Check if this is a credit bill
-        if (getBill().getPaymentMethod() != PaymentMethod.Credit) {
+        if (billToCheck.getPaymentMethod() != PaymentMethod.Credit) {
             return false; // Not a credit bill, allow return
         }
 
         // Check if credit has been settled (fully or partially)
         // Any positive value in these fields indicates settlement has occurred
         boolean hasSettlement =
-            (getBill().getPaidAmount() > 0.01) ||
-            (getBill().getSettledAmountByPatient() > 0.01) ||
-            (getBill().getSettledAmountBySponsor() > 0.01);
+            (billToCheck.getPaidAmount() > 0.01) ||
+            (billToCheck.getSettledAmountByPatient() > 0.01) ||
+            (billToCheck.getSettledAmountBySponsor() > 0.01);
 
         return hasSettlement;
     }
@@ -793,14 +769,6 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             return;
         }
 
-        // Check if credit has been partially or fully settled
-        if (bill.getPaymentMethod() == PaymentMethod.Credit){
-            if (bill != null && bill.getPaidAmount() > 0) {
-                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
-                return;
-            }
-        }
-
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
@@ -820,7 +788,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         }
 
         // Check if credit bill has been settled (fully or partially)
-        if (isCreditSettled()) {
+        if (isCreditSettled(getOriginalPaymentBill())) {
             JsfUtil.addErrorMessage("Cannot return this bill. The credit has been fully or partially settled by the credit company.");
             return;
         }

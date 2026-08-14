@@ -205,6 +205,13 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         }
         dueSurgeryFees.removeAll(removeingBillFees);
 
+        // Default the UI-only "amount to pay now" to the full outstanding
+        // balance for each due fee, so existing full-payment behaviour is
+        // unchanged unless the cashier edits it down for a partial payment.
+        for (BillFee sf : dueSurgeryFees) {
+            sf.setPayingAmount(sf.getFeeValue() - sf.getPaidValue());
+        }
+
         calculateTotalPaymentsForTheSurgeonForCurrentMonthForCurrentInstitution();
         performCalculations();
     }
@@ -262,7 +269,8 @@ public class InwardSurgeryPaymentBillController implements Serializable {
             return;
         }
         for (BillFee f : payingSurgeryFees) {
-            totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
+            Double payingAmount = f.getPayingAmount();
+            totalPaying = totalPaying + (payingAmount != null ? payingAmount : (f.getFeeValue() - f.getPaidValue()));
         }
     }
 
@@ -536,7 +544,7 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash && !feeCollectedByDoctor) {
             Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
             if (userDrawer != null) {
-                double drawerBalance = userDrawer.getCashInHandValue();
+                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
                 double paymentAmount = getTotalPayingWithoutWht();
 
                 boolean allowNegativeDrawer = configOptionApplicationController.getBooleanValueByKey(
@@ -597,8 +605,12 @@ public class InwardSurgeryPaymentBillController implements Serializable {
 
         // Update bill fees without creating payment records
         for (BillFee originalBillFee : getPayingSurgeryFees()) {
-            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
-            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
+            double outstanding = originalBillFee.getFeeValue() - originalBillFee.getPaidValue();
+            Double payingAmount = originalBillFee.getPayingAmount();
+            double amountPaidNow = payingAmount != null ? payingAmount : outstanding;
+
+            originalBillFee.setPaidValue(originalBillFee.getPaidValue() + amountPaidNow);
+            originalBillFee.setSettleValue(originalBillFee.getSettleValue() + amountPaidNow);
 
             // Mark as collected by doctor if flag is set
             if (feeCollectedByDoctor) {
@@ -631,6 +643,20 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         if (dueSurgeryFees == null) {
             JsfUtil.addErrorMessage("Please select surgeries to pay");
             return true;
+        }
+        if (getPayingSurgeryFees() != null) {
+            for (BillFee f : getPayingSurgeryFees()) {
+                double outstanding = f.getFeeValue() - f.getPaidValue();
+                Double payingAmount = f.getPayingAmount();
+                if (payingAmount == null || payingAmount <= 0) {
+                    JsfUtil.addErrorMessage("Please enter a valid paying amount for all selected surgery fees");
+                    return true;
+                }
+                if (payingAmount - outstanding > 0.1) {
+                    JsfUtil.addErrorMessage("Paying amount cannot exceed the outstanding due amount for a surgery fee");
+                    return true;
+                }
+            }
         }
         if (totalPaying == 0) {
             JsfUtil.addErrorMessage("Please select surgeries to pay");
@@ -693,20 +719,24 @@ public class InwardSurgeryPaymentBillController implements Serializable {
 
     private void saveBillCompo(Bill paymentBill, Payment paymentBillPayment) {
         for (BillFee originalBillFee : getPayingSurgeryFees()) {
-            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment);
-            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
-            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
-            
+            double outstanding = originalBillFee.getFeeValue() - originalBillFee.getPaidValue();
+            Double payingAmount = originalBillFee.getPayingAmount();
+            double amountPaidNow = payingAmount != null ? payingAmount : outstanding;
+
+            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment, amountPaidNow);
+            originalBillFee.setPaidValue(originalBillFee.getPaidValue() + amountPaidNow);
+            originalBillFee.setSettleValue(originalBillFee.getSettleValue() + amountPaidNow);
+
             // Mark as collected by doctor if flag is set
             if (feeCollectedByDoctor) {
                 originalBillFee.setFeeCollectedByDoctor(true);
             }
-            
+
             getBillFeeFacade().edit(originalBillFee);
         }
     }
 
-    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p) {
+    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p, double amountPaidNow) {
         BillItem newlyCreatedPayingBillItem = new BillItem();
         newlyCreatedPayingBillItem.setReferanceBillItem(originalBillFee.getBillItem());
         newlyCreatedPayingBillItem.setReferenceBill(originalBillFee.getBill());
@@ -715,10 +745,10 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         newlyCreatedPayingBillItem.setCreatedAt(Calendar.getInstance().getTime());
         newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
         newlyCreatedPayingBillItem.setDiscount(0.0);
-        newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
-        newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setGrossValue(amountPaidNow);
+        newlyCreatedPayingBillItem.setNetValue(amountPaidNow);
         newlyCreatedPayingBillItem.setQty(1.0);
-        newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setRate(amountPaidNow);
         getBillItemFacade().create(newlyCreatedPayingBillItem);
 
         BillFee newlyCreatedBillFee = saveBillFee(newlyCreatedPayingBillItem, p);

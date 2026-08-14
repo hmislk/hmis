@@ -504,6 +504,17 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             JsfUtil.addErrorMessage("Select a received bill to return against.");
             return;
         }
+        // Reload from the DB right before validating discharge state - this
+        // controller is @SessionScoped and selectedReceiveBill (and its
+        // patientEncounter) may be stale if nursing discharge was confirmed
+        // after this return page was loaded. Mirrors the same reload done in
+        // InwardServiceRefundController.refundInwardServiceBill().
+        Bill freshReceiveBill = billFacade.find(selectedReceiveBill.getId());
+        if (freshReceiveBill == null || freshReceiveBill.isRetired()) {
+            JsfUtil.addErrorMessage("Receive bill not available.");
+            return;
+        }
+        selectedReceiveBill = freshReceiveBill;
         if (getReturnLines().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to return on the selected received bill.");
             return;
@@ -514,6 +525,16 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         }
         if (toDepartment == null) {
             JsfUtil.addErrorMessage("Select the destination pharmacy department.");
+            return;
+        }
+        if (selectedReceiveBill.getPatientEncounter() != null
+                && selectedReceiveBill.getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot return medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
+        if (selectedReceiveBill.getPatientEncounter() != null
+                && selectedReceiveBill.getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
             return;
         }
 

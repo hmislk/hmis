@@ -17,6 +17,7 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
     private String fromDepartmentName;
     private String staffName;
     private String comments;
+    private String insId;
 
     public PharmacyTransferReceivedListDTO() {
     }
@@ -48,6 +49,27 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
         this.cancelled = cancelled != null ? cancelled : false;
         this.createrName = createrName;
         this.netTotal = netTotal != null ? netTotal : 0.0;
+        this.fromDepartmentName = fromDepartmentName;
+        this.staffName = staffName;
+        this.comments = comments;
+    }
+
+    /**
+     * Adds {@code insId} and cancelled-by/cancelled-at reporting (issue #20523)
+     * for the {@code pharmacy_transfer_recieve.xhtml} composite, which the
+     * previous 9-arg constructor above did not carry (it always left
+     * cancelledByName/cancelledAt null and sourced comments from the bill's
+     * own {@code comments} rather than the cancelled/refunded bill's). This
+     * is a new constructor per CLAUDE.md rules — the old one is left as-is
+     * for any other caller.
+     */
+    public PharmacyTransferReceivedListDTO(Long billId, String deptId, String insId,
+            Date createdAt, Boolean cancelled, String createrName, Double netTotal,
+            String cancelledByName, Date cancelledAt,
+            String fromDepartmentName, String staffName, String comments) {
+        this(billId, null, deptId, createdAt, cancelled, createrName, netTotal,
+                cancelledByName, cancelledAt);
+        this.insId = insId;
         this.fromDepartmentName = fromDepartmentName;
         this.staffName = staffName;
         this.comments = comments;
@@ -147,5 +169,13 @@ public class PharmacyTransferReceivedListDTO implements Serializable {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getInsId() {
+        return insId;
+    }
+
+    public void setInsId(String insId) {
+        this.insId = insId;
     }
 }
