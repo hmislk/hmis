@@ -395,6 +395,7 @@ public class SurgeryBillController implements Serializable {
             patientItem.setRetiredAt(new Date());
             patientItem.setRetired(true);
             getPatientItemFacade().edit(patientItem);
+            refreshTimedEncounterComponents();
         }
     }
 
@@ -1292,13 +1293,36 @@ public class SurgeryBillController implements Serializable {
 
     public List<EncounterComponent> getProEncounterComponents() {
         if (proEncounterComponents == null) {
-            proEncounterComponents = new ArrayList<>();
+            fetchProEncounterComponents();
         }
         return proEncounterComponents;
     }
 
     public void setProEncounterComponents(List<EncounterComponent> proEncounterComponents) {
         this.proEncounterComponents = proEncounterComponents;
+    }
+
+    public void refreshProEncounterComponents() {
+        proEncounterComponents = null;
+    }
+
+    private void fetchProEncounterComponents() {
+        proEncounterComponents = new ArrayList<>();
+        if (surgeryBill == null || surgeryBill.getProcedure() == null
+                || surgeryBill.getProcedure().getId() == null) {
+            return;
+        }
+        String jpql = "SELECT ec FROM EncounterComponent ec"
+                + " WHERE ec.patientEncounter = :proc"
+                + " AND ec.billItem.bill.surgeryBillType = :sbt"
+                + " ORDER BY ec.orderNo";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("proc", surgeryBill.getProcedure());
+        params.put("sbt", SurgeryBillType.ProfessionalFee);
+        proEncounterComponents = getEncounterComponentFacade().findByJpql(jpql, params);
+        if (proEncounterComponents == null) {
+            proEncounterComponents = new ArrayList<>();
+        }
     }
 
     public PatientEncounterFacade getPatientEncounterFacade() {
@@ -1359,13 +1383,29 @@ public class SurgeryBillController implements Serializable {
 
     public List<EncounterComponent> getTimedEncounterComponents() {
         if (timedEncounterComponents == null) {
-            timedEncounterComponents = new ArrayList<>();
+            fetchTimedEncounterComponents();
         }
         return timedEncounterComponents;
     }
 
     public void setTimedEncounterComponents(List<EncounterComponent> timedEncounterComponents) {
         this.timedEncounterComponents = timedEncounterComponents;
+    }
+
+    public void refreshTimedEncounterComponents() {
+        timedEncounterComponents = null;
+    }
+
+    private void fetchTimedEncounterComponents() {
+        Bill timedBill = getSurgeryTimedServiceBill();
+        if (timedBill == null) {
+            timedEncounterComponents = new ArrayList<>();
+            return;
+        }
+        timedEncounterComponents = getBillBean().getEncounterComponents(timedBill);
+        if (timedEncounterComponents == null) {
+            timedEncounterComponents = new ArrayList<>();
+        }
     }
 
     public PatientItemFacade getPatientItemFacade() {
@@ -1420,12 +1460,41 @@ public class SurgeryBillController implements Serializable {
         this.departmentBillItems = departmentBillItems;
     }
 
+    /**
+     * Invalidates the cached Services tab data (Surgery Workbench's
+     * departmentBillItems, and its surgery_bill_summary.xhtml twin
+     * surgeryServiceDepartmentItems) so the next getter re-fetches from the
+     * DB. Both are derived from the same forwardReferenceBill-scoped Service
+     * BillItems, so they go stale together whenever a Service/Investigation
+     * is settled from the separate BillBhtController bean.
+     */
+    public void refreshSurgeryServiceDepartmentItems() {
+        departmentBillItems = null;
+        surgeryServiceDepartmentItems = null;
+    }
+
     public List<BillItem> getPharmacyIssues() {
+        if (pharmacyIssues == null && getSurgeryBill().getId() != null) {
+            createIssueTable();
+        }
         return pharmacyIssues;
     }
 
     public void setPharmacyIssues(List<BillItem> pharmacyIssues) {
         this.pharmacyIssues = pharmacyIssues;
+    }
+
+    /**
+     * Invalidates the cached Pharmacy/Store issue tables so the next
+     * getPharmacyIssues() call re-fetches from the DB. Wired to the
+     * "Back to Surgery Workbench" buttons on inward_bill_surgery_issue.xhtml
+     * so a freshly issued direct-issue medicine shows up on return (see
+     * issue #20891 — this @SessionScoped bean would otherwise keep serving
+     * the stale/empty list for the rest of the session).
+     */
+    public void refreshPharmacyIssues() {
+        pharmacyIssues = null;
+        storeIssues = null;
     }
 
     public void setSurgeryBill(Bill surgeryBill) {

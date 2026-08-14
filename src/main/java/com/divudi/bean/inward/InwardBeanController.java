@@ -500,6 +500,31 @@ public class InwardBeanController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
     
+    /**
+     * Sums the value of cancelled/returned issue bills as a positive magnitude, so it can be
+     * printed as its own breakup line instead of silently netting out of the parent charge
+     * total (issue #22674). {@code cancellationBtas} should be the cancellation-only subset of
+     * the {@link BillTypeAtomic} list already used to compute the parent charge type's net total.
+     */
+    public double calCancelledCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> cancellationBtas, List<PatientEncounter> cpts) {
+        String sql;
+        HashMap hm;
+        sql = "SELECT  sum(b.netTotal)"
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic IN :btp "
+                + " and  b.patientEncounter IN :pe";
+        hm = new HashMap();
+        hm.put("btp", cancellationBtas);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return -getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
     public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
         String sql;
         HashMap hm;
@@ -2545,6 +2570,19 @@ public class InwardBeanController implements Serializable {
         snapshotTimedItems(patientRoom, newRoomFacilityCharge);
 
         return patientRoom;
+    }
+
+    /**
+     * Same as the 6-arg {@link #savePatientRoom(PatientRoom, PatientRoom, RoomFacilityCharge, PatientEncounter, Date, WebUser)}
+     * but additionally sets {@code PatientRoom.admitted}, for callers (e.g. the "simultaneous"
+     * admit-and-room-assign flow) that must mark the room as occupied immediately rather than
+     * leaving it pending a separate handover/accept step.
+     */
+    public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser, boolean admitted) {
+        if (patientRoom != null) {
+            patientRoom.setAdmitted(admitted);
+        }
+        return savePatientRoom(patientRoom, previousRoom, newRoomFacilityCharge, patientEncounter, admittedAt, webUser);
     }
 
     public PatientRoom admitPatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, Date admittedAt, WebUser webUser) {

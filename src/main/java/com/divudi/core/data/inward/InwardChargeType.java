@@ -22,6 +22,7 @@ public enum InwardChargeType {
     MedicalCareICU("Medical Care", CalculationMethod.PATIENT_ROOM, true),//Goes With Room
     MedicalServices("Medical Services", true),
     Medicine("Medicine", CalculationMethod.PHARMACY_BILL, true),//For BHT ISSUE
+    CancelledReturnedMedicine("Cancelled/Returned Medicine", true),//Value of cancelled/returned medicine issues, shown separately so it is visible on printed breakups (issue #22674)
     MedicinesAndSurgicalSupplies("Medicines and Surgical Supplies", true),//For Surgery Bill Medicines
     MOCharges("MO Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     MaintainCharges("Maintain Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM

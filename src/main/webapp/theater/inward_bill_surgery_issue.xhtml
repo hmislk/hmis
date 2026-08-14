@@ -139,6 +139,7 @@
                                                          ajax="false" immediate="true"
                                                          title="Return to surgery dashboard"
                                                          action="/theater/patient_surgery?faces-redirect=true"
+                                                         actionListener="#{surgeryBillController.refreshPharmacyIssues()}"
                                                          styleClass="ui-button-info ui-button-outlined">
                                             <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill}" target="#{surgeryBillController.surgeryBill}"/>
                                         </p:commandButton>
@@ -395,6 +396,7 @@
                                                      ajax="false" immediate="true"
                                                      title="Return to surgery dashboard"
                                                      action="/theater/patient_surgery?faces-redirect=true"
+                                                     actionListener="#{surgeryBillController.refreshPharmacyIssues()}"
                                                      styleClass="ui-button-info ui-button-outlined">
                                         <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill}" target="#{surgeryBillController.surgeryBill}"/>
                                     </p:commandButton>

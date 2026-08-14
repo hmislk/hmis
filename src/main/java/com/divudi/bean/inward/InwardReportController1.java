@@ -3009,7 +3009,11 @@ public class InwardReportController1 implements Serializable {
                 BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
         );
 
-        List<BillTypeAtomic> depositTypes = Arrays.asList(
+        List<BillTypeAtomic> paymentAndDepositTypes = Arrays.asList(
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION,
                 BillTypeAtomic.INWARD_DEPOSIT,
                 BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
                 BillTypeAtomic.INWARD_DEPOSIT_REFUND,
@@ -3080,7 +3084,7 @@ public class InwardReportController1 implements Serializable {
                     + " and b.billTypeAtomic in :depositTypes";
             HashMap<String, Object> depositParams = new HashMap<>();
             depositParams.put("pe", pe);
-            depositParams.put("depositTypes", depositTypes);
+            depositParams.put("depositTypes", paymentAndDepositTypes);
             double deposited = billFacade.findDoubleByJpql(depositSql, depositParams);
 
             double totalPaid = ccPaid + deposited;

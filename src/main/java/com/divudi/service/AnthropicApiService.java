@@ -375,6 +375,64 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method").add("admissionTypeId")))
                 .build();
 
+        JsonObject admissionSearchTool = Json.createObjectBuilder()
+                .add("name", "search_admissions")
+                .add("description",
+                        "Search or list hospital admissions. Unlike the inward payment worklist, this is "
+                        + "not scoped to unpaid/open admissions — it can list all currently active "
+                        + "(not-discharged) admissions, or find a patient's past or current admissions by "
+                        + "BHT number, name, MRN/PHN, phone, or NIC. All parameters are optional; omitting "
+                        + "status defaults to currently-admitted (not-discharged) patients only.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("status", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("ADMITTED_BUT_NOT_DISCHARGED")
+                                                .add("DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED")
+                                                .add("DISCHARGED_AND_FINAL_BILL_COMPLETED")
+                                                .add("ANY_STATUS"))
+                                        .add("description", "Admission status filter. Default ADMITTED_BUT_NOT_DISCHARGED (currently active patients). Use ANY_STATUS to search past admissions too."))
+                                .add("bhtNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Bed Head Ticket number (partial match)."))
+                                .add("patientName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Patient name (partial match)."))
+                                .add("mrn", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Patient MRN/PHN or patient code (exact match)."))
+                                .add("phone", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Patient or guardian phone/mobile number (exact match)."))
+                                .add("nic", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Patient NIC/passport number (exact match)."))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Numeric AdmissionType ID filter."))
+                                .add("institutionId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Numeric Institution ID filter."))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Numeric Department ID filter."))
+                                .add("fromDate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Admission date range start, format yyyy-MM-dd HH:mm:ss. Must be supplied together with toDate."))
+                                .add("toDate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Admission date range end, format yyyy-MM-dd HH:mm:ss. Must be supplied together with fromDate."))
+                                .add("page", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Page number, default 1."))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Page size, default 50, max 200.")))
+                        .add("required", Json.createArrayBuilder()))
+                .build();
+
         JsonObject clinicalMetadataTool = Json.createObjectBuilder()
                 .add("name", "manage_clinical_metadata")
                 .add("description",
@@ -1938,6 +1996,7 @@ public class AnthropicApiService implements Serializable {
                 .add(searchConfigTool)
                 .add(manageConfigOptionTool)
                 .add(admissionNumberTool)
+                .add(admissionSearchTool)
                 .add(clinicalMetadataTool)
                 .add(itemRequestTool)
                 .add(collectingCentreFeesTool)
@@ -2014,6 +2073,16 @@ public class AnthropicApiService implements Serializable {
                     String lastAdmissionNumber = toolInput.containsKey("lastAdmissionNumber") ? toolInput.getString("lastAdmissionNumber", "") : "";
                     String expectedLastAdmissionNumber = toolInput.containsKey("expectedLastAdmissionNumber") ? toolInput.getString("expectedLastAdmissionNumber", "") : "";
                     return callAdmissionNumberApi(method, admissionTypeId, institutionId, lastAdmissionNumber, expectedLastAdmissionNumber, hmisBaseUrl, hmisApiKey);
+                }
+                case "search_admissions": {
+                    Map<String, String> params = new HashMap<>();
+                    for (String key : new String[]{"status", "bhtNo", "patientName", "mrn", "phone", "nic",
+                        "admissionTypeId", "institutionId", "departmentId", "fromDate", "toDate", "page", "size"}) {
+                        if (toolInput.containsKey(key)) {
+                            params.put(key, toolInput.getString(key, ""));
+                        }
+                    }
+                    return callAdmissionSearchApi(params, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_clinical_metadata": {
                     String method = toolInput.getString("method", "GET");
@@ -2799,6 +2868,50 @@ public class AnthropicApiService implements Serializable {
             return "Error: lastAdmissionNumber and expectedLastAdmissionNumber must be whole numbers.";
         } catch (Exception e) {
             return "Admission number API error: " + e.getMessage();
+        }
+    }
+
+    private String callAdmissionSearchApi(Map<String, String> params, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call admission search API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            StringBuilder urlBuilder = new StringBuilder(
+                    hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/inward/admissions");
+            boolean first = true;
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                if (entry.getValue() == null || entry.getValue().trim().isEmpty()) {
+                    continue;
+                }
+                urlBuilder.append(first ? "?" : "&")
+                        .append(entry.getKey())
+                        .append("=")
+                        .append(URLEncoder.encode(entry.getValue().trim(), StandardCharsets.UTF_8));
+                first = false;
+            }
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlBuilder.toString()))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Admission search API call interrupted.";
+        } catch (Exception e) {
+            return "Admission search API error: " + e.getMessage();
         }
     }
 
@@ -6391,6 +6504,21 @@ public class AnthropicApiService implements Serializable {
                     {"GET",  "/apiInward/validateAdmission/{bht_no}/{phone}",                    "Validate BHT number and phone before payment"},
                     {"POST", "/apiInward/payment",                                                "Process online settlement payment for admitted patient (fields: bht_no, bank_id, reference_no, amount, payment_date)"},
                     {"GET",  "/apiInward/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount}", "Legacy GET-based payment endpoint"}
+                });
+
+        // ── Admission Search ──────────────────────────────────────────────────
+        appendModule(sb, "Admission Search", "/inward/admissions",
+                "General-purpose admission search — unlike /apiInward/admissions (a financial worklist "
+                + "scoped to unpaid/open admissions, capped at 20 rows), this lists all currently active "
+                + "(not-discharged) admissions, or searches past or current admissions by BHT, patient "
+                + "name, MRN/PHN, phone, or NIC, with no financial scoping and no row cap (paginated).",
+                githubUrl(branch, "developer_docs/api/using-apis/API_ADMISSION_DETAILS.md"),
+                new String[][]{
+                    {"GET", "/inward/admissions", "Search/list admissions. Params: status (default "
+                        + "ADMITTED_BUT_NOT_DISCHARGED; also DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED, "
+                        + "DISCHARGED_AND_FINAL_BILL_COMPLETED, ANY_STATUS), bhtNo, patientName, mrn, "
+                        + "phone, nic, admissionTypeId, institutionId, departmentId, fromDate, toDate "
+                        + "(yyyy-MM-dd HH:mm:ss, both required together), page (default 1), size (default 50, max 200)"}
                 });
 
         // ── Inward Discount Matrix ────────────────────────────────────────────
