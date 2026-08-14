@@ -27,7 +27,7 @@ env:
   APP:        bms
   JNDI_MAIN:  jdbc/bms
   JNDI_AUDIT: jdbc/bmsaudit
-  HEALTH_URL: https://bms-migrated.carecode.org/bms/faces/index1.xhtml
+  HEALTH_URL: https://bms.carecode.org/bms/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        bms
       JNDI_MAIN:  jdbc/bms
       JNDI_AUDIT: jdbc/bmsaudit
-      HEALTH_URL: https://bms-migrated.carecode.org/bms/faces/index1.xhtml
+      HEALTH_URL: https://bms.carecode.org/bms/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
