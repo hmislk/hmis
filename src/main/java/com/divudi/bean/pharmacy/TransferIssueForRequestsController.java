@@ -794,6 +794,37 @@ public class TransferIssueForRequestsController implements Serializable {
         JsfUtil.addSuccessMessage("Issue draft cancelled.");
     }
 
+    /**
+     * Retires the in-progress issue Bill and any BillItems already persisted
+     * earlier in the current settle() call (including the item that just
+     * failed, which is not yet added to bill.getBillItems() at the point of
+     * failure), so a mid-loop stock-movement failure does not leave an
+     * orphaned partial bill (mirrors
+     * OpdBillController.retirePartialBillOnSettlementFailure(), #22399/#22938).
+     */
+    private void retirePartialIssueOnSettlementFailure(BillItem failedItem) {
+        Bill bill = getIssuedBill();
+        if (bill == null || bill.getId() == null) {
+            return;
+        }
+        List<BillItem> toRetire = new ArrayList<>(bill.getBillItems());
+        if (failedItem != null && failedItem.getId() != null) {
+            toRetire.add(failedItem);
+        }
+        for (BillItem bi : toRetire) {
+            if (bi != null && bi.getId() != null && !bi.isRetired()) {
+                bi.setRetired(true);
+                bi.setRetireComments("Transfer issue settlement aborted: insufficient stock mid-settlement");
+                getBillItemFacade().edit(bi);
+            }
+        }
+        if (!bill.isRetired()) {
+            bill.setRetired(true);
+            bill.setRetireComments("Transfer issue settlement aborted: insufficient stock mid-settlement");
+            getBillFacade().edit(bill);
+        }
+    }
+
     public synchronized void settle() {
         if (!isAuthorized("SETTLE_ISSUE", "PharmacyIssueForRequestFinalize")) {
             return;
@@ -952,7 +983,20 @@ public class TransferIssueForRequestsController implements Serializable {
                 getBillItemFacade().edit(billItemsInIssue);
                 getBillItemFacade().edit(originalOrderItem);
             } else {
-                getBillItemFacade().edit(billItemsInIssue);
+                // Stock dropped below the requested qty between the pre-loop live check
+                // and this item's turn in the loop (e.g. another line in the same settle()
+                // call consumed the same batch). deductFromStock() did NOT move any stock
+                // or write StockHistory here - continuing would leave this BillItem/
+                // PharmaceuticalBillItem persisted with a qty that was never actually
+                // transferred (coop production, TI/COOP/26/000488, Evion 400mg capsule,
+                // #22938). Abort and retire whatever this settle() already persisted
+                // instead of silently keeping a phantom line.
+                String name = billItemsInIssue.getItem() != null ? billItemsInIssue.getItem().getName() : "one of the items";
+                retirePartialIssueOnSettlementFailure(billItemsInIssue);
+                JsfUtil.addErrorMessage("Insufficient stock to issue " + name + ". "
+                        + "Stock levels may have changed since this page was loaded. "
+                        + "No items were issued - please refresh and try again.");
+                return;
             }
 
             getPharmaceuticalBillItemFacade().edit(billItemsInIssue.getPharmaceuticalBillItem());
