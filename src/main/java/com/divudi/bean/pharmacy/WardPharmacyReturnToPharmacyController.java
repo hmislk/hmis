@@ -517,6 +517,11 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             return;
         }
         if (selectedReceiveBill.getPatientEncounter() != null
+                && selectedReceiveBill.getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot return medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
+        if (selectedReceiveBill.getPatientEncounter() != null
                 && selectedReceiveBill.getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry, patient is discharged.");
             return;
