@@ -27,7 +27,7 @@ env:
   APP:        digasiri
   JNDI_MAIN:  jdbc/digasiri
   JNDI_AUDIT: jdbc/digasiriAudit
-  HEALTH_URL: https://digasiri-migrated.carecode.org/digasiri/faces/index1.xhtml
+  HEALTH_URL: https://digasiri.carecode.org/digasiri/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        digasiri
       JNDI_MAIN:  jdbc/digasiri
       JNDI_AUDIT: jdbc/digasiriAudit
-      HEALTH_URL: https://digasiri-migrated.carecode.org/digasiri/faces/index1.xhtml
+      HEALTH_URL: https://digasiri.carecode.org/digasiri/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
