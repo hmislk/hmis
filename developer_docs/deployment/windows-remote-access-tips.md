@@ -18,9 +18,12 @@ Fix: from Git-Bash, call the **Windows-native** OpenSSH client directly
 instead of the one on `PATH`:
 
 ```bash
-/c/Windows/System32/OpenSSH/ssh.exe -F ~/.ssh/config <host-alias> ...
+/c/Windows/System32/OpenSSH/ssh.exe -F ~/.ssh/config <host-alias>
 /c/Windows/System32/OpenSSH/ssh-add.exe -l   # to verify what's loaded
 ```
+
+(Anything after `<host-alias>` is passed to the remote shell as a command —
+leave it off entirely for an interactive session.)
 
 Alternative if you'd rather avoid the Windows service entirely: start an
 MSYS-native agent in the same Git-Bash session instead (`eval $(ssh-agent -s)`
@@ -33,6 +36,11 @@ plain `http://`, not `https://`. Hitting it with `https://` (or `curl -k
 https://...`) just times out — it's not a certificate problem, the port isn't
 speaking TLS at all.
 
+That's only safe because the traffic is flowing through the encrypted SSH
+tunnel — never expose the admin port directly (e.g. a public port-forward) or
+hit it in `http://` outside the tunnel; with secure admin off, credentials go
+over the wire in clear text.
+
 ## `ControlMaster`/`ControlPersist` (SSH multiplexing) is unreliable here
 
 The usual trick to avoid re-authenticating on every SSH command — adding
@@ -43,16 +51,28 @@ Don't rely on it without testing a newer OpenSSH-for-Windows build first.
 
 ## Driving remote Payara via `asadmin` instead of the browser console
 
-Once you have an SSH tunnel open to a VM's admin port, point your **local**
-`asadmin` at the forwarded port instead of clicking through the browser
-console — much faster for routine checks (`list-applications`,
-`restart-domain`, etc.):
+Once you have an SSH tunnel open to a VM's admin port (`<forwarded-admin-port>`
+on your machine forwarded to the Payara admin port on the VM), point your
+**local** `asadmin` at the forwarded port instead of clicking through the
+browser console. Needs local Payara installed with `asadmin` on `PATH`, or
+call it by full path (e.g. `<PAYARA_HOME>/bin/asadmin.bat` on Windows).
+
+Read-only checks are safe to run anytime:
 
 ```bash
 asadmin --host localhost --port <forwarded-admin-port> --user admin \
   --passwordfile <temp-file-with-AS_ADMIN_PASSWORD> list-applications
 ```
 
-Write the password file to a scratch/temp location and delete it immediately
-after — never leave `AS_ADMIN_PASSWORD` sitting in a file, and never write it
-into this repo.
+`restart-domain` is different — it stops and restarts the DAS, so the admin
+console and any concurrent `asadmin` commands drop until it's back up. Only
+run it inside an approved maintenance window:
+
+```bash
+asadmin --host localhost --port <forwarded-admin-port> --user admin \
+  --passwordfile <temp-file-with-AS_ADMIN_PASSWORD> restart-domain
+```
+
+Write the password file to a scratch/temp location outside the repo and
+delete it immediately after — never leave `AS_ADMIN_PASSWORD` sitting in a
+file, and never write it into this repo.

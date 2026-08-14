@@ -25,12 +25,12 @@ gating is required.
 
 ## Sample being replicated
 
-```
+```text
 OPD CARD
-BILL NO      : DAC/OPC/6374
+BILL NO      : DAC/OPC/XXXX
 BILL DATE    : 2026-07-31 : 21:50
-PATIENT NAME : MR.S VIJE KUMAR
-OPD CARD     : OC43888
+PATIENT NAME : [REDACTED]
+OPD CARD     : OCXXXXX
 ------------------------------------------------------------------------
 PARTICULAR                                                       AMOUNT
 ------------------------------------------------------------------------
@@ -40,7 +40,7 @@ PHARMACY DRUGS                                                   2129.00
 EXTRA MEALS                                                        510.00
 WARD PROCEDURE & CONSUMABLE                                      1961.00
 E T U CHARGES                                                     250.00
-DR.JAYAMINI HORADUGODA (Oncologiss)                             26000.00
+DR. [REDACTED] (Oncologist)                                     26000.00
 ------------------------------------------------------------------------
 TOTAL AMOUNT                                                   33,100.00
 DISCOUNTS                                                        1,200.00
@@ -50,8 +50,12 @@ NET AMOUNT (LKR)                                               21,900.00
 Pay Type      Amount Rs.
 Cash          21900.00
 
-BILL PREPARED BY : NUWAN
+BILL PREPARED BY : [REDACTED]
 ```
+
+(Patient name, BHT/bill/OPD-card numbers, doctor name, and preparer name above
+are redacted placeholders — the reference PDF this was transcribed from is
+not committed to the repo.)
 
 (Footer branding "Software By Sierra Technology Holdings" is **not** replicated —
 replaced with "Powered by CareCode", matching every other 5x5 composite in this
@@ -63,15 +67,15 @@ codebase.)
 |---|---|---|
 | Title | Static "FINAL BILL" or similar | Sample says "OPD CARD"; naming confirmed with user as internal label, see Open Questions |
 | BILL NO | `bill.deptId` | |
-| BILL DATE | `bill.createdAt` | `dd/MM/yyyy hh:mm a` |
+| BILL DATE | `bill.createdAt` | `dd/MM/yyyy hh:mm a` — the sample's `2026-07-31 : 21:50` is the legacy system's raw format; the new format follows the codebase's existing `dd/MM/yyyy hh:mm a` convention instead of replicating it literally |
 | PATIENT NAME | `bill.patientEncounter.patient.person.nameWithTitle` | |
 | OPD CARD | `bill.patientEncounter.bhtNo` | Confirmed by user: "opd card is BHT number" |
-| Particulars (grouped) | New `BhtSummeryController.getCustom3CategoryTotals(bill)` | Twin of `getCustom2CategoryTotals`, keyed off `BillItem.inwardChargeType`, **but does not exclude `InwardChargeType.ProfessionalCharge`** — doctor/consultant fee prints as its own grouped line, since this is a single-page format with no separate Professional Bill page |
+| Particulars (grouped) | New `BhtSummeryController.getCustom3CategoryTotals(bill)` | Twin of `getCustom2CategoryTotals`, keyed off `BillItem.inwardChargeType`, **but does not exclude `InwardChargeType.ProfessionalCharge`** — doctor/consultant fee prints as its own grouped line, since this is a single-page format with no separate Professional Bill page. Row order follows `getCustom2CategoryTotals`'s existing `TreeMap` (alphabetical by category label) — accepted as-is, not the sample's business order |
 | TOTAL AMOUNT | `bill.total` | |
 | DISCOUNTS | `bill.discount` | |
 | DEPOSIT | Sum of `bill.backwardReferenceBills[].netTotal` | Prior payments/receipts recorded against this admission — same source Custom2's receipts table already reads. Confirmed by user: "deposits are equal to payments" |
 | NET AMOUNT | `bill.netTotal` | |
-| Pay Type / Amount | Single row: `bill.paymentMethod` + `bill.paidAmount` | The payment collected at this final settlement (distinct from the Deposit sum above, which covers prior payments) |
+| Pay Type / Amount | Single row: `bill.paymentMethod` + `bill.paidAmount` | The payment collected at this final settlement (distinct from the Deposit sum above, which covers prior payments). Matches the sample's single-row layout; see Open Questions re: split settlements |
 | BILL PREPARED BY | `bill.creater.name` | |
 | Footer | Static "Powered by CareCode" | Matches other 5x5 composites |
 
@@ -130,3 +134,7 @@ can be added later if requested — YAGNI for now.)
   user prefers once they see a rendered preview).
 - Confirm department header content (name/address/phone) is acceptable, since the
   sample's original header/branding block is not being replicated.
+- If a final settlement was split across multiple payment methods
+  (`MultiplePaymentMethods`), the single `bill.paymentMethod` + `bill.paidAmount`
+  row won't show the breakdown — confirm whether that's acceptable (matches the
+  sample) or whether split components need their own rows.
