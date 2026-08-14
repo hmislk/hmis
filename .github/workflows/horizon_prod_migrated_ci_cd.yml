@@ -27,7 +27,7 @@ env:
   APP:        horizon
   JNDI_MAIN:  jdbc/horizon
   JNDI_AUDIT: jdbc/horizonAudit
-  HEALTH_URL: https://horizon-migrated.carecode.org/horizon/faces/index1.xhtml
+  HEALTH_URL: https://horizon.carecode.org/horizon/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        horizon
       JNDI_MAIN:  jdbc/horizon
       JNDI_AUDIT: jdbc/horizonAudit
-      HEALTH_URL: https://horizon-migrated.carecode.org/horizon/faces/index1.xhtml
+      HEALTH_URL: https://horizon.carecode.org/horizon/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
