@@ -246,7 +246,7 @@
                                                         <h:outputText value="#{row.bill.referenceBill.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveQty(row)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0" />
                                                         </h:outputText>
                                                     </td>
@@ -256,7 +256,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveCostValue(row)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -266,7 +266,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate * row.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectivePurchaseValue(row)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -281,7 +281,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{0.0 - row.pharmaceuticalBillItem.retailRate * row.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveRetailValue(row)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
