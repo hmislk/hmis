@@ -1776,6 +1776,49 @@ DB query if in doubt). To reliably capture the message as evidence, call
 insert a `wait_for` in between when the growl itself is the thing being
 captured. Verified while testing issue #22906.
 
+## 69. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it
+
+On `inward/admit_room.xhtml`, a `p:autoComplete`'s `itemSelect` ajax handler bound directly to
+`roomChangeController.current` set that field as soon as a patient was selected — *before* the
+"Continue" `p:commandButton` (bound to `roomChangeController.selectRoomForAdmit()`, `ajax="false"`)
+was ever clicked. The Continue button lived inside a panel gated
+`rendered="#{roomChangeController.current eq null}"`. By the time the Continue postback started,
+`current` was already non-null (set by that earlier ajax request, persisted in the
+`@SessionScoped` bean) — so JSF evaluated the *whole panel*, including the Continue button, as not
+rendered for this request and silently skipped decoding/invoking its action. The button's own
+network POST still looked completely normal (correct hidden field values, correct button
+parameter) — nothing in the request/response cycle hinted the action never ran.
+
+**How this was proven, not just suspected**: added `if (true) { throw new RuntimeException("canary"); }`
+as the literal first line of the suspected action method, rebuilt, redeployed, and repeated the
+click. No exception, no 500, no log line — page rendered its normal "success" output. That's the
+tell: if the action method actually executed, a first-line unconditional throw is unmissable
+(crashes the page). Silence under that canary means the method body never ran at all — reach for
+this test before trusting any subtler theory (stale ViewState, lazy-loading timing, EL caching)
+about a command button that "looks like" it does nothing.
+
+**Fix pattern**: don't bind the ajax-updated input directly to the field that gates the
+surrounding panel's `rendered`. Introduce a separate staging field (e.g. `selectedAdmission`) for
+the autocomplete's `value` and for anything displayed *before* the confirm button is clicked; only
+assign it into the gating field (`current`) inside the confirm button's own action method. That
+keeps the panel's `rendered` condition — and therefore whether the button inside it gets
+decoded/invoked at all — stable for the entire lifecycle of that button's own request. Verified
+against a real waiting-room patient (DB `ROOMADMITTED` flipped 0→1 after "Assign Room") while
+fixing issue #22911.
+
+Two other Payara/asadmin quirks hit while chasing this on the carecode dev machine, worth knowing
+before you spend time debugging "missing" log output:
+- **`java.util.logging` calls (even `.severe(...)`) can silently not reach `server.log`** despite
+  `logging.properties` listing `GFFileHandler` with `logStandardStreams=true` — don't trust
+  "no log line appeared" as proof a code path didn't run; use the canary-throw test above instead,
+  since an uncaught exception during `INVOKE_APPLICATION` reliably surfaces as a rendered error
+  page regardless of the logging pipeline's state.
+- **A `redeploy` that exceeds the foreward-call timeout can leave the domain's DAS memory-bloated
+  and totally unresponsive** (`curl` to the app hangs/times out, `asadmin` commands against the
+  same domain also hang) — matches the existing "Local DAS stalls when memory-bloated" pattern.
+  Recovery: `kill -9` the stuck DAS `java` process (find via `ps aux | grep domains/<name>`),
+  `asadmin start-domain <name>`, then a plain `deploy` (not `redeploy`).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

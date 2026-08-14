@@ -54,7 +54,8 @@ cp src/main/java/com/divudi/service/DdlFileEnhancerService.java "$DDL_DIR/.gener
 ```
 
 This captures whatever local state was already there (e.g. a local JNDI
-swap in `persistence.xml` per [verify-persistence](../verify-persistence/SKILL.md)) so it can be restored byte-for-byte, not just reset to git HEAD.
+swap in `persistence.xml` for local testing) so it can be restored
+byte-for-byte, not just reset to git HEAD.
 
 ### 2. Add DDL-generation properties to persistence.xml
 
@@ -309,9 +310,9 @@ regenerations are rare enough that a single retry is sufficient.
 - Never commit `persistence.xml` or `DdlFileEnhancerService.java` with the
   DDL-generation edits in place — they are local-machine-specific
   (hardcoded absolute paths) and would break CI/CD and other developers'
-  checkouts. [verify-persistence](../verify-persistence/SKILL.md) already
-  checks for stray `eclipselink.application-location` hardcoded paths
-  before push.
+  checkouts. Double-check `git diff` on both files before every commit
+  during this workflow; `commit-code` also flags a staged `persistence.xml`
+  for review.
 - The two persistence units writing to the same file/directory rely on
   EclipseLink appending rather than truncating — this matches the
   previously-documented working DDL (which includes both regular and audit
