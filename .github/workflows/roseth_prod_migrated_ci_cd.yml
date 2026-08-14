@@ -27,7 +27,7 @@ env:
   APP:        roseth
   JNDI_MAIN:  jdbc/roseth
   JNDI_AUDIT: jdbc/rosethaudit
-  HEALTH_URL: https://roseth-migrated.carecode.org/roseth/faces/index1.xhtml
+  HEALTH_URL: https://roseth.carecode.org/roseth/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        roseth
       JNDI_MAIN:  jdbc/roseth
       JNDI_AUDIT: jdbc/rosethaudit
-      HEALTH_URL: https://roseth-migrated.carecode.org/roseth/faces/index1.xhtml
+      HEALTH_URL: https://roseth.carecode.org/roseth/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
