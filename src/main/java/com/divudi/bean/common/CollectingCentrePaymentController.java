@@ -778,6 +778,95 @@ public class CollectingCentrePaymentController implements Serializable {
         return (value == null || value.trim().isEmpty()) ? defaultValue : value;
     }
 
+    public void exportPaymentBillsToExcel() throws IOException {
+        if (paymentBills == null || paymentBills.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bills to Export");
+            return;
+        }
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=CC_Payment_Bills.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("CC Payment Bills");
+            int rowIndex = 0;
+
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"No", "Bill No", "Bill At", "Billed By", "CC Code", "CC Name", "Status", "Cancelled At", "Cancelled By", "Net Total"};
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            int no = 1;
+            for (Bill bill : paymentBills) {
+                Row row = sheet.createRow(rowIndex++);
+
+                row.createCell(0).setCellValue(no++);
+                row.createCell(1).setCellValue(defaultIfNullOrEmpty(bill.getDeptId(), ""));
+
+                Cell billAtCell = row.createCell(2);
+                if (bill.getCreatedAt() != null) {
+                    billAtCell.setCellValue(sdf.format(bill.getCreatedAt()));
+                }
+
+                row.createCell(3).setCellValue(defaultIfNullOrEmpty(getUserNameWithTitle(bill.getCreater()), ""));
+
+                row.createCell(4).setCellValue(bill.getToInstitution() != null ? defaultIfNullOrEmpty(bill.getToInstitution().getInstitutionCode(), "") : "");
+                row.createCell(5).setCellValue(bill.getToInstitution() != null ? defaultIfNullOrEmpty(bill.getToInstitution().getName(), "") : "");
+
+                row.createCell(6).setCellValue(bill.isCancelled() ? "Cancelled" : "");
+
+                Cell cancelAtCell = row.createCell(7);
+                Cell cancelByCell = row.createCell(8);
+                if (bill.isCancelled() && bill.getCancelledBill() != null) {
+                    if (bill.getCancelledBill().getCreatedAt() != null) {
+                        cancelAtCell.setCellValue(sdf.format(bill.getCancelledBill().getCreatedAt()));
+                    }
+                    cancelByCell.setCellValue(defaultIfNullOrEmpty(getUserNameWithTitle(bill.getCancelledBill().getCreater()), ""));
+                }
+
+                Cell netTotalCell = row.createCell(9);
+                netTotalCell.setCellValue(bill.getNetTotal());
+                netTotalCell.setCellStyle(amountStyle);
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            out.flush();
+
+            context.responseComplete();
+
+        } catch (Exception e) {
+        }
+    }
+
+    private String getUserNameWithTitle(com.divudi.core.entity.WebUser user) {
+        if (user == null || user.getWebUserPerson() == null) {
+            return "";
+        }
+        return user.getWebUserPerson().getNameWithTitle();
+    }
+
     public void cancelPaymentBill() {
         if (ccPaymentSettlingStarted) {
             JsfUtil.addErrorMessage("Already Started Process");

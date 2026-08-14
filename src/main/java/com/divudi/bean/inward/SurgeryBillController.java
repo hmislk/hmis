@@ -1474,11 +1474,27 @@ public class SurgeryBillController implements Serializable {
     }
 
     public List<BillItem> getPharmacyIssues() {
+        if (pharmacyIssues == null && getSurgeryBill().getId() != null) {
+            createIssueTable();
+        }
         return pharmacyIssues;
     }
 
     public void setPharmacyIssues(List<BillItem> pharmacyIssues) {
         this.pharmacyIssues = pharmacyIssues;
+    }
+
+    /**
+     * Invalidates the cached Pharmacy/Store issue tables so the next
+     * getPharmacyIssues() call re-fetches from the DB. Wired to the
+     * "Back to Surgery Workbench" buttons on inward_bill_surgery_issue.xhtml
+     * so a freshly issued direct-issue medicine shows up on return (see
+     * issue #20891 — this @SessionScoped bean would otherwise keep serving
+     * the stale/empty list for the rest of the session).
+     */
+    public void refreshPharmacyIssues() {
+        pharmacyIssues = null;
+        storeIssues = null;
     }
 
     public void setSurgeryBill(Bill surgeryBill) {
