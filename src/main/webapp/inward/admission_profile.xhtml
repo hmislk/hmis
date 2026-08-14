@@ -129,6 +129,30 @@
                     </div>
                 </ui:fragment>
 
+                <!-- Pending Appointment Deposit Conversion warning: the appointment
+                     that was admitted still has an un-cancelled appointment deposit
+                     bill that hasn't been converted into this admission's Inward
+                     Deposit. Admitting from an appointment no longer auto-converts
+                     the payment (it used to silently double-count it in Daily
+                     Return); conversion is now this explicit, user-triggered step.
+                     (Issue #22719) -->
+                <ui:fragment rendered="#{webUserController.hasPrivilege('InwardEditPaymentDetails') and admissionController.hasPendingAppointmentDepositConversion}">
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 my-2" role="alert">
+                        <div>
+                            <h:outputText styleClass="fas fa-triangle-exclamation me-2"/>
+                            <h:outputText value="This admission's appointment deposit has not yet been converted into an Inward Deposit."/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Convert to Inward Deposit"
+                                ajax="false"
+                                icon="fa-solid fa-money-bill-transfer"
+                                class="ui-button-warning"
+                                action="#{admissionController.navigateToAppointmentDepositConversion()}"/>
+                        </div>
+                    </div>
+                </ui:fragment>
+
                 <div class="row">
                     <!-- Column 1: Patient Info -->
                     <div class="col-3">
@@ -439,7 +463,7 @@
                                 </div>
                                 <div class="col-12">
                                     <p:commandButton
-                                        rendered="#{admissionController.current.discharged and admissionController.current.paymentFinalized and webUserController.hasPrivilege('InwardSettleFinalBill')}"
+                                        rendered="#{admissionController.current.discharged and inwardSearch.hasAnyFinalBillVersion(admissionController.current) and webUserController.hasPrivilege('InwardSettleFinalBill')}"
                                         value="Manage Final Bills"
                                         ajax="false"
                                         action="#{inwardSearch.navigateToManageFinalBills}"
@@ -465,7 +489,7 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Payments"
+                                        value="Make a Payment"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardDoctorPaymentAccess')}"
                                         action="#{inwardSearch.navigateDoctorPayment}"
@@ -474,6 +498,32 @@
                                         <f:setPropertyActionListener
                                             value="#{admissionController.current}"
                                             target="#{inwardPaymentController.current.patientEncounter}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Make a Deposit"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardMakeDepositAccess')}"
+                                        action="#{inwardSearch.navigateMakeDeposit}"
+                                        icon="fa fa-file"
+                                        class="w-100">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{inwardDepositController.current.patientEncounter}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Post Final Payment"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardPostFinalPaymentAccess') and admissionController.current.finalBill ne null and admissionController.current.finalBill.confirmedFinalBill and not admissionController.current.finalBill.cancelled}"
+                                        action="#{postFinalBillInwardPaymentController.navigateToPostFinalPayment}"
+                                        icon="fa fa-money-bill-wave"
+                                        class="w-100">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{postFinalBillInwardPaymentController.current.patientEncounter}"/>
                                     </p:commandButton>
                                 </div>
                                 <div class="col-6">
@@ -1193,6 +1243,26 @@
                                         class="w-100">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Send Email"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardSendEmail')}"
+                                        action="#{inpatientEmailComposeController.startComposeForAdmission(admissionController.current)}"
+                                        icon="fa fa-envelope"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Sent Emails"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardSendEmail')}"
+                                        action="#{emailController.navigateToAdmissionSentEmails(admissionController.current)}"
+                                        icon="fa fa-envelope-open-text"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
 
@@ -1244,6 +1314,24 @@
                                         ajax="false"
                                         class="w-100 ui-button-success"
                                         title="List of service bills for this admission - view/reprint or return individual bills">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{inwardReportControllerBht.patientEncounter}" />
+                                        <f:setPropertyActionListener
+                                            value="#{null}"
+                                            target="#{inwardReportControllerBht.department}" />
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnPaymentsAndCancellations"
+                                        value="Payments &amp; Cancellations"
+                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        action="#{inwardReportControllerBht.navigateToInpatientPaymentBillListDto()}"
+                                        icon="fa fa-money-bill-wave"
+                                        ajax="false"
+                                        class="w-100 ui-button-success"
+                                        title="Payment bills and their cancellations for this admission - view/reprint">
                                         <f:setPropertyActionListener
                                             value="#{admissionController.current}"
                                             target="#{inwardReportControllerBht.patientEncounter}" />

@@ -1937,8 +1937,7 @@ public class BillService {
             Date toDate,
             Institution institution,
             Institution site,
-            Department department,
-            WebUser webUser) {
+            Department department) {
 
         String jpql = "SELECT COUNT(b) FROM Bill b "
                 + " WHERE b.retired = false "
@@ -1953,11 +1952,6 @@ public class BillService {
         if (institution != null) {
             jpql += " AND b.institution = :ins ";
             params.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            jpql += " AND b.creater = :user ";
-            params.put("user", webUser);
         }
 
         if (department != null) {
@@ -1978,11 +1972,10 @@ public class BillService {
             Date toDate,
             Institution institution,
             Institution site,
-            Department department,
-            WebUser webUser) {
+            Department department) {
 
         // First, debug with count query
-        Long count = countPharmacyReturnWithoutTrasingBills(fromDate, toDate, institution, site, department, webUser);
+        Long count = countPharmacyReturnWithoutTrasingBills(fromDate, toDate, institution, site, department);
 
         if (count == 0) {
             return new ArrayList<>();
@@ -1998,11 +1991,11 @@ public class BillService {
                 + " coalesce(b.invoiceNumber,''), "
                 + " b.createdAt, "
                 + " b.billDate, "
-                + " coalesce(b.toInstitution.name,''), " // ✅ SAFE: Using COALESCE with direct property
-                + " b.toInstitution.id, " // ✅ SAFE: Left join handles null
-                + " coalesce(b.department.name,''), " // ✅ SAFE: Using COALESCE with direct property
-                + " b.department.id, " // ✅ SAFE: Left join handles null
-                + " coalesce(b.creater.webUserPerson.name,''), " // ⚠️ POTENTIAL ISSUE: Nested relationship
+                + " coalesce(toIns.name,''), "
+                + " toIns.id, "
+                + " coalesce(dept.name,''), "
+                + " dept.id, "
+                + " coalesce(createrPerson.name,''), "
                 + " coalesce(b.comments,''), "
                 + " coalesce(b.paymentMethod,''), "
                 + " coalesce(b.total,0.0), "
@@ -2013,10 +2006,10 @@ public class BillService {
                 + " coalesce(bfd.totalRetailSaleValue,0.0) ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
-                + " left join b.toInstitution " // ✅ Explicit LEFT JOIN for safety
-                + " left join b.department " // ✅ Explicit LEFT JOIN for safety
-                + " left join b.creater " // ✅ Explicit LEFT JOIN for safety
-                + " left join b.creater.webUserPerson " // ✅ Explicit LEFT JOIN for nested relationship
+                + " left join b.toInstitution toIns "
+                + " left join b.department dept "
+                + " left join b.creater creater "
+                + " left join creater.webUserPerson createrPerson "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -2029,11 +2022,6 @@ public class BillService {
         if (institution != null) {
             jpql += " and b.institution = :ins ";
             params.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            jpql += " and b.creater = :user ";
-            params.put("user", webUser);
         }
 
         if (department != null) {
@@ -2065,8 +2053,7 @@ public class BillService {
             Date toDate,
             Institution institution,
             Institution site,
-            Department department,
-            WebUser webUser) {
+            Department department) {
 
         // First verify bill items exist
         String countJpql = "SELECT COUNT(bi) FROM Bill b "
@@ -2084,11 +2071,6 @@ public class BillService {
         if (institution != null) {
             countJpql += " AND b.institution = :ins ";
             countParams.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            countJpql += " AND b.creater = :user ";
-            countParams.put("user", webUser);
         }
 
         if (department != null) {
@@ -2115,7 +2097,7 @@ public class BillService {
                 + " b.id, "
                 + " coalesce(b.deptId,''), "
                 + " b.createdAt, "
-                + " coalesce(b.toInstitution.name,''), " // Direct property access with COALESCE
+                + " coalesce(toIns.name,''), "
                 + " coalesce(b.paymentMethod,''), "
                 + " coalesce(item.id,0), " // Handle null item
                 + " coalesce(item.name,''), "
@@ -2124,7 +2106,7 @@ public class BillService {
                 + " coalesce(batch.batchNo,''), "
                 + " batch.dateOfExpire, " // May be null from LEFT JOIN
                 + " coalesce(bi.qty,0.0), "
-                + " coalesce(pbi.qtyInUnit,0.0), "
+                + " coalesce(pbi.qty,0.0), "
                 + " coalesce(bifd.costRate,0.0), "
                 + " coalesce(bifd.purchaseRate,0.0), "
                 + " coalesce(bifd.retailSaleRate,0.0), "
@@ -2139,7 +2121,7 @@ public class BillService {
                 + " left join pbi.stock stock "
                 + " left join stock.itemBatch batch "
                 + " left join batch.item item "
-                + " left join b.toInstitution " // Explicit LEFT JOIN
+                + " left join b.toInstitution toIns "
                 + " where b.retired = false and bi.retired = false "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -2151,11 +2133,6 @@ public class BillService {
         if (institution != null) {
             jpql += " and b.institution = :ins ";
             params.put("ins", institution);
-        }
-
-        if (webUser != null) {
-            jpql += " and b.creater = :user ";
-            params.put("user", webUser);
         }
 
         if (department != null) {
@@ -2766,21 +2743,27 @@ public class BillService {
         // positive = stock came back on a return). For a "movement OUT" report we want the
         // quantity that went out, so we negate the summed pbi.qty: a sale yields a positive
         // out-quantity and a return reduces it, matching the signed value columns below.
-        // Direct Purchase Return is an exception: DirectPurchaseReturnController always
-        // persists pbi.qty as a positive magnitude (see its calculateBillItemDetails()), not
-        // the negative-for-out convention above, even though it is itself an OUT movement
-        // (goods leaving stock back to the supplier). This is a known writer bug tracked
-        // under #21032/#21053 (pbi.qty should be negative for this bill type but the writer
-        // is not yet fixed there); negating it here like a normal sale would flip its sign
-        // and net it against genuine sales, so it's added un-negated to match the current
-        // (buggy) persisted convention. If #21053 is ever fixed to store negative qty for
-        // this bill type, this special case must be removed at the same time.
+        // Direct Purchase Return follows this same convention: DirectPurchaseReturnWorkflowController
+        // (the writer wired to the UI) persists pbi.qty as negative at approval, same as every
+        // other OUT movement here (goods leaving stock back to the supplier) - confirmed by
+        // #21053, where 1098/1100 real DIRECT_PURCHASE_REFUND rows on ruhunu have pbi.qty
+        // correctly negative (the 2 positive outliers are the tracked writer anomaly, not the
+        // norm). An earlier version of this query special-cased this bill type to skip negation,
+        // which was backwards and displayed real returns with a negative out-quantity - see #21833.
+        //
+        // Pending (not yet approved) Direct Purchase Return bills are excluded below: pbi.qty is
+        // only sign-flipped to the correct negative-for-out value at approval time
+        // (DirectPurchaseReturnWorkflowController.completeApproval() -> updateStock()); before
+        // that, prepareBillItems() leaves it as a positive "available to return" quantity, which
+        // is not yet a real stock movement and would net incorrectly if included. Every other
+        // bill type in this report is unaffected by this filter (they don't use the completed
+        // flag the same way and are left as before).
         jpql = "select new com.divudi.core.data.dto.PharmacyMovementOutByItemDTO( "
                 + " it.id, "
                 + " coalesce(it.name, 'N/A'), "
                 + " it.code, "
                 + " coalesce(cat.name, 'N/A'), "
-                + " coalesce(sum(case when b.billTypeAtomic = :directPurchaseReturnBta then pbi.qty else (pbi.qty * -1.0) end), 0.0), "
+                + " (coalesce(sum(pbi.qty), 0.0) * -1.0), "
                 + " coalesce(sum(bi.grossValue), 0.0), "
                 + " coalesce(sum(bi.discount), 0.0), "
                 + " coalesce(sum(bi.marginValue), 0.0), "
@@ -2793,6 +2776,7 @@ public class BillService {
                 + " where (b.retired = false or b.retired is null) "
                 + " and (bi.retired = false or bi.retired is null) "
                 + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and (b.billTypeAtomic <> :directPurchaseReturnBta or b.completed = true) "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         params.put("billTypesAtomics", billTypeAtomics);
@@ -3228,12 +3212,15 @@ public class BillService {
                 + " coalesce(bi.item.category.name, 'No Category')," // Category name for display
                 + " bi.item.id," // Item ID for navigation
                 + " coalesce(bi.item.name, 'No Item')," // Item name for display
-                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end)," // Count
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.hospitalFee else bi.hospitalFee end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.staffFee else bi.staffFee end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.grossValue else bi.grossValue end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.discount else bi.discount end),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -bi.netValue else bi.netValue end)"
+                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end)," // Count (no stored sign)
+                // Fee/value columns are ALREADY stored negative on cancellation/refund bill
+                // items, so they are summed as-is. Negating them here would double-negate and
+                // make cancellations show as positive (the fee-doubling bug of issue #22649).
+                + " sum(bi.hospitalFee),"
+                + " sum(bi.staffFee),"
+                + " sum(bi.grossValue),"
+                + " sum(bi.discount),"
+                + " sum(bi.netValue)"
                 + ") "
                 + " from BillItem bi join bi.bill b "
                 + " where b.retired=:ret "

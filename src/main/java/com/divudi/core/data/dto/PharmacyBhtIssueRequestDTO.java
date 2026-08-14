@@ -50,12 +50,12 @@ public class PharmacyBhtIssueRequestDTO implements Serializable {
                 && bill.getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null
                 && bill.getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom() != null)
                 ? bill.getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName() : null;
-        this.requestedAt = bill.getCreatedAt();
+        this.requestedAt = bill.peekCreatedAt();
         this.requestedByName = (bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null)
                 ? bill.getCreater().getWebUserPerson().getName() : null;
         this.cancelled = bill.isCancelled();
         this.cancelledAt = (bill.isCancelled() && bill.getCancelledBill() != null)
-                ? bill.getCancelledBill().getCreatedAt() : null;
+                ? bill.getCancelledBill().peekCreatedAt() : null;
         this.cancelledByName = (bill.isCancelled() && bill.getCancelledBill() != null
                 && bill.getCancelledBill().getCreater() != null
                 && bill.getCancelledBill().getCreater().getWebUserPerson() != null)

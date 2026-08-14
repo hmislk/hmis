@@ -27,7 +27,7 @@
                                     id="btnCreatePO"
                                     value="Create PO"
                                     ajax="false"
-                                    action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
+                                    action="#{purchaseOrderRequestNativeSqlController.navigateToCreateNewPurchaseOrder()}"
                                     styleClass="ui-button-stage-save w-100"
                                     style="text-align: left"
                                     icon="fas fa-plus-circle"
@@ -117,7 +117,7 @@
                             <div class="d-grid gap-2">
                                 <p:commandButton
                                     id="btnGrn"
-                                    value="GRN"
+                                    value="Create GRN from PO (Legacy)"
                                     ajax="false"
                                     action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
                                     styleClass="ui-button-stage-save w-100"
@@ -126,7 +126,7 @@
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" />
                                 <p:commandButton
                                     id="btnApprovedPOsToGrn"
-                                    value="Approved POs to Create GRN"
+                                    value="Create GRN from PO"
                                     ajax="false"
                                     action="#{searchController.navigateToListPurchaseOrdersToReceiveDto()}"
                                     styleClass="ui-button-stage-save w-100"
@@ -151,6 +151,15 @@
                                     style="text-align: left"
                                     icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" />
+                                <!-- Goods Receipt With Approval: deprecated, issue #21289.
+                                     Routed into the legacy GrnController approval flow, whose
+                                     settle() always fails with "Please select a payment
+                                     method" (never assigns grnBill). The "GRN Finalize" /
+                                     "GRN Approval" buttons above already cover the same
+                                     receive/approve separation via GrnCostingController's
+                                     Save/Finalize/Approve pipeline, making this button a
+                                     redundant, broken duplicate. -->
+                                <!--
                                 <p:commandButton
                                     id="btnGoodsReceiptWithApproval"
                                     value="Goods Receipt With Approval"
@@ -161,6 +170,7 @@
                                     style="text-align: left"
                                     icon="fas fa-dolly-flatbed"
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" />
+                                -->
                             </div>
                         </p:tab>
 

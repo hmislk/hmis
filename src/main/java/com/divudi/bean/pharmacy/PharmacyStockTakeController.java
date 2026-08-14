@@ -117,6 +117,7 @@ public class PharmacyStockTakeController implements Serializable {
     private Long viewBillId; // bound to f:viewParam on print page for state recovery
     /** Holds snapshot items as plain DTOs — no JPA entities, no EclipseLink EAGER triggers */
     private List<com.divudi.core.data.dto.SnapshotBillItemDTO> snapshotItems;
+    private Long snapshotItemsLoadedForBillId;
     private Bill physicalCountBill;
     private UploadedFile file;
     private Institution institution;
@@ -2883,6 +2884,7 @@ public class PharmacyStockTakeController implements Serializable {
             }
 
             snapshotItems = dtos;
+            snapshotItemsLoadedForBillId = snapshotBill.getId();
             System.out.println("[LoadLazy] DONE. items=" + dtos.size()
                     + " ms=" + (System.currentTimeMillis() - t0));
 
@@ -2912,7 +2914,9 @@ public class PharmacyStockTakeController implements Serializable {
      */
     public List<com.divudi.core.data.dto.SnapshotBillItemDTO> getSnapshotItems() {
         // Fast path — already loaded as plain DTOs, no EclipseLink involved
-        if (snapshotItems != null && !snapshotItems.isEmpty()) {
+        if (snapshotItems != null && !snapshotItems.isEmpty()
+                && snapshotBillDisplay != null
+                && Objects.equals(snapshotItemsLoadedForBillId, snapshotBillDisplay.getId())) {
             System.out.println("[GetLazy] CACHE HIT items=" + snapshotItems.size());
             return snapshotItems;
         }

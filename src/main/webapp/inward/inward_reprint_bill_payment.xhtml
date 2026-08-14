@@ -28,7 +28,16 @@
                                         class="ui-button-danger"
                                         icon="fa fa-ban"
                                         action="#{inwardSearch.navigateToPaymentBillCancellation()}"
-                                        disabled="#{inwardSearch.bill.cancelled}"  >
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded}"  >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnToRefund"
+                                        ajax="false" value="Refund"
+                                        class="ui-button-warning"
+                                        icon="fa fa-money-bill-transfer"
+                                        action="#{inwardRefundController.navigateToRefundFromPaymentBill(inwardSearch.bill)}"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded}"  >
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -69,6 +78,24 @@
                                         action="/inward/inward_bill_intrim?faces-redirect=true"
                                         actionListener="#{bhtSummeryController.createTables()}"
                                         >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnInpatientDashboard"
+                                        ajax="false"
+                                        icon="fas fa-id-card"
+                                        class="ui-button-secondary "
+                                        value="Inpatient Dashboard"
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                        >
+                                        <f:setPropertyActionListener
+                                            value="#{inwardSearch.bill.patientEncounter}"
+                                            target="#{bhtSummeryController.patientEncounter}" >
+                                        </f:setPropertyActionListener>
+                                        <f:setPropertyActionListener
+                                            value="#{bhtSummeryController.patientEncounter}"
+                                            target="#{admissionController.current}" >
+                                        </f:setPropertyActionListener>
                                     </p:commandButton>
                                 </div>
                             </div>

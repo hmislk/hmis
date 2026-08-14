@@ -71,6 +71,18 @@ so the entire menu — including the notification bell, websocket, and remoteCom
 is absent from the page. Any Playwright check for these components will fail silently.
 Always go through the department-selection screen first.
 
+**The department gate is a hard prerequisite for every session, not a one-time
+step to satisfy and forget.** After clicking **Select** on the department
+screen, the app redirects to `home.xhtml` — that redirect (not a specific
+target page) is the real confirmation the gate passed. Only after landing on
+`home.xhtml` is it safe to `browser_navigate` straight to a specific report/page
+URL. Prefer clicking through the actual menu (Pharmacy Analytics → tab →
+Generate Report, etc.) over guessing/typing report URLs directly wherever a
+menu path is reasonably discoverable — direct URL navigation is a fallback for
+pages with no simple menu path, not the default technique, since several pages
+(e.g. Inward final-bill pages, see §17 below) rely on session-bean state that a
+URL alone won't set up correctly even post-department-selection.
+
 **A redeploy invalidates the session.** Every time the WAR is redeployed you are
 logged out and must log in again. Plan test runs so you are not mid-flow when a
 deploy lands.
@@ -313,6 +325,33 @@ gh issue comment 21364 --repo hmislk/hmis --body "Verified with Playwright.
 
 Remove temporary screenshots from the main repository after copying the durable
 ones into the wiki so they are not accidentally committed with application code.
+
+### 8a. Bug fixes: pair "before" and "after" evidence
+
+When the underlying issue is a bug report **and reproducing it required a
+live check** (the root cause wasn't already confirmed by reading code),
+capture evidence at **two** points instead of one, and publish them together
+as a comparison rather than as a single final-state screenshot:
+
+1. **Before** — during reproduction (before any fix is written), capture the
+   broken state: a screenshot for UI bugs, or the raw request/response for
+   API-only bugs. This is also the evidence that the bug is real if the
+   report turns out to be stale — save it even when the answer turns out to
+   be "does not reproduce" (record that it didn't reproduce under the tested
+   environment/data/inputs — that is not proof the bug is absent).
+2. **After** — once the fix is deployed, capture the same view/state again
+   (or replay the same request, for API-only bugs) showing correct behavior.
+3. Redact patient identifiers, credentials, tokens, cookies, and other
+   sensitive fields from any API request/response snippet before it leaves
+   `tmp/` or is published — the same sanitization rule §8 applies to
+   screenshots.
+4. Place both images (or both sanitized response snippets) in the same issue
+   comment / PR description, labeled "Before" and "After", so a reviewer can
+   see the fix without redeploying locally.
+
+If the root cause was already confirmed by reading code (no live
+reproduction needed), there is no "before" evidence — publish only the
+post-fix confirmation, without implying a comparison.
 
 ---
 
@@ -1264,6 +1303,475 @@ Two traps found verifying issue #19168's Transfer Issue Department Type filter f
   Pharmacy) and use **Direct Issue** (`pharmacy_transfer_issue_direct_department.xhtml`,
   `TransferIssueDirectController`) instead — it doesn't require a prior
   approved request and reaches the same `Bill.departmentType` stamping logic.
+
+## 50. `p:calendar`/`p:selectOneMenu` widgets can silently ignore a plain Playwright `fill()`/`click()` — drive the PrimeFaces widget JS API directly when the visible value won't stick
+
+Hit while verifying issue #22414 (blocking Hold on an already-paid professional
+fee), which needed a specific old BHT found by widening a search page's date
+filter and switching its payment-method dropdown off "Cash" (no cash-drawer
+balance locally):
+
+- **`p:calendar`**: `browser_type`/`.fill()` on the visible text input updates
+  the DOM, but on some pages the value silently reverts to today's date after
+  the next postback (`inward_search_professional_payment_due.xhtml` did this;
+  `inpatient_search.xhtml`'s calendar accepted `.fill()` normally — behavior
+  isn't consistent across pages, so don't assume either way). If a submitted
+  search comes back with unexpectedly narrow/empty results right after typing
+  a date, suspect this before suspecting the query. Fix: drive the widget
+  directly via `browser_evaluate`:
+  ```js
+  const w = PrimeFaces.widgets['widget_<id_with_colons_as_underscores>'];
+  w.setDate(new Date(2020,0,1,0,0,0));
+  w.input.val('01 Jan 2020 00:00:00').trigger('change');
+  ```
+  Find the widget name with
+  `Object.keys(PrimeFaces.widgets).filter(k => k.includes('<idFragment>'))`.
+- **`p:selectOneMenu`**: setting the underlying native `<select>`'s `.value`
+  directly (even to a matching `<option value>`) does not reliably update the
+  PrimeFaces display label — it can silently resync to a stale/wrong option.
+  What actually works is clicking the real `<li>` inside the (JS-rendered,
+  `display:none` until opened) `..._panel` element:
+  ```js
+  const panel = document.getElementById('<id_with_colons>_panel');
+  const li = Array.from(panel.querySelectorAll('li')).find(li => li.textContent.trim() === 'Cheque');
+  li.click();
+  ```
+  This fires the widget's real `itemClick` handler, which updates both the
+  hidden select and the visible label consistently.
+- Both patterns require the target element to actually exist in
+  `PrimeFaces.widgets` first — a plain `browser_click` to open the dropdown
+  panel beforehand isn't necessary once you're driving it via JS, but doing a
+  quick `browser_snapshot` after any of this is worth it to confirm the
+  visible label actually changed before submitting the form.
+- Confirmed again while verifying issue #22649 (OPD Itemized Sales Summary
+  cancellation-doubling report): `itemized_sale_summary_dto.xhtml`'s From/To
+  `p:calendar` inputs silently reverted to today's date after `.fill()`, every
+  time — as soon as the *other* date field (or any other input on the page)
+  was touched next, both fields resnapped to their pre-fill value. If you'd
+  rather not reach for `browser_evaluate`/widget internals, driving the actual
+  calendar UI works just as reliably: click the input to open its popup, click
+  the "Previous"/"Next" month arrows (found via `browser_find` for the visible
+  month/year text, since the arrows' refs change every re-render) until the
+  target month is showing, then click the day-number link. This sets the
+  widget's real internal Date object (unlike a raw `.fill()`), so the value
+  survives subsequent postbacks/field changes. Note this page has no
+  `showTime`/`timeInput` attribute, so clicking a day only changes the date —
+  the time-of-day stays whatever that field's default already was (00:00:00
+  for From, 23:59:59 for To here). If a test needs the submitted range to land
+  on a specific time or cross midnight, pick the From/To *days* accordingly
+  (e.g. From = day N 00:00:00, To = day N+1 23:59:59) rather than assuming the
+  time resets.
+- Separately: local test data can have **zero** BillFee rows with
+  `paidValue == feeValue` (nobody has ever settled a professional payment
+  through this exact local DB copy) — check with a quick SQL count before
+  assuming a "must find an already-paid row" test fixture exists; if it
+  doesn't, settle one through the real UI first (Search Outstanding
+  Professional Payments → select one row only → Settle) rather than writing
+  `paidValue` via raw SQL, so the whole flow is genuinely exercised. Settling
+  with "Cash" fails locally with "Not enough cash in your drawer" — switch
+  Payment Method to Cheque/Card/Slip/ewallet (whichever needs no drawer
+  balance) to unblock the settlement without needing a funded cash drawer.
+
+## 51. `p:dialog appendTo="@(body)"` silently drops that dialog's own bound inputs from every AJAX submission
+
+A `p:dialog` with `appendTo="@(body)"` gets physically relocated by PrimeFaces
+to be a direct child of `<body>` in the DOM — taking it **outside** whatever
+`<h:form>` it's declared inside in the JSF source. Any `p:selectOneMenu`/
+`p:inputText` inside that dialog that's bound via a normal `value="#{...}"`
+expression (rather than captured through
+`<f:setPropertyActionListener>`/an iteration var on a `p:dataTable` row) will
+never have its value included in the form's AJAX POST body, because
+PrimeFaces serializes the enclosing `<form>`'s actual DOM subtree, and the
+dialog's inputs are no longer part of it. The request still looks legitimate
+— `javax.faces.partial.execute` correctly lists the dialog's component IDs,
+and the response comes back `200` with no exception — but the parameter
+names for those specific inputs are simply absent from the POST body, so the
+server-side bean properties they're bound to never get updated. Symptom:
+"nothing happens" when clicking Save inside the dialog — a value the user
+just typed silently reverts, with no error unless you also check the
+`update` target's message component actually renders (see #32).
+
+Confirmed by injecting an `XMLHttpRequest.prototype.send` hook via
+`javascript_tool` to capture the real request body and diffing the parameter
+names against a known-good submission from the same form (see issue
+`#22352`'s `ward_pharmacy_bht_issue_request_bill.xhtml` "Edit / Substitute
+Item" dialog). The working counterpart,
+`pharmacy_bill_retail_sale_native.xhtml`'s `substituteDlg`, also uses
+`appendTo="@(body)"` but avoids the problem entirely by using
+`f:setPropertyActionListener` on the row's own "Replace" button instead of a
+submitted form field — worth checking as the reference pattern before
+assuming `appendTo` itself needs to be removed.
+
+## 52. A non-AJAX search that looks "hung" in Playwright may actually be a real, still-running N+1 query — check a Payara thread dump before assuming the button is broken
+
+Clicking a date-filtered `ajax="false"` Search button (e.g.
+`SearchController.fillSavedTranserRequestBills()` behind
+`pharmacy_transfer_request_list_search_for_approval.xhtml`'s "Search") can
+time out on `browser_click` ("waiting for scheduled navigations to finish"),
+and every subsequent `browser_snapshot`/`browser_evaluate`/`browser_tabs`
+call on that page then also times out — indistinguishable, from Playwright's
+side, from a broken client-side handler that never reaches the server (the
+symptom described in §37). Opening a **fresh tab** in the same browser
+context can even reproduce the identical hang on the very first click,
+which looks like confirmation the page itself is broken.
+
+It isn't, necessarily. Check `server.log` first for whether the request even
+arrived — but a wide date range that doesn't filter by `billTypeAtomic`
+(only by `billType`, so it pulls every PRE **and** approved/downstream bill
+over the range) can trigger a classic EclipseLink N+1: one `ReadAllQuery` for
+the bill list, then a lazy `OneToOneMapping`/`ForeignReferenceMapping` round
+trip **per row per relationship** (`fromDepartment`, `toDepartment`,
+`creater`, `checkedBy`, …). Over hundreds of matching rows this is genuinely
+slow (multiple minutes), not stuck — but produces no new `server.log` lines
+if that code path (unlike the heavily-instrumented login flow) has no
+`LOGGER.log(...)` trace statements, making "no new log output" look like
+proof the request never arrived when it actually is just quiet.
+
+**Definitive diagnostic**: `asadmin generate-jvm-report --type=thread` prints
+straight to stdout (no file to locate). Payara's report format — unlike a raw
+`jstack` dump — puts each thread's name and state on one physical line (e.g.
+`Thread "http-thread-pool::http-listener-1(2)" thread-id: 75 thread-state:
+RUNNABLE Running in native`), so a single-line `grep -A3
+'http-thread-pool.*RUNNABLE'` reliably catches it and the frames below. A
+thread whose stack shows your controller method (e.g.
+`TransferRequestController.navigateToApproveRequest`) blocked in
+`SocketInputStream.socketRead0` under
+`com.mysql.cj.protocol...`/`EclipseLink` frames is **genuinely executing** —
+not stuck. `SELECT ... FROM information_schema.PROCESSLIST WHERE
+COMMAND='Query' AND ID != CONNECTION_ID()` corroborates this (a short-lived
+but constantly-refreshing row is the N+1 loop grinding through rows, not a
+single frozen query).
+
+**Fix for testing purposes**: don't fight the browser hang — stop issuing
+more clicks/tabs. Each retry adds another slow in-flight request; enough of
+these piling up can exhaust server thread-pool, session, or DB connection
+capacity, making *every* tab/request against that origin appear to hang, even
+unrelated ones. Instead, narrow the date filter to the single day the
+target record was created before searching, which keeps the row count (and
+therefore the N+1 fan-out) small enough to return in a couple of seconds.
+The wide-range search's result **does** eventually land in the session-scoped
+searchController.bills once it finishes, so a plain navigate-away-and-back
+on a fresh tab can pick up the now-populated list without re-submitting.
+Verified while testing issue #22455 (Pharmacy Transfer Request Approval —
+`pharmacy_transfer_request_list_search_for_approval.xhtml` and its twin
+`pharmacy_transfer_request_list_to_approve.xhtml`, both driven by the same
+session-scoped `SearchController`).
+
+## 53. "Pharmacy Bill Search by Bill Type" has two different pages — pick the one keyed on `billType`, not `billTypeAtomic`
+
+Two separate JSF pages both claim to be the pharmacy bill-type search: `pharmacy/pharmacy_search.xhtml`
+(dropdown bound to `searchController.billType`, the plain `BillType` enum) and
+`pharmacy/pharmacy_search_by_bill_type_atomic.xhtml` (dropdown bound to `searchController.billTypeAtomic`,
+the finer-grained `BillTypeAtomic` enum). Both render a "Pharmacy Bill Search" panel with a Bill Type
+dropdown, so it's easy to land on the wrong one and see misleading results. For
+`PHARMACY_RETURN_WITHOUT_TREASING`/`PharmacyReturnWithoutTraising` specifically, the atomic-driven page is
+**dead for this bill type**: `BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING`'s constructor declares its
+associated `BillType` as `PharmacySale` (not `PharmacyReturnWithoutTraising`), so the atomic page's
+`rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyReturnWithoutTraising'}"` panel can never
+match — selecting "Pharmacy Return without a Receipt" there silently falls through to an unrelated stale
+"SALE BILL SEARCH" panel showing "No Bills Found", with no error. Grep
+`BillTypeAtomic.java` for other atomics whose declared `BillType` doesn't match their own name before trusting
+the atomic-based search page for a given bill type — `pharmacy_search.xhtml`'s plain-`billType` dropdown is
+the reliable one when in doubt. Found verifying issue #22563.
+
+## 54. `pharmacy_fast_retail_sale_for_cashier.xhtml` "Settle Bill At Cashier" 500s with a Patient cascade error if the Patient Name field is left blank
+
+`PharmacyFastRetailSaleForCashierController.settlePreBill()` → `settlePharmacyToken()` creates a `Token`
+referencing an in-memory `Patient` placeholder when no patient is selected/entered. Committing that
+transaction throws `IllegalStateException: During synchronization a new object was found through a
+relationship that was not marked cascade PERSIST: com.divudi.core.entity.Patient[ id=null ]`, rolling back
+the whole "Settle Bill At Cashier" action with an HTTP 500 (unrelated to whatever feature is actually under
+test). Always type something into "Enter the Name of the patient" before clicking "Settle Bill At Cashier"
+on this page — a walk-in placeholder name is enough. Found verifying issue #21419.
+
+Also for this page: "Settle Bill At Cashier" only creates a `PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER`
+pre-bill and deducts stock — it does **not** create the final sale bill. To reach the actual
+`PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER` bill (the one with a cancellable "To Cancel" button on
+`pharmacy_reprint_bill_sale_cashier.xhtml`), separately go to `pharmacy_search_pre_bill.xhtml` → **Search
+Not Paid Tokens** → **Call Customer** → **Accept Payment** → enter Tendered amount → **Accept Payment and
+Settle**. Then from `pharmacy_search_pre_bill.xhtml` → **Search Paid Only Tokens** → **View Payment Bill**
+lands on the reprint/cancel page for that bill.
+
+## 55. `inward_bill_professional.xhtml` "Add Professional Fee" silently no-ops if the Speciality autocomplete is left empty
+
+On "Add New Professional Fees", the `+ Add Professional Fee` button is a
+`type="submit"` full postback guarded only by a JS `confirm(...)` — clicking
+it and accepting the dialog looks successful (page reloads, no visible
+error) but the row never appears in "Professional Fees for This Encounter"
+and no `BILLFEE` row is inserted, if the **Speciality** autocomplete (above
+Doctor) was left blank. This is the same zero-observable-signal
+required-field pattern as §37, just on a different page/field — the Doctor
+field alone is not enough. Fix: search and select a Speciality (e.g. type
+`PHYSICIAN`, press Enter) before Doctor/Fee Amount/Add. Confirmed via
+`mysql.general_log`: with Speciality empty, no `INSERT INTO BILLFEE`
+statement reaches the server at all; with it filled, the insert fires
+immediately. Verified while testing issue #22665.
+
+## 56. `p:datePicker timeInput="true"` — typing into the input does not commit; use the PrimeFaces widget API for non-AJAX forms
+
+On `theater/inward_timed_service_consume_surgery.xhtml`'s Start/End Time
+fields (`p:datePicker showTime="true" timeInput="true"`, no `readonlyInput`
+set — `input.readOnly` is `false`), the documented "click → Ctrl+A →
+pressSequentially → Escape" pattern (§ "p:datePicker / p:calendar") left the
+input **empty** every time: `document.getElementById(...).value` read `""`
+both before and after `Escape`, with no visible error. Root cause wasn't
+narrowed further, but the fix that reliably works is to skip DOM typing
+entirely and drive the PrimeFaces widget directly — safe here because the
+submit button (`+ Add Service`) is `ajax="false"`, so (per §29) only the
+final submitted `_input` value matters:
+```js
+Object.keys(PrimeFaces.widgets).filter(k => /starttime|endtime/i.test(k))
+// -> ["widget_form_startTime", "widget_form_endTime"]
+PrimeFaces.widgets.widget_form_startTime.setDate(new Date(2026, 7, 5, 19, 0, 0));
+```
+`setDate()` both sets the widget's internal date **and** re-serializes the
+visible `_input` text using the field's configured pattern, so a DOM read
+right after confirms the committed value. Verified end-to-end for issue #20890:
+the typed-looking string round-tripped correctly through the
+non-AJAX submit and the saved `PATIENTITEM.FROMTIME`/`TOTIME` matched. Only
+use this shortcut for non-AJAX (full-postback) submits — for an AJAX
+`p:datePicker` where the *change* event itself must fire a listener, this
+bypasses that and the real key-event pattern would still be required (untested
+here).
+
+## 57. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link
+
+`inward/nurse/index.xhtml` populates its Rooms/BHT tab lists (room and BHT
+buttons per ward) only when reached via the real PrimeFaces menu action
+(**Inward → Nursing WorkBench**, an `onclick`/`PrimeFaces.addSubmitParam`
+command link that posts a form before navigating). A `browser_navigate`
+straight to `/rh/faces/nurse/index.xhtml` — even from an already-authenticated,
+department-selected session — loads the page shell but leaves both tab panels
+empty, with no console error and no failed network request to explain it; the
+list is populated by server-side controller init tied to the menu's action
+listener, not by a `f:viewAction` or ajax poll that a plain GET would trigger.
+Same rule as the admission/final-bill pages noted in §1 §17: prefer clicking
+through the actual menu path over guessing the URL, and if a page you reached
+by URL shows a suspiciously empty list with no error, retry via the menu link
+before assuming the data itself is missing. Verified while testing issue
+`#22689`. Note: `NursingWorkBenchController.loadLists()` populates the Rooms
+and BHT tabs from the identical query (same `discharged=false /
+paymentFinalized=false / currentPatientRoom` filter) — they always list the
+same admissions, just labeled/sorted by room name vs. BHT number
+respectively. If a specific admission seems "missing" from one tab, search by
+the label that tab actually renders (BHT number on the BHT tab, room name on
+the Rooms tab), not by patient name — neither tab's buttons show it.
+
+## 58. `inward_admission.xhtml` Room No autocomplete excludes the room already reserved by the very appointment being admitted; a required-config error can look like a blocked flow
+
+While testing issue #22719 (appointment → admission → deposit conversion), two admission-form gotchas surfaced together:
+
+- **Room No autocomplete only lists currently-*available* rooms** — a room
+  already reserved for the appointment/patient being admitted (e.g. via the
+  appointment's own `Reservation`) does **not** appear in the completion list,
+  even though it's "theirs." Typing the exact room number/name returns "No
+  results found." This isn't a bug in the flow under test — just pick any
+  other available room from the list (e.g. `Room 410` instead of the
+  originally-reserved `Room 101`) to proceed; the room shown on the
+  reservation and the room picked at admission time are independent fields.
+- **A hidden `ConfigOption` boolean can block the whole Admit action with no
+  visual hint on the form.** `AdmissionController` checks
+  `"Patient Age is Required in Patient Admission"` (default `false`, but was
+  `true` on this Galle Co-op local dev DB) and rejects with "Patient Age is
+  Required" if the patient has no DOB — the message doesn't say which field
+  or where to fix it. Two related traps while fixing it:
+  - Typing into the **Years/Months/Days** age inputs on `patient_edit.xhtml`
+    looks like it commits (`textbox "Years": "30"`) but doesn't persist a DOB —
+    that widget only *computes* a DOB client-side via a JS listener that a
+    plain `fill()`/`pressSequentially()` doesn't reliably trigger. Set the
+    **Date of Birth** `p:calendar` field directly instead (click → Ctrl+A →
+    type `dd/mm/yyyy` → Escape → Save) and verify
+    `SELECT DOB FROM person WHERE ID = (SELECT PERSON_ID FROM patient WHERE ID = <patientId>)`
+    returns a non-NULL row for the specific patient under test before
+    retrying the admission — an unfiltered `SELECT DOB FROM person` returns
+    every patient in the DB and can't confirm the one that matters.
+  - To find *which* config key is blocking an error message with no field
+    reference, `grep` the exact error string in
+    `src/main/java/com/divudi/bean/inward/AdmissionController.java` to find
+    the `configOptionApplicationController.getBooleanValueByKey("...")` call,
+    then toggle it via **Admin → Manage → Application Options → List
+    Application Options → filter by key → Edit Option** (per §26 — never via
+    raw SQL, the L2 cache won't see it). If you flip a real setting to unblock
+    a test, **toggle it back afterward** and confirm via
+    `SELECT OPTIONVALUE FROM configoption WHERE OPTIONKEY = '...'` — this is
+    live config on a real hospital's local dev copy, not disposable test data.
+
+## 59. `CreditCompanyBillSearch.printPreview` is a single shared flag reused for two different meanings — viewing a bill before cancelling can make the cancel form permanently unreachable via normal navigation
+
+On `credit/credit_company_bill_search.xhtml` → **View** → `inpatient_credit_company_bill_reprint.xhtml` → **To Cancel** → `inpatient_credit_company_bill_cancel.xhtml`, the cancel page conditionally
+renders either the cancel **form** (`rendered="#{!creditCompanyBillSearch.printPreview}"`) or a
+read-only "cancellation receipt" preview (`rendered="#{creditCompanyBillSearch.printPreview}"`).
+`BillSearch.navigateToViewBillByAtomicBillType()` (used by the search page's **View** button) calls
+`creditCompanyBillSearch.setBill(bill)` (which resets `printPreview=false` via `recreateModel()`)
+**immediately followed by** `creditCompanyBillSearch.setPrintPreview(true)` — by design, so the
+Reprint page shows a print preview. But `printPreview` is `@SessionScoped` and shared with the
+Cancel page, and clicking **To Cancel** is a plain outcome-string navigation (no bean method call)
+that never resets it. Result: landing on the cancel page via the only in-UI path always shows the
+receipt view instead of the cancel form — **there is no button an end user can click to actually
+reach the cancel form**, even though nothing has been cancelled yet (verify via
+`SELECT CANCELLED FROM BILL WHERE ID=...` — it's still `0`). This is a real product bug, not a
+Playwright limitation; flag/file it rather than silently building around it. Found while verifying
+issue #19931.
+
+**Workaround used only for E2E verification** (not a fix an end user has access to): reach the same
+bill via `credit/credit_company_bill_search_billItems.xhtml` → **Search BHT** → **View Bill**
+instead. That page's button does a *raw* `f:setPropertyActionListener value="#{b.bill}"
+target="#{creditCompanyBillSearch.bill}"` with no follow-up `setPrintPreview(true)`, so
+`printPreview` stays `false`. It navigates to the *generic* `credit_company_bill_reprint.xhtml`
+(whose own **To Cancel** button targets `credit_company_bill_cancel.xhtml` and the *different*
+`creditCompanyBillSearch.cancelBill()` method — **do not click that button**, it may produce the
+wrong `BillTypeAtomic` for an inpatient bill). Instead, once `creditCompanyBillSearch.bill` +
+`printPreview=false` are set, `browser_navigate` directly to
+`inpatient_credit_company_bill_cancel.xhtml` — the session-scoped bean state carries over and the
+correct cancel form (bound to `cancelCreditCompanyPaymentBill()`) renders.
+
+Separately: the cancel form's "Enter a comment" `p:inputText` is required by
+`CreditCompanyBillSearch.errorCheck()` (`"Please enter a comment"`), but that page has no visible
+`<p:messages>`/`<h:messages>` for the resulting `JsfUtil.addErrorMessage(...)` — clicking **Cancel**
+with it empty just re-renders the identical form with **zero visible feedback and zero DB change**,
+easy to mistake for the click not registering at all. Always fill the comment field first; if a
+"Cancel" (or similarly `ajax="false"`) button appears to no-op, check for this pattern before
+assuming a click/ref problem.
+
+## 60. GRN receive/approve `Invoice Total` resets to 0.00 on every page (re)load and needs a *real* blur, not just `fill()`, to pass the "invoice does not match" check
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` (both the initial Finalize and the separate
+Approve page load), `Invoice Total` starts blank/0.00 every time the page is (re)rendered —
+including the second time you land on the same GRN for the Approve step, even though you already
+filled it once during Finalize. Two gotchas stack here:
+
+1. **It must be re-filled at every stage** (Finalize *and* Approve) — don't assume a value entered
+   once persists across the finalize→approve navigation.
+2. **A plain `browser_type`/`.fill()` + `Tab` does not reliably commit it** — the page kept
+   re-showing `Difference: -<amount>` (computed server-side from the *old* 0.00) and Finalize
+   failed with "The invoice does not match..! Check again" even though the input visibly showed
+   the typed value. The fix: `browser_click` into the field, `Control+a`, `browser_type` with
+   `slowly: true`, then an explicit `browser_click` on an unrelated static element (e.g. the page
+   heading) to force a real blur — only then does `Difference` recompute to `0.00` and
+   Finalize/Approve succeed. Verify via `browser_find` on "Difference" before clicking
+   Finalize/Approve, not just by eyeballing the Invoice Total box.
+
+Found while verifying issue #18280 (GRN Return refundAmount fix).
+
+## 61. "Generate Supplier Payments" only lists Credit-payment-method GRNs — a Cash GRN's return never shows up there, by design
+
+`SupplierPaymentController.fillUnsettledCreditPharmacyBills()` (and the sibling return-bills
+method) hard-filter on `PaymentMethod.Credit`. A GRN received with Payment Method = **Cash** will
+never appear on `list_bills_to_generate_supplier_payments.xhtml` or `list_all_grns.xhtml`'s
+"Prepare Payment" flow, no matter its return/refund state — there's nothing owed to the supplier
+for a bill already settled in cash at receipt, so this is correct behavior, not a bug. If a test
+needs to reach the actual Supplier Payment screen (`generate_supplier_payment.xhtml`), the GRN
+**must** be created with Payment Method = **Credit** at receive time; a Cash-paid test GRN is only
+verifiable at the DB level (`BILL.REFUNDAMOUNT`/`PAIDAMOUNT`/`NETTOTAL`), not through this UI path.
+Found while verifying issue #18280.
+
+## 62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback
+
+On `cashier/fund_withdrawal_bill.xhtml` (and the same pattern likely applies
+to `deposit_funds.xhtml` and other `FinancialTransactionController` fund-bill
+pages), navigating straight to the page URL skips the menu action method
+(`navigateToCreateNewFundWithdrawalBill()` → `prepareToAddNewWithdrawalProcessingBill()`)
+that initializes the `@SessionScoped` bean's `currentBill`/`currentBillPayments`.
+The page still renders fully — Payment Method dropdown, Value field, "+Add"
+button all present and clickable — but `addPaymentToWithdrawalFundBill()`
+starts with `if (currentBill == null) { JsfUtil.addErrorMessage("Error"); return; }`,
+and the page has no `<p:messages>`/`<h:messages>` bound, so the growl error
+never renders. Clicking "+Add" just re-shows the same empty payment fields
+with **no error, no added row, no total change** — indistinguishable from a
+Playwright click/ref problem unless you check the "Withdrawal List" /
+"Deposits to Submit" table state after the click. Fix: always reach these
+pages via **Drawer tab → Withdrawals/Deposit to Safe/Bank button**, not
+`browser_navigate` to the URL directly — same root cause as §57, but here the
+consequence is a silent no-op rather than an empty page. Found while
+verifying issue #22870.
+
+## 63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name
+
+When hand-writing a verification/candidate-finding query against `billfee.staff_id`, do **not**
+join it directly to `PERSON.ID` — `Staff` is its own entity with its own `ID`, related to `Person`
+via `STAFF.PERSON_ID`. `billfee.staff_id JOIN person ON billfee.staff_id = person.id` silently
+returns a row (some unrelated person whose `ID` happens to equal the staff's `ID`) instead of an
+empty result, so the query looks correct but reports the wrong doctor's name for the due-payment
+total. Always go through the extra hop: `JOIN staff s ON bf.staff_id = s.id JOIN person p ON
+s.person_id = p.id`. Found while picking Playwright test data for issue #22860 — the initial
+candidate list mislabeled staff ID 11865 as "N H W Mahinda" when the correct name (still under the
+same ID, same due-fee totals) was "A K Liyanage"; the ID itself was fine to test with, only the
+display name was wrong.
+
+## 64. A slow, unfiltered `p:dataTable` search can make *every* subsequent Playwright tool call time out — don't `browser_navigate` away to "recover", just wait longer
+
+On `opd_search_professional_payment_due.xhtml` ("OPD Payments Due Search"), the `ajax="false"`
+Search button runs an unindexed JPQL join across `BILLFEE`/`BILL`/`STAFF`/`PERSON` with no
+department scoping. A wide date range with no name filter can run long enough that
+`browser_click`'s "waiting for scheduled navigations to finish" times out (5s), and every
+following `browser_snapshot`/`browser_wait_for` also times out (30s) because the page is still
+mid-navigation — this looks identical to a wedged browser session. **Do not `browser_navigate` away
+to recover in this situation**: a plain GET reload creates a fresh request and abandons whatever
+the slow POST was about to render, so the search results are lost even though the query eventually
+would have completed server-side (confirmed via `mysql.general_log` — the correct query, with the
+correct bind parameters, executed and matched rows, but the client never saw the response and a
+subsequent GET showed stale/empty state instead). Instead, once the click has already timed out,
+stay on the page and retry `browser_snapshot` after a real wait (`sleep 20` via Bash, not a tool
+`time` argument — those get capped short); the page does eventually render with results. Narrowing
+the date range and adding a name filter before clicking Search avoids the slow path entirely and
+should be preferred when the target staff/date are already known. Found while verifying issue #22860.
+
+## 65. Theatre "Add New Surgery" — the Surgery Name autocomplete is `Item` rows (`DTYPE='ClinicalEntity'`), not a dedicated table
+
+On `theater/patient_surgery.xhtml`'s "Add Surgery" panel, the "Surgery Name" `p:autoComplete`
+(`ProcedureController.completeProcedures`) queries `ClinicalEntity` — which is a
+`SINGLE_TABLE`-inheritance subclass of `Item` (discriminator `DTYPE='ClinicalEntity'`), not its
+own table. There is no `CLINICALENTITY` table to query directly; look up seed rows with:
+```sql
+SELECT ID, NAME FROM ITEM WHERE DTYPE='ClinicalEntity' AND SYMANTICTYPE='Therapeutic_Procedure' AND RETIRED=0;
+```
+A query for an item name absent from that set (e.g. "Appendec" typo, or a name that isn't seeded)
+silently returns "No results found" with no error — this looks like a missing feature but is just
+an empty/mistyped query. Confirmed working seed name: "Appendicectomy". Verified while testing
+issue #20891.
+
+## 66. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it
+
+On `inward/admit_room.xhtml`, a `p:autoComplete`'s `itemSelect` ajax handler bound directly to
+`roomChangeController.current` set that field as soon as a patient was selected — *before* the
+"Continue" `p:commandButton` (bound to `roomChangeController.selectRoomForAdmit()`, `ajax="false"`)
+was ever clicked. The Continue button lived inside a panel gated
+`rendered="#{roomChangeController.current eq null}"`. By the time the Continue postback started,
+`current` was already non-null (set by that earlier ajax request, persisted in the
+`@SessionScoped` bean) — so JSF evaluated the *whole panel*, including the Continue button, as not
+rendered for this request and silently skipped decoding/invoking its action. The button's own
+network POST still looked completely normal (correct hidden field values, correct button
+parameter) — nothing in the request/response cycle hinted the action never ran.
+
+**How this was proven, not just suspected**: added `if (true) { throw new RuntimeException("canary"); }`
+as the literal first line of the suspected action method, rebuilt, redeployed, and repeated the
+click. No exception, no 500, no log line — page rendered its normal "success" output. That's the
+tell: if the action method actually executed, a first-line unconditional throw is unmissable
+(crashes the page). Silence under that canary means the method body never ran at all — reach for
+this test before trusting any subtler theory (stale ViewState, lazy-loading timing, EL caching)
+about a command button that "looks like" it does nothing.
+
+**Fix pattern**: don't bind the ajax-updated input directly to the field that gates the
+surrounding panel's `rendered`. Introduce a separate staging field (e.g. `selectedAdmission`) for
+the autocomplete's `value` and for anything displayed *before* the confirm button is clicked; only
+assign it into the gating field (`current`) inside the confirm button's own action method. That
+keeps the panel's `rendered` condition — and therefore whether the button inside it gets
+decoded/invoked at all — stable for the entire lifecycle of that button's own request. Verified
+against a real waiting-room patient (DB `ROOMADMITTED` flipped 0→1 after "Assign Room") while
+fixing issue #22911.
+
+Two other Payara/asadmin quirks hit while chasing this on the carecode dev machine, worth knowing
+before you spend time debugging "missing" log output:
+- **`java.util.logging` calls (even `.severe(...)`) can silently not reach `server.log`** despite
+  `logging.properties` listing `GFFileHandler` with `logStandardStreams=true` — don't trust
+  "no log line appeared" as proof a code path didn't run; use the canary-throw test above instead,
+  since an uncaught exception during `INVOKE_APPLICATION` reliably surfaces as a rendered error
+  page regardless of the logging pipeline's state.
+- **A `redeploy` that exceeds the foreward-call timeout can leave the domain's DAS memory-bloated
+  and totally unresponsive** (`curl` to the app hangs/times out, `asadmin` commands against the
+  same domain also hang) — matches the existing "Local DAS stalls when memory-bloated" pattern.
+  Recovery: `kill -9` the stuck DAS `java` process (find via `ps aux | grep domains/<name>`),
+  `asadmin start-domain <name>`, then a plain `deploy` (not `redeploy`).
 
 ## Quick checklist
 

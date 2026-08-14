@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.AppointmentController;
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
@@ -24,6 +25,7 @@ import com.divudi.core.data.admin.PageMetadata;
 
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.AdmissionStatus;
@@ -32,6 +34,7 @@ import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
@@ -62,6 +65,7 @@ import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.entity.Area;
 import com.divudi.core.entity.Department;
@@ -168,6 +172,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Inject
     AppointmentController appointmentController;
     @Inject
+    BillSearch billSearch;
+    @Inject
     private ConfigOptionController configOptionController;
     @Inject
     private PatientInsuranceController patientInsuranceController;
@@ -189,6 +195,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     String selectText = "";
     private String ageText = "";
     private String bhtText = "";
+    // Snapshot of the suggested BHT/OPD-card text at the moment the admission
+    // form loaded it into bhtText. Used at save time to detect whether the
+    // user actually edited the field, instead of comparing against a fresh
+    // peek (which can drift if another admission consumes the counter while
+    // this form is still open, wrongly looking like a manual override). (#22583)
+    private String suggestedBhtAtLoad = "";
     private String patientTabId = "tabNewPt";
     private int patientSearchTab;
     private Patient patient;
@@ -483,10 +495,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void addCreditCompnay() {
-        if (encounterCreditCompany.getCreditLimit() <= 0) {
-            JsfUtil.addErrorMessage("Credit limit must be greater than zero");
-            return;
-        }
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
             encounterCreditCompanies.add(encounterCreditCompany);
@@ -2322,11 +2330,242 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
-    private void updateAppointmentBill() {
-        getAppointmentBill().setRefunded(true);
-        getBillFacade().edit(getAppointmentBill());
+    // <editor-fold defaultstate="collapsed" desc="Appointment Deposit Conversion (Issue #22719)">
+    /**
+     * The appointment (linked via {@link Appointment#getPatientEncounter()})
+     * whose deposit bill is pending conversion into an Inward Deposit for the
+     * current admission. Populated by {@link #navigateToAppointmentDepositConversion()}.
+     */
+    private Appointment pendingAppointmentConversion;
 
+    /** Id of the INWARD_APPOINTMENT_CANCEL_BILL created by the last conversion. */
+    private Long lastConversionCancelBillId;
+
+    /** Id of the INWARD_DEPOSIT bill created by the last conversion. */
+    private Long lastConversionDepositBillId;
+
+    /** Lazily-loaded, request-lifetime cache for {@link #getConversionCancelReceipt()}. */
+    private InwardBillReceiptDTO conversionCancelReceipt;
+
+    /** Lazily-loaded, request-lifetime cache for {@link #getConversionDepositReceipt()}. */
+    private InwardBillReceiptDTO conversionDepositReceipt;
+
+    public Appointment getPendingAppointmentConversion() {
+        return pendingAppointmentConversion;
     }
+
+    /**
+     * Finds the appointment linked to this admission (via
+     * {@code Appointment.patientEncounter}, set by {@link #updateAppointment()}
+     * at admission time) whose bill is still an un-cancelled
+     * INWARD_APPOINTMENT_BILL — i.e. its deposit has not yet been converted
+     * into an Inward Deposit for this admission.
+     */
+    private Appointment findPendingAppointmentDepositConversion(PatientEncounter enc) {
+        if (enc == null || enc.getId() == null) {
+            return null;
+        }
+        String jpql = "select a from Appointment a "
+                + " where a.retired = false "
+                + " and a.patientEncounter = :enc "
+                + " and a.bill is not null "
+                + " and a.bill.billTypeAtomic = :bta "
+                + " and a.bill.cancelled = false ";
+        HashMap<String, Object> m = new HashMap<>();
+        m.put("enc", enc);
+        m.put("bta", BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+        return getAppointmentFacade().findFirstByJpql(jpql, m);
+    }
+
+    /**
+     * Drives the Inpatient Dashboard warning banner — true when this
+     * admission has an appointment deposit that has not yet been converted
+     * into an Inward Deposit.
+     */
+    public boolean isHasPendingAppointmentDepositConversion() {
+        return findPendingAppointmentDepositConversion(current) != null;
+    }
+
+    public String navigateToAppointmentDepositConversion() {
+        printPreview = false;
+        if (!webUserController.hasPrivilege("InwardEditPaymentDetails")) {
+            JsfUtil.addErrorMessage("You are not authorized to convert appointment deposits.");
+            return "";
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        pendingAppointmentConversion = findPendingAppointmentDepositConversion(current);
+        if (pendingAppointmentConversion == null) {
+            JsfUtil.addErrorMessage("No pending appointment deposit found for this admission.");
+            return "";
+        }
+        return "/inward/appointment_deposit_conversion?faces-redirect=true";
+    }
+
+    /**
+     * Converts the linked appointment's deposit into this admission's Inward
+     * Deposit: properly cancels the original INWARD_APPOINTMENT_BILL (via
+     * {@link AppointmentController#cancelAppointmentBillForConversion}, the
+     * same cancel-bill pattern used by {@code AppointmentController.cancelAppointment()})
+     * and then creates a new INWARD_DEPOSIT bill for the same amount — same
+     * re-pay call the old auto-conversion used, just now explicit and
+     * user-triggered instead of silent (issue #22719).
+     */
+    public void convertAppointmentDepositToInwardDeposit() {
+        if (!webUserController.hasPrivilege("InwardEditPaymentDetails")) {
+            JsfUtil.addErrorMessage("You are not authorized to convert appointment deposits.");
+            return;
+        }
+        if (pendingAppointmentConversion == null || pendingAppointmentConversion.getBill() == null) {
+            JsfUtil.addErrorMessage("No appointment deposit to convert.");
+            return;
+        }
+        // Re-validate against the current admission and re-check cancellation
+        // status right before acting: current is @SessionScoped and could have
+        // changed in another tab, and this also rejects a second click on an
+        // already-converted deposit (its bill.cancelled is now true, so it no
+        // longer matches).
+        Appointment revalidated = findPendingAppointmentDepositConversion(current);
+        if (revalidated == null || !revalidated.getId().equals(pendingAppointmentConversion.getId())) {
+            JsfUtil.addErrorMessage("This appointment deposit conversion is no longer valid for the current admission. Please retry from the dashboard.");
+            pendingAppointmentConversion = null;
+            return;
+        }
+        pendingAppointmentConversion = revalidated;
+        Bill originalBill = pendingAppointmentConversion.getBill();
+        double amount = originalBill.getTotal();
+
+        Bill cancelBill = appointmentController.cancelAppointmentBillForConversion(
+                originalBill,
+                pendingAppointmentConversion,
+                "Converted to Inward Deposit on Admission — BHT " + getCurrent().getBhtNo());
+        lastConversionCancelBillId = cancelBill.getId();
+
+        PaymentMethod appointmentPaymentMethod = originalBill.getPaymentMethod() != null
+                ? originalBill.getPaymentMethod()
+                : getCurrent().getPaymentMethod();
+        PaymentMethodData conversionPaymentMethodData = buildPaymentMethodDataFromOriginalPayment(originalBill, appointmentPaymentMethod, amount);
+        if (conversionPaymentMethodData != null) {
+            getInwardPaymentController().setPaymentMethodData(conversionPaymentMethodData);
+        }
+        getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+        getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
+        getInwardPaymentController().getCurrent().setPatientEncounter(current);
+        getInwardPaymentController().getCurrent().setTotal(amount);
+        getInwardPaymentController().pay();
+        lastConversionDepositBillId = getInwardPaymentController().getCurrent().getId();
+        getInwardPaymentController().makeNull();
+
+        pendingAppointmentConversion = null;
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Appointment deposit converted to Inward Deposit.");
+    }
+
+    /**
+     * Print DTO for the INWARD_APPOINTMENT_CANCEL_BILL receipt from the most
+     * recent {@link #convertAppointmentDepositToInwardDeposit()} call. Null
+     * until a conversion has succeeded (see {@link #isPrintPreview()}).
+     */
+    public InwardBillReceiptDTO getConversionCancelReceipt() {
+        if (lastConversionCancelBillId == null) {
+            return null;
+        }
+        if (conversionCancelReceipt == null || !lastConversionCancelBillId.equals(conversionCancelReceipt.getBillId())) {
+            conversionCancelReceipt = getBillFacade().findInwardBillReceiptDTO(lastConversionCancelBillId);
+        }
+        return conversionCancelReceipt;
+    }
+
+    /**
+     * Print DTO for the INWARD_DEPOSIT receipt from the most recent
+     * {@link #convertAppointmentDepositToInwardDeposit()} call. Null until a
+     * conversion has succeeded (see {@link #isPrintPreview()}).
+     */
+    public InwardBillReceiptDTO getConversionDepositReceipt() {
+        if (lastConversionDepositBillId == null) {
+            return null;
+        }
+        if (conversionDepositReceipt == null || !lastConversionDepositBillId.equals(conversionDepositReceipt.getBillId())) {
+            conversionDepositReceipt = getBillFacade().findInwardBillReceiptDTO(lastConversionDepositBillId);
+        }
+        return conversionDepositReceipt;
+    }
+
+    /**
+     * Builds the {@link PaymentMethodData} needed by
+     * {@link InwardPaymentController#pay()} so the new Inward Deposit
+     * carries the same bank/cheque/reference details as the original
+     * appointment deposit payment — e.g. a cheque given as "Sampath Bank
+     * 1134" for the appointment must produce a new deposit payment that
+     * also reads "Sampath Bank 1134", not just the same amount and payment
+     * method. Returns {@code null} for {@code Cash} (no extra data needed)
+     * and for methods with no original {@link Payment} row to copy from.
+     * {@code PatientDeposit} is intentionally not handled here — reversing
+     * and re-consuming deposit balance correctly needs its own dedicated
+     * fix and was already unsupported by this conversion flow before this
+     * method existed.
+     */
+    private PaymentMethodData buildPaymentMethodDataFromOriginalPayment(Bill originalBill, PaymentMethod method, double amount) {
+        if (method == null || method == PaymentMethod.Cash) {
+            return null;
+        }
+        List<Payment> originalPayments = billSearch.fetchBillPayments(originalBill);
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return null;
+        }
+        Payment original = originalPayments.get(0);
+
+        PaymentMethodData pmd = new PaymentMethodData();
+        ComponentDetail cd;
+        switch (method) {
+            case Card:
+                cd = pmd.getCreditCard();
+                cd.setInstitution(original.getBank());
+                cd.setNo(original.getCreditCardRefNo());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case Cheque:
+                cd = pmd.getCheque();
+                cd.setInstitution(original.getBank());
+                cd.setNo(original.getChequeRefNo());
+                cd.setDate(original.getChequeDate());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case Slip:
+                cd = pmd.getSlip();
+                cd.setInstitution(original.getBank());
+                cd.setDate(original.getChequeDate() != null ? original.getChequeDate() : original.getPaymentDate());
+                cd.setReferenceNo(original.getReferenceNo());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case ewallet:
+                cd = pmd.getEwallet();
+                cd.setInstitution(original.getBank());
+                cd.setReferenceNo(original.getReferenceNo());
+                cd.setReferralNo(original.getPolicyNo());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            case OnlineSettlement:
+                cd = pmd.getOnlineSettlement();
+                cd.setInstitution(original.getBank());
+                cd.setReferenceNo(original.getReferenceNo());
+                cd.setDate(original.getPaymentDate());
+                cd.setComment(original.getComments());
+                cd.setTotalValue(amount);
+                break;
+            default:
+                return null;
+        }
+        pmd.setPaymentMethod(method);
+        return pmd;
+    }
+    // </editor-fold>
 
     public void listnerForAppoimentSelect(Bill ap) {
         if (ap == null) {
@@ -2651,9 +2890,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatientAllergies();
         saveGuardian();
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        String suggestedBht = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
+        // Compare against the snapshot taken when the form loaded, not a fresh
+        // peek — the counter may have moved on since then (another admission
+        // saved while this form sat open), which would make an untouched
+        // field look like a manual override and bypass the counter/lock,
+        // silently colliding with a number already issued elsewhere. (#22583)
         boolean userOverrodeBht = bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
-                && !bhtText.trim().equals(suggestedBht);
+                && !bhtText.trim().equals(suggestedBhtAtLoad.trim());
 
         long oldBhtLong = getCurrent().getBhtLong();
         String oldBhtNo = getCurrent().getBhtNo();
@@ -2705,7 +2948,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = new PatientRoom();
             if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
-                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
                 getCurrent().setRoomAdmitted(true);
             } else {
                 getCurrent().setRoomAdmitted(false);
@@ -2806,23 +3049,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         getFacade().edit(getCurrent());
 
-        double appointmentFee = 0;
+        // Issue #22719: Do NOT auto re-pay the appointment fee as a new Inward
+        // Deposit here — that silently duplicated the payment (the appointment
+        // bill was only ever flagged refunded=true, not properly cancelled, so
+        // nothing offset the original INWARD_APPOINTMENT_BILL). Just link the
+        // appointment to the new encounter; converting the appointment deposit
+        // into an Inward Deposit is now an explicit, user-triggered action from
+        // the Inpatient Dashboard (see navigateToAppointmentDepositConversion /
+        // convertAppointmentDepositToInwardDeposit).
         if (getAppointmentBill() != null) {
-            appointmentFee = getAppointmentBill().getTotal();
             updateAppointment();
-            updateAppointmentBill();
-        }
-
-        if (appointmentFee != 0) {
-            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
-                    ? getAppointmentBill().getPaymentMethod()
-                    : getCurrent().getPaymentMethod();
-            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
-            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
-            getInwardPaymentController().getCurrent().setPatientEncounter(current);
-            getInwardPaymentController().getCurrent().setTotal(appointmentFee);
-            getInwardPaymentController().pay();
-            getInwardPaymentController().makeNull();
         }
 
         saveEncounterCreditCompanies(current);
@@ -2898,23 +3134,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         getFacade().edit(getCurrent());
 
-        double appointmentFee = 0;
+        // Issue #22719: see saveSelected() above — the automatic re-pay/refunded
+        // flow was silently duplicating the appointment deposit. Only link the
+        // appointment to the new encounter here; the deposit conversion is now
+        // an explicit action from the Inpatient Dashboard.
         if (getAppointmentBill() != null) {
-            appointmentFee = getAppointmentBill().getTotal();
             updateAppointment();
-            updateAppointmentBill();
-        }
-
-        if (appointmentFee != 0) {
-            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
-                    ? getAppointmentBill().getPaymentMethod()
-                    : getCurrent().getPaymentMethod();
-            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
-            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
-            getInwardPaymentController().getCurrent().setPatientEncounter(current);
-            getInwardPaymentController().getCurrent().setTotal(appointmentFee);
-            getInwardPaymentController().pay();
-            getInwardPaymentController().makeNull();
         }
 
         saveEncounterCreditCompanies(current);
@@ -3146,6 +3371,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
+        suggestedBhtAtLoad = bhtText;
 
         // Baby admissions never get a room of their own — the baby stays in the
         // mother's room. Skip applying the admission type's default/package room

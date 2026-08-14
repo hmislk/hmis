@@ -1168,7 +1168,7 @@
                         <p:commandLink
                             id="Goods_Receipt"
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Goods Receipt" />
@@ -1176,7 +1176,15 @@
                     </h:form>
                 </h:panelGroup>
 
-                <!-- Goods Receipt With Approval -->
+                <!-- Goods Receipt With Approval: deprecated, issue #21289.
+                     Routed into the legacy GrnController approval flow, whose
+                     settle() always fails with "Please select a payment
+                     method" (never assigns grnBill). "Goods Receipt" above
+                     already routes every GRN through GrnCostingController's
+                     Save/Finalize/Approve pipeline whenever "Manage Costing"
+                     is enabled, making this tile a redundant, broken
+                     duplicate. -->
+                <!--
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_With_Approval' and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval') and webUserController.hasPrivilege('GoodsRecipt')}">
                     <h:form>
                         <p:tooltip for="Goods_Receipt_With_Approval" value="Goods Receipt With Approval"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -1190,6 +1198,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
+                -->
 
                 <!-- Goods Receipt Costing -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_Costing' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">

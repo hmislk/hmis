@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:fav="http://xmlns.jcp.org/jsf/composite/ezcomp/reports">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -13,28 +14,94 @@
                     <div class="row">
                         <div class="col-md-3">
                             <h:form>
-                                <p:accordionPanel activeIndex="#{searchController.opdAnalyticsIndex}">
+                                <p:accordionPanel id="reportsAccordion" activeIndex="#{searchController.opdAnalyticsIndex}">
                                     <p:ajax process="@this"></p:ajax>
+
+                                    <p:tab title="⭐ Favorites">
+                                        <h:panelGroup id="favoritesPanel" layout="block">
+                                            <h:panelGroup layout="block" styleClass="text-muted p-2" rendered="#{not userFavoriteReportController.hasAnyFavoriteWithKeyPrefix('opdAnalytics_')}">
+                                                <h:outputText value="No favorite reports yet — click the star next to any report to add it here." />
+                                            </h:panelGroup>
+                                            <div class="d-grid gap-2">
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opdIncomeReport')}"><p:commandButton class="w-100 ui-button-success" ajax="false" style="text-align: left" value="OPD Income Report" action="#{opdReportController.navigateToOpdIncomeReportDto()}"/><fav:favoriteStar reportKey="opdAnalytics_opdIncomeReport" label="OPD Income Report" category="Summary Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opdIncomeDailySummary')}"><p:commandButton class="w-100" ajax="false" style="text-align: left" value="OPD Income Daily Summary" action="#{opdReportController.navigateToOpdIncomeDailySummary()}"/><fav:favoriteStar reportKey="opdAnalytics_opdIncomeDailySummary" label="OPD Income Daily Summary" category="Summary Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_hospitalDoctorFeeReport')}"><p:commandButton class="w-100" ajax="false" style="text-align: left" value="Hospital Fee &amp; Doctor Fee Report" action="#{opdReportController.navigateToHospitalDoctorFeeReport()}"/><fav:favoriteStar reportKey="opdAnalytics_hospitalDoctorFeeReport" label="Hospital Fee &amp; Doctor Fee Report" category="Summary Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billItemReport')}"><p:commandButton class="w-100" ajax="false" style="text-align: left" value="Hospital Fee &amp; Doctor Fee Report (By Items)" action="#{opdReportController.navigateToBillItemReport()}"/><fav:favoriteStar reportKey="opdAnalytics_billItemReport" label="Hospital Fee &amp; Doctor Fee Report (By Items)" category="Summary Reports" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_cashierShiftEndSummary')}"><p:commandButton class="w-100" ajax="false" value="Cashier Shift End Summary" action="#{cashierReportController.navigateToShiftEndSummary}" /><fav:favoriteStar reportKey="opdAnalytics_cashierShiftEndSummary" label="Cashier Shift End Summary" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_dayEndSummary')}"><p:commandButton class="w-100" ajax="false" value="Day End Summary" action="#{cashierReportController.navigateToDayEndSummary()}" /><fav:favoriteStar reportKey="opdAnalytics_dayEndSummary" label="Day End Summary" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_departmentAllCashierReport')}"><p:commandButton class="w-100" ajax="false" value="Department All Cashier Report" action="#{cashierReportController.navigateToDepartmentAllCashierReport}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_departmentAllCashierReport" label="Department All Cashier Report" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_cashierReportByReceiptNo')}"><p:commandButton class="w-100" ajax="false" value="Cashier Report (Using Receipt No.)" action="#{cashierReportController.navigateToCashierReport}" actionListener="#{commonReport.recreteModal2}"/><fav:favoriteStar reportKey="opdAnalytics_cashierReportByReceiptNo" label="Cashier Report (Using Receipt No.)" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_allCashierReport')}"><p:commandButton class="w-100" ajax="false" value="All Cashier Report" action="#{cashierReportController.navigateToDepartmentAllCashierReport}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierReport" label="All Cashier Report" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_allCashierReportByReceiptNo')}"><p:commandButton class="w-100" ajax="false" value="All Cashier Report (Using Receipt No.)" action="#{cashierReportController.navigateToAllCashierReportUsingReciptNo()}" actionListener="#{cashierReportController.recreteModal2}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierReportByReceiptNo" label="All Cashier Report (Using Receipt No.)" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_allCashierSummary')}"><p:commandButton class="w-100" ajax="false" value="All Cashier Summary" action="#{cashierReportController.navigateToAllCashierSummary()}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierSummary" label="All Cashier Summary" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_allCashierSummaryWithoutProfessional')}"><p:commandButton class="w-100" ajax="false" value="All Cashier Summary Without Professional" action="#{cashierReportController.navigateToReportCashierSummeryAllTotalOnlyWithoutPro()}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierSummaryWithoutProfessional" label="All Cashier Summary Without Professional" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_cashierBillList')}"><p:commandButton class="w-100" ajax="false" value="Bill List" action="#{cashierReportController.navigateToOpdSearchUserBills()}"/><fav:favoriteStar reportKey="opdAnalytics_cashierBillList" label="Bill List" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_cashierServiceCountReport')}"><p:commandButton class="w-100" ajax="false" value="Cashier Service Count Report" action="#{cashierReportController.navigateToReportCashierItemCountByUser()}"/><fav:favoriteStar reportKey="opdAnalytics_cashierServiceCountReport" label="Cashier Service Count Report" category="Common Cashier Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billTypeSummary')}"><p:commandButton class="w-100" ajax="false" value="Bill Type Summary" action="#{cashierReportController.navigateToBillTypeSummery()}"/><fav:favoriteStar reportKey="opdAnalytics_billTypeSummary" label="Bill Type Summary" category="Common Cashier Reports" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_batchBillList')}"><p:commandButton class="w-100" ajax="false" value="Batch Bill List" action="#{opdBillController.navigateToOpdBatchBillList()}" /><fav:favoriteStar reportKey="opdAnalytics_batchBillList" label="Batch Bill List" category="Lists" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billList')}"><p:commandButton class="w-100" ajax="false" value="Bill List" action="#{opdBillController.navigateToOpdBillList()}" /><fav:favoriteStar reportKey="opdAnalytics_billList" label="Bill List" category="Lists" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billItemList')}"><p:commandButton class="w-100" ajax="false" value="Bill Item List" action="#{opdBillController.navigateToOpdBillItemList()}" /><fav:favoriteStar reportKey="opdAnalytics_billItemList" label="Bill Item List" category="Lists" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billPaymentList')}"><p:commandButton class="w-100" ajax="false" value="Bill Payment List" action="#{opdBillController.navigateToOpdBillPayments()}" /><fav:favoriteStar reportKey="opdAnalytics_billPaymentList" label="Bill Payment List" category="Lists" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_cancellationBillList')}"><p:commandButton class="w-100" ajax="false" value="Cancellation Bill List" action="#{opdBillController.navigateToOpdCancellationBillList()}" /><fav:favoriteStar reportKey="opdAnalytics_cancellationBillList" label="Cancellation Bill List" category="Lists" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opdSaleReport')}"><p:commandButton class="w-100" ajax="false" value="OPD Sale Report" action="#{searchController.navigateToOpdSaleReport()}" /><fav:favoriteStar reportKey="opdAnalytics_opdSaleReport" label="OPD Sale Report" category="Lists" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_itemizedSalesSummary')}"><p:commandButton class="w-100 ui-button-success" ajax="false" icon="fa fa-rocket" value="Itemized Sales Summary" action="#{searchController.navigateToOptimizedItemizedSaleSummary}" title="High-performance DTO-based report - Uses database aggregation for faster loading"/><fav:favoriteStar reportKey="opdAnalytics_itemizedSalesSummary" label="Itemized Sales Summary" category="Item Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_itemWiseSaleReport')}"><p:commandButton class="w-100" ajax="false" value="Item-vice Sale Report" action="#{searchController.navigateToItemizedSaleReportOpd()}" /><fav:favoriteStar reportKey="opdAnalytics_itemWiseSaleReport" label="Item-vice Sale Report" category="Item Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_incomeBreakdownByCategory')}"><p:commandButton class="w-100" ajax="false" value="Income Breakdown by Category" action="#{searchController.navigateToIncomeBreakdownByCategoryOpd()}"/><fav:favoriteStar reportKey="opdAnalytics_incomeBreakdownByCategory" label="Income Breakdown by Category" category="Item Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_combinedItemizedServiceSummary')}"><p:commandButton class="w-100 ui-button-info" ajax="false" icon="fa fa-fw fa-table" value="Itemized Service Summary (OPD + Inward)" action="#{searchController.navigateToCombinedItemizedServiceSummary()}" title="Combined OPD and Inward itemized service summary report"/><fav:favoriteStar reportKey="opdAnalytics_combinedItemizedServiceSummary" label="Itemized Service Summary (OPD + Inward)" category="Item Reports" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_packageDetailReportByBillItems')}"><p:commandButton class="w-100" ajax="false" value="Package Detail Report - By Bill Items" action="#{billPackageMedicalController.navigateToReportOpdPackage()}" actionListener="#{billPackageMedicalController.makeNull}"/><fav:favoriteStar reportKey="opdAnalytics_packageDetailReportByBillItems" label="Package Detail Report - By Bill Items" category="Package Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_packageDetailReportByBills')}"><p:commandButton class="w-100" ajax="false" value="Package Detail Report - By Bills" action="#{billPackageMedicalController.navigateToReportOpdPackageBill()}" actionListener="#{billPackageMedicalController.makeNull}"/><fav:favoriteStar reportKey="opdAnalytics_packageDetailReportByBills" label="Package Detail Report - By Bills" category="Package Reports" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_doctorPaymentsAndDue')}"><p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments and Due" action="#{searchController.navigatToopdSearchProfessionalPaymentDue1()}" actionListener="#{searchController.makeListNull2()}"/><fav:favoriteStar reportKey="opdAnalytics_doctorPaymentsAndDue" label="OPD Doctor Payments and Due" category="Payment Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_doctorPaymentsByBillItem')}"><p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments(By Bill Item)" action="#{searchController.navigatToReportDoctorPaymentOpd()}" actionListener="#{searchController.makeListNull2()}"/><fav:favoriteStar reportKey="opdAnalytics_doctorPaymentsByBillItem" label="OPD Doctor Payments(By Bill Item)" category="Payment Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_doctorPaymentsByBill')}"><p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments(By Bill)" action="#{searchController.navigatToReportDoctorPaymentOpdByBill()}" actionListener="#{searchController.makeListNull2()}"/><fav:favoriteStar reportKey="opdAnalytics_doctorPaymentsByBill" label="OPD Doctor Payments(By Bill)" category="Payment Reports" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_handoverReport')}"><p:commandButton class="w-100" ajax="false" value="Handover Report" action="#{cashierReportController.navigateToReportIncomeWithoutCreditByInstitution()}"/><fav:favoriteStar reportKey="opdAnalytics_handoverReport" label="Handover Report" category="Handover Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_handoverReportByDate')}"><p:commandButton class="w-100" ajax="false" value="Handover Report By Date" action="#{labReportSearchByInstitutionController.navigatToReportLabHandOverByDateSummery()}"/><fav:favoriteStar reportKey="opdAnalytics_handoverReportByDate" label="Handover Report By Date" category="Handover Reports" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billFeePaymentCashierReport')}"><p:commandButton class="w-100" ajax="false" value="Cashier Report" action="#{commonReport.navigateToReportCashierDetailedByUser()}" actionListener="#{commonReport.recreteModal}" /><fav:favoriteStar reportKey="opdAnalytics_billFeePaymentCashierReport" label="Cashier Report" category="Cashier Reports(Bill Fee Payment)" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billFeePaymentCashierSummary')}"><p:commandButton class="w-100" ajax="false" value="Cashier Summary" action="#{commonReport.navigateToReportCashierSummeryByUser()}" actionListener="#{commonReport.recreteModal}" /><fav:favoriteStar reportKey="opdAnalytics_billFeePaymentCashierSummary" label="Cashier Summary" category="Cashier Reports(Bill Fee Payment)" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_departmentWiseIncome')}"><p:commandButton class="w-100" ajax="false" value="Department - wise Income" action="#{commonReport.navigateToReportCashierSummeryByDepartmentwise()}"/><fav:favoriteStar reportKey="opdAnalytics_departmentWiseIncome" label="Department - wise Income" category="Cashier Reports(Bill Fee Payment)" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opdServicesCount')}"><p:commandButton class="w-100" ajax="false" value="OPD Services Count" action="/reports/opd/service_count.xhtml" /><fav:favoriteStar reportKey="opdAnalytics_opdServicesCount" label="OPD Services Count" category="OPD Services" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opdServicesCountDoctorWise')}"><p:commandButton class="w-100" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" /><fav:favoriteStar reportKey="opdAnalytics_opdServicesCountDoctorWise" label="OPD Services Count Doctor Wise" category="OPD Services" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_patientIndicationsReport')}"><p:commandButton class="w-100" ajax="false" value="Patient Indications Report" action="#{opdReportController.navigateToPatientIndicationsReport()}" /><fav:favoriteStar reportKey="opdAnalytics_patientIndicationsReport" label="Patient Indications Report" category="OPD Services" /></h:panelGroup>
+
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opdIncome')}"><p:commandButton class="w-100" ajax="false" value="OPD Income" action="/opd/analytics/opd_income.xhtml" /><fav:favoriteStar reportKey="opdAnalytics_opdIncome" label="OPD Income" category="OPD Income" /></h:panelGroup>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:tab>
+
                                     <p:tab title="Summary Reports">
                                         <div class="d-grid gap-2">
-<!--                                            <p:commandButton 
-                                                class="w-100 ui-button-secondary" 
-                                                ajax="false" 
-                                                style="text-align: left" 
+<!--                                            <p:commandButton
+                                                class="w-100 ui-button-secondary"
+                                                ajax="false"
+                                                style="text-align: left"
                                                 value="OPD Income Report"
                                                 action="#{opdReportController.navigateToOpdIncomeReport()}"/>-->
-                                            <p:commandButton 
-                                                class="w-100 ui-button-success" 
-                                                ajax="false" 
-                                                style="text-align: left" 
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                            <p:commandButton
+                                                class="w-100 ui-button-success"
+                                                ajax="false"
+                                                style="text-align: left"
                                                 value="OPD Income Report"
                                                 action="#{opdReportController.navigateToOpdIncomeReportDto()}"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_opdIncomeReport" label="OPD Income Report" category="Summary Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                              <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
                                                 style="text-align: left"
                                                 value="OPD Income Daily Summary"
                                                 action="#{opdReportController.navigateToOpdIncomeDailySummary()}"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_opdIncomeDailySummary" label="OPD Income Daily Summary" category="Summary Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                             <p:commandButton
                                                 id="btnNavigateToHospitalFeeAndDoctorFeeReportByBills"
                                                 class="w-100"
@@ -42,6 +109,9 @@
                                                 style="text-align: left"
                                                 value="Hospital Fee &amp; Doctor Fee Report"
                                                 action="#{opdReportController.navigateToHospitalDoctorFeeReport()}"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_hospitalDoctorFeeReport" label="Hospital Fee &amp; Doctor Fee Report" category="Summary Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                             <p:commandButton
                                                 id="btnNavigateToBillItemReport"
                                                 class="w-100"
@@ -49,37 +119,42 @@
                                                 style="text-align: left"
                                                 value="Hospital Fee &amp; Doctor Fee Report (By Items)"
                                                 action="#{opdReportController.navigateToBillItemReport()}"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_billItemReport" label="Hospital Fee &amp; Doctor Fee Report (By Items)" category="Summary Reports" />
+                                            </div>
                                         </div>
                                     </p:tab>
 
                                     <!-- Common Cashier Reports Tab -->
                                     <p:tab title="Common Cashier Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Cashier Shift End Summary" action="#{cashierReportController.navigateToShiftEndSummary}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Day End Summary" action="#{cashierReportController.navigateToDayEndSummary()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Department All Cashier Report" action="#{cashierReportController.navigateToDepartmentAllCashierReport}" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Cashier Report (Using Receipt No.)" action="#{cashierReportController.navigateToCashierReport}" actionListener="#{commonReport.recreteModal2}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Cashier Report" action="#{cashierReportController.navigateToDepartmentAllCashierReport}" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Cashier Report (Using Receipt No.)" action="#{cashierReportController.navigateToAllCashierReportUsingReciptNo()}" actionListener="#{cashierReportController.recreteModal2}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Cashier Summary" action="#{cashierReportController.navigateToAllCashierSummary()}" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Cashier Summary Without Professional" action="#{cashierReportController.navigateToReportCashierSummeryAllTotalOnlyWithoutPro()}" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Bill List" action="#{cashierReportController.navigateToOpdSearchUserBills()}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Cashier Service Count Report" action="#{cashierReportController.navigateToReportCashierItemCountByUser()}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Bill Type Summary" action="#{cashierReportController.navigateToBillTypeSummery()}"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Cashier Shift End Summary" action="#{cashierReportController.navigateToShiftEndSummary}" /><fav:favoriteStar reportKey="opdAnalytics_cashierShiftEndSummary" label="Cashier Shift End Summary" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Day End Summary" action="#{cashierReportController.navigateToDayEndSummary()}" /><fav:favoriteStar reportKey="opdAnalytics_dayEndSummary" label="Day End Summary" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Department All Cashier Report" action="#{cashierReportController.navigateToDepartmentAllCashierReport}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_departmentAllCashierReport" label="Department All Cashier Report" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Cashier Report (Using Receipt No.)" action="#{cashierReportController.navigateToCashierReport}" actionListener="#{commonReport.recreteModal2}"/><fav:favoriteStar reportKey="opdAnalytics_cashierReportByReceiptNo" label="Cashier Report (Using Receipt No.)" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="All Cashier Report" action="#{cashierReportController.navigateToDepartmentAllCashierReport}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierReport" label="All Cashier Report" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="All Cashier Report (Using Receipt No.)" action="#{cashierReportController.navigateToAllCashierReportUsingReciptNo()}" actionListener="#{cashierReportController.recreteModal2}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierReportByReceiptNo" label="All Cashier Report (Using Receipt No.)" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="All Cashier Summary" action="#{cashierReportController.navigateToAllCashierSummary()}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierSummary" label="All Cashier Summary" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="All Cashier Summary Without Professional" action="#{cashierReportController.navigateToReportCashierSummeryAllTotalOnlyWithoutPro()}" actionListener="#{cashierReportController.recreteModal}"/><fav:favoriteStar reportKey="opdAnalytics_allCashierSummaryWithoutProfessional" label="All Cashier Summary Without Professional" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Bill List" action="#{cashierReportController.navigateToOpdSearchUserBills()}"/><fav:favoriteStar reportKey="opdAnalytics_cashierBillList" label="Bill List" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Cashier Service Count Report" action="#{cashierReportController.navigateToReportCashierItemCountByUser()}"/><fav:favoriteStar reportKey="opdAnalytics_cashierServiceCountReport" label="Cashier Service Count Report" category="Common Cashier Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Bill Type Summary" action="#{cashierReportController.navigateToBillTypeSummery()}"/><fav:favoriteStar reportKey="opdAnalytics_billTypeSummary" label="Bill Type Summary" category="Common Cashier Reports" /></div>
                                         </div>
                                     </p:tab>
 
                                     <!-- Lists Tab -->
                                     <p:tab title="Lists">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Batch Bill List" action="#{opdBillController.navigateToOpdBatchBillList()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Bill List" action="#{opdBillController.navigateToOpdBillList()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Bill Item List" action="#{opdBillController.navigateToOpdBillItemList()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Bill Payment List" action="#{opdBillController.navigateToOpdBillPayments()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Cancellation Bill List" action="#{opdBillController.navigateToOpdCancellationBillList()}" />
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Batch Bill List" action="#{opdBillController.navigateToOpdBatchBillList()}" /><fav:favoriteStar reportKey="opdAnalytics_batchBillList" label="Batch Bill List" category="Lists" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Bill List" action="#{opdBillController.navigateToOpdBillList()}" /><fav:favoriteStar reportKey="opdAnalytics_billList" label="Bill List" category="Lists" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Bill Item List" action="#{opdBillController.navigateToOpdBillItemList()}" /><fav:favoriteStar reportKey="opdAnalytics_billItemList" label="Bill Item List" category="Lists" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Bill Payment List" action="#{opdBillController.navigateToOpdBillPayments()}" /><fav:favoriteStar reportKey="opdAnalytics_billPaymentList" label="Bill Payment List" category="Lists" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Cancellation Bill List" action="#{opdBillController.navigateToOpdCancellationBillList()}" /><fav:favoriteStar reportKey="opdAnalytics_cancellationBillList" label="Cancellation Bill List" category="Lists" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                             <p:commandButton
                                                 class="w-100" ajax="false" value="OPD Sale Report"
                                                 action="#{searchController.navigateToOpdSaleReport()}" />
+                                            <fav:favoriteStar reportKey="opdAnalytics_opdSaleReport" label="OPD Sale Report" category="Lists" />
+                                            </div>
 
                                         </div>
                                     </p:tab>
@@ -88,6 +163,7 @@
                                     <p:tab title="Item Reports">
                                         <div class="d-grid gap-2">
                                             <!-- DTO-OPTIMIZED VERSION: Recommended for performance -->
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                             <p:commandButton
                                                 class="w-100 ui-button-success"
                                                 ajax="false"
@@ -95,6 +171,8 @@
                                                 value="Itemized Sales Summary"
                                                 action="#{searchController.navigateToOptimizedItemizedSaleSummary}"
                                                 title="High-performance DTO-based report - Uses database aggregation for faster loading"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_itemizedSalesSummary" label="Itemized Sales Summary" category="Item Reports" />
+                                            </div>
 
                                             <!-- DEPRECATED: Entity-based version - will be removed after QA approval -->
                                             <p:commandButton
@@ -106,17 +184,24 @@
                                                 action="#{searchController.navigateToItemizedSaleSummary}"
                                                 title="Legacy entity-based report - Deprecated, will be removed after QA testing"/>
 
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Item-vice Sale Report"
                                                 action="#{searchController.navigateToItemizedSaleReportOpd()}" />
+                                            <fav:favoriteStar reportKey="opdAnalytics_itemWiseSaleReport" label="Item-vice Sale Report" category="Item Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Income Breakdown by Category"
                                                 action="#{searchController.navigateToIncomeBreakdownByCategoryOpd()}"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_incomeBreakdownByCategory" label="Income Breakdown by Category" category="Item Reports" />
+                                            </div>
 
+                                            <div class="d-flex align-items-center gap-1 w-100">
                                             <p:commandButton
                                                 class="w-100 ui-button-info"
                                                 ajax="false"
@@ -124,6 +209,8 @@
                                                 value="Itemized Service Summary (OPD + Inward)"
                                                 action="#{searchController.navigateToCombinedItemizedServiceSummary()}"
                                                 title="Combined OPD and Inward itemized service summary report"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_combinedItemizedServiceSummary" label="Itemized Service Summary (OPD + Inward)" category="Item Reports" />
+                                            </div>
 
                                         </div>
                                     </p:tab>
@@ -132,48 +219,48 @@
                                     <!-- Package Reports Tab -->
                                     <p:tab title="Package Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Package Detail Report - By Bill Items" action="#{billPackageMedicalController.navigateToReportOpdPackage()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
-                                            <p:commandButton class="w-100" ajax="false" value="Package Detail Report - By Bills" action="#{billPackageMedicalController.navigateToReportOpdPackageBill()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Package Detail Report - By Bill Items" action="#{billPackageMedicalController.navigateToReportOpdPackage()}" actionListener="#{billPackageMedicalController.makeNull}"/><fav:favoriteStar reportKey="opdAnalytics_packageDetailReportByBillItems" label="Package Detail Report - By Bill Items" category="Package Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Package Detail Report - By Bills" action="#{billPackageMedicalController.navigateToReportOpdPackageBill()}" actionListener="#{billPackageMedicalController.makeNull}"/><fav:favoriteStar reportKey="opdAnalytics_packageDetailReportByBills" label="Package Detail Report - By Bills" category="Package Reports" /></div>
                                         </div>
                                     </p:tab>
 
                                     <!-- Payment Reports Tab -->
                                     <p:tab title="Payment Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments and Due" action="#{searchController.navigatToopdSearchProfessionalPaymentDue1()}" actionListener="#{searchController.makeListNull2()}"/>                                
-                                            <p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments(By Bill Item)" action="#{searchController.navigatToReportDoctorPaymentOpd()}" actionListener="#{searchController.makeListNull2()}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments(By Bill)" action="#{searchController.navigatToReportDoctorPaymentOpdByBill()}" actionListener="#{searchController.makeListNull2()}"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments and Due" action="#{searchController.navigatToopdSearchProfessionalPaymentDue1()}" actionListener="#{searchController.makeListNull2()}"/><fav:favoriteStar reportKey="opdAnalytics_doctorPaymentsAndDue" label="OPD Doctor Payments and Due" category="Payment Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments(By Bill Item)" action="#{searchController.navigatToReportDoctorPaymentOpd()}" actionListener="#{searchController.makeListNull2()}"/><fav:favoriteStar reportKey="opdAnalytics_doctorPaymentsByBillItem" label="OPD Doctor Payments(By Bill Item)" category="Payment Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="OPD Doctor Payments(By Bill)" action="#{searchController.navigatToReportDoctorPaymentOpdByBill()}" actionListener="#{searchController.makeListNull2()}"/><fav:favoriteStar reportKey="opdAnalytics_doctorPaymentsByBill" label="OPD Doctor Payments(By Bill)" category="Payment Reports" /></div>
                                         </div>
                                     </p:tab>
 
                                     <!-- Handover Reports Tab -->
                                     <p:tab title="Handover Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Handover Report" action="#{cashierReportController.navigateToReportIncomeWithoutCreditByInstitution()}"/>                                
-                                            <p:commandButton class="w-100" ajax="false" value="Handover Report By Date" action="#{labReportSearchByInstitutionController.navigatToReportLabHandOverByDateSummery()}"/>                                
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Handover Report" action="#{cashierReportController.navigateToReportIncomeWithoutCreditByInstitution()}"/><fav:favoriteStar reportKey="opdAnalytics_handoverReport" label="Handover Report" category="Handover Reports" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Handover Report By Date" action="#{labReportSearchByInstitutionController.navigatToReportLabHandOverByDateSummery()}"/><fav:favoriteStar reportKey="opdAnalytics_handoverReportByDate" label="Handover Report By Date" category="Handover Reports" /></div>
                                         </div>
                                     </p:tab>
 
                                     <!-- Cashier Reports Tab -->
                                     <p:tab title="Cashier Reports(Bill Fee Payment)">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Cashier Report" action="#{commonReport.navigateToReportCashierDetailedByUser()}" actionListener="#{commonReport.recreteModal}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Cashier Summary" action="#{commonReport.navigateToReportCashierSummeryByUser()}" actionListener="#{commonReport.recreteModal}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Department - wise Income" action="#{commonReport.navigateToReportCashierSummeryByDepartmentwise()}" rendered="true"/>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Cashier Report" action="#{commonReport.navigateToReportCashierDetailedByUser()}" actionListener="#{commonReport.recreteModal}" /><fav:favoriteStar reportKey="opdAnalytics_billFeePaymentCashierReport" label="Cashier Report" category="Cashier Reports(Bill Fee Payment)" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Cashier Summary" action="#{commonReport.navigateToReportCashierSummeryByUser()}" actionListener="#{commonReport.recreteModal}" /><fav:favoriteStar reportKey="opdAnalytics_billFeePaymentCashierSummary" label="Cashier Summary" category="Cashier Reports(Bill Fee Payment)" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Department - wise Income" action="#{commonReport.navigateToReportCashierSummeryByDepartmentwise()}" rendered="true"/><fav:favoriteStar reportKey="opdAnalytics_departmentWiseIncome" label="Department - wise Income" category="Cashier Reports(Bill Fee Payment)" /></div>
                                         </div>
                                     </p:tab>
                                     <!-- OPD Services Tab -->
                                     <p:tab title="OPD Services">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="OPD Services Count" action="/reports/opd/service_count.xhtml" />
-                                            <p:commandButton class="w-100" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" />
-                                            <p:commandButton class="w-100" ajax="false" value="Patient Indications Report" action="#{opdReportController.navigateToPatientIndicationsReport()}" />
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="OPD Services Count" action="/reports/opd/service_count.xhtml" /><fav:favoriteStar reportKey="opdAnalytics_opdServicesCount" label="OPD Services Count" category="OPD Services" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" /><fav:favoriteStar reportKey="opdAnalytics_opdServicesCountDoctorWise" label="OPD Services Count Doctor Wise" category="OPD Services" /></div>
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="Patient Indications Report" action="#{opdReportController.navigateToPatientIndicationsReport()}" /><fav:favoriteStar reportKey="opdAnalytics_patientIndicationsReport" label="Patient Indications Report" category="OPD Services" /></div>
                                         </div>
                                     </p:tab>
                                     <!-- OPD Income Tab -->
                                     <p:tab title="OPD Income">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="OPD Income" action="/opd/analytics/opd_income.xhtml" />
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton class="w-100" ajax="false" value="OPD Income" action="/opd/analytics/opd_income.xhtml" /><fav:favoriteStar reportKey="opdAnalytics_opdIncome" label="OPD Income" category="OPD Income" /></div>
                                         </div>
                                     </p:tab>
 

@@ -66,10 +66,6 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                 class="w-100">
 
-                                <p:column headerText="Serial" width="80">
-                                    <h:outputText value="/#{b.finalBillVersionSerial}" />
-                                </p:column>
-
                                 <p:column headerText="Bill Number">
                                     <h:outputText value="#{b.deptId}" />
                                 </p:column>
@@ -100,7 +96,7 @@
                                     <p:tag value="Available" severity="secondary" rendered="#{not b.confirmedFinalBill and not b.cancelled}" />
                                 </p:column>
 
-                                <p:column headerText="Actions" width="320">
+                                <p:column headerText="Actions" width="420">
 
                                     <p:commandButton
                                         ajax="false"
@@ -129,11 +125,32 @@
                                     <p:commandButton
                                         ajax="false"
                                         icon="fa fa-plus"
-                                        class="ui-button-warning"
+                                        class="ui-button-warning me-1"
                                         value="Create New Version"
                                         title="Create New Version from #{b.deptId}"
                                         action="#{bhtSummeryController.createNewVersionFromBill(b)}"
                                         rendered="#{not b.cancelled and webUserController.hasPrivilege('InwardFinalBillCreateVersion')}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-trash"
+                                        class="ui-button-danger me-1"
+                                        value="Retire"
+                                        title="Retire #{b.deptId}"
+                                        actionListener="#{inwardSearch.retireFinalBillVersion(b)}"
+                                        rendered="#{not b.retired and not b.confirmedFinalBill and webUserController.hasPrivilege('InwardFinalBillRetire')}">
+                                        <p:confirm header="Confirm" message="Retire bill #{b.deptId}? This cannot be undone." icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-envelope"
+                                        class="ui-button-help"
+                                        value="Email"
+                                        title="Email #{b.deptId}"
+                                        action="#{inwardSearch.prepareEmailFinalBillVersion(b)}"
+                                        rendered="#{webUserController.hasPrivilege('InwardFinalBillEmail')}">
                                     </p:commandButton>
 
                                 </p:column>

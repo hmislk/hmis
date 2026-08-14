@@ -21,6 +21,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -57,6 +58,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.inward.InwardSearch;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.bean.pharmacy.GrnReturnWithCostingController;
@@ -267,6 +269,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     @Inject
     PatientDepositController patientDepositController;
     @Inject
+    InwardSearch inwardSearch;
+    @Inject
     OpdBillController opdBillController;
     @Inject
     SearchController searchController;
@@ -354,6 +358,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private double refundAmount;
     private String txtSearch;
     private Bill bill;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private BillLight billLight;
     private Long selectedBillId;
     private Bill printingBill;
@@ -3810,6 +3816,15 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         this.bill = bill;
     }
 
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != bill) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(bill);
+            individualVoucherGroupsBill = bill;
+        }
+        return individualVoucherGroups;
+    }
+
     public Long getSelectedBillId() {
         return selectedBillId;
     }
@@ -5293,6 +5308,50 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
             case DRAWER_ADJUSTMENT:
                 return requestController.navigateToDrawerAdjustmentApproveByBill(bill);
+
+            case INWARD_PAYMENT:
+                inwardSearch.setBill(bill);
+                return "/inward/inward_reprint_bill_payment?faces-redirect=true";
+
+            case INWARD_PAYMENT_CANCELLATION: {
+                // `bill` here is the cancellation bill itself (a CancelledBill).
+                // InwardSearch.createCancelDepositBill() links it back to the
+                // original deposit bill via billedBill, and the original bill's
+                // cancelledBill points forward to this cancellation bill.
+                // The view page (inward_deposit_cancel_bill_payment.xhtml) needs
+                // the ORIGINAL bill loaded with printPreview=true so it can show
+                // inwardSearch.bill.cancelledBill.
+                Bill originalDepositBill = bill.getBilledBill();
+                if (originalDepositBill == null || originalDepositBill.getId() == null) {
+                    JsfUtil.addErrorMessage("Original bill not found for this cancellation");
+                    return "";
+                }
+                Bill reloadedOriginalDepositBill = billService.reloadBill(originalDepositBill.getId());
+                return inwardSearch.navigateToViewInwardDepositCancellationBill(reloadedOriginalDepositBill);
+            }
+
+            case INWARD_PAYMENT_REFUND:
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
+                // No dedicated view/reprint page exists yet for these two atomics.
+                // Both are still InwardPaymentBill-family bills created via
+                // Bill.copy() of the original deposit bill, so patientEncounter
+                // (and therefore the patient/admission details on the receipt)
+                // is preserved. Falling back to the generic Inward payment
+                // reprint page is a reasonable, functioning view.
+                inwardSearch.setBill(bill);
+                return "/inward/inward_reprint_bill_payment?faces-redirect=true";
+
+            case INWARD_APPOINTMENT_BILL:
+            case INWARD_APPOINTMENT_CANCEL_BILL:
+                // Unlike deposit bills, InwardAppointmentBill never populates
+                // patientEncounter (it lives only on Appointment.patientEncounter,
+                // set later at admission time). inward_reprint_bill_payment.xhtml
+                // reads bill.patientEncounter.* directly, so it can't be reused
+                // here. Instead route to a thin DTO-backed view page whose query
+                // (BillFacade.findInwardBillReceiptDTO) resolves the patient via
+                // LEFT JOINs and tolerates the null patientEncounter.
+                inwardSearch.setAppointmentReceiptBillId(bill.getId());
+                return "/inward/inward_view_appointment_bill_receipt?faces-redirect=true";
 
         }
 
