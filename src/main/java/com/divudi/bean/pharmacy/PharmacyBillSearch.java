@@ -4500,6 +4500,20 @@ public class PharmacyBillSearch implements Serializable {
         return bhtIssueRequestPrintDto;
     }
 
+    // Per-print-job "With Rate" / "Without Rate" choice for the BHT Issue Bill
+    // reprint (ward_pharmacy_reprint_bht_issue_bill_reprint.xhtml). Gated by
+    // the IPRequestViewRates privilege in the XHTML; defaults to false (no
+    // rate) so users never see rates unless they explicitly opt in.
+    private boolean printBhtIssueBillWithRate;
+
+    public boolean isPrintBhtIssueBillWithRate() {
+        return printBhtIssueBillWithRate;
+    }
+
+    public void setPrintBhtIssueBillWithRate(boolean printBhtIssueBillWithRate) {
+        this.printBhtIssueBillWithRate = printBhtIssueBillWithRate;
+    }
+
     public String getReturnPage() {
         return returnPage;
     }
