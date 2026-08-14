@@ -334,7 +334,7 @@
                             </p:column>
 
                             <p:column headerText="MRP Value">
-                                <h:outputText value="#{0.0 - pharmacyReportController.ipDrugReturnEffectiveRetailValue(row)}">
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveRetailValue(row)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">

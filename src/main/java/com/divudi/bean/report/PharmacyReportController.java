@@ -4642,7 +4642,7 @@ public class PharmacyReportController implements Serializable {
                 mrp.setCellStyle(numberStyle);
 
                 Cell mrpValue = row.createCell(12);
-                mrpValue.setCellValue(0.0 - ipDrugReturnEffectiveRetailValue(bi));
+                mrpValue.setCellValue(ipDrugReturnEffectiveRetailValue(bi));
                 mrpValue.setCellStyle(numberStyle);
 
                 Cell disc = row.createCell(13);
@@ -4871,7 +4871,7 @@ public class PharmacyReportController implements Serializable {
 
                 // MRP Value
                 PdfPCell retailVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", 0.0 - ipDrugReturnEffectiveRetailValue(bi)), dataFont));
+                        new Phrase(String.format("%,.2f", ipDrugReturnEffectiveRetailValue(bi)), dataFont));
                 retailVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(retailVCell);
 
