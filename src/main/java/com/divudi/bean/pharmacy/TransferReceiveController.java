@@ -1082,7 +1082,8 @@ public class TransferReceiveController implements Serializable {
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-        if (tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
+        if (tmp.getPharmaceuticalBillItem().getStaffStock() == null
+                || tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
         }
@@ -1090,7 +1091,18 @@ public class TransferReceiveController implements Serializable {
         //   getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
+    /**
+     * A null staffStock means the corresponding issue-side line never
+     * actually moved stock to the porter - treat that the same as
+     * insufficient stock rather than letting the missing reference NPE.
+     * porterStockCoversAllLines() already rejects this case up front for
+     * settle()/settleApprove(); this guard covers onEdit() and any other
+     * caller that reaches a single line's stock check directly (#22951).
+     */
     public boolean errorCheck(BillItem billItem) {
+        if (billItem.getPharmaceuticalBillItem().getStaffStock() == null) {
+            return true;
+        }
         if (billItem.getPharmaceuticalBillItem().getStaffStock().getStock() < billItem.getQty()) {
             return true;
         }
