@@ -6913,6 +6913,13 @@ public class SearchController implements Serializable {
     }
 
     public void fillPharmacyTransferRequestsToApprove() {
+        // Approval happens from the SUPPLYING department's session (the department
+        // that will issue the stock), which is stored as b.toDepartment on a
+        // transfer-request bill (b.fromDepartment/b.department is the REQUESTER).
+        // Filtering on fromDepartment here meant a finalized request could never
+        // match the approver's session department, so this list was always empty
+        // for every department (found via Playwright E2E testing the transfer
+        // request -> approve -> issue workflow, 2026-08-14).
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
                 + "b.id, b.deptId, b.createdAt, COALESCE(toDept.name, ''), "
                 + "COALESCE(creatorPerson.name, ''), b.cancelled, "
@@ -6927,14 +6934,14 @@ public class SearchController implements Serializable {
                 + "WHERE b.checkedBy IS NOT NULL "
                 + "AND (b.completed = false OR b.completed IS NULL) "
                 + "AND b.institution = :ins "
-                + "AND b.fromDepartment = :fromDep "
+                + "AND b.toDepartment = :toDep "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND b.retired = false "
                 + "AND b.billTypeAtomic = :bTp "
                 + "ORDER BY b.createdAt DESC";
         Map<String, Object> params = new HashMap<>();
         params.put("ins", sessionController.getInstitution());
-        params.put("fromDep", sessionController.getDepartment());
+        params.put("toDep", sessionController.getDepartment());
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
         params.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
@@ -6943,13 +6950,15 @@ public class SearchController implements Serializable {
     }
 
     public void fillApprovedPharmacyTransferRequests() {
+        // Same fix as fillPharmacyTransferRequestsToApprove() above: the approving/
+        // issuing department is stored in b.toDepartment, not b.fromDepartment.
         bills = null;
         HashMap tmp = new HashMap();
         String sql;
         sql = "Select b From Bill b where "
                 + " b.completed = true "
                 + " and b.institution = :ins "
-                + " and b.fromDepartment = :fromDep "
+                + " and b.toDepartment = :toDep "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
                 + " and b.billTypeAtomic= :bTp";
@@ -6958,7 +6967,7 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("ins", sessionController.getInstitution());
-        tmp.put("fromDep", sessionController.getDepartment());
+        tmp.put("toDep", sessionController.getDepartment());
         tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
 
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);

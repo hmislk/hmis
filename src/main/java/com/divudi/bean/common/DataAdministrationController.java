@@ -349,6 +349,10 @@ public class DataAdministrationController implements Serializable {
     // never be rendered into a textarea that a full-form submit would echo back.
     private String wikiFetchedDdl;
     private String wikiFetchedDdlInfo;
+    // Table picked by the admin on the "Check Missing Fields and Add Fields"
+    // tab to extract that table's CREATE TABLE statement out of wikiFetchedDdl
+    // into createdSql, instead of requiring it to be hand-pasted.
+    private String selectedWikiTableName;
 
     Date fromDate;
     Date toDate;
@@ -2560,6 +2564,65 @@ public class DataAdministrationController implements Serializable {
         return wikiFetchedDdlInfo;
     }
 
+    /**
+     * Table names parsed out of {@link #wikiFetchedDdl} (populated by
+     * {@link #loadDdlFromWiki()}), for the "Check Missing Fields and Add
+     * Fields" tab's table picker. Uses the same split-by-"CREATE TABLE"
+     * approach as {@link #createTablesOnDatabase}, so the list always
+     * matches what that execution path would actually operate on.
+     */
+    public List<String> getWikiTableNames() {
+        List<String> tableNames = new ArrayList<>();
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            return tableNames;
+        }
+        String[] rawParts = wikiFetchedDdl.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+            String tableName = extractTableName("CREATE TABLE " + part);
+            if (tableName != null && !tableName.isEmpty()) {
+                tableNames.add(tableName);
+            }
+        }
+        Collections.sort(tableNames);
+        return tableNames;
+    }
+
+    /**
+     * Extracts the CREATE TABLE statement for {@link #selectedWikiTableName}
+     * out of {@link #wikiFetchedDdl} and places it in {@link #createdSql},
+     * so the admin doesn't need to already know and hand-paste it before
+     * clicking "Generate Alter Statements".
+     */
+    public void loadCreateStatementForSelectedTable() {
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Load the latest DDL from wiki first.");
+            return;
+        }
+        if (selectedWikiTableName == null || selectedWikiTableName.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Select a table first.");
+            return;
+        }
+        String[] rawParts = wikiFetchedDdl.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+            String createStatement = "CREATE TABLE " + part;
+            String tableName = extractTableName(createStatement);
+            if (selectedWikiTableName.equals(tableName)) {
+                createdSql = createStatement;
+                JsfUtil.addSuccessMessage("Loaded CREATE TABLE statement for '" + tableName + "'. Click 'Generate Alter Statements' to continue.");
+                return;
+            }
+        }
+        JsfUtil.addErrorMessage("Table '" + selectedWikiTableName + "' not found in the fetched DDL.");
+    }
+
     public void checkMissingFields() {
         // Clear all previous results
         suggestedSql = "";
@@ -4673,6 +4736,14 @@ public class DataAdministrationController implements Serializable {
 
     public void setCreatedSql(String createdSql) {
         this.createdSql = createdSql;
+    }
+
+    public String getSelectedWikiTableName() {
+        return selectedWikiTableName;
+    }
+
+    public void setSelectedWikiTableName(String selectedWikiTableName) {
+        this.selectedWikiTableName = selectedWikiTableName;
     }
 
     public String getAlterSql() {

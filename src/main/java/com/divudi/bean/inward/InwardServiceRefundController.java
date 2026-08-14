@@ -130,7 +130,7 @@ public class InwardServiceRefundController implements Serializable {
             return null;
         }
         if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
-                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+                && !webUserController.hasPrivilege("InwardProcessReturnAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot return services: nursing discharge has been confirmed for this patient.");
             return null;
         }

@@ -329,7 +329,14 @@ public class GrnCostingNativeSqlController implements Serializable {
         setCurrentExpense(null);
 
         if (getCurrentGrnBillPre().getId() != null) {
-            String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId ORDER BY bi.searialNo";
+            // bi.retired = false is required here (#22891): without it, a
+            // line removed during an earlier Save (soft-retired via
+            // "Remove Selected") reappears as an active, editable row on
+            // every fresh reload -- reached from both the "To Finalize
+            // GRNs" and "To Approve GRNs" lists, which both route through
+            // this same method. Matches the pattern already used by
+            // reloadCurrentGrnBillPreAfterApprove()'s query below.
+            String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false ORDER BY bi.searialNo";
             Map<String, Object> params = new HashMap<>();
             params.put("billId", getCurrentGrnBillPre().getId());
             List<BillItem> loadedItems = billItemFacade.findByJpql(jpql, params);
@@ -519,6 +526,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         grnCostingNativeSqlService.updateDraftBillHeader(
                 billId,
                 getCurrentGrnBillPre().getInvoiceNumber(),
+                getCurrentGrnBillPre().getInvoiceDate(),
                 getCurrentGrnBillPre().getPaymentMethod() != null ? getCurrentGrnBillPre().getPaymentMethod().name() : null,
                 getCurrentGrnBillPre().getCreditDuration(),
                 null,
@@ -618,9 +626,24 @@ public class GrnCostingNativeSqlController implements Serializable {
         if (!isAuthorized("APPROVE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnApprove")) {
             return;
         }
-        if (getCurrentGrnBillPre().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
-            JsfUtil.addErrorMessage("This GRN is already approved");
-            return;
+        // A fresh DB read, not the in-memory currentGrnBillPre.getBillTypeAtomic()
+        // (#22894): this bean is @SessionScoped, and approveGrn() below sets
+        // billTypeAtomic=PHARMACY_GRN on the in-memory entity for immediate UI
+        // feedback (see the end of this method). If that mutated reference --
+        // or any other staleness in this session across two sequential GRN
+        // approvals -- ever leaked into a later read, the in-memory check could
+        // false-positive on a bill the DB still has as PHARMACY_GRN_PRE, blocking
+        // a genuinely first-time approval. The DB is the only source of truth
+        // this guard should trust; a real double-approve is still correctly
+        // blocked since a truly-approved bill reads back PHARMACY_GRN here too.
+        // Skipped for a bill with no id yet -- it cannot possibly be already
+        // approved if it has never been persisted.
+        if (getCurrentGrnBillPre().getId() != null) {
+            Bill freshBillState = billFacade.findWithoutCache(getCurrentGrnBillPre().getId());
+            if (freshBillState != null && freshBillState.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                JsfUtil.addErrorMessage("This GRN is already approved");
+                return;
+            }
         }
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
@@ -848,6 +871,18 @@ public class GrnCostingNativeSqlController implements Serializable {
     private GrnLineData toLineData(BillItem bi) {
         GrnLineData line = new GrnLineData();
         populateLineData(line, bi);
+
+        // Batch No / Date of Expiry, entered on this page pre-Finalize --
+        // read here (Save-stage) so GrnCostingNativeSqlService.saveLine()
+        // can persist them to pharmaceuticalbillitem.doe/stringValue. Without
+        // this, they only ever existed in-memory and were silently dropped
+        // on any fresh page reload before Finalize/Approve (#22892).
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+        if (pbi != null) {
+            line.setDoe(pbi.getDoe());
+            line.setBatchNumber(pbi.getStringValue());
+        }
+
         return line;
     }
 
@@ -2413,6 +2448,18 @@ public class GrnCostingNativeSqlController implements Serializable {
             return "";
         }
 
+        // Aggregate THIS GRN's own lines by PO item first. A single PO line can
+        // be split/duplicated across multiple GRN lines for the same item, and
+        // each line individually staying under the remaining qty does not
+        // guarantee their SUM does -- checking line-by-line against
+        // "previously received (other GRNs) + this one line" let an aggregate
+        // over-receipt slip through silently (#22893: 20 received against 15
+        // ordered, split across 2 duplicate lines, no validation error).
+        Map<Long, Double> currentGrnQtyByPoItem = new HashMap<>();
+        Map<Long, Double> currentGrnFreeQtyByPoItem = new HashMap<>();
+        Map<Long, PharmaceuticalBillItem> poItemById = new HashMap<>();
+        Map<Long, String> itemNameByPoItem = new HashMap<>();
+
         for (BillItem grnItem : billItems) {
             if (grnItem.getReferanceBillItem() == null || grnItem.getPharmaceuticalBillItem() == null) {
                 continue;
@@ -2421,32 +2468,41 @@ public class GrnCostingNativeSqlController implements Serializable {
             BillItem purchaseOrderItem = grnItem.getReferanceBillItem();
             PharmaceuticalBillItem poItem = purchaseOrderItem.getPharmaceuticalBillItem();
 
-            if (poItem == null) {
+            if (poItem == null || poItem.getId() == null) {
                 continue;
             }
 
             PharmaceuticalBillItem currentGrnPbi = grnItem.getPharmaceuticalBillItem();
 
+            Long poItemId = poItem.getId();
+            currentGrnQtyByPoItem.merge(poItemId, currentGrnPbi.getQty(), Double::sum);
+            currentGrnFreeQtyByPoItem.merge(poItemId, currentGrnPbi.getFreeQty(), Double::sum);
+            poItemById.putIfAbsent(poItemId, poItem);
+            itemNameByPoItem.putIfAbsent(poItemId, grnItem.getItem() != null ? grnItem.getItem().getName() : "Unknown Item");
+        }
+
+        boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
+
+        for (Map.Entry<Long, PharmaceuticalBillItem> e : poItemById.entrySet()) {
+            Long poItemId = e.getKey();
+            PharmaceuticalBillItem poItem = e.getValue();
+
             double orderedQty = poItem.getQty();
             double orderedFreeQty = poItem.getFreeQty();
-            double currentGrnQty = currentGrnPbi.getQty();
-            double currentGrnFreeQty = currentGrnPbi.getFreeQty();
+            double currentGrnQty = currentGrnQtyByPoItem.getOrDefault(poItemId, 0.0);
+            double currentGrnFreeQty = currentGrnFreeQtyByPoItem.getOrDefault(poItemId, 0.0);
 
-            double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
-            double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
-
-            double previouslyReceivedQty = totalReceivedFromAllGrns;
-            double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns;
+            double previouslyReceivedQty = calculateRemainigQtyFromOrder(poItem);
+            double previouslyReceivedFreeQty = calculateRemainingFreeQtyFromOrder(poItem);
 
             if (orderedQty < previouslyReceivedQty + currentGrnQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty
+                return "Item " + itemNameByPoItem.get(poItemId) + " cannot receive " + currentGrnQty
                         + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
                         + ", Remaining: " + (orderedQty - previouslyReceivedQty);
             }
 
-            boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
             if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
+                return "Item " + itemNameByPoItem.get(poItemId) + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
                         + ", Already received free: " + previouslyReceivedFreeQty
                         + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
