@@ -240,7 +240,7 @@
                                                 icon="fas fa-plus-circle"
                                                 title="Create a GRN for Selected Approved PO with costing"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                                action="#{grnCostingController.navigateToResiveCostingWithSaveApprove()}"
+                                                action="#{grnCostingNativeSqlController.navigateToResiveCostingWithSaveApprove()}"
                                                 disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                                 <f:param name="billId" value="#{p.billId}"/>
                                             </p:commandButton>
@@ -354,7 +354,7 @@
                                                             title="Edit Saved GRN with Costing"
                                                             ajax="false"
                                                             rendered="#{g.billTypeAtomic eq 'PHARMACY_GRN_PRE' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                                            action="#{pharmacyBillSearch.navigateToEditSavedGrnCostingByBillId(g.billId)}">
+                                                            action="#{pharmacyBillSearch.navigateToEditSavedGrnCostingNativeByBillId(g.billId)}">
                                                         </p:commandButton>
                                                     </h:panelGroup>
                                                 </p:column>

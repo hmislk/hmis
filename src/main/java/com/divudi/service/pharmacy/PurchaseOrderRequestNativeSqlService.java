@@ -30,27 +30,36 @@ public class PurchaseOrderRequestNativeSqlService {
     private String tBillItem;
     private String tPharmBillItem;
 
+    /**
+     * JPA persist for the draft bill row -- NOT native SQL. BilledBill is a
+     * single-table-inheritance subclass of Bill (discriminated by the DTYPE
+     * column), and DTYPE has no explicit @DiscriminatorColumn/
+     * @DiscriminatorValue mapping in this codebase -- EclipseLink derives and
+     * writes it automatically only through em.persist(), never through a raw
+     * native INSERT. A native INSERT here previously left DTYPE null,
+     * producing "Missing class indicator field from database row" on the
+     * very next JPA read of this bill (billFacade.find() in the controller).
+     * Same fix as PurchaseOrderApprovingNativeSqlService.createApprovedBill()
+     * -- see that method's Javadoc for the full precedent.
+     */
     public long createDraftBill(long departmentId, long institutionId, long createrId, String deptId, String insId) {
-        Date now = new Date();
-        em.createNativeQuery(
-            "INSERT INTO " + billTable()
-            + " (BILLTYPEATOMIC, billType, department_ID, institution_ID, fromDepartment_ID, fromInstitution_ID,"
-            + " creater_ID, createdAt, checked, retired, cancelled, deptId, insId, netTotal, total)"
-            + " VALUES (?,?,?,?,?,?,?,?,0,0,0,?,?,0,0)")
-            .setParameter(1, BillTypeAtomic.PHARMACY_ORDER_PRE.toString())
-            .setParameter(2, BillType.PharmacyOrder.toString())
-            .setParameter(3, departmentId)
-            .setParameter(4, institutionId)
-            .setParameter(5, departmentId)
-            .setParameter(6, institutionId)
-            .setParameter(7, createrId)
-            .setParameter(8, new Timestamp(now.getTime()))
-            .setParameter(9, deptId)
-            .setParameter(10, insId)
-            .executeUpdate();
-        long billId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
+        com.divudi.core.entity.BilledBill bill = new com.divudi.core.entity.BilledBill();
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
+        bill.setBillType(BillType.PharmacyOrder);
+        bill.setDepartment(em.getReference(com.divudi.core.entity.Department.class, departmentId));
+        bill.setInstitution(em.getReference(com.divudi.core.entity.Institution.class, institutionId));
+        bill.setFromDepartment(em.getReference(com.divudi.core.entity.Department.class, departmentId));
+        bill.setFromInstitution(em.getReference(com.divudi.core.entity.Institution.class, institutionId));
+        bill.setCreater(em.getReference(com.divudi.core.entity.WebUser.class, createrId));
+        bill.setCreatedAt(new Date());
+        bill.setDeptId(deptId);
+        bill.setInsId(insId);
+        bill.setNetTotal(0.0);
+        bill.setTotal(0.0);
+        em.persist(bill);
+        em.flush();
         evictCache();
-        return billId;
+        return bill.getId();
     }
 
     public void updateDraftBillHeader(long billId, Long toInstitutionId, PaymentMethod paymentMethod,
@@ -256,7 +265,7 @@ public class PurchaseOrderRequestNativeSqlService {
         int updated = em.createNativeQuery(
                 "UPDATE " + pharmBillItemTable()
                 + " SET qty=?, freeQty=?, purchaseRate=?, purchaseRatePack=?, purchaseValue=?,"
-                + " retailRate=?, retailRatePack=?, retailRateInUnit=?, retailValue=? WHERE billItem_ID=?")
+                + " retailRate=?, retailRatePack=?, retailValue=? WHERE billItem_ID=?")
                 .setParameter(1, pbiQty)
                 .setParameter(2, pbiFreeQty)
                 .setParameter(3, pbiPurchaseRate)
@@ -264,18 +273,17 @@ public class PurchaseOrderRequestNativeSqlService {
                 .setParameter(5, purchaseValue.doubleValue())
                 .setParameter(6, pbiRetailRate)
                 .setParameter(7, retailRate.doubleValue())
-                .setParameter(8, pbiRetailRate)
-                .setParameter(9, retailValue.doubleValue())
-                .setParameter(10, billItemId)
+                .setParameter(8, retailValue.doubleValue())
+                .setParameter(9, billItemId)
                 .executeUpdate();
 
         if (updated == 0) {
             em.createNativeQuery(
                 "INSERT INTO " + pharmBillItemTable()
                 + " (billItem_ID, qty, freeQty, purchaseRate, purchaseRatePack, purchaseValue,"
-                + " retailRate, retailRatePack, retailRateInUnit, retailValue, costRate, costRatePack, costValue,"
+                + " retailRate, retailRatePack, retailValue, costRate, costRatePack, costValue,"
                 + " createdAt, creater_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
+                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
                 .setParameter(1, billItemId)
                 .setParameter(2, pbiQty)
                 .setParameter(3, pbiFreeQty)
@@ -284,10 +292,9 @@ public class PurchaseOrderRequestNativeSqlService {
                 .setParameter(6, purchaseValue.doubleValue())
                 .setParameter(7, pbiRetailRate)
                 .setParameter(8, retailRate.doubleValue())
-                .setParameter(9, pbiRetailRate)
-                .setParameter(10, retailValue.doubleValue())
-                .setParameter(11, new Timestamp(new Date().getTime()))
-                .setParameter(12, line.getCreaterId())
+                .setParameter(9, retailValue.doubleValue())
+                .setParameter(10, new Timestamp(new Date().getTime()))
+                .setParameter(11, line.getCreaterId())
                 .executeUpdate();
         }
 
