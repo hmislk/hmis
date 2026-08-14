@@ -228,6 +228,7 @@
                             </div>
                         </f:facet>
 
+                        <div style="overflow-x:auto;">
                         <p:dataTable
                             id="tblReport"
                             value="#{inwardInvoiceJournalController.reportRows}"
@@ -239,15 +240,14 @@
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
-                            styleClass="w-100">
+                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}">
 
                             <!-- ===== Patient / admission details ===== -->
                             <p:column headerText="BHT No" style="white-space:nowrap;">
                                 <h:outputText value="#{row.bhtNo}" />
                             </p:column>
 
-                            <p:column headerText="Patient Name">
+                            <p:column headerText="Patient Name" style="white-space:nowrap;">
                                 <h:outputText value="#{row.patientName}" />
                             </p:column>
 
@@ -369,7 +369,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Company">
+                            <p:column headerText="Credit Company" style="white-space:nowrap;">
                                 <h:outputText value="#{row.creditCompanyName}" />
                             </p:column>
 
@@ -410,6 +410,7 @@
                             </f:facet>
 
                         </p:dataTable>
+                        </div>
 
                     </p:panel>
 
