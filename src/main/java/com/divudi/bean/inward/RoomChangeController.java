@@ -311,13 +311,25 @@ public class RoomChangeController implements Serializable {
         pR.setRetiredAt(new Date());
         getPatientRoomFacade().edit(pR);
 
-        if (admissionTypeEnum == AdmissionTypeEnum.Admission) {
-            pR.getPreviousRoom().setDischarged(false);
-            pR.getPreviousRoom().setDischargedAt(null);
-            pR.getPreviousRoom().setDischargedBy(null);
-            getPatientRoomFacade().edit(pR.getPreviousRoom());
-            getCurrent().setCurrentPatientRoom(pR.getPreviousRoom());
-            getEjbFacade().edit(getCurrent());
+        // Repoint the encounter off a retired room so it never keeps referencing one that's
+        // neither visible nor discharged. Previously this only ran for Admission-type encounters,
+        // which left DayCase encounters with the same dangling-currentPatientRoom bug fixed in
+        // removeRoom() (Issue #22955) - reading pR.getPatientEncounter() directly (not getCurrent())
+        // also avoids the session-staleness trap noted in BhtSummeryController's discharge guard.
+        PatientEncounter encounter = pR.getPatientEncounter();
+        if (encounter != null && pR.equals(encounter.getCurrentPatientRoom())) {
+            PatientRoom previousRoom = pR.getPreviousRoom();
+            if (previousRoom != null && !previousRoom.isRetired()) {
+                previousRoom.setDischarged(false);
+                previousRoom.setDischargedAt(null);
+                previousRoom.setDischargedBy(null);
+                getPatientRoomFacade().edit(previousRoom);
+                encounter.setCurrentPatientRoom(previousRoom);
+            } else {
+                encounter.setCurrentPatientRoom(null);
+                encounter.setRoomAdmitted(false);
+            }
+            patientEncounterFacade.edit(encounter);
         }
 
         recordRoomAuditEvent(pR, "Room Removed", beforeState);
