@@ -3525,6 +3525,120 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    /**
+     * Drill-down data source for the "Drug Return IP" COGS row (see
+     * calculateDrugReturnIp()). Modelled closely on retrieveBhtIssueBillItems() above,
+     * but scoped to the IP_DRUG_RETURN_DIRECT_TYPES / IP_DRUG_RETURN_STORED_SIGN_TYPES /
+     * IP_DRUG_RETURN_DEDUCTED_TYPES bill types, using the same stock-movement date basis
+     * and per-row math as the main COGS row so this drill-down reconciles with it. Also
+     * excludes cancelled bills, but only for the deducted types - see
+     * retrieveDeductedIpDrugReturnValues() for why (issue #22909).
+     */
+    private void retrieveIpDrugReturnBillItems() {
+        try {
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+            resetFinanceTotals();
+
+            List<BillTypeAtomic> combinedBillTypes = new ArrayList<>();
+            combinedBillTypes.addAll(IP_DRUG_RETURN_DIRECT_TYPES);
+            combinedBillTypes.addAll(IP_DRUG_RETURN_STORED_SIGN_TYPES);
+            combinedBillTypes.addAll(IP_DRUG_RETURN_DEDUCTED_TYPES);
+
+            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
+                    + "LEFT JOIN FETCH bi.item "
+                    + "LEFT JOIN FETCH bi.bill b "
+                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
+                    + "LEFT JOIN FETCH pbi.itemBatch "
+                    // Only bi.retired is filtered (NOT b.retired) to stay in lockstep with
+                    // retrievePurchaseAndCostValues() — the main COGS row filters only the
+                    // bill item, so filtering the bill here would make the two totals
+                    // diverge for retired bills that still carry non-retired items.
+                    + "WHERE bi.retired = false "
+                    + "AND b.billTypeAtomic IN :billTypes "
+                    // Cancelling a ward/theatre return reverses stock directly on the Stock
+                    // table without creating BillItem rows of its own, so a cancelled
+                    // return's original items must be excluded here too - see
+                    // retrieveDeductedIpDrugReturnValues() (issue #22909).
+                    + "AND (b.billTypeAtomic NOT IN :deductedTypes OR b.cancelled = false) "
+                    // Must match the date basis used by retrievePurchaseAndCostValues()
+                    // (the main COGS row), else this drill-down will not reconcile with
+                    // the row total.
+                    + "AND FUNCTION('GREATEST', b.createdAt, COALESCE(b.completedAt, b.createdAt), COALESCE(b.checkeAt, b.createdAt)) BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypes", combinedBillTypes);
+            params.put("deductedTypes", IP_DRUG_RETURN_DEDUCTED_TYPES);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+            // Match the main COGS row's item filter (against the batch's item), not bi.item/Amp.
+            addFilter(jpql, params, "pbi.itemBatch.item", "itm", item);
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            netTotal = billItems.stream()
+                    .map(BillItem::getBill)
+                    .distinct()
+                    .mapToDouble(Bill::getNetTotal)
+                    .sum();
+
+            double storedPurchase = 0.0;
+            double storedCost = 0.0;
+            double storedRetail = 0.0;
+            double deductedPurchase = 0.0;
+            double deductedCost = 0.0;
+            double deductedRetail = 0.0;
+
+            for (BillItem bi : billItems) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi == null) {
+                    continue;
+                }
+                ItemBatch itemBatch = pbi.getItemBatch();
+                if (itemBatch == null) {
+                    continue;
+                }
+                double qty = pbi.getQty();
+                double purchaseRate = itemBatch.getPurcahseRate(); // intentional typo - db compatibility
+                Double costRateBoxed = itemBatch.getCostRate();
+                double costRate = costRateBoxed != null ? costRateBoxed : 0.0;
+                double retailRate = itemBatch.getRetailsaleRate();
+
+                BillTypeAtomic bta = bi.getBill() != null ? bi.getBill().getBillTypeAtomic() : null;
+
+                if (IP_DRUG_RETURN_DEDUCTED_TYPES.contains(bta)) {
+                    deductedPurchase += qty * purchaseRate;
+                    deductedCost += qty * costRate;
+                    deductedRetail += qty * retailRate;
+                } else {
+                    storedPurchase += qty * purchaseRate;
+                    storedCost += qty * costRate;
+                    storedRetail += qty * retailRate;
+                }
+            }
+
+            totalPurchaseValue = storedPurchase - Math.abs(deductedPurchase);
+            totalCostValue = storedCost - Math.abs(deductedCost);
+            totalRetailValue = storedRetail - Math.abs(deductedRetail);
+            costValueTotal = totalCostValue;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+            resetFinanceTotals();
+        }
+    }
+
     private void retrieveBillItems(List<BillTypeAtomic> btas, List<PaymentMethod> paymentMethod) {
         try {
             billItems = new ArrayList<>();
@@ -4329,17 +4443,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processIpDrugReturn() {
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
-        );
-        retrieveBillItems("b.billTypeAtomic", billTypes);
+        retrieveIpDrugReturnBillItems();
     }
 
     public void exportIpDrugReturnToExcel() {
@@ -4509,7 +4613,7 @@ public class PharmacyReportController implements Serializable {
 
                 Cell d5 = row.createCell(5);
                 d5.setCellValue(
-                        bi.getQty());
+                        ipDrugReturnEffectiveQty(bi));
                 d5.setCellStyle(dataStyle);
 
                 Cell costRate = row.createCell(6);
@@ -4518,7 +4622,7 @@ public class PharmacyReportController implements Serializable {
                 costRate.setCellStyle(numberStyle);
 
                 Cell costValue = row.createCell(7);
-                costValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty());
+                costValue.setCellValue(ipDrugReturnEffectiveCostValue(bi));
                 costValue.setCellStyle(numberStyle);
 
                 Cell purchaseRate = row.createCell(8);
@@ -4526,7 +4630,7 @@ public class PharmacyReportController implements Serializable {
                 purchaseRate.setCellStyle(numberStyle);
 
                 Cell purchaseValue = row.createCell(9);
-                purchaseValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty());
+                purchaseValue.setCellValue(ipDrugReturnEffectivePurchaseValue(bi));
                 purchaseValue.setCellStyle(numberStyle);
 
                 Cell netT = row.createCell(10);
@@ -4538,7 +4642,7 @@ public class PharmacyReportController implements Serializable {
                 mrp.setCellStyle(numberStyle);
 
                 Cell mrpValue = row.createCell(12);
-                mrpValue.setCellValue(0.0 - bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty());
+                mrpValue.setCellValue(0.0 - ipDrugReturnEffectiveRetailValue(bi));
                 mrpValue.setCellStyle(numberStyle);
 
                 Cell disc = row.createCell(13);
@@ -4722,9 +4826,9 @@ public class PharmacyReportController implements Serializable {
                         bi.getBill().getReferenceBill().getDeptId(),
                         dataFont));
 
-                // Qty
+                // Qty (effective, signed to match the main COGS row)
                 PdfPCell qty = new PdfPCell(new Phrase(
-                        String.format("%,.0f", bi.getQty()),
+                        String.format("%,.0f", ipDrugReturnEffectiveQty(bi)),
                         dataFont));
                 qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(qty);
@@ -4737,7 +4841,7 @@ public class PharmacyReportController implements Serializable {
 
                 // Cost Value
                 PdfPCell costVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty()), dataFont));
+                        new Phrase(String.format("%,.2f", ipDrugReturnEffectiveCostValue(bi)), dataFont));
                 costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(costVCell);
 
@@ -4749,7 +4853,7 @@ public class PharmacyReportController implements Serializable {
 
                 // Purchase Value
                 PdfPCell purchaseVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty()), dataFont));
+                        new Phrase(String.format("%,.2f", ipDrugReturnEffectivePurchaseValue(bi)), dataFont));
                 purchaseVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(purchaseVCell);
 
@@ -4767,7 +4871,7 @@ public class PharmacyReportController implements Serializable {
 
                 // MRP Value
                 PdfPCell retailVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", 0.0 - bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty()), dataFont));
+                        new Phrase(String.format("%,.2f", 0.0 - ipDrugReturnEffectiveRetailValue(bi)), dataFont));
                 retailVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(retailVCell);
 
@@ -8682,6 +8786,56 @@ public class PharmacyReportController implements Serializable {
             return 0.0;
         }
         return bhtIssueEffectiveQty(billItem) * billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
+    }
+
+    private boolean isIpDrugReturnDeductedType(BillItem billItem) {
+        if (billItem == null || billItem.getBill() == null) {
+            return false;
+        }
+        return IP_DRUG_RETURN_DEDUCTED_TYPES.contains(billItem.getBill().getBillTypeAtomic());
+    }
+
+    /**
+     * Effective (signed) qty for a Drug Return IP drill-down row: rows whose bill type
+     * is one of the "deducted" types (see IP_DRUG_RETURN_DEDUCTED_TYPES) store a
+     * POSITIVE qty while stock actually falls, so their effective qty/value must be
+     * shown negative to match the main COGS row's math (issue #22909). Used by the
+     * XHTML view and its exports.
+     */
+    public double ipDrugReturnEffectiveQty(BillItem billItem) {
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null) {
+            return 0.0;
+        }
+        double qty = billItem.getPharmaceuticalBillItem().getQty();
+        return isIpDrugReturnDeductedType(billItem) ? -Math.abs(qty) : qty;
+    }
+
+    public double ipDrugReturnEffectivePurchaseValue(BillItem billItem) {
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null
+                || billItem.getPharmaceuticalBillItem().getItemBatch() == null) {
+            return 0.0;
+        }
+        return ipDrugReturnEffectiveQty(billItem) * billItem.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
+    }
+
+    public double ipDrugReturnEffectiveCostValue(BillItem billItem) {
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null
+                || billItem.getPharmaceuticalBillItem().getItemBatch() == null) {
+            return 0.0;
+        }
+        Double costRate = billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+        if (costRate == null) {
+            return 0.0;
+        }
+        return ipDrugReturnEffectiveQty(billItem) * costRate;
+    }
+
+    public double ipDrugReturnEffectiveRetailValue(BillItem billItem) {
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null
+                || billItem.getPharmaceuticalBillItem().getItemBatch() == null) {
+            return 0.0;
+        }
+        return ipDrugReturnEffectiveQty(billItem) * billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
     }
 
     public void exportBhtIssueToExcel() {
@@ -13250,19 +13404,101 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    /**
+     * Same aggregate query as retrievePurchaseAndCostValues(String, Object) above, but
+     * additionally excludes cancelled bills. Used only for IP_DRUG_RETURN_DEDUCTED_TYPES:
+     * cancelling a ward/theatre return-to-pharmacy bill
+     * (RETURN_MEDICINE_INWARD_CANCELLATION - see
+     * WardPharmacyReturnToPharmacyController.cancelReturnBill() /
+     * reverseReturnStockMovements()) reverses stock directly on the Stock table and
+     * creates no BillItem rows of its own, so without this filter a cancelled return's
+     * original BillItem rows stay counted in COGS forever (issue #22909). Do not use
+     * this for any other COGS row - the generic 2-arg retrievePurchaseAndCostValues()
+     * overload intentionally does not filter on bi.bill.cancelled and is shared by ~15
+     * other rows.
+     */
+    private Map<String, Double> retrieveDeductedIpDrugReturnValues(List<BillTypeAtomic> billTypes) {
+        try {
+
+            Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND bi.bill.cancelled = :cancelled ")
+                    // Use stock-movement date (completedAt) when present, else createdAt.
+                    // Stock moves on approval (completedAt = StockHistory date); filtering by
+                    // createdAt mis-dates approval-gated movements (e.g. GRN returns created one
+                    // day, approved another) and produces a spurious COGS variance. See issue #21266.
+                    .append("AND FUNCTION('GREATEST', bi.bill.createdAt, COALESCE(bi.bill.completedAt, bi.bill.createdAt), COALESCE(bi.bill.checkeAt, bi.bill.createdAt)) BETWEEN :fd AND :td ");
+
+            commonParams.put("ret", false);
+            commonParams.put("billTypes", billTypes);
+            commonParams.put("cancelled", false);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
+            baseQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
+            }
+            return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
     private void calculateDrugReturnIp() {
         try {
-            List<BillTypeAtomic> billTypes = Arrays.asList(
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-                    BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
-                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
-                    BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
-            );
-            Map<String, Double> ipDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes);
+            // Direct issue return/cancellation types plus the ward/theatre
+            // return-to-pharmacy leg (pharmacy receiving the return - stock IN, stored
+            // positive) sum correctly with their stored signs in one query - same
+            // pattern as calculateBhtIssueValue() (issue #22909).
+            List<BillTypeAtomic> storedSignTypes = new ArrayList<>(IP_DRUG_RETURN_DIRECT_TYPES);
+            storedSignTypes.addAll(IP_DRUG_RETURN_STORED_SIGN_TYPES);
+            Map<String, Double> ipDrugReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", storedSignTypes);
+
+            // The ward/theatre return leg (RETURN_MEDICINE_INWARD/THEATRE) removes stock
+            // from the ward/theatre but its bills store a POSITIVE quantity, so it must be
+            // queried separately and DEDUCTED from the row total - same pattern
+            // calculateBhtIssueValue() used for these two types before the move. This
+            // deducted query additionally excludes cancelled bills (see
+            // retrieveDeductedIpDrugReturnValues() for why) - issue #22909.
+            Map<String, Double> deductedValues = retrieveDeductedIpDrugReturnValues(IP_DRUG_RETURN_DEDUCTED_TYPES);
+            for (Map.Entry<String, Double> e : deductedValues.entrySet()) {
+                double v = e.getValue() == null ? 0.0 : Math.abs(e.getValue());
+                ipDrugReturns.merge(e.getKey(), -v, Double::sum);
+            }
+
             cogsRows.put("Drug Return IP", ipDrugReturns);
 
         } catch (Exception e) {
@@ -14038,32 +14274,71 @@ public class PharmacyReportController implements Serializable {
     // BHT Issue row (and its drill-down, see retrieveBhtIssueBillItems()) is the NET
     // stock effect of the inward + theatre medicine issue cycle. These bill types store
     // a NEGATIVE qty (stock falls when issued, rises when accepted back), so they sum
-    // correctly with their stored signs in one query. The THEATRE_* request/accept/return
-    // legs have no creation sites in the codebase today (dead enum values, zero rows) but
+    // correctly with their stored signs in one query. The THEATRE_* request/accept legs
+    // have no creation sites in the codebase today (dead enum values, zero rows) but
     // are included here mirroring the INWARD conventions so this row stays correct if a
-    // theatre issue workflow is wired up later (issue #22011).
+    // theatre issue workflow is wired up later (issue #22011). The ward/theatre
+    // return-to-pharmacy leg (ACCEPT_RETURN_MEDICINE_INWARD/THEATRE - pharmacy receiving
+    // the return) has moved out of this list into IP_DRUG_RETURN_STORED_SIGN_TYPES below:
+    // it lives in a DIFFERENT department than the issue leg, so folding it into this
+    // whole-hospital-scoped row incorrectly inflated "BHT Issue" on department-scoped
+    // runs, which have nothing to net it against (issue #22909).
     private static final List<BillTypeAtomic> BHT_ISSUE_STORED_SIGN_TYPES = Collections.unmodifiableList(Arrays.asList(
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
             BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD,
-            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
-            BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE,
-            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
+            BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE
     ));
 
-    // These bill types store a POSITIVE qty while stock actually FALLS (ward return leg,
-    // ward administration consumption, theatre return leg), so their totals must be
-    // DEDUCTED (via -Math.abs) from the stored-sign totals above rather than summed
-    // directly. Without these, every ward/theatre consumption or return shows up as a
-    // spurious COGS variance (found via COGS E2E verification, issue #22011).
+    // This bill type stores a POSITIVE qty while stock actually FALLS (ward
+    // administration consumption), so its total must be DEDUCTED (via -Math.abs) from
+    // the stored-sign totals above rather than summed directly. Without this, every
+    // ward consumption shows up as a spurious COGS variance (found via COGS E2E
+    // verification, issue #22011). The ward/theatre return-to-pharmacy leg
+    // (RETURN_MEDICINE_INWARD/THEATRE - stock leaving the ward/theatre) has moved out
+    // of this list into IP_DRUG_RETURN_DEDUCTED_TYPES below: it lives in a DIFFERENT
+    // department than the issue leg, so folding it into this whole-hospital-scoped row
+    // incorrectly inflated "BHT Issue" on department-scoped runs, which have nothing to
+    // net it against (issue #22909).
     private static final List<BillTypeAtomic> BHT_ISSUE_DEDUCTED_TYPES = Collections.unmodifiableList(Arrays.asList(
-            BillTypeAtomic.RETURN_MEDICINE_INWARD,
-            BillTypeAtomic.WARD_MEDICINE_ADMINISTRATION_CONSUMPTION,
-            BillTypeAtomic.RETURN_MEDICINE_THEATRE
+            BillTypeAtomic.WARD_MEDICINE_ADMINISTRATION_CONSUMPTION
     ));
+
+    // The existing 8 "direct issue" inward/theatre return + cancellation bill types -
+    // already correctly signed at creation - used by the "Drug Return IP" row
+    // (calculateDrugReturnIp()) and its drill-down (retrieveIpDrugReturnBillItems()).
+    private static final List<BillTypeAtomic> IP_DRUG_RETURN_DIRECT_TYPES = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
+    ));
+
+    // Ward/theatre return-to-pharmacy leg moved out of BHT Issue (#22909): pharmacy
+    // receiving the return - stock IN at pharmacy, stored positive, summed directly
+    // (same convention BHT_ISSUE_STORED_SIGN_TYPES used for these two types before
+    // the move).
+    private static final List<BillTypeAtomic> IP_DRUG_RETURN_STORED_SIGN_TYPES =
+            Collections.unmodifiableList(Arrays.asList(
+                    BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                    BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
+            ));
+
+    // Ward/theatre leg - stock OUT of ward/theatre, stored positive but must be
+    // deducted (-abs), same convention BHT_ISSUE_DEDUCTED_TYPES used for these two
+    // types before the move (#22909).
+    private static final List<BillTypeAtomic> IP_DRUG_RETURN_DEDUCTED_TYPES =
+            Collections.unmodifiableList(Arrays.asList(
+                    BillTypeAtomic.RETURN_MEDICINE_INWARD,
+                    BillTypeAtomic.RETURN_MEDICINE_THEATRE
+            ));
 
     private void calculateBhtIssueValue() {
         try {
