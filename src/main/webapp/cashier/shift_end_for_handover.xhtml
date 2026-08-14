@@ -84,6 +84,11 @@
                                                         <i class="pi pi-exclamation-triangle" style="margin-right:4px;"></i>
                                                         <h:outputText value="Handover not complete. Please complete the handover before ending your shift." />
                                                     </h:panelGroup>
+                                                    <h:panelGroup rendered="#{financialTransactionController.pendingFloatTransferBypassedForShiftEnd}"
+                                                                  style="color:#0c5460; background-color:#d1ecf1; border:1px solid #bee5eb; border-radius:4px; padding:4px 8px; display:inline-block;" class="mx-2">
+                                                        <i class="pi pi-info-circle" style="margin-right:4px;"></i>
+                                                        <h:outputText value="A float transfer is still pending. You are allowed to end the shift anyway ('Allow Shift End Without Handover Acceptance' is enabled)." />
+                                                    </h:panelGroup>
                                                     <p:commandButton
                                                         class="ui-button-danger mx-2"
                                                         ajax="false"

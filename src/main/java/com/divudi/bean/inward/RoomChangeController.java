@@ -91,6 +91,19 @@ public class RoomChangeController implements Serializable {
     private PatientRoom roomForReceipt;
     List<Admission> selectedItems;
     private Admission current;
+    /**
+     * Staging field for the Admit Room "Patient Selection" step
+     * (admit_room.xhtml). The autocomplete there binds to this field, not
+     * {@link #current} directly, so that selecting a patient does not flip
+     * {@code current} — and therefore does not flip the {@code rendered}
+     * condition on the surrounding panel — mid-lifecycle. If it bound to
+     * {@code current} directly, an earlier ajax event (itemSelect) would
+     * already leave {@code current} non-null by the time the "Continue"
+     * button's own full postback runs, so JSF would evaluate the panel
+     * (and the Continue button inside it) as not rendered for that
+     * request and silently skip invoking its action. See #22911.
+     */
+    private Admission selectedAdmission;
     private List<Admission> items = null;
     private Institution institution;
     private List<Patient> patientList;
@@ -209,18 +222,19 @@ public class RoomChangeController implements Serializable {
 
     public String navigateToAdmitRoomFromMenu() {
         setCurrent(null);
+        setSelectedAdmission(null);
         setCurrentPatientRoom(null);
         institution = sessionController.getInstitution();
         return "/inward/admit_room?faces-redirect=true";
     }
 
     public void selectRoomForAdmit() {
-        if (current == null) {
+        if (selectedAdmission == null) {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
+        current = selectedAdmission;
         if (current.getCurrentPatientRoom() == null) {
-            JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
         setCurrentPatientRoom(current.getCurrentPatientRoom());
@@ -486,6 +500,7 @@ public class RoomChangeController implements Serializable {
         patientRoom = null;
         selectedItems = null;
         current = null;
+        selectedAdmission = null;
         items = null;
         patientList = null;
         changeAt = null;
@@ -737,6 +752,14 @@ public class RoomChangeController implements Serializable {
 
     public void setCurrent(Admission current) {
         this.current = current;
+    }
+
+    public Admission getSelectedAdmission() {
+        return selectedAdmission;
+    }
+
+    public void setSelectedAdmission(Admission selectedAdmission) {
+        this.selectedAdmission = selectedAdmission;
     }
 
     public void createPatientRoom() {
