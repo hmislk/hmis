@@ -55,7 +55,18 @@
                                             value="Search" 
                                             icon="fa fa-search"
                                             class="ui-button-success mt-2"
-                                            action="#{collectingCentrePaymentController.findCollectingCentrePaymentBills()}" />
+                                            action="#{collectingCentrePaymentController.findCollectingCentrePaymentBills()}" >
+                                        </p:commandButton>
+                                        
+                                        <p:commandButton
+                                            id="btnExcel"
+                                            icon="fa-solid fa-file-excel"
+                                            ajax="false"
+                                            value="Download"
+                                            class="w-100 mt-1"
+                                            action="#{collectingCentrePaymentController.exportPaymentBillsToExcel()}">
+                                        </p:commandButton>
+                                        
                                         <hr/>
 
                                         <p:inputText 

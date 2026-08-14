@@ -15,11 +15,13 @@ import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardPriceAdjustment;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.facade.AdmissionTypeFacade;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.facade.RoomCategoryFacade;
 import com.divudi.service.AuditService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -88,6 +90,9 @@ public class PriceMatrixInwardApi {
     private AdmissionTypeFacade admissionTypeFacade;
 
     @EJB
+    private RoomCategoryFacade roomCategoryFacade;
+
+    @EJB
     private AuditService auditService;
 
     private static final Gson gson = new GsonBuilder()
@@ -116,6 +121,7 @@ public class PriceMatrixInwardApi {
 
             Long departmentId    = longParam("departmentId");
             Long categoryId      = longParam("categoryId");
+            Long roomCategoryId  = longParam("roomCategoryId");
             String paymentMethodStr = param("paymentMethod");
             int limit = intParam("limit", 50, 1, 1000);
 
@@ -139,6 +145,10 @@ public class PriceMatrixInwardApi {
             if (categoryId != null) {
                 jpql.append(" and a.category.id = :cid");
                 params.put("cid", categoryId);
+            }
+            if (roomCategoryId != null) {
+                jpql.append(" and a.roomCategory.id = :rcid");
+                params.put("rcid", roomCategoryId);
             }
             if (paymentMethod != null) {
                 jpql.append(" and a.paymentMethod = :pm");
@@ -301,10 +311,21 @@ public class PriceMatrixInwardApi {
                 }
             }
 
+            // Optional: roomCategoryId (Room Facility Category)
+            Category roomCategory = null;
+            Long roomCategoryId = asLong(body.get("roomCategoryId"));
+            if (roomCategoryId != null) {
+                RoomCategory rc = roomCategoryFacade.find(roomCategoryId);
+                if (rc == null || rc.isRetired()) {
+                    return errorResponse("Room category not found: " + roomCategoryId, 400);
+                }
+                roomCategory = rc;
+            }
+
             // Duplicate detection
             InwardPriceAdjustment existing = findDuplicate(
                     department, category, paymentMethod, fromPrice, toPrice,
-                    creditCompany, admissionType);
+                    creditCompany, admissionType, roomCategory);
             if (existing != null) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -326,6 +347,7 @@ public class PriceMatrixInwardApi {
             entry.setToPrice(toPrice);
             entry.setAdmissionType(admissionType);
             entry.setCreditCompany(creditCompany);
+            entry.setRoomCategory(roomCategory);
             entry.setCreatedAt(new Date());
             entry.setCreater(user);
             priceMatrixFacade.create(entry);
@@ -474,11 +496,24 @@ public class PriceMatrixInwardApi {
                 }
             }
 
+            if (body.containsKey("roomCategoryId")) {
+                Long rcId = asLong(body.get("roomCategoryId"));
+                if (rcId == null) {
+                    entry.setRoomCategory(null);
+                } else {
+                    RoomCategory rc = roomCategoryFacade.find(rcId);
+                    if (rc == null || rc.isRetired()) {
+                        return errorResponse("Room category not found: " + rcId, 400);
+                    }
+                    entry.setRoomCategory(rc);
+                }
+            }
+
             // Duplicate check (excluding self)
             InwardPriceAdjustment dup = findDuplicate(
                     entry.getDepartment(), entry.getCategory(), entry.getPaymentMethod(),
                     entry.getFromPrice(), entry.getToPrice(), entry.getCreditCompany(),
-                    entry.getAdmissionType());
+                    entry.getAdmissionType(), entry.getRoomCategory());
             if (dup != null && !dup.getId().equals(entry.getId())) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -597,6 +632,14 @@ public class PriceMatrixInwardApi {
             row.put("creditCompanyName", null);
         }
 
+        if (pm.getRoomCategory() != null) {
+            row.put("roomCategoryId", pm.getRoomCategory().getId());
+            row.put("roomCategoryName", pm.getRoomCategory().getName());
+        } else {
+            row.put("roomCategoryId", null);
+            row.put("roomCategoryName", null);
+        }
+
         row.put("retired", pm.isRetired());
         if (pm.getCreatedAt() != null) {
             row.put("createdAt", pm.getCreatedAt().toInstant()
@@ -615,7 +658,7 @@ public class PriceMatrixInwardApi {
 
     private InwardPriceAdjustment findDuplicate(Department department, Category category,
             PaymentMethod paymentMethod, Double fromPrice, Double toPrice,
-            Institution creditCompany, AdmissionType admissionType) {
+            Institution creditCompany, AdmissionType admissionType, Category roomCategory) {
 
         StringBuilder jpql = new StringBuilder(
                 "select a from InwardPriceAdjustment a where a.retired = false");
@@ -658,6 +701,12 @@ public class PriceMatrixInwardApi {
         } else {
             jpql.append(" and a.admissionType = :at");
             params.put("at", admissionType);
+        }
+        if (roomCategory == null) {
+            jpql.append(" and a.roomCategory is null");
+        } else {
+            jpql.append(" and a.roomCategory = :rc");
+            params.put("rc", roomCategory);
         }
 
         @SuppressWarnings("unchecked")
