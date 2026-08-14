@@ -450,6 +450,12 @@ public class TransferReceiveController implements Serializable {
             return;
         }
 
+        String missingStaffStockError = findMissingStaffStockError();
+        if (missingStaffStockError != null) {
+            JsfUtil.addErrorMessage(missingStaffStockError);
+            return;
+        }
+
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
             // Get quantity from user input (BillItemFinanceDetails) and convert to units
@@ -956,10 +962,37 @@ public class TransferReceiveController implements Serializable {
     }
 
     public boolean errorCheck(BillItem billItem) {
+        if (billItem.getPharmaceuticalBillItem().getStaffStock() == null) {
+            return true;
+        }
         if (billItem.getPharmaceuticalBillItem().getStaffStock().getStock() < billItem.getQty()) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Finds the first receive line whose PharmaceuticalBillItem has no
+     * staffStock link - e.g. because the corresponding issue-side line
+     * never actually moved stock to the porter (see #22938). Checked
+     * before any persistence starts so a bad line reports a clear error
+     * instead of letting errorCheck() NPE mid-loop and leave the request
+     * in a partially-processed state (see #22943).
+     */
+    private String findMissingStaffStockError() {
+        for (BillItem i : getReceivedBill().getBillItems()) {
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                continue;
+            }
+            if (pbi.getStaffStock() == null) {
+                String itemName = i.getItem() != null ? i.getItem().getName() : "one of the items";
+                return "Cannot receive " + itemName + " - it was never actually transferred out by the "
+                        + "issuing department (no stock movement found for it), even though the transfer "
+                        + "note lists it. Please check the original Transfer Issue before retrying this receive.";
+            }
+        }
+        return null;
     }
 
     public void saveBill() {
