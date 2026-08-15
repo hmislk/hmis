@@ -1858,7 +1858,7 @@ code when the page itself is correct.
 *different* option first, then select the desired one back — each of those
 is a real change, so both `change` events fire and the bean field updates
 both times:
-```
+```text
 click dropdown → click a different option (e.g. "Credit Card")
 click dropdown → click the target option (e.g. "Cash")
 ```
