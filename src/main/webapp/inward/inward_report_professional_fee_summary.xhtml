@@ -237,16 +237,18 @@
                             div, not the inner <table>). Overriding both here — scoped to this
                             table's client id, so it can't leak to any other dataTable on the
                             page — lets columns size to their natural (nowrap) content width;
-                            PrimeFaces' own built-in .ui-datatable-tablewrapper div already has
-                            overflow-x:auto, so once the table can exceed that div's width, the
-                            existing horizontal scrollbar appears automatically. Found via live
+                            PrimeFaces' own built-in .ui-datatable-tablewrapper div already
+                            scrolls horizontally, so once the table can exceed the wrapper's
+                            width, PrimeFaces' own scrollbar appears automatically. Found via live
                             verification 2026-08-15 — see docs/superpowers/plans/2026-08-15-
                             professional-fee-summary-report.md Task 8.
                         -->
                         <style>
                             #frm\:tblReport table { table-layout: auto; width: auto; }
+                            @media print {
+                                #frm\:tblReport table { table-layout: fixed; width: 100%; }
+                            }
                         </style>
-                        <div style="overflow-x:auto;">
                         <p:dataTable
                             id="tblReport"
                             value="#{inwardProfessionalFeeSummaryController.reportRows}"
@@ -344,7 +346,6 @@
                             </f:facet>
 
                         </p:dataTable>
-                        </div>
 
                     </p:panel>
 

@@ -86,7 +86,7 @@ noted):
   `mergeIfNonZero`
 - `fetchDiscountAndMarginByEncounter()` — kept as-is (single combined total, used by
   Journal) **plus** a new sibling method
-  `fetchDiscountAndMarginByEncounterSplitByProfessional()` that returns
+  `fetchDiscountAndMarginSplitByProfessional()` that returns
   `Map<Long, double[]>` keyed the same way but with `double[]{professionalDiscount,
   professionalMargin, otherDiscount, otherMargin}`, adding `and bf.bill.billType = :btp` /
   `!= :btp` (`BillType.InwardProfessional`) to the existing WHERE clause. Only the new

@@ -471,48 +471,75 @@ public class InwardBhtChargeAggregationService implements Serializable {
     }
 
     /**
-     * Same filter as fetchDiscountAndMarginByEncounter(), but split by whether the
-     * underlying BillFee's bill is BillType.InwardProfessional (professional
-     * bucket) or anything else (other bucket). Used by the Professional & Other
-     * Fee Summary report (2026-08-15) to net each bucket independently.
+     * Same filter as fetchDiscountAndMarginByEncounter(), but split by the SAME
+     * criterion the gross charge split uses (fetchProfessionalFeeCharges /
+     * fetchBillFeeCharges(consultantOnly=true)): a BillFee counts as "professional"
+     * only if its bill is InwardProfessional AND its fee is Staff-type AND its
+     * staff is a Consultant — i.e. exactly the ProfessionalCharge criterion, not
+     * "any BillFee on an InwardProfessional bill" (which would also catch
+     * DoctorAndNurses/assisting-staff fees and misroute their discount). Used by
+     * the Professional & Other Fee Summary report (2026-08-15) to net each bucket
+     * independently, consistently with how the gross totals are bucketed.
      * Returns Map&lt;encounterId, double[]{professionalDiscount, professionalServiceCharge,
      * otherDiscount, otherServiceCharge}&gt;.
      */
     public Map<Long, double[]> fetchDiscountAndMarginSplitByProfessional(List<PatientEncounter> encounters) {
         Map<Long, double[]> result = new HashMap<>();
 
-        String jpql = "select bf.bill.patientEncounter.id, bf.bill.billType, sum(bf.feeDiscount), sum(bf.feeMargin)"
+        String professionalJpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
                 + " from BillFee bf"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
                 + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
+                + " and bf.bill.billType = :btp"
+                + " and bf.fee.feeType = :ftp"
+                + " and type(bf.staff) = :staffClass"
                 + " and bf.bill.patientEncounter in :encs"
-                + " group by bf.bill.patientEncounter.id, bf.bill.billType";
+                + " group by bf.bill.patientEncounter.id";
+
+        String otherJpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
+                + " from BillFee bf"
+                + " where bf.retired = false"
+                + " and bf.bill.retired = false"
+                + " and bf.bill.cancelled = false"
+                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
+                + " and not (bf.bill.billType = :btp and bf.fee.feeType = :ftp and type(bf.staff) = :staffClass)"
+                + " and bf.bill.patientEncounter in :encs"
+                + " group by bf.bill.patientEncounter.id";
 
         Map<String, Object> params = new HashMap<>();
         params.put("encs", encounters);
         params.put("excludedTypes", Arrays.asList(
                 BillTypeAtomic.INWARD_FINAL_BILL, BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL));
+        params.put("btp", BillType.InwardProfessional);
+        params.put("ftp", FeeType.Staff);
+        params.put("staffClass", Consultant.class);
 
-        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        if (rows != null) {
-            for (Object[] r : rows) {
-                Long     encId    = (Long) r[0];
-                BillType billType = (BillType) r[1];
-                double   disc     = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
-                double   marg     = r[3] == null ? 0.0 : ((Number) r[3]).doubleValue();
-
+        List<Object[]> professionalRows = patientEncounterFacade.findObjectArrayByJpql(professionalJpql, params, TemporalType.TIMESTAMP);
+        if (professionalRows != null) {
+            for (Object[] r : professionalRows) {
+                Long encId = (Long) r[0];
+                double disc = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
+                double marg = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
                 double[] bucket = result.computeIfAbsent(encId, k -> new double[4]);
-                if (billType == BillType.InwardProfessional) {
-                    bucket[0] += disc;
-                    bucket[1] += marg;
-                } else {
-                    bucket[2] += disc;
-                    bucket[3] += marg;
-                }
+                bucket[0] += disc;
+                bucket[1] += marg;
             }
         }
+
+        List<Object[]> otherRows = patientEncounterFacade.findObjectArrayByJpql(otherJpql, params, TemporalType.TIMESTAMP);
+        if (otherRows != null) {
+            for (Object[] r : otherRows) {
+                Long encId = (Long) r[0];
+                double disc = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
+                double marg = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
+                double[] bucket = result.computeIfAbsent(encId, k -> new double[4]);
+                bucket[2] += disc;
+                bucket[3] += marg;
+            }
+        }
+
         return result;
     }
 }

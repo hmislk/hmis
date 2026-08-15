@@ -128,18 +128,8 @@ public class InwardProfessionalFeeSummaryController implements Serializable {
         }
 
         Map<InwardChargeType, Double> charges = chargeMap.get(enc.getId());
-        double professionalGross = 0;
-        double otherGross = 0;
-        if (charges != null) {
-            for (Map.Entry<InwardChargeType, Double> e : charges.entrySet()) {
-                double value = e.getValue() == null ? 0.0 : e.getValue();
-                if (e.getKey() == InwardChargeType.ProfessionalCharge) {
-                    professionalGross += value;
-                } else {
-                    otherGross += value;
-                }
-            }
-        }
+        double professionalGross = sumProfessionalGross(charges);
+        double otherGross = sumOtherGross(charges);
 
         double[] splitDm = splitDiscountMarginMap.get(enc.getId());
         double professionalDiscount = splitDm != null ? splitDm[0] : 0.0;
@@ -153,6 +143,29 @@ public class InwardProfessionalFeeSummaryController implements Serializable {
         return row;
     }
 
+    /** Package-private + static for unit testability — see InwardProfessionalFeeSummaryControllerTest. */
+    static double sumProfessionalGross(Map<InwardChargeType, Double> charges) {
+        if (charges == null) {
+            return 0.0;
+        }
+        Double v = charges.get(InwardChargeType.ProfessionalCharge);
+        return v == null ? 0.0 : v;
+    }
+
+    /** Package-private + static for unit testability — see InwardProfessionalFeeSummaryControllerTest. */
+    static double sumOtherGross(Map<InwardChargeType, Double> charges) {
+        if (charges == null) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (Map.Entry<InwardChargeType, Double> e : charges.entrySet()) {
+            if (e.getKey() != InwardChargeType.ProfessionalCharge) {
+                total += e.getValue() == null ? 0.0 : e.getValue();
+            }
+        }
+        return total;
+    }
+
     // -------------------------------------------------------------------------
     // UI helpers
     // -------------------------------------------------------------------------
@@ -164,11 +177,6 @@ public class InwardProfessionalFeeSummaryController implements Serializable {
 
     public void onSiteChange() {
         department = null;
-    }
-
-    public String navigateToReport() {
-        makeNull();
-        return "/inward/inward_report_professional_fee_summary?faces-redirect=true";
     }
 
     public void makeNull() {
