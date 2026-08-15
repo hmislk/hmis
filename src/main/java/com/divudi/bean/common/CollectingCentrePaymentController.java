@@ -64,6 +64,8 @@ public class CollectingCentrePaymentController implements Serializable {
     SessionController sessionController;
     @Inject
     AgentAndCcApplicationController agentAndCcApplicationController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -587,6 +589,9 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
+        if (configOptionApplicationController.getBooleanValueByKey("Collecting Centre Agent Payment - Skip Payment Record", true)) {
+            return null;
+        }
         Payment p = new Payment();
         p.setBill(bill);
         setPaymentMethodData(p, pm);
