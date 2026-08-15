@@ -480,6 +480,16 @@ public class InwardBhtChargeAggregationService implements Serializable {
      * DoctorAndNurses/assisting-staff fees and misroute their discount). Used by
      * the Professional & Other Fee Summary report (2026-08-15) to net each bucket
      * independently, consistently with how the gross totals are bucketed.
+     *
+     * otherJpql uses explicit LEFT JOINs on bf.fee/bf.staff, not the implicit
+     * inner-join path navigation professionalJpql uses (BillFee.fee and
+     * BillFee.staff are both nullable @ManyToOne). Writing bf.fee.feeType or
+     * type(bf.staff) anywhere in a query — even inside NOT(...) — forces an
+     * implicit inner join, which structurally drops any row with a null fee/staff
+     * from the result set before the WHERE predicate is evaluated. That's correct
+     * for professionalJpql (a null-staff row genuinely isn't professional), but
+     * would have been wrong here: it silently dropped those rows from BOTH
+     * buckets instead of counting them as "other" (CodeRabbit review, PR #22964).
      * Returns Map&lt;encounterId, double[]{professionalDiscount, professionalServiceCharge,
      * otherDiscount, otherServiceCharge}&gt;.
      */
@@ -499,12 +509,12 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " group by bf.bill.patientEncounter.id";
 
         String otherJpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
-                + " from BillFee bf"
+                + " from BillFee bf left join bf.fee f left join bf.staff s"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
                 + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
-                + " and not (bf.bill.billType = :btp and bf.fee.feeType = :ftp and type(bf.staff) = :staffClass)"
+                + " and (bf.bill.billType != :btp or f.id is null or f.feeType != :ftp or s.id is null or type(s) != :staffClass)"
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
