@@ -1190,6 +1190,9 @@ public class TransferReceiveController implements Serializable {
      */
     private String findMissingStaffStockError() {
         for (BillItem i : getReceivedBill().getBillItems()) {
+            if (receiveQtyInUnits(i) <= 0.0) {
+                continue;
+            }
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             if (pbi == null) {
                 continue;
