@@ -157,7 +157,7 @@ public class RetailSaleNativeSqlController3 implements Serializable, ControllerW
     private String comment = "";
     private double cashPaid;
     private double balance;
-    private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod = PaymentMethod.Cash;
     private PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
     private Staff toStaff;
@@ -1367,7 +1367,7 @@ public class RetailSaleNativeSqlController3 implements Serializable, ControllerW
         comment = "";
         cashPaid = 0.0;
         balance = 0.0;
-        paymentMethod = null;
+        paymentMethod = PaymentMethod.Cash;
         paymentScheme = null;
         paymentMethodData = null;
         toStaff = null;
