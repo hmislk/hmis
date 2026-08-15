@@ -22,7 +22,7 @@ public enum InwardChargeType {
     MedicalCareICU("Medical Care", CalculationMethod.PATIENT_ROOM, true),//Goes With Room
     MedicalServices("Medical Services", true),
     Medicine("Medicine", CalculationMethod.PHARMACY_BILL, true),//For BHT ISSUE
-    CancelledReturnedMedicine("Cancelled/Returned Medicine", true),//Value of cancelled/returned medicine issues, shown separately so it is visible on printed breakups (issue #22674)
+    CancelledReturnedMedicine("Cancelled/Returned Medicine", false),//Value of cancelled/returned medicine issues; NOT shown as its own final-bill row because it is already netted into the Medicine charge type's own total (its bill-type list includes the cancellation/return types) — showing it separately (issue #22674) double-counted it into the bill grand total. Kept allowToSetItems=false rather than deleted so the value/label are still available if a future print breakup needs it without touching bill totals.
     MedicinesAndSurgicalSupplies("Medicines and Surgical Supplies", true),//For Surgery Bill Medicines
     MOCharges("MO Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     MaintainCharges("Maintain Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
