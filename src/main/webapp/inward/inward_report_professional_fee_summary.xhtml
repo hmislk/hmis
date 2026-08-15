@@ -12,7 +12,7 @@
                 <h:form id="frm">
 
                     <!-- ===== Filters ===== -->
-                    <p:panel header="Inpatient Invoice Journal" class="m-1">
+                    <p:panel header="Professional &amp; Other Fee Summary" class="m-1">
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid"
                                      columnClasses="label-icon-column, input-column">
@@ -25,7 +25,7 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
-                                value="#{inwardInvoiceJournalController.fromDate}"
+                                value="#{inwardProfessionalFeeSummaryController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                             <p:spacer width="50" />
@@ -38,7 +38,7 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
-                                value="#{inwardInvoiceJournalController.toDate}"
+                                value="#{inwardProfessionalFeeSummaryController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                             <p:spacer width="50" />
@@ -50,7 +50,7 @@
                             <p:selectOneMenu
                                 id="dateBasisMenu"
                                 styleClass="w-100 form-control"
-                                value="#{inwardInvoiceJournalController.dateBasis}">
+                                value="#{inwardProfessionalFeeSummaryController.dateBasis}">
                                 <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
                                 <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
                             </p:selectOneMenu>
@@ -62,7 +62,7 @@
                             <p:selectOneMenu
                                 id="admStatusMenu"
                                 styleClass="w-100 form-control"
-                                value="#{inwardInvoiceJournalController.admissionStatus}">
+                                value="#{inwardProfessionalFeeSummaryController.admissionStatus}">
                                 <f:selectItems
                                     value="#{enumController.admissionStatuses}"
                                     var="s"
@@ -79,7 +79,7 @@
                             <p:selectOneMenu
                                 id="admTypeMenu"
                                 styleClass="w-100 form-control"
-                                value="#{inwardInvoiceJournalController.admissionType}">
+                                value="#{inwardProfessionalFeeSummaryController.admissionType}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItems
                                     value="#{admissionTypeController.items}"
@@ -95,7 +95,7 @@
                                 <h:outputLabel value="Payment Method" for="pmMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="pmMenu" styleClass="w-100 form-control"
-                                             value="#{inwardInvoiceJournalController.paymentMethod}">
+                                             value="#{inwardProfessionalFeeSummaryController.paymentMethod}">
                                 <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                             </p:selectOneMenu>
@@ -107,13 +107,13 @@
                             <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
-                                value="#{inwardInvoiceJournalController.institution}"
+                                value="#{inwardProfessionalFeeSummaryController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins"
                                                itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="cmbIns" update="cmbDept siteMenu"
-                                        listener="#{inwardInvoiceJournalController.onInstitutionChange}" />
+                                        listener="#{inwardProfessionalFeeSummaryController.onInstitutionChange}" />
                             </p:selectOneMenu>
 
                             <p:spacer />
@@ -125,13 +125,13 @@
                             <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"
-                                value="#{inwardInvoiceJournalController.site}"
+                                value="#{inwardProfessionalFeeSummaryController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site"
                                                itemLabel="#{site.name}" itemValue="#{site}" />
                                 <p:ajax process="siteMenu" update="cmbDept"
-                                        listener="#{inwardInvoiceJournalController.onSiteChange}" />
+                                        listener="#{inwardProfessionalFeeSummaryController.onSiteChange}" />
                             </p:selectOneMenu>
 
                             <p:spacer />
@@ -142,9 +142,9 @@
                             </h:panelGroup>
                             <h:panelGroup id="cmbDept">
                                 <p:selectOneMenu
-                                    rendered="#{inwardInvoiceJournalController.institution eq null and inwardInvoiceJournalController.site eq null}"
+                                    rendered="#{inwardProfessionalFeeSummaryController.institution eq null and inwardProfessionalFeeSummaryController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{inwardInvoiceJournalController.department}"
+                                    value="#{inwardProfessionalFeeSummaryController.department}"
                                     filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
@@ -152,33 +152,33 @@
                                         var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                                 <p:selectOneMenu
-                                    rendered="#{inwardInvoiceJournalController.institution eq null and inwardInvoiceJournalController.site ne null}"
+                                    rendered="#{inwardProfessionalFeeSummaryController.institution eq null and inwardProfessionalFeeSummaryController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{inwardInvoiceJournalController.department}"
+                                    value="#{inwardProfessionalFeeSummaryController.department}"
                                     filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardInvoiceJournalController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardProfessionalFeeSummaryController.site)}"
                                         var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                                 <p:selectOneMenu
-                                    rendered="#{inwardInvoiceJournalController.institution ne null and inwardInvoiceJournalController.site eq null}"
+                                    rendered="#{inwardProfessionalFeeSummaryController.institution ne null and inwardProfessionalFeeSummaryController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{inwardInvoiceJournalController.department}"
+                                    value="#{inwardProfessionalFeeSummaryController.department}"
                                     filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardInvoiceJournalController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardProfessionalFeeSummaryController.institution)}"
                                         var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                                 <p:selectOneMenu
-                                    rendered="#{inwardInvoiceJournalController.institution ne null and inwardInvoiceJournalController.site ne null}"
+                                    rendered="#{inwardProfessionalFeeSummaryController.institution ne null and inwardProfessionalFeeSummaryController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{inwardInvoiceJournalController.department}"
+                                    value="#{inwardProfessionalFeeSummaryController.department}"
                                     filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardInvoiceJournalController.institution, inwardInvoiceJournalController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardProfessionalFeeSummaryController.institution, inwardProfessionalFeeSummaryController.site)}"
                                         var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                             </h:panelGroup>
@@ -188,7 +188,7 @@
                         <p:commandButton
                             value="Generate"
                             icon="fas fa-cogs"
-                            action="#{inwardInvoiceJournalController.generateReport()}"
+                            action="#{inwardProfessionalFeeSummaryController.generateReport()}"
                             ajax="false"
                             class="ui-button-success m-1" />
 
@@ -196,7 +196,7 @@
 
                     <!-- ===== Results ===== -->
                     <p:panel id="pnlResults"
-                             rendered="#{inwardInvoiceJournalController.reportRows != null}">
+                             rendered="#{inwardProfessionalFeeSummaryController.reportRows != null}">
 
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -214,7 +214,7 @@
                                                      ajax="false">
                                         <p:dataExporter type="xlsx"
                                                         target="tblReport"
-                                                        fileName="Inpatient_Invoice_Journal" />
+                                                        fileName="Professional_Other_Fee_Summary" />
                                     </p:commandButton>
                                     <p:commandButton value="PDF"
                                                      icon="fas fa-file-pdf"
@@ -222,7 +222,7 @@
                                                      ajax="false">
                                         <p:dataExporter type="pdf"
                                                         target="tblReport"
-                                                        fileName="Inpatient_Invoice_Journal" />
+                                                        fileName="Professional_Other_Fee_Summary" />
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -237,10 +237,11 @@
                             div, not the inner <table>). Overriding both here — scoped to this
                             table's client id, so it can't leak to any other dataTable on the
                             page — lets columns size to their natural (nowrap) content width;
-                            PrimeFaces' own built-in .ui-datatable-tablewrapper div already has
-                            overflow-x:auto, so once the table can exceed that div's width, the
-                            existing horizontal scrollbar appears automatically. Ported from
-                            hmislk/hmis#22964 (2026-08-15).
+                            PrimeFaces' own built-in .ui-datatable-tablewrapper div already
+                            scrolls horizontally, so once the table can exceed the wrapper's
+                            width, PrimeFaces' own scrollbar appears automatically. Found via live
+                            verification 2026-08-15 — see docs/superpowers/plans/2026-08-15-
+                            professional-fee-summary-report.md Task 8.
                         -->
                         <style>
                             #frm\:tblReport table { table-layout: auto; width: auto; }
@@ -250,7 +251,7 @@
                         </style>
                         <p:dataTable
                             id="tblReport"
-                            value="#{inwardInvoiceJournalController.reportRows}"
+                            value="#{inwardProfessionalFeeSummaryController.reportRows}"
                             var="row"
                             emptyMessage="No records found"
                             paginator="true"
@@ -261,7 +262,6 @@
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                             rowsPerPageTemplate="10,20,50,{ShowAll|'All'}">
 
-                            <!-- ===== Patient / admission details ===== -->
                             <p:column headerText="BHT No" style="white-space:nowrap;">
                                 <h:outputText value="#{row.bhtNo}" />
                             </p:column>
@@ -290,134 +290,56 @@
                                 <h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" />
                             </p:column>
 
-                            <!-- ===== One column per InwardChargeType (hidden when all zeros) ===== -->
-                            <p:columns
-                                value="#{inwardInvoiceJournalController.allChargeTypes}"
-                                var="ct"
-                                rendered="#{inwardInvoiceJournalController.isChargeTypeActive(ct)}"
-                                headerText="#{inwardInvoiceJournalController.getChargeTypeLabel(ct)}"
-                                style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.getChargeForType(ct)}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.getColumnTotal(ct)}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:columns>
-
-                            <!-- ===== Discount ===== -->
-                            <p:column headerText="Discount"
+                            <p:column headerText="Professional Fee Total"
                                       style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.totalDiscount}">
+                                <h:outputText value="#{row.professionalFeeTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
+                                    <h:outputText value="#{inwardProfessionalFeeSummaryController.grandTotalProfessionalFee}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <!-- ===== Service Charge (margin) ===== -->
-                            <p:column headerText="Service Charge"
+                            <p:column headerText="Other Fee Total"
                                       style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.totalServiceCharge}">
+                                <h:outputText value="#{row.otherFeeTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
+                                    <h:outputText value="#{inwardProfessionalFeeSummaryController.grandTotalOtherFee}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <!-- ===== Gross total of charges ===== -->
-                            <p:column headerText="Gross Total"
-                                      style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{row.grossTotal}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <!-- ===== Net total of charges (gross - discount + service charge) ===== -->
                             <p:column headerText="Net Total"
                                       style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{row.grandTotal}">
+                                <h:outputText value="#{row.netTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCharges}">
+                                    <h:outputText value="#{inwardProfessionalFeeSummaryController.grandTotalNet}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
-                            </p:column>
-
-                            <!-- ===== Deposit total ===== -->
-                            <p:column headerText="Total Deposits"
-                                      style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.totalDeposits}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposits}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <!-- ===== Credit settlement ===== -->
-                            <p:column headerText="Credit Settlement"
-                                      style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.creditSettlementTotal}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditSettlement}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Credit Company" style="white-space:nowrap;">
-                                <h:outputText value="#{row.creditCompanyName}" />
                             </p:column>
 
                             <f:facet name="footer">
                                 <div class="text-end">
-                                    <strong>Grand Total Gross: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
+                                    <strong>Grand Total Professional Fee: </strong>
+                                    <h:outputText value="#{inwardProfessionalFeeSummaryController.grandTotalProfessionalFee}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Discount: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
+                                    <strong>Grand Total Other Fee: </strong>
+                                    <h:outputText value="#{inwardProfessionalFeeSummaryController.grandTotalOtherFee}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Service Charge: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Net Charges: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCharges}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Deposits: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposits}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Credit Settlements: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditSettlement}">
+                                    <strong>Grand Total Net: </strong>
+                                    <h:outputText value="#{inwardProfessionalFeeSummaryController.grandTotalNet}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </div>
