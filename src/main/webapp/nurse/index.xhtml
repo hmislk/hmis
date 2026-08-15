@@ -124,7 +124,8 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
-                                                            value="Room Change"
+                                                            value="Room Change (Deprecated)"
+                                                            title="Deprecated - use Patient Room Details instead"
                                                             ajax="false"
                                                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                                             action="#{admissionController.navigateToRoomChange()}"
@@ -134,7 +135,8 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
-                                                            value="Guardian Room Change"
+                                                            value="Guardian Room Change (Deprecated)"
+                                                            title="Deprecated - use Patient Room Details instead"
                                                             ajax="false"
                                                             rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
                                                             action="#{admissionController.navigateToGuardianRoomChange()}"
