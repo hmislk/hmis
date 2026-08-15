@@ -156,39 +156,49 @@
                                         <p:commandButton ajax="false" icon="fa fa-sync-alt" title="Redraw Bill"></p:commandButton>
                                     </div>
 
-                                    <h:panelGroup id="gpBillPreview" class="mt-2 p-2"> 
+                                    <div class="d-flex justify-content-end gap-2 mt-1">
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('IPRequestViewRates')}">
+                                            <p:outputLabel value="Rate" class="mt-2"></p:outputLabel>
+                                            <p:selectOneRadio value="#{pharmacyBillSearch.printBhtIssueBillWithRate}" layout="lineDirection">
+                                                <f:selectItem itemLabel="Without Rate" itemValue="#{false}"/>
+                                                <f:selectItem itemLabel="With Rate" itemValue="#{true}"/>
+                                            </p:selectOneRadio>
+                                        </h:panelGroup>
+                                    </div>
+
+                                    <h:panelGroup id="gpBillPreview" class="mt-2 p-2">
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                                <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                                <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" showRate="#{webUserController.hasPrivilege('IPRequestViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" />
                                             </h:panelGroup>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-                                            <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></phi:saleBill_prabodha>
+                                        <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                            <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}">
+                                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}" showRate="#{webUserController.hasPrivilege('IPRequestViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}"></phi:saleBill_prabodha>
                                             </h:panelGroup>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-                                            <h:panelGroup rendered="true" > 
-                                                <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                            </h:panelGroup>
-                                        </h:panelGroup>  
-
-                                        <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}"> 
-                                            <h:panelGroup rendered="true" > 
-                                                <ph:A4_paper_with_headings bill="#{pharmacyBillSearch.bill}"></ph:A4_paper_with_headings>
-                                            </h:panelGroup>
-                                        </h:panelGroup>
-                                        
-                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
+                                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                             <h:panelGroup rendered="true" >
-                                                <phi:saleBill_Header_Inward bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                                <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}" showRate="#{webUserController.hasPrivilege('IPRequestViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}"></phi:saleBill_five_five>
                                             </h:panelGroup>
-                                        </h:panelGroup> 
+                                        </h:panelGroup>
 
-                                    </h:panelGroup>  
+                                        <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
+                                            <h:panelGroup rendered="true" >
+                                                <ph:A4_paper_with_headings bill="#{pharmacyBillSearch.bill}" showRate="#{webUserController.hasPrivilege('IPRequestViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}"></ph:A4_paper_with_headings>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}">
+                                            <h:panelGroup rendered="true" >
+                                                <phi:saleBill_Header_Inward bill="#{pharmacyBillSearch.bill}" duplicate="true" showRate="#{webUserController.hasPrivilege('IPRequestViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" />
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
                                 </p:panel>
                             </div>
                         </div>
