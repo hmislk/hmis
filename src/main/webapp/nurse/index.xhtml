@@ -153,6 +153,21 @@
                                                             rendered="false"
                                                             class="w-100">
                                                         </p:commandButton>
+
+                                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}">
+                                                            <p:commandButton
+                                                                value="Add Baby Admission"
+                                                                disabled="#{admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
+                                                                title="#{admissionController.current.parentEncounter != null ? 'A baby admission cannot have its own baby admission' : (admissionController.current.discharged eq true ? 'Patient is discharged' : '')}"
+                                                                action="#{admissionController.navigateToAddBabyAdmission}"
+                                                                icon="fa fa-baby"
+                                                                ajax="false"
+                                                                class="w-100">
+                                                                <f:setPropertyActionListener
+                                                                    value="#{admissionController.current}"
+                                                                    target="#{roomChangeController.current}" />
+                                                            </p:commandButton>
+                                                        </h:panelGroup>
                                                     </div>
 
                                                 </p:panel>
