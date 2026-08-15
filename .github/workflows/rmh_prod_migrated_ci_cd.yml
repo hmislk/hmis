@@ -27,7 +27,7 @@ env:
   APP:        rmh
   JNDI_MAIN:  jdbc/rmh
   JNDI_AUDIT: jdbc/rmhAudit
-  HEALTH_URL: https://rmh-migrated.carecode.org/rmh/faces/index1.xhtml
+  HEALTH_URL: https://rmh.carecode.org/rmh/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        rmh
       JNDI_MAIN:  jdbc/rmh
       JNDI_AUDIT: jdbc/rmhAudit
-      HEALTH_URL: https://rmh-migrated.carecode.org/rmh/faces/index1.xhtml
+      HEALTH_URL: https://rmh.carecode.org/rmh/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
