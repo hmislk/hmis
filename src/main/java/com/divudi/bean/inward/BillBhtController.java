@@ -17,6 +17,7 @@ import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
@@ -27,7 +28,11 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
@@ -79,6 +84,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -116,6 +122,8 @@ public class BillBhtController implements Serializable {
     DepartmentController departmentController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -148,6 +156,8 @@ public class BillBhtController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @Inject
     BillController billController;
+    @Inject
+    private SurgeryBillController surgeryBillController;
     ///////////////////
 
     private double total;
@@ -191,6 +201,108 @@ public class BillBhtController implements Serializable {
     private Priority currentBillItemPriority;
     private Double currentBillItemQty;
 
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("inward/inward_bill_service");
+        metadata.setPageName("Inward Add Services");
+        metadata.setDescription("Adds services, investigations, and their fees to an inpatient's bill");
+        metadata.setControllerClass("BillBhtController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Bill Fees are based on the site for " + sessionController.getDepartment().getName(),
+                "Uses site-specific bill fees (falling back to base fees when none exist for the site) when adding services to the inward bill. Mirrors the equivalent OPD option.",
+                "BillBhtController.java: billFeeFromBillItemWithMatrix() method",
+                OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Use Sample Management for Inward Service and Investigations",
+                "Routes the print-preview 'Manage Samples' action to sample management instead of direct label printing",
+                "inward_bill_service.xhtml: print-preview action buttons",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is POS Paper",
+                "Uses POS paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is A4 Paper",
+                "Uses A4 paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is A4Printed Paper",
+                "Uses A4 pre-printed paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is FiveFiveCustom3 Paper",
+                "Uses the FiveFiveCustom3 paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is 5x8 inch Paper",
+                "Uses the 5x8 inch paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is FiveFivePrinted paper",
+                "Uses the FiveFive pre-printed paper format for the inward service bill print preview (this is also the fallback default when the paper type preference is unset)",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "NursingWorkBench",
+                "Access to the Nursing WorkBench navigation button",
+                "inward_bill_service.xhtml: 'Nursing WorkBench' buttons"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "InwardSearch",
+                "Access to Search Patients, Patient Profile, and Inpatient Dashboard navigation buttons",
+                "inward_bill_service.xhtml: patient navigation button group"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ShowServiceCharges",
+                "View rate, gross value, discount, service charge, VAT, and net value columns/details for inward services and fees",
+                "inward_bill_service.xhtml: Bill Items and Fees tab columns, Bill Details panel"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ShowInwardFee",
+                "Allows editing the Total Gross value of an inward fee directly in the Fees tab",
+                "inward_bill_service.xhtml: Fees tab, Total Gross input"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     public String navigateToAddServiceFromMenu() {
         resetBillData();
         return "/inward/inward_bill_service?faces-redirect=true";
@@ -200,7 +312,61 @@ public class BillBhtController implements Serializable {
         resetBillData();
         batchBill = surgeryBill;
         patientEncounter = surgeryBill.getPatientEncounter();
+        loadExistingSurgeryServiceEntries(surgeryBill);
         return "/theater/inward_bill_surgery_service?faces-redirect=true";
+    }
+
+    /**
+     * Rebuilds {@link #lstBillEntries} (the "Item Requests" / Bill Items cart
+     * shown in inward_bill_surgery_service.xhtml) from the surgery service
+     * BillItems already saved to the DB against this surgery bill.
+     *
+     * Each time the surgery service cart is settled, settleBillSurgery() ->
+     * saveBill() creates one or more Service sub-bills whose
+     * forwardReferenceBill points back at the surgery bill (see
+     * BillBeanController.setSurgeryData). resetBillData() clears
+     * lstBillEntries on every navigation into this page, so without this,
+     * previously requested/billed items never reappear (issue #20893).
+     */
+    private void loadExistingSurgeryServiceEntries(Bill surgeryBill) {
+        lstBillEntries = new ArrayList<>();
+        if (surgeryBill == null) {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("surgeryBill", surgeryBill);
+        params.put("surgeryBillType", SurgeryBillType.Service);
+        String jpql = "select bi from BillItem bi "
+                + "where bi.bill.forwardReferenceBill = :surgeryBill "
+                + "and bi.bill.surgeryBillType = :surgeryBillType "
+                + "and bi.retired = false "
+                + "and bi.bill.retired = false "
+                + "order by bi.id";
+        List<BillItem> existingBillItems = billItemFacade.findByJpql(jpql, params);
+        if (existingBillItems == null) {
+            return;
+        }
+        for (BillItem bItem : existingBillItems) {
+            BillEntry entry = new BillEntry();
+            entry.setBillItem(bItem);
+            entry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
+            entry.setLstBillFees(existingBillFeesForBillItem(bItem));
+            entry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
+            lstBillEntries.add(entry);
+        }
+    }
+
+    /**
+     * Fetches the BillFees already persisted for a previously-billed BillItem,
+     * so re-displaying the item shows the fees actually charged rather than
+     * recomputing them against the current price matrix.
+     */
+    private List<BillFee> existingBillFeesForBillItem(BillItem bItem) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("billItem", bItem);
+        String jpql = "select bf from BillFee bf where bf.billItem = :billItem and bf.retired = false order by bf.id";
+        List<BillFee> fees = billFeeFacade.findByJpql(jpql, params);
+        return fees != null ? fees : new ArrayList<>();
     }
 
     public String navigateToPrintLabelsForInvestigations() {
@@ -326,6 +492,7 @@ public class BillBhtController implements Serializable {
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
+        loadExistingSurgeryServiceEntries(getBatchBill());
     }
 
     public String navigateToAddServicesFromAdmissionProfile() {
@@ -693,6 +860,12 @@ public class BillBhtController implements Serializable {
             return;
         }
 
+        if (batchBill.getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+
         if (getBatchBill().getProcedure() == null) {
             return;
         }
@@ -716,6 +889,10 @@ public class BillBhtController implements Serializable {
 
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
+
+        if (batchBill.getBillType() == BillType.SurgeryBill) {
+            surgeryBillController.refreshSurgeryServiceDepartmentItems();
+        }
 
     }
 
@@ -1028,7 +1205,12 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        // Falls back to the old application-wide key so any pre-existing configuration
+        // (set before this option was made discoverable/per-department) keeps working.
+        boolean legacyGlobalSiteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = sessionController.getDepartment() != null
+                ? configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site for " + sessionController.getDepartment().getName(), legacyGlobalSiteBasedBillFees)
+                : legacyGlobalSiteBasedBillFees;
         Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
         List<ItemFee> itemFee;
 

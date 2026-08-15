@@ -8,20 +8,23 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="fullAccess" type="boolean" default="true"
+                      shortDescription="When false, exposes a single combined view (no tabs) with just the DDL-load-and-run and Fix AUTO_INCREMENT actions — for the unauthenticated mf.xhtml migration-pending page. When true (default), exposes the full four-tab admin toolset."/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form >
 
-            <p:accordionPanel 
-                activeIndex="#{dataAdministrationController.tabIndexMissingFields}">
+            <p:accordionPanel
+                activeIndex="#{dataAdministrationController.tabIndexMissingFields}"
+                rendered="#{cc.attrs.fullAccess}">
                 <p:ajax process="@this" ></p:ajax>
 
                 <p:tab
                     title="Add All Tables using create ddl file contents"  >
 
-                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
+                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;" rendered="#{cc.attrs.fullAccess}">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
                             <h:outputLabel value="Update Database by DDL File" class="mx-2"/>
@@ -85,7 +88,7 @@
                     </p:panelGrid>
 
                 </p:tab>
-                <p:tab title="Check Missing Fields and Add Fields" >
+                <p:tab title="Check Missing Fields and Add Fields" rendered="#{cc.attrs.fullAccess}" >
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
@@ -128,6 +131,17 @@
                         <p:outputLabel value="Wiki DDL Version" />
                         <h:outputText value="#{dataAdministrationController.wikiDdlVersion != null ? dataAdministrationController.wikiDdlVersion : '(not yet fetched)'}" />
 
+                        <p:outputLabel value="Load from Wiki" />
+                        <h:panelGroup layout="block" class="d-flex align-items-center">
+                            <p:commandButton
+                                value="Load Latest DDL from Wiki"
+                                ajax="false"
+                                action="#{dataAdministrationController.loadDdlFromWiki}"
+                                styleClass="ui-button-success mr-3"
+                                title="Server downloads the full DDL script from the wiki, so the table below can be picked without hand-pasting its CREATE TABLE statement"/>
+                            <h:outputText value="#{dataAdministrationController.wikiFetchedDdlInfo}" />
+                        </h:panelGroup>
+
                         <p:outputLabel value="Stored DB Version" />
                         <h:panelGroup layout="block" class="d-flex align-items-center">
                             <h:outputText value="#{dataAdministrationController.storedDdlVersion != null ? dataAdministrationController.storedDdlVersion : '(not set)'}" styleClass="me-3"/>
@@ -162,8 +176,25 @@
                             class="w-100"
                             rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseErrors}"/>
 
+                        <p:outputLabel value="Table (from fetched DDL)" rendered="#{not empty dataAdministrationController.wikiFetchedDdlInfo}"/>
+                        <h:panelGroup layout="block" class="d-flex align-items-center" rendered="#{not empty dataAdministrationController.wikiFetchedDdlInfo}">
+                            <p:selectOneMenu id="wikiTableSelect" value="#{dataAdministrationController.selectedWikiTableName}" class="mr-2">
+                                <f:selectItem itemLabel="Select a table..." itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{dataAdministrationController.wikiTableNames}"/>
+                            </p:selectOneMenu>
+                            <p:commandButton
+                                value="Use Selected Table's DDL"
+                                ajax="true"
+                                process="@this wikiTableSelect"
+                                update="createdSqlArea :growl"
+                                action="#{dataAdministrationController.loadCreateStatementForSelectedTable}"
+                                styleClass="ui-button-info"
+                                title="Fills 'Data table Create SQL statement' below with this table's CREATE TABLE statement from the fetched DDL"/>
+                        </h:panelGroup>
+
                         <p:outputLabel value="Data table Create SQL statement" ></p:outputLabel>
                         <p:inputTextarea
+                            id="createdSqlArea"
                             rows="6"
                             autoResize="false"
                             value="#{dataAdministrationController.createdSql}"
@@ -260,7 +291,7 @@
 
                 </p:tab>
 
-                <p:tab title="Run Custom SQL Commands" >
+                <p:tab title="Run Custom SQL Commands" rendered="#{cc.attrs.fullAccess}" >
 
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
@@ -315,6 +346,81 @@
                 </p:tab>
 
             </p:accordionPanel>
+
+            <!-- Reduced toolset for the unauthenticated mf.xhtml migration-pending page:
+                 both actions in a single view, no tabs — see fullAccess attribute above. -->
+            <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;" rendered="#{not cc.attrs.fullAccess}">
+                <f:facet name="header">
+                    <i class="fa fa-search"/>
+                    <h:outputLabel value="Database Migration" class="mx-2"/>
+                </f:facet>
+
+                <p:outputLabel value="Instructions" />
+                <p>Click 'Load Latest DDL from Wiki and Update Both Databases' to download the current full DDL script and apply it to both the main and audit databases. If the database was restored from a dump and INSERTs are failing with a missing default value on the ID column, click 'Fix AUTO_INCREMENT' as well. The guide is at <a href="https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide" target="_blank">Database Schema DDL Generation Guide</a>.</p>
+
+                <p:outputLabel value="Database Selection" />
+                <h:panelGroup layout="block" class="d-flex">
+                    <p:selectBooleanCheckbox
+                        value="#{dataAdministrationController.runOnMainDatabase}"
+                        class="mr-2"/>
+                    <h:outputText value="Main Database (hmisPU)" class="mr-3"/>
+                    <p:selectBooleanCheckbox
+                        value="#{dataAdministrationController.runOnAuditDatabase}"
+                        class="mr-2"/>
+                    <h:outputText value="Audit Database (hmisAuditPU)"/>
+                </h:panelGroup>
+
+                <p:outputLabel value="Actions" />
+                <h:panelGroup layout="block" class="d-flex flex-wrap align-items-center">
+                    <p:commandButton
+                        value="Load Latest DDL from Wiki and Update Both Databases"
+                        ajax="false"
+                        action="#{dataAdministrationController.loadDdlFromWikiAndUpdateBothDatabases}"
+                        styleClass="ui-button-success me-2 mb-2"
+                        icon="fa fa-download"
+                        title="Downloads the full DDL script from the wiki and applies it to the main (hmisPU) and audit (hmisAuditPU) databases"/>
+                    <p:commandButton
+                        value="Fix AUTO_INCREMENT"
+                        ajax="false"
+                        action="#{dataAdministrationController.fixMissingAutoIncrement()}"
+                        styleClass="ui-button-warning me-2 mb-2"
+                        icon="fa fa-wrench"
+                        title="Scans every table for a BIGINT ID primary key missing AUTO_INCREMENT and re-adds it. Safe to run repeatedly — a no-op on a healthy database."/>
+                    <p:commandButton
+                        value="Mark Migration as Complete"
+                        ajax="false"
+                        action="#{dataAdministrationController.markMigrationComplete()}"
+                        styleClass="ui-button-info me-2 mb-2"
+                        icon="fa fa-check"
+                        title="Confirms the schema is up to date and clears the migration-pending banner"/>
+                    <p:commandButton
+                        value="Mark as Not Necessary"
+                        ajax="false"
+                        action="#{dataAdministrationController.markMigrationNotNecessary()}"
+                        styleClass="ui-button-secondary mb-2"
+                        icon="fa fa-times"
+                        title="Dismisses the migration-pending banner without applying any DDL"/>
+                </h:panelGroup>
+
+                <p:outputLabel value="Execution Feedback" rendered="#{not empty dataAdministrationController.executionFeedback}"/>
+                <h:panelGroup layout="block" styleClass="p-2 border rounded bg-light w-100" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;"
+                              rendered="#{not empty dataAdministrationController.executionFeedback}">
+                    #{dataAdministrationController.executionFeedback}
+                </h:panelGroup>
+
+                <p:outputLabel value="Main Database Results" rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                <h:panelGroup layout="block" styleClass="p-2 border rounded bg-light w-100" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;"
+                              rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
+                    #{dataAdministrationController.mainDatabaseExecutionFeedback}
+                </h:panelGroup>
+
+                <p:outputLabel value="Audit Database Results" rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                <h:panelGroup layout="block" styleClass="p-2 border rounded bg-light w-100" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;"
+                              rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
+                    #{dataAdministrationController.auditDatabaseExecutionFeedback}
+                </h:panelGroup>
+            </p:panelGrid>
+
         </h:form>
 
     </cc:implementation>

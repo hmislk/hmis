@@ -42,7 +42,7 @@
                                 class="ui-button-success"
                                 value="Excel"
                                 ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" postProcessor="#{reportsStock.postProcessXLSStockByBatchDevelopers}" />
                             </p:commandButton>
 
 
@@ -75,8 +75,18 @@
                                          rowsPerPageTemplate="20, 50, 100" 
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Batch Stock Report - #{reportsStock.department.name}"/>                                     
-                                </f:facet> 
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="Stock Report by Batch"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Institution: #{not empty reportsStock.institution ? reportsStock.institution.name : 'All'}   |   "/>
+                                            <h:outputText value="Site: #{not empty reportsStock.site ? reportsStock.site.name : 'All'}   |   "/>
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
+                                </f:facet>
 
 
                                 <p:column 
@@ -268,16 +278,6 @@
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
                                                     <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="11" >
-                                            <f:facet name="footer" >
-                                                <h:outputLabel value="Printed At " ></h:outputLabel>
-                                                <h:outputLabel value="#{sessionController.currentDate}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

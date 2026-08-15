@@ -1214,6 +1214,7 @@ public class PharmacyIssueController implements Serializable {
             preBill.setCompleted(draft.isCompleted());
             preBill.setComments(draft.getComments());
             preBill.setInvoiceNumber(draft.getInvoiceNumber());
+            preBill.setReferenceNumber(draft.getReferenceNumber());
             preBill.setDepartmentType(draft.getDepartmentType());
             preBill.setBillTypeAtomic(draft.getBillTypeAtomic());
             preBill.setBillType(draft.getBillType());

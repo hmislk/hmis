@@ -167,6 +167,19 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
     }
 
+    /**
+     * Navigation target of the 4-window switch buttons (Sale 1..4).
+     *
+     * Unlike {@link #pharmacyRetailSaleNative()} this deliberately does <b>not</b>
+     * reset the window: a cart parked in another window must survive a switch. It only
+     * clears the settle-in-progress latch so a window abandoned mid-settle is usable
+     * again. Mirrors PharmacySaleController.pharmacyRetailSale(). Issue #22443.
+     */
+    public String switchToThisSaleWindow() {
+        billSettlingStarted = false;
+        return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+    }
+
     @SuppressWarnings("unchecked")
     public String viewByBillId(Long billId) {
         if (billId == null) {

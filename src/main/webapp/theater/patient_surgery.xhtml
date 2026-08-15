@@ -190,6 +190,9 @@
                                     <h:outputLabel value="Surgery" class="mx-4"/>
                                 </f:facet>
                                 <in:surgeryDetail bill="#{surgeryBillController.surgeryBill}"/>
+                                <p:badge value="Surgery Validated / Completed" severity="success"
+                                          rendered="#{surgeryBillController.surgeryBill.completed}"
+                                          style="display:block; margin-top:0.5rem;"/>
                             </p:panel>
 
                             <!-- Navigate to Edit Surgery page -->
@@ -391,7 +394,8 @@
                                         ajax="false"
                                         action="#{billBhtController.navigateToSurgeryServices(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-plus-square"
-                                        class="w-100"/>
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}"/>
 
                                     <p:commandButton
                                         value="Direct Issue Medicines"
@@ -399,7 +403,8 @@
                                         action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                         actionListener="#{pharmacySaleBhtController.resetAll()}"
                                         icon="fa fa-pills"
-                                        class="w-100">
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
                                         <f:setPropertyActionListener
                                             value="#{surgeryBillController.surgeryBill}"
                                             target="#{pharmacySaleBhtController.batchBill}"/>
@@ -410,7 +415,8 @@
                                         ajax="false"
                                         action="#{inwardTimedItemController.navigateToSurgeryTimedServices(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-clock"
-                                        class="w-100">
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -418,7 +424,8 @@
                                         ajax="false"
                                         action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFees(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-user-md"
-                                        class="w-100">
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -434,6 +441,14 @@
                                         ajax="false"
                                         action="#{surgeryBillController.navigateToSurgicalDetails(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-notes-medical"
+                                        class="w-100">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        value="Surgery Bill Summary / Validate"
+                                        ajax="false"
+                                        action="#{surgeryBillController.navigateToSurgeryBillSummary(surgeryBillController.surgeryBill)}"
+                                        icon="fa fa-clipboard-check"
                                         class="w-100">
                                     </p:commandButton>
                                 </div>

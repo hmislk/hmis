@@ -85,7 +85,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchPendingRequests() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
@@ -100,7 +100,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnacceptedIssues() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic IN :btas"
@@ -121,7 +121,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnacceptedWardReturns() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
@@ -136,7 +136,7 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnprocessedDirectIssueReturns() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
                 + " FROM Bill b"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
@@ -268,7 +268,10 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Cannot confirm physical discharge: nursing discharge has not been completed.");
             return;
         }
-        if (!Boolean.TRUE.equals(currentEncounter.getDischarged())) {
+        boolean administrativelyDischarged = Boolean.TRUE.equals(currentEncounter.getDischarged())
+                || (currentEncounter.getParentEncounter() != null
+                    && Boolean.TRUE.equals(currentEncounter.getParentEncounter().getDischarged()));
+        if (!administrativelyDischarged) {
             JsfUtil.addErrorMessage("Cannot confirm physical discharge: administrative discharge (final bill) has not been completed.");
             return;
         }

@@ -3766,7 +3766,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         hm.put("to", toDate);
 
         if (balanceGraterThan != null) {
-            jpql += " and (abs(b.balance) < :val) ";
+            jpql += " and (abs(b.balance) < :val) and (abs(b.paidAmount) > :val) ";
             hm.put("val", balanceGraterThan);
         }
         if (pm != null) {

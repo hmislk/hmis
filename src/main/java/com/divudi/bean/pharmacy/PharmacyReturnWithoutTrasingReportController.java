@@ -6,7 +6,6 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.InstitutionController;
-import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillDTO;
 import com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillItemDTO;
@@ -57,8 +56,6 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
     // Injected services
     @EJB
     private BillService billService;
-    @Inject
-    private SessionController sessionController;
     @Inject
     private InstitutionController institutionController;
     @Inject
@@ -126,7 +123,7 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
 
             // Fetch bill-level data
             billReportData = billService.fetchPharmacyReturnWithoutTrasingBillDTOs(
-                    fromDate, toDate, institution, site, department, sessionController.getLoggedUser());
+                    fromDate, toDate, institution, site, department);
 
             calculateBillSummary();
 
@@ -154,7 +151,7 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
 
             // Fetch item-level data
             billItemReportData = billService.fetchPharmacyReturnWithoutTrasingBillItemDTOs(
-                    fromDate, toDate, institution, site, department, sessionController.getLoggedUser());
+                    fromDate, toDate, institution, site, department);
 
             calculateBillItemSummary();
 

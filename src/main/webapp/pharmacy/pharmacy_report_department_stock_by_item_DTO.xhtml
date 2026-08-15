@@ -105,7 +105,7 @@
                                     <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
                                                      actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" />
                                     <p:commandButton styleClass="ui-button-success mx-1" icon="fas fa-file-excel" value="Excel" ajax="false">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_By_Item"/>
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_By_Item" postProcessor="#{reportsStock.postProcessXLSStockReportByItem}"/>
                                     </p:commandButton>
                                     <p:commandButton styleClass="ui-button-info mx-1" icon="fas fa-print" value="Print"
                                                      actionListener="#{reportsStock.prepareForPrint()}"
@@ -131,8 +131,22 @@
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock Report by Item - #{reportsStock.department.name}"/>                                     
-                                </f:facet> 
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="Stock Report by Item"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Institution: #{not empty reportsStock.institution ? reportsStock.institution.name : 'All'}   |   "/>
+                                            <h:outputText value="Site: #{not empty reportsStock.site ? reportsStock.site.name : 'All'}   |   "/>
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}   |   "/>
+                                            <h:outputText value="Category: #{not empty reportsStock.category ? reportsStock.category.name : 'All'}   |   "/>
+                                            <h:outputText value="Dosage Form: #{not empty reportsStock.dosageForm ? reportsStock.dosageForm.name : 'All'}   |   "/>
+                                            <h:outputText value="Department Types: #{reportsStock.selectedDepartmentTypesPrintDisplay}   |   "/>
+                                            <h:outputText value="Include Zero Stock: #{reportsStock.includeZeroStock ? 'Yes' : 'No'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
+                                </f:facet>
 
                                 <p:column width="20px;" headerText="No" sortBy="#{ii}"
                                           style="width: 20px;">

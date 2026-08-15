@@ -20,6 +20,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.Drawer;
@@ -34,6 +35,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
+import com.divudi.service.AuditService;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.io.Serializable;
@@ -41,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -85,6 +88,8 @@ public class InwardSurgeryPaymentBillController implements Serializable {
     StaffFacade staffFacade;
     @EJB
     private CashTransactionBean cashTransactionBean;
+    @EJB
+    private AuditService auditService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -119,8 +124,12 @@ public class InwardSurgeryPaymentBillController implements Serializable {
     private Double withholdingTaxLimit;
     private Double withholdingTaxPercentage;
     private double totalDue;
+    private double totalOnHold;
     private double totalPaying;
     private double totalPayingWithoutWht;
+    private boolean holdOverrideAcknowledged;
+    private String holdOverrideReason;
+    private List<BillFee> feesHeldAtSettle;
 
     private Boolean printPreview = false;
     private PaymentMethod paymentMethod;
@@ -168,8 +177,10 @@ public class InwardSurgeryPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                // Held fees are listed (flagged "On Hold" in the UI) rather than
+                // hidden, so the payer can see the money exists — issue #22484.
                 + " and bf.staff=:stf ";
-        
+
         sql += " order by bf.createdAt desc";
 
         h.put("fd", fromDate);
@@ -193,6 +204,13 @@ public class InwardSurgeryPaymentBillController implements Serializable {
             }
         }
         dueSurgeryFees.removeAll(removeingBillFees);
+
+        // Default the UI-only "amount to pay now" to the full outstanding
+        // balance for each due fee, so existing full-payment behaviour is
+        // unchanged unless the cashier edits it down for a partial payment.
+        for (BillFee sf : dueSurgeryFees) {
+            sf.setPayingAmount(sf.getFeeValue() - sf.getPaidValue());
+        }
 
         calculateTotalPaymentsForTheSurgeonForCurrentMonthForCurrentInstitution();
         performCalculations();
@@ -225,13 +243,23 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         }
     }
 
+    /**
+     * Splits the listed dues into a payable total and an on-hold total, so the
+     * payable figure is not inflated by fees that cannot be paid — issue #22483.
+     */
     private void calculateTotalDue() {
         totalDue = 0.0;
+        totalOnHold = 0.0;
         if (dueSurgeryFees == null) {
             return;
         }
         for (BillFee f : dueSurgeryFees) {
-            totalDue += (f.getFeeValue() - f.getPaidValue());
+            double outstanding = f.getFeeValue() - f.getPaidValue();
+            if (f.isProfessionalPaymentHeld()) {
+                totalOnHold += outstanding;
+            } else {
+                totalDue += outstanding;
+            }
         }
     }
 
@@ -241,9 +269,244 @@ public class InwardSurgeryPaymentBillController implements Serializable {
             return;
         }
         for (BillFee f : payingSurgeryFees) {
-            totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
+            Double payingAmount = f.getPayingAmount();
+            totalPaying = totalPaying + (payingAmount != null ? payingAmount : (f.getFeeValue() - f.getPaidValue()));
         }
     }
+
+    // <editor-fold defaultstate="collapsed" desc="Professional payment hold (#22483, #22484)">
+    /**
+     * Called by the due-fee table's selection AJAX events. Changing the
+     * selection invalidates any earlier override acknowledgement, so a held fee
+     * cannot be slipped in after the confirmation box was ticked.
+     */
+    public void onSelectionChanged() {
+        resetHoldOverride();
+        performCalculations();
+    }
+
+    private void resetHoldOverride() {
+        holdOverrideAcknowledged = false;
+        holdOverrideReason = null;
+        feesHeldAtSettle = null;
+    }
+
+    public List<BillFee> getHeldFeesSelected() {
+        List<BillFee> held = new ArrayList<>();
+        if (payingSurgeryFees == null) {
+            return held;
+        }
+        for (BillFee bf : payingSurgeryFees) {
+            if (bf.isProfessionalPaymentHeld()) {
+                held.add(bf);
+            }
+        }
+        return held;
+    }
+
+    public boolean isSelectionContainsHeldFees() {
+        return !getHeldFeesSelected().isEmpty();
+    }
+
+    public boolean isCanOverrideHold() {
+        return webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold");
+    }
+
+    public String getHeldFeesSelectedBhtNumbers() {
+        List<String> bhtNos = new ArrayList<>();
+        for (BillFee bf : getHeldFeesSelected()) {
+            PatientEncounter pe = bf.getPatienEncounter();
+            String bhtNo = pe != null && pe.getBhtNo() != null ? pe.getBhtNo() : "(no BHT)";
+            if (!bhtNos.contains(bhtNo)) {
+                bhtNos.add(bhtNo);
+            }
+        }
+        return String.join(", ", bhtNos);
+    }
+
+    public double getHeldFeesSelectedValue() {
+        double total = 0.0;
+        for (BillFee bf : getHeldFeesSelected()) {
+            total = total + (bf.getFeeValue() - bf.getPaidValue());
+        }
+        return total;
+    }
+
+    /**
+     * Guards the selection against held fees. Returns an error message to show,
+     * or null when the payment may proceed. A user without
+     * {@code InwardPayProfessionalFeesWhileOnHold} is blocked outright; a user
+     * who holds it must explicitly acknowledge the override (issue #22483).
+     */
+    private String checkHoldsOnSelection() {
+        List<Long> heldNow = findCurrentlyHeldFeeIds(payingSurgeryFees);
+        // Remember what this authoritative read found, so the settle path audits
+        // exactly what the guard let through without re-querying.
+        feesHeldAtSettle = new ArrayList<>();
+        if (payingSurgeryFees != null) {
+            for (BillFee bf : payingSurgeryFees) {
+                if (bf.getId() != null && heldNow.contains(bf.getId())) {
+                    feesHeldAtSettle.add(bf);
+                }
+            }
+        }
+        if (heldNow.isEmpty()) {
+            return null;
+        }
+        String bhtNumbers = describeBhtsForFeeIds(heldNow);
+        if (!isCanOverrideHold()) {
+            return "Cannot pay: professional payments are on hold for " + bhtNumbers
+                    + ". Release the hold before paying, or ask a user with the"
+                    + " 'Pay Professional Fees While On Hold' privilege.";
+        }
+        // A hold applied after this page was loaded was never shown to the user,
+        // so an acknowledgement given before it existed cannot cover it.
+        for (BillFee bf : payingSurgeryFees) {
+            if (bf.getId() != null && heldNow.contains(bf.getId()) && !bf.isProfessionalPaymentHeld()) {
+                resetHoldOverride();
+                return "Professional payments for " + bhtNumbers + " were put on hold while this page was open."
+                        + " Run the search again to see the current hold status before settling.";
+            }
+        }
+        if (!holdOverrideAcknowledged) {
+            return "The selection includes professional payments on hold for " + bhtNumbers
+                    + ". Tick the override confirmation and give a reason before settling.";
+        }
+        if (holdOverrideReason == null || holdOverrideReason.trim().isEmpty()) {
+            return "Please give a reason for paying professional payments that are on hold.";
+        }
+        return null;
+    }
+
+    /**
+     * Fee IDs in {@code selection} that are on hold <em>right now</em>, read
+     * fresh from the database rather than from the in-memory selection.
+     *
+     * This bean is {@code @SessionScoped}, so the due-fee list may have been
+     * loaded minutes ago and its hold flags can be stale — a hold applied by
+     * another user in the meantime must still block the payment. A scalar
+     * projection is used so the check reads columns rather than being served a
+     * cached entity, and the encounter is joined with an explicit LEFT JOIN so
+     * fees with no admission are not silently dropped from the fee-level
+     * branch of the OR. (Issue #22483)
+     */
+    private List<Long> findCurrentlyHeldFeeIds(List<BillFee> selection) {
+        List<Long> heldIds = new ArrayList<>();
+        if (selection == null || selection.isEmpty()) {
+            return heldIds;
+        }
+        List<Long> ids = new ArrayList<>();
+        for (BillFee bf : selection) {
+            if (bf != null && bf.getId() != null) {
+                ids.add(bf.getId());
+            }
+        }
+        if (ids.isEmpty()) {
+            return heldIds;
+        }
+        String jpql = "select bf.id from BillFee bf "
+                + " left join bf.patienEncounter pe "
+                + " where bf.id in :ids "
+                + " and (bf.feePaymentOnHold = true or pe.professionalPaymentsOnHold = true) ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ids", ids);
+        for (Object o : getBillFeeFacade().findObjects(jpql, params)) {
+            if (o instanceof Number) {
+                heldIds.add(((Number) o).longValue());
+            }
+        }
+        return heldIds;
+    }
+
+    /**
+     * BHT numbers for the given fee IDs, taken from the loaded selection. The
+     * BHT number itself never changes, so the in-memory copy is safe here even
+     * when the hold flags on it are stale.
+     */
+    private String describeBhtsForFeeIds(List<Long> feeIds) {
+        List<String> bhtNos = new ArrayList<>();
+        if (payingSurgeryFees == null) {
+            return "";
+        }
+        for (BillFee bf : payingSurgeryFees) {
+            if (bf.getId() == null || !feeIds.contains(bf.getId())) {
+                continue;
+            }
+            PatientEncounter pe = bf.getPatienEncounter();
+            String bhtNo = pe != null && pe.getBhtNo() != null ? pe.getBhtNo() : "(no BHT)";
+            if (!bhtNos.contains(bhtNo)) {
+                bhtNos.add(bhtNo);
+            }
+        }
+        return String.join(", ", bhtNos);
+    }
+
+    /**
+     * Records the override on the payment bill and in the admission's audit
+     * trail, so a payment made past a hold is traceable afterwards.
+     */
+    private void recordHoldOverride(Bill paymentBill, List<BillFee> held) {
+        if (held == null || held.isEmpty()) {
+            return;
+        }
+        List<String> overriddenBhtNos = new ArrayList<>();
+        for (BillFee bf : held) {
+            PatientEncounter bhtPe = bf.getPatienEncounter();
+            String bhtNo = bhtPe != null && bhtPe.getBhtNo() != null ? bhtPe.getBhtNo() : "(no BHT)";
+            if (!overriddenBhtNos.contains(bhtNo)) {
+                overriddenBhtNos.add(bhtNo);
+            }
+        }
+        String reason = holdOverrideReason == null ? "" : holdOverrideReason.trim();
+        String note = "Paid while on hold (" + String.join(", ", overriddenBhtNos) + ") by "
+                + sessionController.getLoggedUser().getName() + ". Reason: " + reason;
+        if (paymentBill != null) {
+            String existing = paymentBill.getComments();
+            paymentBill.setComments(existing == null || existing.trim().isEmpty()
+                    ? note : existing + " | " + note);
+        }
+        for (BillFee bf : held) {
+            PatientEncounter pe = bf.getPatienEncounter();
+            if (pe == null) {
+                continue;
+            }
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("billFeeId", bf.getId());
+            before.put("feePaymentOnHold", bf.isFeePaymentOnHold());
+            before.put("bhtProfessionalPaymentsOnHold", pe.isProfessionalPaymentsOnHold());
+            Map<String, Object> after = new LinkedHashMap<>(before);
+            after.put("paidWhileOnHold", Boolean.TRUE);
+            after.put("overrideReason", reason);
+            after.put("paymentBillId", paymentBill != null ? paymentBill.getId() : null);
+            auditService.logEncounterAudit(pe, "Surgery Professional Fee Paid While On Hold",
+                    before, after, sessionController.getLoggedUser(), "BillFee", bf.getId());
+        }
+    }
+
+    public boolean isHoldOverrideAcknowledged() {
+        return holdOverrideAcknowledged;
+    }
+
+    public void setHoldOverrideAcknowledged(boolean holdOverrideAcknowledged) {
+        this.holdOverrideAcknowledged = holdOverrideAcknowledged;
+    }
+
+    public String getHoldOverrideReason() {
+        return holdOverrideReason;
+    }
+
+    public void setHoldOverrideReason(String holdOverrideReason) {
+        this.holdOverrideReason = holdOverrideReason;
+    }
+
+    public double getTotalOnHold() {
+        return totalOnHold;
+    }
+
+    public void setTotalOnHold(double totalOnHold) {
+        this.totalOnHold = totalOnHold;
+    }
+    // </editor-fold>
 
     private void calculateWithholdingTaxDependingOnPayments() {
         if (totalPaidForCurrentSurgeonForCurrentMonthForCurrentInstitute == 0.0) {
@@ -281,10 +544,12 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash && !feeCollectedByDoctor) {
             Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
             if (userDrawer != null) {
-                double drawerBalance = userDrawer.getCashInHandValue();
+                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
                 double paymentAmount = getTotalPayingWithoutWht();
 
-                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                boolean allowNegativeDrawer = configOptionApplicationController.getBooleanValueByKey(
+                        "Inward Professional Payments - Allow Negative Drawer Balance", false);
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true) && !allowNegativeDrawer) {
                     if (drawerBalance < paymentAmount) {
                         JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
                         return;
@@ -304,8 +569,20 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         }
         
         saveBillCompo(newlyCreatedPaymentBill, newlyCreatedPayment);
+        List<BillFee> heldPaid = feesHeldAtSettle;
+        boolean paidPastHold = heldPaid != null && !heldPaid.isEmpty();
+        if (paidPastHold) {
+            recordHoldOverride(newlyCreatedPaymentBill, heldPaid);
+            getBillFacade().edit(newlyCreatedPaymentBill);
+        }
         printPreview = true;
-        JsfUtil.addSuccessMessage("Surgery Payment Successfully Processed");
+        if (paidPastHold) {
+            JsfUtil.addSuccessMessage("Surgery Payment Successfully Processed. Payments on hold were paid using your"
+                    + " override privilege — this has been recorded on the payment bill and in the admission's audit trail.");
+        } else {
+            JsfUtil.addSuccessMessage("Surgery Payment Successfully Processed");
+        }
+        resetHoldOverride();
     }
 
     public void settleWithoutPayment() {
@@ -317,34 +594,47 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         }
         
         performCalculations();
-        
+
+        // Record the override before the fees are marked paid, so the hold is
+        // captured even if a later write fails part-way (#22483).
+        List<BillFee> heldPaid = feesHeldAtSettle;
+        boolean paidPastHold = heldPaid != null && !heldPaid.isEmpty();
+        if (paidPastHold) {
+            recordHoldOverride(null, heldPaid);
+        }
+
         // Update bill fees without creating payment records
         for (BillFee originalBillFee : getPayingSurgeryFees()) {
-            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
-            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
-            
+            double outstanding = originalBillFee.getFeeValue() - originalBillFee.getPaidValue();
+            Double payingAmount = originalBillFee.getPayingAmount();
+            double amountPaidNow = payingAmount != null ? payingAmount : outstanding;
+
+            originalBillFee.setPaidValue(originalBillFee.getPaidValue() + amountPaidNow);
+            originalBillFee.setSettleValue(originalBillFee.getSettleValue() + amountPaidNow);
+
             // Mark as collected by doctor if flag is set
             if (feeCollectedByDoctor) {
                 originalBillFee.setFeeCollectedByDoctor(true);
             }
-            
+
             getBillFeeFacade().edit(originalBillFee);
         }
-        
+
         printPreview = true;
-        JsfUtil.addSuccessMessage("Surgery Fees Successfully Settled (No Payment Record Created)");
+        if (paidPastHold) {
+            JsfUtil.addSuccessMessage("Surgery Fees Successfully Settled (No Payment Record Created). Payments on hold"
+                    + " were settled using your override privilege — this has been recorded in the admission's audit trail.");
+        } else {
+            JsfUtil.addSuccessMessage("Surgery Fees Successfully Settled (No Payment Record Created)");
+        }
+        resetHoldOverride();
     }
 
     private boolean errorCheck() {
-        if (getPayingSurgeryFees() != null) {
-            for (BillFee bf : getPayingSurgeryFees()) {
-                com.divudi.core.entity.PatientEncounter pe = bf.getPatienEncounter();
-                if (pe != null && Boolean.TRUE.equals(pe.getProfessionalPaymentsOnHold())
-                        && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
-                    JsfUtil.addErrorMessage("Cannot pay: professional payments are on hold for BHT " + pe.getBhtNo() + ".");
-                    return true;
-                }
-            }
+        String holdError = checkHoldsOnSelection();
+        if (holdError != null) {
+            JsfUtil.addErrorMessage(holdError);
+            return true;
         }
         if (currentSurgeon == null) {
             JsfUtil.addErrorMessage("Please select a Surgeon");
@@ -353,6 +643,20 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         if (dueSurgeryFees == null) {
             JsfUtil.addErrorMessage("Please select surgeries to pay");
             return true;
+        }
+        if (getPayingSurgeryFees() != null) {
+            for (BillFee f : getPayingSurgeryFees()) {
+                double outstanding = f.getFeeValue() - f.getPaidValue();
+                Double payingAmount = f.getPayingAmount();
+                if (payingAmount == null || payingAmount <= 0) {
+                    JsfUtil.addErrorMessage("Please enter a valid paying amount for all selected surgery fees");
+                    return true;
+                }
+                if (payingAmount - outstanding > 0.1) {
+                    JsfUtil.addErrorMessage("Paying amount cannot exceed the outstanding due amount for a surgery fee");
+                    return true;
+                }
+            }
         }
         if (totalPaying == 0) {
             JsfUtil.addErrorMessage("Please select surgeries to pay");
@@ -415,20 +719,24 @@ public class InwardSurgeryPaymentBillController implements Serializable {
 
     private void saveBillCompo(Bill paymentBill, Payment paymentBillPayment) {
         for (BillFee originalBillFee : getPayingSurgeryFees()) {
-            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment);
-            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
-            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
-            
+            double outstanding = originalBillFee.getFeeValue() - originalBillFee.getPaidValue();
+            Double payingAmount = originalBillFee.getPayingAmount();
+            double amountPaidNow = payingAmount != null ? payingAmount : outstanding;
+
+            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment, amountPaidNow);
+            originalBillFee.setPaidValue(originalBillFee.getPaidValue() + amountPaidNow);
+            originalBillFee.setSettleValue(originalBillFee.getSettleValue() + amountPaidNow);
+
             // Mark as collected by doctor if flag is set
             if (feeCollectedByDoctor) {
                 originalBillFee.setFeeCollectedByDoctor(true);
             }
-            
+
             getBillFeeFacade().edit(originalBillFee);
         }
     }
 
-    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p) {
+    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p, double amountPaidNow) {
         BillItem newlyCreatedPayingBillItem = new BillItem();
         newlyCreatedPayingBillItem.setReferanceBillItem(originalBillFee.getBillItem());
         newlyCreatedPayingBillItem.setReferenceBill(originalBillFee.getBill());
@@ -437,10 +745,10 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         newlyCreatedPayingBillItem.setCreatedAt(Calendar.getInstance().getTime());
         newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
         newlyCreatedPayingBillItem.setDiscount(0.0);
-        newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
-        newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setGrossValue(amountPaidNow);
+        newlyCreatedPayingBillItem.setNetValue(amountPaidNow);
         newlyCreatedPayingBillItem.setQty(1.0);
-        newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setRate(amountPaidNow);
         getBillItemFacade().create(newlyCreatedPayingBillItem);
 
         BillFee newlyCreatedBillFee = saveBillFee(newlyCreatedPayingBillItem, p);

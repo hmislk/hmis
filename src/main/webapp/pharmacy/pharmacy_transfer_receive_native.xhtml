@@ -36,6 +36,7 @@
                             class="ui-button-success mx-2"
                             action="#{transferReceiveNativeSqlController.settle}"
                             ajax="false"
+                            onclick="return confirm('Do you want to receive this transfer?');"
                             disabled="#{not webUserController.hasPrivilege('PharmacyReceiveFinalize')}">
                         </p:commandButton>
 

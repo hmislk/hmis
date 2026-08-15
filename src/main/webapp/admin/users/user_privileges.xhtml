@@ -108,7 +108,7 @@
                                 autocomplete="off">
                                 <p:ajax
                                     event="keyup"
-                                    process="@this"
+                                    process="@this tree"
                                     listener="#{userPrivilageController.filterPrivileges}"
                                     update="tree"
                                     oncomplete="PF('privTree').filter()" />

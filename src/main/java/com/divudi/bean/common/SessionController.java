@@ -83,6 +83,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import javax.faces.context.FacesContext;
@@ -352,6 +353,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        thisLogin = null;
     }
 
     @Override
@@ -1804,14 +1807,23 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         // Check password expiration
         if (enablePasswordExpiration) {
+            // Use the raw (non-self-initializing) accessor - getLastPasswordResetAt()
+            // silently sets the field to "now" when null, which would make a null
+            // check here always false and defeat the expiration check entirely.
+            Date lastPasswordResetAt = loggedUser.getLastPasswordResetAtRaw();
+            if (lastPasswordResetAt == null) {
+                // No recorded password change (e.g. account predates this feature) -
+                // treat as an unknown-age, expired password rather than silently exempting it.
+                passwordRequirementMessage = "Password has expired. Please reset your password.";
+                JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
+                return false;
+            }
             long expirationMillis = passwordExpirationPeriod * 24L * 60 * 60 * 1000; // Convert days to milliseconds
-            if (loggedUser.getLastPasswordResetAt() != null) {
-                long timeSinceLastReset = System.currentTimeMillis() - loggedUser.getLastPasswordResetAt().getTime();
-                if (timeSinceLastReset > expirationMillis) {
-                    passwordRequirementMessage = "Password has expired. Please reset your password.";
-                    JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
-                    return false;
-                }
+            long timeSinceLastReset = System.currentTimeMillis() - lastPasswordResetAt.getTime();
+            if (timeSinceLastReset > expirationMillis) {
+                passwordRequirementMessage = "Password has expired. Please reset your password.";
+                JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
+                return false;
             }
         }
 
@@ -2169,6 +2181,40 @@ public class SessionController implements Serializable, HttpSessionListener {
         paymentManagementAfterShiftStart = null;
         availableDepartmentTypesForPharmacyTransactions = null;
         financialTransactionController.resetForLogout();
+        invalidateHttpSession();
+    }
+
+    /**
+     * Invalidates the underlying HttpSession so all @SessionScoped beans
+     * (including their cached reference lists, e.g. #22509) are destroyed
+     * on logout instead of surviving into the next login on the same
+     * browser session (#22508).
+     *
+     * Skips the redirect when already on logout.xhtml (session-timeout
+     * flow) so that page's own "session timed out, please log in again"
+     * message and Login button still render instead of being bounced
+     * straight to the index page.
+     */
+    private void invalidateHttpSession() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            return;
+        }
+        Object session = ctx.getExternalContext().getSession(false);
+        if (session instanceof HttpSession) {
+            ((HttpSession) session).invalidate();
+        }
+        String viewId = ctx.getViewRoot() != null ? ctx.getViewRoot().getViewId() : null;
+        if (viewId != null && viewId.contains("logout.xhtml")) {
+            return;
+        }
+        try {
+            String redirectUrl = ctx.getExternalContext().getRequestContextPath() + "/faces/index.xhtml";
+            ctx.getExternalContext().redirect(redirectUrl);
+            ctx.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public WebUser getCurrent() {

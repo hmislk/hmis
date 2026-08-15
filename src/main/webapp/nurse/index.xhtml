@@ -124,7 +124,8 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
-                                                            value="Room Change"
+                                                            value="Room Change (Deprecated)"
+                                                            title="Deprecated - use Patient Room Details instead"
                                                             ajax="false"
                                                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                                             action="#{admissionController.navigateToRoomChange()}"
@@ -134,7 +135,8 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
-                                                            value="Guardian Room Change"
+                                                            value="Guardian Room Change (Deprecated)"
+                                                            title="Deprecated - use Patient Room Details instead"
                                                             ajax="false"
                                                             rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
                                                             action="#{admissionController.navigateToGuardianRoomChange()}"
@@ -204,6 +206,17 @@
                                                                 title="Navigate to Hold Professional Payments"
                                                                 rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
                                                                 styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
+                                                            </p:commandButton>
+
+                                                            <p:commandButton
+                                                                id="btnProfessionalFeeHold"
+                                                                value="Professional Payments Report"
+                                                                ajax="false"
+                                                                action="#{professionalFeeHoldController.navigateToProfessionalFeeHold(admissionController.current)}"
+                                                                icon="fa fa-list-check"
+                                                                title="Report and per-item hold/unhold of professional payments for this admission"
+                                                                rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                                                styleClass="w-100 ui-button-secondary">
                                                             </p:commandButton>
                                                         </div>
                                                     </div>
@@ -473,7 +486,7 @@
                                                             value="Add Surgeries"
                                                             icon="fa fa-clock"
                                                             ajax="false"
-                                                            rendered="#{admissionController.current ne null and not admissionController.current.paymentFinalized and webUserController.hasPrivilege('InwardSurgeryAdd')}"
+                                                            rendered="#{admissionController.current ne null and admissionController.current.id ne null and not admissionController.current.paymentFinalized and webUserController.hasPrivilege('InwardSurgeryAdd')}"
                                                             action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                                             class="w-100">
                                                             <f:setPropertyActionListener
@@ -486,7 +499,7 @@
                                                             value="Manage Surgeries"
                                                             icon="fa fa-list"
                                                             ajax="false"
-                                                            rendered="#{webUserController.hasPrivilege('InwardSurgeryManage')}"
+                                                            rendered="#{admissionController.current ne null and admissionController.current.id ne null and webUserController.hasPrivilege('InwardSurgeryManage')}"
                                                             action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}"
                                                             class="w-100">
                                                             <f:setPropertyActionListener
@@ -632,14 +645,11 @@
                                                                 <p:commandButton
                                                                     id="btnPharmacyRequestsHistoryNurse"
                                                                     value="Pharmacy Requests"
-                                                                    action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestsList()}"
+                                                                    action="#{inwardPharmacyEncounterReportController.navigateToWardPharmacyRequestsList()}"
                                                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                                                     icon="fa fa-clipboard-list"
                                                                     class="w-100"
                                                                     ajax="false">
-                                                                    <f:setPropertyActionListener
-                                                                        value="#{admissionController.current}"
-                                                                        target="#{inwardPharmacyEncounterReportController.patientEncounter}" />
                                                                 </p:commandButton>
                                                             </div>
                                                             <div class="col-6">
@@ -737,6 +747,77 @@
                                                                 value="#{null}"
                                                                 target="#{inwardReportControllerBht.department}" />
                                                         </p:commandButton>
+                                                    </div>
+                                                </p:panel>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBenchPanelPayments')}">
+                                            <div class="col-6">
+                                                <p:panel header="Payments">
+                                                    <h:panelGroup layout="block" rendered="#{admissionController.current ne null and admissionController.hasPendingAppointmentDepositConversion}">
+                                                        <div class="p-2 rounded mb-2" style="background-color:#e8f5ee;">
+                                                            <div class="text-uppercase small fw-bold text-muted mb-2">Payment Actions</div>
+                                                            <div class="row g-2">
+                                                                <div class="col-6">
+                                                                    <p:commandButton
+                                                                        id="btnConvertAppointmentDepositNurse"
+                                                                        value="Convert Appointment Deposit"
+                                                                        ajax="false"
+                                                                        action="#{admissionController.navigateToAppointmentDepositConversion()}"
+                                                                        icon="fa fa-right-left"
+                                                                        rendered="#{webUserController.hasPrivilege('InwardEditPaymentDetails') and admissionController.current ne null and admissionController.hasPendingAppointmentDepositConversion}"
+                                                                        class="w-100">
+                                                                    </p:commandButton>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </h:panelGroup>
+
+                                                    <hr class="my-2"/>
+
+                                                    <div class="p-2 rounded" style="background-color:#eef1f4;">
+                                                        <div class="text-uppercase small fw-bold text-muted mb-2">Payment Reports</div>
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <p:commandButton
+                                                                    id="btnDepartmentPaymentsReportNurse"
+                                                                    value="Department Payments Report"
+                                                                    ajax="false"
+                                                                    action="#{inwardReportControllerBht.navigateToInwardPaymentBillListForDepartment()}"
+                                                                    icon="fa fa-money-bill-wave"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                                                    class="w-100 ui-button-success">
+                                                                </p:commandButton>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <p:commandButton
+                                                                    id="btnAdmissionPaymentsReportNurse"
+                                                                    value="This Admission's Payments"
+                                                                    ajax="false"
+                                                                    action="#{inwardReportControllerBht.navigateToInpatientPaymentBillListDto()}"
+                                                                    icon="fa fa-file-invoice-dollar"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardReport') and admissionController.current ne null}"
+                                                                    class="w-100 ui-button-success">
+                                                                    <f:setPropertyActionListener
+                                                                        value="#{admissionController.current}"
+                                                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                                                    <f:setPropertyActionListener
+                                                                        value="#{null}"
+                                                                        target="#{inwardReportControllerBht.department}" />
+                                                                </p:commandButton>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <p:commandButton
+                                                                    id="btnSentEmailsReportNurse"
+                                                                    value="Sent Emails Report"
+                                                                    ajax="false"
+                                                                    action="#{emailController.navigateToEmailList()}"
+                                                                    icon="fa fa-envelope"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                                                    class="w-100 ui-button-success">
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </p:panel>
                                             </div>

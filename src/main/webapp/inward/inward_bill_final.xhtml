@@ -14,6 +14,7 @@
     <ui:define name="content">
 
         <h:head>
+            <h:outputScript library="js" name="custom4-paged-print.js" target="head"/>
             <h:outputStylesheet>
                 .top-aligned-grid td {
                 vertical-align: top !important;
@@ -30,71 +31,22 @@
             <h:form>
                 <p:panel rendered="#{!bhtSummeryController.printPreview}">
                     <f:facet name="header">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
+                        <div class="d-flex justify-content-between align-items-center w-100">
+
+                            <!-- LEFT: title -->
+                            <div class="d-flex align-items-center gap-2">
                                 <h:outputText styleClass="fas fa-file-invoice-dollar" />
-                                <h:outputLabel value="Inward Final Bill" class="mx-2"/>
+                                <h:outputLabel value="Inward Final Bill"/>
                             </div>
-                            <div>
-                                <p:commandButton 
-                                    update="dList tot @all settle saveProvisional" 
-                                    value="Process"
-                                    actionListener="#{bhtSummeryController.processFinalBill()}"
-                                    process="@this"
-                                    class="ui-button-warning mx-1" 
-                                    icon="fas fa-cog"
-                                    style="width: 150px; padding: 1px; margin: auto;"
-                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" >
-                                </p:commandButton>
 
-                                <p:commandButton 
-                                    class="ui-button-warning mx-2"
-                                    icon="fas fa-cogs"
-                                    value="Process Bill"
-                                    process="@this"
-                                    update="dList tot settle saveProvisional @all printTempBill"
-                                    action="#{bhtSummeryController.createTempBill()}" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" >
-                                </p:commandButton>
-
-                                <p:commandButton 
-                                    class="ui-button-info"
-                                    icon="fas fa-print"
-                                    value="Check Final Bill"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false) and configOptionApplicationController.getBooleanValueByKey('Show Print Button For Intermediate Bill on Final Bill Edit',false)}">
-                                    <p:printer target="printTempBill" />
-                                </p:commandButton>
-
-                                <p:commandButton
-                                    value="Save Provisional Bill"
-                                    action="#{bhtSummeryController.saveProvisionalBill()}"
-                                    id="saveProvisional"
-                                    ajax="false"
-                                    disabled="#{bhtSummeryController.changed}"
-                                    class="ui-button-warning mx-1"
-                                    icon="fa fa-save"
-                                    style="width: 200px; padding: 1px; margin: auto;"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Save Provisional on Final Bill Edit',false) and webUserController.hasPrivilege('InwardSaveProvisionalFinalBill')}">
-                                </p:commandButton>
-
-                                <p:commandButton
-                                    value="Settle"
-                                    action="#{bhtSummeryController.settle}"
-                                    id="settle"
-                                    ajax="false"
-                                    disabled="#{bhtSummeryController.changed}"
-                                    class="ui-button-success mx-1"
-                                    icon="fa fa-check"
-                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
-                                    rendered="#{webUserController.hasPrivilege('InwardSettleFinalBill')}">
-                                </p:commandButton>
-
+                            <!-- CENTER: entity navigation -->
+                            <div class="d-flex gap-2">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <p:commandButton
                                         ajax="false"
-                                        value="Inpatient Profile"
+                                        value="Inpatient Dashboard"
                                         icon="fa fa-id-card"
-                                        styleClass="ui-button-secondary mx-1"
+                                        styleClass="ui-button-info ui-button-outlined"
                                         action="#{bhtSummeryController.navigateToInpatientProfile()}">
                                         <f:setPropertyActionListener
                                             target="#{admissionController.current}"
@@ -102,6 +54,51 @@
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
+
+                            <!-- RIGHT: actions — left=least important, right=primary -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton
+                                    update="dList tot @all settle"
+                                    value="Process"
+                                    actionListener="#{bhtSummeryController.processFinalBill()}"
+                                    process="@this"
+                                    styleClass="ui-button-warning"
+                                    icon="fas fa-cog"
+                                    style="width: 150px; padding: 1px; margin: auto;"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" >
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    styleClass="ui-button-warning"
+                                    icon="fas fa-cogs"
+                                    value="Process Bill"
+                                    process="@this"
+                                    update="dList tot settle @all printTempBill"
+                                    action="#{bhtSummeryController.createTempBill()}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" >
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    styleClass="ui-button-info"
+                                    icon="fas fa-print"
+                                    value="Check Final Bill"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false) and configOptionApplicationController.getBooleanValueByKey('Show Print Button For Intermediate Bill on Final Bill Edit',false)}">
+                                    <p:printer target="printTempBill" />
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    value="Save Final Bill"
+                                    action="#{bhtSummeryController.settle}"
+                                    id="settle"
+                                    ajax="false"
+                                    disabled="#{bhtSummeryController.changed}"
+                                    styleClass="ui-button-success"
+                                    icon="fa fa-check"
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
+                                    rendered="#{webUserController.hasPrivilege('InwardSettleFinalBill')}">
+                                </p:commandButton>
+                            </div>
+
                         </div>
                     </f:facet>
 
@@ -628,14 +625,15 @@
                                     id="catAdj" 
                                     class="w-100 text-end"
                                     value="#{c.adjustedTotal}"
-                                    disabled="#{c.inwardChargeType eq 'RoomCharges' 
+                                    disabled="#{!configOptionApplicationController.getBooleanValueByKeyReadOnly('Inward Final Bill - Allow Editing Adjusted Total For All Charge Types', false)
+                                                and (c.inwardChargeType eq 'RoomCharges'
                                                 or c.inwardChargeType eq 'MOCharges'
                                                 or c.inwardChargeType eq 'MaintainCharges'
                                                 or c.inwardChargeType eq 'NursingCharges'
                                                 or c.inwardChargeType eq 'LinenCharges'
                                                 or c.inwardChargeType eq 'MedicalCareICU'
                                                 or c.inwardChargeType eq 'AdministrationCharge'
-                                                or c.inwardChargeType eq 'ProfessionalCharge'}">
+                                                or c.inwardChargeType eq 'ProfessionalCharge')}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} "
                                             event="blur"
@@ -940,11 +938,11 @@
                 <p:panel rendered="#{bhtSummeryController.printPreview}">
                     <p:panel>
                         <f:facet name="header">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h:outputLabel value="Final Bill" class="mt-2"/>
-                                </div>
-                                <div style="text-align: center!important;">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+
+                                <!-- LEFT: title + claimable status -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputLabel value="Final Bill"/>
                                     <h:panelGroup
                                         rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
                                         <p:outputLabel value="CLAIMABLE"/>
@@ -959,33 +957,41 @@
                                     </h:panelGroup>
                                 </div>
 
-                                <div>
+                                <!-- CENTER: entity navigation -->
+                                <div class="d-flex gap-2">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Inpatient Dashboard"
+                                            icon="fa fa-id-card"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                            <f:setPropertyActionListener
+                                                target="#{admissionController.current}"
+                                                value="#{bhtSummeryController.patientEncounter}" />
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- RIGHT: actions — left=least important, right=primary -->
+                                <div class="d-flex gap-2 align-items-center">
                                     <p:selectBooleanCheckbox value="#{bhtSummeryController.showOrginalBill}"
                                                              label="Show Original Bill" itemLabel="Show Original Bill"
                                                              class="mx-2">
                                         <p:ajax process="@this" update="@all"/>
                                     </p:selectBooleanCheckbox>
 
-                                    <!-- Collect payment button — routes to the right page based on payment method -->
-                                    <p:commandButton
-                                        value="Collect Patient Payment"
-                                        ajax="false"
-                                        icon="fas fa-money-bill-wave"
-                                        class="ui-button-success mx-1"
-                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit'}"
-                                        action="#{bhtSummeryController.navigateToCollectPayment()}"/>
-                                    <p:commandButton
-                                        value="Collect Patient Co-payment"
-                                        ajax="false"
-                                        icon="fas fa-user-check"
-                                        class="ui-button-warning mx-1"
-                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}"
-                                        action="#{bhtSummeryController.navigateToCollectPayment()}"/>
-
                                     <p:commandButton value="Final Bill" ajax="false"
                                                      class="ui-button-info mx-1" icon="fas fa-print">
                                         <p:printer target="finalBillOnly"/>
                                     </p:commandButton>
+
+                                    <p:commandButton value="Custom Bill 3" type="button"
+                                                     class="ui-button-info mx-1" icon="fas fa-print"
+                                                     onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('custom4BillOnly',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                    <p:commandButton value="Custom Bill 3 (Duplicate)" type="button"
+                                                     class="ui-button-info mx-1" icon="fas fa-print"
+                                                     onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('custom4BillOnlyDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
 
                                     <h:panelGroup
                                         rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
@@ -1058,9 +1064,36 @@
                                         </p:commandButton>
                                     </h:panelGroup>
 
+                                    <!-- Collect payment button — routes to the right page based on payment method; primary action, rightmost -->
+                                    <p:commandButton
+                                        value="Collect Patient Payment"
+                                        ajax="false"
+                                        icon="fas fa-money-bill-wave"
+                                        class="ui-button-success mx-1"
+                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit'}"
+                                        action="#{bhtSummeryController.navigateToCollectPayment()}"/>
+                                    <p:commandButton
+                                        value="Collect Patient Co-payment"
+                                        ajax="false"
+                                        icon="fas fa-user-check"
+                                        class="ui-button-success mx-1"
+                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}"
+                                        action="#{bhtSummeryController.navigateToCollectPayment()}"/>
                                 </div>
                             </div>
                         </f:facet>
+
+                        <h:panelGroup id="custom4BillOnly" styleClass="noBorder">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="false" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="custom4BillOnlyDuplicate" styleClass="noBorder">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="true" showProfessional="true"/>
+                        </h:panelGroup>
 
                         <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder"
                                       rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">

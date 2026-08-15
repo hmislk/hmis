@@ -432,6 +432,10 @@ public class BhtIssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("Cannot return medicines: nursing discharge has already been confirmed for this patient.");
             return;
         }
+        if (getBill().getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return;
+        }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;

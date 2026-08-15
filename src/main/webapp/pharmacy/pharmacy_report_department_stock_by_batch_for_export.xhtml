@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
         <ui:define name="subcontent">
             <h:form id="frm">
@@ -42,7 +43,8 @@
                                      class="ui-button-success m-1">
                         <p:dataExporter type="xlsx"
                                         target="tbl"
-                                        fileName="stock_by_batch_#{reportsStock.department.name}" />
+                                        fileName="stock_by_batch_#{reportsStock.department.name}"
+                                        postProcessor="#{reportsStock.postProcessXLSStockByBatchForExport}" />
                     </p:commandButton>
 
 
@@ -56,6 +58,18 @@
                                  paginatorPosition="top"
                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
 
+                        <f:facet name="header">
+                            <h:panelGroup layout="block">
+                                <h:outputLabel value="Stock Report by Batch for Export"/>
+                                <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                    <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}   |   "/>
+                                    <h:outputText value="Include Zero Stocks: #{reportsStock.includeZeroStock ? 'Yes' : 'No'}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </f:facet>
+                        <f:facet name="footer">
+                            <common:report_print_footer/>
+                        </f:facet>
 
                         <p:column headerText="Serial No">
                             <h:outputText value="#{idx + 1}" />

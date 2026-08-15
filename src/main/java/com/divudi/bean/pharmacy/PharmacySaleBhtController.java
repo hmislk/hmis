@@ -16,6 +16,7 @@ import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.inward.SurgeryBillController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -199,6 +200,8 @@ public class PharmacySaleBhtController implements Serializable {
     UserNotificationController userNotificationController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    SurgeryBillController surgeryBillController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -295,6 +298,12 @@ public class PharmacySaleBhtController implements Serializable {
     // pharmacist sees the original prescription against what was actually resolved
     // (and any low/no-stock shortfall) — prevents silent omissions. Issue #21334.
     private List<DischargeConversionRow> dischargeConversionReport = new ArrayList<>();
+    // Per-requested-line stock availability report shown on the BHT issue-request
+    // page so the pharmacist sees Available/Requested/Remaining BEFORE clicking
+    // "Issue to BHT", instead of only a late error on settle. Kept separate from
+    // dischargeConversionReport (different flow) so this change cannot regress
+    // the stable discharge-issue path. Issue #22312.
+    private List<BhtIssueStockReportRow> bhtIssueStockReport = new ArrayList<>();
     Department department;
     String errorMessage = "";
     /////////////////
@@ -318,6 +327,11 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void settleSurgeryBhtIssue() {
         if (getBatchBill() == null) {
+            return;
+        }
+        if (getBatchBill().getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(getBatchBill())) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
         if (getPreBill().getBillItems().isEmpty()) {
@@ -772,6 +786,7 @@ public class PharmacySaleBhtController implements Serializable {
         cachedMatrixByAdmissionDepartment = null;
         dischargeIssueMode = false;
         dischargeConversionReport = new ArrayList<>();
+        bhtIssueStockReport = new ArrayList<>();
     }
 
     /**
@@ -1126,6 +1141,23 @@ public class PharmacySaleBhtController implements Serializable {
     /** True when any converted line was not issued in full (needs pharmacist attention). */
     public boolean isDischargeConversionHasAttentionItems() {
         for (DischargeConversionRow r : getDischargeConversionReport()) {
+            if (r.isNeedsAttention()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<BhtIssueStockReportRow> getBhtIssueStockReport() {
+        if (bhtIssueStockReport == null) {
+            bhtIssueStockReport = new ArrayList<>();
+        }
+        return bhtIssueStockReport;
+    }
+
+    /** True when any BHT issue-request line was not issued in full (needs pharmacist attention). */
+    public boolean isBhtIssueStockReportHasAttentionItems() {
+        for (BhtIssueStockReportRow r : getBhtIssueStockReport()) {
             if (r.isNeedsAttention()) {
                 return true;
             }
@@ -1777,7 +1809,11 @@ public class PharmacySaleBhtController implements Serializable {
                 return true;
             }
             if (bi.getPharmaceuticalBillItem().getStock() == null) {
-                JsfUtil.addErrorMessage("Requested item not found" + bi.getItem().getName());
+                double requestedQtyForCheck = Math.abs(bi.getPharmaceuticalBillItem().getQty());
+                JsfUtil.addErrorMessage("No stock available for " + bi.getItem().getName()
+                        + ". Available: 0, Requested: " + requestedQtyForCheck
+                        + ", Remaining not issued: " + requestedQtyForCheck
+                        + ". Please select a substitute or check pharmacy stock.");
                 return true;
             }
             if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
@@ -2110,12 +2146,12 @@ public class PharmacySaleBhtController implements Serializable {
                 return false;
             }
             Stock tbiStock = tbi.getPharmaceuticalBillItem().getStock();
-            if (tbiStock == null) {
-                JsfUtil.addErrorMessage("No stock available for " + tbi.getItem().getName() + ". Please check pharmacy stock.");
-                return false;
-            }
-            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbiStock.getStock()) {
-                JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
+            double requestedQtyForSettle = Math.abs(tbi.getPharmaceuticalBillItem().getQty());
+            if (requestedQtyForSettle > tbiStock.getStock()) {
+                double availableQty = tbiStock.getStock();
+                JsfUtil.addErrorMessage("Not Enough Stock for " + tbi.getItem().getName()
+                        + ". Available: " + availableQty + ", Requested: " + requestedQtyForSettle
+                        + ", Remaining not issued: " + (requestedQtyForSettle - availableQty) + ".");
                 return false;
             }
         }
@@ -2860,6 +2896,9 @@ public class PharmacySaleBhtController implements Serializable {
         // same @SessionScoped controller so items are priced with the inward
         // price matrix, not at bare retail. (PR #21330 review)
         dischargeIssueMode = false;
+        // Reset the stock-availability report on every (re)generation so a stale
+        // report from a previous request/navigation is never shown. Issue #22312.
+        bhtIssueStockReport = new ArrayList<>();
         if (b == null) {
             JsfUtil.addErrorMessage("No bill");
             return;
@@ -2951,14 +2990,17 @@ public class PharmacySaleBhtController implements Serializable {
 
             Amp exactAmp = null;
             List<StockQty> exactStockQtys = null;
+            double exactCandidateQty = 0;
 
             Amp sameStrengthAmp = null;
             List<StockQty> sameStrengthStockQtys = null;
             Date sameStrengthEarliestExpiry = null;
+            double sameStrengthCandidateQty = 0;
 
             Amp fallbackAmp = null;
             List<StockQty> fallbackStockQtys = null;
             Date fallbackEarliestExpiry = null;
+            double fallbackCandidateQty = 0;
 
             for (Amp candidate : candidateAmps) {
                 Double ampStrength = candidate.getStrengthOfAnIssueUnit();
@@ -2992,6 +3034,7 @@ public class PharmacySaleBhtController implements Serializable {
                 if (isExact) {
                     exactAmp = candidate;
                     exactStockQtys = stockQtys;
+                    exactCandidateQty = candidateQty;
                     break; // exact match is optimal
                 } else if (isSameStrength
                         && (sameStrengthAmp == null
@@ -3000,6 +3043,7 @@ public class PharmacySaleBhtController implements Serializable {
                     sameStrengthAmp = candidate;
                     sameStrengthStockQtys = stockQtys;
                     sameStrengthEarliestExpiry = candidateEarliestExpiry;
+                    sameStrengthCandidateQty = candidateQty;
                 } else if (!isSameStrength
                         && (fallbackAmp == null
                         || (candidateEarliestExpiry != null && (fallbackEarliestExpiry == null
@@ -3007,28 +3051,35 @@ public class PharmacySaleBhtController implements Serializable {
                     fallbackAmp = candidate;
                     fallbackStockQtys = stockQtys;
                     fallbackEarliestExpiry = candidateEarliestExpiry;
+                    fallbackCandidateQty = candidateQty;
                 }
             }
 
             // Pick best available candidate
             final List<StockQty> selectedStockQtys;
             final boolean isSubstitute;
+            final double selectedCandidateQty;
 
             if (exactAmp != null) {
                 selectedStockQtys = exactStockQtys;
                 isSubstitute = false;
+                selectedCandidateQty = exactCandidateQty;
             } else if (sameStrengthAmp != null) {
                 selectedStockQtys = sameStrengthStockQtys;
                 isSubstitute = true;
+                selectedCandidateQty = sameStrengthCandidateQty;
             } else if (fallbackAmp != null) {
                 selectedStockQtys = fallbackStockQtys;
                 isSubstitute = true;
+                selectedCandidateQty = fallbackCandidateQty;
             } else {
                 selectedStockQtys = null;
                 isSubstitute = false;
+                selectedCandidateQty = issuableQty;
             }
 
             if (selectedStockQtys != null && !selectedStockQtys.isEmpty()) {
+                double issuedQtyForLine = 0.0;
                 for (StockQty sq : selectedStockQtys) {
                     if (sq.getQty() == 0) {
                         continue;
@@ -3066,7 +3117,26 @@ public class PharmacySaleBhtController implements Serializable {
                     }
                     calculateRates(billItem);
                     billItems.add(billItem);
+                    issuedQtyForLine += sq.getQty();
                 }
+
+                // Stock-availability report row for this requested line. Issue #22312.
+                BhtIssueStockReportRow reportRow = new BhtIssueStockReportRow();
+                reportRow.setRequestedItemName(requestedItem.getName());
+                reportRow.setRequestedQty(selectedCandidateQty);
+                reportRow.setIssuedQty(issuedQtyForLine);
+                if (issuedQtyForLine >= selectedCandidateQty) {
+                    reportRow.setStatus(BhtIssueStockReportRow.Status.ISSUED_FULL);
+                    reportRow.setMessage("");
+                } else {
+                    double remaining = selectedCandidateQty - issuedQtyForLine;
+                    reportRow.setStatus(BhtIssueStockReportRow.Status.PARTIAL_LOW_STOCK);
+                    reportRow.setMessage("Available: " + issuedQtyForLine + ", Requested: " + selectedCandidateQty
+                            + ", Remaining not issued: " + remaining + " of " + requestedItem.getName()
+                            + " at " + dept.getName()
+                            + ". Issued the available quantity — use \"Select a Substitute\" or split the rest manually.");
+                }
+                bhtIssueStockReport.add(reportRow);
             } else {
                 // No stock found for any AMP — add placeholder for manual resolution
                 billItem = new BillItem();
@@ -3089,6 +3159,18 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                 calculateRates(billItem);
                 billItems.add(billItem);
+
+                // Stock-availability report row for this requested line. Issue #22312.
+                BhtIssueStockReportRow reportRow = new BhtIssueStockReportRow();
+                reportRow.setRequestedItemName(requestedItem.getName());
+                reportRow.setRequestedQty(issuableQty);
+                reportRow.setIssuedQty(0.0);
+                reportRow.setStatus(BhtIssueStockReportRow.Status.NOT_AVAILABLE);
+                reportRow.setMessage("Available: 0, Requested: " + issuableQty
+                        + ", Remaining not issued: " + issuableQty + " of " + requestedItem.getName()
+                        + " at " + dept.getName()
+                        + ". No stock found — use \"Select a Substitute\" to resolve before settling.");
+                bhtIssueStockReport.add(reportRow);
             }
         }
 
@@ -3886,6 +3968,110 @@ public class PharmacySaleBhtController implements Serializable {
                     return "Issued in full";
                 case QTY_DEFAULTED:
                     return "Qty defaulted — verify";
+                case PARTIAL_LOW_STOCK:
+                    return "Partial — low stock";
+                case NOT_AVAILABLE:
+                    return "Not available";
+                default:
+                    return "";
+            }
+        }
+    }
+
+    /**
+     * One row of the per-requested-line stock availability report shown on the
+     * BHT issue-request page. Captures the requested quantity against what was
+     * actually issuable from stock so the pharmacist sees Available/Requested/
+     * Remaining BEFORE clicking "Issue to BHT". Issue #22312.
+     */
+    public static class BhtIssueStockReportRow implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        public enum Status {
+            ISSUED_FULL,
+            PARTIAL_LOW_STOCK,
+            NOT_AVAILABLE
+        }
+
+        private String requestedItemName;
+        private Double requestedQty;
+        private Double issuedQty;
+        private Status status;
+        private String message;
+
+        public BhtIssueStockReportRow() {
+        }
+
+        public String getRequestedItemName() {
+            return requestedItemName;
+        }
+
+        public void setRequestedItemName(String requestedItemName) {
+            this.requestedItemName = requestedItemName;
+        }
+
+        public Double getRequestedQty() {
+            return requestedQty;
+        }
+
+        public void setRequestedQty(Double requestedQty) {
+            this.requestedQty = requestedQty;
+        }
+
+        public Double getIssuedQty() {
+            return issuedQty;
+        }
+
+        public void setIssuedQty(Double issuedQty) {
+            this.issuedQty = issuedQty;
+        }
+
+        public Status getStatus() {
+            return status;
+        }
+
+        public void setStatus(Status status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        /** True when this row needs the pharmacist's attention (not fully issued). */
+        public boolean isNeedsAttention() {
+            return status != Status.ISSUED_FULL;
+        }
+
+        /** Bootstrap/PrimeFaces severity keyword for styling the row. */
+        public String getSeverity() {
+            if (status == null) {
+                return "info";
+            }
+            switch (status) {
+                case ISSUED_FULL:
+                    return "success";
+                case PARTIAL_LOW_STOCK:
+                    return "warning";
+                case NOT_AVAILABLE:
+                    return "danger";
+                default:
+                    return "info";
+            }
+        }
+
+        public String getStatusLabel() {
+            if (status == null) {
+                return "";
+            }
+            switch (status) {
+                case ISSUED_FULL:
+                    return "Issued in full";
                 case PARTIAL_LOW_STOCK:
                     return "Partial — low stock";
                 case NOT_AVAILABLE:
