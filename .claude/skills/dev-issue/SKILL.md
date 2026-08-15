@@ -17,6 +17,11 @@ Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
 non-repro case, 3, 4, 14) are the points where you pause for the user.
 
+This authorization also covers `superpowers:writing-plans`' Execution
+Handoff question, if that chain gets invoked anywhere in this flow (e.g.
+during step 5): auto-select **option 1, Subagent-Driven** without asking —
+do not stop for it as an additional discussion gate.
+
 ## 1. Setup
 
 Run the `start-issue` skill for `$0`: creates the branch from
