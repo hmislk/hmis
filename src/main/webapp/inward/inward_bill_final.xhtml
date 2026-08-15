@@ -625,14 +625,15 @@
                                     id="catAdj" 
                                     class="w-100 text-end"
                                     value="#{c.adjustedTotal}"
-                                    disabled="#{c.inwardChargeType eq 'RoomCharges' 
+                                    disabled="#{!configOptionApplicationController.getBooleanValueByKeyReadOnly('Inward Final Bill - Allow Editing Adjusted Total For All Charge Types', false)
+                                                and (c.inwardChargeType eq 'RoomCharges'
                                                 or c.inwardChargeType eq 'MOCharges'
                                                 or c.inwardChargeType eq 'MaintainCharges'
                                                 or c.inwardChargeType eq 'NursingCharges'
                                                 or c.inwardChargeType eq 'LinenCharges'
                                                 or c.inwardChargeType eq 'MedicalCareICU'
                                                 or c.inwardChargeType eq 'AdministrationCharge'
-                                                or c.inwardChargeType eq 'ProfessionalCharge'}">
+                                                or c.inwardChargeType eq 'ProfessionalCharge')}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} "
                                             event="blur"
