@@ -921,23 +921,32 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // with no admission selected). Re-check server-side before creating the
         // baby admission, since getCurrent() would otherwise happily hand back
         // a transient, unsaved Admission as the parent. (#22998 review)
-        if (current == null || current.getId() == null || current.getPatient() == null
-                || current.getPatient().getId() == null) {
+        if (current == null || current.getId() == null || current.getId() <= 0) {
             JsfUtil.addErrorMessage("Select a saved admission before adding a baby admission.");
             return "";
         }
-        if (current.getDischarged() != null && current.getDischarged()) {
+        // AdmissionController is @SessionScoped, so `current` can be a stale
+        // snapshot from earlier in the session (e.g. another tab/request
+        // discharged this same admission since it was loaded here). Re-read
+        // the parent from the DB rather than trusting the in-memory copy.
+        Admission persistedParent = getEjbFacade().findWithoutCache(current.getId());
+        if (persistedParent == null || persistedParent.getPatient() == null
+                || persistedParent.getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Select a saved admission before adding a baby admission.");
+            return "";
+        }
+        if (Boolean.TRUE.equals(persistedParent.getDischarged())) {
             JsfUtil.addErrorMessage("A discharged admission cannot have a baby admission.");
             return "";
         }
-        if (current.getParentEncounter() != null) {
+        if (persistedParent.getParentEncounter() != null) {
             // A baby admission's parentEncounter already points to the mother.
             // Do not allow a baby to have its own baby admission (e.g. grandmother
             // admits mother, mother admits daughter is not a realistic scenario).
             JsfUtil.addErrorMessage("A baby admission cannot have its own baby admission.");
             return "";
         }
-        parentAdmission = current;
+        parentAdmission = persistedParent;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
             ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
