@@ -180,6 +180,14 @@
                                         <h:outputLabel value="#{bhtSummeryController.grantTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
+                                        <h:outputLabel value="Gross Total" style="font-weight: bold" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}"/>
+                                        <h:outputLabel value="#{bhtSummeryController.grossTotal}" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Service Charge (Margin)" style="font-weight: bold" title="Price matrix value already included in Total Charges above" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}"/>
+                                        <h:outputLabel value="#{bhtSummeryController.marginTotal}" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                         <h:outputLabel value="Item Discounts" style="font-weight: bold"/>
                                         <h:outputLabel value="#{bhtSummeryController.itemDiscountTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -584,6 +592,12 @@
 
                             <p:column headerText="Total" sortBy="#{c.total}" class="text-end" width="14em;">
                                 <h:outputLabel value="#{c.total}" class="w-100 text-end">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Service Charge (Margin)" sortBy="#{c.margin}" class="text-end" width="12em;" title="Price matrix value already included in Total for this charge type" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                <h:outputLabel value="#{c.margin}" class="w-100 text-end">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>

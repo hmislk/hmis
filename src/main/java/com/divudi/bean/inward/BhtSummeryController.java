@@ -4852,7 +4852,13 @@ public class BhtSummeryController implements Serializable {
      * breakdown, not just the net total. Services/investigations
      * (BillItem-backed) come from a bulk JPQL sum grouped by InwardChargeType;
      * Professional/Assisting fees (BillFee-backed, staff fee records) are
-     * summed from the lists already fetched for their respective tabs.
+     * summed from the lists already fetched for their respective tabs;
+     * Room/Maintain/MO/Nursing/Medical Care/Administration/Linen charges
+     * (PatientRoom-backed) are summed in-memory from the already-recalculated
+     * {@link #getPatientRooms()} list, because PatientRoom's marginXxxCharge
+     * fields are {@code @Transient} — display-only, recomputed on every
+     * calculation, never persisted — so a JPQL sum over them is not possible
+     * (issue #22975).
      */
     private void setGrossMarginVatBreakdown() {
         Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
@@ -4872,6 +4878,21 @@ public class BhtSummeryController implements Serializable {
                 cit.setVat(values[2]);
             } else {
                 cit.setGross(cit.getTotal());
+            }
+        }
+
+        // Room/maintain/MO/nursing/medical-care/administration/linen charges are
+        // computed straight from PatientRoom (not BillItem), so they never show up
+        // in serviceBreakdown above. Their own price-matrix margin (issue #22975)
+        // lives on PatientRoom's marginXxxCharge fields instead, and Total already
+        // has it folded in the same way BillItem's does — pull it out here so the
+        // Charge Types grid can show it as its own Matrix Value column.
+        Map<InwardChargeType, Double> roomMargins = sumRoomMatrixMargins();
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            Double roomMargin = roomMargins.get(cit.getInwardChargeType());
+            if (roomMargin != null && roomMargin != 0.0) {
+                cit.setMargin(roomMargin);
+                cit.setGross(cit.getTotal() - roomMargin);
             }
         }
 
@@ -4923,6 +4944,26 @@ public class BhtSummeryController implements Serializable {
                 cit.setVat(0.0);
             }
         }
+    }
+
+    /**
+     * Sums each PatientRoom's transient price-matrix margin fields, grouped by
+     * the InwardChargeType they contribute to. Relies on {@link #getPatientRooms()}
+     * to trigger the same recalculation the "Mandatory Charge Types" room tabs
+     * already use, so the figures agree with what those tabs show.
+     */
+    private Map<InwardChargeType, Double> sumRoomMatrixMargins() {
+        Map<InwardChargeType, Double> margins = new HashMap<>();
+        for (PatientRoom p : getPatientRooms()) {
+            margins.merge(InwardChargeType.RoomCharges, p.getMarginRoomCharge(), Double::sum);
+            margins.merge(InwardChargeType.MaintainCharges, p.getMarginMaintainCharge(), Double::sum);
+            margins.merge(InwardChargeType.LinenCharges, p.getMarginLinenCharge(), Double::sum);
+            margins.merge(InwardChargeType.MOCharges, p.getMarginMoCharge(), Double::sum);
+            margins.merge(InwardChargeType.NursingCharges, p.getMarginNursingCharge(), Double::sum);
+            margins.merge(InwardChargeType.AdministrationCharge, p.getMarginAdministrationCharge(), Double::sum);
+            margins.merge(InwardChargeType.MedicalCareICU, p.getMarginMedicalCareCharge(), Double::sum);
+        }
+        return margins;
     }
 
     private void updateRoomChargeList() {
