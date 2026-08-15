@@ -1867,6 +1867,27 @@ redeploy-forced relogin; once a real change has fired once, subsequent
 same-value clicks are fine since the model is no longer null. Found verifying
 issue #22991.
 
+## 72. `p:calendar`'s `pattern` attribute can differ from the usual `dd/mm/yyyy` — type in the exact server-side pattern, not a guessed format
+
+`pharmacy/direct_purchase.xhtml`'s "Date of Expiry" field (`bill:calDoe`) is a
+`p:calendar` with `pattern="dd MM yy"` — space-separated, numeric month, and a
+**2-digit** year, not the more common `dd/mm/yyyy`. Typing a plausibly-formatted
+date like `31-12-2027` gets silently rejected: the input renders with
+`aria-invalid`/a red border, the value never converts to a real `Date`, and
+the downstream action (`addItem()` here) hits its own `doe == null` validation
+and no-ops with an error message — easy to misread as "the button doesn't
+work" rather than "the date didn't parse". Symptom is worse than a normal
+validation error because nothing about the on-screen state screams "wrong
+format" unless you're specifically looking for the invalid-state styling.
+
+**Fix**: read the `pattern="..."` attribute straight from the component's
+source (`grep -n 'p:calendar' -A2` around the field's `id`) before typing
+anything, and match it exactly — here, `31 12 27` (Ctrl+A, type slowly,
+`Escape` to close the overlay without resetting the value, same pattern as
+the general `p:calendar` guidance in §3). Don't assume `dd/mm/yyyy` just
+because that's the most common pattern elsewhere in the app. Verified while
+testing issue #23005.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

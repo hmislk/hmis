@@ -276,10 +276,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
-        if (getBill().getId() == null) {
-            getBillFacade().create(getBill());
-        }
-
         // Setup basic quantity and rate fields for AMP/AMPP handling
         BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
 
@@ -944,10 +940,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
         if (getBill().getId() == null) {
-            getBillFacade().create(getBill());
-            if (getBill().getBillFinanceDetails() == null) {
-                getBill().setBillFinanceDetails(new BillFinanceDetails(getBill()));
-            }
+            JsfUtil.addErrorMessage("Please add item(s), select a Supplier, and Save Draft before adding expenses.");
+            return;
         }
         if (getCurrentExpense().getItem() == null) {
             JsfUtil.addErrorMessage("Expense ?");
@@ -1602,10 +1596,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void finalizeDraftDirectPurchase() {
-        // Always (re)persist first: addItem() may have already created a bare
-        // bill row (to get an id for the item FK) before department/supplier
-        // were set, so bill.getId() != null does not mean the draft is fully
-        // saved. persistDraftDirectPurchase() handles both create and edit.
+        // Always call persistDraftDirectPurchase() first: it is the method that
+        // actually creates the bill (addItem() no longer creates a bare row),
+        // and it also handles the create-vs-edit branching for a draft that is
+        // being resumed and re-saved.
         if (!persistDraftDirectPurchase()) {
             return;
         }
@@ -2506,7 +2500,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bill == null) {
             bill = new BilledBill();
             bill.setBillType(BillType.PharmacyPurchaseBill);
-            bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
             bill.setReferenceInstitution(getSessionController().getInstitution());
             boolean consignmentEnabled = configOptionApplicationController.getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", true);
             bill.setConsignment(consignmentEnabled);
