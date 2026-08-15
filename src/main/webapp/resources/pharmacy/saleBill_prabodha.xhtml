@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
+        <cc:attribute name="showRate" default="true" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -228,18 +229,20 @@
                             <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:20%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value="RATE"  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
+                        <ui:fragment rendered="#{cc.attrs.showRate}">
+                            <td  style="width:20%;text-align: right; padding-right: 30px;">
+                                <h:outputLabel value="RATE"  styleClass="itemHeadings" ></h:outputLabel>
+                            </td>
 
-                        <td  style="width:20%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
+                            <td  style="width:20%;text-align: right; padding-right: 30px;">
+                                <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
+                            </td>
+                        </ui:fragment>
                     </tr>
 
                     <tr>
                         <td colspan="4" class="w-100">
-                            <h:outputLabel value="-----------------------------------------"   />                           
+                            <h:outputLabel value="-----------------------------------------"   />
                         </td>
                     </tr>
 
@@ -260,16 +263,18 @@
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
-                            <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value="#{bip.rate}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value="#{bip.grossValue}"    >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
+                            <ui:fragment rendered="#{cc.attrs.showRate}">
+                                <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
+                                    <h:outputLabel    value="#{bip.rate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
+                                    <h:outputLabel    value="#{bip.grossValue}"    >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </ui:fragment>
 
                         </tr>
 
@@ -298,6 +303,7 @@
 
                 <table style="width: 100%;">
 
+                    <ui:fragment rendered="#{cc.attrs.showRate}">
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Total" />
@@ -343,6 +349,7 @@
 
                         </td>
                     </tr>
+                    </ui:fragment>
 
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">

@@ -20,8 +20,13 @@ Deploy the latest development code to QA1 or QA2 via GitHub Actions.
 
 Before deploying, MUST verify:
 
-1. **persistence.xml uses environment variables** (run `/verify-persistence` first)
-2. **No hardcoded DDL generation paths**
+1. **persistence.xml uses environment variables** — read
+   `src/main/resources/META-INF/persistence.xml` and confirm both
+   `<jta-data-source>` values are `${JDBC_DATASOURCE}` /
+   `${JDBC_AUDIT_DATASOURCE}`, not a hardcoded local JNDI name (e.g.
+   `jdbc/coop`, `jdbc/ruhunuAudit`)
+2. **No hardcoded DDL generation paths** — no
+   `eclipselink.application-location` pointing at `c:/tmp/` or `/home/*/tmp/`
 3. **All changes committed and pushed**
 
 ## Deployment Process

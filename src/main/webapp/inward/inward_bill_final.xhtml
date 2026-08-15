@@ -58,7 +58,7 @@
                             <!-- RIGHT: actions — left=least important, right=primary -->
                             <div class="d-flex gap-2 align-items-center">
                                 <p:commandButton
-                                    update="dList tot @all settle saveProvisional"
+                                    update="dList tot @all settle"
                                     value="Process"
                                     actionListener="#{bhtSummeryController.processFinalBill()}"
                                     process="@this"
@@ -73,7 +73,7 @@
                                     icon="fas fa-cogs"
                                     value="Process Bill"
                                     process="@this"
-                                    update="dList tot settle saveProvisional @all printTempBill"
+                                    update="dList tot settle @all printTempBill"
                                     action="#{bhtSummeryController.createTempBill()}"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" >
                                 </p:commandButton>
@@ -84,18 +84,6 @@
                                     value="Check Final Bill"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false) and configOptionApplicationController.getBooleanValueByKey('Show Print Button For Intermediate Bill on Final Bill Edit',false)}">
                                     <p:printer target="printTempBill" />
-                                </p:commandButton>
-
-                                <p:commandButton
-                                    value="Save Provisional Bill"
-                                    action="#{bhtSummeryController.saveProvisionalBill()}"
-                                    id="saveProvisional"
-                                    ajax="false"
-                                    disabled="#{bhtSummeryController.changed}"
-                                    styleClass="ui-button-warning"
-                                    icon="fa fa-save"
-                                    style="width: 200px; padding: 1px; margin: auto;"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Save Provisional on Final Bill Edit',false) and webUserController.hasPrivilege('InwardSaveProvisionalFinalBill')}">
                                 </p:commandButton>
 
                                 <p:commandButton
@@ -637,14 +625,15 @@
                                     id="catAdj" 
                                     class="w-100 text-end"
                                     value="#{c.adjustedTotal}"
-                                    disabled="#{c.inwardChargeType eq 'RoomCharges' 
+                                    disabled="#{!configOptionApplicationController.getBooleanValueByKeyReadOnly('Inward Final Bill - Allow Editing Adjusted Total For All Charge Types', false)
+                                                and (c.inwardChargeType eq 'RoomCharges'
                                                 or c.inwardChargeType eq 'MOCharges'
                                                 or c.inwardChargeType eq 'MaintainCharges'
                                                 or c.inwardChargeType eq 'NursingCharges'
                                                 or c.inwardChargeType eq 'LinenCharges'
                                                 or c.inwardChargeType eq 'MedicalCareICU'
                                                 or c.inwardChargeType eq 'AdministrationCharge'
-                                                or c.inwardChargeType eq 'ProfessionalCharge'}">
+                                                or c.inwardChargeType eq 'ProfessionalCharge')}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} "
                                             event="blur"
