@@ -1837,6 +1837,36 @@ go through. Fix in automation: after any Fees-tab row shows a "Select Staff"
 dropdown, pick a value from it (PrimeFaces click-option pattern, §13) before
 clicking Settle. Found verifying issue #22916.
 
+## 71. A fresh `p:selectOneMenu` visually shows its first `<option>` as selected even when the bound model value is still `null` — clicking that same-looking option fires no `change` event
+
+On `pharmacy_bill_retail_sale_native.xhtml`'s Payment Method dropdown (default
+list order: Cash, Credit Card, Multiple Payment Methods, ...), a freshly
+loaded/newly-logged-in page renders the native `<select>` showing "Cash" as
+selected — this is just the browser defaulting an unset `<select>` to its
+first `<option>`, not evidence that `paymentMethod` is actually bound to
+`PaymentMethod.Cash` server-side. It's still `null` until the user makes a
+real selection. `browser_click` on that already-visually-"Cash" option is a
+no-op: the native select's `selectedIndex` doesn't change, so no `change`
+event fires, so `p:ajax event="change"` never runs and any `rendered="#{bean.paymentMethod
+eq 'Cash'}"` block downstream stays on its null-branch (nothing rendered)
+even though the dropdown *looks* set to Cash. Symptom: fields that should
+appear for Cash (e.g. Tendered/Balance) never show up, with no error and no
+network request — easy to misdiagnose as a `rendered` condition bug in the
+code when the page itself is correct.
+
+**Fix**: to genuinely land on the visually-default option, select a
+*different* option first, then select the desired one back — each of those
+is a real change, so both `change` events fire and the bean field updates
+both times:
+```text
+click dropdown → click a different option (e.g. "Credit Card")
+click dropdown → click the target option (e.g. "Cash")
+```
+Only needed the first time a dropdown is touched in a fresh session/after a
+redeploy-forced relogin; once a real change has fired once, subsequent
+same-value clicks are fine since the model is no longer null. Found verifying
+issue #22991.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
