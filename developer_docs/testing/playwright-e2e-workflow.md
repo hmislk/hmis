@@ -1881,8 +1881,8 @@ validation error because nothing about the on-screen state screams "wrong
 format" unless you're specifically looking for the invalid-state styling.
 
 **Fix**: read the `pattern="..."` attribute straight from the component's
-source (`grep -n 'p:calendar' -A2` around the field's `id`) before typing
-anything, and match it exactly — here, `31 12 27` (Ctrl+A, type slowly,
+source (`grep -n -A6 -B1 'id="calDoe"' src/main/webapp/pharmacy/direct_purchase.xhtml`)
+before typing anything, and match it exactly — here, `31 12 27` (Ctrl+A, type slowly,
 `Escape` to close the overlay without resetting the value, same pattern as
 the general `p:calendar` guidance in §3). Don't assume `dd/mm/yyyy` just
 because that's the most common pattern elsewhere in the app. Verified while

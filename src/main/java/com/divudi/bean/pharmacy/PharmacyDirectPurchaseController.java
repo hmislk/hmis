@@ -939,10 +939,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
             return;
         }
-        if (getBill().getId() == null) {
-            JsfUtil.addErrorMessage("Please add item(s), select a Supplier, and Save Draft before adding expenses.");
-            return;
-        }
         if (getCurrentExpense().getItem() == null) {
             JsfUtil.addErrorMessage("Expense ?");
             return;
@@ -971,15 +967,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         recalculateExpenseTotals();
         recalculateProfitMarginsForAllItems();
 
-        // Persist the expense directly so its generated id lands on this same
-        // in-memory object. Relying on getBillFacade().edit(getBill())'s cascade
-        // merges a copy of the bill graph - the id never comes back to
-        // currentExpense, so later save paths see getId()==null and either
-        // duplicate-create it or wrongly retire the row cascade already made
-        // (issue #21856 review).
-        getBillItemFacade().create(currentExpense);
-        getBillFacade().edit(getBill());
-
+        // Deliberately NOT persisted here (issue #23005): like items added via
+        // addItem(), the expense stays in the in-memory billExpenses list until
+        // persistDraftDirectPurchase() or settleDirectPurchaseBillFinally() runs
+        // - both already loop over billExpenses and create()/edit() each row
+        // with expenseBill set to the (by-then persisted) Bill, so an early
+        // persist here is redundant and was the source of orphan bare Bill rows
+        // when a user added an expense before ever saving/settling.
         currentExpense = null;
 
     }
