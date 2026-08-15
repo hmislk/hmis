@@ -57,6 +57,13 @@
                                             actionListener="#{inwardInvoiceJournalController.makeNull()}"
                                             class="ui-button-success"
                                             ajax="false" />
+                                        <p:commandButton
+                                            value="Professional &amp; Other Fee Summary"
+                                            icon="fa fa-fw fa-hand-holding-usd"
+                                            action="inward_report_professional_fee_summary?faces-redirect=true"
+                                            actionListener="#{inwardProfessionalFeeSummaryController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
                                         <p:commandButton ajax="false" value="BHT Sevice Errror Diduction" icon="fa fa-fw fa-exclamation-triangle" action="inward_bill_final_break_down_error?faces-redirect=true" rendered="false" />
                                         <p:commandButton ajax="false" value="BHT Interim Error Correction" icon="fa fa-fw fa-wrench" action="inward_bill_intrim_finalized_error_correction?faces-redirect=true" />
                                         <p:commandButton ajax="false" value="Error" icon="fa fa-fw fa-bug" action="#{bhtSummeryFinalizedController.errorCheck}" rendered="false"/>
