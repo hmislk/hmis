@@ -14,17 +14,6 @@
                 You are NOT authorized
             </h:panelGroup>
             <h:panelGroup id="gpOrder" rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" >
-                <div class="d-flex justify-content-end">
-                    <!-- Small non-prominent fallback to legacy entity-based page -->
-                    <p:commandButton
-                        ajax="false"
-                        value="Legacy View"
-                        title="Open original entity-based Purchase Order Request page"
-                        action="pharmacy_purhcase_order_request?faces-redirect=true"
-                        class="ui-button-secondary ms-3"
-                        icon="fas fa-history"
-                        style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"/>
-                </div>
                 <p:defaultCommand target="btnSave" ></p:defaultCommand>
                 <p:messages id="pageMessages" ></p:messages>
                 <h:panelGroup id="notPrintPreview"  rendered="#{not purchaseOrderRequestNativeSqlController.printPreview}" class="w-100 p-0 m-0">
@@ -62,10 +51,19 @@
                                                         value="Config"
                                                         icon="fa fa-cog"
                                                         title="Page Configuration Management"
-                                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_purhcase_order_request')}"
+                                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_purhcase_order_request_native')}"
                                                         ajax="false"
                                                         styleClass="ui-button-secondary"/>
                                                 </h:panelGroup>
+                                                <!-- Small non-prominent fallback to legacy entity-based page -->
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Legacy View"
+                                                    title="Open original entity-based Purchase Order Request page"
+                                                    action="pharmacy_purhcase_order_request?faces-redirect=true"
+                                                    class="ui-button-secondary"
+                                                    icon="fas fa-history"
+                                                    style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"/>
                                                 <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected"
                                                                  disabled="#{not webUserController.hasPrivilege('PurchaseOrderSave')}"
                                                                  action="#{purchaseOrderRequestNativeSqlController.removeSelected()}"/>

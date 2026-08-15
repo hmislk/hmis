@@ -159,6 +159,8 @@ public class PharmacyBillSearch implements Serializable {
     @Inject
     GrnCostingController grnCostingController;
     @Inject
+    GrnCostingNativeSqlController grnCostingNativeSqlController;
+    @Inject
     SearchController searchController;
     @Inject
     PreReturnController preReturnController;
@@ -1614,6 +1616,46 @@ public class PharmacyBillSearch implements Serializable {
         return navigateToEditSavedGrnCosting();
     }
 
+    /**
+     * Native-SQL sibling of navigateToEditSavedGrnCosting() -- routes into
+     * GrnCostingNativeSqlController/pharmacy_grn_costing_native.xhtml instead
+     * of the legacy GrnCostingController/pharmacy_grn_costing_with_save_approve.xhtml.
+     * The legacy pair above is left untouched so the "Legacy View" fallback
+     * keeps working (issue #22874, mirrors the #22872 lesson on preserving
+     * legacy reachability during a native-SQL conversion).
+     */
+    public String navigateToEditSavedGrnCostingNative() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_GRN_PRE) {
+            JsfUtil.addErrorMessage("Selected bill is not a saved GRN (PRE).");
+            return null;
+        }
+        bill = billService.reloadBill(bill);
+        grnCostingNativeSqlController.setCurrentGrnBillPre(bill);
+        return grnCostingNativeSqlController.navigateToEditGrnCosting();
+    }
+
+    /**
+     * Id-based counterpart of navigateToEditSavedGrnCostingNative(), for
+     * pages that only carry a lightweight GRN summary DTO rather than a
+     * preloaded Bill entity (same rationale as navigateToEditSavedGrnCostingByBillId()).
+     */
+    public String navigateToEditSavedGrnCostingNativeByBillId(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        bill = billService.reloadBill(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        return navigateToEditSavedGrnCostingNative();
+    }
+
 //    public String navigateToApproveGrn() {
 //        if (bill == null) {
 //            JsfUtil.addErrorMessage("No Bill Selected");
@@ -1824,6 +1866,7 @@ public class PharmacyBillSearch implements Serializable {
         printPreview = false;
         tempbillItems = null;
         //  comment = null;
+        printBhtIssueBillWithRate = false;
     }
 
     private boolean checkPaid() {
@@ -2233,6 +2276,29 @@ public class PharmacyBillSearch implements Serializable {
         cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
 
         return cb;
+    }
+
+    // Atomically claims the "cancel this return" slot with a single conditional UPDATE, so two
+    // overlapping requests for the same bill (double-click, slow-AJAX retry, duplicate tab) can't
+    // both pass an in-memory isCancelled() check and each create their own full stock reversal.
+    // The old pattern set bill.cancelled=true only at the END of the method, after the reversal
+    // was already created — a real request can take seconds (multiple bill-item + stock writes),
+    // long enough for a second click to sail through the same stale check. Found via a July 2026
+    // COGS variance investigation: a single return was cancelled 4 times in 15 seconds (bills
+    // 5196838/5196837/5196867/5196866, all referencing bill 5196715), driving item batch 4609211
+    // to a negative quantity. Returns true only if THIS call is the one that flips the flag.
+    private boolean claimReturnCancellationOrReportError() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", getBill().getId());
+        int updated = getBillFacade().updateByJpql(
+                "UPDATE Bill b SET b.cancelled = true WHERE b.id = :id AND b.cancelled = false",
+                params);
+        if (updated != 1) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return false;
+        }
+        getBill().setCancelled(true);
+        return true;
     }
 
 //    private void updateRemainingQty(PharmaceuticalBillItem nB) {
@@ -3511,6 +3577,9 @@ public class PharmacyBillSearch implements Serializable {
                 JsfUtil.addErrorMessage("Payment for this bill Already Paid");
                 return;
             }
+            if (!claimReturnCancellationOrReportError()) {
+                return;
+            }
 
             RefundBill cb = pharmacyCreateRefundCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
@@ -3530,7 +3599,6 @@ public class PharmacyBillSearch implements Serializable {
 //                getPharmacyBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
 //                getPharmacyBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
 //            }
-            getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
             JsfUtil.addSuccessMessage("Cancelled");
@@ -3558,6 +3626,9 @@ public class PharmacyBillSearch implements Serializable {
                 JsfUtil.addErrorMessage("This BHT Already Discharge..");
                 return;
             }
+            if (!claimReturnCancellationOrReportError()) {
+                return;
+            }
 
             RefundBill cb = pharmacyCreateRefundCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
@@ -3570,7 +3641,6 @@ public class PharmacyBillSearch implements Serializable {
             pharmacyCancelReturnBillItemsWithReducingStock(cb);
 
             // cancelPreBillFees(cb.getBillItems());
-            getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
             JsfUtil.addSuccessMessage("Cancelled");
@@ -3587,6 +3657,9 @@ public class PharmacyBillSearch implements Serializable {
             if (pharmacyErrorCheck()) {
                 return;
             }
+            if (!claimReturnCancellationOrReportError()) {
+                return;
+            }
 
             RefundBill cb = pharmacyCreateRefundCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
@@ -3599,7 +3672,6 @@ public class PharmacyBillSearch implements Serializable {
             Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
             pharmacyCancelReturnBillItems(cb, p);
 
-            getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
 
@@ -4427,6 +4499,20 @@ public class PharmacyBillSearch implements Serializable {
             }
         }
         return bhtIssueRequestPrintDto;
+    }
+
+    // Per-print-job "With Rate" / "Without Rate" choice for the BHT Issue Bill
+    // reprint (ward_pharmacy_reprint_bht_issue_bill_reprint.xhtml). Gated by
+    // the IPRequestViewRates privilege in the XHTML; defaults to false (no
+    // rate) so users never see rates unless they explicitly opt in.
+    private boolean printBhtIssueBillWithRate;
+
+    public boolean isPrintBhtIssueBillWithRate() {
+        return printBhtIssueBillWithRate;
+    }
+
+    public void setPrintBhtIssueBillWithRate(boolean printBhtIssueBillWithRate) {
+        this.printBhtIssueBillWithRate = printBhtIssueBillWithRate;
     }
 
     public String getReturnPage() {
