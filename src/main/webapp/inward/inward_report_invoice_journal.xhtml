@@ -228,6 +228,27 @@
                             </div>
                         </f:facet>
 
+                        <!--
+                            PrimeFaces' theme forces table-layout:fixed and width:100% on
+                            .ui-datatable table via a class rule, which silently defeats plain
+                            column-width/nowrap styling by dividing the available width evenly
+                            across columns and clipping content, regardless of dataTable's own
+                            styleClass (that attribute targets the OUTER .ui-datatable wrapper
+                            div, not the inner <table>). Overriding both here — scoped to this
+                            table's client id, so it can't leak to any other dataTable on the
+                            page — lets columns size to their natural (nowrap) content width;
+                            PrimeFaces' own built-in .ui-datatable-tablewrapper div already
+                            scrolls horizontally, so once the table can exceed the wrapper's
+                            width, PrimeFaces' own scrollbar appears automatically. Found via live
+                            verification 2026-08-15 — see docs/superpowers/plans/2026-08-15-
+                            professional-fee-summary-report.md Task 8.
+                        -->
+                        <style>
+                            #frm\:tblReport table { table-layout: auto; width: auto; }
+                            @media print {
+                                #frm\:tblReport table { table-layout: fixed; width: 100%; }
+                            }
+                        </style>
                         <p:dataTable
                             id="tblReport"
                             value="#{inwardInvoiceJournalController.reportRows}"
@@ -239,15 +260,14 @@
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
-                            styleClass="w-100">
+                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}">
 
                             <!-- ===== Patient / admission details ===== -->
                             <p:column headerText="BHT No" style="white-space:nowrap;">
                                 <h:outputText value="#{row.bhtNo}" />
                             </p:column>
 
-                            <p:column headerText="Patient Name">
+                            <p:column headerText="Patient Name" style="white-space:nowrap;">
                                 <h:outputText value="#{row.patientName}" />
                             </p:column>
 
@@ -369,7 +389,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Company">
+                            <p:column headerText="Credit Company" style="white-space:nowrap;">
                                 <h:outputText value="#{row.creditCompanyName}" />
                             </p:column>
 
