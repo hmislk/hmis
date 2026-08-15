@@ -10,6 +10,7 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.inward.SurgeryBillController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -76,6 +77,8 @@ public class StoreSaleBhtController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    SurgeryBillController surgeryBillController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -483,6 +486,11 @@ public class StoreSaleBhtController implements Serializable {
     }
 
     public void settleStoreBhtIssue() {
+        if (getBatchBill() != null && getBatchBill().getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(getBatchBill())) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
         settleBhtIssue(BillType.StoreBhtPre, BillNumberSuffix.STISSUE);
     }
 

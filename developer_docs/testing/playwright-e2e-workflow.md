@@ -1819,6 +1819,24 @@ before you spend time debugging "missing" log output:
   Recovery: `kill -9` the stuck DAS `java` process (find via `ps aux | grep domains/<name>`),
   `asadmin start-domain <name>`, then a plain `deploy` (not `redeploy`).
 
+## 70. `inward/inward_bill_service.xhtml`'s "Settle" button silently returns to the edit screen — with the same items still loaded — when a fee row needs a Staff pick
+
+Clicking **Settle** (`ajax="false"`, `confirm()`-guarded) for a bill whose Fees tab
+has a row with a non-null `speciality` (e.g. a "Technician Fee") but no `staff`
+selected does **not** navigate to print preview and does **not** throw a visible
+error near the button — the page does a full reload and lands back on the exact
+same "Add Services" edit view, Bill Items/Fees tabs still populated, looking
+almost identical to the pre-click state. The only server-side evidence is a
+`Growl` message baked into the reloaded HTML (`msgs:[{summary:"Please select
+Staff",...,severity:'error'}]`), which is easy to miss since no dialog or
+distinct page state change signals failure. Confirm success/failure by grepping
+the full-postback response body for `Growl`/`severity:'error'` (per §32's
+pattern), or simply check whether the "Investigation or Service" picker /
+"Add" button are still rendered afterward — their presence means Settle did not
+go through. Fix in automation: after any Fees-tab row shows a "Select Staff"
+dropdown, pick a value from it (PrimeFaces click-option pattern, §13) before
+clicking Settle. Found verifying issue #22916.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

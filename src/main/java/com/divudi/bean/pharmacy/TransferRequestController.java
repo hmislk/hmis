@@ -349,6 +349,20 @@ public class TransferRequestController implements Serializable {
         return getAvailableQtyAtOrderingStore(bi) < bi.getQty();
     }
 
+    // Value of the stock already available at the Ordering Store, priced at the
+    // same config-selected transfer rate (see determineTransferRate) already
+    // shown in the row's Transfer Rate/Transfer Value columns.
+    public double getTotalDrugAmountAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+        BigDecimal rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        if (rate == null) {
+            return 0.0;
+        }
+        return getAvailableQtyAtOrderingStore(bi) * rate.doubleValue();
+    }
+
     public void saveBill() {
         if (getBill().getId() == null) {
 
