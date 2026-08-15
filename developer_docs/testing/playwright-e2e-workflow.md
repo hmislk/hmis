@@ -1730,7 +1730,53 @@ silently returns "No results found" with no error — this looks like a missing 
 an empty/mistyped query. Confirmed working seed name: "Appendicectomy". Verified while testing
 issue #20891.
 
-## 66. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it
+## 66. PrimeFaces `p:tree` privilege picker (`admin/users/user_privileges.xhtml`) — clicking a toggler icon directly does nothing; use the Search box instead, and re-login after any privilege change
+
+The "Manage User Privileges" tree (widget var `privTree`) lazily renders — its
+`ui-treenode-children` `<ul>`s stay `display:none` until PrimeFaces actually
+expands that node client-side. A raw DOM `.click()` on the toggler icon (or
+calling the widget's `expandNode()` directly) does **not** flip
+`aria-expanded`/unhide the children — the tree only reliably expands and
+scrolls to a match through its own **Search** textbox: type the privilege's
+exact display label, then send a `Backspace` (a plain `fill()` doesn't fire
+the keyup the search listens on) and wait ~1-2s for the AJAX re-render. After
+that the matched `treeitem`'s checkbox can be clicked directly by locating it
+under `span.ui-treenode-label` → `closest('li.ui-treenode')` →
+`div.ui-chkbox-box`.
+
+Also: privileges are loaded into the session at login, not read live. After
+granting/revoking a privilege for the test user, you must log out and log
+back in (department re-selection included) before the new grant takes
+effect in that user's session — testing "immediately after Update User
+Privileges" without a re-login will silently show the old (stale)
+privilege behavior. Verified while testing issue #22906.
+
+## 67. `inpatient_search.xhtml` / `inward_search.xhtml` date filter defaults to "last 7 days" and silently returns "No records found" for older admissions — even when searching by exact BHT No
+
+The Admissions search page's `From Date`/`To Date` fields default to a
+rolling 7-day window and are combined with the BHT No / other filters via
+AND, not OR. Searching by an exact BHT number for an admission outside that
+window returns "No records found" with no indication that the date range
+(not the BHT number) is the reason. Always widen `From Date` back to (or
+before) the admission's actual `DATEOFADMISSION` — check it in the DB first
+(`SELECT DATEOFADMISSION FROM PATIENTENCOUNTER WHERE ID=...`) — before
+concluding a BHT number search failed. The `p:calendar` popup only navigates
+one month per "Previous Month" click; budget one click per month of gap.
+Verified while testing issue #22906.
+
+## 68. PrimeFaces `p:growl` error/success messages fade before a subsequent `browser_snapshot`/`wait_for` — snapshot immediately after the triggering action, not after a delay
+
+A validation error or success growl (e.g. from a blocked/allowed refund
+submission) can disappear from the DOM within ~1-2 seconds. If you
+`browser_wait_for` a couple of seconds and *then* snapshot, the growl may
+already be gone even though the underlying action definitely ran (verify via
+DB query if in doubt). To reliably capture the message as evidence, call
+`browser_snapshot` (or `browser_take_screenshot`) right after
+`browser_handle_dialog`/the click that triggers the AJAX response — do not
+insert a `wait_for` in between when the growl itself is the thing being
+captured. Verified while testing issue #22906.
+
+## 69. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it
 
 On `inward/admit_room.xhtml`, a `p:autoComplete`'s `itemSelect` ajax handler bound directly to
 `roomChangeController.current` set that field as soon as a patient was selected — *before* the
