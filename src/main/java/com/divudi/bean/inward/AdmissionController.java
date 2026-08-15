@@ -915,8 +915,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAddBabyAdmission() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("No Admission selected");
+        // The disabled attribute on the "Add Baby Admission" buttons (Admission
+        // Profile, Nursing Workbench) is a UI convenience only and can go stale
+        // (page left open past discharge) or be bypassed (direct action call
+        // with no admission selected). Re-check server-side before creating the
+        // baby admission, since getCurrent() would otherwise happily hand back
+        // a transient, unsaved Admission as the parent. (#22998 review)
+        if (current == null || current.getId() == null || current.getPatient() == null
+                || current.getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Select a saved admission before adding a baby admission.");
+            return "";
+        }
+        if (current.getDischarged() != null && current.getDischarged()) {
+            JsfUtil.addErrorMessage("A discharged admission cannot have a baby admission.");
             return "";
         }
         if (current.getParentEncounter() != null) {

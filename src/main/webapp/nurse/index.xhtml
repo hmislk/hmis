@@ -157,7 +157,7 @@
                                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}">
                                                             <p:commandButton
                                                                 value="Add Baby Admission"
-                                                                disabled="#{admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
+                                                                disabled="#{admissionController.current.id eq null or admissionController.current.patient eq null or admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
                                                                 title="#{admissionController.current.parentEncounter != null ? 'A baby admission cannot have its own baby admission' : (admissionController.current.discharged eq true ? 'Patient is discharged' : '')}"
                                                                 action="#{admissionController.navigateToAddBabyAdmission}"
                                                                 icon="fa fa-baby"
