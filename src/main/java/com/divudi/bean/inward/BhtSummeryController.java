@@ -2751,10 +2751,12 @@ public class BhtSummeryController implements Serializable {
             totalAllocated += alloc.getAllocatedAmount();
         }
         if (Math.abs(totalAllocated - expected) > 0.01) {
-            JsfUtil.addErrorMessage("Total allocation (" + String.format("%.2f", totalAllocated)
-                    + ") must equal the net due amount (" + String.format("%.2f", expected)
-                    + "). Difference: " + String.format("%.2f", totalAllocated - expected));
-            return true;
+            if (configOptionApplicationController.getBooleanValueByKey("Block Inward Final Bill When Credit Allocation Total Differs From Net Due Amount", true)) {
+                JsfUtil.addErrorMessage("Total allocation (" + String.format("%.2f", totalAllocated)
+                        + ") must equal the net due amount (" + String.format("%.2f", expected)
+                        + "). Difference: " + String.format("%.2f", totalAllocated - expected));
+                return true;
+            }
         }
         return false;
     }
