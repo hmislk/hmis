@@ -12,6 +12,10 @@
     <ui:define name="content">
 
         <h:form>
+            <div class="alert alert-warning d-flex align-items-center gap-2 my-3" role="alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h:outputText value="This page is deprecated. Please use Patient Room Details (from the Interim Bill or Admission Profile page) for room management going forward. This page is kept only as a fallback and will be removed later." />
+            </div>
             <p:panel rendered="#{roomChangeController.current eq null}" styleClass="shadow-sm">
                 <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
