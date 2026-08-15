@@ -228,6 +228,24 @@
                             </div>
                         </f:facet>
 
+                        <!--
+                            PrimeFaces' theme forces table-layout:fixed and width:100% on
+                            .ui-datatable table via a class rule, which silently defeats plain
+                            column-width/nowrap styling by dividing the available width evenly
+                            across columns and clipping content, regardless of dataTable's own
+                            styleClass (that attribute targets the OUTER .ui-datatable wrapper
+                            div, not the inner <table>). Overriding both here — scoped to this
+                            table's client id, so it can't leak to any other dataTable on the
+                            page — lets columns size to their natural (nowrap) content width;
+                            PrimeFaces' own built-in .ui-datatable-tablewrapper div already has
+                            overflow-x:auto, so once the table can exceed that div's width, the
+                            existing horizontal scrollbar appears automatically. Found via live
+                            verification 2026-08-15 — see docs/superpowers/plans/2026-08-15-
+                            professional-fee-summary-report.md Task 8.
+                        -->
+                        <style>
+                            #frm\:tblReport table { table-layout: auto; width: auto; }
+                        </style>
                         <div style="overflow-x:auto;">
                         <p:dataTable
                             id="tblReport"
