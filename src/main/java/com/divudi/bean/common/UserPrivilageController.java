@@ -720,6 +720,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchIssuedReferenceBook, "Search Collecting Centre Reference Book"), collectingCentreManageNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCreditLimitInCC, "Change Collecting Centre Credit Limit"), collectingCentreManageNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PayCollectingCentre, "Pay Collecting Centre"), collectingCentreManageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreReprintOriginalBill, "Reprint the Original Bill"), collectingCentreManageNode);
 
         TreeNode creditDebitNoteNode = new DefaultTreeNode(new PrivilegeHolder(null, "Credit/Debit Note"), collectingCentreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreCreditDebitNoteMenu, "Credit/Debit Note Menu"), creditDebitNoteNode);
