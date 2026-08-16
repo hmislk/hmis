@@ -70,6 +70,12 @@ public class GrnLineData {
     private Date doe;
     private String batchNumber;
 
+    // Free-text "Comments" (regular item lines) / "Description" (Bill Expense
+    // lines) field -- backs BillItem.descreption / billitem.DESCREPTION.
+    // Missing from this DTO was the root cause of #22997, same bug class as
+    // #22892's doe/batchNumber omission in the same native-SQL save path.
+    private String description;
+
     // Used only by expense lines (GrnCostingNativeSqlService.saveExpenseLine) --
     // mirrors BillItem.consideredForCosting, whether this expense feeds the
     // bill-level cost-rate distribution or is display-only.
@@ -313,6 +319,14 @@ public class GrnLineData {
 
     public void setBatchNumber(String batchNumber) {
         this.batchNumber = batchNumber;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public double getValueAtCostRate() {
