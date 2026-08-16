@@ -30,11 +30,17 @@
                                              action="#{atmController.navigateToAtmList()}" ajax="false"
                                              class="m-1 ui-button-secondary w-25" icon="fas fa-list"
                                              title="View and download the full list of ATMs"/>
-                            <p:selectOneListbox id="lstSelect" value="#{atmController.current}" filter="true" filterMatchMode="contains"
-                                                class="w-100" disabled="#{atmController.editable}">
-                                <f:selectItems value="#{atmController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                                <p:ajax update="gpDetail btnEdit" process="lstSelect" />
-                            </p:selectOneListbox>
+                            <p:autoComplete id="lstSelect" class="w-100" inputStyleClass="w-100"
+                                            value="#{atmController.selectedAtmDto}"
+                                            completeMethod="#{atmController.completeAtmDto}"
+                                            converter="atmDtoConverter"
+                                            var="myItem" itemLabel="#{myItem.name}" itemValue="#{myItem}"
+                                            forceSelection="true"
+                                            minQueryLength="2"
+                                            placeholder="Search by name (minimum 2 characters)..."
+                                            disabled="#{atmController.editable}">
+                                <p:ajax event="itemSelect" update="gpDetail btnEdit" process="@this" />
+                            </p:autoComplete>
                         </div>
                         <div class="col-md-7">
                             <p:panel>
