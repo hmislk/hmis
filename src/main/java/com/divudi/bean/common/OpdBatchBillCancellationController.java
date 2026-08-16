@@ -3034,7 +3034,6 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(individualCancelltionBill);
-        originalBill.setBillItems(null);
         billService.saveBill(originalBill);
     }
 
@@ -3179,7 +3178,6 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(individualCancelltionBill);
-        originalBill.setBillItems(null);
         billService.saveBill(originalBill);
     }
 
