@@ -112,9 +112,9 @@ picture of each one is understood.
 
 If the cue to capture carries no description at all (e.g. just "capture", or
 "check playwrite"), don't capture speculatively and ask afterward what it
-was for — ask for the one-line description first (or in the same turn as the
-capture), so each recorded demo has its description attached from the start
-instead of needing a follow-up round-trip.
+was for — ask for the one-line description. If the user provides it in the
+same turn, capture the demo; otherwise wait and do not capture until the
+description is available.
 
 ### Forward-looking narration vs a firm bug cue
 
@@ -123,9 +123,10 @@ happened yet) from "see this, X is broken" (the actual cue). Narration that
 describes what's coming next is not itself a capture cue — wait for the
 concrete bug before recording anything.
 
-If a capture already happened and the user's next message reveals it wasn't
+If a capture already happened and the user later clarifies that demo #N was not
 meant as a bug report (e.g. "no error in this page yet, just gathering
-facts"), treat that as an explicit instruction to drop the prior capture:
+facts"), treat that as an explicit instruction to drop the prior capture —
+whether that clarification arrives in the very next message or a later one:
 acknowledge it ("Dropping demo #N — noted as context only") and exclude it
 from the investigation/filing phases. Don't carry the ambiguity forward and
 make the user re-resolve it during investigation.
