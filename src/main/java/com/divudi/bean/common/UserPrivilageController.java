@@ -782,6 +782,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyReturnItemsOnly = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsOnly, "Pharmacy Return Items Only"), retailTransaction);
         TreeNode PharmacyReturnItemsAndPayments = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsAndPayments, "Pharmacy Return Items And Payments"), retailTransaction);
         TreeNode PharmacySearchReturnBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchReturnBill, "Pharmacy Search ReturnBill"), retailTransaction);
+        TreeNode PharmacySearchReturnBillCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchReturnBillCancel, "Pharmacy Search Return Bill Cancel"), retailTransaction);
         TreeNode PharmacySaleReprint = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleReprint, "Pharmacy Sale Reprint"), retailTransaction);
         TreeNode PrintOriginalPharmacyBillFromReprint = new DefaultTreeNode(new PrivilegeHolder(Privileges.PrintOriginalPharmacyBillFromReprint, "Print Original Pharmacy Bill From Reprint"), retailTransaction);
         TreeNode PharmacySaleCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleCancel, "Pharmacy Sale Bill Cancel"), retailTransaction);
