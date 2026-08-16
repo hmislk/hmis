@@ -99,15 +99,46 @@ public class PharmacyDirectPurchaseController implements Serializable {
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToStartNewDirectPurchaseBill() {
+        if (hasDirectPurchaseAwaitingApprovalInDepartment()) {
+            return null;
+        }
         prepareForNewDIrectPurchaseBill();
         draftMode = false;
         return "/pharmacy/direct_purchase?faces-redirect=true";
     }
 
     public String navigateToStartNewDirectPurchaseDraft() {
+        if (hasDirectPurchaseAwaitingApprovalInDepartment()) {
+            return null;
+        }
         prepareForNewDIrectPurchaseBill();
         draftMode = true;
         return "/pharmacy/direct_purchase?faces-redirect=true";
+    }
+
+    /**
+     * Blocks starting a brand-new Direct Purchase (draft or single-step) while
+     * this department already has one finalized but not yet approved -- i.e.
+     * BILLTYPEATOMIC still PHARMACY_DIRECT_PURCHASE_PRE, completed=true (past
+     * Finalize), checked=false (not yet through Approve). Department-scoped
+     * (not per-user): forces any pending approval to be resolved before more
+     * purchases pile up unapproved, since Approve is what actually adds stock
+     * — related to issue #23005's concurrency follow-up.
+     */
+    private boolean hasDirectPurchaseAwaitingApprovalInDepartment() {
+        String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.department = :dept "
+                + "AND b.billTypeAtomic = :type AND b.completed = true "
+                + "AND b.checked = false AND b.retired = false";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("dept", getSessionController().getDepartment());
+        params.put("type", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
+        long pendingCount = getBillFacade().findLongByJpql(jpql, params);
+        if (pendingCount > 0) {
+            JsfUtil.addErrorMessage("This department already has a Direct Purchase finalized and waiting to be "
+                    + "approved. Please approve (or address) it via the Approve List before starting a new one.");
+            return true;
+        }
+        return false;
     }
 
     public String loadDraftForEditing(com.divudi.core.entity.Bill draft) {
@@ -539,6 +570,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     PharmacyCostingService pharmacyCostingService;
     @EJB
     com.divudi.service.BillService billService;
+    @EJB
+    com.divudi.service.pharmacy.DirectPurchaseApprovingNativeSqlService directPurchaseApprovingService;
 
     /**
      * Controllers
@@ -1463,6 +1496,21 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return false;
         }
 
+        // Guard against a stale session (this bean's in-memory `bill` was loaded
+        // before another user finalized/approved it) blindly reopening an
+        // already-completed bill: the writes below unconditionally reset
+        // billTypeAtomic/checked/completed, which would silently un-approve it
+        // if this check weren't here first. Only relevant for a bill that's
+        // already persisted (getId() != null) — a brand-new bill can't be
+        // completed by anyone yet.
+        if (getBill().getId() != null) {
+            com.divudi.core.entity.Bill freshCheck = billService.reloadBill(getBill());
+            if (freshCheck != null && freshCheck.isCompleted()) {
+                JsfUtil.addErrorMessage("This bill has already been finalized/approved by another user and cannot be edited. Please refresh.");
+                return false;
+            }
+        }
+
         // Save bill header as PRE type — no bill number yet, no stock
         getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
         getBill().setBillType(com.divudi.core.data.BillType.PharmacyPurchaseBill);
@@ -1598,7 +1646,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
-        // Fresh DB read to guard against concurrent finalization
+        // Fresh DB read for early, friendly messaging (payment method validation
+        // needs a real read anyway) — the actual concurrency guard is the atomic
+        // claim below, not this check by itself, since a second session could
+        // still pass this same read between here and the claim.
         com.divudi.core.entity.Bill freshBill = billService.reloadBill(bill);
         if (freshBill == null) {
             JsfUtil.addErrorMessage("Draft bill not found in database.");
@@ -1612,13 +1663,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
-        freshBill.setCompleted(true);
-        freshBill.setCompletedAt(new Date());
-        freshBill.setCompletedBy(getSessionController().getLoggedUser());
-        freshBill.setEditedAt(new Date());
-        freshBill.setEditor(getSessionController().getLoggedUser());
-        getBillFacade().edit(freshBill);
-        bill = (com.divudi.core.entity.BilledBill) freshBill;
+        // Atomic claim: only one concurrent finalize() call on this bill can
+        // win (COMPLETED=0 -> 1 in a single UPDATE). A losing call gets 0 rows
+        // affected here rather than silently overwriting the winner's write.
+        boolean claimed = directPurchaseApprovingService.claimForFinalize(
+                freshBill.getId(), getSessionController().getLoggedUser().getId());
+        if (!claimed) {
+            JsfUtil.addErrorMessage("This draft was already finalized by another user. Please refresh the list.");
+            return;
+        }
+        bill = (com.divudi.core.entity.BilledBill) billService.reloadBill(freshBill);
 
         JsfUtil.addSuccessMessage("Direct Purchase finalized. It is now pending approval.");
         printPreview = true;
@@ -1691,14 +1745,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
         }
 
+        // Atomic claim BEFORE the stock loop, replacing the bill number and no
+        // longer just an in-memory setChecked(true)+edit(): only one concurrent
+        // approve() call on this bill can win (BILLTYPEATOMIC PRE->final and
+        // CHECKED 0->1 in a single UPDATE gated on the current state). A losing
+        // call gets 0 rows affected and must not touch stock.
+        boolean claimed = directPurchaseApprovingService.claimForApproval(
+                getBill().getId(), getSessionController().getLoggedUser().getId());
+        if (!claimed) {
+            JsfUtil.addErrorMessage("This bill was already approved by another user. Please refresh the list.");
+            return;
+        }
+        // Reload to pick up the natively-claimed BILLTYPEATOMIC/CHECKED/CHECKEDBY/
+        // CHECKEAT before any further edit(), so those aren't overwritten with
+        // stale in-memory values.
+        bill = (com.divudi.core.entity.BilledBill) billService.reloadBill(getBill());
+
         getBill().setDeptId(deptId);
         getBill().setInsId(insId);
-        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-        // Mark checked=true BEFORE the stock loop so a concurrent approve request
-        // that reloads the bill will see it already approved and abort
-        getBill().setChecked(true);
-        getBill().setCheckeAt(new Date());
-        getBill().setCheckedBy(getSessionController().getLoggedUser());
         getBillFacade().edit(getBill());
 
         // Reload bill items from DB to ensure we have the persisted state
