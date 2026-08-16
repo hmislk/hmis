@@ -183,6 +183,11 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
      * (:699-725). Lost when this page was migrated to native SQL (#20261); without it, users could open
      * the cashier sale page and settle bills even with "Pharmacy billing can be done after shift start"
      * enabled and no shift actually started.
+     *
+     * Unlike the legacy method it mirrors, the no-shift branch redirects to /cashier/index (the
+     * navigateToPharmacyRetailSale() pattern, :1590-1607) rather than back onto this sale page. This
+     * page's settleBillWithPay() has no shift check of its own, so landing back here would leave any
+     * cart the @SessionScoped bean was already holding fully settleable with no guard left to stop it.
      */
     public String navigateToPharmacyBillForCashierNativeFromMenu() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
@@ -192,9 +197,8 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 billSettlingStarted = false;
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_native?faces-redirect=true";
             } else {
-                billSettlingStarted = false;
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_native?faces-redirect=true";
+                return "/cashier/index?faces-redirect=true";
             }
         } else {
             resetAll();
