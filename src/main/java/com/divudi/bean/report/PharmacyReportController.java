@@ -11089,13 +11089,16 @@ public class PharmacyReportController implements Serializable {
             }
 
             // Consignment filter: Use item stock quantity (not batch qty)
+            // NOTE: hide zero-stock items (normal, expected), but never hide negative
+            // quantities - a negative net qty means oversold/backorder data that must
+            // stay visible instead of being silently dropped from the report (issue #23026).
             double itemQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
             if (isConsignmentItem()) {
                 if (itemQty > 0) {
                     continue;
                 }
             } else {
-                if (itemQty <= 0) {
+                if (itemQty == 0) {
                     continue;
                 }
             }
@@ -11315,13 +11318,16 @@ public class PharmacyReportController implements Serializable {
             }
 
             // Consignment filter (unchanged - stays in Java)
+            // NOTE: hide zero-stock batches (normal, expected), but never hide negative
+            // quantities - a negative batch qty means oversold/backorder data that must
+            // stay visible instead of being silently dropped from the report (issue #23026).
             double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
                     continue;
                 }
             } else {
-                if (batchQty <= 0) {
+                if (batchQty == 0) {
                     continue;
                 }
             }
