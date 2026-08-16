@@ -108,6 +108,28 @@ picture of each one is understood.
   the end signal.
 - Multiple issues can be demonstrated in one session, back to back.
 
+### Content-free capture cues
+
+If the cue to capture carries no description at all (e.g. just "capture", or
+"check playwrite"), don't capture speculatively and ask afterward what it
+was for — ask for the one-line description first (or in the same turn as the
+capture), so each recorded demo has its description attached from the start
+instead of needing a follow-up round-trip.
+
+### Forward-looking narration vs a firm bug cue
+
+Distinguish "I'm about to show you X" (scene-setting for a demo that hasn't
+happened yet) from "see this, X is broken" (the actual cue). Narration that
+describes what's coming next is not itself a capture cue — wait for the
+concrete bug before recording anything.
+
+If a capture already happened and the user's next message reveals it wasn't
+meant as a bug report (e.g. "no error in this page yet, just gathering
+facts"), treat that as an explicit instruction to drop the prior capture:
+acknowledge it ("Dropping demo #N — noted as context only") and exclude it
+from the investigation/filing phases. Don't carry the ambiguity forward and
+make the user re-resolve it during investigation.
+
 **HARD STOP** — do not read application code, form a root-cause hypothesis,
 or otherwise start investigating any demo until the end signal in step 4.
 
