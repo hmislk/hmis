@@ -802,7 +802,7 @@ public class AmpController implements Serializable {
 
         int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item", "4"));
 
-        if (current.getCode().trim().length() < maxCodeLeanth) {
+        if (current.getCode() == null || current.getCode().trim().length() < maxCodeLeanth) {
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
             return;
         }

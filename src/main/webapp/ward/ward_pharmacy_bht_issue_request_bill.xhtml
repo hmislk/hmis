@@ -716,7 +716,6 @@
                                             widgetVar="editBillItemDialog"
                                             header="Edit / Substitute Item"
                                             modal="true"
-                                            appendTo="@(body)"
                                             width="40%"
                                             fitViewport="true">
                                             <h:panelGrid columns="2" cellpadding="6" styleClass="w-100"
@@ -750,7 +749,7 @@
                                                     class="ui-button-success"
                                                     action="#{pharmacyRequestForBhtController.saveEditedBillItem}"
                                                     process="@this cmbSubstitute txtEditQty"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} @(.ui-messages)"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('growl',view).clientId}"
                                                     oncomplete="if (args &amp;&amp; args.editSaved) { PF('editBillItemDialog').hide(); }" />
                                             </f:facet>
                                         </p:dialog>

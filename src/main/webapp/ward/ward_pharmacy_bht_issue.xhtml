@@ -88,7 +88,7 @@
                                 <h:outputText value="#{w.speciality.name}" />
                             </p:column>
                             <p:column headerText="Staff Code">
-                                <h:outputText value="#{w.code}" />
+                                <h:outputText value="#{w.staffCode}" />
                             </p:column>
                         </p:autoComplete>
                     </div>
@@ -263,6 +263,61 @@
                     </h:panelGroup>
                 </h:panelGroup>
 
+                <h:panelGroup layout="block" styleClass="row mb-3"
+                              rendered="#{not empty pharmacySaleBhtController.bhtIssueStockReport}">
+                    <div class="col-12">
+                        <p:panel id="panelBhtIssueStockReport" class="w-100"
+                                 toggleable="true"
+                                 collapsed="#{not pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}">
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center w-100">
+                                    <h:outputText styleClass="fas fa-boxes me-2" />
+                                    <p:outputLabel value="Stock Availability Report" styleClass="fw-bold" />
+                                    <p:tag styleClass="ms-3"
+                                           value="Review — insufficient stock"
+                                           severity="warning"
+                                           rendered="#{pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}" />
+                                    <p:tag styleClass="ms-3"
+                                           value="All issued in full"
+                                           severity="success"
+                                           rendered="#{not pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}" />
+                                </div>
+                            </f:facet>
+                            <p:dataTable id="tblBhtIssueStockReport"
+                                         value="#{pharmacySaleBhtController.bhtIssueStockReport}"
+                                         var="sr"
+                                         styleClass="w-100"
+                                         stripedRows="true"
+                                         size="small">
+                                <p:column headerText="Requested Item">
+                                    <h:outputText value="#{sr.requestedItemName}" />
+                                </p:column>
+                                <p:column headerText="Requested" style="width:7em;" styleClass="text-end">
+                                    <h:outputText value="#{sr.requestedQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Issued" style="width:7em;" styleClass="text-end">
+                                    <h:outputText value="#{sr.issuedQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" style="width:12em;">
+                                    <p:tag value="#{sr.statusLabel}" severity="#{sr.severity}" />
+                                </p:column>
+                                <p:column headerText="Note">
+                                    <h:outputText value="#{sr.message}" styleClass="text-muted" />
+                                </p:column>
+                            </p:dataTable>
+                            <h:panelGroup layout="block" styleClass="alert alert-warning m-2"
+                                          rendered="#{pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}">
+                                <i class="fa fa-exclamation-triangle me-2"></i>
+                                <h:outputText value="One or more requested medicines have insufficient or no stock. Use &quot;Select a Substitute&quot; on the flagged row(s) or arrange stock before settling — settling will be blocked until resolved." />
+                            </h:panelGroup>
+                        </p:panel>
+                    </div>
+                </h:panelGroup>
+
                 <p:panel header="Available Items" class="mt-2">
                     <style>
                         .auto-substituted-row { background-color: #FFF3CD !important; }
@@ -310,6 +365,15 @@
                             <h:panelGroup rendered="#{bItm.autoSubstituted}" layout="block"
                                           style="margin-top:2px;font-size:0.85em;color:#e67e22;font-style:italic;">
                                 <h:outputText value="Auto-sub: #{bItm.requestedItemName} → #{bItm.item.name}" />
+                            </h:panelGroup>
+                        </p:column>
+
+                        <p:column headerText="Comment" style="width: 50px!important; padding: 6px;">
+                            <h:outputText value="#{bItm.referanceBillItem.instructions}" />
+                            <h:panelGroup layout="block"
+                                          rendered="#{bItm.referanceBillItem.hasPrescription() and bItm.referanceBillItem.prescription.comment ne null and bItm.referanceBillItem.prescription.comment ne ''}"
+                                          style="font-size:0.85em;color:#555;margin-top:2px;">
+                                <h:outputText value="Rx: #{bItm.referanceBillItem.prescription.comment}" />
                             </h:panelGroup>
                         </p:column>
 

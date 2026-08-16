@@ -14,42 +14,41 @@
     </h:head>
     <h:body>
 
-        <!-- Migration pending: open to everyone -->
-        <h:panelGroup rendered="#{applicationController.databaseMigrationPending}">
+        <!-- Available whenever canAccessMigrationPage() allows it: unauthenticated while a
+             migration is pending (as before), or to logged-in Admin-privilege users afterward,
+             so schema drift can always be fixed without requiring an admin to hand-run SQL.
+             Reduced toolset only (fullAccess="false") — this page is reachable pre-login, so it
+             must never expose the full admin toolset (Check Missing Fields, Run Custom SQL).
+             Those remain available only through the authenticated Admin Functions path
+             (dataAdmin/missing_database_fields.xhtml). -->
+        <h:panelGroup rendered="#{dataAdministrationController.canAccessMigrationPage()}" layout="block">
 
             <div class="container mt-3">
-                <div class="alert alert-warning" role="alert">
+                <h:panelGroup layout="block" styleClass="alert alert-warning" rendered="#{applicationController.databaseMigrationPending}">
                     <strong>Database Migration Pending</strong> —
                     Please check for missing fields and run the migration below, then mark it as complete.
-                </div>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="alert alert-info" rendered="#{not applicationController.databaseMigrationPending}">
+                    No database migration is pending. Tools remain available below for administrators.
+                </h:panelGroup>
+
+                <p:button value="Back to Home" outcome="/index" icon="fa fa-home"
+                          styleClass="ui-button-info ui-button-outlined mb-3"/>
             </div>
 
-            <ez:midding_data_fields/>
-
-            <div class="container mt-3 mb-5">
-                <h:form id="migrationControlForm">
-                    <p:commandButton value="Mark Migration as Complete"
-                                     action="#{dataAdministrationController.markMigrationComplete()}"
-                                     ajax="false"
-                                     styleClass="ui-button-success me-2"/>
-                    <p:commandButton value="Mark as Not Necessary"
-                                     action="#{dataAdministrationController.markMigrationNotNecessary()}"
-                                     ajax="false"
-                                     styleClass="ui-button-secondary"/>
-                </h:form>
-            </div>
+            <ez:midding_data_fields fullAccess="false"/>
 
         </h:panelGroup>
 
-        <!-- Not migration pending: admin only -->
-        <h:panelGroup rendered="#{not applicationController.databaseMigrationPending}">
-
-            <h:panelGroup >
-                <ez:midding_data_fields/>
-            </h:panelGroup>
-
-           
-
+        <!-- Access denied: migration not pending and the current user is not an Admin. -->
+        <h:panelGroup rendered="#{dataAdministrationController.isMigrationPageAccessDenied()}" layout="block">
+            <div class="container mt-3 mb-5">
+                <div class="alert alert-danger" role="alert">
+                    No database migration is pending. This page is restricted to administrators.
+                </div>
+                <p:button value="Back to Home" outcome="/index" icon="fa fa-home"
+                          styleClass="ui-button-info ui-button-outlined"/>
+            </div>
         </h:panelGroup>
 
         <p:growl id="growl" showDetail="true" life="3000"/>

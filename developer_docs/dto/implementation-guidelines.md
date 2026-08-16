@@ -439,6 +439,8 @@ String jpql = "SELECT new DTO("
 
 **Note:** Even with LEFT JOIN, you must join EACH level of the relationship chain separately.
 
+**🚨 An explicit `LEFT JOIN` without an alias is a hard compile error, not a silent failure.** Unlike the silent-zero-rows case above, writing `LEFT JOIN b.toInstitution` (no alias) and then still referencing `b.toInstitution.name` in SELECT/WHERE throws `EclipseLink-0 JPQLException: An identification variable must be defined for a JOIN expression` at query-build time — every call fails, wrapped in an `EJBTransactionRolledbackException`. If the caller catches and swallows the exception (`catch (Exception e) { e.printStackTrace(); return new ArrayList<>(); }`), this looks identical to "no matching rows" from the UI, with the real error only visible in `server.log`. Once you add an explicit `LEFT JOIN x.y alias`, every reference to that path in the rest of the query must go through `alias`, not `x.y` again. (Found in issue #18579 — `BillService.fetchPharmacyReturnWithoutTrasingBillDTOs`/`...BillItemDTOs` had four such unaliased joins.)
+
 ### ✅ SOLUTION 3 (Standard): COALESCE on every nullable LEFT JOIN String — always apply this
 
 Even when LEFT JOINs are present, a `null` value flowing into a `String` DTO constructor

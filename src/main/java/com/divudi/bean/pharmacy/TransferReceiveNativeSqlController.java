@@ -341,8 +341,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         List<String> stockErrors = transferReceiveNativeSqlService.checkSourceStockSufficiency(itemRowList);
         if (!stockErrors.isEmpty()) {
+            // Each message is already fully worded by checkSourceStockSufficiency() —
+            // it covers both a quantity shortfall and a missing staffStockId link (#22951).
             for (String msg : stockErrors) {
-                JsfUtil.addErrorMessage("Insufficient source stock — " + msg);
+                JsfUtil.addErrorMessage(msg);
             }
             return;
         }
@@ -391,8 +393,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         List<String> stockErrors = transferReceiveNativeSqlService.checkSourceStockSufficiency(itemRowList);
         if (!stockErrors.isEmpty()) {
+            // Each message is already fully worded by checkSourceStockSufficiency() —
+            // it covers both a quantity shortfall and a missing staffStockId link (#22951).
             for (String msg : stockErrors) {
-                JsfUtil.addErrorMessage("Insufficient source stock — " + msg);
+                JsfUtil.addErrorMessage(msg);
             }
             return;
         }

@@ -5,7 +5,10 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -34,6 +37,9 @@ public class ProfessionalPaymentHoldController implements Serializable {
 
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
+
+    @EJB
+    private AuditService auditService;
 
     @Inject
     private SessionController sessionController;
@@ -69,10 +75,13 @@ public class ProfessionalPaymentHoldController implements Serializable {
             JsfUtil.addErrorMessage("Professional payments are already on hold for this BHT.");
             return;
         }
+        Map<String, Object> before = holdStateMap();
         currentEncounter.setProfessionalPaymentsOnHold(Boolean.TRUE);
         currentEncounter.setProfessionalPaymentsHoldDateTime(new Date());
         currentEncounter.setProfessionalPaymentsHoldBy(sessionController.getLoggedUser());
         patientEncounterFacade.edit(currentEncounter);
+        auditService.logEncounterAudit(currentEncounter, "Professional Payments Hold (BHT)",
+                before, holdStateMap(), sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Professional payments held for BHT " + currentEncounter.getBhtNo() + ".");
     }
 
@@ -89,12 +98,31 @@ public class ProfessionalPaymentHoldController implements Serializable {
             JsfUtil.addErrorMessage("Professional payments are not currently on hold for this BHT.");
             return;
         }
+        Map<String, Object> before = holdStateMap();
         currentEncounter.setProfessionalPaymentsOnHold(Boolean.FALSE);
         currentEncounter.setProfessionalPaymentsHoldDateTime(null);
         currentEncounter.setProfessionalPaymentsHoldBy(null);
         currentEncounter.setProfessionalPaymentsHoldNotes(null);
         patientEncounterFacade.edit(currentEncounter);
+        auditService.logEncounterAudit(currentEncounter, "Professional Payments Hold Released (BHT)",
+                before, holdStateMap(), sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Professional payments hold released for BHT " + currentEncounter.getBhtNo() + ".");
+    }
+
+    /**
+     * Snapshot of the BHT-level hold fields for audit before/after events (#22383).
+     */
+    private Map<String, Object> holdStateMap() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (currentEncounter == null) {
+            return m;
+        }
+        m.put("professionalPaymentsOnHold", currentEncounter.isProfessionalPaymentsOnHold());
+        m.put("professionalPaymentsHoldDateTime", currentEncounter.getProfessionalPaymentsHoldDateTime());
+        m.put("professionalPaymentsHoldBy", currentEncounter.getProfessionalPaymentsHoldBy() != null
+                ? currentEncounter.getProfessionalPaymentsHoldBy().getName() : null);
+        m.put("professionalPaymentsHoldNotes", currentEncounter.getProfessionalPaymentsHoldNotes());
+        return m;
     }
 
     // -------------------------------------------------------------------------

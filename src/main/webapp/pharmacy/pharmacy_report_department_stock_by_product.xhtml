@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       >
 
     <h:body>
@@ -26,7 +27,7 @@
                             </p:commandButton>
                             <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                              
+                                                postProcessor="#{reportsStock.postProcessXLSStockReportByProduct}"
                                               />
                             </p:commandButton>
                         </h:panelGrid>
@@ -42,8 +43,16 @@
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock Report by Product - #{reportsStock.department.name}"/>                                     
-                                </f:facet> 
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="Stock Report by Product"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
+                                </f:facet>
 
                                 <p:column width="40px;" headerText="No" sortBy="#{ii}">
                                     <h:outputLabel value="#{ii+1}" />

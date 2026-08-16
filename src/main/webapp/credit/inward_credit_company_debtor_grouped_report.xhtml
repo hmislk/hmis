@@ -45,7 +45,7 @@
                             <p:autoComplete id="cmbCc" styleClass="w-100" inputStyleClass="w-100 form-control"
                                             value="#{creditCompanyDebtorGroupedReportController.institution}"
                                             completeMethod="#{institutionController.completeCreditCompany}"
-                                            var="cc" itemLabel="#{cc.name}" itemValue="#{cc}"
+                                            var="ccIns" itemLabel="#{ccIns.name}" itemValue="#{ccIns}"
                                             forceSelection="true" />
 
                             <!-- Row 2: Date Basis -->
@@ -190,6 +190,10 @@
                                     <p:commandButton value="Excel" icon="fas fa-file-excel"
                                                      class="ui-button-success mr-2"
                                                      actionListener="#{creditCompanyDebtorGroupedReportController.downloadExcel}"
+                                                     ajax="false" />
+                                    <p:commandButton value="PDF" icon="fas fa-file-pdf"
+                                                     class="ui-button-danger mx-1"
+                                                     actionListener="#{creditCompanyDebtorGroupedReportController.downloadPdf}"
                                                      ajax="false" />
                                     <p:commandButton value="Print" icon="fas fa-print"
                                                      class="ui-button-info ml-1" ajax="false">
