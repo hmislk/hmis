@@ -330,13 +330,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         if (item == null) {
             throw new Exception("VMP not found with ID: " + id);
         }
-        Long vtmId = item.getVtm() != null ? item.getVtm().getId() : null;
-        String vtmName = item.getVtm() != null ? item.getVtm().getName() : null;
-        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
-        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
-        return new VmpDto(item.getId(), item.getName(), item.getCode(),
-                item.getDescreption(), item.isRetired(), item.isInactive(),
-                vtmId, vtmName, dosageFormId, dosageFormName);
+        return buildVmpDto(item);
     }
 
     private AmpDto findAmpById(Long id) throws Exception {
@@ -344,16 +338,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         if (item == null) {
             throw new Exception("AMP not found with ID: " + id);
         }
-        Long vmpId = item.getVmp() != null ? item.getVmp().getId() : null;
-        String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
-        Long categoryId = item.getCategory() != null ? item.getCategory().getId() : null;
-        String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
-        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
-        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
-        return new AmpDto(item.getId(), item.getName(), item.getCode(),
-                item.getBarcode(), item.isInactive(),
-                vmpId, vmpName, categoryId, categoryName,
-                dosageFormId, dosageFormName);
+        return buildAmpDto(item);
     }
 
     private VmppDto findVmppById(Long id) throws Exception {
@@ -452,15 +437,10 @@ public class PharmaceuticalItemApiService implements Serializable {
             }
             item.setDosageForm(dosageForm);
         }
+        applyVmpUnitFields(item, request);
         setAuditFieldsForCreate(item, user);
         vmpFacade.createAndFlush(item);
-        Long vtmId = item.getVtm() != null ? item.getVtm().getId() : null;
-        String vtmName = item.getVtm() != null ? item.getVtm().getName() : null;
-        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
-        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
-        return new VmpDto(item.getId(), item.getName(), item.getCode(),
-                item.getDescreption(), item.isRetired(), item.isInactive(),
-                vtmId, vtmName, dosageFormId, dosageFormName);
+        return buildVmpDto(item);
     }
 
     private AmpDto createAmp(AmpRequestDTO request, WebUser user) throws Exception {
@@ -470,16 +450,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         applyAmpSpecificFields(item, request);
         setAuditFieldsForCreate(item, user);
         ampFacade.createAndFlush(item);
-        Long vmpId = item.getVmp() != null ? item.getVmp().getId() : null;
-        String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
-        Long categoryId = item.getCategory() != null ? item.getCategory().getId() : null;
-        String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
-        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
-        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
-        return new AmpDto(item.getId(), item.getName(), item.getCode(),
-                item.getBarcode(), item.isInactive(),
-                vmpId, vmpName, categoryId, categoryName,
-                dosageFormId, dosageFormName);
+        return buildAmpDto(item);
     }
 
     private VmppDto createVmpp(VmppRequestDTO request, WebUser user) throws Exception {
@@ -609,15 +580,10 @@ public class PharmaceuticalItemApiService implements Serializable {
             }
             item.setDosageForm(dosageForm);
         }
+        applyVmpUnitFields(item, request);
         setAuditFieldsForEdit(item, user);
         vmpFacade.edit(item);
-        Long vtmId = item.getVtm() != null ? item.getVtm().getId() : null;
-        String vtmName = item.getVtm() != null ? item.getVtm().getName() : null;
-        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
-        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
-        return new VmpDto(item.getId(), item.getName(), item.getCode(),
-                item.getDescreption(), item.isRetired(), item.isInactive(),
-                vtmId, vtmName, dosageFormId, dosageFormName);
+        return buildVmpDto(item);
     }
 
     private AmpDto updateAmp(Long id, AmpRequestDTO request, WebUser user) throws Exception {
@@ -629,16 +595,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         applyAmpSpecificFieldsIfProvided(item, request);
         setAuditFieldsForEdit(item, user);
         ampFacade.edit(item);
-        Long vmpId = item.getVmp() != null ? item.getVmp().getId() : null;
-        String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
-        Long categoryId = item.getCategory() != null ? item.getCategory().getId() : null;
-        String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
-        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
-        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
-        return new AmpDto(item.getId(), item.getName(), item.getCode(),
-                item.getBarcode(), item.isInactive(),
-                vmpId, vmpName, categoryId, categoryName,
-                dosageFormId, dosageFormName);
+        return buildAmpDto(item);
     }
 
     private VmppDto updateVmpp(Long id, VmppRequestDTO request, WebUser user) throws Exception {
@@ -961,10 +918,82 @@ public class PharmaceuticalItemApiService implements Serializable {
             }
             item.setStrengthUnit(strengthUnit);
         }
+        if (request.getIssueUnitId() != null) {
+            MeasurementUnit issueUnit = measurementUnitFacade.find(request.getIssueUnitId());
+            if (issueUnit == null) {
+                throw new Exception("Measurement unit not found with ID: " + request.getIssueUnitId());
+            }
+            item.setIssueUnit(issueUnit);
+        }
     }
 
     private void applyAmpSpecificFieldsIfProvided(Amp item, AmpRequestDTO request) throws Exception {
         applyAmpSpecificFields(item, request);
+    }
+
+    /**
+     * Applies issueUnitId / strengthUnitId from a VmpRequestDTO onto a Vmp.
+     * VMP has no dedicated request-DTO method for this yet (unlike Amp, which
+     * already carried strengthUnitId) -- added alongside AMP's issueUnitId
+     * support so both VMP and AMP can have their issue/strength units set via
+     * the API instead of only being derivable from free-text VMP names.
+     */
+    private void applyVmpUnitFields(Vmp item, VmpRequestDTO request) throws Exception {
+        if (request.getIssueUnitId() != null) {
+            MeasurementUnit issueUnit = measurementUnitFacade.find(request.getIssueUnitId());
+            if (issueUnit == null) {
+                throw new Exception("Measurement unit not found with ID: " + request.getIssueUnitId());
+            }
+            item.setIssueUnit(issueUnit);
+        }
+        if (request.getStrengthUnitId() != null) {
+            MeasurementUnit strengthUnit = measurementUnitFacade.find(request.getStrengthUnitId());
+            if (strengthUnit == null) {
+                throw new Exception("Measurement unit not found with ID: " + request.getStrengthUnitId());
+            }
+            item.setStrengthUnit(strengthUnit);
+        }
+    }
+
+    private VmpDto buildVmpDto(Vmp item) {
+        Long vtmId = item.getVtm() != null ? item.getVtm().getId() : null;
+        String vtmName = item.getVtm() != null ? item.getVtm().getName() : null;
+        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
+        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
+        VmpDto dto = new VmpDto(item.getId(), item.getName(), item.getCode(),
+                item.getDescreption(), item.isRetired(), item.isInactive(),
+                vtmId, vtmName, dosageFormId, dosageFormName);
+        if (item.getIssueUnit() != null) {
+            dto.setIssueUnitId(item.getIssueUnit().getId());
+            dto.setIssueUnitName(item.getIssueUnit().getName());
+        }
+        if (item.getStrengthUnit() != null) {
+            dto.setStrengthUnitId(item.getStrengthUnit().getId());
+            dto.setStrengthUnitName(item.getStrengthUnit().getName());
+        }
+        return dto;
+    }
+
+    private AmpDto buildAmpDto(Amp item) {
+        Long vmpId = item.getVmp() != null ? item.getVmp().getId() : null;
+        String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
+        Long categoryId = item.getCategory() != null ? item.getCategory().getId() : null;
+        String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
+        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
+        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
+        AmpDto dto = new AmpDto(item.getId(), item.getName(), item.getCode(),
+                item.getBarcode(), item.isInactive(),
+                vmpId, vmpName, categoryId, categoryName,
+                dosageFormId, dosageFormName);
+        if (item.getIssueUnit() != null) {
+            dto.setIssueUnitId(item.getIssueUnit().getId());
+            dto.setIssueUnitName(item.getIssueUnit().getName());
+        }
+        if (item.getStrengthUnit() != null) {
+            dto.setStrengthUnitId(item.getStrengthUnit().getId());
+            dto.setStrengthUnitName(item.getStrengthUnit().getName());
+        }
+        return dto;
     }
 
     private void applyPackFields(Item item, Long parentVmpId, Double dblValue, Long packUnitId, String parentType) throws Exception {

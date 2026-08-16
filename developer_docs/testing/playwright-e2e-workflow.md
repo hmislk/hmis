@@ -1730,6 +1730,164 @@ silently returns "No results found" with no error — this looks like a missing 
 an empty/mistyped query. Confirmed working seed name: "Appendicectomy". Verified while testing
 issue #20891.
 
+## 66. PrimeFaces `p:tree` privilege picker (`admin/users/user_privileges.xhtml`) — clicking a toggler icon directly does nothing; use the Search box instead, and re-login after any privilege change
+
+The "Manage User Privileges" tree (widget var `privTree`) lazily renders — its
+`ui-treenode-children` `<ul>`s stay `display:none` until PrimeFaces actually
+expands that node client-side. A raw DOM `.click()` on the toggler icon (or
+calling the widget's `expandNode()` directly) does **not** flip
+`aria-expanded`/unhide the children — the tree only reliably expands and
+scrolls to a match through its own **Search** textbox: type the privilege's
+exact display label, then send a `Backspace` (a plain `fill()` doesn't fire
+the keyup the search listens on) and wait ~1-2s for the AJAX re-render. After
+that the matched `treeitem`'s checkbox can be clicked directly by locating it
+under `span.ui-treenode-label` → `closest('li.ui-treenode')` →
+`div.ui-chkbox-box`.
+
+Also: privileges are loaded into the session at login, not read live. After
+granting/revoking a privilege for the test user, you must log out and log
+back in (department re-selection included) before the new grant takes
+effect in that user's session — testing "immediately after Update User
+Privileges" without a re-login will silently show the old (stale)
+privilege behavior. Verified while testing issue #22906.
+
+## 67. `inpatient_search.xhtml` / `inward_search.xhtml` date filter defaults to "last 7 days" and silently returns "No records found" for older admissions — even when searching by exact BHT No
+
+The Admissions search page's `From Date`/`To Date` fields default to a
+rolling 7-day window and are combined with the BHT No / other filters via
+AND, not OR. Searching by an exact BHT number for an admission outside that
+window returns "No records found" with no indication that the date range
+(not the BHT number) is the reason. Always widen `From Date` back to (or
+before) the admission's actual `DATEOFADMISSION` — check it in the DB first
+(`SELECT DATEOFADMISSION FROM PATIENTENCOUNTER WHERE ID=...`) — before
+concluding a BHT number search failed. The `p:calendar` popup only navigates
+one month per "Previous Month" click; budget one click per month of gap.
+Verified while testing issue #22906.
+
+## 68. PrimeFaces `p:growl` error/success messages fade before a subsequent `browser_snapshot`/`wait_for` — snapshot immediately after the triggering action, not after a delay
+
+A validation error or success growl (e.g. from a blocked/allowed refund
+submission) can disappear from the DOM within ~1-2 seconds. If you
+`browser_wait_for` a couple of seconds and *then* snapshot, the growl may
+already be gone even though the underlying action definitely ran (verify via
+DB query if in doubt). To reliably capture the message as evidence, call
+`browser_snapshot` (or `browser_take_screenshot`) right after
+`browser_handle_dialog`/the click that triggers the AJAX response — do not
+insert a `wait_for` in between when the growl itself is the thing being
+captured. Verified while testing issue #22906.
+
+## 69. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it
+
+On `inward/admit_room.xhtml`, a `p:autoComplete`'s `itemSelect` ajax handler bound directly to
+`roomChangeController.current` set that field as soon as a patient was selected — *before* the
+"Continue" `p:commandButton` (bound to `roomChangeController.selectRoomForAdmit()`, `ajax="false"`)
+was ever clicked. The Continue button lived inside a panel gated
+`rendered="#{roomChangeController.current eq null}"`. By the time the Continue postback started,
+`current` was already non-null (set by that earlier ajax request, persisted in the
+`@SessionScoped` bean) — so JSF evaluated the *whole panel*, including the Continue button, as not
+rendered for this request and silently skipped decoding/invoking its action. The button's own
+network POST still looked completely normal (correct hidden field values, correct button
+parameter) — nothing in the request/response cycle hinted the action never ran.
+
+**How this was proven, not just suspected**: added `if (true) { throw new RuntimeException("canary"); }`
+as the literal first line of the suspected action method, rebuilt, redeployed, and repeated the
+click. No exception, no 500, no log line — page rendered its normal "success" output. That's the
+tell: if the action method actually executed, a first-line unconditional throw is unmissable
+(crashes the page). Silence under that canary means the method body never ran at all — reach for
+this test before trusting any subtler theory (stale ViewState, lazy-loading timing, EL caching)
+about a command button that "looks like" it does nothing.
+
+**Fix pattern**: don't bind the ajax-updated input directly to the field that gates the
+surrounding panel's `rendered`. Introduce a separate staging field (e.g. `selectedAdmission`) for
+the autocomplete's `value` and for anything displayed *before* the confirm button is clicked; only
+assign it into the gating field (`current`) inside the confirm button's own action method. That
+keeps the panel's `rendered` condition — and therefore whether the button inside it gets
+decoded/invoked at all — stable for the entire lifecycle of that button's own request. Verified
+against a real waiting-room patient (DB `ROOMADMITTED` flipped 0→1 after "Assign Room") while
+fixing issue #22911.
+
+Two other Payara/asadmin quirks hit while chasing this on the carecode dev machine, worth knowing
+before you spend time debugging "missing" log output:
+- **`java.util.logging` calls (even `.severe(...)`) can silently not reach `server.log`** despite
+  `logging.properties` listing `GFFileHandler` with `logStandardStreams=true` — don't trust
+  "no log line appeared" as proof a code path didn't run; use the canary-throw test above instead,
+  since an uncaught exception during `INVOKE_APPLICATION` reliably surfaces as a rendered error
+  page regardless of the logging pipeline's state.
+- **A `redeploy` that exceeds the foreward-call timeout can leave the domain's DAS memory-bloated
+  and totally unresponsive** (`curl` to the app hangs/times out, `asadmin` commands against the
+  same domain also hang) — matches the existing "Local DAS stalls when memory-bloated" pattern.
+  Recovery: `kill -9` the stuck DAS `java` process (find via `ps aux | grep domains/<name>`),
+  `asadmin start-domain <name>`, then a plain `deploy` (not `redeploy`).
+
+## 70. `inward/inward_bill_service.xhtml`'s "Settle" button silently returns to the edit screen — with the same items still loaded — when a fee row needs a Staff pick
+
+Clicking **Settle** (`ajax="false"`, `confirm()`-guarded) for a bill whose Fees tab
+has a row with a non-null `speciality` (e.g. a "Technician Fee") but no `staff`
+selected does **not** navigate to print preview and does **not** throw a visible
+error near the button — the page does a full reload and lands back on the exact
+same "Add Services" edit view, Bill Items/Fees tabs still populated, looking
+almost identical to the pre-click state. The only server-side evidence is a
+`Growl` message baked into the reloaded HTML (`msgs:[{summary:"Please select
+Staff",...,severity:'error'}]`), which is easy to miss since no dialog or
+distinct page state change signals failure. Confirm success/failure by grepping
+the full-postback response body for `Growl`/`severity:'error'` (per §32's
+pattern), or simply check whether the "Investigation or Service" picker /
+"Add" button are still rendered afterward — their presence means Settle did not
+go through. Fix in automation: after any Fees-tab row shows a "Select Staff"
+dropdown, pick a value from it (PrimeFaces click-option pattern, §13) before
+clicking Settle. Found verifying issue #22916.
+
+## 71. A fresh `p:selectOneMenu` visually shows its first `<option>` as selected even when the bound model value is still `null` — clicking that same-looking option fires no `change` event
+
+On `pharmacy_bill_retail_sale_native.xhtml`'s Payment Method dropdown (default
+list order: Cash, Credit Card, Multiple Payment Methods, ...), a freshly
+loaded/newly-logged-in page renders the native `<select>` showing "Cash" as
+selected — this is just the browser defaulting an unset `<select>` to its
+first `<option>`, not evidence that `paymentMethod` is actually bound to
+`PaymentMethod.Cash` server-side. It's still `null` until the user makes a
+real selection. `browser_click` on that already-visually-"Cash" option is a
+no-op: the native select's `selectedIndex` doesn't change, so no `change`
+event fires, so `p:ajax event="change"` never runs and any `rendered="#{bean.paymentMethod
+eq 'Cash'}"` block downstream stays on its null-branch (nothing rendered)
+even though the dropdown *looks* set to Cash. Symptom: fields that should
+appear for Cash (e.g. Tendered/Balance) never show up, with no error and no
+network request — easy to misdiagnose as a `rendered` condition bug in the
+code when the page itself is correct.
+
+**Fix**: to genuinely land on the visually-default option, select a
+*different* option first, then select the desired one back — each of those
+is a real change, so both `change` events fire and the bean field updates
+both times:
+```text
+click dropdown → click a different option (e.g. "Credit Card")
+click dropdown → click the target option (e.g. "Cash")
+```
+Only needed the first time a dropdown is touched in a fresh session/after a
+redeploy-forced relogin; once a real change has fired once, subsequent
+same-value clicks are fine since the model is no longer null. Found verifying
+issue #22991.
+
+## 72. `p:calendar`'s `pattern` attribute can differ from the usual `dd/mm/yyyy` — type in the exact server-side pattern, not a guessed format
+
+`pharmacy/direct_purchase.xhtml`'s "Date of Expiry" field (`bill:calDoe`) is a
+`p:calendar` with `pattern="dd MM yy"` — space-separated, numeric month, and a
+**2-digit** year, not the more common `dd/mm/yyyy`. Typing a plausibly-formatted
+date like `31-12-2027` gets silently rejected: the input renders with
+`aria-invalid`/a red border, the value never converts to a real `Date`, and
+the downstream action (`addItem()` here) hits its own `doe == null` validation
+and no-ops with an error message — easy to misread as "the button doesn't
+work" rather than "the date didn't parse". Symptom is worse than a normal
+validation error because nothing about the on-screen state screams "wrong
+format" unless you're specifically looking for the invalid-state styling.
+
+**Fix**: read the `pattern="..."` attribute straight from the component's
+source (`grep -n -A6 -B1 'id="calDoe"' src/main/webapp/pharmacy/direct_purchase.xhtml`)
+before typing anything, and match it exactly — here, `31 12 27` (Ctrl+A, type slowly,
+`Escape` to close the overlay without resetting the value, same pattern as
+the general `p:calendar` guidance in §3). Don't assume `dd/mm/yyyy` just
+because that's the most common pattern elsewhere in the app. Verified while
+testing issue #23005.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

@@ -25,10 +25,50 @@
                          ============================================================ -->
                     <p:panel rendered="#{!retailSaleNativeSqlController2.billPreview}">
 
+                        <p:dialog
+                            header="Search Any Medicine..."
+                            widgetVar="findAMP"
+                            minHeight="300"
+                            width="1100"
+                            position="top"
+                            modal="true"
+                            closeOnEscape="true">
+                            <p:autoComplete
+                                id="exItem"
+                                forceSelection="true"
+                                class="w-100 formgrid grid"
+                                placeholder="Search Any Medicine..."
+                                maxResults="20"
+                                minQueryLength="3"
+                                inputStyleClass="w-100"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
+                                var="vt"
+                                onfocus="this.select()"
+                                itemLabel="#{vt.name}"
+                                itemValue="#{vt}">
+                                <p:column headerText="Code" style="padding: 6px;width: 4em;">
+                                    <h:outputLabel value="#{vt.code}" />
+                                </p:column>
+                                <p:column headerText="Item" style="width: 350px; padding: 6px;">
+                                    <h:outputLabel value="#{vt.name}" />
+                                </p:column>
+                                <p:column headerText="Stock" style="padding: 6px; text-align: center;width: 5em;">
+                                    <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department, vt)}">
+                                        <f:convertNumber pattern="#,###" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Price" style="padding: 6px; text-align: right;width: 6em;">
+                                    <p:outputLabel value="#{pharmacyPurchaseController.findLastRetailRate(vt)}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                        </p:dialog>
+
                         <p:panel class="w-100">
                             <f:facet name="header">
                                 <div class="row w-100 align-items-center">
-                                    <div class="col-4">
+                                    <div class="col-md-3">
                                         <h:outputText styleClass="fas fa-mortar-pestle" />
                                         <h:outputLabel value="Pharmacy Retail Sale (Sale 3)" class="mx-2" />
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
@@ -41,35 +81,7 @@
                                                 class="ui-button-secondary mx-1" />
                                         </h:panelGroup>
                                     </div>
-                                    <div class="col-4 text-center">
-                                        <p:commandButton
-                                            icon="fa fa-search"
-                                            value="Search Sale Bills"
-                                            ajax="false"
-                                            action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
-                                            actionListener="#{searchController.makeListNull}"
-                                            class="ui-button-info" />
-                                    </div>
-                                    <div class="col-4 text-end">
-                                        <p:commandButton
-                                            ajax="false"
-                                            accesskey="s"
-                                            value="Settle"
-                                            icon="fa fa-check"
-                                            class="ui-button-success mx-1"
-                                            onclick="if (!confirm('Are you sure?')) return false"
-                                            action="#{retailSaleNativeSqlController2.settleBillWithPay}" />
-                                        <p:commandButton
-                                            icon="fa fa-plus"
-                                            value="New Bill"
-                                            ajax="false"
-                                            action="pharmacy_bill_retail_sale_native_2"
-                                            class="ui-button-warning"
-                                            actionListener="#{retailSaleNativeSqlController2.resetAll()}" />
-                                    </div>
-                                </div>
-                                <div class="row w-100 align-items-center">
-                                    <div class="col-12 text-center">
+                                    <div class="col-md-5 text-center">
                                         <p:commandButton
                                             class="m-1"
                                             icon="fas fa-file-invoice"
@@ -107,6 +119,32 @@
                                             actionListener="#{retailSaleNativeSqlController3.switchToThisSaleWindow()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
                                     </div>
+                                    <div class="col-md-2 text-center">
+                                        <p:commandButton
+                                            icon="fa fa-search"
+                                            value="Search Sale Bills"
+                                            ajax="false"
+                                            action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
+                                            actionListener="#{searchController.makeListNull}"
+                                            class="ui-button-info" />
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <p:commandButton
+                                            ajax="false"
+                                            accesskey="s"
+                                            value="Settle"
+                                            icon="fa fa-check"
+                                            class="ui-button-success mx-1"
+                                            onclick="if (!confirm('Are you sure?')) return false"
+                                            action="#{retailSaleNativeSqlController2.settleBillWithPay}" />
+                                        <p:commandButton
+                                            icon="fa fa-plus"
+                                            value="New Bill"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native_2"
+                                            class="ui-button-warning"
+                                            actionListener="#{retailSaleNativeSqlController2.resetAll()}" />
+                                    </div>
                                 </div>
                             </f:facet>
 
@@ -121,7 +159,18 @@
                                         <div class="row w-100 m-1 p-1">
                                             <div class="col-md-5">
                                                 <p:focus id="focusForAcIx" for="acStock" />
-                                                <p:outputLabel class="w-100" for="acStock">Medicines or Devices</p:outputLabel>
+                                                <p:outputLabel class="w-100" for="acStock">
+                                                    Medicines or Devices
+                                                    <i class="fas fa-shopping-cart"
+                                                       onclick="PF('findAMP').show()"
+                                                       onkeypress="if(event.key==='Enter'||event.key===' ')PF('findAMP').show()"
+                                                       role="button"
+                                                       tabindex="0"
+                                                       title="Search Any Medicine"
+                                                       aria-label="Open Search Any Medicine dialog"
+                                                       style="font-size: 14px; color: purple; margin-left: 8px; cursor: pointer;">
+                                                    </i>
+                                                </p:outputLabel>
                                                 <h:panelGroup id="acStock">
                                                     <p:autoComplete
                                                         id="acStockField"
@@ -588,7 +637,7 @@
                                                         <h:outputLabel value="Payment Details" class="mx-4" />
                                                     </f:facet>
                                                     <div class="row">
-                                                        <div class="col-md-5">
+                                                        <div class="col-md-6">
                                                             <p:selectOneMenu
                                                                 id="pay"
                                                                 value="#{retailSaleNativeSqlController2.paymentMethod}"
@@ -597,7 +646,8 @@
                                                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}" />
                                                                 <p:ajax process="@this cmbPs cmbPaymentScheme" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController2.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
-
+                                                        </div>
+                                                        <div class="col-md-6">
                                                             <p:selectOneMenu
                                                                 id="cmbPaymentScheme"
                                                                 value="#{retailSaleNativeSqlController2.paymentScheme}"
@@ -607,8 +657,60 @@
                                                                 <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                                                                 <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController2.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
+
+                                                            <p:selectOneMenu
+                                                                id="cmbPs"
+                                                                value="#{retailSaleNativeSqlController2.paymentScheme}"
+                                                                rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}"
+                                                                class="my-1">
+                                                                <f:selectItem itemLabel="Discount Scheme" />
+                                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController2.listnerForPaymentMethodChange()}" />
+                                                            </p:selectOneMenu>
                                                         </div>
                                                     </div>
+
+                                                    <!-- Bill totals (merged former Bill Details panel) -->
+                                                    <h:panelGroup layout="block" id="panelBillDetails" class="my-1">
+                                                        <h:panelGrid columns="2" columnClasses="numberCol, textCol">
+                                                            <h:outputLabel value="Total" styleClass="fw-bold" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                                <h:outputLabel id="total" value="#{retailSaleNativeSqlController2.preBill.total}" styleClass="fw-bold">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Discount" styleClass="fw-bold" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                                <h:outputLabel id="dis" value="#{retailSaleNativeSqlController2.preBill.discount}" styleClass="fw-bold">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Net Total" styleClass="fw-bold fs-5 text-primary" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                                <h:outputLabel id="netTotal" value="#{retailSaleNativeSqlController2.preBill.netTotal}" styleClass="fw-bold fs-5 text-primary">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Tendered" rendered="#{retailSaleNativeSqlController2.paymentMethod eq 'Cash'}" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1" rendered="#{retailSaleNativeSqlController2.paymentMethod eq 'Cash'}">
+                                                                <p:inputText
+                                                                    id="paid"
+                                                                    value="#{retailSaleNativeSqlController2.cashPaid}"
+                                                                    class="form-control text-end"
+                                                                    autocomplete="off"
+                                                                    accesskey="t"
+                                                                    onfocus="this.select()">
+                                                                    <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
+                                                                </p:inputText>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Balance" rendered="#{retailSaleNativeSqlController2.paymentMethod eq 'Cash'}" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1" rendered="#{retailSaleNativeSqlController2.paymentMethod eq 'Cash'}">
+                                                                <h:outputLabel id="balance" value="#{retailSaleNativeSqlController2.balance}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                        </h:panelGrid>
+                                                    </h:panelGroup>
 
                                                     <div class="row">
                                                         <div class="my-1">
@@ -731,18 +833,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-5">
-                                                        <p:selectOneMenu
-                                                            id="cmbPs"
-                                                            value="#{retailSaleNativeSqlController2.paymentScheme}"
-                                                            rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}"
-                                                            class="my-1">
-                                                            <f:selectItem itemLabel="Discount Scheme" />
-                                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                                            <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController2.listnerForPaymentMethodChange()}" />
-                                                        </p:selectOneMenu>
-                                                    </div>
-
+                                                    <h:outputLabel value="Additional Details" styleClass="fw-bold mb-1 d-block" />
                                                     <h:panelGrid columns="2" class="my-2">
                                                         <p:outputLabel value="Referring Doctor" />
                                                         <p:autoComplete
@@ -756,52 +847,6 @@
                                                             inputStyleClass="form-control" />
                                                         <p:outputLabel value="Comments" />
                                                         <p:inputTextarea id="txtComment" class="w-100 mx-4" value="#{retailSaleNativeSqlController2.comment}" />
-                                                    </h:panelGrid>
-                                                </p:panel>
-
-                                                <!-- Bill Details panel -->
-                                                <p:panel id="panelBillDetails" class="my-1">
-                                                    <f:facet name="header">
-                                                        <h:outputText styleClass="fas fa-list" />
-                                                        <h:outputLabel value="Bill Details" class="mx-4" />
-                                                    </f:facet>
-                                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol">
-                                                        <h:outputLabel value="Total" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="total" value="#{retailSaleNativeSqlController2.preBill.total}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Discount" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="dis" value="#{retailSaleNativeSqlController2.preBill.discount}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Net Total" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="netTotal" value="#{retailSaleNativeSqlController2.preBill.netTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Tendered" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <p:inputText
-                                                                id="paid"
-                                                                value="#{retailSaleNativeSqlController2.cashPaid}"
-                                                                class="form-control text-end"
-                                                                autocomplete="off"
-                                                                accesskey="t"
-                                                                onfocus="this.select()">
-                                                                <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
-                                                            </p:inputText>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Balance" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="balance" value="#{retailSaleNativeSqlController2.balance}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
                                                     </h:panelGrid>
                                                 </p:panel>
                                             </div>

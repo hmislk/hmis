@@ -17,6 +17,11 @@ Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
 non-repro case, 3, 4, 14) are the points where you pause for the user.
 
+This authorization also covers `superpowers:writing-plans`' Execution
+Handoff question, if that chain gets invoked anywhere in this flow (e.g.
+during step 5): auto-select **option 1, Subagent-Driven** without asking —
+do not stop for it as an additional discussion gate.
+
 ## 1. Setup
 
 Run the `start-issue` skill for `$0`: creates the branch from
@@ -186,17 +191,22 @@ These wiki image URLs are reused in the PR description in step 13.
 
 ## 11. Pre-push check
 
-Run the `verify-persistence` skill's pre-push step: swap `persistence.xml`
-back to the `${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}` placeholders,
-remembering the local JNDI names for the post-push restore.
+Check `src/main/resources/META-INF/persistence.xml` yourself — no skill
+needed. If `<jta-data-source>` holds a local JNDI name (e.g. `jdbc/coop`,
+`jdbc/ruhunuAudit`) in either persistence unit, note the values (you'll
+restore them in step 12) and swap them back to `${JDBC_DATASOURCE}` /
+`${JDBC_AUDIT_DATASOURCE}` with `Edit` before staging. If it already reads
+placeholders, there's nothing to do here — proceed to commit.
 
 ## 12. Commit and push
 
 Stage the intended source/doc files (`git add <files>`), including
-`persistence.xml` now that it has placeholders. Then run `commit-code` with
-`$0` as the issue number, then `git push`. Immediately after the push, run
-`verify-persistence`'s post-push step to restore `persistence.xml` to the
-local JNDI names, leaving that change **unstaged**.
+`persistence.xml` now that it has placeholders. Commit directly (`git
+commit`) with the message format from
+[Commit Conventions](../../../developer_docs/git/commit-conventions.md) —
+issue number in the closing keyword, Co-Authored-By trailer — then `git
+push`. Immediately after the push, restore `persistence.xml` to the local
+JNDI names noted in step 11 with `Edit`, leaving that change **unstaged**.
 
 ## 13. Create the PR
 

@@ -12,6 +12,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="showRate" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -194,9 +195,16 @@
                         <td style="width:55%!important;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
-                        <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                        </td>
+                        <ui:fragment rendered="#{cc.attrs.bill.margin ne 0.0 and !cc.attrs.showRate}">
+                            <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
+                                <h:outputLabel value="QTY"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
+                            </td>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{cc.attrs.showRate}">
+                            <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
+                                <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
+                            </td>
+                        </ui:fragment>
                     </tr>
                     <tr>
                         <td colspan="2" style="text-align: center;" class="billline">
@@ -211,11 +219,13 @@
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <ui:fragment rendered="#{cc.attrs.showRate}">
+                                    <td style="text-align: right;" >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </ui:fragment>
                             </tr>
 
                         </ui:repeat>
@@ -233,17 +243,19 @@
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
-                                <td    style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <ui:fragment rendered="#{cc.attrs.showRate}">
+                                    <td    style="text-align: right;" >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
 
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                    <td style="text-align: right;" >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </ui:fragment>
 
                             </tr>
                         </ui:repeat>
@@ -263,7 +275,7 @@
             <div  >
 
                 <table style="width: 100%;">
-                    <h:panelGroup rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
+                    <h:panelGroup rendered="#{(webUserController.hasPrivilege('ShowInwardFee')) and cc.attrs.showRate}">
                         <tr >
                             <td class="totalsBlock" style="text-align: left; width: 60%;">
                                 <h:outputLabel value="Actual Total"  />
@@ -289,7 +301,7 @@
 
 
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
+                    <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and cc.attrs.showRate}">
                         <tr>
                             <td  class="totalsBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
@@ -302,27 +314,29 @@
                         </tr>
                     </h:panelGroup>
 
-                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                    <ui:fragment rendered="#{cc.attrs.showRate}">
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
 
-                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.vat}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.vat}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:fragment>
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel   value="Number of Items Count" />

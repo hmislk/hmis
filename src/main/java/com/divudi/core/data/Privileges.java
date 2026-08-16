@@ -90,6 +90,7 @@ public enum Privileges {
     InwardServiceItemRequestApproval("Inward Service/Item Request Approval"),
     InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
+    InwardProcessReturnAfterNursingDischarge("Inward Process Return After Nursing Discharge"),
     InwardHoldProfessionalPayments("Hold Professional Payments"),
     InwardPayProfessionalFeesWhileOnHold("Pay Professional Fees While On Hold"),
     InwardBilling("Inward Billing"),
@@ -618,6 +619,7 @@ public enum Privileges {
     PharmacyReturnItemsOnly("Pharmacy Return Items Only"),
     PharmacyReturnItemsAndPayments("Pharmacy Return Items and Payments"),
     PharmacySearchReturnBill("Pharmacy Search Return Bill"),
+    PharmacySearchReturnBillCancel("Pharmacy Search Return Bill Cancel"),
     PharmacyAddToStock("Pharmacy Add to Stock"),
     // Pharmacy Wholesale Transaction
     PharmacyWholeSaleTransactionMenue("Pharmacy Wholesale Transaction Menu"),
@@ -1068,6 +1070,7 @@ public enum Privileges {
             case PharmacyReturnItemsOnly:
             case PharmacyReturnItemsAndPayments:
             case PharmacySearchReturnBill:
+            case PharmacySearchReturnBillCancel:
             case PharmacyAddToStock:
             case PharmacyDonation:
 
@@ -1243,6 +1246,7 @@ public enum Privileges {
             case InwardNursingDischarge:
             case InwardPhysicalDischarge:
             case InwardAddChargesAfterNursingDischarge:
+            case InwardProcessReturnAfterNursingDischarge:
             case InwardHoldProfessionalPayments:
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:

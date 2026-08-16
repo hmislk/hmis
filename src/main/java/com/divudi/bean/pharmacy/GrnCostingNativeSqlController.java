@@ -329,7 +329,14 @@ public class GrnCostingNativeSqlController implements Serializable {
         setCurrentExpense(null);
 
         if (getCurrentGrnBillPre().getId() != null) {
-            String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId ORDER BY bi.searialNo";
+            // bi.retired = false is required here (#22891): without it, a
+            // line removed during an earlier Save (soft-retired via
+            // "Remove Selected") reappears as an active, editable row on
+            // every fresh reload -- reached from both the "To Finalize
+            // GRNs" and "To Approve GRNs" lists, which both route through
+            // this same method. Matches the pattern already used by
+            // reloadCurrentGrnBillPreAfterApprove()'s query below.
+            String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false ORDER BY bi.searialNo";
             Map<String, Object> params = new HashMap<>();
             params.put("billId", getCurrentGrnBillPre().getId());
             List<BillItem> loadedItems = billItemFacade.findByJpql(jpql, params);
@@ -519,6 +526,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         grnCostingNativeSqlService.updateDraftBillHeader(
                 billId,
                 getCurrentGrnBillPre().getInvoiceNumber(),
+                getCurrentGrnBillPre().getInvoiceDate(),
                 getCurrentGrnBillPre().getPaymentMethod() != null ? getCurrentGrnBillPre().getPaymentMethod().name() : null,
                 getCurrentGrnBillPre().getCreditDuration(),
                 null,
@@ -829,6 +837,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setReferenceBillItemId(bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null);
         line.setSerialNo(bi.getSearialNo());
         line.setCreaterId(sessionController.getLoggedUser().getId());
+        line.setDescription(bi.getDescreption());
 
         if (f == null) {
             return;
@@ -863,6 +872,18 @@ public class GrnCostingNativeSqlController implements Serializable {
     private GrnLineData toLineData(BillItem bi) {
         GrnLineData line = new GrnLineData();
         populateLineData(line, bi);
+
+        // Batch No / Date of Expiry, entered on this page pre-Finalize --
+        // read here (Save-stage) so GrnCostingNativeSqlService.saveLine()
+        // can persist them to pharmaceuticalbillitem.doe/stringValue. Without
+        // this, they only ever existed in-memory and were silently dropped
+        // on any fresh page reload before Finalize/Approve (#22892).
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+        if (pbi != null) {
+            line.setDoe(pbi.getDoe());
+            line.setBatchNumber(pbi.getStringValue());
+        }
+
         return line;
     }
 
@@ -884,6 +905,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setLineGrossTotal(expense.getGrossValue());
         line.setLineNetTotal(expense.getNetValue());
         line.setConsideredForCosting(expense.isConsideredForCosting());
+        line.setDescription(expense.getDescreption());
         return line;
     }
 

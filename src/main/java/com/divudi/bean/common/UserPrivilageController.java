@@ -194,6 +194,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddProfessionalFee, "Add Professional Fee"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddTimedServices, "Add Timed Services"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAddChargesAfterNursingDischarge, "Add Charges After Nursing Discharge"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardProcessReturnAfterNursingDischarge, "Process Return After Nursing Discharge"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardHoldProfessionalPayments, "Hold Professional Payments"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPayProfessionalFeesWhileOnHold, "Pay Professional Fees While On Hold"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestApproval, "Approve Service/Item Requests"), servicesItemsNode);
@@ -781,6 +782,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyReturnItemsOnly = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsOnly, "Pharmacy Return Items Only"), retailTransaction);
         TreeNode PharmacyReturnItemsAndPayments = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsAndPayments, "Pharmacy Return Items And Payments"), retailTransaction);
         TreeNode PharmacySearchReturnBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchReturnBill, "Pharmacy Search ReturnBill"), retailTransaction);
+        TreeNode PharmacySearchReturnBillCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchReturnBillCancel, "Pharmacy Search Return Bill Cancel"), retailTransaction);
         TreeNode PharmacySaleReprint = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleReprint, "Pharmacy Sale Reprint"), retailTransaction);
         TreeNode PrintOriginalPharmacyBillFromReprint = new DefaultTreeNode(new PrivilegeHolder(Privileges.PrintOriginalPharmacyBillFromReprint, "Print Original Pharmacy Bill From Reprint"), retailTransaction);
         TreeNode PharmacySaleCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleCancel, "Pharmacy Sale Bill Cancel"), retailTransaction);

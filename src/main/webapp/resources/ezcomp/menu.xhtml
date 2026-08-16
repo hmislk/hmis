@@ -490,20 +490,22 @@
                             rendered="#{webUserController.hasPrivilege('WatingRoomAdmitPatient') and not configOptionApplicationController.getBooleanValueByKey('Patient admission and room assignment are simultaneous processes.', true)}" >
                         </p:menuitem>
 
-                        <p:menuitem 
-                            ajax="false" 
-                            action="#{admissionController.navigateToRoomChange()}" 
-                            value="Room Change" 
-                            icon="fa fa-exchange-alt" 
-                            actionListener="#{roomChangeController.recreate()}" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToRoomChange()}"
+                            value="Room Change (Deprecated)"
+                            title="Deprecated - use Patient Room Details on the Interim Bill / Admission Profile page instead"
+                            icon="fa fa-exchange-alt"
+                            actionListener="#{roomChangeController.recreate()}"
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}" >
                         </p:menuitem>
-                        <p:menuitem 
-                            ajax="false" 
-                            action="#{admissionController.navigateToGuardianRoomChange()}" 
-                            value="Guardian Room Change" 
-                            icon="fa fa-user-edit" 
-                            actionListener="#{roomChangeController.recreate()}" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToGuardianRoomChange()}"
+                            value="Guardian Room Change (Deprecated)"
+                            title="Deprecated - use Patient Room Details on the Interim Bill / Admission Profile page instead"
+                            icon="fa fa-user-edit"
+                            actionListener="#{roomChangeController.recreate()}"
                             rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" >
                         </p:menuitem>
                         <p:menuitem
@@ -1052,8 +1054,7 @@
                     <p:submenu label="Sale" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyRetailTransactionMenue')}">
                         <p:menuitem
                             ajax="false"
-                            action="/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true"
-                            actionListener="#{retailSaleNativeSqlController.resetAll()}"
+                            action="#{retailSaleNativeSqlController.pharmacyRetailSaleNative()}"
                             value="Retail Sale"
                             icon="fas fa-mortar-pestle"
                             style="font-weight: bold;"

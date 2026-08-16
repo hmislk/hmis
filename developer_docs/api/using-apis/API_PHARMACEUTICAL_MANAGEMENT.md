@@ -145,9 +145,14 @@ curl -X GET "http://localhost:8080/api/pharmaceutical_items/amp/123" \
   "descreption": "Generic paracetamol tablet",
   "departmentType": "Pharmacy",
   "vtmId": 123,
-  "dosageFormId": 456
+  "dosageFormId": 456,
+  "issueUnitId": 236,
+  "strengthUnitId": 209
 }
 ```
+`issueUnitId` and `strengthUnitId` reference `MeasurementUnit` IDs (same
+lookup as `pharmaceutical_config/units`) — not to be confused with
+`dosageFormId`, which references a `DosageForm`.
 
 **AMP Request Body:**
 ```json
@@ -163,9 +168,16 @@ curl -X GET "http://localhost:8080/api/pharmaceutical_items/amp/123" \
   "discountAllowed": true,
   "allowFractions": false,
   "consumptionAllowed": true,
-  "refundsAllowed": true
+  "refundsAllowed": true,
+  "strengthOfAnIssueUnit": 500.0,
+  "strengthUnitId": 209,
+  "issueUnitId": 236
 }
 ```
+`strengthOfAnIssueUnit` is the numeric strength (e.g. `500.0` for a 500mg
+tablet) — distinct from `strengthUnitId`, which is the unit it's measured in
+(mg). `issueUnitId` is the unit the item is issued/dispensed in (e.g.
+Tablet, Capsule, ml).
 
 **VMPP Request Body:**
 ```json
@@ -360,10 +372,15 @@ All responses follow this standard format:
 - `id`, `name`, `code`, `descreption`, `retired`, `inactive`
 
 ### VMP Response
-- `id`, `name`, `code`, `descreption`, `retired`, `inactive`, `vtmId`, `vtmName`, `dosageFormId`, `dosageFormName`
+- `id`, `name`, `code`, `descreption`, `retired`, `inactive`, `vtmId`, `vtmName`, `dosageFormId`, `dosageFormName`, `issueUnitId`, `issueUnitName`, `strengthUnitId`, `strengthUnitName`
 
 ### AMP Response
-- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`, `dosageFormId`, `dosageFormName`
+- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`, `dosageFormId`, `dosageFormName`, `issueUnitId`, `issueUnitName`, `strengthUnitId`, `strengthUnitName`
+
+Note: `issueUnitId`/`strengthUnitId`/`issueUnitName`/`strengthUnitName` are
+populated on `GET`/`POST`/`PUT` (single-item) responses but not yet on the
+`search` list endpoint's DTO projection — look up the item by ID after a
+write to confirm what was saved.
 
 ### VMPP Response
 - `id`, `name`, `code`, `retired`, `inactive`, `vmpId`, `vmpName`
