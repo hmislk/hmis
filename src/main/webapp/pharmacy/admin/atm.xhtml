@@ -39,7 +39,7 @@
                                             minQueryLength="2"
                                             placeholder="Search by name (minimum 2 characters)..."
                                             disabled="#{atmController.editable}">
-                                <p:ajax event="itemSelect" update="gpDetail btnEdit" process="@this" />
+                                <p:ajax event="itemSelect" update="gpDetail btnEdit btnDelete" process="@this" />
                             </p:autoComplete>
                         </div>
                         <div class="col-md-7">
