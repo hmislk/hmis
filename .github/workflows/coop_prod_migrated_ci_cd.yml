@@ -27,7 +27,7 @@ env:
   APP:        coop
   JNDI_MAIN:  jdbc/coop
   JNDI_AUDIT: jdbc/coopaudit
-  HEALTH_URL: https://coop-migrated.carecode.org/coop/faces/index1.xhtml
+  HEALTH_URL: https://coop.carecode.org/coop/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        coop
       JNDI_MAIN:  jdbc/coop
       JNDI_AUDIT: jdbc/coopaudit
-      HEALTH_URL: https://coop-migrated.carecode.org/coop/faces/index1.xhtml
+      HEALTH_URL: https://coop.carecode.org/coop/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
