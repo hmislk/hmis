@@ -27,7 +27,7 @@ env:
   APP:        coop
   JNDI_MAIN:  jdbc/coopStg
   JNDI_AUDIT: jdbc/coopStgAudit
-  HEALTH_URL: https://stg.carecode.org/coop/faces/index1.xhtml
+  HEALTH_URL: https://stg-migrated.carecode.org/coop/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        coop
       JNDI_MAIN:  jdbc/coopStg
       JNDI_AUDIT: jdbc/coopStgAudit
-      HEALTH_URL: https://stg.carecode.org/coop/faces/index1.xhtml
+      HEALTH_URL: https://stg-migrated.carecode.org/coop/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
