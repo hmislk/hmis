@@ -11089,13 +11089,16 @@ public class PharmacyReportController implements Serializable {
             }
 
             // Consignment filter: Use item stock quantity (not batch qty)
+            // NOTE: hide zero-stock items (normal, expected), but never hide negative
+            // quantities - a negative net qty means oversold/backorder data that must
+            // stay visible instead of being silently dropped from the report (issue #23026).
             double itemQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
             if (isConsignmentItem()) {
                 if (itemQty > 0) {
                     continue;
                 }
             } else {
-                if (itemQty <= 0) {
+                if (itemQty == 0) {
                     continue;
                 }
             }
@@ -11315,13 +11318,16 @@ public class PharmacyReportController implements Serializable {
             }
 
             // Consignment filter (unchanged - stays in Java)
+            // NOTE: hide zero-stock batches (normal, expected), but never hide negative
+            // quantities - a negative batch qty means oversold/backorder data that must
+            // stay visible instead of being silently dropped from the report (issue #23026).
             double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
                     continue;
                 }
             } else {
-                if (batchQty <= 0) {
+                if (batchQty == 0) {
                     continue;
                 }
             }
@@ -11746,46 +11752,13 @@ public class PharmacyReportController implements Serializable {
                 jpql.append("AND sh.item.departmentType IN :departmentTypes ");
             }
 
-            // Group by item and filter positive quantities
-            jpql.append("AND sh.itemBatch.item.id IN (")
-                    .append("SELECT sh4.itemBatch.item.id FROM StockHistory sh4 ")
-                    .append("WHERE sh4.retired = :ret ")
-                    .append("AND sh4.id IN (")
-                    .append("SELECT MAX(sh5.id) FROM StockHistory sh5 ")
-                    .append("WHERE sh5.retired = :ret ")
-                    .append("AND sh5.createdAt <= :et3 ");
-
-            params.put("et3", date);
-
-            // Add filters to item filtering subqueries
-            addFilter(jpql, params, "sh5.institution", "ins4", institution);
-            addFilter(jpql, params, "sh5.department.site", "sit4", site);
-            addFilter(jpql, params, "sh5.department", "dep4", department);
-            addFilter(jpql, params, "sh5.item", "itm4", item);
-            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh5.item.departmentType IN :departmentTypes ");
-            }
-
-            jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
-
-            addFilter(jpql, params, "sh4.institution", "ins5", institution);
-            addFilter(jpql, params, "sh4.department.site", "sit5", site);
-            addFilter(jpql, params, "sh4.department", "dep5", department);
-            addFilter(jpql, params, "sh4.item", "itm5", item);
-            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh4.item.departmentType IN :departmentTypes ");
-            }
-
-            jpql.append("GROUP BY sh4.itemBatch.item.id ")
-                    .append("HAVING SUM(sh4.stockQty) > 0");
-
-            // Apply consignment filter if needed
-            if (isConsignmentItem()) {
-                jpql.append(" AND SUM(sh4.stockQty) <= 0");
-            }
-
-            jpql.append(")");
-
+            // NOTE: do NOT filter batches/items by SUM(stockQty) > 0 here. This snapshot
+            // must include every batch's latest quantity as-of `date`, positive, zero, or
+            // negative (oversold/backorder). Excluding negative-quantity items understates
+            // Opening/Closing Stock only on the snapshot where the item's running total
+            // happens to be negative, breaking the Opening + movements = Closing identity
+            // and producing a phantom COGS variance the moment that item's total crosses
+            // zero within the report window (issue #23018).
             // Execute the query
             List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
