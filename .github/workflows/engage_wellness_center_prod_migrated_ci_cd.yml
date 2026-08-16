@@ -27,7 +27,7 @@ env:
   APP:        ewc
   JNDI_MAIN:  jdbc/ewc
   JNDI_AUDIT: jdbc/ewcAudit
-  HEALTH_URL: https://ewc-migrated.carecode.org/ewc/faces/index1.xhtml
+  HEALTH_URL: https://ewc.carecode.org/ewc/faces/index1.xhtml
 
 jobs:
   build:
@@ -87,7 +87,7 @@ jobs:
       APP:        ewc
       JNDI_MAIN:  jdbc/ewc
       JNDI_AUDIT: jdbc/ewcAudit
-      HEALTH_URL: https://ewc-migrated.carecode.org/ewc/faces/index1.xhtml
+      HEALTH_URL: https://ewc.carecode.org/ewc/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
