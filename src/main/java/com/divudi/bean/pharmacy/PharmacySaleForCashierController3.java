@@ -324,7 +324,7 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
         }
 
         PageMetadata metadata = new PageMetadata();
-        metadata.setPagePath("pharmacy/pharmacy_bill_retail_sale_for_cashier");
+        metadata.setPagePath("pharmacy/pharmacy_bill_retail_sale_for_cashier_3");
         metadata.setPageName("Pharmacy Retail Sale For Cashier");
         metadata.setDescription("Pharmacy retail sale interface for cashiers with token system support");
         metadata.setControllerClass("PharmacySaleForCashierController3");
