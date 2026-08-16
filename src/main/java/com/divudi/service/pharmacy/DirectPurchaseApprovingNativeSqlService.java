@@ -95,6 +95,14 @@ public class DirectPurchaseApprovingNativeSqlService {
      * already finalized (or approved -- approval implies completed=1 too)
      * this same bill.
      *
+     * The WHERE clause's ID match alone already pins this to exactly one
+     * row, and CHECKED=0/BILLTYPEATOMIC=PRE already hold by construction
+     * whenever COMPLETED=0 (checked/final-type are only ever set together,
+     * at Approve, which itself requires COMPLETED=1 first) -- but asserting
+     * them explicitly here, plus RETIRED=0, is cheap defense-in-depth
+     * against this claiming an unrelated or retired bill if some future
+     * code path ever leaves one in an unexpected state.
+     *
      * @return true if this call won the claim and may proceed; false
      * otherwise.
      */
@@ -103,12 +111,14 @@ public class DirectPurchaseApprovingNativeSqlService {
         int claimed = em.createNativeQuery(
                 "UPDATE " + billTable()
                 + " SET COMPLETED=1, COMPLETEDBY_ID=?, COMPLETEDAT=?, EDITOR_ID=?, EDITEDAT=?"
-                + " WHERE ID=? AND COMPLETED=0")
+                + " WHERE ID=? AND COMPLETED=0 AND CHECKED=0 AND BILLTYPEATOMIC=?"
+                + " AND (RETIRED=0 OR RETIRED IS NULL)")
                 .setParameter(1, editorId)
                 .setParameter(2, now)
                 .setParameter(3, editorId)
                 .setParameter(4, now)
                 .setParameter(5, billId)
+                .setParameter(6, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE.toString())
                 .executeUpdate();
         evictCache();
         return claimed == 1;
