@@ -1,0 +1,152 @@
+---
+name: demonstrate-issues
+description: >
+  Run a live bug-demonstration capture session before filing GitHub issues.
+  The user drives the browser and narrates bugs one after another ("see
+  this — clicking X should do Y but does Z"); this skill captures each demo
+  (snapshot + screenshot + description + environment context) without
+  investigating, only after the user signals the session is over does it
+  investigate root causes, then only after the user reviews the write-ups
+  does it file issues. Use when asked to "demonstrate some bugs", "show you
+  issues before filing them", or via `/demonstrate-issues`. Never fixes
+  anything — it ends at filing GitHub issue(s); any actual fix is separate,
+  later `dev-issue` work.
+allowed-tools: Read, Glob, Grep, Bash, PowerShell, mcp__playwright__browser_navigate,
+  mcp__playwright__browser_navigate_back, mcp__playwright__browser_click,
+  mcp__playwright__browser_type, mcp__playwright__browser_fill_form,
+  mcp__playwright__browser_select_option, mcp__playwright__browser_hover,
+  mcp__playwright__browser_press_key, mcp__playwright__browser_wait_for,
+  mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot,
+  mcp__playwright__browser_console_messages, mcp__playwright__browser_network_requests,
+  mcp__playwright__browser_evaluate, mcp__playwright__browser_resize,
+  mcp__playwright__browser_tabs, mcp__playwright__browser_close
+---
+
+# Demonstrate Issues (HMIS)
+
+Structurally separates three phases with hard stops between them:
+**demonstrate** → **investigate** → **file**. This exists to prevent acting
+on a partial picture — jumping from "here's a bug" straight to code before
+every bug the user wants to show is on the table, and before the full
+picture of each one is understood.
+
+## Non-goals
+
+- **No development or fixing ever happens inside this skill.** It ends at
+  filing GitHub issue(s). Any actual fix is separate, later work — hand the
+  filed issue number(s) to `dev-issue`.
+- Does not change the behavior of `dev-issue`, `playwright-e2e`, or any
+  other skill — they keep auto-logging in and driving the browser
+  themselves by default. The user-drives-login default below is local to
+  this skill only.
+
+## Reference docs
+
+- [Playwright E2E Testing Workflow](../../../developer_docs/testing/playwright-e2e-workflow.md) —
+  PrimeFaces widget commit patterns, dialog handling, the §1 login/department
+  gate, and the §8/§8a screenshot-privacy-check convention this skill reuses
+  for evidence capture.
+- [Playwright MCP Guide](../../../developer_docs/tools/playwright-mcp-guide.md) —
+  generic MCP tool mechanics (clicking, dropdowns, common errors).
+
+## 1. Deploy check (environment-agnostic — never hardcode names/ports)
+
+- Resolve the WAR path dynamically each run: read `<finalName>` from
+  `pom.xml` (or glob `target/*.war`) rather than assuming a fixed filename
+  like `rh-3.0.0.war` — the version differs across checkouts/machines.
+- Resolve the Payara **admin port** and the app's **HTTP port** from the
+  local credentials file for this machine (`C:\Credentials\credentials.txt`
+  or equivalent) — never assume the defaults (4848 / 8080). Multiple Payara
+  installs can coexist on one box on non-default ports (see
+  [playwright-e2e-workflow §27](../../../developer_docs/testing/playwright-e2e-workflow.md#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)).
+- Resolve the deployed **context root / URL path** via
+  `asadmin --port <admin-port> list-applications` rather than assuming
+  `/rh` — different instances are deployed as `/rh`, `/hmis`, `/coop`, etc.
+- Compare the resolved WAR's build time against `git log -1` (HEAD). If the
+  running app is behind HEAD, rebuild (`mvn clean package -DskipTests`, JDK
+  11) and redeploy automatically using the resolved admin port/app name —
+  see [§0a](../../../developer_docs/testing/playwright-e2e-workflow.md#0a-rebuild-and-redeploy-local-code-changes-before-testing).
+  Only pause and ask if the build fails or the working tree state is
+  ambiguous (e.g. uncommitted changes on a file that affects the build).
+
+## 2. Open login page, hand off (default), but overridable
+
+- `browser_navigate` to the resolved login URL and tell the user it's ready.
+- **Default:** the user logs in and selects department themselves, directly
+  in the visible Playwright-launched browser window — they may need a
+  different department or user account than whatever would be defaulted to,
+  and may want to keep those credentials off-screen.
+- **Override:** only if the user says something like "you may continue" (or
+  otherwise hands control back), log in and navigate for the rest of the
+  session, same as `playwright-e2e`'s normal login flow.
+
+## 3. Demonstration loop
+
+- The user narrates/points out each issue in chat while driving the browser
+  themselves (e.g. "see this — clicking X should do Y but does Z").
+- On the user's cue, capture:
+  - an accessibility snapshot (`browser_snapshot`)
+  - a screenshot (`browser_take_screenshot`) into the project `tmp/`
+    folder, one subfolder per session
+  - the user's description, verbatim
+  - auto-detected environment context: department/user read from the page
+    header, current git branch + commit SHA (`git rev-parse --abbrev-ref
+    HEAD` / `git rev-parse HEAD`), timestamp
+- **Pure capture only at this stage — no code investigation yet.** Confirm
+  each capture ("Got it, recorded as demo #N") and wait for the next cue or
+  the end signal.
+- Multiple issues can be demonstrated in one session, back to back.
+
+**HARD STOP** — do not read application code, form a root-cause hypothesis,
+or otherwise start investigating any demo until the end signal in step 4.
+
+## 4. End signal
+
+The user says "that's all" (or equivalent) to end the demonstration loop.
+
+## 5. Investigation phase
+
+For each recorded demo: full codebase access is available (grep, read
+controllers/JSF pages, `git blame`/`git log` on the relevant file, DB
+queries if needed) to work out expected-vs-actual behavior and a root-cause
+code pointer (file/line).
+
+Rhythm is flexible and assistant-judged: default to investigating all
+recorded issues quietly and bringing finished write-ups back for batch
+review (step 6), but switch to narrating findings live, issue-by-issue,
+when that reads better for a given case — ask the user when genuinely
+unsure which mode fits.
+
+## 6. Discuss before filing
+
+Present all draft write-ups together (title + summary + root cause +
+proposed issue count/grouping) for the user's review.
+
+Default is **one GitHub issue per demonstrated bug**, but if two demos seem
+to share a root cause (or one demo should split into two issues), ask the
+user before filing rather than deciding unilaterally.
+
+**HARD STOP** — do not file anything until the user confirms this batch.
+
+## 7. File
+
+One GitHub issue per confirmed bug (per the discussion in step 6), each
+following a standard template:
+
+- **Summary**
+- **Environment** (branch/commit, department, user role, instance if
+  relevant)
+- **Steps to reproduce** — minimal and deterministic (strip anything not
+  required to trigger the bug)
+- **Expected** vs **Actual**
+- **Root cause** — code file/line pointer, with a short explanation
+- **Evidence** — inspect each screenshot for identifiable data (patient
+  names, NICs, phone numbers, financial details, etc.) first. If clean,
+  attach directly to the issue (more useful than prose alone). If it
+  contains identifiable info, redact then attach, or ask the user how to
+  handle it if clean redaction isn't straightforward — same rule as
+  [playwright-e2e-workflow §8](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence).
+
+File with `gh issue create --repo hmislk/hmis --title "<title>" --body
+"<body>"`. After filing, remove the session's temporary screenshots from the
+project `tmp/` folder once they're no longer needed as reference.
