@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
@@ -103,6 +104,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     private PriceMatrixController priceMatrixController;
     @Inject
     private PatientDepositController patientDepositController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
 
     // ---- EJB ----
     @EJB
@@ -161,10 +164,28 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     // Navigation
     // -----------------------------------------------------------------------
 
+    /**
+     * Shift-start guard ported from PharmacySaleForCashierController.navigateToPharmacyRetailSale()
+     * (:1590-1607). Lost when this page was migrated to native SQL (#20260); without it, users could
+     * open the retail sale page and settle bills even with "Pharmacy billing can be done after shift
+     * start" enabled and no shift actually started.
+     */
     public String pharmacyRetailSaleNative() {
-        resetAll();
-        billSettlingStarted = false;
-        return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetAll();
+                billSettlingStarted = false;
+                return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            resetAll();
+            billSettlingStarted = false;
+            return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+        }
     }
 
     /**
