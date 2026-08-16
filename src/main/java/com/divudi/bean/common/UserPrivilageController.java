@@ -1193,8 +1193,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsInvestigationSummaryFeeTypeWithCredit, "Investigation Summary Fee Type With Credit"), labAnalyticsIncomeNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsInvestigationSummaryRegentFeeWithCredit, "Investigation Summary Regent Fee With Credit"), labAnalyticsIncomeNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsInvestigationSummaryRegentFeeByPayMethod, "Investigation Summary Regent Fee By Payment Method"), labAnalyticsIncomeNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsDailyLabSummaryByDepartment, "#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"), labAnalyticsIncomeNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsDailyLabSummaryByDepartmentDto, "#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)"), labAnalyticsIncomeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsDailyLabSummaryByDepartment, "Daily Lab Summmary By Department"), labAnalyticsIncomeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsDailyLabSummaryByDepartmentDto, "Daily Lab Summmary By Department (DTO)"), labAnalyticsIncomeNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsCardIncomeReport, "Laboratary Card Income Report"), labAnalyticsIncomeNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsDailyOpdFeeSummary, "Daily OPD Fee Summary"), labAnalyticsIncomeNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabAnalyticsDailyOpdFeeSummaryWithCounts, "Daily OPD Fee Summary with Counts"), labAnalyticsIncomeNode);

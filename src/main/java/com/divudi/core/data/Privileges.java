@@ -1010,8 +1010,8 @@ public enum Privileges {
     LabAnalyticsInvestigationSummaryFeeTypeWithCredit("Lab Analytics - Investigation Summary Fee Type With Credit"),
     LabAnalyticsInvestigationSummaryRegentFeeWithCredit("Lab Analytics - Investigation Summary Regent Fee With Credit"),
     LabAnalyticsInvestigationSummaryRegentFeeByPayMethod("Lab Analytics - Investigation Summary Regent Fee By Payment Method"),
-    LabAnalyticsDailyLabSummaryByDepartment("Lab Analytics - #{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"),
-    LabAnalyticsDailyLabSummaryByDepartmentDto("Lab Analytics - #{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)"),
+    LabAnalyticsDailyLabSummaryByDepartment("Lab Analytics - Daily Lab Summmary By Department"),
+    LabAnalyticsDailyLabSummaryByDepartmentDto("Lab Analytics - Daily Lab Summmary By Department (DTO)"),
     LabAnalyticsCardIncomeReport("Lab Analytics - Laboratary Card Income Report"),
     LabAnalyticsDailyOpdFeeSummary("Lab Analytics - Daily OPD Fee Summary"),
     LabAnalyticsDailyOpdFeeSummaryWithCounts("Lab Analytics - Daily OPD Fee Summary with Counts"),
@@ -1709,6 +1709,7 @@ public enum Privileges {
 
             case AdminInactivePatients:
             case MergePatients:
+            case ClientPortalCreateAccount:
                 return "Admin";
 
             case PharmacyAnalyticsPharmacyIncomeReport:
