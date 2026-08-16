@@ -78,6 +78,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1939,13 +1940,22 @@ public class PharmacySaleBhtController implements Serializable {
     private Stock selectedSubstituteStock;
     private List<Stock> substituteStocks;
     // Per-row selection state for the "Issuing Bill Item" autocomplete on each BHT Issue
-    // row, keyed by BillItem.searialNo. A single shared field doesn't work here — every
-    // row's p:autoComplete is bound to the same @SessionScoped controller instance, so a
-    // plain field would (a) show row A's selection on every other row and (b) revert to
-    // showing nothing the instant a selection is made, since replaceIssuingBillItem used to
-    // null it out right after reading it. Keyed per row, each row keeps its own state and
-    // keeps displaying it after selection. Issue #23055.
-    private Map<Integer, Stock> issuingSelections = new HashMap<>();
+    // row, keyed by BillItem instance identity. A single shared field doesn't work here —
+    // every row's p:autoComplete is bound to the same @SessionScoped controller instance,
+    // so a plain field would (a) show row A's selection on every other row and (b) revert
+    // to showing nothing the instant a selection is made, since replaceIssuingBillItem used
+    // to null it out right after reading it.
+    //
+    // Keyed by BillItem.searialNo initially, but CodeRabbit review on #23068 caught that
+    // calTotal() renumbers searialNo after a row is removed, which could reassign a
+    // surviving row's selection to the wrong stock. Switched to IdentityHashMap keyed by
+    // the BillItem instance itself instead — plain HashMap/equals() doesn't help here
+    // either, since BillItem.equals() falls back to comparing searialNo when both ids are
+    // null (the normal case for these freshly-generated, unsaved rows), so a regular map
+    // would have the exact same collision risk after a renumber. IdentityHashMap ignores
+    // equals()/hashCode() entirely and compares by reference, which is what's actually
+    // wanted for "this specific in-memory row instance". Issue #23055.
+    private Map<BillItem, Stock> issuingSelections = new IdentityHashMap<>();
 
     @Inject
     VmpController vmpController;
@@ -2044,9 +2054,12 @@ public class PharmacySaleBhtController implements Serializable {
         m.put("d", sessionController.getDepartment());
         m.put("s", 0.0);
         m.put("n", "%" + query.trim().toUpperCase() + "%");
+        // UPPER() on both sides — :n is uppercased above, but the columns themselves aren't,
+        // so a case-sensitive DB collation would silently stop matching mixed-case item
+        // names. CodeRabbit review on #23068.
         String sql = "select i from Stock i where i.stock >:s and i.department=:d "
-                + "and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n "
-                + "or (i.itemBatch.item.vmp.name) like :n) "
+                + "and (UPPER(i.itemBatch.item.name) like :n or UPPER(i.itemBatch.item.code) like :n "
+                + "or UPPER(i.itemBatch.item.vmp.name) like :n) "
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         return getStockFacade().findByJpql(sql, m, 20);
     }
@@ -2064,7 +2077,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         itemForSubstitution = bi;
-        selectedSubstituteStock = issuingSelections.get(bi.getSearialNoInteger());
+        selectedSubstituteStock = issuingSelections.get(bi);
         replaceSelectedSubstitute();
         // Leave the map entry as-is (don't null it out) so the row keeps showing what
         // was just picked instead of reverting to blank on the next render.
@@ -2072,11 +2085,11 @@ public class PharmacySaleBhtController implements Serializable {
 
     /**
      * Backing map for the per-row "Issuing Bill Item" autocomplete
-     * (value="#{pharmacySaleBhtController.issuingSelections[bItm.searialNo]}").
+     * (value="#{pharmacySaleBhtController.issuingSelections[bItm]}").
      * JSF EL reads/writes this via Map get/put, giving each row independent state
      * without needing a getter/setter pair per row. Issue #23055.
      */
-    public Map<Integer, Stock> getIssuingSelections() {
+    public Map<BillItem, Stock> getIssuingSelections() {
         return issuingSelections;
     }
 
@@ -2577,6 +2590,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         getBillItems().remove(b);
+        issuingSelections.remove(b);
 
         calTotal();
     }
@@ -2980,9 +2994,9 @@ public class PharmacySaleBhtController implements Serializable {
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
         // Reset per-row autocomplete state on every (re)generation, same reasoning as
-        // bhtIssueStockReport above — otherwise a row from a previous navigation could
-        // leak its selection into a same-numbered row on a different bill. Issue #23055.
-        issuingSelections = new HashMap<>();
+        // bhtIssueStockReport above — the old rows are being discarded entirely here, so
+        // stale identity-keyed entries would just leak memory otherwise. Issue #23055.
+        issuingSelections = new IdentityHashMap<>();
 
         // --- Batch pre-computation to avoid the N+1 pattern this loop used to
         // have (3 aggregate queries + AMP-resolution + stock query per candidate,
@@ -3237,7 +3251,7 @@ public class PharmacySaleBhtController implements Serializable {
                     // Seed this row's autocomplete state with the stock it was actually
                     // resolved to, so the initial render shows real data instead of an
                     // empty/blank-templated input. Issue #23055.
-                    issuingSelections.put(billItem.getSearialNo(), sq.getStock());
+                    issuingSelections.put(billItem, sq.getStock());
                     issuedQtyForLine += sq.getQty();
                 }
 

@@ -364,7 +364,7 @@
 
                         <p:column headerText="Issuing Bill Item" style="padding: 6px;">
                             <p:autoComplete id="Isitem"
-                                            value="#{pharmacySaleBhtController.issuingSelections[bItm.searialNo]}"
+                                            value="#{pharmacySaleBhtController.issuingSelections[bItm]}"
                                             completeMethod="#{pharmacySaleBhtController.completeAllDepartmentStock}"
                                             var="stk"
                                             itemLabel="#{stk.itemBatch.item.name} (Batch: #{stk.itemBatch.batchNo}, Qty: #{stk.stock})"
@@ -443,7 +443,11 @@
                                     </h:outputLabel>
                                 </div>
                             </div>
-                            <div class="row mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                            <!-- Plain <div rendered="..."> is silently ignored by JSF (rendered
+                                 only works on actual JSF components) — these privilege checks
+                                 were rendering unconditionally regardless of privilege until
+                                 fixed to h:panelGroup per CodeRabbit review on #23068. -->
+                            <h:panelGroup layout="block" styleClass="row mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                 <div class="col-md-3">
                                     <strong>Sale Rate: </strong>
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
@@ -462,13 +466,13 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </div>
-                                <div class="col-md-3" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{webUserController.hasPrivilege('Developers')}">
                                     <strong>Available Stock: </strong>
                                     <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.stock}">
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
-                                </div>
-                            </div>
+                                </h:panelGroup>
+                            </h:panelGroup>
                         </p:rowExpansion>
 
                     </p:dataTable>
