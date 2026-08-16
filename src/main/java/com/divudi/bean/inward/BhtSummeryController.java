@@ -4852,7 +4852,13 @@ public class BhtSummeryController implements Serializable {
      * breakdown, not just the net total. Services/investigations
      * (BillItem-backed) come from a bulk JPQL sum grouped by InwardChargeType;
      * Professional/Assisting fees (BillFee-backed, staff fee records) are
-     * summed from the lists already fetched for their respective tabs.
+     * summed from the lists already fetched for their respective tabs;
+     * Room/Maintain/MO/Nursing/Medical Care/Administration/Linen charges
+     * (PatientRoom-backed) are summed in-memory from the already-recalculated
+     * {@link #getPatientRooms()} list, because PatientRoom's marginXxxCharge
+     * fields are {@code @Transient} — display-only, recomputed on every
+     * calculation, never persisted — so a JPQL sum over them is not possible
+     * (issue #22975).
      */
     private void setGrossMarginVatBreakdown() {
         Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
@@ -4872,6 +4878,25 @@ public class BhtSummeryController implements Serializable {
                 cit.setVat(values[2]);
             } else {
                 cit.setGross(cit.getTotal());
+            }
+        }
+
+        // Room/maintain/MO/nursing/medical-care/administration/linen charges are
+        // computed straight from PatientRoom (not BillItem), so they never show up
+        // in serviceBreakdown above. Their own price-matrix margin (issue #22975)
+        // lives on PatientRoom's marginXxxCharge fields instead, and Total already
+        // has it folded in the same way BillItem's does — pull it out here so the
+        // Charge Types grid can show it as its own Matrix Value column. Added
+        // (not set) onto whatever margin the charge type already has, since a
+        // charge type can combine a room-backed total with a service-backed one
+        // (e.g. additional/timed charges routed onto the same InwardChargeType)
+        // and overwriting would silently drop the service-side margin.
+        Map<InwardChargeType, Double> roomMargins = sumRoomMatrixMargins();
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            Double roomMargin = roomMargins.get(cit.getInwardChargeType());
+            if (roomMargin != null && roomMargin != 0.0) {
+                cit.setMargin(cit.getMargin() + roomMargin);
+                cit.setGross(cit.getTotal() - cit.getMargin());
             }
         }
 
@@ -4923,6 +4948,45 @@ public class BhtSummeryController implements Serializable {
                 cit.setVat(0.0);
             }
         }
+    }
+
+    /**
+     * Sums each PatientRoom's transient price-matrix margin fields, grouped by
+     * the InwardChargeType they contribute to.
+     * <p>
+     * {@link #getPatientRooms()} only recalculates via {@code setPatientRoomData()}
+     * the first time {@code patientRooms} is populated — the seven per-charge-type
+     * discount listeners (e.g. {@link #changeDiscountListenerPatientRoomRoomCharge})
+     * reload {@code patientRooms} straight from the DB afterward without calling
+     * it, which would leave these {@code @Transient} margin fields at their
+     * just-loaded default of 0. So the margin (and calculated-total) fields are
+     * recomputed here unconditionally before summing — cheap relative to the rest
+     * of a bill recalculation, and safe to repeat since {@code calculateRoomCharge()}
+     * and its siblings are pure functions of the room's own charge/duration fields
+     * plus the configured price matrix; they never touch discount/adjusted fields,
+     * so this can't clobber a discount the user just edited.
+     */
+    private Map<InwardChargeType, Double> sumRoomMatrixMargins() {
+        Map<InwardChargeType, Double> margins = new HashMap<>();
+        for (PatientRoom p : getPatientRooms()) {
+            calculateRoomCharge(p);
+            calculateMaintananceCharge(p);
+            calculateLinenCharge(p);
+            if (!(p instanceof GuardianRoom)) {
+                calculateNursingCharge(p);
+                calculateMoCharge(p);
+                calculateAdministrationCharge(p);
+                calculateMedicalCareCharge(p);
+            }
+            margins.merge(InwardChargeType.RoomCharges, p.getMarginRoomCharge(), Double::sum);
+            margins.merge(InwardChargeType.MaintainCharges, p.getMarginMaintainCharge(), Double::sum);
+            margins.merge(InwardChargeType.LinenCharges, p.getMarginLinenCharge(), Double::sum);
+            margins.merge(InwardChargeType.MOCharges, p.getMarginMoCharge(), Double::sum);
+            margins.merge(InwardChargeType.NursingCharges, p.getMarginNursingCharge(), Double::sum);
+            margins.merge(InwardChargeType.AdministrationCharge, p.getMarginAdministrationCharge(), Double::sum);
+            margins.merge(InwardChargeType.MedicalCareICU, p.getMarginMedicalCareCharge(), Double::sum);
+        }
+        return margins;
     }
 
     private void updateRoomChargeList() {

@@ -619,6 +619,7 @@ public enum Privileges {
     PharmacyReturnItemsOnly("Pharmacy Return Items Only"),
     PharmacyReturnItemsAndPayments("Pharmacy Return Items and Payments"),
     PharmacySearchReturnBill("Pharmacy Search Return Bill"),
+    PharmacySearchReturnBillCancel("Pharmacy Search Return Bill Cancel"),
     PharmacyAddToStock("Pharmacy Add to Stock"),
     // Pharmacy Wholesale Transaction
     PharmacyWholeSaleTransactionMenue("Pharmacy Wholesale Transaction Menu"),
@@ -1069,6 +1070,7 @@ public enum Privileges {
             case PharmacyReturnItemsOnly:
             case PharmacyReturnItemsAndPayments:
             case PharmacySearchReturnBill:
+            case PharmacySearchReturnBillCancel:
             case PharmacyAddToStock:
             case PharmacyDonation:
 

@@ -172,8 +172,8 @@ public class GrnCostingNativeSqlService {
                 "INSERT INTO " + billItemTable()
                 + " (bill_ID, item_ID, referanceBillItem_ID, qty, netValue, grossValue, Rate, netRate,"
                 + " discountRate, createdAt, creater_ID, retired, refunded, billItemRefunded,"
-                + " consideredForCosting, inwardChargeType, searialNo)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?)")
+                + " consideredForCosting, inwardChargeType, searialNo, DESCREPTION)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?,?)")
                 .setParameter(1, billId)
                 .setParameter(2, line.getItemId())
                 .setParameter(3, line.getReferenceBillItemId())
@@ -191,6 +191,11 @@ public class GrnCostingNativeSqlService {
                 .setParameter(10, new Timestamp(new Date().getTime()))
                 .setParameter(11, line.getCreaterId())
                 .setParameter(12, line.getSerialNo())
+                // DESCREPTION (legacy-typo'd column, backs BillItem.descreption) --
+                // the "Comments" field on this page's item list; omission here was
+                // the root cause of #22997, same bug class as #22892's doe/
+                // batchNumber omission above.
+                .setParameter(13, line.getDescription())
                 .executeUpdate();
             billItemId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
         } else {
@@ -198,7 +203,7 @@ public class GrnCostingNativeSqlService {
             em.createNativeQuery(
                 "UPDATE " + billItemTable()
                 + " SET item_ID=?, referanceBillItem_ID=?, qty=?, netValue=?, grossValue=?, Rate=?, netRate=?,"
-                + " discountRate=?, searialNo=? WHERE ID=?")
+                + " discountRate=?, searialNo=?, DESCREPTION=? WHERE ID=?")
                 .setParameter(1, line.getItemId())
                 .setParameter(2, line.getReferenceBillItemId())
                 .setParameter(3, line.getQuantity())
@@ -209,7 +214,8 @@ public class GrnCostingNativeSqlService {
                 .setParameter(7, line.getLineNetRate())
                 .setParameter(8, line.getLineDiscountRate())
                 .setParameter(9, line.getSerialNo())
-                .setParameter(10, billItemId)
+                .setParameter(10, line.getDescription())
+                .setParameter(11, billItemId)
                 .executeUpdate();
         }
 
@@ -365,8 +371,8 @@ public class GrnCostingNativeSqlService {
                 "INSERT INTO " + billItemTable()
                 + " (expenseBill_ID, item_ID, qty, netValue, grossValue, Rate, netRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
-                + " consideredForCosting, searialNo)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
+                + " consideredForCosting, searialNo, DESCREPTION)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,?,?,?)")
                 .setParameter(1, billId)
                 .setParameter(2, expenseLine.getItemId())
                 .setParameter(3, expenseLine.getQuantity())
@@ -378,13 +384,17 @@ public class GrnCostingNativeSqlService {
                 .setParameter(9, expenseLine.getCreaterId())
                 .setParameter(10, expenseLine.isConsideredForCosting() ? 1 : 0)
                 .setParameter(11, expenseLine.getSerialNo())
+                // DESCREPTION (legacy-typo'd column, backs BillItem.descreption) --
+                // the "Description" field on this page's Bill Expenses section;
+                // omission here was the root cause of #22997.
+                .setParameter(12, expenseLine.getDescription())
                 .executeUpdate();
             billItemId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
         } else {
             billItemId = expenseLine.getBillItemId();
             em.createNativeQuery(
                 "UPDATE " + billItemTable()
-                + " SET item_ID=?, qty=?, netValue=?, grossValue=?, Rate=?, netRate=?, consideredForCosting=?, searialNo=?"
+                + " SET item_ID=?, qty=?, netValue=?, grossValue=?, Rate=?, netRate=?, consideredForCosting=?, searialNo=?, DESCREPTION=?"
                 + " WHERE ID=?")
                 .setParameter(1, expenseLine.getItemId())
                 .setParameter(2, expenseLine.getQuantity())
@@ -394,7 +404,8 @@ public class GrnCostingNativeSqlService {
                 .setParameter(6, expenseLine.getLineNetRate())
                 .setParameter(7, expenseLine.isConsideredForCosting() ? 1 : 0)
                 .setParameter(8, expenseLine.getSerialNo())
-                .setParameter(9, billItemId)
+                .setParameter(9, expenseLine.getDescription())
+                .setParameter(10, billItemId)
                 .executeUpdate();
         }
         evictLineCache();

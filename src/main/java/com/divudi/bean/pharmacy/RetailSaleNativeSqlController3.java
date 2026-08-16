@@ -157,7 +157,7 @@ public class RetailSaleNativeSqlController3 implements Serializable, ControllerW
     private String comment = "";
     private double cashPaid;
     private double balance;
-    private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod = PaymentMethod.Cash;
     private PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
     private Staff toStaff;
@@ -830,33 +830,43 @@ public class RetailSaleNativeSqlController3 implements Serializable, ControllerW
             return;
         }
 
-        // Multi-batch FEFO fill: merge the user-selected batch with additional batches and
-        // sort all candidates by expiry before allocating, so earlier-expiring stock is always
-        // dispensed first regardless of which batch the user picked.
+        // Priority allocation: fully satisfy from the batch the user selected (e.g. for its
+        // price) if it has enough stock; only top up the shortfall FEFO from other batches.
         double addedQty = 0.0;
 
-        List<StockDTO> candidates = new ArrayList<>();
-        candidates.add(stockDto);
-        candidates.addAll(findNextAvailableStockDtos(stockDto.getItemId(), selectedStockId));
-        candidates.sort(Comparator.comparing(
-                StockDTO::getDateOfExpire,
-                Comparator.nullsLast(Date::compareTo)));
+        // Priority 1: fully satisfy from the batch the user selected, if possible.
+        if (!isStockAlreadyOnBill(selectedStockId)) {
+            double selectedAvailable = stockDto.getStockQty() != null ? stockDto.getStockQty() : 0.0;
+            double takeFromSelected = Math.min(remainingQty, selectedAvailable);
+            if (takeFromSelected > 0) {
+                addBillItemLineForStock(stockDto, takeFromSelected);
+                addedQty += takeFromSelected;
+                remainingQty -= takeFromSelected;
+            }
+        }
 
-        for (StockDTO next : candidates) {
-            if (remainingQty <= 0) {
-                break;
+        // Priority 2: only the shortfall (if any) is topped up FEFO from other batches.
+        if (remainingQty > 0) {
+            List<StockDTO> others = findNextAvailableStockDtos(stockDto.getItemId(), selectedStockId);
+            others.sort(Comparator.comparing(
+                    StockDTO::getDateOfExpire,
+                    Comparator.nullsLast(Date::compareTo)));
+            for (StockDTO next : others) {
+                if (remainingQty <= 0) {
+                    break;
+                }
+                if (isStockAlreadyOnBill(next.getId())) {
+                    continue;
+                }
+                double available = next.getStockQty() != null ? next.getStockQty() : 0.0;
+                double take = Math.min(remainingQty, available);
+                if (take <= 0) {
+                    continue;
+                }
+                addBillItemLineForStock(next, take);
+                addedQty += take;
+                remainingQty -= take;
             }
-            if (isStockAlreadyOnBill(next.getId())) {
-                continue;
-            }
-            double available = next.getStockQty() != null ? next.getStockQty() : 0.0;
-            double take = Math.min(remainingQty, available);
-            if (take <= 0) {
-                continue;
-            }
-            addBillItemLineForStock(next, take);
-            addedQty += take;
-            remainingQty -= take;
         }
 
         if (addedQty <= 0) {
@@ -1357,7 +1367,7 @@ public class RetailSaleNativeSqlController3 implements Serializable, ControllerW
         comment = "";
         cashPaid = 0.0;
         balance = 0.0;
-        paymentMethod = null;
+        paymentMethod = PaymentMethod.Cash;
         paymentScheme = null;
         paymentMethodData = null;
         toStaff = null;
