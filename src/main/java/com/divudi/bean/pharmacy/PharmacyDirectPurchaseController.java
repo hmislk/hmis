@@ -1533,11 +1533,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getBill().setChecked(false);
         getBill().setCompleted(false);
 
+        // For a brand-new bill, create it now so items/expenses below have a
+        // real Bill FK to attach to. For an already-persisted draft, do NOT
+        // edit(bill) here yet: at this point Bill.billExpenses (CascadeType.ALL)
+        // may still hold a newly-added, not-yet-persisted expense (added via
+        // addExpense(), which also appends to Bill.billExpenses for live total
+        // calculations). An early edit()/merge() here would cascade-persist
+        // that transient expense as a phantom row (with a generated ID this
+        // in-memory session never learns about), which the explicit
+        // create()-vs-edit() check in the expense-persist loop below can't
+        // see -- causing a duplicate BillItem row (caught and soft-retired by
+        // the "retire removed expenses" cleanup, but still wasteful, same
+        // flavor of bug as the #23005 orphan-bill issue). The header field
+        // changes made above are flushed later by this method's final
+        // syncBillItemsCollectionFromDatabase()+edit(bill) call, once every
+        // item/expense already has a real ID and cascade-merge can no longer
+        // duplicate anything.
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
-        } else {
-            syncBillItemsCollectionFromDatabase();
-            getBillFacade().edit(getBill());
         }
 
         // Retire any previously persisted items that were removed from the session list
