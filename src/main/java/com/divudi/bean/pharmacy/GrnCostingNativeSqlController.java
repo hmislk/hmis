@@ -837,6 +837,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setReferenceBillItemId(bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null);
         line.setSerialNo(bi.getSearialNo());
         line.setCreaterId(sessionController.getLoggedUser().getId());
+        line.setDescription(bi.getDescreption());
 
         if (f == null) {
             return;
@@ -904,6 +905,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setLineGrossTotal(expense.getGrossValue());
         line.setLineNetTotal(expense.getNetValue());
         line.setConsideredForCosting(expense.isConsideredForCosting());
+        line.setDescription(expense.getDescreption());
         return line;
     }
 

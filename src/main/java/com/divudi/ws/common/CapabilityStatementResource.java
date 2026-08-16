@@ -281,7 +281,10 @@ public class CapabilityStatementResource {
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
                         "Pharmaceutical item master data. AMP create/update accepts "
                         + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
-                        + "for strength-ratio based dispensing substitution.",
+                        + "for strength-ratio based dispensing substitution. VMP and AMP create/update "
+                        + "also accept issueUnitId (Long, MeasurementUnit) and, for VMP, strengthUnitId "
+                        + "-- both surfaced back as issueUnitId/issueUnitName/strengthUnitId/strengthUnitName "
+                        + "on GET/POST/PUT single-item responses.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Items", "/api/pharmacy/items",
