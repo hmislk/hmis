@@ -778,6 +778,7 @@ public enum Privileges {
     SearchIssuedReferenceBook("Search CC Reference Book"),
     ChangeCreditLimitInCC("Change CC Credit Limit"),
     PayCollectingCentre("Pay Collecting Centre"),
+    CollectingCentreReprintOriginalBill("Collecting Centre Reprint Original Bill"),
     CollectingCentreCreditDebitNoteMenu("CC Credit/Debit Note Menu"),
     CollectingCentreCreditNote("CC Credit Note"),
     CollectingCentreDebitNote("CC Debit Note"),
@@ -1188,6 +1189,7 @@ public enum Privileges {
             case SearchIssuedReferenceBook:
             case ChangeCreditLimitInCC:
             case PayCollectingCentre:
+            case CollectingCentreReprintOriginalBill:
             case CollectingCentreCreditDebitNoteMenu:
             case CollectingCentreCreditNote:
             case CollectingCentreDebitNote:
