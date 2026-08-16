@@ -51,23 +51,33 @@ picture of each one is understood.
 
 ## 1. Deploy check (environment-agnostic — never hardcode names/ports)
 
-- Resolve the WAR path dynamically each run: read `<finalName>` from
-  `pom.xml` (or glob `target/*.war`) rather than assuming a fixed filename
-  like `rh-3.0.0.war` — the version differs across checkouts/machines.
+- Resolve the WAR path deterministically each run: prefer `<finalName>` from
+  `pom.xml` over globbing. Only fall back to `target/*.war` if `pom.xml`
+  doesn't resolve one, and if that glob matches more than one file, treat it
+  as the "ambiguous working tree state" case below rather than guessing
+  which one to use — never assume a fixed filename like `rh-3.0.0.war`, the
+  version differs across checkouts/machines.
 - Resolve the Payara **admin port** and the app's **HTTP port** from the
   local credentials file for this machine (`C:\Credentials\credentials.txt`
   or equivalent) — never assume the defaults (4848 / 8080). Multiple Payara
   installs can coexist on one box on non-default ports (see
   [playwright-e2e-workflow §27](../../../developer_docs/testing/playwright-e2e-workflow.md#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)).
+  **Don't `Read` the whole credentials file into context** — it may hold
+  passwords/tokens alongside the ports. Extract just the port line(s) (e.g.
+  `grep`/`findstr` for the admin-port/http-port keys) and use only those
+  values.
 - Resolve the deployed **context root / URL path** via
   `asadmin --port <admin-port> list-applications` rather than assuming
   `/rh` — different instances are deployed as `/rh`, `/hmis`, `/coop`, etc.
-- Compare the resolved WAR's build time against `git log -1` (HEAD). If the
-  running app is behind HEAD, rebuild (`mvn clean package -DskipTests`, JDK
-  11) and redeploy automatically using the resolved admin port/app name —
-  see [§0a](../../../developer_docs/testing/playwright-e2e-workflow.md#0a-rebuild-and-redeploy-local-code-changes-before-testing).
+- Compare the resolved WAR's build time against `git log -1` (HEAD) — mtime
+  alone doesn't prove the WAR was built from HEAD, so also check
+  `git status --short` and record the current commit SHA alongside it. If
+  the running app is behind HEAD, rebuild (`mvn clean package -DskipTests`,
+  JDK 11) and redeploy automatically using the resolved admin port/app name
+  — see [§0a](../../../developer_docs/testing/playwright-e2e-workflow.md#0a-rebuild-and-redeploy-local-code-changes-before-testing).
   Only pause and ask if the build fails or the working tree state is
-  ambiguous (e.g. uncommitted changes on a file that affects the build).
+  ambiguous (e.g. uncommitted changes on a file that affects the build, or
+  more than one candidate WAR as above).
 
 ## 2. Open login page, hand off (default), but overridable
 
@@ -89,9 +99,10 @@ picture of each one is understood.
   - a screenshot (`browser_take_screenshot`) into the project `tmp/`
     folder, one subfolder per session
   - the user's description, verbatim
-  - auto-detected environment context: department/user read from the page
-    header, current git branch + commit SHA (`git rev-parse --abbrev-ref
-    HEAD` / `git rev-parse HEAD`), timestamp
+  - auto-detected environment context: department and user **role** read
+    from the page header (not the raw account/login name), current git
+    branch + commit SHA (`git rev-parse --abbrev-ref HEAD` / `git rev-parse
+    HEAD`), timestamp
 - **Pure capture only at this stage — no code investigation yet.** Confirm
   each capture ("Got it, recorded as demo #N") and wait for the next cue or
   the end signal.
@@ -109,7 +120,11 @@ The user says "that's all" (or equivalent) to end the demonstration loop.
 For each recorded demo: full codebase access is available (grep, read
 controllers/JSF pages, `git blame`/`git log` on the relevant file, DB
 queries if needed) to work out expected-vs-actual behavior and a root-cause
-code pointer (file/line).
+code pointer (file/line). Database queries are **read-only** and select only
+the fields needed to confirm the root cause (same rule as
+[playwright-e2e-workflow §6](../../../developer_docs/testing/playwright-e2e-workflow.md#6-verify-against-the-database));
+keep raw query results — and especially patient data — out of the
+transcript and out of draft/filed issue text.
 
 Rhythm is flexible and assistant-judged: default to investigating all
 recorded issues quietly and bringing finished write-ups back for batch
@@ -119,14 +134,17 @@ unsure which mode fits.
 
 ## 6. Discuss before filing
 
-Present all draft write-ups together (title + summary + root cause +
-proposed issue count/grouping) for the user's review.
+Present the **complete sanitized issue body** for each draft — not just
+title/summary/root cause/grouping, but the full content from step 7
+(environment, steps to reproduce, expected vs actual, root cause, and the
+evidence/attachments after redaction) — together for the user's review.
 
 Default is **one GitHub issue per demonstrated bug**, but if two demos seem
 to share a root cause (or one demo should split into two issues), ask the
 user before filing rather than deciding unilaterally.
 
-**HARD STOP** — do not file anything until the user confirms this batch.
+**HARD STOP** — do not file anything until the user confirms the exact
+final body and attachments for this batch.
 
 ## 7. File
 
@@ -140,13 +158,24 @@ following a standard template:
   required to trigger the bug)
 - **Expected** vs **Actual**
 - **Root cause** — code file/line pointer, with a short explanation
-- **Evidence** — inspect each screenshot for identifiable data (patient
-  names, NICs, phone numbers, financial details, etc.) first. If clean,
-  attach directly to the issue (more useful than prose alone). If it
-  contains identifiable info, redact then attach, or ask the user how to
-  handle it if clean redaction isn't straightforward — same rule as
+- **Evidence** — inspect **every** captured artifact for identifiable data
+  (patient names, NICs, phone numbers, financial details, etc.) before it
+  goes anywhere near the issue: screenshots, accessibility snapshots, the
+  user's verbatim description, environment context, and the assembled issue
+  body text itself — not just screenshots. If clean, keep it; if it
+  contains identifiable info, redact it, or ask the user how to handle it if
+  clean redaction isn't straightforward.
+
+  `gh issue create --body` is text-only — it cannot upload local
+  screenshots. Publish screenshots through the existing wiki flow instead,
+  same as every other HMIS skill: copy the sanitized images into
+  `../hmis.wiki/images/`, commit and push the wiki, then embed the raw wiki
+  URLs (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`)
+  in the issue body — see
   [playwright-e2e-workflow §8](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence).
 
-File with `gh issue create --repo hmislk/hmis --title "<title>" --body
-"<body>"`. After filing, remove the session's temporary screenshots from the
-project `tmp/` folder once they're no longer needed as reference.
+File with `gh issue create --repo hmislk/hmis --title "<title>" --body-file
+<file>` (use `--body-file` for the multiline body assembled above). Verify
+the created issue — including that its embedded images render — before
+removing the session's temporary screenshots from the project `tmp/`
+folder.
