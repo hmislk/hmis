@@ -145,9 +145,16 @@
                                             <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsItemStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item') and userFavoriteReportController.isFavorite('pharmacyAnalytics_itemStock')}"><p:commandButton
                                                 class="w-100 ui-button-success"
                                                 icon="fa fa-box"
-                                                value="Item Stock"
+                                                value="Item (AMP) Stock"
                                                 action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
-                                                ajax="false"/><fav:favoriteStar reportKey="pharmacyAnalytics_itemStock" label="Item Stock" category="Stock Reports" /></h:panelGroup>
+                                                ajax="false"/><fav:favoriteStar reportKey="pharmacyAnalytics_itemStock" label="Item (AMP) Stock" category="Stock Reports" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsItemStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show VMP Stock Report', true) and userFavoriteReportController.isFavorite('pharmacyAnalytics_vmpStockReport')}"><p:commandButton
+                                                class="w-100 ui-button-success"
+                                                icon="fa fa-layer-group"
+                                                value="VMP Stock Report"
+                                                action="#{reportsStock.navigateToVmpStockReport()}"
+                                                ajax="false"
+                                                title="Aggregates stock across every AMP (brand) linked to a VMP into one row per VMP"/><fav:favoriteStar reportKey="pharmacyAnalytics_vmpStockReport" label="VMP Stock Report" category="Stock Reports" /></h:panelGroup>
                                             <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsExpiringStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry') and userFavoriteReportController.isFavorite('pharmacyAnalytics_expiringStock')}"><p:commandButton
                                                 class="w-100 ui-button-warning"
                                                 icon="fa fa-clock"
@@ -592,9 +599,18 @@
                                                 rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsItemStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}"
                                                 class="w-100 ui-button-success"
                                                 icon="fa fa-box"
-                                                value="Item Stock"
+                                                value="Item (AMP) Stock"
                                                 action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
-                                                ajax="false"/><fav:favoriteStar reportKey="pharmacyAnalytics_itemStock" label="Item Stock" category="Stock Reports" visible="#{webUserController.hasPrivilege('PharmacyAnalyticsItemStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}" /></div>
+                                                ajax="false"/><fav:favoriteStar reportKey="pharmacyAnalytics_itemStock" label="Item (AMP) Stock" category="Stock Reports" visible="#{webUserController.hasPrivilege('PharmacyAnalyticsItemStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}" /></div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100"><p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsItemStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show VMP Stock Report', true)}"
+                                                class="w-100 ui-button-success"
+                                                icon="fa fa-layer-group"
+                                                value="VMP Stock Report"
+                                                action="#{reportsStock.navigateToVmpStockReport()}"
+                                                ajax="false"
+                                                title="Aggregates stock across every AMP (brand) linked to a VMP into one row per VMP"/><fav:favoriteStar reportKey="pharmacyAnalytics_vmpStockReport" label="VMP Stock Report" category="Stock Reports" visible="#{webUserController.hasPrivilege('PharmacyAnalyticsItemStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show VMP Stock Report', true)}" /></div>
 
                                             <div class="d-flex align-items-center gap-1 w-100"><p:commandButton
                                                 rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsExpiringStock') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}"
