@@ -15,6 +15,9 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dto.TransferIssueItemRowDto;
 import com.divudi.core.data.dto.TransferIssuePrintDto;
 import com.divudi.core.entity.Bill;
@@ -98,7 +101,59 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         // No heavy initialization — list is loaded on navigation
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_transfer_issue_native",
+                "Pharmacy Transfer Issue (Native)",
+                "Issue stock transfers to another department using the native SQL workflow",
+                "TransferIssueNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Issue A4 Paper",
+                "Controls whether transfer issue receipts print on A4 paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Use Save Finalize Approve Workflow for Issue for Requests",
+                "Enables the multi-step save, finalize, and approve workflow for issuing against transfer requests",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyIssueForRequestApprove",
+                "Permission to approve stock transfer issues raised against requests"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyIssueForRequestFinalize",
+                "Permission to finalize stock transfer issues raised against requests"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyIssueForRequestSave",
+                "Permission to save stock transfer issues raised against requests"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyTransferViewRates",
+                "Permission to view purchase/transfer rates on the transfer issue screen"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------

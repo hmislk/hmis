@@ -778,6 +778,7 @@ public enum Privileges {
     SearchIssuedReferenceBook("Search CC Reference Book"),
     ChangeCreditLimitInCC("Change CC Credit Limit"),
     PayCollectingCentre("Pay Collecting Centre"),
+    CollectingCentreReprintOriginalBill("Collecting Centre Reprint Original Bill"),
     CollectingCentreCreditDebitNoteMenu("CC Credit/Debit Note Menu"),
     CollectingCentreCreditNote("CC Credit Note"),
     CollectingCentreDebitNote("CC Debit Note"),
@@ -843,7 +844,412 @@ public enum Privileges {
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
     AiChat("AI Chat"),
-    ClientPortalCreateAccount("Create Client Portal Account")
+    ClientPortalCreateAccount("Create Client Portal Account"),
+    //<editor-fold defaultstate="collapsed" desc="Pharmacy Analytics Reports">
+    PharmacyAnalyticsPharmacyIncomeReport("Pharmacy Analytics - Pharmacy Income Report"),
+    PharmacyAnalyticsIncomeSummaryCategory("Pharmacy Analytics - Income Summary Category"),
+    PharmacyAnalyticsPharmacyIncomeAndCost("Pharmacy Analytics - Pharmacy Income and Cost"),
+    PharmacyAnalyticsDailyStockValuesF15("Pharmacy Analytics - Daily Stock Values (F-15)"),
+    PharmacyAnalyticsF15DrillDownLevel1("Pharmacy Analytics - F-15 Drill-Down (Level 1)"),
+    PharmacyAnalyticsF9B("Pharmacy Analytics - F 9B"),
+    PharmacyAnalyticsBillTypes("Pharmacy Analytics - Bill Types"),
+    PharmacyAnalyticsAllItemMovementSummary("Pharmacy Analytics - All Item Movement Summary"),
+    PharmacyAnalyticsCashInOutReport("Pharmacy Analytics - Cash In/Out Report"),
+    PharmacyAnalyticsCashierReport("Pharmacy Analytics - Cashier Report"),
+    PharmacyAnalyticsCashierSummary("Pharmacy Analytics - Cashier Summary"),
+    PharmacyAnalyticsAllCashierReport("Pharmacy Analytics - All Cashier Report"),
+    PharmacyAnalyticsAllCashierSummary("Pharmacy Analytics - All Cashier Summary"),
+    PharmacyAnalyticsCashierDetailedReportByDepartment("Pharmacy Analytics - Cashier Detailed Report by Department"),
+    PharmacyAnalyticsPharmacySaleSummary("Pharmacy Analytics - Pharmacy Sale Summary"),
+    PharmacyAnalyticsPharmacySaleSummaryDate("Pharmacy Analytics - Pharmacy Sale Summary Date"),
+    PharmacyAnalyticsAllDepartmentSaleSummary("Pharmacy Analytics - All Department Sale Summary"),
+    PharmacyAnalyticsSaleSummaryByBillType("Pharmacy Analytics - Sale Summary - By Bill Type"),
+    PharmacyAnalyticsSaleSummaryByPaymentMethod("Pharmacy Analytics - Sale Summary - By Payment Method"),
+    PharmacyAnalyticsSaleSummaryByPaymentMethodByBill("Pharmacy Analytics - Sale Summary - By Payment Method (By Bill)"),
+    PharmacyAnalyticsStockOverviewReport("Pharmacy Analytics - Stock Overview Report"),
+    PharmacyAnalyticsBatchStock("Pharmacy Analytics - Batch Stock"),
+    PharmacyAnalyticsItemStock("Pharmacy Analytics - Item Stock"),
+    PharmacyAnalyticsExpiringStock("Pharmacy Analytics - Expiring Stock"),
+    PharmacyAnalyticsShortExpiryByAMPPeriod("Pharmacy Analytics - Short Expiry (by AMP Period)"),
+    PharmacyAnalyticsStaffStock("Pharmacy Analytics - Staff Stock"),
+    PharmacyAnalyticsZeroStockItemReport("Pharmacy Analytics - Zero Stock Item Report"),
+    PharmacyAnalyticsSuppliersExpiringStocks("Pharmacy Analytics - Suppliers Expiring Stocks"),
+    PharmacyAnalyticsStockReportByItem("Pharmacy Analytics - Stock Report by Item"),
+    PharmacyAnalyticsStockReportByItemOrderByVMP("Pharmacy Analytics - Stock Report by Item - Order by VMP"),
+    PharmacyAnalyticsStockReportByProduct("Pharmacy Analytics - Stock Report by Product"),
+    PharmacyAnalyticsStockReportOfSingleProduct("Pharmacy Analytics - Stock Report of Single Product"),
+    PharmacyAnalyticsSupplierStockReport("Pharmacy Analytics - Supplier Stock Report"),
+    PharmacyAnalyticsSuppliersStockSummary("Pharmacy Analytics - Suppliers Stock Summary"),
+    PharmacyAnalyticsCategoryStockReport("Pharmacy Analytics - Category Stock Report"),
+    PharmacyAnalyticsCategoryStockSummary("Pharmacy Analytics - Category Stock Summary"),
+    PharmacyAnalyticsStockHistory("Pharmacy Analytics - Stock History"),
+    PharmacyAnalyticsBeforeStockTakingReport("Pharmacy Analytics - Before Stock Taking Report"),
+    PharmacyAnalyticsAfterStockTakingReport("Pharmacy Analytics - After Stock Taking Report"),
+    PharmacyAnalyticsStockTakingReportNew("Pharmacy Analytics - Stock Taking Report(New)"),
+    PharmacyAnalyticsStockWithMovement("Pharmacy Analytics - Stock With Movement"),
+    PharmacyAnalyticsDepartmentViceStock("Pharmacy Analytics - Department Vice Stock"),
+    PharmacyAnalyticsStockSummaryWithSuppliers("Pharmacy Analytics - Stock Summary (with Suppliers)"),
+    PharmacyAnalyticsStockReportWithSuppliers("Pharmacy Analytics - Stock Report (with Suppliers)"),
+    PharmacyAnalyticsStockReportByBatchForExport("Pharmacy Analytics - Stock Report by Batch for Export"),
+    PharmacyAnalyticsBinCard("Pharmacy Analytics - Bin Card"),
+    PharmacyAnalyticsItemBinCard("Pharmacy Analytics - Item Bin Card"),
+    PharmacyAnalyticsBatchBinCard("Pharmacy Analytics - Batch Bin Card"),
+    PharmacyAnalyticsItemsAMPList("Pharmacy Analytics - Items (AMP) List"),
+    PharmacyAnalyticsMedicineVTMATMVMPAMPVMPPAndAMPPList("Pharmacy Analytics - Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List"),
+    PharmacyAnalyticsSingleItemSummary("Pharmacy Analytics - Single Item Summary"),
+    PharmacyAnalyticsAllItemsSummary("Pharmacy Analytics - All Items Summary"),
+    PharmacyAnalyticsItemsWithoutDistributor("Pharmacy Analytics - Items Without Distributor"),
+    PharmacyAnalyticsItemsWithSuppliersAndPrices("Pharmacy Analytics - Items With Suppliers and Prices"),
+    PharmacyAnalyticsItemsWithDistributor("Pharmacy Analytics - Items With Distributor"),
+    PharmacyAnalyticsItemsWithMultipleDistributorItemsOnly("Pharmacy Analytics - Items With Multiple Distributor(Items Only)"),
+    PharmacyAnalyticsItemWithMultipleDistributor("Pharmacy Analytics - Item With Multiple Distributor"),
+    PharmacyAnalyticsROLAndROQManagement("Pharmacy Analytics - ROL and ROQ Management"),
+    PharmacyAnalyticsReorderAnalysis("Pharmacy Analytics - Reorder Analysis"),
+    PharmacyAnalyticsMovementReportStockByDate("Pharmacy Analytics - Movement Report Stock By Date"),
+    PharmacyAnalyticsMovementReportStockByDateByBatch("Pharmacy Analytics - Movement Report Stock By Date - By Batch"),
+    PharmacyAnalyticsPharmacyAllReport("Pharmacy Analytics - Pharmacy All Report"),
+    PharmacyAnalyticsOrderingRequirementReport("Pharmacy Analytics - Ordering Requirement Report"),
+    PharmacyAnalyticsMovementOutBySaleIssueAndConsumptionWithCurrentStockReport("Pharmacy Analytics - Movement Out by Sale, Issue, and Consumption with Current Stock Report"),
+    PharmacyAnalyticsStockMovementTimelineGraphical("Pharmacy Analytics - Stock Movement Timeline (Graphical)"),
+    PharmacyAnalyticsSaleReport("Pharmacy Analytics - Sale Report"),
+    PharmacyAnalyticsPrescriptionReport("Pharmacy Analytics - Prescription Report"),
+    PharmacyAnalyticsInstitutionItemMovement("Pharmacy Analytics - Institution Item Movement"),
+    PharmacyAnalyticsFastMoving("Pharmacy Analytics - Fast Moving"),
+    PharmacyAnalyticsSlowMoving("Pharmacy Analytics - Slow Moving"),
+    PharmacyAnalyticsNonMoving("Pharmacy Analytics - Non Moving"),
+    PharmacyAnalyticsPrescriptionSummary("Pharmacy Analytics - Prescription Summary"),
+    PharmacyAnalyticsPresciptionList("Pharmacy Analytics - Presciption List"),
+    PharmacyAnalyticsListOfPharmacyBills("Pharmacy Analytics - List of Pharmacy Bills"),
+    PharmacyAnalyticsRetailSaleBillList("Pharmacy Analytics - Retail Sale Bill List"),
+    PharmacyAnalyticsSaleDetailByBill("Pharmacy Analytics - Sale Detail - By Bill"),
+    PharmacyAnalyticsSaleDetailByBillItems("Pharmacy Analytics - Sale Detail - By Bill Items"),
+    PharmacyAnalyticsSaleDetailByDiscountScheme("Pharmacy Analytics - Sale Detail - By Discount Scheme"),
+    PharmacyAnalyticsSaleSummaryByDiscountSchemeSummary("Pharmacy Analytics - Sale Summary By Discount Scheme Summary"),
+    PharmacyAnalyticsSaleDetailByPaymentMethod("Pharmacy Analytics - Sale Detail - By Payment Method"),
+    PharmacyAnalyticsPharmacySaleReport("Pharmacy Analytics - Pharmacy Sale Report"),
+    PharmacyAnalyticsPharmacyWholesaleReport("Pharmacy Analytics - Pharmacy Wholesale Report"),
+    PharmacyAnalyticsPharmacyWholesaleCreditBills("Pharmacy Analytics - Pharmacy Wholesale Credit Bills"),
+    PharmacyAnalyticsBHTIssueByBill("Pharmacy Analytics - BHT Issue - By Bill"),
+    PharmacyAnalyticsBHTIssueByBillItem("Pharmacy Analytics - BHT Issue - By Bill Item"),
+    PharmacyAnalyticsBHTIssueByItem("Pharmacy Analytics - BHT Issue - By Item"),
+    PharmacyAnalyticsBHTIssueStaff("Pharmacy Analytics - BHT Issue - Staff"),
+    PharmacyAnalyticsBHTIssueWithMarginReport("Pharmacy Analytics - BHT Issue With Margin Report"),
+    PharmacyAnalyticsPharmacyProcurementReport("Pharmacy Analytics - Pharmacy Procurement Report"),
+    PharmacyAnalyticsPharmacyDirectPurchaseReport("Pharmacy Analytics - Pharmacy Direct purchase Report"),
+    PharmacyAnalyticsGRNSummary("Pharmacy Analytics - GRN Summary"),
+    PharmacyAnalyticsDepartmentStockByBatch("Pharmacy Analytics - Department Stock By Batch"),
+    PharmacyAnalyticsPurchaseOrdersNotApproved("Pharmacy Analytics - Purchase Orders Not Approved"),
+    PharmacyAnalyticsDepartmentStockByBatchToUpload("Pharmacy Analytics - Department Stock By Batch to Upload"),
+    PharmacyAnalyticsItemWiseProcurement("Pharmacy Analytics - Item-wise Procurement"),
+    PharmacyAnalyticsPurcharseBillWithSupplier("Pharmacy Analytics - Purcharse Bill with Supplier"),
+    PharmacyAnalyticsPharmacyGRNReport("Pharmacy Analytics - Pharmacy GRN Report"),
+    PharmacyAnalyticsPharmacyGRNAndPurchaseReport("Pharmacy Analytics - Pharmacy GRN and purchase Report"),
+    PharmacyAnalyticsGRNPurchaseItemsBySupplier("Pharmacy Analytics - GRN Purchase Items by Supplier"),
+    PharmacyAnalyticsGRNSummaryBySupplier("Pharmacy Analytics - GRN Summary By Supplier"),
+    PharmacyAnalyticsGRNBillItemReport("Pharmacy Analytics - GRN Bill Item Report"),
+    PharmacyAnalyticsGRNRegistry("Pharmacy Analytics - GRN Registry"),
+    PharmacyAnalyticsGRNReturnList("Pharmacy Analytics - GRN Return List"),
+    PharmacyAnalyticsPurchaseOrderSummary("Pharmacy Analytics - Purchase Order Summary"),
+    PharmacyAnalyticsPurchaseBillsByDepartment("Pharmacy Analytics - Purchase Bills by Department"),
+    PharmacyAnalyticsPurchaseSummaryBySupplier("Pharmacy Analytics - Purchase Summary By Supplier"),
+    PharmacyAnalyticsPurchaseSummaryCreditCash("Pharmacy Analytics - Purchase Summary (Credit / Cash )"),
+    PharmacyAnalyticsPurchaseAndGRNSummaryCreditCash("Pharmacy Analytics - Purchase and GRN Summary (Credit / Cash )"),
+    PharmacyAnalyticsPurchaseSummaryBySupplierCreditCash("Pharmacy Analytics - Purchase Summary By Supplier (Credit / Cash)"),
+    PharmacyAnalyticsGRNPaymentSummary("Pharmacy Analytics - GRN Payment Summary"),
+    PharmacyAnalyticsGRNPaymentSummaryBySupplier("Pharmacy Analytics - GRN Payment Summary By Supplier"),
+    PharmacyAnalyticsPharmacyReturnWithoutTraising("Pharmacy Analytics - Pharmacy Return Without Traising"),
+    PharmacyAnalyticsProcurementBillItemList("Pharmacy Analytics - Procurement Bill Item List"),
+    PharmacyAnalyticsTransferIssueByBillItem("Pharmacy Analytics - Transfer Issue By Bill Item"),
+    PharmacyAnalyticsTransferIssueByBill("Pharmacy Analytics - Transfer Issue by Bill"),
+    PharmacyAnalyticsTransferIssueSummary("Pharmacy Analytics - Transfer Issue Summary"),
+    PharmacyAnalyticsTransferReceiveByBillItem("Pharmacy Analytics - Transfer Receive By Bill Item"),
+    PharmacyAnalyticsTransferReceiveByBill("Pharmacy Analytics - Transfer Receive by Bill"),
+    PharmacyAnalyticsTransferReceiveSummary("Pharmacy Analytics - Transfer Receive Summary"),
+    PharmacyAnalyticsReportTransferIssuedNotRecieved("Pharmacy Analytics - Report Transfer Issued not Recieved"),
+    PharmacyAnalyticsStaffStockReport("Pharmacy Analytics - Staff Stock Report"),
+    PharmacyAnalyticsTransferReportSummary("Pharmacy Analytics - Transfer Report Summary"),
+    PharmacyAnalyticsTransferIssueSummaryReportByDate("Pharmacy Analytics - Transfer Issue Summary Report By Date"),
+    PharmacyAnalyticsTransferReceiveVsBHTIssueQuntityTotalsByItem("Pharmacy Analytics - Transfer Receive Vs BHT Issue Quntity Totals By Item"),
+    PharmacyAnalyticsItemWiseAdjustments("Pharmacy Analytics - Item-wise adjustments"),
+    PharmacyAnalyticsExpiryAdjustments("Pharmacy Analytics - Expiry adjustments"),
+    PharmacyAnalyticsUnitIssueByBill("Pharmacy Analytics - Unit Issue by bill"),
+    PharmacyAnalyticsUnitIssueByDepartment("Pharmacy Analytics - Unit Issue by Department"),
+    PharmacyAnalyticsUnitIssueByItemBatch("Pharmacy Analytics - Unit Issue by Item (Batch)"),
+    PharmacyAnalyticsUnitIssueByItem("Pharmacy Analytics - Unit Issue by Item"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Lab Analytics Reports">
+    LabAnalyticsInvestigationList("Lab Analytics - Investigation List"),
+    LabAnalyticsBillList("Lab Analytics - Bill List"),
+    LabAnalyticsBillItemList("Lab Analytics - Bill Item List"),
+    LabAnalyticsClientList("Lab Analytics - Client List"),
+    LabAnalyticsSampleList("Lab Analytics - Sample List"),
+    LabAnalyticsSampleListDto("Lab Analytics - Sample List (DTO)"),
+    LabAnalyticsAvgTurnAroundTime("Lab Analytics - Average Turn Around Time"),
+    LabAnalyticsBillWiseTurnAroundTime("Lab Analytics - Bill-vice turn-around time"),
+    LabAnalyticsByBilledInstitution("Lab Analytics - By Billed Institution"),
+    LabAnalyticsByBilledDepartment("Lab Analytics - By Billed Department"),
+    LabAnalyticsByReportedInstitution("Lab Analytics - By Reported Institution"),
+    LabAnalyticsByReportedDepartment("Lab Analytics - By Reported Department"),
+    LabAnalyticsOpdBillItemsForCreditCompanies("Lab Analytics - OPD Bill Items For Credit Companies"),
+    LabAnalyticsCancelledLabBillList("Lab Analytics - List of Cancelled Lab Bills"),
+    LabAnalyticsByOrderingInstitution("Lab Analytics - By Ordering Institution"),
+    LabAnalyticsCollectionCentreDetail("Lab Analytics - Report by Collection Centre(Detail)"),
+    LabAnalyticsCollectionCentreSummary("Lab Analytics - Report by Collection Centre(Summary)"),
+    LabAnalyticsCollectionCentreCount("Lab Analytics - Report by Collection Centre Count"),
+    LabAnalyticsCollectionCentreCountSummary("Lab Analytics - Report by Collection Centre Count(Summary)"),
+    LabAnalyticsReferringDoctorDetail("Lab Analytics - Report by Referring Doctor(Details)"),
+    LabAnalyticsReferringDoctorSummary("Lab Analytics - Report by Referring Doctor(Summary)"),
+    LabAnalyticsInwardSummaryByAddedDate("Lab Analytics - Inward Lab Summary by Added Date"),
+    LabAnalyticsInwardSummaryByAddedDateWithMargin("Lab Analytics - Inward Lab Summary by Added Date With Margin"),
+    LabAnalyticsInvestigationSummaryInward("Lab Analytics - Investigation Summary Inward"),
+    LabAnalyticsInvestigationSummaryInwardByDate("Lab Analytics - Investigation Summary Inward by Date"),
+    LabAnalyticsIncomeSummary("Lab Analytics - Income Summary"),
+    LabAnalyticsReportSummaryDepartment("Lab Analytics - Report Summary Department"),
+    LabAnalyticsReportSummaryByDay("Lab Analytics - Report Summary by day"),
+    LabAnalyticsInvestigationSummaryFeeType("Lab Analytics - Investigation Summary Fee Type"),
+    LabAnalyticsInvestigationSummaryRegentFee("Lab Analytics - Investigation Summary Regent Fee"),
+    LabAnalyticsInvestigationSummaryFeeTypeWithCredit("Lab Analytics - Investigation Summary Fee Type With Credit"),
+    LabAnalyticsInvestigationSummaryRegentFeeWithCredit("Lab Analytics - Investigation Summary Regent Fee With Credit"),
+    LabAnalyticsInvestigationSummaryRegentFeeByPayMethod("Lab Analytics - Investigation Summary Regent Fee By Payment Method"),
+    LabAnalyticsDailyLabSummaryByDepartment("Lab Analytics - Daily Lab Summmary By Department"),
+    LabAnalyticsDailyLabSummaryByDepartmentDto("Lab Analytics - Daily Lab Summmary By Department (DTO)"),
+    LabAnalyticsCardIncomeReport("Lab Analytics - Laboratary Card Income Report"),
+    LabAnalyticsDailyOpdFeeSummary("Lab Analytics - Daily OPD Fee Summary"),
+    LabAnalyticsDailyOpdFeeSummaryWithCounts("Lab Analytics - Daily OPD Fee Summary with Counts"),
+    LabAnalyticsDailyInwardFeeSummary("Lab Analytics - Daily Inward Fee Summary"),
+    LabAnalyticsDailyInwardFeeSummaryWithCounts("Lab Analytics - Daily Inward Fee Summary with Counts"),
+    LabAnalyticsReportSummaryByMonthCashCredit("Lab Analytics - Report Summary by Month With Cash and Credit"),
+    LabAnalyticsTestWiseCountReport("Lab Analytics - Test Wise Count Report"),
+    LabAnalyticsTestWiseCountReportDto("Lab Analytics - Test Wise Count Report - DTO"),
+    LabAnalyticsTestWiseReagentCostReport("Lab Analytics - Test Wise Reagent Cost Report"),
+    LabAnalyticsIncomeReport("Lab Analytics - Laboratary Income Report"),
+    LabAnalyticsOrderReport("Lab Analytics - Laboratory Order Report"),
+    LabAnalyticsLaboratorySummary("Lab Analytics - Laboratory Summary"),
+    LabAnalyticsDailySummaryByBillTypes("Lab Analytics - Daily Summary By Bill Types"),
+    LabAnalyticsDailySummary("Lab Analytics - Daily Summary"),
+    LabAnalyticsDailySummaryInwardOpd("Lab Analytics - Daily Summary Inward and Opd"),
+    LabAnalyticsDailySummaryInwardOpdByDate("Lab Analytics - Daily Summary Inward and Opd by Date"),
+    LabAnalyticsDailySummaryInwardOpdCount("Lab Analytics - Daily Summary Inward and Opd Count"),
+    LabAnalyticsAllIncomeSummary("Lab Analytics - Laboratory All Income Summary"),
+    LabAnalyticsCancelledBillSearch("Lab Analytics - Bills Cancelled after Approving Reports"),
+    LabAnalyticsTestResultsSingle("Lab Analytics - Test Results - Single"),
+    LabAnalyticsTestResults("Lab Analytics - Test Results"),
+    LabAnalyticsPriceList("Lab Analytics - Price List"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Reports Page Reports">
+    ReportsAssetRegister("Reports Page - 1. Asset Register"),
+    ReportsPoStatusReport("Reports Page - 2. PO Status Report"),
+    ReportsEmployeeAssetIssue("Reports Page - 3. Employee Asset Issue"),
+    ReportsFixedAssetIssue("Reports Page - 4. Fixed Asset Issue"),
+    ReportsAssetWarentyExpireReport("Reports Page - 5. Asset Warranty Expire Report"),
+    ReportsAssetGrnReport("Reports Page - 6. Asset GRN Report"),
+    ReportsAssetTransferReport("Reports Page - 7. Asset Transfer Report"),
+    ReportsItemLoacationHistory("Reports Page - 8. Item Loacation History"),
+    ReportsAssetAmcExpiryReport("Reports Page - 9. Asset AMC Expiry"),
+    ReportsAssetWarrantyExpiry("Reports Page - 10. Asset Warranty Expiry"),
+    ReportsAssetAmcReport("Reports Page - 11. AMC"),
+    ReportsWorkOrderReport("Reports Page - 12. Work Order"),
+    ReportsPretentiveMaintainanceReport("Reports Page - 13. Preventive Maintenance"),
+    ReportsModalityDowntime("Reports Page - 14. Modality Down Time"),
+    ReportsAssetDisposalReportSaleDisposalWriteOff("Reports Page - 15. Asset Disposal Report (Sale Disposal, Write-off)"),
+    ReportsPurchaseRateMovement("Reports Page - 16. Purchase Rate movement"),
+    ReportsCafeDiscount("Reports Page - 1. Café Discount"),
+    ReportsCafeSale("Reports Page - 2. Café Sale"),
+    ReportsCafeExpiry("Reports Page - 3. Café Expiry"),
+    ReportsCafeConsumption("Reports Page - 4. Café Consumption"),
+    ReportsCafeInwardPatientSale("Reports Page - 5. Cafe Inward Patient Sale"),
+    ReportsInwardService("Reports Page - 6. Inward Service"),
+    ReportsTheatreService("Reports Page - 7. Theatre Service"),
+    ReportsBillExpenses("Reports Page - 8. Bill Expenses"),
+    ReportsTotalCashierSummary("Reports Page - Total Cashier Summary"),
+    ReportsAllCashierSummary("Reports Page - 1. All Cashier Summary"),
+    ReportsCashierSummary("Reports Page - 2. Cashier Summary"),
+    ReportsCashierDetails("Reports Page - 3. Cashier Details"),
+    ReportsListAllDrawers("Reports Page - 4. All Drawers"),
+    ReportsAllCashierHandovers("Reports Page - 5. Shifts"),
+    ReportsHandoverStatusReport("Reports Page - 6. Handovers"),
+    ReportsShiftEndCash("Reports Page - 7. Shift End Cash"),
+    ReportsActiveShiftsReport("Reports Page - 8. Active Shifts"),
+    ReportsIouConversionBillReport("Reports Page - 9. IOU Conversion Bills"),
+    ReportsIouConversionPaymentReport("Reports Page - 10. IOU Conversion Payments"),
+    ReportsShiftStartAndEnd("Reports Page - 12. Shift End Summary"),
+    ReportsCourierLabReportsPrint("Reports Page - Courier Lab Reports Print"),
+    ReportsCCReportsPrint("Reports Page - 1. Collection Center Reports Print"),
+    ReportsCCCurrentBalanceReport("Reports Page - 2. Collection Center Current Balance"),
+    ReportsCCBalanceReport("Reports Page - 2. Collection Center Balance"),
+    ReportsCCReceiptReport("Reports Page - 3. Collection Center Receipt"),
+    ReportsCCBillWiseDetailReport("Reports Page - 4. Collection Center Bill Wise Detail"),
+    ReportsCCWiseInvoiceListReport("Reports Page - 5. Collection Center Wise Invoice List"),
+    ReportsCCStatementReport("Reports Page - 6. Collection Center Statement"),
+    ReportsCCWiseSummaryReport("Reports Page - 7. Collection Center Wise Summary"),
+    ReportsTestWiseCountReport("Reports Page - 8. Collection Center Test Wise Count"),
+    ReportsCCRouteAnalysisReport("Reports Page - 9. Route Analysis"),
+    ReportsCCBookReport("Reports Page - 10. Collction Centre Book"),
+    ReportsCCBookWiseDetail("Reports Page - 11. Collction Centre Book Wise Detail"),
+    ReportsCCInvestigationListReport("Reports Page - 12. Collction Centre Investigation List"),
+    ReportsCCBillItemListReport("Reports Page - 12. Collction Centre Bill Item List"),
+    ReportsDashboard("Reports Page - Dashboard"),
+    ReportsDailyReturn("Reports Page - Daily return"),
+    ReportsDailyReturnDto("Reports Page - Daily return – Fast"),
+    ReportsIncomeBreakdownByCategory("Reports Page - Income Breakdown by Category"),
+    ReportsBillsByItemCategory("Reports Page - Bills by Category"),
+    ReportsIpIncomeCategoryWiseReport("Reports Page - 3. IP Income Category Wise"),
+    ReportsServiceCategoryWiseBillDetail("Reports Page - 4. Service Category Wise Bill Details"),
+    ReportsServiceCategoryWiseBillDetailOpd("Reports Page - 4.1. Service Category Wise Bill Details OPD"),
+    ReportsProfessionalFeePayment("Reports Page - 5. Professional Fees Payment"),
+    ReportsDiscount("Reports Page - 6. Discount"),
+    ReportsOutsidePayment("Reports Page - 7. Outside Payments"),
+    ReportsCollectionCenterWiseIncome("Reports Page - 8. Collection Center Wise Income"),
+    ReportsInvoiceAndReciptReportSerialWise("Reports Page - 9. Invoice and Receipt Report (Serial Wise)"),
+    ReportsPharmacySaleReport("Reports Page - 10. Pharmacy Sale (OP/IP)"),
+    ReportsDebtorSettlement("Reports Page - 11. Debtor Settlement"),
+    ReportsDebtorBalanceReport("Reports Page - 12. Debtor Balance Report"),
+    ReportsOpdAndInwardDueReport("Reports Page - 13. OPD and Inward Due"),
+    ReportsDebtorAgeAnlysis("Reports Page - 14. Debtor Age Anlysis"),
+    ReportsCreditInvoiceDispatch("Reports Page - 15. Credit Invoice Dispatch"),
+    ReportsPettyCashPayment("Reports Page - 16. Petty Cash Payment"),
+    ReportsWhtReport("Reports Page - 17. WHT"),
+    ReportsBillWiseItemMovementReport("Reports Page - 18. Bill Wise Item Movement"),
+    ReportsDebtorSettlementFinancial("Reports Page - 19. Debtor Settlement"),
+    ReportsStaffWelfareBills("Reports Page - 21. Staff Welfare"),
+    ReportsProfitMatrixReport("Reports Page - 22. Profit Matrix"),
+    ReportsPackageReport("Reports Page - 23. Package Report"),
+    ReportsDebtorAnalysis("Reports Page - 24. Debtor Analysis"),
+    ReportsDrawerHistory("Reports Page - 25. Drawer History By User"),
+    ReportsAllUsersDrawerHistory("Reports Page - 26. Drawer History"),
+    ReportsDrawerAdjustments("Reports Page - 26 A. Drawer Adjustments"),
+    ReportsDepartmentRevenueReport("Reports Page - 27. Department Revenue"),
+    ReportsPaymentSettlement("Reports Page - 28. Payment Settlement"),
+    ReportsDueSearch("Reports Page - 29. Due Search"),
+    ReportsDueSearchCreditCompany("Reports Page - 30. Due Search (Credit Company)"),
+    ReportsDueAge("Reports Page - 31. Due Age"),
+    ReportsDueAgeCreditCompany("Reports Page - 32. Due Age (Credit Company)"),
+    ReportsDueAgeDetail("Reports Page - 33. Due Age Detail"),
+    ReportsExcessSearchCreditCompany("Reports Page - 34. Excess Search (Credit Company)"),
+    ReportsExcessAgeCreditCompany("Reports Page - 35. Excess Age (Credit Company)"),
+    ReportsExcessSearch("Reports Page - 36. Excess Search"),
+    ReportsExcessAge("Reports Page - 37. Excess Age"),
+    ReportsProfessionalFees("Reports Page - Professional Fees"),
+    ReportsProfessionalFeePayments("Reports Page - Professional Fee Payments"),
+    ReportsProfessionalPayments("Reports Page - Professional Payments"),
+    ReportsDepartmentReports("Reports Page - 1. Department Report"),
+    ReportsEmployeeDetails("Reports Page - 2. Employee Detail"),
+    ReportsEmployeeToRetired("Reports Page - 3. Employee To Retired Details"),
+    ReportsEmployeeEndofProbation("Reports Page - 4. Employee End of Probation"),
+    ReportsStaffDetail("Reports Page - 5. Staff Detail"),
+    ReportsHolidayReport("Reports Page - 6. Holiday Report"),
+    ReportsAttendanceReport("Reports Page - 1. Attandance Report"),
+    ReportsLateInAndEarlyOut("Reports Page - 2. Late In and Early Out"),
+    ReportsStaffShiftDetailsByStaff("Reports Page - 3. Staff Shift Detail By Report"),
+    ReportsVerifiedReport("Reports Page - 4. Verified Report"),
+    ReportsFingerPrintRecordByLogged("Reports Page - 1. Fingerprint Record by Logged"),
+    ReportsFingerPrintRecordByVerified("Reports Page - 2. Fingerprint Record by Verified"),
+    ReportsFingerPrintRecordNoShiftSettled("Reports Page - 3. Fingerprint Record by No Shift Settled"),
+    ReportsFingerPrintApprove("Reports Page - 4. Fingerprint Approve"),
+    ReportsLeaveForm("Reports Page - 1. Leave Form"),
+    ReportsAdditionalFormReportVerification("Reports Page - 2. Additinal Form Report Verification"),
+    ReportsOnlineFormStatus("Reports Page - 3. Online Form Status"),
+    ReportsStaffShiftHistory("Reports Page - 1. Staff Shift History"),
+    ReportsFingerprintHistory("Reports Page - 2. Fingerprint history"),
+    ReportsLeaveReport("Reports Page - 1. Leave Report"),
+    ReportsLeaveReportSummery("Reports Page - 2. Leave Report Summary"),
+    ReportsLateLeaveDetails("Reports Page - 3. Late Leave(Detail)"),
+    ReportsLeaveSummeryReport("Reports Page - 4.Leave Summary Report"),
+    ReportsStaffShiftReport("Reports Page - 1. Staff Shift Report"),
+    ReportsEnteredShiftReport("Reports Page - 2. Entered Shift Report"),
+    ReportsRosterTimeAndVerifyTime("Reports Page - 3. Roaster Table and Verify Time Report"),
+    ReportsHeadCountReport("Reports Page - 1. Head Count"),
+    ReportsEmployeeWorkedDayReport("Reports Page - 2. Employee Worked Day Report"),
+    ReportsEmployeeWorkedDayReportSalaryCycle("Reports Page - 3. Employee Worked Day Report(Salary Cycle)"),
+    ReportsMonthendEmployeeWorkingTimeAndOvertime("Reports Page - 4. Month End Employee Working Time + Over Time Report"),
+    ReportsMonthEndEmployeeNoPayReportByMinutes("Reports Page - 5. Month End Employee(No Pay) Report-By Minute"),
+    ReportsMonthEndEmployeeSummery("Reports Page - 6. Month End Employee Summary"),
+    ReportsFingerAnalysisReportBySalaryCycle("Reports Page - 7. Finger Analysis Report by Salary Cycle"),
+    ReportsAdmissionDischargeReport("Reports Page - 1. Admission and Discharge"),
+    ReportsIpUnsettledInvoices("Reports Page - 2. IP Unsettled Invoices"),
+    ReportsRoomChange("Reports Page - 3. Room Change"),
+    ReportsAdmissionCategoryWiseAdmission("Reports Page - 4. Admission Category Wise Admission"),
+    ReportsIpServiceReport("Reports Page - 5. Service Reports"),
+    ReportsAdmissionReport("Reports Page - 6. Admission Reports"),
+    ReportsClosingStockReport("Reports Page - 1. Closing Stock"),
+    ReportsConsumption("Reports Page - 2. Consumption (Legacy)"),
+    ReportsConsumptionDto("Reports Page - 2. Consumption"),
+    ReportsStockTransferReport("Reports Page - 3. Stock Transfers"),
+    ReportsCostOfGoodsSold("Reports Page - 4. Cost Of Good Sold"),
+    ReportsGoodInTransit("Reports Page - 5. Good in Transit"),
+    ReportsGrnReport("Reports Page - 6. GRN Report"),
+    ReportsBatchWiseStockReport("Reports Page - 7. Batch Wise Stock"),
+    ReportsSlowFastNoneMovement("Reports Page - 8. Slow/Fast/None Movement Report"),
+    ReportsGrn("Reports Page - 9. GRN"),
+    ReportsBeforeStockTaking("Reports Page - 10. Before Stock Taking"),
+    ReportsAfterStockTaking("Reports Page - 11. After Stock Taking"),
+    ReportsStockLedgerDto("Reports Page - 12. Stock Ledger"),
+    ReportsStockLedger("Reports Page - 12. Stock Leger (Legacy)"),
+    ReportsExpiryItem("Reports Page - 13. Expiry Item Report"),
+    ReportsGrnReturnVarianceReport("Reports Page - 14. GRN Return Variance Report"),
+    ReportsGrnSummaryReport("Reports Page - 15. GRN Summary Report"),
+    ReportsLabReportsTestCount("Reports Page - Test Count Report"),
+    ReportsTestWiseCountReports("Reports Page - Test Wise Count"),
+    ReportsLabBillItemList("Reports Page - Lab Bill Item List"),
+    ReportsTurnAroundTimeDetails("Reports Page - Turn Around Time Details"),
+    ReportsTurnAroundTimeHourly("Reports Page - Turn Around Time(Hourly)"),
+    ReportsLabPeakHourStatistics("Reports Page - Peak Hour Statistics"),
+    ReportsSampleCarrierReport("Reports Page - Sample Carrier"),
+    ReportsLabOrganismAntibioticSensitivityReport("Reports Page - Organism Antibiotic Sensitivity"),
+    ReportsLabInvetigationWiseReport("Reports Page - Investigation Wise Research"),
+    ReportsAnnualTestStatistics("Reports Page - Annual Test Statistics"),
+    ReportsExternalLaboratoryWorkloadReport("Reports Page - External Laboratory Workload"),
+    ReportsLaboratoryWorkloadReport("Reports Page - Laboratory Workload"),
+    ReportsInvestigationMonthEndSummery("Reports Page - Investigation Month End Summary"),
+    ReportsInvestigationMonthEndDetails("Reports Page - Investigation Month End Details"),
+    ReportsLabRegisterReport("Reports Page - Lab Register"),
+    ReportsCollectionCenterStatement("Reports Page - Collection center statement"),
+    ReportsRoomOccupancyReport("Reports Page - 1. Room Occupancy"),
+    ReportsSurgerySurvey("Reports Page - 2. Surgery Survey"),
+    ReportsSugeryStatus("Reports Page - 3. Surgery Status"),
+    ReportsSurgeryCostEstimation("Reports Page - 4. Surgery Cost Estimation"),
+    ReportsDurationServiceReport("Reports Page - 5. Duration Service Report"),
+    ReportsPharmacyDepartmentWiseSaleReport("Reports Page - 6. Pharmacy Department Wise Sale Report"),
+    ReportsManagementAdmissionCountReport("Reports Page - 7. Referring Doctor Wise Revenue"),
+    ReportsReferringDoctorWiseRevenueDto("Reports Page - 7a. Referring Doctor Wise Revenue (DTO - Fast)"),
+    ReportsOtRoomWiseSergeryCount("Reports Page - 8. OT Room Wise Surgery Count"),
+    ReportsSurgeryWiseCount("Reports Page - 9. Surgery Count(Surgery Wise)"),
+    ReportsSurgeryCountDoctorWise("Reports Page - 10. Surgery Count(Doctor Wise)"),
+    ReportsSurgeryCountTypeWise("Reports Page - 11. Surgery Count(Type)"),
+    ReportsAdmissionCountConsultationWise("Reports Page - 12. Admission Count(Consultant Wise)"),
+    ReportsAdmissionCountPaymentTypeWise("Reports Page - 13. Admission Count(Payment Type Wise)"),
+    ReportsManagementHospitalCensusReport("Reports Page - 14. Hospital Census"),
+    ReportsROOMOCCUPANCY("Reports Page - 15. ROOM OCCUPANCY"),
+    ReportsOpdWeeklyReport("Reports Page - 16. OPD Weekly Report"),
+    ReportsSpecialityDoctorWiseIncome("Reports Page - 17. Speciality/Doctor Wise Income Report"),
+    ReportsAllDepartmentSaleReport("Reports Page - 18. All Department Sale Report"),
+    ReportsDailyReturnImportForQbReport("Reports Page - 1. QB Import Reports"),
+    ReportsReportQbItemList("Reports Page - 2. Item Import Report"),
+    ReportsAllStaffSalarySummary("Reports Page - 1. All Staff Salary Summary"),
+    ReportsStaffPayrollReport("Reports Page - 2. Staff Payroll"),
+    ReportsStaffPayrollAccountant("Reports Page - 3. Staff Payroll(Accountant)"),
+    ReportsStaffPayrollByDepartmentByRoster("Reports Page - 4. Staff Payroll(By Department, By Roster)"),
+    ReportsStaffPayrollSelectedStaff("Reports Page - 5. Staff Payroll(Selected Staff)"),
+    ReportsStaffOverTimeReport("Reports Page - 6. Staff Over Time"),
+    ReportsNopayandSalaryAllowanceReport("Reports Page - 7. No Pay and Salary Allowance Report"),
+    ReportsStaffPaysheetComponentList("Reports Page - 8. Staff Paysheet Component List"),
+    ReportsStaffSalaryBankWise("Reports Page - 9. Staff Salary Bank Wise"),
+    ReportsStaffSalaryPaymentToBank("Reports Page - 10. Staff Salary Payment To Bank"),
+    ReportsStaffSalaryPaymentToBankSlip("Reports Page - 11. Staff Salary Payment To Bank(Slip)"),
+    ReportsStaffSalaryPaymentToBankPayPast("Reports Page - 12. Staff Salary Payment To Bank(Pay Fast)"),
+    ReportsStaffSalaryComponentReport("Reports Page - 13. Staff Salary Component"),
+    ReportsStaffSalaryComponentBankWiseReport("Reports Page - 14. Staff Salary Component(Bank Wise)"),
+    ReportsStaffSalaryComponentBetweenToSalaryCycles("Reports Page - 15. Staff Salary Component(Between To Salary Cycles)"),
+    ReportsEPF("Reports Page - 16. EPF"),
+    ReportsETF("Reports Page - 17. ETF"),
+    ReportsEpfEtfUploadReport("Reports Page - 18. EPF/ETF Upload Report"),
+    ReportsStaffSalaryGenerateOrNotReport("Reports Page - 19. Staff Salary Generate Or Not Report"),
+    ReportsStaffSalaryGenerateOrDeleteDetailReport("Reports Page - 20. Staff Salary Generate Or Delete Detail Report"),
+    ReportsStaffGratuity("Reports Page - 21. Staff Garduity"),
+    ReportsPatientJourney("Reports Page - 1. Patient Journey"),
+    ReportsPatientLedger("Reports Page - 2. Patient Ledger"),
+    ReportsSpecialityWiseDemograhicData("Reports Page - 3. Speciality Wise Demographic Data"),
+    //</editor-fold>
     ;
 
     private final String label;
@@ -1188,6 +1594,7 @@ public enum Privileges {
             case SearchIssuedReferenceBook:
             case ChangeCreditLimitInCC:
             case PayCollectingCentre:
+            case CollectingCentreReprintOriginalBill:
             case CollectingCentreCreditDebitNoteMenu:
             case CollectingCentreCreditNote:
             case CollectingCentreDebitNote:
@@ -1304,7 +1711,413 @@ public enum Privileges {
 
             case AdminInactivePatients:
             case MergePatients:
+            case ClientPortalCreateAccount:
                 return "Admin";
+
+            case PharmacyAnalyticsPharmacyIncomeReport:
+            case PharmacyAnalyticsIncomeSummaryCategory:
+            case PharmacyAnalyticsPharmacyIncomeAndCost:
+            case PharmacyAnalyticsDailyStockValuesF15:
+            case PharmacyAnalyticsF15DrillDownLevel1:
+            case PharmacyAnalyticsF9B:
+            case PharmacyAnalyticsBillTypes:
+            case PharmacyAnalyticsAllItemMovementSummary:
+            case PharmacyAnalyticsCashInOutReport:
+            case PharmacyAnalyticsCashierReport:
+            case PharmacyAnalyticsCashierSummary:
+            case PharmacyAnalyticsAllCashierReport:
+            case PharmacyAnalyticsAllCashierSummary:
+            case PharmacyAnalyticsCashierDetailedReportByDepartment:
+            case PharmacyAnalyticsPharmacySaleSummary:
+            case PharmacyAnalyticsPharmacySaleSummaryDate:
+            case PharmacyAnalyticsAllDepartmentSaleSummary:
+            case PharmacyAnalyticsSaleSummaryByBillType:
+            case PharmacyAnalyticsSaleSummaryByPaymentMethod:
+            case PharmacyAnalyticsSaleSummaryByPaymentMethodByBill:
+            case PharmacyAnalyticsStockOverviewReport:
+            case PharmacyAnalyticsBatchStock:
+            case PharmacyAnalyticsItemStock:
+            case PharmacyAnalyticsExpiringStock:
+            case PharmacyAnalyticsShortExpiryByAMPPeriod:
+            case PharmacyAnalyticsStaffStock:
+            case PharmacyAnalyticsZeroStockItemReport:
+            case PharmacyAnalyticsSuppliersExpiringStocks:
+            case PharmacyAnalyticsStockReportByItem:
+            case PharmacyAnalyticsStockReportByItemOrderByVMP:
+            case PharmacyAnalyticsStockReportByProduct:
+            case PharmacyAnalyticsStockReportOfSingleProduct:
+            case PharmacyAnalyticsSupplierStockReport:
+            case PharmacyAnalyticsSuppliersStockSummary:
+            case PharmacyAnalyticsCategoryStockReport:
+            case PharmacyAnalyticsCategoryStockSummary:
+            case PharmacyAnalyticsStockHistory:
+            case PharmacyAnalyticsBeforeStockTakingReport:
+            case PharmacyAnalyticsAfterStockTakingReport:
+            case PharmacyAnalyticsStockTakingReportNew:
+            case PharmacyAnalyticsStockWithMovement:
+            case PharmacyAnalyticsDepartmentViceStock:
+            case PharmacyAnalyticsStockSummaryWithSuppliers:
+            case PharmacyAnalyticsStockReportWithSuppliers:
+            case PharmacyAnalyticsStockReportByBatchForExport:
+            case PharmacyAnalyticsBinCard:
+            case PharmacyAnalyticsItemBinCard:
+            case PharmacyAnalyticsBatchBinCard:
+            case PharmacyAnalyticsItemsAMPList:
+            case PharmacyAnalyticsMedicineVTMATMVMPAMPVMPPAndAMPPList:
+            case PharmacyAnalyticsSingleItemSummary:
+            case PharmacyAnalyticsAllItemsSummary:
+            case PharmacyAnalyticsItemsWithoutDistributor:
+            case PharmacyAnalyticsItemsWithSuppliersAndPrices:
+            case PharmacyAnalyticsItemsWithDistributor:
+            case PharmacyAnalyticsItemsWithMultipleDistributorItemsOnly:
+            case PharmacyAnalyticsItemWithMultipleDistributor:
+            case PharmacyAnalyticsROLAndROQManagement:
+            case PharmacyAnalyticsReorderAnalysis:
+            case PharmacyAnalyticsMovementReportStockByDate:
+            case PharmacyAnalyticsMovementReportStockByDateByBatch:
+            case PharmacyAnalyticsPharmacyAllReport:
+            case PharmacyAnalyticsOrderingRequirementReport:
+            case PharmacyAnalyticsMovementOutBySaleIssueAndConsumptionWithCurrentStockReport:
+            case PharmacyAnalyticsStockMovementTimelineGraphical:
+            case PharmacyAnalyticsSaleReport:
+            case PharmacyAnalyticsPrescriptionReport:
+            case PharmacyAnalyticsInstitutionItemMovement:
+            case PharmacyAnalyticsFastMoving:
+            case PharmacyAnalyticsSlowMoving:
+            case PharmacyAnalyticsNonMoving:
+            case PharmacyAnalyticsPrescriptionSummary:
+            case PharmacyAnalyticsPresciptionList:
+            case PharmacyAnalyticsListOfPharmacyBills:
+            case PharmacyAnalyticsRetailSaleBillList:
+            case PharmacyAnalyticsSaleDetailByBill:
+            case PharmacyAnalyticsSaleDetailByBillItems:
+            case PharmacyAnalyticsSaleDetailByDiscountScheme:
+            case PharmacyAnalyticsSaleSummaryByDiscountSchemeSummary:
+            case PharmacyAnalyticsSaleDetailByPaymentMethod:
+            case PharmacyAnalyticsPharmacySaleReport:
+            case PharmacyAnalyticsPharmacyWholesaleReport:
+            case PharmacyAnalyticsPharmacyWholesaleCreditBills:
+            case PharmacyAnalyticsBHTIssueByBill:
+            case PharmacyAnalyticsBHTIssueByBillItem:
+            case PharmacyAnalyticsBHTIssueByItem:
+            case PharmacyAnalyticsBHTIssueStaff:
+            case PharmacyAnalyticsBHTIssueWithMarginReport:
+            case PharmacyAnalyticsPharmacyProcurementReport:
+            case PharmacyAnalyticsPharmacyDirectPurchaseReport:
+            case PharmacyAnalyticsGRNSummary:
+            case PharmacyAnalyticsDepartmentStockByBatch:
+            case PharmacyAnalyticsPurchaseOrdersNotApproved:
+            case PharmacyAnalyticsDepartmentStockByBatchToUpload:
+            case PharmacyAnalyticsItemWiseProcurement:
+            case PharmacyAnalyticsPurcharseBillWithSupplier:
+            case PharmacyAnalyticsPharmacyGRNReport:
+            case PharmacyAnalyticsPharmacyGRNAndPurchaseReport:
+            case PharmacyAnalyticsGRNPurchaseItemsBySupplier:
+            case PharmacyAnalyticsGRNSummaryBySupplier:
+            case PharmacyAnalyticsGRNBillItemReport:
+            case PharmacyAnalyticsGRNRegistry:
+            case PharmacyAnalyticsGRNReturnList:
+            case PharmacyAnalyticsPurchaseOrderSummary:
+            case PharmacyAnalyticsPurchaseBillsByDepartment:
+            case PharmacyAnalyticsPurchaseSummaryBySupplier:
+            case PharmacyAnalyticsPurchaseSummaryCreditCash:
+            case PharmacyAnalyticsPurchaseAndGRNSummaryCreditCash:
+            case PharmacyAnalyticsPurchaseSummaryBySupplierCreditCash:
+            case PharmacyAnalyticsGRNPaymentSummary:
+            case PharmacyAnalyticsGRNPaymentSummaryBySupplier:
+            case PharmacyAnalyticsPharmacyReturnWithoutTraising:
+            case PharmacyAnalyticsProcurementBillItemList:
+            case PharmacyAnalyticsTransferIssueByBillItem:
+            case PharmacyAnalyticsTransferIssueByBill:
+            case PharmacyAnalyticsTransferIssueSummary:
+            case PharmacyAnalyticsTransferReceiveByBillItem:
+            case PharmacyAnalyticsTransferReceiveByBill:
+            case PharmacyAnalyticsTransferReceiveSummary:
+            case PharmacyAnalyticsReportTransferIssuedNotRecieved:
+            case PharmacyAnalyticsStaffStockReport:
+            case PharmacyAnalyticsTransferReportSummary:
+            case PharmacyAnalyticsTransferIssueSummaryReportByDate:
+            case PharmacyAnalyticsTransferReceiveVsBHTIssueQuntityTotalsByItem:
+            case PharmacyAnalyticsItemWiseAdjustments:
+            case PharmacyAnalyticsExpiryAdjustments:
+            case PharmacyAnalyticsUnitIssueByBill:
+            case PharmacyAnalyticsUnitIssueByDepartment:
+            case PharmacyAnalyticsUnitIssueByItemBatch:
+            case PharmacyAnalyticsUnitIssueByItem:
+                return "Pharmacy";
+
+            case LabAnalyticsInvestigationList:
+            case LabAnalyticsBillList:
+            case LabAnalyticsBillItemList:
+            case LabAnalyticsClientList:
+            case LabAnalyticsSampleList:
+            case LabAnalyticsSampleListDto:
+            case LabAnalyticsAvgTurnAroundTime:
+            case LabAnalyticsBillWiseTurnAroundTime:
+            case LabAnalyticsByBilledInstitution:
+            case LabAnalyticsByBilledDepartment:
+            case LabAnalyticsByReportedInstitution:
+            case LabAnalyticsByReportedDepartment:
+            case LabAnalyticsOpdBillItemsForCreditCompanies:
+            case LabAnalyticsCancelledLabBillList:
+            case LabAnalyticsByOrderingInstitution:
+            case LabAnalyticsCollectionCentreDetail:
+            case LabAnalyticsCollectionCentreSummary:
+            case LabAnalyticsCollectionCentreCount:
+            case LabAnalyticsCollectionCentreCountSummary:
+            case LabAnalyticsReferringDoctorDetail:
+            case LabAnalyticsReferringDoctorSummary:
+            case LabAnalyticsInwardSummaryByAddedDate:
+            case LabAnalyticsInwardSummaryByAddedDateWithMargin:
+            case LabAnalyticsInvestigationSummaryInward:
+            case LabAnalyticsInvestigationSummaryInwardByDate:
+            case LabAnalyticsIncomeSummary:
+            case LabAnalyticsReportSummaryDepartment:
+            case LabAnalyticsReportSummaryByDay:
+            case LabAnalyticsInvestigationSummaryFeeType:
+            case LabAnalyticsInvestigationSummaryRegentFee:
+            case LabAnalyticsInvestigationSummaryFeeTypeWithCredit:
+            case LabAnalyticsInvestigationSummaryRegentFeeWithCredit:
+            case LabAnalyticsInvestigationSummaryRegentFeeByPayMethod:
+            case LabAnalyticsDailyLabSummaryByDepartment:
+            case LabAnalyticsDailyLabSummaryByDepartmentDto:
+            case LabAnalyticsCardIncomeReport:
+            case LabAnalyticsDailyOpdFeeSummary:
+            case LabAnalyticsDailyOpdFeeSummaryWithCounts:
+            case LabAnalyticsDailyInwardFeeSummary:
+            case LabAnalyticsDailyInwardFeeSummaryWithCounts:
+            case LabAnalyticsReportSummaryByMonthCashCredit:
+            case LabAnalyticsTestWiseCountReport:
+            case LabAnalyticsTestWiseCountReportDto:
+            case LabAnalyticsTestWiseReagentCostReport:
+            case LabAnalyticsIncomeReport:
+            case LabAnalyticsOrderReport:
+            case LabAnalyticsLaboratorySummary:
+            case LabAnalyticsDailySummaryByBillTypes:
+            case LabAnalyticsDailySummary:
+            case LabAnalyticsDailySummaryInwardOpd:
+            case LabAnalyticsDailySummaryInwardOpdByDate:
+            case LabAnalyticsDailySummaryInwardOpdCount:
+            case LabAnalyticsAllIncomeSummary:
+            case LabAnalyticsCancelledBillSearch:
+            case LabAnalyticsTestResultsSingle:
+            case LabAnalyticsTestResults:
+            case LabAnalyticsPriceList:
+                return "Lab";
+
+            case ReportsAssetRegister:
+            case ReportsPoStatusReport:
+            case ReportsEmployeeAssetIssue:
+            case ReportsFixedAssetIssue:
+            case ReportsAssetWarentyExpireReport:
+            case ReportsAssetGrnReport:
+            case ReportsAssetTransferReport:
+            case ReportsItemLoacationHistory:
+            case ReportsAssetAmcExpiryReport:
+            case ReportsAssetWarrantyExpiry:
+            case ReportsAssetAmcReport:
+            case ReportsWorkOrderReport:
+            case ReportsPretentiveMaintainanceReport:
+            case ReportsModalityDowntime:
+            case ReportsAssetDisposalReportSaleDisposalWriteOff:
+            case ReportsPurchaseRateMovement:
+            case ReportsCafeDiscount:
+            case ReportsCafeSale:
+            case ReportsCafeExpiry:
+            case ReportsCafeConsumption:
+            case ReportsCafeInwardPatientSale:
+            case ReportsInwardService:
+            case ReportsTheatreService:
+            case ReportsBillExpenses:
+            case ReportsTotalCashierSummary:
+            case ReportsAllCashierSummary:
+            case ReportsCashierSummary:
+            case ReportsCashierDetails:
+            case ReportsListAllDrawers:
+            case ReportsAllCashierHandovers:
+            case ReportsHandoverStatusReport:
+            case ReportsShiftEndCash:
+            case ReportsActiveShiftsReport:
+            case ReportsIouConversionBillReport:
+            case ReportsIouConversionPaymentReport:
+            case ReportsShiftStartAndEnd:
+            case ReportsCourierLabReportsPrint:
+            case ReportsCCReportsPrint:
+            case ReportsCCCurrentBalanceReport:
+            case ReportsCCBalanceReport:
+            case ReportsCCReceiptReport:
+            case ReportsCCBillWiseDetailReport:
+            case ReportsCCWiseInvoiceListReport:
+            case ReportsCCStatementReport:
+            case ReportsCCWiseSummaryReport:
+            case ReportsTestWiseCountReport:
+            case ReportsCCRouteAnalysisReport:
+            case ReportsCCBookReport:
+            case ReportsCCBookWiseDetail:
+            case ReportsCCInvestigationListReport:
+            case ReportsCCBillItemListReport:
+            case ReportsDashboard:
+            case ReportsDailyReturn:
+            case ReportsDailyReturnDto:
+            case ReportsIncomeBreakdownByCategory:
+            case ReportsBillsByItemCategory:
+            case ReportsIpIncomeCategoryWiseReport:
+            case ReportsServiceCategoryWiseBillDetail:
+            case ReportsServiceCategoryWiseBillDetailOpd:
+            case ReportsProfessionalFeePayment:
+            case ReportsDiscount:
+            case ReportsOutsidePayment:
+            case ReportsCollectionCenterWiseIncome:
+            case ReportsInvoiceAndReciptReportSerialWise:
+            case ReportsPharmacySaleReport:
+            case ReportsDebtorSettlement:
+            case ReportsDebtorBalanceReport:
+            case ReportsOpdAndInwardDueReport:
+            case ReportsDebtorAgeAnlysis:
+            case ReportsCreditInvoiceDispatch:
+            case ReportsPettyCashPayment:
+            case ReportsWhtReport:
+            case ReportsBillWiseItemMovementReport:
+            case ReportsDebtorSettlementFinancial:
+            case ReportsStaffWelfareBills:
+            case ReportsProfitMatrixReport:
+            case ReportsPackageReport:
+            case ReportsDebtorAnalysis:
+            case ReportsDrawerHistory:
+            case ReportsAllUsersDrawerHistory:
+            case ReportsDrawerAdjustments:
+            case ReportsDepartmentRevenueReport:
+            case ReportsPaymentSettlement:
+            case ReportsDueSearch:
+            case ReportsDueSearchCreditCompany:
+            case ReportsDueAge:
+            case ReportsDueAgeCreditCompany:
+            case ReportsDueAgeDetail:
+            case ReportsExcessSearchCreditCompany:
+            case ReportsExcessAgeCreditCompany:
+            case ReportsExcessSearch:
+            case ReportsExcessAge:
+            case ReportsProfessionalFees:
+            case ReportsProfessionalFeePayments:
+            case ReportsProfessionalPayments:
+            case ReportsDepartmentReports:
+            case ReportsEmployeeDetails:
+            case ReportsEmployeeToRetired:
+            case ReportsEmployeeEndofProbation:
+            case ReportsStaffDetail:
+            case ReportsHolidayReport:
+            case ReportsAttendanceReport:
+            case ReportsLateInAndEarlyOut:
+            case ReportsStaffShiftDetailsByStaff:
+            case ReportsVerifiedReport:
+            case ReportsFingerPrintRecordByLogged:
+            case ReportsFingerPrintRecordByVerified:
+            case ReportsFingerPrintRecordNoShiftSettled:
+            case ReportsFingerPrintApprove:
+            case ReportsLeaveForm:
+            case ReportsAdditionalFormReportVerification:
+            case ReportsOnlineFormStatus:
+            case ReportsStaffShiftHistory:
+            case ReportsFingerprintHistory:
+            case ReportsLeaveReport:
+            case ReportsLeaveReportSummery:
+            case ReportsLateLeaveDetails:
+            case ReportsLeaveSummeryReport:
+            case ReportsStaffShiftReport:
+            case ReportsEnteredShiftReport:
+            case ReportsRosterTimeAndVerifyTime:
+            case ReportsHeadCountReport:
+            case ReportsEmployeeWorkedDayReport:
+            case ReportsEmployeeWorkedDayReportSalaryCycle:
+            case ReportsMonthendEmployeeWorkingTimeAndOvertime:
+            case ReportsMonthEndEmployeeNoPayReportByMinutes:
+            case ReportsMonthEndEmployeeSummery:
+            case ReportsFingerAnalysisReportBySalaryCycle:
+            case ReportsAdmissionDischargeReport:
+            case ReportsIpUnsettledInvoices:
+            case ReportsRoomChange:
+            case ReportsAdmissionCategoryWiseAdmission:
+            case ReportsIpServiceReport:
+            case ReportsAdmissionReport:
+            case ReportsClosingStockReport:
+            case ReportsConsumption:
+            case ReportsConsumptionDto:
+            case ReportsStockTransferReport:
+            case ReportsCostOfGoodsSold:
+            case ReportsGoodInTransit:
+            case ReportsGrnReport:
+            case ReportsBatchWiseStockReport:
+            case ReportsSlowFastNoneMovement:
+            case ReportsGrn:
+            case ReportsBeforeStockTaking:
+            case ReportsAfterStockTaking:
+            case ReportsStockLedgerDto:
+            case ReportsStockLedger:
+            case ReportsExpiryItem:
+            case ReportsGrnReturnVarianceReport:
+            case ReportsGrnSummaryReport:
+            case ReportsLabReportsTestCount:
+            case ReportsTestWiseCountReports:
+            case ReportsLabBillItemList:
+            case ReportsTurnAroundTimeDetails:
+            case ReportsTurnAroundTimeHourly:
+            case ReportsLabPeakHourStatistics:
+            case ReportsSampleCarrierReport:
+            case ReportsLabOrganismAntibioticSensitivityReport:
+            case ReportsLabInvetigationWiseReport:
+            case ReportsAnnualTestStatistics:
+            case ReportsExternalLaboratoryWorkloadReport:
+            case ReportsLaboratoryWorkloadReport:
+            case ReportsInvestigationMonthEndSummery:
+            case ReportsInvestigationMonthEndDetails:
+            case ReportsLabRegisterReport:
+            case ReportsCollectionCenterStatement:
+            case ReportsRoomOccupancyReport:
+            case ReportsSurgerySurvey:
+            case ReportsSugeryStatus:
+            case ReportsSurgeryCostEstimation:
+            case ReportsDurationServiceReport:
+            case ReportsPharmacyDepartmentWiseSaleReport:
+            case ReportsManagementAdmissionCountReport:
+            case ReportsReferringDoctorWiseRevenueDto:
+            case ReportsOtRoomWiseSergeryCount:
+            case ReportsSurgeryWiseCount:
+            case ReportsSurgeryCountDoctorWise:
+            case ReportsSurgeryCountTypeWise:
+            case ReportsAdmissionCountConsultationWise:
+            case ReportsAdmissionCountPaymentTypeWise:
+            case ReportsManagementHospitalCensusReport:
+            case ReportsROOMOCCUPANCY:
+            case ReportsOpdWeeklyReport:
+            case ReportsSpecialityDoctorWiseIncome:
+            case ReportsAllDepartmentSaleReport:
+            case ReportsDailyReturnImportForQbReport:
+            case ReportsReportQbItemList:
+            case ReportsAllStaffSalarySummary:
+            case ReportsStaffPayrollReport:
+            case ReportsStaffPayrollAccountant:
+            case ReportsStaffPayrollByDepartmentByRoster:
+            case ReportsStaffPayrollSelectedStaff:
+            case ReportsStaffOverTimeReport:
+            case ReportsNopayandSalaryAllowanceReport:
+            case ReportsStaffPaysheetComponentList:
+            case ReportsStaffSalaryBankWise:
+            case ReportsStaffSalaryPaymentToBank:
+            case ReportsStaffSalaryPaymentToBankSlip:
+            case ReportsStaffSalaryPaymentToBankPayPast:
+            case ReportsStaffSalaryComponentReport:
+            case ReportsStaffSalaryComponentBankWiseReport:
+            case ReportsStaffSalaryComponentBetweenToSalaryCycles:
+            case ReportsEPF:
+            case ReportsETF:
+            case ReportsEpfEtfUploadReport:
+            case ReportsStaffSalaryGenerateOrNotReport:
+            case ReportsStaffSalaryGenerateOrDeleteDetailReport:
+            case ReportsStaffGratuity:
+            case ReportsPatientJourney:
+            case ReportsPatientLedger:
+            case ReportsSpecialityWiseDemograhicData:
+                return "Reports";
 
             default:
                 return this.toString();
