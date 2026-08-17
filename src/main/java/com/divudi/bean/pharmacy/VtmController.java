@@ -720,13 +720,29 @@ public class VtmController implements Serializable {
     public void setSelectedVtmDto(VtmDto selectedVtmDto) {
         this.selectedVtmDto = selectedVtmDto;
 
-        // Sync with entity if DTO is selected
+        // Sync with entity if DTO is selected. Re-check the same scope condition
+        // completeVtmDto() already enforces (retired=false, departmentType=Pharmacy) -
+        // without this, a submitted ID for a retired or out-of-scope VTM would load
+        // straight into `current` and become editable/deletable, since this setter
+        // (and the converter below) round-trip on every postback, not just the initial
+        // search. CodeRabbit review on #23062.
         if (selectedVtmDto != null && selectedVtmDto.getId() != null) {
-            this.current = getFacade().find(selectedVtmDto.getId());
+            Vtm loaded = getFacade().find(selectedVtmDto.getId());
+            this.current = isInPharmacyScope(loaded) ? loaded : null;
         } else {
             // Clear current entity when no DTO is selected
             this.current = null;
         }
+    }
+
+    /**
+     * Same scope condition as completeVtmDto()'s WHERE clause, re-applied here
+     * because setSelectedVtmDto() and VtmDtoConverter.getAsObject() both resolve a
+     * client-submitted ID directly via facade lookup, with no other server-side check
+     * that the ID actually came from the scoped autocomplete results. Issue #23062.
+     */
+    private static boolean isInPharmacyScope(Vtm vtm) {
+        return vtm != null && !vtm.isRetired() && vtm.getDepartmentType() == DepartmentType.Pharmacy;
     }
 
     // Audit Events Methods
@@ -1070,9 +1086,12 @@ public class VtmController implements Serializable {
                     return null;
                 }
 
-                // Load entity from database and convert to DTO
+                // Load entity from database and convert to DTO. Re-checked against the
+                // same scope condition completeVtmDto() enforces - the converter round-trips
+                // on every postback, so without this check a submitted ID for a retired or
+                // out-of-scope VTM would silently resolve. Issue #23062.
                 Vtm entity = controller.getFacade().find(id);
-                if (entity != null) {
+                if (isInPharmacyScope(entity)) {
                     VtmDto dto = controller.createVtmDto(entity);
                     return dto;
                 } else {
