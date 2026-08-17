@@ -1135,7 +1135,9 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         StringBuilder sql = new StringBuilder(
                 "SELECT NEW com.divudi.core.data.dto.StockDTO("
                 + "i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, "
-                + "i.itemBatch.item.name, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) "
+                + "i.itemBatch.item.name, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, "
+                + "(SELECT COALESCE(SUM(s2.stock), 0.0) FROM Stock s2 "
+                + "WHERE s2.itemBatch.item = i.itemBatch.item AND s2.department = i.department AND s2.stock > :stockMin)) "
                 + "FROM Stock i "
                 + "WHERE i.stock > :stockMin "
                 + "AND i.department = :department "

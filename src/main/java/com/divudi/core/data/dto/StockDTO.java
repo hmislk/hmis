@@ -379,6 +379,15 @@ public class StockDTO implements Serializable {
         this.costRate = costRate;
     }
 
+    // Constructor for optimized retail sale autocomplete with total stock qty across all batches
+    // of the item within the same department (Total Stock column)
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, Double retailRate, Double stockQty, Date dateOfExpire,
+                    Double totalStockQty) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, retailRate, stockQty, dateOfExpire);
+        this.totalStockQty = totalStockQty;
+    }
+
     // Constructor for optimized retail sale autocomplete with departmentType (for department type filtering)
     public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
                     String genericName, String batchNo, Double retailRate, Double stockQty,

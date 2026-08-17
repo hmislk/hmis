@@ -223,7 +223,15 @@
                                                                 <f:convertNumber pattern="#,###" />
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        
+                                                        <p:column
+                                                            width="20em"
+                                                            headerText="Total Stock"
+                                                            style="padding: 6px; width: 100px;"
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.totalStockQty}">
+                                                                <f:convertNumber pattern="#,###" />
+                                                            </h:outputLabel>
+                                                        </p:column>
                                                         <p:column
                                                             width="20em"
                                                             headerText="Expiry"
