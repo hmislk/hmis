@@ -1148,7 +1148,7 @@ public class RetailSaleNativeSqlController2 implements Serializable, ControllerW
         int maxResults = 20; // fallback default
         try {
             maxResults = configOptionApplicationController.getIntegerValueByKey(
-                    "RetailSaleStockAutocompleteMaxResults", 20);
+                    "Pharmacy Retail Sale - Medicine Autocomplete Max Results", 20);
         } catch (Exception e) {
             // Use fallback default
         }
