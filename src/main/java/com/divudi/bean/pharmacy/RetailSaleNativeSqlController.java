@@ -1154,8 +1154,16 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
+        int maxResults = 20; // fallback default
+        try {
+            maxResults = configOptionApplicationController.getIntegerValueByKey(
+                    "RetailSaleStockAutocompleteMaxResults", 20);
+        } catch (Exception e) {
+            // Use fallback default
+        }
+
         lastAutocompleteResults = (List<StockDTO>) stockFacade.findLightsByJpql(
-                sql.toString(), parameters, TemporalType.TIMESTAMP, 30);
+                sql.toString(), parameters, TemporalType.TIMESTAMP, maxResults);
         return lastAutocompleteResults != null ? lastAutocompleteResults : new ArrayList<>();
     }
 
