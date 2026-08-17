@@ -242,12 +242,50 @@ public class CollectingCentrePaymentController implements Serializable {
         m.put("ret", false);
         m.put("cc", ccPaymentBill.getCollectingCentre());
         m.put("types", types);
-        m.put("fromDate", ccPaymentBill.getFromDate());
-        m.put("toDate", ccPaymentBill.getToDate());
+
+        Date rangeFromDate = ccPaymentBill.getFromDate();
+        Date rangeToDate = ccPaymentBill.getToDate();
+
+        if (rangeFromDate == null || rangeToDate == null) {
+            // Legacy payment bills created before fromDate/toDate were persisted on the Bill itself.
+            // Fall back to the date span of the bills it actually settled so a BETWEEN NULL AND NULL
+            // does not silently match zero rows and skip clearing paymentDone on cancellation.
+            Date[] derivedRange = deriveDateRangeFromBillItems(ccPaymentBill);
+            rangeFromDate = derivedRange[0];
+            rangeToDate = derivedRange[1];
+        }
+
+        m.put("fromDate", rangeFromDate);
+        m.put("toDate", rangeToDate);
+
+        if (rangeFromDate == null || rangeToDate == null) {
+            return new ArrayList<>();
+        }
 
         List<AgentHistory> listCount = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         return listCount;
+    }
+
+    private Date[] deriveDateRangeFromBillItems(Bill ccPaymentBill) {
+        Date min = null;
+        Date max = null;
+        if (ccPaymentBill.getBillItems() != null) {
+            for (BillItem bi : ccPaymentBill.getBillItems()) {
+                Bill referenced = bi.getReferenceBill();
+                if (referenced == null || referenced.getCreatedAt() == null) {
+                    continue;
+                }
+                Date createdAt = referenced.getCreatedAt();
+                if (min == null || createdAt.before(min)) {
+                    min = createdAt;
+                }
+                if (max == null || createdAt.after(max)) {
+                    max = createdAt;
+                }
+            }
+        }
+        return new Date[]{min, max};
     }
 
     public double calculaPayingBalanceAcodingToCCBalabce(AgentHistory startingHistory, AgentHistory endingHistory, double paidCCAmount) {
