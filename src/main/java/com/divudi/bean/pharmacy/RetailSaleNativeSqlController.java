@@ -1155,7 +1155,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
         lastAutocompleteResults = (List<StockDTO>) stockFacade.findLightsByJpql(
-                sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+                sql.toString(), parameters, TemporalType.TIMESTAMP, 30);
         return lastAutocompleteResults != null ? lastAutocompleteResults : new ArrayList<>();
     }
 
