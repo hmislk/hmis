@@ -13,7 +13,7 @@
 
             <ui:define name="subcontent">
                 <h:form id="frm">
-                    <p:panel header="Stock Report by Item" >
+                    <p:panel header="VMP Stock Report" >
 
                         <common:institution_site_department_filter controller="#{reportsStock}"/>
 
@@ -94,7 +94,7 @@
                                             <h:outputLabel value="Include Zero Stock" styleClass="mb-0"/>
                                         </h:panelGroup>
                                         <h:selectBooleanCheckbox id="includeZeroStockFilter" value="#{reportsStock.includeZeroStock}" />
-                                        <h:outputLabel for="includeZeroStockFilter" value=" Include items with zero stock" styleClass="ms-1"/>
+                                        <h:outputLabel for="includeZeroStockFilter" value=" Include VMPs with zero stock" styleClass="ms-1"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
                                 <!-- Action Buttons -->
@@ -103,9 +103,9 @@
                                         <h:outputLabel value="&#160;" styleClass="mb-0"/>
                                     </h:panelGroup>
                                     <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
-                                                     actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" />
+                                                     actionListener="#{reportsStock.fillDepartmentVmpStocks()}" />
                                     <p:commandButton styleClass="ui-button-success mx-1" icon="fas fa-file-excel" value="Excel" ajax="false">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_By_Item" postProcessor="#{reportsStock.postProcessXLSStockReportByItem}"/>
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_By_VMP" postProcessor="#{reportsStock.postProcessXLSStockReportByItem}"/>
                                     </p:commandButton>
                                     <p:commandButton styleClass="ui-button-info mx-1" icon="fas fa-print" value="Print"
                                                      actionListener="#{reportsStock.prepareForPrint()}"
@@ -122,11 +122,11 @@
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
 
                             <!-- Cells keep their natural (unwrapped) width so the table overflows its
-                                 container and scrolls horizontally (scrollable="true" below) instead of
-                                 wrapping long item names onto multiple lines. table-layout must be
-                                 overridden from PrimeFaces' default "fixed" (which silently clips
-                                 nowrap content to the container width) to "auto" so the table can
-                                 actually grow past the scrollable viewport. Issue #23052. -->
+                                 container and scrolls horizontally instead of wrapping long VMP names
+                                 onto multiple lines. table-layout must be overridden from PrimeFaces'
+                                 default "fixed" (which silently clips nowrap content to the container
+                                 width) to "auto" so the table can actually grow past the scrollable
+                                 viewport. See issue #23052 for the same fix on the sibling reports. -->
                             <style>
                                 [id="frm:tbl"] td, [id="frm:tbl"] th { white-space: nowrap; }
                                 [id="frm:tbl"] .ui-datatable-scrollable-header table,
@@ -137,11 +137,11 @@
                             </style>
 
                             <p:dataTable
-                                id="tbl" 
-                                rowIndexVar="ii" 
-                                value="#{reportsStock.stockReportByItemDTOS}" var="i"
-                                rendered="#{reportsStock.stockReportByItemDTOS.size() ne 0 }"
-                                rows="#{reportsStock.paginator?'20':reportsStock.stockReportByItemDTOS.size()}"
+                                id="tbl"
+                                rowIndexVar="ii"
+                                value="#{reportsStock.stockReportByVmpDTOS}" var="i"
+                                rendered="#{reportsStock.stockReportByVmpDTOS.size() ne 0 }"
+                                rows="#{reportsStock.paginator?'20':reportsStock.stockReportByVmpDTOS.size()}"
                                 paginator="#{reportsStock.paginator}"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="20, 50, 100"
@@ -149,7 +149,7 @@
                                 scrollWidth="100%">
                                 <f:facet name="header">
                                     <h:panelGroup layout="block">
-                                        <h:outputLabel value="Stock Report by Item"/>
+                                        <h:outputLabel value="VMP Stock Report"/>
                                         <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
                                             <h:outputText value="Institution: #{not empty reportsStock.institution ? reportsStock.institution.name : 'All'}   |   "/>
                                             <h:outputText value="Site: #{not empty reportsStock.site ? reportsStock.site.name : 'All'}   |   "/>
@@ -170,7 +170,7 @@
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
 
-                                <p:column headerText="Code" 
+                                <p:column headerText="Code"
                                           sortBy="#{i.code}" filterBy="#{i.code}"
                                           styleClass="averageNumericColumn"
                                           filterMatchMode="startsWith">
@@ -180,32 +180,32 @@
                                     <h:outputLabel value="#{i.code}" />
                                 </p:column>
 
-                                <p:column headerText="Item" 
+                                <p:column headerText="VMP"
                                           sortBy="#{i.name}" filterBy="#{i.name}"
                                           filterMatchMode="contains">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item"/>
+                                        <h:outputLabel value="VMP"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.name}" />
                                 </p:column>
 
-                                <p:column headerText="Quantity" 
+                                <p:column headerText="Quantity"
                                           styleClass="averageNumericColumn"
                                           style="text-align: right;" sortBy="#{i.qty}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Quantity"/>                                     
+                                        <h:outputLabel value="Quantity"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.qty}"  >
                                         <f:convertNumber pattern="#,###" />
-                                    </h:outputLabel>                                 
+                                    </h:outputLabel>
                                 </p:column>
 
 
-                                <p:column headerText="Purchase Value" 
+                                <p:column headerText="Purchase Value"
                                           styleClass="averageNumericColumn"
                                           style="text-align: right;" sortBy="#{i.purchaseValue}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Purchase Value"/>                                     
+                                        <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.purchaseValue}"  >
                                         <f:convertNumber pattern="#,##0.00" />
@@ -213,11 +213,11 @@
                                 </p:column>
 
 
-                                <p:column headerText="Retail Sale Value" 
+                                <p:column headerText="Retail Sale Value"
                                           styleClass="averageNumericColumn"
                                           style="text-align: right;" sortBy="#{i.saleValue}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Sale Value"/>                                     
+                                        <h:outputLabel value="Sale Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.saleValue}"  >
                                         <f:convertNumber pattern="#,##0.00" />
