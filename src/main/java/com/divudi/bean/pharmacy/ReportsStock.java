@@ -1206,6 +1206,84 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     }
 
     /**
+     * VMP Stock Report — aggregates stock across every AMP (brand) linked to
+     * a VMP into a single row per VMP, so e.g. "Amoxicillin 500mg capsule"
+     * shows one combined quantity/value across all its brands, instead of
+     * one row per AMP as the AMP-level Item Stock report does. Reuses
+     * {@link StockReportByItemDTO} since its shape (code, name, qty,
+     * purchaseValue, saleValue) is identical at the VMP level. Items with no
+     * VMP link (e.g. store/lab items) are excluded, since there's nothing to
+     * aggregate them under. Issue #23054.
+     */
+    public void fillDepartmentVmpStocks() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select new com.divudi.core.data.dto.StockReportByItemDTO("
+                    + "s.itemBatch.item.vmp.code, "
+                    + "s.itemBatch.item.vmp.name, "
+                    + "sum(s.stock), "
+                    + "sum(s.itemBatch.purcahseRate * s.stock), "
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s "
+                    + "left join s.itemBatch.item.category cat "
+                    + "left join s.itemBatch.item.dosageForm df "
+                    + "where s.itemBatch.item.vmp is not null");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" group by s.itemBatch.item.vmp.name, s.itemBatch.item.vmp.code order by s.itemBatch.item.vmp.name");
+            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(jpql.toString(), m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (StockReportByItemDTO r : lsts) {
+                stockPurchaseValue += r.getPurchaseValue();
+                stockSaleValue += r.getSaleValue();
+            }
+            stockReportByVmpDTOS = lsts;
+        }, PharmacyReports.STOCK_REPORT_BY_VMP, sessionController.getLoggedUser());
+    }
+
+    private List<StockReportByItemDTO> stockReportByVmpDTOS;
+
+    public List<StockReportByItemDTO> getStockReportByVmpDTOS() {
+        return stockReportByVmpDTOS;
+    }
+
+    public void setStockReportByVmpDTOS(List<StockReportByItemDTO> stockReportByVmpDTOS) {
+        this.stockReportByVmpDTOS = stockReportByVmpDTOS;
+    }
+
+    public String navigateToVmpStockReport() {
+        stockReportByVmpDTOS = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_vmp_dto?faces-redirect=true";
+    }
+
+    /**
      * {@code p:dataExporter} postProcessor for the "Stock Report by Item"
      * page - adds the report title, active filters, and a Printed By/At
      * footer around the exported table (issue #17615).

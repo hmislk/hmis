@@ -99,58 +99,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToStartNewDirectPurchaseBill() {
-        if (hasDirectPurchaseAwaitingApprovalInDepartment()) {
-            return null;
-        }
         prepareForNewDIrectPurchaseBill();
         draftMode = false;
         return "/pharmacy/direct_purchase?faces-redirect=true";
     }
 
     public String navigateToStartNewDirectPurchaseDraft() {
-        if (hasDirectPurchaseAwaitingApprovalInDepartment()) {
-            return null;
-        }
         prepareForNewDIrectPurchaseBill();
         draftMode = true;
         return "/pharmacy/direct_purchase?faces-redirect=true";
-    }
-
-    /**
-     * Blocks starting a brand-new Direct Purchase (draft or single-step) while
-     * this department already has one finalized but not yet approved -- i.e.
-     * BILLTYPEATOMIC still PHARMACY_DIRECT_PURCHASE_PRE, completed=true (past
-     * Finalize), checked=false (not yet through Approve). Department-scoped
-     * (not per-user): forces any pending approval to be resolved before more
-     * purchases pile up unapproved, since Approve is what actually adds stock
-     * — related to issue #23005's concurrency follow-up.
-     *
-     * Names the blocking bill's date/deptId in the error message rather than
-     * just saying "check the Approve List": that list's default search range
-     * is the current day, so a bill finalized on an earlier date is a real
-     * match for this guard but would be invisible there without manually
-     * widening the date filter -- the message needs to tell the user what
-     * they're looking for.
-     */
-    private boolean hasDirectPurchaseAwaitingApprovalInDepartment() {
-        String jpql = "SELECT b FROM Bill b WHERE b.department = :dept "
-                + "AND b.billTypeAtomic = :type AND b.completed = true "
-                + "AND b.checked = false AND b.retired = false ORDER BY b.createdAt";
-        java.util.Map<String, Object> params = new java.util.HashMap<>();
-        params.put("dept", getSessionController().getDepartment());
-        params.put("type", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
-        List<com.divudi.core.entity.Bill> pending = getBillFacade().findByJpql(jpql, params);
-        if (pending != null && !pending.isEmpty()) {
-            com.divudi.core.entity.Bill blocker = pending.get(0);
-            String createdAtStr = blocker.getCreatedAt() == null ? "unknown date"
-                    : new SimpleDateFormat("dd MMM yyyy HH:mm").format(blocker.getCreatedAt());
-            String identifier = blocker.getDeptId() != null ? blocker.getDeptId() : ("ID " + blocker.getId());
-            JsfUtil.addErrorMessage("This department already has a Direct Purchase (" + identifier
-                    + ", finalized " + createdAtStr + ") waiting to be approved. Please approve (or address) it "
-                    + "via the Approve List (widen the date range if it doesn't show today) before starting a new one.");
-            return true;
-        }
-        return false;
     }
 
     public String loadDraftForEditing(com.divudi.core.entity.Bill draft) {
@@ -1486,8 +1443,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBillFacade().edit(getBill());
         }
     }
-    
-    
+
+
     // <editor-fold defaultstate="collapsed" desc="Draft Workflow Methods">
 
     /**

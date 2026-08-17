@@ -10,6 +10,9 @@ import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -110,7 +113,76 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         // No heavy initialization — list is loaded on navigation
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_transfer_receive_native",
+                "Pharmacy Transfer Receive (Native)",
+                "Receive stock transfers from another department using the native SQL workflow",
+                "TransferReceiveNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Bill is Template",
+                "Controls whether the transfer receive bill is generated as a template bill",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4",
+                "Prints the transfer receive receipt on plain A4 paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4 Custom 1",
+                "Prints the transfer receive receipt using A4 custom format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4 Custom 2",
+                "Prints the transfer receive receipt using A4 custom format 2",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4 Detailed",
+                "Prints the transfer receive receipt using the detailed A4 format",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is Letter Paper Custom 1",
+                "Prints the transfer receive receipt using Letter paper custom format 1",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyReceiveFinalize",
+                "Permission to finalize a pharmacy transfer receive"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyTransferViewRates",
+                "Permission to view purchase/transfer rates on the transfer receive screen"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------
