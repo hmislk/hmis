@@ -159,15 +159,21 @@ public class CollectingCentrePaymentController implements Serializable {
             return;
         }
 
-        double paymentDone = getAllAgentHistory(currentCollectingCentre, true);
+        findPendingCCBills();
 
-        if (paymentDone > 0.0) {
-            JsfUtil.addErrorMessage("There is a bill that was taken within this range.");
+        if (selectedCCpaymentBills == null || selectedCCpaymentBills.isEmpty()) {
+            JsfUtil.addErrorMessage("There are no unpaid bills for this Collecting Centre within this range.");
             setCurrentCollectingCentre(null);
             return;
         }
 
-        findPendingCCBills();
+        long unpaidBillsBeforeRange = countUnpaidCCBillsBefore(currentCollectingCentre, fromDate);
+        if (unpaidBillsBeforeRange > 0) {
+            JsfUtil.addErrorMessage("There are " + unpaidBillsBeforeRange + " unpaid bill(s) for this Collecting Centre dated before the selected From Date. "
+                    + "Extend the range to include them before settling, otherwise they will be left unpaid.");
+            setCurrentCollectingCentre(null);
+            return;
+        }
 
         allHistorys = getAllAgentHistory(currentCollectingCentre);
 
@@ -180,12 +186,34 @@ public class CollectingCentrePaymentController implements Serializable {
         if (endingHistory != null) {
             finalEndingBalanseInCC = endingHistory.getBalanceAfterTransaction();
         }
-        
+
         periodPaidAmount = getPaidAgentPaymentsDuringThisPeriod(currentCollectingCentre);
 
-        calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory,periodPaidAmount);
+        // Ledger balance-delta is retained only for display/reconciliation (startingBalanseInCC /
+        // finalEndingBalanseInCC) - it must not drive the amount actually charged, since it can
+        // silently include activity that was already settled outside the selected date range.
+        calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory, periodPaidAmount);
+
+        // The amount charged is always the value of the itemized bills being marked paid.
+        payingBalanceAcodingToCCBalabce = totalCCAmount;
 
         calculateTotalOfPaymentReceive();
+    }
+
+    public long countUnpaidCCBillsBefore(Institution collectingCentre, Date beforeDate) {
+        String jpql = "select count(bill.id) "
+                + " from Bill bill "
+                + " where bill.collectingCentre=:cc "
+                + " and bill.createdAt < :beforeDate "
+                + " and bill.paid =:paid"
+                + " and bill.retired=false ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("cc", collectingCentre);
+        m.put("beforeDate", beforeDate);
+        m.put("paid", false);
+
+        return billFacade.findLongByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
     
     public List<AgentHistory> getAllHistoryFromPaymentBill(Bill ccPaymentBill) {
