@@ -221,6 +221,15 @@
                                                         </p:column>
                                                         <p:column
                                                             width="20em"
+                                                            headerText="Total Stock"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKeyReadOnly('Pharmacy Retail Sale - Show Total AMP Stock in Autocomplete', false)}"
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.totalStockQty}">
+                                                                <f:convertNumber pattern="#,###" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+                                                        <p:column
+                                                            width="20em"
                                                             headerText="Expiry"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.dateOfExpire}">
