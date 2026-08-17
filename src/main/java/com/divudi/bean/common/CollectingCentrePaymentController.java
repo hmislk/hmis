@@ -9,6 +9,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.data.dto.CollectingCentrePaymentBillDTO;
 import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -92,7 +93,7 @@ public class CollectingCentrePaymentController implements Serializable {
     private double payingBalanceAcodingToCCBalabce = 0.0;
     private Bill currentPaymentBill;
 
-    private List<Bill> paymentBills;
+    private List<CollectingCentrePaymentBillDTO> paymentBills;
 
     private String billNumber;
     private String comment;
@@ -106,8 +107,12 @@ public class CollectingCentrePaymentController implements Serializable {
         return "/collecting_centre/collecting_centre_repayment_bill_search?faces-redirect=true";
     }
 
-    public String navigateToViewCCPaymentBill(Bill bill) {
-        setCurrentPaymentBill(bill);
+    public String navigateToViewCCPaymentBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("Payment Bill is Missing");
+            return "";
+        }
+        setCurrentPaymentBill(billFacade.find(billId));
         return "/collecting_centre/cc_repayment_bill_reprint?faces-redirect=true";
     }
 
@@ -699,7 +704,16 @@ public class CollectingCentrePaymentController implements Serializable {
         String jpql;
         Map temMap = new HashMap();
 
-        jpql = "select b from Bill b "
+        jpql = "select new com.divudi.core.data.dto.CollectingCentrePaymentBillDTO("
+                + " b.id, b.deptId, b.fromDate, b.toDate, b.createdAt, b.cancelled, cb.createdAt,"
+                + " cwup.name, ccrwup.name, ti.institutionCode, ti.name, b.netTotal) "
+                + " from Bill b "
+                + " left join b.cancelledBill cb "
+                + " left join b.creater c "
+                + " left join c.webUserPerson cwup "
+                + " left join cb.creater ccr "
+                + " left join ccr.webUserPerson ccrwup "
+                + " left join b.toInstitution ti "
                 + " where b.billTypeAtomic =:atomic "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
@@ -720,7 +734,7 @@ public class CollectingCentrePaymentController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        paymentBills = billFacade.findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        paymentBills = (List<CollectingCentrePaymentBillDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -858,8 +872,10 @@ public class CollectingCentrePaymentController implements Serializable {
 
             XSSFCellStyle amountStyle = workbook.createCellStyle();
 
+            SimpleDateFormat sdfDate = new SimpleDateFormat("dd-MM-yyyy");
+
             Row headerRow = sheet.createRow(rowIndex++);
-            String[] headers = {"No", "Bill No", "Bill At", "Billed By", "CC Code", "CC Name", "Status", "Cancelled At", "Cancelled By", "Net Total"};
+            String[] headers = {"No", "Bill No", "From", "To", "Bill At", "Billed By", "CC Code", "CC Name", "Status", "Cancelled At", "Cancelled By", "Net Total"};
 
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -868,35 +884,46 @@ public class CollectingCentrePaymentController implements Serializable {
             }
 
             int no = 1;
-            for (Bill bill : paymentBills) {
+            for (CollectingCentrePaymentBillDTO bill : paymentBills) {
                 Row row = sheet.createRow(rowIndex++);
 
                 row.createCell(0).setCellValue(no++);
                 row.createCell(1).setCellValue(defaultIfNullOrEmpty(bill.getDeptId(), ""));
 
-                Cell billAtCell = row.createCell(2);
+                Cell fromDateCell = row.createCell(2);
+                if (bill.getFromDate() != null) {
+                    fromDateCell.setCellValue(sdfDate.format(bill.getFromDate()));
+                }
+
+                Cell toDateCell = row.createCell(3);
+                if (bill.getToDate() != null) {
+                    toDateCell.setCellValue(sdfDate.format(bill.getToDate()));
+                }
+
+                Cell billAtCell = row.createCell(4);
                 if (bill.getCreatedAt() != null) {
                     billAtCell.setCellValue(sdf.format(bill.getCreatedAt()));
                 }
 
-                row.createCell(3).setCellValue(defaultIfNullOrEmpty(getUserNameWithTitle(bill.getCreater()), ""));
+                row.createCell(5).setCellValue(defaultIfNullOrEmpty(bill.getCreatedByName(), ""));
 
-                row.createCell(4).setCellValue(bill.getToInstitution() != null ? defaultIfNullOrEmpty(bill.getToInstitution().getInstitutionCode(), "") : "");
-                row.createCell(5).setCellValue(bill.getToInstitution() != null ? defaultIfNullOrEmpty(bill.getToInstitution().getName(), "") : "");
+                row.createCell(6).setCellValue(defaultIfNullOrEmpty(bill.getToInstitutionCode(), ""));
+                row.createCell(7).setCellValue(defaultIfNullOrEmpty(bill.getToInstitutionName(), ""));
 
-                row.createCell(6).setCellValue(bill.isCancelled() ? "Cancelled" : "");
+                boolean cancelled = Boolean.TRUE.equals(bill.getCancelled());
+                row.createCell(8).setCellValue(cancelled ? "Cancelled" : "");
 
-                Cell cancelAtCell = row.createCell(7);
-                Cell cancelByCell = row.createCell(8);
-                if (bill.isCancelled() && bill.getCancelledBill() != null) {
-                    if (bill.getCancelledBill().getCreatedAt() != null) {
-                        cancelAtCell.setCellValue(sdf.format(bill.getCancelledBill().getCreatedAt()));
+                Cell cancelAtCell = row.createCell(9);
+                Cell cancelByCell = row.createCell(10);
+                if (cancelled) {
+                    if (bill.getCancelledAt() != null) {
+                        cancelAtCell.setCellValue(sdf.format(bill.getCancelledAt()));
                     }
-                    cancelByCell.setCellValue(defaultIfNullOrEmpty(getUserNameWithTitle(bill.getCancelledBill().getCreater()), ""));
+                    cancelByCell.setCellValue(defaultIfNullOrEmpty(bill.getCancelledByName(), ""));
                 }
 
-                Cell netTotalCell = row.createCell(9);
-                netTotalCell.setCellValue(bill.getNetTotal());
+                Cell netTotalCell = row.createCell(11);
+                netTotalCell.setCellValue(bill.getNetTotal() != null ? bill.getNetTotal() : 0.0);
                 netTotalCell.setCellStyle(amountStyle);
             }
 
@@ -911,13 +938,6 @@ public class CollectingCentrePaymentController implements Serializable {
 
         } catch (Exception e) {
         }
-    }
-
-    private String getUserNameWithTitle(com.divudi.core.entity.WebUser user) {
-        if (user == null || user.getWebUserPerson() == null) {
-            return "";
-        }
-        return user.getWebUserPerson().getNameWithTitle();
     }
 
     public void cancelPaymentBill() {
@@ -1166,11 +1186,11 @@ public class CollectingCentrePaymentController implements Serializable {
         this.currentPaymentBill = currentPaymentBill;
     }
 
-    public List<Bill> getPaymentBills() {
+    public List<CollectingCentrePaymentBillDTO> getPaymentBills() {
         return paymentBills;
     }
 
-    public void setPaymentBills(List<Bill> paymentBills) {
+    public void setPaymentBills(List<CollectingCentrePaymentBillDTO> paymentBills) {
         this.paymentBills = paymentBills;
     }
 
