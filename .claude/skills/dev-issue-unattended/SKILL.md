@@ -83,6 +83,45 @@ and end the run — do not guess.
   history, and related issues give no clear signal either way — by picking an
   option silently. That is exactly the "stop and flag" case in steps 3 and 14.
 
+### Insufficient issue description — hand back to the reporter, don't just stop
+
+One flavor of stop gets a different resolution than the rest of this
+section: when a stop at step 2, 2a, or 3 traces back to **the issue's own
+description being inadequate** — not a code-architecture question, not a
+schema/security limit — hand it back to whoever filed it instead of posting
+a bare blocker comment.
+
+This is a judgment call at runtime, same as any other step-3 decision:
+document the reasoning. When genuinely unclear whether a stop is a
+description problem or an architecture problem, default to the plain hard
+limit above (post blocker, stop) — don't reassign work to a reporter who
+can't actually resolve a code-level question.
+
+When it does fire:
+
+1. Post a comment on the issue asking **only** for what actually stalled
+   this run — drawn from, not a fixed template dumped every time:
+   - the exact page/screen: URL or menu breadcrumb (`Menu > Submenu >
+     Page`)
+   - a clear description of current vs. expected behavior
+   - for report/analytics requests: desired filters, columns, grouping
+   - repro steps including a concrete example record/BHT/bill number
+   - screenshot(s) of the current behavior or desired layout
+
+   Ground the ask in what was actually tried, e.g. "Searched for a page
+   matching this description under Inward and Reports; couldn't identify
+   which screen this refers to. Could you share the URL or navigation
+   path?" — not a bare template.
+2. `@mention` the issue's creator:
+   `gh issue view <n> --repo hmislk/hmis --json author --jq '.author.login'`
+3. `gh issue edit <n> --repo hmislk/hmis --add-assignee <creator-login>` —
+   **added alongside** `buddhika75`, never replacing them.
+4. Set the project-board (#11) Status field back to **Backlog** (same
+   GraphQL mutation pattern `start-issue` step 5 uses to set it forward to
+   "In Progress" — same field, different target option).
+5. Record this issue's outcome as "needs info" for the batch summary (step
+   15), then continue to the next issue in the batch (step 0).
+
 ## 1. Setup
 
 **If given an issue number:** run the `start-issue` skill for it, as
