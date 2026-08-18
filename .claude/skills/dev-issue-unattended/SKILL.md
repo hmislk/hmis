@@ -1,16 +1,17 @@
 ---
 name: dev-issue-unattended
 description: >
-  Run a GitHub issue through its full lifecycle end-to-end with NO pauses for
-  user input — investigate, decide the approach, gather test context, and run
-  the CI/review loop entirely autonomously, documenting every judgment call
-  for after-the-fact review instead of asking. Use ONLY when the user has
-  explicitly said they will be unreachable (away from the computer, asleep,
-  offline) and wants an issue (or an unfiled bug/request they just described)
-  shipped as a mergeable PR without them. Do not use this for normal work —
-  use dev-issue instead, which asks for input at the same points this skill
-  auto-resolves.
-argument-hint: "[issue-number | problem description]"
+  Run one or more GitHub issues through their full lifecycle end-to-end with
+  NO pauses for user input — investigate, decide the approach, gather test
+  context, and run the CI/review loop entirely autonomously, documenting
+  every judgment call for after-the-fact review instead of asking. Accepts
+  a single issue, a batch of issue numbers/URLs, or an unfiled bug/request
+  described in plain text. Use ONLY when the user has explicitly said they
+  will be unreachable (away from the computer, asleep, offline) and wants
+  the issue(s) shipped as mergeable PR(s) without them. Do not use this for
+  normal work — use dev-issue instead, which asks for input at the same
+  points this skill auto-resolves.
+argument-hint: "[issue-number|issue-url][, issue-number|issue-url ...] | problem description"
 ---
 
 # Full Issue Lifecycle, Unattended (HMIS)
@@ -23,6 +24,33 @@ skill only when the user has told you up front they won't be reachable.
 Invoking this skill is explicit authorization for every commit/push/PR/issue
 step below, including filing the GitHub issue itself if none exists yet — do
 not re-ask before any of them.
+
+## 0. Parse input
+
+Accept a comma/space/newline-separated list mixing bare issue numbers
+(`23100`) and full GitHub issue URLs
+(`https://github.com/hmislk/hmis/issues/23100` — extract the trailing
+number with a regex on `/issues/(\d+)`).
+
+- Dedupe the resulting set.
+- Validate each with `gh issue view <n> --repo hmislk/hmis --json title`.
+  Any that don't resolve are **not** a whole-batch abort — drop them, note
+  "could not resolve issue #N" for the final summary (step 15), and
+  continue with the rest.
+- Process the remaining issues **one at a time, lowest issue number
+  first**. Steps 1–14 below are the per-issue body of this loop: each issue
+  gets its own branch (via `start-issue`), its own commits, its own PR, and
+  its own review loop, exactly as if `dev-issue-unattended` had been run
+  solo on just that issue.
+- If an issue hits any stop — an existing hard limit, the "insufficient
+  issue description" flag (see Hard limits below), or the "could not
+  resolve" case above — record the outcome for that issue and move on to
+  the next one. The batch is done once every issue in the list has been
+  attempted.
+- A single free-text problem description with no issue number (the
+  existing "if given only a problem description" mode in step 1) is
+  unchanged and is not part of batch mode — it still handles exactly one ad
+  hoc request per run.
 
 ## Hard limits — never bypassed, no matter how confident
 
