@@ -256,6 +256,7 @@
                     </tr>
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier')}">
+                        <h:panelGroup rendered="#{cc.attrs.bill.paymentMethodLabel eq 'Cash'}">
                         <tr>
                             <td class="totalsItemBlock1" style="text-align: left;">
                                 <h:outputLabel value="Tendered"/>
@@ -276,6 +277,7 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
+                    </h:panelGroup>
                     </h:panelGroup>
 
                     <tr>
