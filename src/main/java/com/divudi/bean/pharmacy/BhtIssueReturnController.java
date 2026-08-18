@@ -432,6 +432,10 @@ public class BhtIssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("Cannot return medicines: nursing discharge has already been confirmed for this patient.");
             return;
         }
+        if (getBill().getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return;
+        }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;
@@ -530,7 +534,11 @@ public class BhtIssueReturnController implements Serializable {
             }
 
             tmp.setQtyInUnit(tmpQty);
-            bi.setQty(tmpQty);
+            // Returning qty stays at the 0.0 default set above so the user must
+            // opt in to returning each item; tmpQty (the true max returnable
+            // balance) is kept on remainingQty for display/reference only, not
+            // written back into the editable qty (issue #23023).
+            bi.setRemainingQty(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 

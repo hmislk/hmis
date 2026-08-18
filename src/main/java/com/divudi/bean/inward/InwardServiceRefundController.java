@@ -5,12 +5,19 @@
  * Inward service bill refund (issue #21247): return selected inward service
  * items from a bill without cancelling the whole bill. Kept separate from
  * OPD / Collecting-Centre refunds (BillSearch) because inpatient refunds have
- * different concerns - no drawer / cash-in-hand check, no lab-sampling guard,
- * credit-spend against the BHT encounter rather than a cash collection.
+ * different concerns - no drawer / cash-in-hand check, credit-spend against
+ * the BHT encounter rather than a cash collection. The lab-sampling guard
+ * (issue #22987) reuses the same PatientInvestigationStatus whitelist and
+ * dataEntered check already used by InwardSearch#checkCancelBill /
+ * #checkInvestigation for the sibling "Cancel whole bill" flow, so a
+ * laboratory investigation item can't be returned once its sample has been
+ * received (or its report already entered) - only before the lab has taken
+ * the sample, or again once the lab has retired/rejected it.
  */
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
@@ -21,9 +28,11 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
 import java.io.Serializable;
@@ -53,6 +62,8 @@ public class InwardServiceRefundController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private PatientInvestigationFacade patientInvestigationFacade;
 
     @Inject
     private SessionController sessionController;
@@ -64,6 +75,8 @@ public class InwardServiceRefundController implements Serializable {
     private AdmissionController admissionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    private EnumController enumController;
 
     private List<BillItem> refundingItems;
     private String comment;
@@ -130,8 +143,12 @@ public class InwardServiceRefundController implements Serializable {
             return null;
         }
         if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
-                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+                && !webUserController.hasPrivilege("InwardProcessReturnAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot return services: nursing discharge has been confirmed for this patient.");
+            return null;
+        }
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
             return null;
         }
         inwardSearch.setBill(bill);
@@ -162,6 +179,11 @@ public class InwardServiceRefundController implements Serializable {
             }
             if (itemAlreadyReturned(original)) {
                 JsfUtil.addErrorMessage("One or more selected items are already returned");
+                return null;
+            }
+            String labGuardError = checkLabSampleGuard(original);
+            if (labGuardError != null) {
+                JsfUtil.addErrorMessage(labGuardError);
                 return null;
             }
             for (BillFee bf : originalFeesOf(original)) {
@@ -346,6 +368,44 @@ public class InwardServiceRefundController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("id", original.getId());
         return billItemFacade.findFirstByJpql(jpql, params) != null;
+    }
+
+    /**
+     * Lab-sampling guard for returning a laboratory investigation item
+     * (issue #22987). Not every BillItem on an inward service bill is a lab
+     * investigation (professional/other services have none), so a missing
+     * PatientInvestigation simply means this guard doesn't apply.
+     *
+     * Reuses the exact same status whitelist and dataEntered check already
+     * used by InwardSearch#checkCancelBill / #checkInvestigation for the
+     * sibling "Cancel whole bill" flow, so the two flows agree on when a lab
+     * item may be returned:
+     *  - before the lab has received the sample (status still in
+     *    EnumController#getAvailableStatusforCancel - Ordered / Barcode
+     *    Generated / Sample Collected / Sample Sent / Sample Rejected): OK.
+     *  - once the sample has been received/accepted and is being processed:
+     *    blocked.
+     *  - once a result has been entered (dataEntered): blocked, even if the
+     *    status itself would otherwise allow it.
+     *
+     * @return a user-facing error message if the return should be blocked,
+     * or null if it's allowed.
+     */
+    private String checkLabSampleGuard(BillItem original) {
+        String jpql = "SELECT p FROM PatientInvestigation p WHERE p.retired = false AND p.billItem = :bi";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bi", original);
+        PatientInvestigation investigation = patientInvestigationFacade.findFirstByJpql(jpql, params);
+        if (investigation == null) {
+            return null;
+        }
+        if (Boolean.TRUE.equals(investigation.getDataEntered())) {
+            return "Cannot return \"" + original.getItem().getName() + "\" - the laboratory report has already been entered for this test.";
+        }
+        if (!enumController.getAvailableStatusforCancel().contains(investigation.getStatus())) {
+            return "Cannot return \"" + original.getItem().getName() + "\" - this test has already been received by the Laboratory.";
+        }
+        return null;
     }
 
     // Getters / Setters

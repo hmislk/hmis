@@ -2517,9 +2517,9 @@ public class CreditCompanyDueController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         List<BillTypeAtomic> bts = new ArrayList<>();
 
-        bts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-        bts.add(BillTypeAtomic.INWARD_DEPOSIT);
-        bts.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        bts.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+        bts.add(BillTypeAtomic.INWARD_PAYMENT);
+        bts.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "

@@ -442,21 +442,31 @@ public class AtmController implements Serializable {
      * @param selectedAtmDto The selected ATM DTO from UI
      */
     public void setSelectedAtmDto(AtmDto selectedAtmDto) {
-        System.out.println("setSelectedAtmDto called");
-        System.out.println("selectedAtmDto = " + selectedAtmDto);
         this.selectedAtmDto = selectedAtmDto;
 
-        // Sync with entity if DTO is selected
+        // Sync with entity if DTO is selected. Re-check the same scope condition
+        // completeAtmDto() already enforces (retired=false, departmentType=Pharmacy) -
+        // without this, a submitted ID for a retired or out-of-scope ATM would load
+        // straight into `current` and become editable/deletable, since this setter
+        // (and the converter below) round-trip on every postback, not just the initial
+        // search. CodeRabbit review on #23062.
         if (selectedAtmDto != null && selectedAtmDto.getId() != null) {
-            System.out.println("selectedAtmDto.getId() = " + selectedAtmDto.getId());
-            this.current = getFacade().find(selectedAtmDto.getId());
-            System.out.println("Loaded entity: " + (this.current != null ? this.current.getName() : "null"));
+            Atm loaded = getFacade().find(selectedAtmDto.getId());
+            this.current = isInPharmacyScope(loaded) ? loaded : null;
         } else {
             // Clear current entity when no DTO is selected
-            System.out.println("Clearing current entity (selectedAtmDto is null or has null ID)");
             this.current = null;
         }
-        System.out.println("current = " + current);
+    }
+
+    /**
+     * Same scope condition as completeAtmDto()'s WHERE clause, re-applied here
+     * because setSelectedAtmDto() and AtmDtoConverter.getAsObject() both resolve a
+     * client-submitted ID directly via facade lookup, with no other server-side check
+     * that the ID actually came from the scoped autocomplete results. Issue #23062.
+     */
+    private static boolean isInPharmacyScope(Atm atm) {
+        return atm != null && !atm.isRetired() && atm.getDepartmentType() == DepartmentType.Pharmacy;
     }
 
     /**
@@ -823,14 +833,17 @@ public class AtmController implements Serializable {
                     return null;
                 }
 
-                // Load entity from database and convert to DTO
+                // Load entity from database and convert to DTO. Re-checked against the
+                // same scope condition completeAtmDto() enforces - the converter round-trips
+                // on every postback, so without this check a submitted ID for a retired or
+                // out-of-scope ATM would silently resolve. Issue #23062.
                 Atm entity = controller.getFacade().find(id);
-                if (entity != null) {
+                if (isInPharmacyScope(entity)) {
                     AtmDto dto = controller.createAtmDto(entity);
                     System.out.println("Created DTO from entity: " + dto.getName());
                     return dto;
                 } else {
-                    System.out.println("Entity not found for ID: " + id);
+                    System.out.println("Entity not found or out of scope for ID: " + id);
                     return null;
                 }
 

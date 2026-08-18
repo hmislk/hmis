@@ -149,6 +149,16 @@ public class CapabilityStatementResource {
                 .add(resource("Admission Number Counters", "/api/admission-numbers",
                         "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
                         "API Key (Finance header)", "GET", "PUT"))
+                .add(resource("Admission Search", "/api/inward/admissions",
+                        "General-purpose admission search — list all currently active (not-discharged) "
+                        + "admissions, or search past or current admissions by BHT no, patient name, "
+                        + "MRN/PHN, phone, or NIC. Unlike /api/apiInward/admissions this is not scoped to "
+                        + "unpaid/open admissions and has no row cap (paginated via page/size). "
+                        + "Params: status (ADMITTED_BUT_NOT_DISCHARGED default, "
+                        + "DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED, DISCHARGED_AND_FINAL_BILL_COMPLETED, "
+                        + "ANY_STATUS), bhtNo, patientName, mrn, phone, nic, admissionTypeId, institutionId, "
+                        + "departmentId, fromDate, toDate, page, size.",
+                        "API Key (Finance header)", "GET"))
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
@@ -271,7 +281,10 @@ public class CapabilityStatementResource {
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
                         "Pharmaceutical item master data. AMP create/update accepts "
                         + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
-                        + "for strength-ratio based dispensing substitution.",
+                        + "for strength-ratio based dispensing substitution. VMP and AMP create/update "
+                        + "also accept issueUnitId (Long, MeasurementUnit) and, for VMP, strengthUnitId "
+                        + "-- both surfaced back as issueUnitId/issueUnitName/strengthUnitId/strengthUnitName "
+                        + "on GET/POST/PUT single-item responses.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Items", "/api/pharmacy/items",

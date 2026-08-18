@@ -61,6 +61,7 @@
                                     ajax="false"
                                     value="Search"
                                     icon="fas fa-search"
+                                    rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsGeneralSearch')}"
                                     action="#{admissionController.searchAdmissions}"
                                     class="mt-2 w-100 mb-3 ui-button-warning">
                                 </p:commandButton>
@@ -187,26 +188,39 @@
 
 
                                 <p:outputLabel value="Occupation" ></p:outputLabel>
-                                <p:inputText
+                                <p:autoComplete
+                                    id="occupation"
                                     class="w-100"
-                                    value="#{admissionController.occupationForSearch}" >
-                                </p:inputText>
+                                    inputStyleClass="form-control"
+                                    forceSelection="true"
+                                    value="#{admissionController.occupationForSearch}"
+                                    completeMethod="#{clinicalEntityController.completeOccupation}"
+                                    var="occ"
+                                    itemLabel="#{occ.name}"
+                                    itemValue="#{occ.name}"
+                                    placeholder="Occupation"
+                                    maxResults="15"
+                                    size="10">
+                                </p:autoComplete>
 
                                 <p:outputLabel value="Insurance Company" ></p:outputLabel>
                                 <p:selectOneMenu
+                                    id="cmbCreditCompanyForSearch"
                                     class="w-100"
                                     value="#{admissionController.creditCompanyForSearch}"
                                     filter="true"
                                     autoWidth="false"
+                                    appendTo="@(body)"
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.creditCompanies}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}" />
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="creditCompanyItem" itemLabel="#{creditCompanyItem.name}" itemValue="#{creditCompanyItem}" />
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Status" ></p:outputLabel>
                                 <p:selectOneMenu
                                     class="w-100"
-                                    value="#{admissionController.admissionStatusForSearch}" >
+                                    value="#{admissionController.admissionStatusForSearch}"
+                                    appendTo="@(body)" >
                                     <f:selectItem itemLabel="Any Status"></f:selectItem>
                                     <f:selectItems value="#{enumController.admissionStatuses}"
                                                    var="status"
@@ -216,7 +230,8 @@
                                 <p:outputLabel value="Admission Type" ></p:outputLabel>
                                 <p:selectOneMenu
                                     class="w-100"
-                                    value="#{admissionController.admissionTypeForSearch}" >
+                                    value="#{admissionController.admissionTypeForSearch}"
+                                    appendTo="@(body)" >
                                     <f:selectItem itemLabel="All"></f:selectItem>
                                     <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                 </p:selectOneMenu>
@@ -228,6 +243,7 @@
                                     value="#{admissionController.institutionForSearch}"
                                     filter="true"
                                     autoWidth="false"
+                                    appendTo="@(body)"
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
                                     <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -244,6 +260,7 @@
                                         value="#{admissionController.site}"
                                         filter="true"
                                         autoWidth="false"
+                                        appendTo="@(body)"
                                         >
                                         <f:selectItem itemLabel="All"></f:selectItem>
                                         <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -259,6 +276,7 @@
                                         value="#{admissionController.loggedDepartment}"
                                         filter="true"
                                         autoWidth="false"
+                                        appendTo="@(body)"
                                         >
                                         <f:selectItem itemLabel="All"></f:selectItem>
                                         <f:selectItems

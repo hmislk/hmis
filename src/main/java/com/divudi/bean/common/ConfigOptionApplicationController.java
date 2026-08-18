@@ -118,7 +118,7 @@ public class ConfigOptionApplicationController implements Serializable {
         loadApplicationOptions();
     }
 
-    public void loadApplicationOptions() {
+    public synchronized void loadApplicationOptions() {
         isLoadingApplicationOptions = true;
         try {
             applicationOptions = new HashMap<>();
@@ -252,6 +252,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
+        getBooleanValueByKey("Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
 
         // Bill-type-specific numbering strategies for Purchase Order Requests (POR)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
@@ -1212,7 +1213,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getIntegerValueByKey("StockHistory Archive - Max Batches Per Run", 50);
     }
 
-    public ConfigOption getApplicationOption(String key) {
+    public synchronized ConfigOption getApplicationOption(String key) {
         if (applicationOptions == null) {
             loadApplicationOptions();
         }
@@ -1494,6 +1495,23 @@ public class ConfigOptionApplicationController implements Serializable {
         if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
             String dv = defaultValue ? "true" : "false";
             option = createApplicationOptionIfAbsent(key, OptionValueType.BOOLEAN, dv);
+        }
+        return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    /**
+     * Read-only variant of {@link #getBooleanValueByKey(String, boolean)} —
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist. Use this for {@code rendered="..."}
+     * gates and other pure reads that must not silently create configuration
+     * rows just because a page was viewed; reserve the mutating
+     * {@code getBooleanValueByKey} for paths that are meant to seed a
+     * default the first time a key is consulted (e.g. an explicit save).
+     */
+    public boolean getBooleanValueByKeyReadOnly(String key, boolean defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
+            return defaultValue;
         }
         return Boolean.parseBoolean(option.getOptionValue());
     }

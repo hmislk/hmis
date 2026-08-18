@@ -4389,12 +4389,18 @@ public class SearchController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE);
         params.put("issuedBillIds", issuedBillIds);
+        // Receive bills link back to the issued bill via backwardReferenceBill -
+        // both the deprecated TransferReceiveController and the current
+        // TransferReceiveNativeSqlController set it on every receive. referenceBill
+        // is only set by one legacy code path, so filtering on it here silently
+        // dropped every native-path receive from the issued list's "Received"
+        // column (issue #20717).
         String jpql = "SELECT NEW com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
-                + "b.id, b.referenceBill.id, b.deptId, b.cancelled) "
+                + "b.id, b.backwardReferenceBill.id, b.deptId, b.cancelled) "
                 + "FROM Bill b "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :btp "
-                + "AND b.referenceBill.id IN :issuedBillIds";
+                + "AND b.backwardReferenceBill.id IN :issuedBillIds";
         List<PharmacyTransferReceivedListDTO> result = (List<PharmacyTransferReceivedListDTO>)
                 getBillFacade().findDTOsByJpql(jpql, params);
         return result != null ? result : new ArrayList<>();
@@ -4965,6 +4971,18 @@ public class SearchController implements Serializable {
         // PharmacyAdjustment: use lightweight DTO query (issue #21016 / #20299).
         if (billType == BillType.PharmacyAdjustment) {
             pharmacyBillSearch.fetchAdjustmentSearchDtos(maxResult);
+            return;
+        }
+
+        // GrnPaymentPre: use lightweight DTO query (issue #20523).
+        if (billType == BillType.GrnPaymentPre) {
+            pharmacyBillSearch.fetchGrnPaymentSearchDtos(maxResult);
+            return;
+        }
+
+        // PurchaseReturn: use lightweight DTO query (issue #20523).
+        if (billType == BillType.PurchaseReturn) {
+            pharmacyBillSearch.fetchPurchaseReturnSearchDtos(maxResult);
             return;
         }
 
@@ -6901,6 +6919,35 @@ public class SearchController implements Serializable {
     }
 
     public void fillPharmacyTransferRequestsToApprove() {
+        // ============================================================================
+        // DO NOT "FIX" THIS TO b.toDepartment. Read this comment fully before touching
+        // the department filter below — this exact flip has already been made and
+        // reverted once (see #23039, which reverted #22944 / commit 1bc11999a4).
+        //
+        // Transfer Request approval is a maker-checker cycle WITHIN THE REQUESTING
+        // department, same pattern as Direct Purchase / Disposal Issue / Transfer
+        // Receive / Issue-for-Requests (see e.g. SearchController.createDirectPurchaseTableToApprove(),
+        // which filters on b.department = session department for exactly the same reason):
+        //   - b.department / b.fromDepartment = the department that CREATED the request
+        //     (set at creation in TransferRequestController). It does Save -> Finalize
+        //     -> APPROVE on its own bill, all within itself.
+        //   - b.toDepartment = the department that will SUPPLY the stock. It never
+        //     approves another department's request; it only sees the request AFTER
+        //     approval, through its own separate Issue-for-Requests cycle
+        //     (SearchController.createRequestTableDto(), which correctly filters on
+        //     b.toDepartment, feeding pharmacy_transfer_request_list.xhtml).
+        //
+        // Living proof of the correct direction: the older combined Edit/Approve/View
+        // page (pharmacy_transfer_request_list_search_for_approval.xhtml, backed by
+        // fillSavedTranserRequestBills() above) has always filtered on b.fromDepartment
+        // and has always worked correctly.
+        //
+        // #22944's "list is always empty" symptom was real, but filtering on toDepartment
+        // was the wrong diagnosis — it silently moved the Approve step from the requester
+        // to the supplier instead of fixing the actual defect. Re-diagnose empty-list
+        // reports against fromDepartment (e.g. checkedBy/completed not being set
+        // correctly by Finalize), not by flipping this filter again.
+        // ============================================================================
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
                 + "b.id, b.deptId, b.createdAt, COALESCE(toDept.name, ''), "
                 + "COALESCE(creatorPerson.name, ''), b.cancelled, "
@@ -6931,6 +6978,11 @@ public class SearchController implements Serializable {
     }
 
     public void fillApprovedPharmacyTransferRequests() {
+        // Same department model as fillPharmacyTransferRequestsToApprove() above —
+        // see the full explanation there. This lists the REQUESTING department's own
+        // approved-request history (pharmacy_transfer_request_list_approved.xhtml,
+        // "View Request" only), so it must stay scoped to b.fromDepartment, not
+        // b.toDepartment. DO NOT flip this again (#23039).
         bills = null;
         HashMap tmp = new HashMap();
         String sql;
@@ -7850,8 +7902,10 @@ public class SearchController implements Serializable {
      */
     private void fillGrnsByBulkQuery(List<Bill> poList, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
         Map<Long, List<Bill>> grnsByPoId = new HashMap<>();
+        List<Long> poIds = new ArrayList<>();
         for (Bill po : poList) {
             grnsByPoId.put(po.getId(), new ArrayList<>());
+            poIds.add(po.getId());
         }
 
         // Path 1: GRN.referenceBill is the PO
@@ -7899,11 +7953,17 @@ public class SearchController implements Serializable {
         // end up linked one hop further up the approval chain than expected, so resolve
         // each approval bill's own referenceBill (the original PO) and match on that
         // too, mirroring Path 1/2's tolerance for an alternate linking path.
+        // NOTE: must filter on b.id IN :poIds here, not "b IN :pos" against a
+        // List<Bill> - comparing the root identification variable directly to an
+        // entity-valued list parameter silently matches zero rows under EclipseLink,
+        // unlike a navigated path expression (e.g. Path 1/2's "g.referenceBill IN
+        // :pos"). This previously left the legacy page's GRN list empty even after
+        // porting Path 3 from the DTO method (which correctly uses "b.id IN :poIds").
         Map<Long, List<Long>> approvalIdsByOriginalPoId = new HashMap<>();
         String originalPoJpql = "SELECT b.id, b.referenceBill.id FROM Bill b "
-                + "WHERE b IN :pos AND b.referenceBill IS NOT NULL";
+                + "WHERE b.id IN :poIds AND b.referenceBill IS NOT NULL";
         Map<String, Object> originalPoParams = new HashMap<>();
-        originalPoParams.put("pos", poList);
+        originalPoParams.put("poIds", poIds);
         List<Object> originalPoRows = getBillFacade().findObjects(originalPoJpql, originalPoParams);
         if (originalPoRows != null) {
             for (Object row : originalPoRows) {
@@ -16567,6 +16627,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where"
                 + " b.billType = :billType "
+                + " and b.billTypeAtomic = :bta "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
@@ -16603,6 +16664,59 @@ public class SearchController implements Serializable {
         sql += " order by b.deptId desc  ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("bta", BillTypeAtomic.INWARD_PAYMENT);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+
+    public void createInwardDepositBills() {
+        Date startTime = new Date();
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where"
+                + " b.billType = :billType "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) = :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.deptId desc  ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
@@ -18531,7 +18645,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
-            inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_PAYMENT);
             inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
@@ -18541,7 +18655,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
-            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
@@ -18551,7 +18665,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Refund and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsRefund = new ArrayList<>();
-            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
@@ -18987,7 +19101,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
-            inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_PAYMENT);
             inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
@@ -18997,7 +19111,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
-            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
@@ -19007,7 +19121,7 @@ public class SearchController implements Serializable {
 
 // Generate Inward Payments Refund and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsRefund = new ArrayList<>();
-            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
@@ -21236,14 +21350,14 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generateInwardPatientDepositPayments() {
         try {
-            // Get specific inward deposit bill types only
+            // Get specific inward payment bill types only
             List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
-                    BillTypeAtomic.INWARD_DEPOSIT,
+                    BillTypeAtomic.INWARD_PAYMENT,
                     BillTypeAtomic.INWARD_APPOINTMENT_BILL,
-                    BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                    BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
                     BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL,
-                    BillTypeAtomic.INWARD_DEPOSIT_REFUND,
-                    BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
+                    BillTypeAtomic.INWARD_PAYMENT_REFUND,
+                    BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION
             );
 
             // Use payment report method with bill type filtering

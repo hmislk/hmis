@@ -25,7 +25,7 @@ The `persistence.xml` committed on `development` uses CI/CD placeholders:
 The correct local JNDI names are stored in:
 `src/main/resources/META-INF/persistence_for_local_testing.xml`
 
-**Before pushing to remote**, revert `persistence.xml` back to placeholders (or use `/commit-code` / `verify-persistence` skill which checks this automatically).
+**Before pushing to remote**, revert `persistence.xml` back to placeholders — check it directly, or let `/commit-code` catch it (it verifies persistence.xml whenever it's staged).
 
 Reference: [persistence-workflow.md](../persistence/persistence-workflow.md)
 

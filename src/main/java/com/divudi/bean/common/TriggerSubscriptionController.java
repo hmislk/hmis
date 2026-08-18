@@ -64,16 +64,46 @@ public class TriggerSubscriptionController implements Serializable {
         // DISTINCT avoids duplicate UserNotifications when a user holds both a
         // department-specific and an application-wide subscription for the trigger.
         Map m = new HashMap();
-        String jpql = "SELECT DISTINCT i.webUser "
-                + " FROM TriggerSubscription i "
-                + " where i.triggerType=:tt "
-                + " and i.retired=:ret "
-                + " and (i.department=:dep or i.department is null)";
-
         m.put("tt", tt);
         m.put("ret", false);
         m.put("dep", dept);
-        us = webUserFacade.findByJpql(jpql, m);
+
+        String directUserJpql = "SELECT DISTINCT i.webUser "
+                + " FROM TriggerSubscription i "
+                + " where i.triggerType=:tt "
+                + " and i.retired=:ret "
+                + " and i.webUser is not null "
+                + " and (i.department=:dep or i.department is null)";
+        List<WebUser> directUsers = webUserFacade.findByJpql(directUserJpql, m);
+        if (directUsers != null) {
+            us.addAll(directUsers);
+        }
+
+        // TriggerSubscription.webUser is nullable because a subscription can
+        // instead target a WebUserRole (UserRoleTriggerSubscriptionController).
+        // Resolve those role-based subscriptions to their member users via
+        // WebUserRoleUser and merge (de-duplicated) with the direct subscribers,
+        // instead of letting the role rows surface as null entries (issue #22791).
+        String roleUserJpql = "SELECT DISTINCT ru.webUser "
+                + " FROM WebUserRoleUser ru "
+                + " where ru.retired=:ret "
+                + " and ru.webUser is not null "
+                + " and ru.webUserRole in ("
+                + "   SELECT i.webUserRole FROM TriggerSubscription i "
+                + "   where i.triggerType=:tt "
+                + "   and i.retired=:ret "
+                + "   and i.webUserRole is not null "
+                + "   and (i.department=:dep or i.department is null)"
+                + " )";
+        List<WebUser> roleUsers = webUserFacade.findByJpql(roleUserJpql, m);
+        if (roleUsers != null) {
+            for (WebUser u : roleUsers) {
+                if (u != null && !us.contains(u)) {
+                    us.add(u);
+                }
+            }
+        }
+
         return us;
     }
 
