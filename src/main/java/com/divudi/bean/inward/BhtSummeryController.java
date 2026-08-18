@@ -2114,7 +2114,10 @@ public class BhtSummeryController implements Serializable {
             return;
         }
         if (pr.isFromPackage() && !isPackageRoomDurationExceeded(pr)) {
-            // Package-locked charge stays as set by InpatientPackageApplicationBean.
+            // Package-locked charge stays as set by InpatientPackageApplicationBean,
+            // but newly-linked timed items still need to be snapshotted so their
+            // charges aren't silently dropped from the bill.
+            getInwardBean().snapshotTimedItems(pr, pr.getRoomFacilityCharge());
             patientRooms = null;
             createTables();
             return;
@@ -2129,6 +2132,7 @@ public class BhtSummeryController implements Serializable {
         pr.setCurrentAdministrationCharge(rfc.getAdminstrationCharge());
         pr.setCurrentMedicalCareCharge(rfc.getMedicalCareCharge());
         getPatientRoomFacade().edit(pr);
+        getInwardBean().snapshotTimedItems(pr, rfc);
         patientRooms = null;
         createTables();
     }
@@ -5147,27 +5151,6 @@ public class BhtSummeryController implements Serializable {
                         i.setTotal(getInwardBean().getAdmissionCharge(getPatientEncounter(), childPatientEncouters));
                     }
                     break;
-                case RoomCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.RoomCharges, 0.0));
-                    break;
-                case MOCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MOCharges, 0.0));
-                    break;
-                case NursingCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.NursingCharges, 0.0));
-                    break;
-                case MaintainCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MaintainCharges, 0.0));
-                    break;
-                case MedicalCareICU:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MedicalCareICU, 0.0));
-                    break;
-                case AdministrationCharge:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.AdministrationCharge, 0.0));
-                    break;
-                case LinenCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.LinenCharges, 0.0));
-                    break;
                 case Medicine:
                     if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
                         i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
@@ -5197,6 +5180,17 @@ public class BhtSummeryController implements Serializable {
                         i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
                     }
                     break;
+            }
+        }
+
+        // Apply room-linked timed item sums after the category-specific switch above,
+        // additively, so a timed item configured with one of the switch's own charge
+        // categories (e.g. Medicine, ProfessionalCharge) is added on top of that
+        // category's own total instead of being overwritten by it.
+        for (ChargeItemTotal i : chargeItemTotals) {
+            Double roomSum = roomSums.get(i.getInwardChargeType());
+            if (roomSum != null) {
+                i.setTotal(i.getTotal() + roomSum);
             }
         }
 
