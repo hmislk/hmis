@@ -351,7 +351,7 @@
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
-                                <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                <h:outputLabel value="#{not empty bip.item.printName ? bip.item.printName : bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
