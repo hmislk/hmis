@@ -2129,6 +2129,7 @@ public class BhtSummeryController implements Serializable {
         pr.setCurrentAdministrationCharge(rfc.getAdminstrationCharge());
         pr.setCurrentMedicalCareCharge(rfc.getMedicalCareCharge());
         getPatientRoomFacade().edit(pr);
+        getInwardBean().snapshotTimedItems(pr, rfc);
         patientRooms = null;
         createTables();
     }
@@ -5141,32 +5142,18 @@ public class BhtSummeryController implements Serializable {
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 
         for (ChargeItemTotal i : chargeItemTotals) {
+            Double roomSum = roomSums.get(i.getInwardChargeType());
+            if (roomSum != null) {
+                i.setTotal(roomSum);
+            }
+        }
+
+        for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
                 case AdmissionFee:
                     if (getPatientEncounter().getAdmissionType() != null) {
                         i.setTotal(getInwardBean().getAdmissionCharge(getPatientEncounter(), childPatientEncouters));
                     }
-                    break;
-                case RoomCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.RoomCharges, 0.0));
-                    break;
-                case MOCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MOCharges, 0.0));
-                    break;
-                case NursingCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.NursingCharges, 0.0));
-                    break;
-                case MaintainCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MaintainCharges, 0.0));
-                    break;
-                case MedicalCareICU:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.MedicalCareICU, 0.0));
-                    break;
-                case AdministrationCharge:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.AdministrationCharge, 0.0));
-                    break;
-                case LinenCharges:
-                    i.setTotal(roomSums.getOrDefault(InwardChargeType.LinenCharges, 0.0));
                     break;
                 case Medicine:
                     if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
