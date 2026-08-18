@@ -122,6 +122,16 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private Admission current;
     private Patient patient;
     private boolean patientDetailsEditable;
+    /**
+     * Distinguishes "a patient was tentatively picked in the search
+     * autocomplete" from "Continue was clicked and
+     * navigateToEditAdmissionDetails() finished loading the admission for
+     * editing". Both states leave `current.bhtNo` non-null, so the
+     * search-vs-edit panel toggle and the Continue button's enabled state
+     * cannot be driven off `current.bhtNo` alone (issue #22977). This flag
+     * only flips true once the edit form is actually ready to show.
+     */
+    private boolean admissionEditFormReady;
     String selectText = "";
     String comment;
 
@@ -476,6 +486,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void onInstitutionChange() {
         current = null;
+        admissionEditFormReady = false;
     }
 
     public Institution getInstitution() {
@@ -550,6 +561,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         items = null;
         patientList = null;
         current = null;
+        admissionEditFormReady = false;
         selectText = "";
         yearMonthDay = new YearMonthDay();
         institution = sessionController.getInstitution();
@@ -721,6 +733,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         createPatientRoom();
         fillCreditCompaniesByPatient();
         fillCurrentPatientAllergies(current.getPatient());
+        admissionEditFormReady = true;
         return "/inward/inward_edit_bht?faces-redirect=true";
     }
 
@@ -806,6 +819,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public boolean isAdmissionEditFormReady() {
+        return admissionEditFormReady;
     }
 
     public void setCurrent(Admission current) {

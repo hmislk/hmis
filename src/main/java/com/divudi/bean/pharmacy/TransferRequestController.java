@@ -628,6 +628,12 @@ public class TransferRequestController implements Serializable {
     public void saveTransferRequestPreBillAndBillItems() {
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
+        // fromDepartment (below) = the department creating this request; it is also the
+        // department that will later Save -> Finalize -> Approve it (maker-checker
+        // within itself). toDepartment only gets to see this bill AFTER approval, via
+        // its own separate Issue-for-Requests cycle. See the department-filter comment
+        // on SearchController.fillPharmacyTransferRequestsToApprove() (#23039) before
+        // changing which department is treated as the approver here.
         getTransferRequestBillPre().setToDepartment(getToDepartment());
         getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());

@@ -11,10 +11,10 @@
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="GRN Summary Report">
-                        
+
                         <!-- Filter Section -->
                         <h:panelGrid columns="8" class="w-100">
-                            
+
                             <!-- From Date -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
@@ -24,14 +24,15 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
+                                value="#{pharmacyController.fromDate}"
                                 showTime="true"
                                 yearNavigator="true"
                                 monthNavigator="true"
                                 timeInput="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            
+
                             <p:spacer width="20"/>
-                            
+
                             <!-- To Date -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
@@ -41,15 +42,16 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
+                                value="#{pharmacyController.toDate}"
                                 showTime="true"
                                 yearNavigator="true"
                                 monthNavigator="true"
                                 timeInput="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            
+
                             <p:spacer width="20"/>
-                            
-                            
+
+
                             <!-- Institution -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
@@ -58,15 +60,17 @@
                             <p:selectOneMenu
                                 id="grnInstitution"
                                 class="w-100"
+                                value="#{pharmacyController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions"/>
-                                <f:selectItem itemLabel="City Hospital" itemValue="1"/>
-                                <f:selectItem itemLabel="Metro Medical Center" itemValue="2"/>
-                                <f:selectItem itemLabel="Central Clinic" itemValue="3"/>
+                                <f:selectItems
+                                        value="#{institutionController.companies}"
+                                        var="ins"
+                                        itemLabel="#{ins.name}"
+                                        itemValue="#{ins}"/>
+                                <p:ajax process="grnInstitution" update="grnDept"/>
                             </p:selectOneMenu>
-                            
-<!--                            <p:spacer width="20"/>-->
-                            
+
                             <!-- Site -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
@@ -75,171 +79,243 @@
                             <p:selectOneMenu
                                 id="grnSite"
                                 class="w-100"
+                                value="#{pharmacyController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
-                                <f:selectItem itemLabel="Main Campus" itemValue="1"/>
-                                <f:selectItem itemLabel="Branch Office" itemValue="2"/>
-                                <f:selectItem itemLabel="Emergency Unit" itemValue="3"/>
+                                <f:selectItems
+                                        value="#{institutionController.sites}"
+                                        var="site"
+                                        itemLabel="#{site.name}"
+                                        itemValue="#{site}"/>
+                                <p:ajax process="grnSite" update="grnDept"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/>
-                            
+
                             <!-- Department/Store -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department/Store" class="m-3" for="grnDepartmentStore"/>
+                                <p:outputLabel value="Department/Store" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="grnDepartmentStore"
-                                styleClass="w-100 form-control"
-                                filterMatchMode="contains"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments"/>
-                                <f:selectItem itemLabel="Pharmacy" itemValue="1"/>
-                                <f:selectItem itemLabel="Laboratory" itemValue="2"/>
-                                <f:selectItem itemLabel="Radiology" itemValue="3"/>
-                                <f:selectItem itemLabel="OT Supplies" itemValue="4"/>
-                            </p:selectOneMenu>
-                           
+                            <h:panelGroup id="grnDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                        id="grnDeptAll"
+                                        label="Department/Store"
+                                        rendered="#{pharmacyController.institution eq null and pharmacyController.site eq null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{pharmacyController.dept}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                        id="grnDeptSite"
+                                        label="Department/Store"
+                                        rendered="#{pharmacyController.institution eq null and pharmacyController.site ne null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{pharmacyController.dept}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.site)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                        id="grnDeptInstitution"
+                                        label="Department/Store"
+                                        rendered="#{pharmacyController.institution ne null and pharmacyController.site eq null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{pharmacyController.dept}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyController.institution)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                        id="grnDeptInstitutionSite"
+                                        label="Department/Store"
+                                        rendered="#{pharmacyController.institution ne null and pharmacyController.site ne null}"
+                                        styleClass="w-100 form-control"
+                                        value="#{pharmacyController.dept}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
                             <p:spacer width="20"/>
-                            
+
                             <!-- Payment Mode -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-credit-card mr-2"/>
                                 <p:outputLabel value="Payment Mode" class="m-3" for="grnPaymentMode"/>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="grnPaymentMode" 
-                                class="w-100">
+                            <p:selectOneMenu
+                                id="grnPaymentMode"
+                                class="w-100"
+                                value="#{pharmacyController.paymentMethod}">
                                 <f:selectItem itemLabel="All Modes"/>
-                                <f:selectItem itemLabel="Cash" itemValue="cash"/>
-                                <f:selectItem itemLabel="Credit" itemValue="credit"/>
-                                <f:selectItem itemLabel="Cheque" itemValue="cheque"/>
-                                <f:selectItem itemLabel="Bank Transfer" itemValue="transfer"/>
+                                <f:selectItems
+                                        value="#{enumController.paymentMethods}"
+                                        var="pm"
+                                        itemLabel="#{pm.label}"
+                                        itemValue="#{pm}"/>
                             </p:selectOneMenu>
-                            
-                            <!--<p:spacer width="20"/>-->
-                            
-                            <!-- GRN Status -->
+
+                            <!-- Purchase Type -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-info-circle mr-2"/>
                                 <p:outputLabel value="Purchase Type" class="m-3" for="purchaseType"/>
                             </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="purchaseType" 
-                                class="w-100">
+                            <p:selectOneMenu
+                                id="purchaseType"
+                                class="w-100"
+                                value="#{pharmacyController.purchaseType}">
                                 <f:selectItem itemLabel="All Types"/>
-                                <f:selectItem itemLabel="Direct Purchase" itemValue="received"/>
-                                <f:selectItem itemLabel="GRN" itemValue="partial"/>
-<!--                                <f:selectItem itemLabel="Pending" itemValue="pending"/>-->
+                                <f:selectItem itemLabel="GRN" itemValue="grn"/>
+                                <f:selectItem itemLabel="Direct Purchase" itemValue="direct"/>
                             </p:selectOneMenu>
-                            
+
                         </h:panelGrid>
-                        
+
                         <!-- Action Buttons -->
                         <h:panelGroup layout="block" class="mt-3 mb-3">
-                            <p:commandButton 
-                                value="Process" 
+                            <p:commandButton
+                                value="Process"
                                 icon="fas fa-cogs"
                                 class="ui-button-warning mx-1"
-                                type="button"/>
-                            <p:commandButton 
-                                value="Print" 
-                                icon="fas fa-print"
-                                class="ui-button-secondary mx-1"
-                                type="button"/>
-                            <p:commandButton 
-                                value="Download" 
+                                ajax="false"
+                                action="#{pharmacyController.generateGrnReport()}"/>
+                            <p:commandButton
+                                value="Download"
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-1"
-                                type="button"/>
-                            <p:commandButton 
-                                value="PDF" 
+                                ajax="false"
+                                rendered="#{not empty pharmacyController.bills}">
+                                <p:dataExporter type="xlsx"
+                                                target="tbl1"
+                                                fileName="GRN_Summary_Report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}"
+                                                postProcessor="#{pharmacyController.postProcessGRNSummaryReportExcel}"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                value="PDF"
                                 icon="fas fa-file-pdf"
                                 class="ui-button-danger mx-1"
-                                type="button"/>
+                                ajax="false"
+                                action="#{pharmacyController.exportGRNAndDirectPurchaseSummaryReportToPDF()}"
+                                rendered="#{not empty pharmacyController.bills}"/>
                         </h:panelGroup>
-                        
+
                         <p:divider/>
-                        
-                        <!-- Static HTML Table for Demo Data -->
+
+                        <!-- GRN Summary Table -->
                         <h:panelGroup layout="block">
-                            <table class="ui-datatable ui-widget table-sm" style="width:100%;">
-                                <thead class="ui-datatable-thead">
-                                    <tr>
-                                        <th style="width:4em;text-align:center">S.No</th>
-                                        <th style="width:6em">GRN No</th>
-                                        <th style="width:6em">Purchase Type</th>
-                                        <th style="width:6em">GRN Date</th>
-                                        <th style="width:6em">Invoice No</th>
-                                        <th style="width:6em">Invoice Date</th>
-                                        <th style="width:6em">Vendor Name</th>
-                                        <th style="width:6em">Payment Mode</th>
-                                        <th style="width:6em;text-align:right">Amount</th>
-                                        <th style="width:6em;text-align:right">Dis. Amount</th>
-                                        <th style="width:6em;text-align:right">Stock Amount</th>
-                                        <th style="width:6em">Status</th>
-                                        <th style="width:6em;text-align:center">Remark</th>
-                                        <th style="width:6em">Date</th>
-                                        <th style="width:6em">Sign</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="ui-datatable-data">
-                                    <!-- Row 1 -->
-                                    <tr class="ui-widget-content">
-                                        <td style="text-align:center">1</td>
-                                        <td><span style="color:#007bff;font-weight:bold;cursor:pointer">GRN-2024-001</span></td>
-                                        <td>GRN</td>
-                                        <td>Apr 21, 2025</td>
-                                        <td>INV-2024-1234</td>
-                                        <td>Apr 21, 2025</td>
-                                        <td>ABC Pharmaceuticals Ltd.</td>
-                                        <td>Credit</td>
-                                        <!--<td style="text-align:center">45</td>-->
-                                        <td style="text-align:right">1,25,450.00</td>
-                                        <td style="text-align:right">-</td>
-                                        <td style="text-align:right">1,25,450.00</td>
-                                        <td><span style="color:#008000">APPROVED</span></td>
-                                        <td>---</td>
-                                        <td>---</td>
-                                        <td>---</td>
-                                    </tr>
-                                    <!-- Row 2 -->
-                                    <tr class="ui-widget-content">
-                                        <td style="text-align:center">2</td>
-                                        <td><span style="color:#007bff;font-weight:bold;cursor:pointer">GRN-2024-002</span></td>
-                                        <td>Direct Purchase</td>
-                                        <td>Apr 21, 2025</td>
-                                        <td>INV-2024-1245</td>
-                                        <td>Apr 21, 2025</td>
-                                        <td>MediSupply Co.</td>
-                                        <td>Bank Transfer</td>
-                                        <td style="text-align:right">8125.10</td>
-                                        <td style="text-align:right">500</td>
-                                        <td style="text-align:right">7625.10</td>
-                                        <td><span style="color:#008000">APPROVED</span></td>
-                                        <td>---</td>
-                                        <td>---</td>
-                                        <td>---</td>
-                                    </tr>
-                                   
-                                </tbody>
-                                <tfoot class="ui-datatable-tfoot">
-                                    <tr>
-                                        <td colspan="8" style="text-align:right;font-weight:bold">Total</td>
-                                        <td style="text-align:right;font-weight:bold">123321.10</td>
-                                        <td style="text-align:right;font-weight:bold">500.00</td>
-                                        <td style="text-align:right;font-weight:bold">122121.10</td>
-                                        <td colspan="4"></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                            
-                            <div style="margin-top:20px;text-align:center;color:#666;">
-                                <p:outputLabel value="Showing 1 to 2 of 2 entries"/>
-                            </div>
+                            <p:dataTable id="tbl1"
+                                         value="#{pharmacyController.bills}"
+                                         var="bill"
+                                         rowIndexVar="n"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         styleClass="table-sm"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="S.No" width="50" styleClass="text-center">
+                                    <h:outputText value="#{n+1}"/>
+                                </p:column>
+                                <p:column headerText="GRN No">
+                                    <h:outputText value="#{bill.deptId}"/>
+                                </p:column>
+                                <p:column headerText="Purchase Type">
+                                    <h:outputText value="#{bill.billTypeAtomic.label}"/>
+                                </p:column>
+                                <p:column headerText="GRN Date">
+                                    <h:outputText value="#{bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Invoice No">
+                                    <h:outputText value="#{bill.invoiceNumber}"/>
+                                </p:column>
+                                <p:column headerText="Invoice Date">
+                                    <h:outputText value="#{bill.invoiceDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Vendor Name">
+                                    <h:outputText value="#{(bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND') ? bill.toInstitution.name : bill.fromInstitution.name}"/>
+                                </p:column>
+                                <p:column headerText="Payment Mode">
+                                    <h:outputText value="#{bill.paymentMethod.label}"/>
+                                </p:column>
+                                <p:column headerText="Amount" styleClass="text-end">
+                                    <h:outputText value="#{bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Dis. Amount" styleClass="text-end">
+                                    <h:outputText value="#{bill.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Stock Amount" styleClass="text-end">
+                                    <h:outputText value="#{bill.billFinanceDetails != null ? bill.billFinanceDetails.totalPurchaseValue : 0}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <h:outputText value="Cancelled"
+                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED'}"/>
+                                    <h:outputText value="Returned"
+                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"/>
+                                    <h:outputText value="Approved"
+                                                  rendered="#{(bill.billTypeAtomic eq 'PHARMACY_GRN' and bill.completed) or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"/>
+                                    <h:outputText value="Pending Approval"
+                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN' and not bill.completed}"/>
+                                </p:column>
+                                <p:column headerText="Remark">
+                                    <h:outputText value="-"/>
+                                </p:column>
+                                <p:column headerText="Date">
+                                    <h:outputText value="-"/>
+                                </p:column>
+                                <p:column headerText="Sign">
+                                    <h:outputText value="-"/>
+                                </p:column>
+
+                                <f:facet name="footer">
+                                    <h:outputText value="No matching records found." rendered="#{empty pharmacyController.bills}"/>
+                                </f:facet>
+                            </p:dataTable>
                         </h:panelGroup>
-                        
+
                     </p:panel>
                 </h:form>
             </ui:define>

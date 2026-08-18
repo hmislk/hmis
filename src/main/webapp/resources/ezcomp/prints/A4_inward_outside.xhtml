@@ -110,7 +110,7 @@
                         <tr>
                             <td style="text-align: center;">#{s.index + 1}</td>
                             <td style="text-transform: capitalize;">
-                                <h:outputLabel value="#{bip.inwardChargeType.label}" />
+                                <h:outputLabel value="#{not empty bip.item.name ? bip.item.name : bip.inwardChargeType.label}" />
                             </td>
                             <td style="text-align: right;">
                                 <h:outputLabel value="#{bip.netValue}">
