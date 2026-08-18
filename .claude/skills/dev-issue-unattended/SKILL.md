@@ -318,6 +318,17 @@ run (same as `dev-issue`).
 
 ## 15. Notify
 
-Produce one skimmable summary the user can catch up on in a single read:
-what was found, every decision made and why (from step 3/13), what was
-verified and how, links to issue/PR/wiki. **Never merge.**
+Produce one skimmable summary covering **every issue in the batch** (a
+single issue is just a batch of one), one line each:
+
+- `#N — shipped as PR #M` (link to the PR)
+- `#N — needs info from reporter` (link to the comment posted in the
+  Insufficient issue description flow)
+- `#N — stopped: <short reason>` (link to the blocker comment)
+- `#N — could not resolve issue number/URL`
+
+For issues that shipped, include what was found, every decision made and
+why (from step 3/13), what was verified and how, and links to the
+issue/PR/wiki — same depth as a solo run. For issues that didn't ship, the
+link to the comment is enough; don't re-summarize what's already written
+there. **Never merge.**
