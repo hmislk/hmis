@@ -849,6 +849,50 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    /**
+     * A Transfer Request may only be cancelled while it is still un-cancelled and no
+     * Transfer Issue has been created against it yet. Issue bills created for a
+     * request set backwardReferenceBill back to this request (see
+     * TransferIssueNativeSqlController.buildIssueBillHeader()) - a cancelled
+     * downstream issue doesn't count, so a request whose only issue was itself
+     * cancelled remains cancellable.
+     *
+     * The bill actually being viewed here can be either the PRE-bill (the page
+     * pharmacy_transfer_request_list_approved.xhtml links to
+     * PHARMACY_TRANSFER_REQUEST_PRE bills) or the approved PHARMACY_TRANSFER_REQUEST
+     * bill itself. Transfer Issues set backwardReferenceBill on the *approved* bill
+     * created at Approve time, not on the pre-bill, so when viewing a pre-bill this
+     * follows its own forwardReferenceBill one hop to find them (issue #23112).
+     *
+     * 🚨 Bill.forwardReferenceBills/backwardReferenceBills are named backwards from
+     * their own mappedBy targets (Bill.java ~line 70): the field called
+     * forwardReferenceBills is actually {@code mappedBy = "backwardReferenceBill"} (so
+     * it holds the bills that point AT this one via THEIR backwardReferenceBill - e.g.
+     * an Issue bill pointing at its request), while backwardReferenceBills is
+     * {@code mappedBy = "forwardReferenceBill"} (the reverse). Reading
+     * getBackwardReferenceBills() here - the intuitive-looking name - actually returns
+     * the pre-bill itself, not the issue; getForwardReferenceBills() is correct. Do not
+     * "fix" this without also fixing every existing caller of the other one.
+     *
+     * Used both to render the "Cancel Request" button disabled and, here, to actually
+     * block the action server-side - the disabled attribute alone is not a real guard.
+     */
+    public boolean isTransferRequestCancellable() {
+        if (bill == null) {
+            return false;
+        }
+        if (bill.isCancelled()) {
+            return false;
+        }
+        Bill approvedBill = bill.getForwardReferenceBill() != null ? bill.getForwardReferenceBill() : bill;
+        for (Bill downstream : approvedBill.getForwardReferenceBills()) {
+            if (downstream != null && !downstream.isCancelled()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public String cancelPharmacyTransferRequestBill() {
         if (comment == null || comment.isEmpty()) {
             JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
@@ -856,6 +900,10 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (!isTransferRequestCancellable()) {
+            JsfUtil.addErrorMessage("This transfer request cannot be cancelled - it has already been issued or is already cancelled.");
             return "";
         }
         CancelledBill cb = pharmacyCreateCancelBill();
