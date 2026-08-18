@@ -4389,12 +4389,18 @@ public class SearchController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE);
         params.put("issuedBillIds", issuedBillIds);
+        // Receive bills link back to the issued bill via backwardReferenceBill -
+        // both the deprecated TransferReceiveController and the current
+        // TransferReceiveNativeSqlController set it on every receive. referenceBill
+        // is only set by one legacy code path, so filtering on it here silently
+        // dropped every native-path receive from the issued list's "Received"
+        // column (issue #20717).
         String jpql = "SELECT NEW com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
-                + "b.id, b.referenceBill.id, b.deptId, b.cancelled) "
+                + "b.id, b.backwardReferenceBill.id, b.deptId, b.cancelled) "
                 + "FROM Bill b "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :btp "
-                + "AND b.referenceBill.id IN :issuedBillIds";
+                + "AND b.backwardReferenceBill.id IN :issuedBillIds";
         List<PharmacyTransferReceivedListDTO> result = (List<PharmacyTransferReceivedListDTO>)
                 getBillFacade().findDTOsByJpql(jpql, params);
         return result != null ? result : new ArrayList<>();
