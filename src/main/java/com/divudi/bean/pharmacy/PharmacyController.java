@@ -260,6 +260,10 @@ public class PharmacyController implements Serializable {
     private Institution fromInstitution;
     private PaymentMethod paymentMethod;
     private String reportType;
+    // Purchase-type filter for the GRN Summary Report page (grn_summary_report.xhtml).
+    // "grn" restricts to GRN bill types, "direct" to Direct Purchase bill types,
+    // null/unset keeps the existing behaviour of generateGrnReport() (all types). Issue #22984.
+    private String purchaseType;
     private double totalCreditPurchaseValue;
     private double totalCashPurchaseValue;
     private double totalCashCostValue;
@@ -10531,6 +10535,16 @@ public class PharmacyController implements Serializable {
         bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
         bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
+        if ("grn".equals(purchaseType)) {
+            bta.removeIf(t -> t == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+                    || t == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED
+                    || t == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else if ("direct".equals(purchaseType)) {
+            bta.removeIf(t -> t == BillTypeAtomic.PHARMACY_GRN
+                    || t == BillTypeAtomic.PHARMACY_GRN_RETURN
+                    || t == BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        }
+
         bills = new ArrayList<>();
 
         String sql = "SELECT b FROM Bill b "
@@ -12236,6 +12250,14 @@ public class PharmacyController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getPurchaseType() {
+        return purchaseType;
+    }
+
+    public void setPurchaseType(String purchaseType) {
+        this.purchaseType = purchaseType;
     }
 
     public Department getDept() {
