@@ -851,28 +851,21 @@ public class PharmacyBillSearch implements Serializable {
 
     /**
      * A Transfer Request may only be cancelled while it is still un-cancelled and no
-     * Transfer Issue has been created against it yet. Issue bills created for a
-     * request set backwardReferenceBill back to this request (see
-     * TransferIssueNativeSqlController.buildIssueBillHeader()) - a cancelled
-     * downstream issue doesn't count, so a request whose only issue was itself
-     * cancelled remains cancellable.
+     * active Transfer Issue has been created against it yet. Delegates to
+     * Bill.checkActiveForwardReference() - the same helper the sibling
+     * PharmacyTransferIssue cancel guard already uses a few hundred lines below
+     * ("Item for this bill already recieve") and that store_transfer_issued_list.xhtml
+     * / list_to_cash_recieve.xhtml use for their own Cancel-button disabled state - so
+     * this reuses the established, tested convention rather than reimplementing it.
+     * It already excludes cancelled and retired forward bills, so a request whose only
+     * issue was itself cancelled remains cancellable.
      *
      * The bill actually being viewed here can be either the PRE-bill (the page
      * pharmacy_transfer_request_list_approved.xhtml links to
      * PHARMACY_TRANSFER_REQUEST_PRE bills) or the approved PHARMACY_TRANSFER_REQUEST
      * bill itself. Transfer Issues set backwardReferenceBill on the *approved* bill
      * created at Approve time, not on the pre-bill, so when viewing a pre-bill this
-     * follows its own forwardReferenceBill one hop to find them (issue #23112).
-     *
-     * 🚨 Bill.forwardReferenceBills/backwardReferenceBills are named backwards from
-     * their own mappedBy targets (Bill.java ~line 70): the field called
-     * forwardReferenceBills is actually {@code mappedBy = "backwardReferenceBill"} (so
-     * it holds the bills that point AT this one via THEIR backwardReferenceBill - e.g.
-     * an Issue bill pointing at its request), while backwardReferenceBills is
-     * {@code mappedBy = "forwardReferenceBill"} (the reverse). Reading
-     * getBackwardReferenceBills() here - the intuitive-looking name - actually returns
-     * the pre-bill itself, not the issue; getForwardReferenceBills() is correct. Do not
-     * "fix" this without also fixing every existing caller of the other one.
+     * follows its own forwardReferenceBill one hop before delegating (issue #23112).
      *
      * Used both to render the "Cancel Request" button disabled and, here, to actually
      * block the action server-side - the disabled attribute alone is not a real guard.
@@ -885,12 +878,7 @@ public class PharmacyBillSearch implements Serializable {
             return false;
         }
         Bill approvedBill = bill.getForwardReferenceBill() != null ? bill.getForwardReferenceBill() : bill;
-        for (Bill downstream : approvedBill.getForwardReferenceBills()) {
-            if (downstream != null && !downstream.isCancelled()) {
-                return false;
-            }
-        }
-        return true;
+        return !approvedBill.checkActiveForwardReference();
     }
 
     public String cancelPharmacyTransferRequestBill() {
