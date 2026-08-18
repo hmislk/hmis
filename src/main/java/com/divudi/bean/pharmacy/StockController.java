@@ -405,8 +405,10 @@ public class StockController implements Serializable {
         }
 
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+        
+        int maxResult = configOptionApplicationController.getIntegerValueByKey("Pharmacy Retail Sale - Medicine Autocomplete Max Results", 20);
 
-        List<StockDTO> stockDtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+        List<StockDTO> stockDtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, maxResult);
 
         // Calculate total stock quantities per item
         addItemStockToStockDtos(stockDtos);
