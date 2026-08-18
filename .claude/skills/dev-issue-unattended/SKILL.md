@@ -36,10 +36,16 @@ repo. Report invalid tokens rather than guessing at what they meant.
 
 - Dedupe the resulting set of valid numbers.
 - Validate each with `gh issue view <n> --repo hmislk/hmis --json title`.
-  Any that don't resolve (invalid token or nonexistent issue) are **not** a
-  whole-batch abort — drop them, note "could not resolve issue #N" (or the
-  raw invalid token) for the final summary (step 15), and continue with the
-  rest.
+  Only drop-and-continue when GitHub itself confirms the issue doesn't
+  exist (a clean "not found" from `gh`) or the token was invalid per the
+  URL rule above — note "could not resolve issue #N" (or the raw invalid
+  token) for the final summary (step 15) and move on. Any other failure
+  from this command — auth, permission, rate-limit, network/transport
+  errors — is not evidence the issue doesn't exist; it's the "true
+  whole-batch abort" case from the Hard limits section below (`gh` itself
+  is unreachable/broken), since it will affect every remaining issue the
+  same way. Stop and report it rather than silently dropping issues one by
+  one.
 - Process the remaining issues **one at a time, lowest issue number
   first**. Steps 1–14 below are the per-issue body of this loop: each issue
   gets its own branch (via `start-issue`), its own commits, its own PR, and
@@ -94,11 +100,12 @@ documented here, and warrants stopping and asking rather than guessing.
 
 ### Insufficient issue description — hand back to the reporter, don't just stop
 
-One flavor of stop gets a different resolution than the rest of this
-section: when a stop at step 2, 2a, or 3 traces back to **the issue's own
-description being inadequate** — not a code-architecture question, not a
-schema/security limit — hand it back to whoever filed it instead of posting
-a bare blocker comment.
+Two flavors of stop below get a different resolution than the rest of this
+section — this one and "Cannot reproduce with adequate information" further
+down. This one: when a stop at step 2, 2a, or 3 traces back to **the
+issue's own description being inadequate** — not a code-architecture
+question, not a schema/security limit — hand it back to whoever filed it
+instead of posting a bare blocker comment.
 
 This is a judgment call at runtime, same as any other step-3 decision:
 document the reasoning. When genuinely unclear whether a stop is a
@@ -109,7 +116,12 @@ reporter who can't actually resolve a code-level question.
 When it does fire:
 
 1. Look up the issue's creator first, before composing anything:
-   `gh issue view <n> --repo hmislk/hmis --json author --jq '.author.login'`
+   `gh issue view <n> --repo hmislk/hmis --json author --jq '.author.login'`.
+   If this fails or returns an empty login, stop here — do not post the
+   comment, edit the assignee, or touch the project board with a broken or
+   missing `@mention`. Record this issue's outcome as "stopped — could not
+   resolve issue creator" for the batch summary (step 15) and continue to
+   the next issue.
 2. Post a comment on the issue that opens with `@<creator-login>` and asks
    **only** for what actually stalled this run — drawn from, not a fixed
    template dumped every time:
@@ -140,6 +152,35 @@ When it does fire:
    (step 15) so it's clear what still needs finishing by hand.
 6. Record this issue's outcome as "needs info" for the batch summary (step
    15), then continue to the next issue in the batch (step 0).
+
+### Cannot reproduce with adequate information — close and invite discussion
+
+The second special-cased flavor: step 2a's bug genuinely does not reproduce
+under a reasonable, documented attempt, **and** the issue already gave
+enough to work with — this is distinct from the missing-specifics case
+above, which stays on the "ask for more info, keep open" path. Here, more
+async back-and-forth isn't likely to help; close the issue instead of
+leaving it open indefinitely with just a blocker comment, and let the
+reporter bring it back with a live discussion if it's still happening.
+
+1. Look up the issue's creator first, same as the Insufficient issue
+   description flow above — including its failure guard: if the lookup
+   fails or returns an empty login, stop here without posting or closing.
+   Record "stopped — could not resolve issue creator" for the batch summary
+   (step 15) and continue to the next issue.
+2. Post a comment that opens with `@<creator-login>`: what was tried, what
+   didn't reproduce, and an explicit invite to discuss rather than reopen
+   async — e.g. "Attempted to reproduce via <what was tried>; did not
+   observe the described behavior. Closing for now — if this is still
+   occurring, let's discuss and file a fresh issue with updated repro
+   details."
+3. `gh issue close <n> --repo hmislk/hmis --reason "not planned"`.
+4. Check that both the comment and the close actually succeeded before
+   calling this outcome final — if the close command errors after the
+   comment posted, note that in the batch summary rather than assuming the
+   issue is closed.
+5. Record this issue's outcome as "closed — could not reproduce" for the
+   batch summary (step 15), then continue to the next issue.
 
 ## 1. Setup
 
@@ -186,10 +227,12 @@ confirmed root cause from code + history alone.
   it didn't reproduce is missing specifics from the issue itself (no concrete
   example record, no repro steps, an ambiguous "sometimes it fails" with no
   stated conditions), that's the **Insufficient issue description** case —
-  route there. If instead it's an environment mismatch unrelated to what the
-  issue said, use the plain hard limit: post the finding to the issue and end
-  the run. This is a hard limit either way, not a style preference — an
-  unverified fix for an unreproduced bug is worse than no fix.
+  route there. If instead the issue gave enough to try and it genuinely
+  doesn't reproduce, that's the **Cannot reproduce with adequate
+  information** case — close it and invite a discussion instead of leaving
+  a blocker comment open indefinitely. This is a hard limit either way, not
+  a style preference — an unverified fix for an unreproduced bug is worse
+  than no fix.
 
 ## 3. Decide the approach (no Plan Mode pause)
 
@@ -343,6 +386,7 @@ single issue is just a batch of one), one line each:
 - `#N — shipped as PR #M` (link to the PR)
 - `#N — needs info from reporter` (link to the comment posted in the
   Insufficient issue description flow)
+- `#N — closed, could not reproduce` (link to the closing comment)
 - `#N — stopped: <short reason>` (link to the blocker comment)
 - `#N — could not resolve issue number/URL`
 
