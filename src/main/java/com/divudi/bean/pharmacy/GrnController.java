@@ -1412,6 +1412,12 @@ public class GrnController implements Serializable {
     }
 
     public void createGrn() {
+        // insTotal/difference are @SessionScoped fields that can carry over from a
+        // previous GRN the user worked on in this session; reset them here so this
+        // entry point is self-contained regardless of whether the caller already
+        // reset state (CodeRabbit review on #23086/PR #23122).
+        insTotal = 0;
+        difference = 0;
         setFromInstitution(getApproveBill().getToInstitution());
         setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
@@ -1423,6 +1429,8 @@ public class GrnController implements Serializable {
     }
 
     public void createGrn(Bill importGrn) {
+        insTotal = 0;
+        difference = 0;
         setFromInstitution(importGrn.getToInstitution());
         setReferenceInstitution(importGrn.getDepartment().getInstitution());
         generateBillComponent(importGrn);
@@ -1431,6 +1439,8 @@ public class GrnController implements Serializable {
     }
 
     public void createGrnAll() {
+        insTotal = 0;
+        difference = 0;
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
         getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1440,6 +1450,8 @@ public class GrnController implements Serializable {
     }
 
     public void createGrnWholesale() {
+        insTotal = 0;
+        difference = 0;
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
