@@ -378,20 +378,22 @@
                                         completeMethod="#{staffController.completeStaffWithoutDoctors}"
                                         forceSelection="true"
                                         var="w"
-                                        itemLabel="#{w.person.name}"
+                                        itemLabel="#{w.person.nameWithTitle}"
                                         itemValue="#{w}"
+                                        minQueryLength="3"
+                                        maxResults="20"
                                         placeholder="Search staff by name..."
                                         value="#{transferIssueDirectController.issuedBill.toStaff}" >
-                                        <p:column headerText="Name">
+                                        <p:column headerText="Name" style="padding: 6px; width: 450px;">
                                             <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Speciality">
+                                        <p:column headerText="Speciality" style="padding: 6px; width: 150px;">
                                             <h:outputText value="#{w.speciality.name}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Code">
+                                        <p:column headerText="Code" style="padding: 6px; width: 100px;">
                                             <h:outputText value="#{w.code}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Staff Code">
+                                        <p:column headerText="Staff Code" style="padding: 6px; width: 100px;">
                                             <h:outputText value="#{w.staffCode}" ></h:outputText>
                                         </p:column>
                                     </p:autoComplete>
