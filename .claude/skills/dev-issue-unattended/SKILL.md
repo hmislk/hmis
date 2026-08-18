@@ -146,6 +146,11 @@ root cause by reading code — git archaeology (`git log -p -S<term>`,
 `git blame`, related closed issues/PRs) is often decisive here and costs
 nothing to try before falling back to live reproduction.
 
+If this investigation — including the git archaeology above — cannot
+identify which entities/services/pages are even involved, that's the
+**Insufficient issue description** case from the Hard limits section, not
+a reason to guess. Route there instead of continuing to step 2a/3.
+
 ## 2a. Reproduce the bug (bug issues only, root cause still unconfirmed)
 
 Skip for feature/enhancement issues and for bugs where step 2 already found a
@@ -157,11 +162,15 @@ confirmed root cause from code + history alone.
   not** ask which one to use — auto-discover the closest real match with a
   read-only query, and only fall back to generating one through the app (see
   step 4) if nothing suitable exists.
-- If it still doesn't reproduce under a reasonable, documented attempt: stop,
-  post the finding to the issue (what was tried, what didn't reproduce), and
-  end the run rather than guessing at a fix for a bug you couldn't observe.
-  This is a hard limit, not a style preference — an unverified fix for an
-  unreproduced bug is worse than no fix.
+- If it still doesn't reproduce under a reasonable, documented attempt: stop
+  rather than guessing at a fix for a bug you couldn't observe. If the reason
+  it didn't reproduce is missing specifics from the issue itself (no concrete
+  example record, no repro steps, an ambiguous "sometimes it fails" with no
+  stated conditions), that's the **Insufficient issue description** case —
+  route there. If instead it's an environment mismatch unrelated to what the
+  issue said, use the plain hard limit: post the finding to the issue and end
+  the run. This is a hard limit either way, not a style preference — an
+  unverified fix for an unreproduced bug is worse than no fix.
 
 ## 3. Decide the approach (no Plan Mode pause)
 
@@ -173,8 +182,13 @@ Where `dev-issue` enters Plan Mode and waits for approval, instead:
    the original #19963 design instead of guessing at a new one).
 2. Pick the option best supported by that evidence. When two options are
    both plausible and the evidence doesn't clearly favor one, that is
-   "genuinely ambiguous" — stop per the hard limits above instead of
-   flipping a coin.
+   "genuinely ambiguous" — stop, but which stop depends on *why* it's
+   ambiguous: if the codebase itself gives conflicting signals (two
+   existing patterns both plausible), use the plain hard limit above (post
+   blocker, stop). If the ambiguity is instead about *what the reporter
+   wants* — e.g. a report request with no filters/columns/grouping
+   specified, a feature request with no acceptance criteria — that's the
+   **Insufficient issue description** case; route there instead.
 3. Write the reasoning down **now**, in a form that survives to the PR
    description (step 13) and, for any non-obvious interpretation, an issue
    comment — not just in conversation. The user is reviewing this after the
