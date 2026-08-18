@@ -225,6 +225,18 @@
                                     </div>
                                 </div>
                                 <div class="row m-1">
+                                    <div class="col-4">
+                                        <p:outputLabel value="Comment"/>
+                                    </div>
+                                    <div class="col-8">
+                                        <p:inputTextarea
+                                            id="comment"
+                                            rows="2"
+                                            class="w-100"
+                                            value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.comment}"/>
+                                    </div>
+                                </div>
+                                <div class="row m-1">
                                     <div class="col-12">
                                         <p:commandButton
                                             id="btnAddService"
@@ -271,6 +283,12 @@
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Comments">
+                                <p:inputTextarea
+                                    id="rowComment"
+                                    rows="2"
+                                    class="w-100"
+                                    value="#{ti.billFee.patientItem.comment}"
+                                    disabled="#{ti.billFee.id eq null or ti.billFee.retired or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
                                 <h:outputLabel value="Added by #{ti.billFee.creater.webUserPerson.name}"/>
                                 <br/>
                                 <h:panelGroup rendered="#{ti.billFee.retired}">
