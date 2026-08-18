@@ -28,15 +28,18 @@ not re-ask before any of them.
 ## 0. Parse input
 
 Accept a comma/space/newline-separated list mixing bare issue numbers
-(`23100`) and full GitHub issue URLs
-(`https://github.com/hmislk/hmis/issues/23100` — extract the trailing
-number with a regex on `/issues/(\d+)`).
+(`23100`) and full GitHub issue URLs. Accept only bare numeric tokens or a
+URL matching exactly `^https://github.com/hmislk/hmis/issues/(\d+)/?$` —
+any other host or repo path (e.g. a URL pointing at a fork or a different
+project) is an invalid token, not a source of an issue number for this
+repo. Report invalid tokens rather than guessing at what they meant.
 
-- Dedupe the resulting set.
+- Dedupe the resulting set of valid numbers.
 - Validate each with `gh issue view <n> --repo hmislk/hmis --json title`.
-  Any that don't resolve are **not** a whole-batch abort — drop them, note
-  "could not resolve issue #N" for the final summary (step 15), and
-  continue with the rest.
+  Any that don't resolve (invalid token or nonexistent issue) are **not** a
+  whole-batch abort — drop them, note "could not resolve issue #N" (or the
+  raw invalid token) for the final summary (step 15), and continue with the
+  rest.
 - Process the remaining issues **one at a time, lowest issue number
   first**. Steps 1–14 below are the per-issue body of this loop: each issue
   gets its own branch (via `start-issue`), its own commits, its own PR, and
@@ -56,7 +59,13 @@ number with a regex on `/issues/(\d+)`).
 
 These are not judgment calls. If one of these is required to proceed, STOP,
 post the blocker as a comment on the issue (creating one first if needed),
-and end the run — do not guess.
+and end the run — do not guess. **"End the run," here and everywhere else
+in this skill, is always scoped to the current issue**: in batch mode
+(step 0), it means stop work on this issue, record its outcome, and
+continue the batch with the next one — never abort the whole batch.
+Reserve a true whole-batch abort for a failure that isn't scoped to one
+issue at all (e.g. `gh` itself is unreachable) — that's outside anything
+documented here, and warrants stopping and asking rather than guessing.
 
 - Never merge a PR, and never push directly to `development`, `master`, or
   any production branch — everything goes through a PR.
@@ -94,32 +103,42 @@ a bare blocker comment.
 This is a judgment call at runtime, same as any other step-3 decision:
 document the reasoning. When genuinely unclear whether a stop is a
 description problem or an architecture problem, default to the plain hard
-limit above (post blocker, stop) — don't reassign work to a reporter who
-can't actually resolve a code-level question.
+limit above (post a blocker comment and stop) — don't reassign work to a
+reporter who can't actually resolve a code-level question.
 
 When it does fire:
 
-1. Post a comment on the issue asking **only** for what actually stalled
-   this run — drawn from, not a fixed template dumped every time:
+1. Look up the issue's creator first, before composing anything:
+   `gh issue view <n> --repo hmislk/hmis --json author --jq '.author.login'`
+2. Post a comment on the issue that opens with `@<creator-login>` and asks
+   **only** for what actually stalled this run — drawn from, not a fixed
+   template dumped every time:
    - the exact page/screen: URL or menu breadcrumb (`Menu > Submenu >
      Page`)
    - a clear description of current vs. expected behavior
    - for report/analytics requests: desired filters, columns, grouping
-   - repro steps including a concrete example record/BHT/bill number
+   - repro steps that pin down the scenario without a real record
+     identifier — ask for a redacted/synthetic example (e.g. "a BHT like
+     the one in this scenario, with any real patient/bill numbers replaced")
+     rather than a real BHT or bill number, same "no patient-linked
+     identifiers in a GitHub comment" rule as the hard limits above
    - screenshot(s) of the current behavior or desired layout
 
    Ground the ask in what was actually tried, e.g. "Searched for a page
    matching this description under Inward and Reports; couldn't identify
    which screen this refers to. Could you share the URL or navigation
    path?" — not a bare template.
-2. `@mention` the issue's creator:
-   `gh issue view <n> --repo hmislk/hmis --json author --jq '.author.login'`
 3. `gh issue edit <n> --repo hmislk/hmis --add-assignee <creator-login>` —
    **added alongside** `buddhika75`, never replacing them.
 4. Set the project-board (#11) Status field back to **Backlog** (same
    GraphQL mutation pattern `start-issue` step 5 uses to set it forward to
    "In Progress" — same field, different target option).
-5. Record this issue's outcome as "needs info" for the batch summary (step
+5. Check each of steps 2–4 actually succeeded (non-error `gh`/API output)
+   before calling this "needs info" — if one failed partway (e.g. the
+   comment posted but the assignee edit errored), don't silently record it
+   as fully done; note exactly which parts succeeded in the batch summary
+   (step 15) so it's clear what still needs finishing by hand.
+6. Record this issue's outcome as "needs info" for the batch summary (step
    15), then continue to the next issue in the batch (step 0).
 
 ## 1. Setup
@@ -185,8 +204,8 @@ Where `dev-issue` enters Plan Mode and waits for approval, instead:
    "genuinely ambiguous" — stop, but which stop depends on *why* it's
    ambiguous: if the codebase itself gives conflicting signals (two
    existing patterns both plausible), use the plain hard limit above (post
-   blocker, stop). If the ambiguity is instead about *what the reporter
-   wants* — e.g. a report request with no filters/columns/grouping
+   a blocker comment and stop). If the ambiguity is instead about *what
+   the reporter wants* — e.g. a report request with no filters/columns/grouping
    specified, a feature request with no acceptance criteria — that's the
    **Insufficient issue description** case; route there instead.
 3. Write the reasoning down **now**, in a form that survives to the PR
