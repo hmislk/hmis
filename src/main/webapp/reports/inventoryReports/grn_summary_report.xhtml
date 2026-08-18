@@ -95,12 +95,14 @@
                             <!-- Department/Store -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department/Store" class="m-3" for="grnDept"/>
+                                <p:outputLabel value="Department/Store" class="m-3"/>
                             </h:panelGroup>
                             <h:panelGroup id="grnDept">
 
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
+                                        id="grnDeptAll"
+                                        label="Department/Store"
                                         rendered="#{pharmacyController.institution eq null and pharmacyController.site eq null}"
                                         styleClass="w-100 form-control"
                                         value="#{pharmacyController.dept}"
@@ -116,6 +118,8 @@
 
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
+                                        id="grnDeptSite"
+                                        label="Department/Store"
                                         rendered="#{pharmacyController.institution eq null and pharmacyController.site ne null}"
                                         styleClass="w-100 form-control"
                                         value="#{pharmacyController.dept}"
@@ -131,6 +135,8 @@
 
                                 <!-- Component 3: With Institution Only -->
                                 <p:selectOneMenu
+                                        id="grnDeptInstitution"
+                                        label="Department/Store"
                                         rendered="#{pharmacyController.institution ne null and pharmacyController.site eq null}"
                                         styleClass="w-100 form-control"
                                         value="#{pharmacyController.dept}"
@@ -138,7 +144,7 @@
                                         filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
                                     <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution)}"
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyController.institution)}"
                                             var="dept"
                                             itemLabel="#{dept.name}"
                                             itemValue="#{dept}"/>
@@ -146,6 +152,8 @@
 
                                 <!-- Component 4: With Both Institution and Site -->
                                 <p:selectOneMenu
+                                        id="grnDeptInstitutionSite"
+                                        label="Department/Store"
                                         rendered="#{pharmacyController.institution ne null and pharmacyController.site ne null}"
                                         styleClass="w-100 form-control"
                                         value="#{pharmacyController.dept}"
@@ -212,7 +220,7 @@
                                 <p:dataExporter type="xlsx"
                                                 target="tbl1"
                                                 fileName="GRN_Summary_Report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}"
-                                                postProcessor="#{pharmacyController.postProcessGRNAndDirectPurchaseReportExcel}"/>
+                                                postProcessor="#{pharmacyController.postProcessGRNSummaryReportExcel}"/>
                             </p:commandButton>
                             <p:commandButton
                                 value="PDF"
@@ -288,7 +296,9 @@
                                     <h:outputText value="Returned"
                                                   rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"/>
                                     <h:outputText value="Approved"
-                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"/>
+                                                  rendered="#{(bill.billTypeAtomic eq 'PHARMACY_GRN' and bill.completed) or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"/>
+                                    <h:outputText value="Pending Approval"
+                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN' and not bill.completed}"/>
                                 </p:column>
                                 <p:column headerText="Remark">
                                     <h:outputText value="-"/>

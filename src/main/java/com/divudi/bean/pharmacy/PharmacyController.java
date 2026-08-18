@@ -10528,21 +10528,15 @@ public class PharmacyController implements Serializable {
 
         List<BillTypeAtomic> bta = new ArrayList<>();
 
-        bta.add(BillTypeAtomic.PHARMACY_GRN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-
-        if ("grn".equals(purchaseType)) {
-            bta.removeIf(t -> t == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
-                    || t == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED
-                    || t == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-        } else if ("direct".equals(purchaseType)) {
-            bta.removeIf(t -> t == BillTypeAtomic.PHARMACY_GRN
-                    || t == BillTypeAtomic.PHARMACY_GRN_RETURN
-                    || t == BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        if (!"direct".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        }
+        if (!"grn".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         }
 
         bills = new ArrayList<>();
@@ -11238,6 +11232,14 @@ public class PharmacyController implements Serializable {
     
     // PostProcessor for grn and direct purchase summary report excel export
     public void postProcessGRNAndDirectPurchaseReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN and Direct Purchase Report");
+    }
+
+    public void postProcessGRNSummaryReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN Summary Report");
+    }
+
+    private void postProcessGRNAndDirectPurchaseReportExcel(Object document, String reportTitle) {
         if (document == null) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
             return;
@@ -11252,13 +11254,13 @@ public class PharmacyController implements Serializable {
             return;
         }
 
-        workbook.setSheetName(0, "GRN and Direct Purchase Report");
+        workbook.setSheetName(0, reportTitle);
         sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForGRNDetailReport();
 
         if (filters != null && !filters.isEmpty()) {
-            addMetaDataToExcelSheet(workbook, sheet, 0, "GRN and Direct Purchase Report", filters);
+            addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters);
         }
         int rowIndex = 5;
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
