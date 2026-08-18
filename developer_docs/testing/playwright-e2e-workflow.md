@@ -1888,7 +1888,25 @@ the general `p:calendar` guidance in §3). Don't assume `dd/mm/yyyy` just
 because that's the most common pattern elsewhere in the app. Verified while
 testing issue #23005.
 
-## 73. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit
+## 73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`
+
+Running `asadmin.bat deploy --contextroot / --name rh <war>` from the Bash
+tool (Git Bash/MSYS) fails with a `ConfigurationException` complaining it
+can't parse `jndi:/server/D:/Program%20Files/Git//WEB-INF/faces-config.xml`.
+MSYS auto-converts any bare leading `/` argument (like `--contextroot /`) into
+an absolute Windows path rooted at the Git install dir before the argument
+ever reaches `asadmin`, corrupting the context root and breaking the app's own
+path resolution. `--port <n>` and named paths are unaffected — only a
+standalone `/` argument triggers it.
+
+**Fix**: prefix the command with `MSYS_NO_PATHCONV=1` to disable MSYS's
+argument path-mangling for that call:
+```bash
+MSYS_NO_PATHCONV=1 "D:/Payara/bin/asadmin.bat" deploy --contextroot / --name rh "<path>/target/rh-3.0.0.war"
+```
+Verified while testing issue #22993.
+
+## 74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit
 
 Local Payara deploys the WAR **exploded** (unzipped), not as a jar-in-place —
 confirmed at `<payara-install>\glassfish\domains\domain1\applications\rh\`.
