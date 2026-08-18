@@ -423,6 +423,7 @@ public class GrnController implements Serializable {
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
         calGrossTotal();
+        calDifference();
     }
 
     public List<BillItem> findAllBillItemsRefernceToOriginalItem(BillItem referenceBillItem) {
@@ -473,6 +474,7 @@ public class GrnController implements Serializable {
             getBillItems().add(newBillItemCreatedByDuplication);
         }
         calGrossTotal();
+        calDifference();
     }
 
     public void removeSelected() {
@@ -488,6 +490,7 @@ public class GrnController implements Serializable {
             getBillItems().remove(b.getSearialNo());
             calGrossTotal();
         }
+        calDifference();
 
         selectedBillItems = null;
     }
@@ -1413,6 +1416,10 @@ public class GrnController implements Serializable {
         setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
         calGrossTotal();
+        // Difference must reflect the GRN total as soon as the items are loaded, not
+        // only after the user types into Invoice Total (issue #23086) - insTotal is
+        // still 0 here, so this correctly shows the full GRN total as the difference.
+        calDifference();
     }
 
     public void createGrn(Bill importGrn) {
@@ -1420,6 +1427,7 @@ public class GrnController implements Serializable {
         setReferenceInstitution(importGrn.getDepartment().getInstitution());
         generateBillComponent(importGrn);
         calGrossTotal();
+        calDifference();
     }
 
     public void createGrnAll() {
@@ -1428,6 +1436,7 @@ public class GrnController implements Serializable {
         getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponentAll();
         calGrossTotal();
+        calDifference();
     }
 
     public void createGrnWholesale() {
@@ -1437,6 +1446,7 @@ public class GrnController implements Serializable {
         getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
         calGrossTotal();
+        calDifference();
     }
 
     private double getRetailPrice(BillItem billItem) {
