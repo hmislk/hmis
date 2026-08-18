@@ -1906,6 +1906,27 @@ MSYS_NO_PATHCONV=1 "D:/Payara/bin/asadmin.bat" deploy --contextroot / --name rh 
 ```
 Verified while testing issue #22993.
 
+## 74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit
+
+Local Payara deploys the WAR **exploded** (unzipped), not as a jar-in-place —
+confirmed at `<payara-install>\glassfish\domains\domain1\applications\rh\`.
+Facelets are not hot-reloaded in this configuration (production-mode
+caching), so an XHTML edit under `src/main/webapp` needs a redeploy to take
+effect — but for a JSF-only fix, copying the single corrected file straight
+into the exploded app directory is a much faster iterate-and-recheck loop
+than a full `package`/`asadmin redeploy` cycle:
+```bash
+cp "src/main/webapp/reports/inventoryReports/grn_summary_report.xhtml" \
+   "D:/Payara/glassfish/domains/domain1/applications/rh/reports/inventoryReports/grn_summary_report.xhtml"
+```
+A plain `browser_navigate` reload picks it up immediately (no restart, no
+session loss). This is a throwaway shortcut for iterating on a fix, not a
+deployment method — always finish with a real `package` + `asadmin undeploy`/
+`deploy` (§0a) before treating the change as verified, since that's what
+actually proves the WAR builds and packages the fix correctly. Verified while
+testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
+way in seconds instead of a multi-minute rebuild).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
