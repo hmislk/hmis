@@ -121,7 +121,22 @@
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
 
-                            <p:dataTable 
+                            <!-- Cells keep their natural (unwrapped) width so the table overflows its
+                                 container and scrolls horizontally (scrollable="true" below) instead of
+                                 wrapping long item names onto multiple lines. table-layout must be
+                                 overridden from PrimeFaces' default "fixed" (which silently clips
+                                 nowrap content to the container width) to "auto" so the table can
+                                 actually grow past the scrollable viewport. Issue #23052. -->
+                            <style>
+                                [id="frm:tbl"] td, [id="frm:tbl"] th { white-space: nowrap; }
+                                [id="frm:tbl"] .ui-datatable-scrollable-header table,
+                                [id="frm:tbl"] .ui-datatable-scrollable-body table {
+                                    table-layout: auto !important;
+                                    width: auto !important;
+                                }
+                            </style>
+
+                            <p:dataTable
                                 id="tbl" 
                                 rowIndexVar="ii" 
                                 value="#{reportsStock.stockReportByItemDTOS}" var="i"
@@ -129,7 +144,9 @@
                                 rows="#{reportsStock.paginator?'20':reportsStock.stockReportByItemDTOS.size()}"
                                 paginator="#{reportsStock.paginator}"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="20, 50, 100">
+                                rowsPerPageTemplate="20, 50, 100"
+                                scrollable="true"
+                                scrollWidth="100%">
                                 <f:facet name="header">
                                     <h:panelGroup layout="block">
                                         <h:outputLabel value="Stock Report by Item"/>

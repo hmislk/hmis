@@ -260,6 +260,10 @@ public class PharmacyController implements Serializable {
     private Institution fromInstitution;
     private PaymentMethod paymentMethod;
     private String reportType;
+    // Purchase-type filter for the GRN Summary Report page (grn_summary_report.xhtml).
+    // "grn" restricts to GRN bill types, "direct" to Direct Purchase bill types,
+    // null/unset keeps the existing behaviour of generateGrnReport() (all types). Issue #22984.
+    private String purchaseType;
     private double totalCreditPurchaseValue;
     private double totalCashPurchaseValue;
     private double totalCashCostValue;
@@ -6401,22 +6405,10 @@ public class PharmacyController implements Serializable {
         return data;
     }
 
-    public boolean isInvalidFilter() {
-        if (item != null && (reportType.equals("summeryReport") || reportType.equals("byBill"))) {
-            return true;
-        }
-        return false;
-    }
-
     public void createStockTransferReport() {
         reportTimerController.trackReportExecution(() -> {
             resetFields();
 //            BillType bt;
-
-            if (isInvalidFilter()) {
-                JsfUtil.addErrorMessage("Item filter cannot be applied for 'Summary' or 'Bill' report types. Please remove the item filter or choose a 'Detail' Report.");
-                return;
-            }
 
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             if ("issue".equals(transferType)) {
@@ -6937,6 +6929,10 @@ public class PharmacyController implements Serializable {
         if (dosageForm != null) {
             sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df) ");
             parameters.put("df", dosageForm);
+        }
+        if (item != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item) ");
+            parameters.put("item", item);
         }
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             sql.append(" AND b.departmentType IN :departmentTypes ");
@@ -10532,12 +10528,16 @@ public class PharmacyController implements Serializable {
 
         List<BillTypeAtomic> bta = new ArrayList<>();
 
-        bta.add(BillTypeAtomic.PHARMACY_GRN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        if (!"direct".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        }
+        if (!"grn".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        }
 
         bills = new ArrayList<>();
 
@@ -11232,6 +11232,14 @@ public class PharmacyController implements Serializable {
     
     // PostProcessor for grn and direct purchase summary report excel export
     public void postProcessGRNAndDirectPurchaseReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN and Direct Purchase Report");
+    }
+
+    public void postProcessGRNSummaryReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN Summary Report");
+    }
+
+    private void postProcessGRNAndDirectPurchaseReportExcel(Object document, String reportTitle) {
         if (document == null) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
             return;
@@ -11246,13 +11254,13 @@ public class PharmacyController implements Serializable {
             return;
         }
 
-        workbook.setSheetName(0, "GRN and Direct Purchase Report");
+        workbook.setSheetName(0, reportTitle);
         sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForGRNDetailReport();
 
         if (filters != null && !filters.isEmpty()) {
-            addMetaDataToExcelSheet(workbook, sheet, 0, "GRN and Direct Purchase Report", filters);
+            addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters);
         }
         int rowIndex = 5;
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
@@ -12244,6 +12252,14 @@ public class PharmacyController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getPurchaseType() {
+        return purchaseType;
+    }
+
+    public void setPurchaseType(String purchaseType) {
+        this.purchaseType = purchaseType;
     }
 
     public Department getDept() {

@@ -1,5 +1,7 @@
 package com.divudi.core.data.dto.pharmacy;
 
+import java.util.Date;
+
 /**
  * Carries one GRN (Goods Received Note, "Manage Costing = true" flow) line's
  * already-computed values from the controller to
@@ -56,6 +58,23 @@ public class GrnLineData {
     private double lineCostRate;
     private double valueAtCostRate;
     private double totalCostRate;
+
+    // Date of Expiry / Batch No, entered at Save time -- carried through to
+    // pharmaceuticalbillitem.doe/stringValue so they survive a reload before
+    // Finalize/Approve. Missing from this DTO was the root cause of #22892
+    // (Save-stage native SQL silently dropped these two fields, unlike the
+    // Approve-stage GrnApproveLineData which already carried its own
+    // expiryDate/batchNo pair). Named batchNumber, not batchNo, to avoid
+    // field-hiding/method-overriding GrnApproveLineData's distinct batchNo
+    // field of the same name.
+    private Date doe;
+    private String batchNumber;
+
+    // Free-text "Comments" (regular item lines) / "Description" (Bill Expense
+    // lines) field -- backs BillItem.descreption / billitem.DESCREPTION.
+    // Missing from this DTO was the root cause of #22997, same bug class as
+    // #22892's doe/batchNumber omission in the same native-SQL save path.
+    private String description;
 
     // Used only by expense lines (GrnCostingNativeSqlService.saveExpenseLine) --
     // mirrors BillItem.consideredForCosting, whether this expense feeds the
@@ -284,6 +303,30 @@ public class GrnLineData {
 
     public void setLineCostRate(double lineCostRate) {
         this.lineCostRate = lineCostRate;
+    }
+
+    public Date getDoe() {
+        return doe;
+    }
+
+    public void setDoe(Date doe) {
+        this.doe = doe;
+    }
+
+    public String getBatchNumber() {
+        return batchNumber;
+    }
+
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public double getValueAtCostRate() {
