@@ -211,14 +211,26 @@ public class CollectingCentrePaymentController implements Serializable {
                 + " where bill.collectingCentre=:cc "
                 + " and bill.createdAt < :beforeDate "
                 + " and bill.paid =:paid"
-                + " and bill.retired=false ";
+                + " and bill.retired=false "
+                + " and bill.billTypeAtomic not in :excludedAtomics ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("cc", collectingCentre);
         m.put("beforeDate", beforeDate);
         m.put("paid", false);
+        m.put("excludedAtomics", ccSettlementVoucherAtomicTypes());
 
         return billFacade.findLongByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    // CC_AGENT_PAYMENT/CC_AGENT_PAYMENT_CANCELLATION vouchers are created with the same
+    // collectingCentre and default to paid=false, so they must be excluded from the unpaid-bill
+    // queries below - otherwise a settlement voucher blocks or pollutes the next settlement.
+    private List<BillTypeAtomic> ccSettlementVoucherAtomicTypes() {
+        List<BillTypeAtomic> types = new ArrayList<>();
+        types.add(BillTypeAtomic.CC_AGENT_PAYMENT);
+        types.add(BillTypeAtomic.CC_AGENT_PAYMENT_CANCELLATION);
+        return types;
     }
     
     public List<AgentHistory> getAllHistoryFromPaymentBill(Bill ccPaymentBill) {
@@ -471,13 +483,15 @@ public class CollectingCentrePaymentController implements Serializable {
                 + " where bill.collectingCentre=:cc "
                 + " and bill.createdAt between :fromDate and :toDate "
                 + " and bill.paid =:paid"
-                + " and bill.retired=false ";
+                + " and bill.retired=false "
+                + " and bill.billTypeAtomic not in :excludedAtomics ";
 
         jpql += " order by bill.createdAt asc ";
         temMap.put("cc", currentCollectingCentre);
         temMap.put("fromDate", fromDate);
         temMap.put("paid", false);
         temMap.put("toDate", toDate);
+        temMap.put("excludedAtomics", ccSettlementVoucherAtomicTypes());
 
         selectedCCpaymentBills = billFacade.findLightsByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
