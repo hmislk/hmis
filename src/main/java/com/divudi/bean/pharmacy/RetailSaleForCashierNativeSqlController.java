@@ -11,6 +11,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.TokenController;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.bean.common.PatientDepositController;
@@ -22,8 +23,12 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.TokenType;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
@@ -114,6 +119,8 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
     private PatientDepositController patientDepositController;
     @Inject
     private FinancialTransactionController financialTransactionController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     // ---- EJB ----
     @EJB
@@ -171,7 +178,108 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         resetAll();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_bill_retail_sale_for_cashier_native",
+                "Pharmacy Retail Sale For Cashier (Native)",
+                "Pharmacy retail sale interface for cashiers with token system support, using the native SQL workflow",
+                "RetailSaleForCashierNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable token system in sale for cashier",
+                "Enables the token queue system on the cashier retail sale page",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Medicine Identification Codes Used",
+                "Enables medicine identification code lookup during item search",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Bill Support for Native Printers",
+                "Enables native printer support for pharmacy bill printing",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 1",
+                "Prints the retail sale bill using custom paper format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 2",
+                "Prints the retail sale bill using custom paper format 2",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 3",
+                "Prints the retail sale bill using custom paper format 3",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header",
+                "Prints the retail sale bill on Five-Five paper without a blank header space",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper",
+                "Prints the retail sale bill on standard POS paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper Custom 1",
+                "Prints the retail sale bill on POS paper using custom format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS paper with header",
+                "Prints the retail sale bill on POS paper with a header line",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading",
+                "Prints the sale token on Five-Five paper with blank space for a printed heading",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Token Paper is POS Paper",
+                "Prints the sale token on standard POS paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Token Paper is POS Paper Custom 1",
+                "Prints the sale token on POS paper using custom format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show alternative medicines available during retail sale",
+                "Displays alternative/substitute medicines available while entering a retail sale",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------
@@ -1677,8 +1785,9 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         }
         qry = qry.replaceAll("[\\n\\r]", "").trim();
 
+        Department department = sessionController.getLoggedUser().getDepartment();
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", sessionController.getLoggedUser().getDepartment());
+        parameters.put("department", department);
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry + "%");
 
@@ -1723,7 +1832,67 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
 
         lastAutocompleteResults = (List<StockDTO>) stockFacade.findLightsByJpql(
                 sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
-        return lastAutocompleteResults != null ? lastAutocompleteResults : new ArrayList<>();
+        if (lastAutocompleteResults == null) {
+            lastAutocompleteResults = new ArrayList<>();
+        }
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Retail Sale - Show Total AMP Stock in Autocomplete", false)) {
+            populateTotalStockQty(lastAutocompleteResults, department);
+        }
+        return lastAutocompleteResults;
+    }
+
+    /**
+     * Populates the AMP-wide total stock quantity (summed across all batches
+     * of the item in the given department) onto each StockDTO's
+     * totalStockQty field. This is separate from the per-batch "Stocks"
+     * value already present on the DTO (dto.getStock()), which reflects only
+     * the single matched Stock row.
+     * <p>
+     * Gated behind the "Pharmacy Retail Sale - Show Total AMP Stock in
+     * Autocomplete" config key so it never runs unless explicitly enabled.
+     * Runs exactly one aggregate JPQL query regardless of list size (never a
+     * per-row subquery).
+     */
+    private void populateTotalStockQty(List<StockDTO> stocks, Department department) {
+        if (stocks == null || stocks.isEmpty()) {
+            return;
+        }
+        List<Long> itemIds = new ArrayList<>();
+        for (StockDTO dto : stocks) {
+            Long itemId = dto.getItemId();
+            if (itemId != null && !itemIds.contains(itemId)) {
+                itemIds.add(itemId);
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemIds", itemIds);
+        params.put("department", department);
+        String jpql = "SELECT s.itemBatch.item.id, SUM(s.stock) FROM Stock s "
+                + "WHERE s.itemBatch.item.id IN :itemIds AND s.department = :department "
+                + "GROUP BY s.itemBatch.item.id";
+        List<Object[]> rows = stockFacade.findAggregates(jpql, params);
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> totals = new HashMap<>();
+        for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) {
+                continue;
+            }
+            Long itemId = ((Number) row[0]).longValue();
+            Double totalStock = ((Number) row[1]).doubleValue();
+            totals.put(itemId, totalStock);
+        }
+
+        for (StockDTO dto : stocks) {
+            dto.setTotalStockQty(totals.get(dto.getItemId()));
+        }
     }
 
     public void handleSelect(SelectEvent<StockDTO> event) {
