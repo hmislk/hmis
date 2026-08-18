@@ -2114,7 +2114,10 @@ public class BhtSummeryController implements Serializable {
             return;
         }
         if (pr.isFromPackage() && !isPackageRoomDurationExceeded(pr)) {
-            // Package-locked charge stays as set by InpatientPackageApplicationBean.
+            // Package-locked charge stays as set by InpatientPackageApplicationBean,
+            // but newly-linked timed items still need to be snapshotted so their
+            // charges aren't silently dropped from the bill.
+            getInwardBean().snapshotTimedItems(pr, pr.getRoomFacilityCharge());
             patientRooms = null;
             createTables();
             return;
@@ -5142,13 +5145,6 @@ public class BhtSummeryController implements Serializable {
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 
         for (ChargeItemTotal i : chargeItemTotals) {
-            Double roomSum = roomSums.get(i.getInwardChargeType());
-            if (roomSum != null) {
-                i.setTotal(roomSum);
-            }
-        }
-
-        for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
                 case AdmissionFee:
                     if (getPatientEncounter().getAdmissionType() != null) {
@@ -5184,6 +5180,17 @@ public class BhtSummeryController implements Serializable {
                         i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
                     }
                     break;
+            }
+        }
+
+        // Apply room-linked timed item sums after the category-specific switch above,
+        // additively, so a timed item configured with one of the switch's own charge
+        // categories (e.g. Medicine, ProfessionalCharge) is added on top of that
+        // category's own total instead of being overwritten by it.
+        for (ChargeItemTotal i : chargeItemTotals) {
+            Double roomSum = roomSums.get(i.getInwardChargeType());
+            if (roomSum != null) {
+                i.setTotal(i.getTotal() + roomSum);
             }
         }
 
