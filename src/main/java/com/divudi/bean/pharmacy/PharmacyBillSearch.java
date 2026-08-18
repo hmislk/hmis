@@ -851,21 +851,27 @@ public class PharmacyBillSearch implements Serializable {
 
     /**
      * A Transfer Request may only be cancelled while it is still un-cancelled and no
-     * active Transfer Issue has been created against it yet. Delegates to
-     * Bill.checkActiveForwardReference() - the same helper the sibling
-     * PharmacyTransferIssue cancel guard already uses a few hundred lines below
-     * ("Item for this bill already recieve") and that store_transfer_issued_list.xhtml
-     * / list_to_cash_recieve.xhtml use for their own Cancel-button disabled state - so
-     * this reuses the established, tested convention rather than reimplementing it.
-     * It already excludes cancelled and retired forward bills, so a request whose only
-     * issue was itself cancelled remains cancellable.
+     * active Transfer Issue has been created against it yet.
      *
      * The bill actually being viewed here can be either the PRE-bill (the page
      * pharmacy_transfer_request_list_approved.xhtml links to
      * PHARMACY_TRANSFER_REQUEST_PRE bills) or the approved PHARMACY_TRANSFER_REQUEST
      * bill itself. Transfer Issues set backwardReferenceBill on the *approved* bill
      * created at Approve time, not on the pre-bill, so when viewing a pre-bill this
-     * follows its own forwardReferenceBill one hop before delegating (issue #23112).
+     * follows its own forwardReferenceBill one hop first (issue #23112).
+     *
+     * Deliberately does NOT delegate to Bill.checkActiveForwardReference() (used by the
+     * sibling PharmacyTransferIssue guard a few hundred lines below): that generic
+     * helper treats any non-cancelled forward-referencing bill as active, but
+     * PharmacyBillSearch.pharmacyTransferIssueCancel() - a live, config-gated
+     * cancellation path (pharmacy_cancel_transfer_issue.xhtml /
+     * store_cancel_transfer_issue.xhtml) - creates its PHARMACY_ISSUE_CANCELLED
+     * cancellation-record bill with cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill())
+     * (i.e. pointing at the *request*, same as the original Issue) and never marks that
+     * record itself cancelled. checkActiveForwardReference() would see that record as an
+     * eternally-active forward reference and permanently block the request from ever
+     * becoming cancellable again, even after its only real Issue was properly cancelled.
+     * Restricting to billTypeAtomic == PHARMACY_ISSUE avoids counting that record.
      *
      * Used both to render the "Cancel Request" button disabled and, here, to actually
      * block the action server-side - the disabled attribute alone is not a real guard.
@@ -878,7 +884,16 @@ public class PharmacyBillSearch implements Serializable {
             return false;
         }
         Bill approvedBill = bill.getForwardReferenceBill() != null ? bill.getForwardReferenceBill() : bill;
-        return !approvedBill.checkActiveForwardReference();
+        for (Bill downstream : approvedBill.getForwardReferenceBills()) {
+            if (downstream != null
+                    && downstream.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_ISSUE
+                    && downstream.getCreater() != null
+                    && !downstream.isCancelled()
+                    && !downstream.isRetired()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String cancelPharmacyTransferRequestBill() {
