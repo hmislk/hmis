@@ -350,6 +350,13 @@ public class PharmacyReportController implements Serializable {
 
     private String dateRange;
 
+    // Separate date-range selector for the Slow/Fast/None Movement Report.
+    // Kept independent from `dateRange` (used by the Expiry Item Report, see
+    // updateDateRange()) because the two reports need opposite "within N
+    // months" semantics: expiry looks forward from today, movement history
+    // looks backward from today. Issue #22993.
+    private String movementDateRange;
+
     private List<PharmacyRow> rows;
     BillType[] billTypes;
     List<MovementReportDto> movementRecords;
@@ -11252,6 +11259,13 @@ public class PharmacyReportController implements Serializable {
             jpql.append(" LEFT JOIN b.toDepartment toDep");
             jpql.append(" LEFT JOIN b.department billDep");
             jpql.append(" WHERE s.createdAt BETWEEN :fd AND :td");
+            // Exclude staff-custody StockHistory rows. Transfer Issue/Receive (and
+            // similar ward-return flows) write two StockHistory rows per movement -
+            // one department-level (addToStockHistory(..., Department)) and one
+            // staff-level (addToStockHistory(..., Staff)) recording the same signed
+            // pbi.qty as the item passes through staff custody. Without this filter
+            // the Stock Ledger double-counts every such movement (issue #20330).
+            jpql.append(" AND s.department IS NOT NULL");
 
             if (institution != null) {
                 jpql.append(" AND s.institution = :ins");
@@ -11620,13 +11634,16 @@ public class PharmacyReportController implements Serializable {
             }
 
             // Consignment filter: Use item stock quantity (not batch qty)
+            // NOTE: hide zero-stock items (normal, expected), but never hide negative
+            // quantities - a negative net qty means oversold/backorder data that must
+            // stay visible instead of being silently dropped from the report (issue #23026).
             double itemQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
             if (isConsignmentItem()) {
                 if (itemQty > 0) {
                     continue;
                 }
             } else {
-                if (itemQty <= 0) {
+                if (itemQty == 0) {
                     continue;
                 }
             }
@@ -11681,7 +11698,7 @@ public class PharmacyReportController implements Serializable {
                         continue;
                     }
                 } else {
-                    if (itemQty <= 0) {
+                    if (itemQty == 0) {
                         continue;
                     }
                 }
@@ -11891,13 +11908,16 @@ public class PharmacyReportController implements Serializable {
             }
 
             // Consignment filter (unchanged - stays in Java)
+            // NOTE: hide zero-stock batches (normal, expected), but never hide negative
+            // quantities - a negative batch qty means oversold/backorder data that must
+            // stay visible instead of being silently dropped from the report (issue #23026).
             double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
                     continue;
                 }
             } else {
-                if (batchQty <= 0) {
+                if (batchQty == 0) {
                     continue;
                 }
             }
@@ -11949,7 +11969,7 @@ public class PharmacyReportController implements Serializable {
                         continue;
                     }
                 } else {
-                    if (batchQty <= 0) {
+                    if (batchQty == 0) {
                         continue;
                     }
                 }
@@ -12365,52 +12385,13 @@ public class PharmacyReportController implements Serializable {
                 jpql.append("AND sh.item.departmentType IN :departmentTypes ");
             }
 
-            // Group by item and filter positive quantities
-            jpql.append("AND sh.itemBatch.item.id IN (")
-                    .append("SELECT sh4.itemBatch.item.id FROM StockHistory sh4 ")
-                    .append("WHERE sh4.retired = :ret ")
-                    .append("AND sh4.id IN (")
-                    .append("SELECT MAX(sh5.id) FROM StockHistory sh5 ")
-                    .append("WHERE sh5.retired = :ret ")
-                    .append("AND sh5.createdAt <= :et3 ");
-
-            params.put("et3", date);
-
-            // Add filters to item filtering subqueries
-            addFilter(jpql, params, "sh5.institution", "ins4", institution);
-            addFilter(jpql, params, "sh5.department.site", "sit4", site);
-            addFilter(jpql, params, "sh5.department", "dep4", department);
-            addFilter(jpql, params, "sh5.item", "itm4", item);
-            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh5.item.departmentType IN :departmentTypes ");
-            }
-
-            jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
-
-            addFilter(jpql, params, "sh4.institution", "ins5", institution);
-            addFilter(jpql, params, "sh4.department.site", "sit5", site);
-            addFilter(jpql, params, "sh4.department", "dep5", department);
-            addFilter(jpql, params, "sh4.item", "itm5", item);
-            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh4.item.departmentType IN :departmentTypes ");
-            }
-
-            jpql.append("GROUP BY sh4.itemBatch.item.id ")
-                    .append("HAVING SUM(sh4.stockQty) > 0");
-
-            if (isConsignmentItem()) {
-                jpql.append(" AND SUM(sh4.stockQty) <= 0");
-            }
-
-            jpql.append(")");
-
             // NOTE: do NOT filter batches/items by SUM(stockQty) > 0 here. This snapshot
             // must include every batch's latest quantity as-of `date`, positive, zero, or
             // negative (oversold/backorder). Excluding negative-quantity items understates
             // Opening/Closing Stock only on the snapshot where the item's running total
             // happens to be negative, breaking the Opening + movements = Closing identity
             // and producing a phantom COGS variance the moment that item's total crosses
-            // zero within the report window (issue: COGS report variance, 2026-08-11).
+            // zero within the report window (issue #23018).
             // Execute the query
             List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -15373,6 +15354,29 @@ public class PharmacyReportController implements Serializable {
         // System.out.println("Updated To Date: " + toDate);
     }
 
+    // Method for updating dates when a date range is selected on the
+    // Slow/Fast/None Movement Report. Unlike updateDateRange() (used by the
+    // Expiry Item Report), "Within N Months" here means looking backward
+    // over the last N months of movement history, ending today. Issue #22993.
+    public void updateMovementDateRange() {
+        LocalDate today = LocalDate.now();
+
+        switch (movementDateRange) {
+            case "within3months":
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today.minusMonths(3)));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today));
+                break;
+            case "within6months":
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today.minusMonths(6)));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today));
+                break;
+            case "within12months":
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today.minusMonths(12)));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today));
+                break;
+        }
+    }
+
     // Utility to convert LocalDate to Date
     private Date convertToDate(LocalDate localDate) {
         return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -17180,6 +17184,14 @@ public class PharmacyReportController implements Serializable {
         this.dateRange = dateRange;
     }
 
+    public String getMovementDateRange() {
+        return movementDateRange;
+    }
+
+    public void setMovementDateRange(String movementDateRange) {
+        this.movementDateRange = movementDateRange;
+    }
+
     public Double getStockQty() {
         return stockQty;
     }
@@ -17790,6 +17802,24 @@ public class PharmacyReportController implements Serializable {
                 return "Within 12 Months";
             case "shortexpiry":
                 return "Expired Items";
+            default:
+                return "-";
+        }
+    }
+
+    // MovementDateRange to Label (Slow/Fast/None Movement Report)
+    public String getMovementDateRangeAsString() {
+        if (movementDateRange == null) {
+            return "-";
+        }
+
+        switch (movementDateRange) {
+            case "within3months":
+                return "Within 3 Months";
+            case "within6months":
+                return "Within 6 Months";
+            case "within12months":
+                return "Within 12 Months";
             default:
                 return "-";
         }

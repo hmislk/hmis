@@ -6130,6 +6130,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return "/collecting_centre/view/cc_bill_view?faces-redirect=true";
     }
 
+    public String navigateToCcOriginalBillPrint() {
+        return "/collecting_centre/view/cc_original_bill_reprint?faces-redirect=true";
+    }
+
     public String navigateToViewCcBillCancellation(Bill bill) {
         loadBillDetails(bill);
         return "/collecting_centre/view/cc_bill_cancellation_view?faces-redirect=true";

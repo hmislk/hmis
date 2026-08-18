@@ -1837,6 +1837,96 @@ go through. Fix in automation: after any Fees-tab row shows a "Select Staff"
 dropdown, pick a value from it (PrimeFaces click-option pattern, §13) before
 clicking Settle. Found verifying issue #22916.
 
+## 71. A fresh `p:selectOneMenu` visually shows its first `<option>` as selected even when the bound model value is still `null` — clicking that same-looking option fires no `change` event
+
+On `pharmacy_bill_retail_sale_native.xhtml`'s Payment Method dropdown (default
+list order: Cash, Credit Card, Multiple Payment Methods, ...), a freshly
+loaded/newly-logged-in page renders the native `<select>` showing "Cash" as
+selected — this is just the browser defaulting an unset `<select>` to its
+first `<option>`, not evidence that `paymentMethod` is actually bound to
+`PaymentMethod.Cash` server-side. It's still `null` until the user makes a
+real selection. `browser_click` on that already-visually-"Cash" option is a
+no-op: the native select's `selectedIndex` doesn't change, so no `change`
+event fires, so `p:ajax event="change"` never runs and any `rendered="#{bean.paymentMethod
+eq 'Cash'}"` block downstream stays on its null-branch (nothing rendered)
+even though the dropdown *looks* set to Cash. Symptom: fields that should
+appear for Cash (e.g. Tendered/Balance) never show up, with no error and no
+network request — easy to misdiagnose as a `rendered` condition bug in the
+code when the page itself is correct.
+
+**Fix**: to genuinely land on the visually-default option, select a
+*different* option first, then select the desired one back — each of those
+is a real change, so both `change` events fire and the bean field updates
+both times:
+```text
+click dropdown → click a different option (e.g. "Credit Card")
+click dropdown → click the target option (e.g. "Cash")
+```
+Only needed the first time a dropdown is touched in a fresh session/after a
+redeploy-forced relogin; once a real change has fired once, subsequent
+same-value clicks are fine since the model is no longer null. Found verifying
+issue #22991.
+
+## 72. `p:calendar`'s `pattern` attribute can differ from the usual `dd/mm/yyyy` — type in the exact server-side pattern, not a guessed format
+
+`pharmacy/direct_purchase.xhtml`'s "Date of Expiry" field (`bill:calDoe`) is a
+`p:calendar` with `pattern="dd MM yy"` — space-separated, numeric month, and a
+**2-digit** year, not the more common `dd/mm/yyyy`. Typing a plausibly-formatted
+date like `31-12-2027` gets silently rejected: the input renders with
+`aria-invalid`/a red border, the value never converts to a real `Date`, and
+the downstream action (`addItem()` here) hits its own `doe == null` validation
+and no-ops with an error message — easy to misread as "the button doesn't
+work" rather than "the date didn't parse". Symptom is worse than a normal
+validation error because nothing about the on-screen state screams "wrong
+format" unless you're specifically looking for the invalid-state styling.
+
+**Fix**: read the `pattern="..."` attribute straight from the component's
+source (`grep -n -A6 -B1 'id="calDoe"' src/main/webapp/pharmacy/direct_purchase.xhtml`)
+before typing anything, and match it exactly — here, `31 12 27` (Ctrl+A, type slowly,
+`Escape` to close the overlay without resetting the value, same pattern as
+the general `p:calendar` guidance in §3). Don't assume `dd/mm/yyyy` just
+because that's the most common pattern elsewhere in the app. Verified while
+testing issue #23005.
+
+## 73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`
+
+Running `asadmin.bat deploy --contextroot / --name rh <war>` from the Bash
+tool (Git Bash/MSYS) fails with a `ConfigurationException` complaining it
+can't parse `jndi:/server/D:/Program%20Files/Git//WEB-INF/faces-config.xml`.
+MSYS auto-converts any bare leading `/` argument (like `--contextroot /`) into
+an absolute Windows path rooted at the Git install dir before the argument
+ever reaches `asadmin`, corrupting the context root and breaking the app's own
+path resolution. `--port <n>` and named paths are unaffected — only a
+standalone `/` argument triggers it.
+
+**Fix**: prefix the command with `MSYS_NO_PATHCONV=1` to disable MSYS's
+argument path-mangling for that call:
+```bash
+MSYS_NO_PATHCONV=1 "D:/Payara/bin/asadmin.bat" deploy --contextroot / --name rh "<path>/target/rh-3.0.0.war"
+```
+Verified while testing issue #22993.
+
+## 74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit
+
+Local Payara deploys the WAR **exploded** (unzipped), not as a jar-in-place —
+confirmed at `<payara-install>\glassfish\domains\domain1\applications\rh\`.
+Facelets are not hot-reloaded in this configuration (production-mode
+caching), so an XHTML edit under `src/main/webapp` needs a redeploy to take
+effect — but for a JSF-only fix, copying the single corrected file straight
+into the exploded app directory is a much faster iterate-and-recheck loop
+than a full `package`/`asadmin redeploy` cycle:
+```bash
+cp "src/main/webapp/reports/inventoryReports/grn_summary_report.xhtml" \
+   "D:/Payara/glassfish/domains/domain1/applications/rh/reports/inventoryReports/grn_summary_report.xhtml"
+```
+A plain `browser_navigate` reload picks it up immediately (no restart, no
+session loss). This is a throwaway shortcut for iterating on a fix, not a
+deployment method — always finish with a real `package` + `asadmin undeploy`/
+`deploy` (§0a) before treating the change as verified, since that's what
+actually proves the WAR builds and packages the fix correctly. Verified while
+testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
+way in seconds instead of a multi-minute rebuild).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

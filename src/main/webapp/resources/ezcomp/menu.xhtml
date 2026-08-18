@@ -1054,8 +1054,7 @@
                     <p:submenu label="Sale" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyRetailTransactionMenue')}">
                         <p:menuitem
                             ajax="false"
-                            action="/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true"
-                            actionListener="#{retailSaleNativeSqlController.resetAll()}"
+                            action="#{retailSaleNativeSqlController.pharmacyRetailSaleNative()}"
                             value="Retail Sale"
                             icon="fas fa-mortar-pestle"
                             style="font-weight: bold;"

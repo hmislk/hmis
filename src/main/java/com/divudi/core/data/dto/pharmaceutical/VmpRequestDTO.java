@@ -14,6 +14,8 @@ public class VmpRequestDTO extends PharmaceuticalItemBaseRequestDTO implements S
 
     private Long vtmId;
     private Long dosageFormId;
+    private Long issueUnitId;
+    private Long strengthUnitId;
 
     public VmpRequestDTO() {
     }
@@ -32,5 +34,21 @@ public class VmpRequestDTO extends PharmaceuticalItemBaseRequestDTO implements S
 
     public void setDosageFormId(Long dosageFormId) {
         this.dosageFormId = dosageFormId;
+    }
+
+    public Long getIssueUnitId() {
+        return issueUnitId;
+    }
+
+    public void setIssueUnitId(Long issueUnitId) {
+        this.issueUnitId = issueUnitId;
+    }
+
+    public Long getStrengthUnitId() {
+        return strengthUnitId;
+    }
+
+    public void setStrengthUnitId(Long strengthUnitId) {
+        this.strengthUnitId = strengthUnitId;
     }
 }
