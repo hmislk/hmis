@@ -4668,6 +4668,22 @@ public class PharmacyStockTakeController implements Serializable {
         return total;
     }
 
+    public double getVarianceDetailedTotalQtyVariance() {
+        return getVarianceDetailedTotalQtyAfter() - getVarianceDetailedTotalQtyBefore();
+    }
+
+    public double getVarianceDetailedTotalValueVarianceAtCostRate() {
+        return getVarianceDetailedTotalValueAfterAtCostRate() - getVarianceDetailedTotalValueBeforeAtCostRate();
+    }
+
+    public double getVarianceDetailedTotalValueVarianceAtRetailRate() {
+        return getVarianceDetailedTotalValueAfterAtRetailRate() - getVarianceDetailedTotalValueBeforeAtRetailRate();
+    }
+
+    public double getVarianceDetailedTotalValueVarianceAtPurchaseRate() {
+        return getVarianceDetailedTotalValueAfterAtPurchaseRate() - getVarianceDetailedTotalValueBeforeAtPurchaseRate();
+    }
+
     /**
      * Generate a sanitized filename for the variance detailed report Excel export.
      *
@@ -4969,6 +4985,11 @@ public class PharmacyStockTakeController implements Serializable {
         public Double getValueAfterAtRetailRate() { return getQtyAfter() * getRetailRate(); }
         public Double getValueBeforeAtPurchaseRate() { return getQtyBefore() * getPurchaseRate(); }
         public Double getValueAfterAtPurchaseRate() { return getQtyAfter() * getPurchaseRate(); }
+
+        public Double getQtyVariance() { return getQtyAfter() - getQtyBefore(); }
+        public Double getValueVarianceAtCostRate() { return getValueAfterAtCostRate() - getValueBeforeAtCostRate(); }
+        public Double getValueVarianceAtRetailRate() { return getValueAfterAtRetailRate() - getValueBeforeAtRetailRate(); }
+        public Double getValueVarianceAtPurchaseRate() { return getValueAfterAtPurchaseRate() - getValueBeforeAtPurchaseRate(); }
     }
 
     /** Scalar snapshot reference — replaces full BillItem entity pre-load. */
