@@ -365,6 +365,7 @@
                         <p:column headerText="Issuing Bill Item" style="padding: 6px;">
                             <p:autoComplete id="Isitem"
                                             value="#{pharmacySaleBhtController.issuingSelections[bItm]}"
+                                            converter="stockConverter"
                                             completeMethod="#{pharmacySaleBhtController.completeAllDepartmentStock}"
                                             var="stk"
                                             itemLabel="#{stk.itemBatch.item.name} (Batch: #{stk.itemBatch.batchNo}, Qty: #{stk.stock})"
@@ -407,7 +408,8 @@
                                     icon="fas fa-trash"
                                     action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}"
                                     class="ui-button-danger"
-                                    ajax="false" >
+                                    process="@this"
+                                    update="itemList">
                                 </p:commandButton>
                             </div>
 
