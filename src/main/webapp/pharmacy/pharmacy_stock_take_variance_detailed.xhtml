@@ -48,9 +48,11 @@
                                 <p:commandButton value="Print" icon="fa fa-print" styleClass="no-print" ajax="false" style="margin-right: 8px;">
                                     <p:printer target="varianceDetailedPanel" />
                                 </p:commandButton>
-                                <p:commandButton value="Download" icon="fa fa-download" styleClass="no-print" ajax="false">
+                                <p:commandButton value="Download" icon="fa fa-download" styleClass="no-print" ajax="false" style="margin-right: 8px;">
                                     <p:dataExporter type="xlsx" target="tblVarianceDetailed" fileName="#{pharmacyStockTakeController.varianceDetailedExcelFilename}" />
                                 </p:commandButton>
+                                <p:commandButton value="Back" icon="fa fa-arrow-left" styleClass="no-print ui-button-secondary" ajax="false"
+                                                  action="#{pharmacyStockTakeController.gotoViewVariance(pharmacyStockTakeController.snapshotBill)}"/>
 
                             </div>
                             <div class="card-body">
