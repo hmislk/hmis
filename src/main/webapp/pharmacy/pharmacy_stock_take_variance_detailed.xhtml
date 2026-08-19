@@ -43,20 +43,20 @@
                     <div class="container-fluid">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h2 class="mb-0">Stock Take Variance Report</h2>
+                                <h2 class="mb-0">Stock Take Variance Detailed Report</h2>
 
                                 <p:commandButton value="Print" icon="fa fa-print" styleClass="no-print" ajax="false" style="margin-right: 8px;">
-                                    <p:printer target="variancePanel" />
+                                    <p:printer target="varianceDetailedPanel" />
                                 </p:commandButton>
                                 <p:commandButton value="Download" icon="fa fa-download" styleClass="no-print" ajax="false" style="margin-right: 8px;">
-                                    <p:dataExporter type="xlsx" target="tblVariance" fileName="#{pharmacyStockTakeController.varianceExcelFilename}" />
+                                    <p:dataExporter type="xlsx" target="tblVarianceDetailed" fileName="#{pharmacyStockTakeController.varianceDetailedExcelFilename}" />
                                 </p:commandButton>
-                                <p:commandButton value="Variance Detailed Report" icon="fa fa-list-alt" styleClass="no-print" ajax="false"
-                                                  action="#{pharmacyStockTakeController.gotoViewVarianceDetailed(pharmacyStockTakeController.snapshotBill)}"/>
+                                <p:commandButton value="Back" icon="fa fa-arrow-left" styleClass="no-print ui-button-secondary" ajax="false"
+                                                  action="#{pharmacyStockTakeController.gotoViewVariance(pharmacyStockTakeController.snapshotBill)}"/>
 
                             </div>
                             <div class="card-body">
-                                <h:panelGroup id="variancePanel">
+                                <h:panelGroup id="varianceDetailedPanel">
                                     <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
                                         <div class="alert alert-warning">No snapshot bill selected. Please go back to the list and choose a bill.</div>
                                     </h:panelGroup>
@@ -65,7 +65,7 @@
 
                                         <!-- Print-only header with full details -->
                                         <div class="print-header">
-                                            <h3 style="margin:0 0 6px 0;">Stock Take Variance Report</h3>
+                                            <h3 style="margin:0 0 6px 0;">Stock Take Variance Detailed Report</h3>
                                             <table style="width:100%; font-size:10pt;">
                                                 <tr>
                                                     <td style="width:50%;"><strong>Institution:</strong>&#160;<h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/></td>
@@ -96,16 +96,13 @@
                                         <p:separator/>
 
                                         <p:dataTable
-                                            id="tblVariance" value="#{pharmacyStockTakeController.varianceRows}" var="r"
+                                            id="tblVarianceDetailed" value="#{pharmacyStockTakeController.varianceDetailedRows}" var="r"
                                             rows="25"
                                             paginator="true"
                                             paginatorPosition="both"
                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                             rowsPerPageTemplate="10,25,50,100"
                                             styleClass="ui-datatable-striped ui-datatable-gridlines">
-                                            <p:column headerText="BillItem ID" width="8em" class="text-end">
-                                                <h:outputText value="#{r.billItemId}"/>
-                                            </p:column>
                                             <p:column headerText="Code" width="8em">
                                                 <h:outputText value="#{r.code}"/>
                                             </p:column>
@@ -136,42 +133,122 @@
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Initial Stock" width="8em" class="text-end">
-                                                <h:outputText value="#{r.initialQty}">
-                                                    <f:convertNumber integerOnly="true"/>
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Sum of Variances" width="10em" class="text-end">
-                                                <h:outputText value="#{r.sumVariance}">
-                                                    <f:convertNumber integerOnly="true"/>
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Sum of Variances at Cost Rate" width="10em" class="text-end">
-                                                <h:outputText value="#{r.sumVariance*r.costRate}">
-                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <p:column headerText="Qty Before" width="8em" class="text-end">
+                                                <h:outputText value="#{r.qtyBefore}">
+                                                    <f:convertNumber pattern="#,##0.######"/>
                                                 </h:outputText>
                                                 <f:facet name="footer">
-                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtCostRate}" class="font-weight-bold">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalQtyBefore}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.######"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Qty After" width="8em" class="text-end">
+                                                <h:outputText value="#{r.qtyAfter}">
+                                                    <f:convertNumber pattern="#,##0.######"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalQtyAfter}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.######"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Qty Variance" width="8em" class="text-end">
+                                                <h:outputText value="#{r.qtyVariance}">
+                                                    <f:convertNumber pattern="#,##0.######"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalQtyVariance}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.######"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Value Before at Cost Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueBeforeAtCostRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueBeforeAtCostRate}" class="font-weight-bold">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </f:facet>
                                             </p:column>
-                                            <p:column headerText="Sum of Variances at Purchase Rate" width="10em" class="text-end">
-                                                <h:outputText value="#{r.sumVariance*r.purchaseRate}">
-                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <p:column headerText="Value After at Cost Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueAfterAtCostRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                                 <f:facet name="footer">
-                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtPurchaseRate}" class="font-weight-bold">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueAfterAtCostRate}" class="font-weight-bold">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </f:facet>
                                             </p:column>
-                                            <p:column headerText="Sum of Variances at Retail Rate" width="10em" class="text-end">
-                                                <h:outputText value="#{r.sumVariance*r.retailRate}">
-                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <p:column headerText="Value Variance at Cost Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueVarianceAtCostRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                                 <f:facet name="footer">
-                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtRetailRate}" class="font-weight-bold">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueVarianceAtCostRate}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Value Before at Retail Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueBeforeAtRetailRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueBeforeAtRetailRate}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Value After at Retail Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueAfterAtRetailRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueAfterAtRetailRate}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Value Variance at Retail Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueVarianceAtRetailRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueVarianceAtRetailRate}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Value Before at Purchase Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueBeforeAtPurchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueBeforeAtPurchaseRate}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Value After at Purchase Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueAfterAtPurchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueAfterAtPurchaseRate}" class="font-weight-bold">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Value Variance at Purchase Rate" width="10em" class="text-end">
+                                                <h:outputText value="#{r.valueVarianceAtPurchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalValueVarianceAtPurchaseRate}" class="font-weight-bold">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </f:facet>
@@ -188,4 +265,3 @@
         </ui:composition>
     </h:body>
 </html>
-
