@@ -1205,7 +1205,7 @@ public class StockController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = Stock.class)
+    @FacesConverter(value = "stockConverter", forClass = Stock.class)
     public static class StockConverter implements Converter {
 
         @Override
