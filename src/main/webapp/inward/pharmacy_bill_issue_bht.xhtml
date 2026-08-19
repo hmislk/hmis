@@ -191,14 +191,6 @@
                             <!-- RIGHT: actions, left=least important -> right=primary -->
                             <div class="d-flex gap-2 align-items-center">
                                 <p:commandButton
-                                    value="New Bill"
-                                    ajax="false"
-                                    styleClass="ui-button-warning"
-                                    icon="fa-solid fa-plus"
-                                    action="pharmacy_bill_issue_bht"
-                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
-                                </p:commandButton>
-                                <p:commandButton
                                     id="btnSettleNative"
                                     value="Settle"
                                     ajax="true"
@@ -211,6 +203,15 @@
                                     style="min-width:120px"
                                     icon="fa-solid fa-check-circle">
                                 </p:commandButton>
+                                <p:commandButton
+                                    value="New Bill"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    icon="fa-solid fa-plus"
+                                    action="pharmacy_bill_issue_bht"
+                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
+                                </p:commandButton>
+                                
                             </div>
                         </div>
                     </f:facet>
