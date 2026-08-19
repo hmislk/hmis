@@ -11259,6 +11259,13 @@ public class PharmacyReportController implements Serializable {
             jpql.append(" LEFT JOIN b.toDepartment toDep");
             jpql.append(" LEFT JOIN b.department billDep");
             jpql.append(" WHERE s.createdAt BETWEEN :fd AND :td");
+            // Exclude staff-custody StockHistory rows. Transfer Issue/Receive (and
+            // similar ward-return flows) write two StockHistory rows per movement -
+            // one department-level (addToStockHistory(..., Department)) and one
+            // staff-level (addToStockHistory(..., Staff)) recording the same signed
+            // pbi.qty as the item passes through staff custody. Without this filter
+            // the Stock Ledger double-counts every such movement (issue #20330).
+            jpql.append(" AND s.department IS NOT NULL");
 
             if (institution != null) {
                 jpql.append(" AND s.institution = :ins");
