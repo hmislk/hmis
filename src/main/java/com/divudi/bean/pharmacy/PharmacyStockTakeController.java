@@ -129,6 +129,7 @@ public class PharmacyStockTakeController implements Serializable {
     // Use Light DTOs via constructor-based JPQL to avoid heavy entity graphs
     private List<com.divudi.core.light.common.PharmacySnapshotBillLight> snapshotBillRows;
     private List<VarianceRow> varianceRows; // aggregated variance report rows
+    private List<VarianceDetailedRow> varianceDetailedRows; // before/after adjustment report rows
     private String approvalJobId; // background approval job id
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
     private com.divudi.core.entity.Category selectedDosageForm; // for dosage-form-specific downloads
@@ -2429,6 +2430,18 @@ public class PharmacyStockTakeController implements Serializable {
         return gotoViewVariance(b);
     }
 
+    // Navigate to the Variance Detailed Report (before/after adjustment quantities & values)
+    public String gotoViewVarianceDetailed(Bill b) {
+        if (b == null) {
+            return null;
+        }
+        this.snapshotBill = b;
+        this.institution = b.getInstitution();
+        this.department = b.getDepartment();
+        prepareVarianceDetailedRows();
+        return "/pharmacy/pharmacy_stock_take_variance_detailed?faces-redirect=true";
+    }
+
     // Build aggregated variance rows for the selected snapshot using scalar JPQL projections
     private void prepareVarianceRows() {
         varianceRows = new java.util.ArrayList<>();
@@ -2539,6 +2552,81 @@ public class PharmacyStockTakeController implements Serializable {
         // with multiple batches to appear twice: once with the real variance, once as a
         // zero-variance ghost row from the un-uploaded batch.
         varianceRows.removeIf(vr -> vr.getLastPhysicalQty() == null);
+    }
+
+    // Build detailed before/after-adjustment rows for the selected snapshot, sourced from the
+    // posted adjustment bill (forwardReferenceBill of the approved physical count bill) — the
+    // authoritative before/after stock values, not the snapshot/physical-count variance sum.
+    private void prepareVarianceDetailedRows() {
+        varianceDetailedRows = new java.util.ArrayList<>();
+        if (snapshotBill == null || snapshotBill.getId() == null) {
+            return;
+        }
+
+        String jpqlBillIds = "SELECT b.id FROM Bill b "
+                + "WHERE b.billType = :bt AND b.referenceBill.id = :rbId "
+                + "AND b.forwardReferenceBill IS NOT NULL "
+                + "ORDER BY b.createdAt ASC, b.id ASC";
+        HashMap<String, Object> bp = new HashMap<>();
+        bp.put("bt", BillType.PharmacyPhysicalCountBill);
+        bp.put("rbId", snapshotBill.getId());
+        List<Object> physBillIdObjs = billFacade.findObjects(jpqlBillIds, bp);
+        if (physBillIdObjs == null || physBillIdObjs.isEmpty()) {
+            return;
+        }
+        List<Long> physBillIds = new java.util.ArrayList<>();
+        for (Object o : physBillIdObjs) {
+            if (o instanceof Number) {
+                physBillIds.add(((Number) o).longValue());
+            }
+        }
+
+        String jpqlAdjBillIds = "SELECT pcb.forwardReferenceBill.id FROM Bill pcb "
+                + "WHERE pcb.id IN :pbs AND pcb.forwardReferenceBill IS NOT NULL";
+        HashMap<String, Object> ap = new HashMap<>();
+        ap.put("pbs", physBillIds);
+        List<Object> adjBillIdObjs = billFacade.findObjects(jpqlAdjBillIds, ap);
+        if (adjBillIdObjs == null || adjBillIdObjs.isEmpty()) {
+            return;
+        }
+        List<Long> adjBillIds = new java.util.ArrayList<>();
+        for (Object o : adjBillIdObjs) {
+            if (o instanceof Number) {
+                adjBillIds.add(((Number) o).longValue());
+            }
+        }
+
+        String jpqlAdj = "SELECT it.code, it.name, cat.name, df.name, ib.batchNo, "
+                + "pbi.purchaseRate, pbi.retailRate, pbi.costRate, "
+                + "pbi.beforeAdjustmentValue, pbi.afterAdjustmentValue "
+                + "FROM BillItem abi "
+                + "LEFT JOIN abi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN abi.item it "
+                + "LEFT JOIN it.category cat "
+                + "LEFT JOIN it.dosageForm df "
+                + "LEFT JOIN pbi.itemBatch ib "
+                + "WHERE abi.bill.id IN :abs "
+                + "ORDER BY it.name, ib.batchNo";
+        HashMap<String, Object> adp = new HashMap<>();
+        adp.put("abs", adjBillIds);
+        List<Object[]> adjRows = billItemFacade.findObjectArrayByJpql(jpqlAdj, adp, javax.persistence.TemporalType.TIMESTAMP);
+        if (adjRows == null) {
+            return;
+        }
+        for (Object[] r : adjRows) {
+            VarianceDetailedRow vr = new VarianceDetailedRow();
+            vr.setCode(r[0] != null ? r[0].toString() : null);
+            vr.setItemName(r[1] != null ? r[1].toString() : null);
+            vr.setCategory(r[2] != null ? r[2].toString() : null);
+            vr.setDosageForm(r[3] != null ? r[3].toString() : null);
+            vr.setBatchNo(r[4] != null ? r[4].toString() : null);
+            vr.setPurchaseRate(r[5] instanceof Number ? ((Number) r[5]).doubleValue() : 0.0);
+            vr.setRetailRate(r[6] instanceof Number ? ((Number) r[6]).doubleValue() : 0.0);
+            vr.setCostRate(r[7] instanceof Number ? ((Number) r[7]).doubleValue() : 0.0);
+            vr.setQtyBefore(r[8] instanceof Number ? ((Number) r[8]).doubleValue() : 0.0);
+            vr.setQtyAfter(r[9] instanceof Number ? ((Number) r[9]).doubleValue() : 0.0);
+            varianceDetailedRows.add(vr);
+        }
     }
 
     /**
@@ -4504,6 +4592,101 @@ public class PharmacyStockTakeController implements Serializable {
         return total;
     }
 
+    public List<VarianceDetailedRow> getVarianceDetailedRows() {
+        return varianceDetailedRows;
+    }
+
+    public double getVarianceDetailedTotalQtyBefore() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalQtyAfter() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueBeforeAtCostRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore() * r.getCostRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueAfterAtCostRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter() * r.getCostRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueBeforeAtRetailRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore() * r.getRetailRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueAfterAtRetailRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter() * r.getRetailRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueBeforeAtPurchaseRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore() * r.getPurchaseRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueAfterAtPurchaseRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter() * r.getPurchaseRate();
+        }
+        return total;
+    }
+
+    /**
+     * Generate a sanitized filename for the variance detailed report Excel export.
+     *
+     * @return sanitized filename without extension (PrimeFaces appends .xlsx)
+     */
+    public String getVarianceDetailedExcelFilename() {
+        if (snapshotBill == null) {
+            return "pharmacy_stock_take_variance_detailed";
+        }
+        String datePart = "";
+        if (snapshotBill.getCreatedAt() != null) {
+            datePart = "_" + new java.text.SimpleDateFormat("yyyy-MM-dd").format(snapshotBill.getCreatedAt());
+        }
+        String billPart = (snapshotBill.getDeptId() != null && !snapshotBill.getDeptId().trim().isEmpty())
+                ? "_" + snapshotBill.getDeptId().replaceAll("[/\\\\:*?\"<>|,. ]", "_").trim()
+                : "";
+        return "pharmacy_stock_take_variance_detailed" + datePart + billPart;
+    }
+
     // Start asynchronous approval so it completes even if browser closes
     public void startApprovePhysicalCountAsync() {
         LOGGER.log(Level.INFO, "[StockTake] startApprovePhysicalCountAsync() called. pcBillId={0}, items={1}",
@@ -4734,6 +4917,58 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Alias used in XHTML column: r.batch
         public String getBatch() { return batchNo; }
+    }
+
+    // DTO for variance detailed report — before/after adjustment quantities & values, no entity references
+    public static class VarianceDetailedRow implements Serializable {
+
+        private String code;
+        private String itemName;
+        private String category;
+        private String dosageForm;
+        private String batchNo;
+        private Double purchaseRate;
+        private Double retailRate;
+        private Double costRate;
+        private Double qtyBefore;
+        private Double qtyAfter;
+
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+
+        public String getItemName() { return itemName; }
+        public void setItemName(String itemName) { this.itemName = itemName; }
+
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+
+        public String getDosageForm() { return dosageForm; }
+        public void setDosageForm(String dosageForm) { this.dosageForm = dosageForm; }
+
+        public String getBatchNo() { return batchNo; }
+        public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
+
+        public Double getPurchaseRate() { return purchaseRate != null ? purchaseRate : 0.0; }
+        public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
+
+        public Double getRetailRate() { return retailRate != null ? retailRate : 0.0; }
+        public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }
+
+        public Double getCostRate() { return costRate != null ? costRate : 0.0; }
+        public void setCostRate(Double costRate) { this.costRate = costRate; }
+
+        public Double getQtyBefore() { return qtyBefore != null ? qtyBefore : 0.0; }
+        public void setQtyBefore(Double qtyBefore) { this.qtyBefore = qtyBefore; }
+
+        public Double getQtyAfter() { return qtyAfter != null ? qtyAfter : 0.0; }
+        public void setQtyAfter(Double qtyAfter) { this.qtyAfter = qtyAfter; }
+
+        public Double getValueBeforeAtCostRate() { return getQtyBefore() * getCostRate(); }
+        public Double getValueAfterAtCostRate() { return getQtyAfter() * getCostRate(); }
+        public Double getValueBeforeAtRetailRate() { return getQtyBefore() * getRetailRate(); }
+        public Double getValueAfterAtRetailRate() { return getQtyAfter() * getRetailRate(); }
+        public Double getValueBeforeAtPurchaseRate() { return getQtyBefore() * getPurchaseRate(); }
+        public Double getValueAfterAtPurchaseRate() { return getQtyAfter() * getPurchaseRate(); }
     }
 
     /** Scalar snapshot reference — replaces full BillItem entity pre-load. */
