@@ -2852,7 +2852,7 @@ public class PharmacyBean {
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         if (f == null || f.getRetailSaleRate() == null) {
-            return 0.0;
+            return getLastRetailRateByPharmaceuticalBillItem(item, dept);
         }
 
         return f.getRetailSaleRate().doubleValue();
