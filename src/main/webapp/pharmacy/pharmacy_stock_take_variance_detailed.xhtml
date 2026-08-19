@@ -135,31 +135,31 @@
                                             </p:column>
                                             <p:column headerText="Qty Before" width="8em" class="text-end">
                                                 <h:outputText value="#{r.qtyBefore}">
-                                                    <f:convertNumber integerOnly="true"/>
+                                                    <f:convertNumber pattern="#,##0.######"/>
                                                 </h:outputText>
                                                 <f:facet name="footer">
                                                     <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalQtyBefore}" class="font-weight-bold">
-                                                        <f:convertNumber integerOnly="true"/>
+                                                        <f:convertNumber pattern="#,##0.######"/>
                                                     </h:outputText>
                                                 </f:facet>
                                             </p:column>
                                             <p:column headerText="Qty After" width="8em" class="text-end">
                                                 <h:outputText value="#{r.qtyAfter}">
-                                                    <f:convertNumber integerOnly="true"/>
+                                                    <f:convertNumber pattern="#,##0.######"/>
                                                 </h:outputText>
                                                 <f:facet name="footer">
                                                     <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalQtyAfter}" class="font-weight-bold">
-                                                        <f:convertNumber integerOnly="true"/>
+                                                        <f:convertNumber pattern="#,##0.######"/>
                                                     </h:outputText>
                                                 </f:facet>
                                             </p:column>
                                             <p:column headerText="Qty Variance" width="8em" class="text-end">
                                                 <h:outputText value="#{r.qtyVariance}">
-                                                    <f:convertNumber integerOnly="true"/>
+                                                    <f:convertNumber pattern="#,##0.######"/>
                                                 </h:outputText>
                                                 <f:facet name="footer">
                                                     <h:outputText value="#{pharmacyStockTakeController.varianceDetailedTotalQtyVariance}" class="font-weight-bold">
-                                                        <f:convertNumber integerOnly="true"/>
+                                                        <f:convertNumber pattern="#,##0.######"/>
                                                     </h:outputText>
                                                 </f:facet>
                                             </p:column>
