@@ -1697,6 +1697,14 @@ public enum Privileges {
             case InpatientDashboardPanelPharmaceuticals:
             case InpatientDashboardPanelDocuments:
             case InpatientDashboardPanelReports:
+            case InwardReportPharmacyIssueSummary:
+            case InwardReportServiceSummary:
+            case InwardReportServiceBills:
+            case InwardReportPaymentsAndCancellations:
+            case InwardReportPharmacyAndServiceSummary:
+            case InwardReportLabBillSummary:
+            case InwardReportLabResultSummary:
+            case InwardReportPharmacyIssueSummaryLegacy:
             case InwardEditPatientDetailsFromAdmission:
             case InwardEditPaymentDetails:
             case InwardManageAllergies:
