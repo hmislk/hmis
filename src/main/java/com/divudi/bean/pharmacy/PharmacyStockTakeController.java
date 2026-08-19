@@ -2554,15 +2554,61 @@ public class PharmacyStockTakeController implements Serializable {
         varianceRows.removeIf(vr -> vr.getLastPhysicalQty() == null);
     }
 
-    // Build detailed before/after-adjustment rows for the selected snapshot, sourced from the
-    // posted adjustment bill (forwardReferenceBill of the approved physical count bill) — the
-    // authoritative before/after stock values, not the snapshot/physical-count variance sum.
+    // Build detailed before/after-adjustment rows for the selected snapshot. Same scope as
+    // prepareVarianceRows() — every uploaded snapshot item, not just adjusted ones — but with
+    // before/after quantities and values instead of a variance sum. Qty Before/After come from
+    // the posted adjustment bill's authoritative beforeAdjustmentValue/afterAdjustmentValue where
+    // an adjustment was posted (non-zero variance); for uploaded items with zero variance (no
+    // adjustment line exists), before = after = the uploaded physical count quantity.
     private void prepareVarianceDetailedRows() {
         varianceDetailedRows = new java.util.ArrayList<>();
         if (snapshotBill == null || snapshotBill.getId() == null) {
             return;
         }
 
+        // --- Step 1: load snapshot bill items as scalars (before-state + rates) ---
+        String jpqlSnap = "SELECT bi.id, bi.qty, "
+                + "ib.purcahseRate, ib.retailsaleRate, ib.costRate, "
+                + "ib.batchNo, it.code, it.name, cat.name, df.name "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN pbi.itemBatch ib "
+                + "LEFT JOIN ib.item it "
+                + "LEFT JOIN it.category cat "
+                + "LEFT JOIN it.dosageForm df "
+                + "WHERE bi.bill.id = :billId "
+                + "ORDER BY it.name, ib.batchNo";
+        HashMap<String, Object> sp = new HashMap<>();
+        sp.put("billId", snapshotBill.getId());
+        List<Object[]> snapRows = billItemFacade.findObjectArrayByJpql(jpqlSnap, sp, javax.persistence.TemporalType.TIMESTAMP);
+
+        java.util.Map<Long, VarianceDetailedRow> map = new java.util.LinkedHashMap<>();
+        java.util.Map<Long, Boolean> uploaded = new java.util.HashMap<>();
+        if (snapRows != null) {
+            for (Object[] r : snapRows) {
+                Long id = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+                Double qty = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : 0.0;
+
+                VarianceDetailedRow vr = new VarianceDetailedRow();
+                vr.setPurchaseRate(r[2] instanceof Number ? ((Number) r[2]).doubleValue() : 0.0);
+                vr.setRetailRate(r[3] instanceof Number ? ((Number) r[3]).doubleValue() : 0.0);
+                vr.setCostRate(r[4] instanceof Number ? ((Number) r[4]).doubleValue() : 0.0);
+                vr.setBatchNo(r[5] != null ? r[5].toString() : null);
+                vr.setCode(r[6] != null ? r[6].toString() : null);
+                vr.setItemName(r[7] != null ? r[7].toString() : null);
+                vr.setCategory(r[8] != null ? r[8].toString() : null);
+                vr.setDosageForm(r[9] != null ? r[9].toString() : null);
+                vr.setQtyBefore(qty);
+                vr.setQtyAfter(qty);
+                if (id != null) {
+                    map.put(id, vr);
+                    uploaded.put(id, false);
+                }
+                varianceDetailedRows.add(vr);
+            }
+        }
+
+        // --- Step 2: load physical count bill items — mark uploaded, default After = counted qty ---
         String jpqlBillIds = "SELECT b.id FROM Bill b "
                 + "WHERE b.billType = :bt AND b.referenceBill.id = :rbId "
                 + "AND b.forwardReferenceBill IS NOT NULL "
@@ -2572,6 +2618,7 @@ public class PharmacyStockTakeController implements Serializable {
         bp.put("rbId", snapshotBill.getId());
         List<Object> physBillIdObjs = billFacade.findObjects(jpqlBillIds, bp);
         if (physBillIdObjs == null || physBillIdObjs.isEmpty()) {
+            varianceDetailedRows.clear();
             return;
         }
         List<Long> physBillIds = new java.util.ArrayList<>();
@@ -2581,6 +2628,46 @@ public class PharmacyStockTakeController implements Serializable {
             }
         }
 
+        // physBillItemId, refSnapshotBillItemId, physicalQty
+        String jpqlPhys = "SELECT bi.id, bi.referanceBillItem.id, bi.qty "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.id IN :pbs AND bi.referanceBillItem IS NOT NULL "
+                + "ORDER BY bi.bill.createdAt ASC, bi.bill.id ASC, bi.id ASC";
+        HashMap<String, Object> pp = new HashMap<>();
+        pp.put("pbs", physBillIds);
+        List<Object[]> physRows = billItemFacade.findObjectArrayByJpql(jpqlPhys, pp, javax.persistence.TemporalType.TIMESTAMP);
+
+        java.util.Map<Long, Long> physToSnapshot = new java.util.HashMap<>();
+        if (physRows != null) {
+            for (Object[] pr : physRows) {
+                Long physId = pr[0] instanceof Number ? ((Number) pr[0]).longValue() : null;
+                Long snapId = pr[1] instanceof Number ? ((Number) pr[1]).longValue() : null;
+                Double physQty = pr[2] instanceof Number ? ((Number) pr[2]).doubleValue() : null;
+                if (snapId == null) {
+                    continue;
+                }
+                VarianceDetailedRow vr = map.get(snapId);
+                if (vr == null) {
+                    continue;
+                }
+                vr.setQtyAfter(physQty != null ? physQty : 0.0);
+                uploaded.put(snapId, true);
+                if (physId != null) {
+                    physToSnapshot.put(physId, snapId);
+                }
+            }
+        }
+
+        // Drop snapshot rows that were never uploaded — same rule as the existing Variance Report.
+        varianceDetailedRows = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<Long, VarianceDetailedRow> e : map.entrySet()) {
+            if (Boolean.TRUE.equals(uploaded.get(e.getKey()))) {
+                varianceDetailedRows.add(e.getValue());
+            }
+        }
+
+        // --- Step 3: overlay authoritative before/after from the posted adjustment bill,
+        // for lines where an adjustment was actually posted (non-zero variance). ---
         String jpqlAdjBillIds = "SELECT pcb.forwardReferenceBill.id FROM Bill pcb "
                 + "WHERE pcb.id IN :pbs AND pcb.forwardReferenceBill IS NOT NULL";
         HashMap<String, Object> ap = new HashMap<>();
@@ -2596,17 +2683,11 @@ public class PharmacyStockTakeController implements Serializable {
             }
         }
 
-        String jpqlAdj = "SELECT it.code, it.name, cat.name, df.name, ib.batchNo, "
-                + "pbi.purchaseRate, pbi.retailRate, pbi.costRate, "
-                + "pbi.beforeAdjustmentValue, pbi.afterAdjustmentValue "
+        // referanceBillItemId (physical count line), beforeAdjustmentValue, afterAdjustmentValue
+        String jpqlAdj = "SELECT abi.referanceBillItem.id, pbi.beforeAdjustmentValue, pbi.afterAdjustmentValue "
                 + "FROM BillItem abi "
                 + "LEFT JOIN abi.pharmaceuticalBillItem pbi "
-                + "LEFT JOIN abi.item it "
-                + "LEFT JOIN it.category cat "
-                + "LEFT JOIN it.dosageForm df "
-                + "LEFT JOIN pbi.itemBatch ib "
-                + "WHERE abi.bill.id IN :abs "
-                + "ORDER BY it.name, ib.batchNo";
+                + "WHERE abi.bill.id IN :abs";
         HashMap<String, Object> adp = new HashMap<>();
         adp.put("abs", adjBillIds);
         List<Object[]> adjRows = billItemFacade.findObjectArrayByJpql(jpqlAdj, adp, javax.persistence.TemporalType.TIMESTAMP);
@@ -2614,18 +2695,26 @@ public class PharmacyStockTakeController implements Serializable {
             return;
         }
         for (Object[] r : adjRows) {
-            VarianceDetailedRow vr = new VarianceDetailedRow();
-            vr.setCode(r[0] != null ? r[0].toString() : null);
-            vr.setItemName(r[1] != null ? r[1].toString() : null);
-            vr.setCategory(r[2] != null ? r[2].toString() : null);
-            vr.setDosageForm(r[3] != null ? r[3].toString() : null);
-            vr.setBatchNo(r[4] != null ? r[4].toString() : null);
-            vr.setPurchaseRate(r[5] instanceof Number ? ((Number) r[5]).doubleValue() : 0.0);
-            vr.setRetailRate(r[6] instanceof Number ? ((Number) r[6]).doubleValue() : 0.0);
-            vr.setCostRate(r[7] instanceof Number ? ((Number) r[7]).doubleValue() : 0.0);
-            vr.setQtyBefore(r[8] instanceof Number ? ((Number) r[8]).doubleValue() : 0.0);
-            vr.setQtyAfter(r[9] instanceof Number ? ((Number) r[9]).doubleValue() : 0.0);
-            varianceDetailedRows.add(vr);
+            Long physId = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+            if (physId == null) {
+                continue;
+            }
+            Long snapId = physToSnapshot.get(physId);
+            if (snapId == null) {
+                continue;
+            }
+            VarianceDetailedRow vr = map.get(snapId);
+            if (vr == null) {
+                continue;
+            }
+            Double before = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
+            Double after = r[2] instanceof Number ? ((Number) r[2]).doubleValue() : null;
+            if (before != null) {
+                vr.setQtyBefore(before);
+            }
+            if (after != null) {
+                vr.setQtyAfter(after);
+            }
         }
     }
 
