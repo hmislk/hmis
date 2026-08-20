@@ -353,8 +353,8 @@ public class TransferRequestController implements Serializable {
 
     public double getAvailableQtyAtRequestingDepartment(BillItem bi) {
         if (bi == null || bi.getItem() == null
-                || getTransferRequestBillPre() == null
-                || getTransferRequestBillPre().getFromDepartment() == null) {
+                || transferRequestBillPre == null
+                || transferRequestBillPre.getFromDepartment() == null) {
             return 0.0;
         }
         return availableQtyAtRequestingDepartmentCache.computeIfAbsent(bi, this::calculateAvailableQtyAtRequestingDepartment);
@@ -362,7 +362,7 @@ public class TransferRequestController implements Serializable {
 
     private double calculateAvailableQtyAtRequestingDepartment(BillItem bi) {
         Item item = bi.getItem();
-        double stock = stockService.findDepartmentStock(getTransferRequestBillPre().getFromDepartment(), item);
+        double stock = stockService.findDepartmentStock(transferRequestBillPre.getFromDepartment(), item);
         if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
             return stock / item.getDblValue();
         }
