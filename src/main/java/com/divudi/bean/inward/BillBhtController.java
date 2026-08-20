@@ -82,6 +82,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.PostConstruct;
@@ -197,7 +198,8 @@ public class BillBhtController implements Serializable {
     private Department selectedInwardItemDepartment;
     private List<Department> inwardItemDepartments;
     private List<ItemLight> inwardItem;
-    
+    private PatientEncounter inwardItemCacheKey;
+
     private Priority currentBillItemPriority;
     private Double currentBillItemQty;
 
@@ -1970,8 +1972,9 @@ public class BillBhtController implements Serializable {
     }
 
     public List<ItemLight> getInwardItem() {
-        if (inwardItem == null) {
+        if (inwardItem == null || !Objects.equals(inwardItemCacheKey, patientEncounter)) {
             inwardItem = fillInwardItem();
+            inwardItemCacheKey = patientEncounter;
         }
         return inwardItem;
     }

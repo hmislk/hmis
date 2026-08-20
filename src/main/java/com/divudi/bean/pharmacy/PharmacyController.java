@@ -260,6 +260,10 @@ public class PharmacyController implements Serializable {
     private Institution fromInstitution;
     private PaymentMethod paymentMethod;
     private String reportType;
+    // Purchase-type filter for the GRN Summary Report page (grn_summary_report.xhtml).
+    // "grn" restricts to GRN bill types, "direct" to Direct Purchase bill types,
+    // null/unset keeps the existing behaviour of generateGrnReport() (all types). Issue #22984.
+    private String purchaseType;
     private double totalCreditPurchaseValue;
     private double totalCashPurchaseValue;
     private double totalCashCostValue;
@@ -6401,22 +6405,10 @@ public class PharmacyController implements Serializable {
         return data;
     }
 
-    public boolean isInvalidFilter() {
-        if (item != null && (reportType.equals("summeryReport") || reportType.equals("byBill"))) {
-            return true;
-        }
-        return false;
-    }
-
     public void createStockTransferReport() {
         reportTimerController.trackReportExecution(() -> {
             resetFields();
 //            BillType bt;
-
-            if (isInvalidFilter()) {
-                JsfUtil.addErrorMessage("Item filter cannot be applied for 'Summary' or 'Bill' report types. Please remove the item filter or choose a 'Detail' Report.");
-                return;
-            }
 
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             if ("issue".equals(transferType)) {
@@ -6937,6 +6929,10 @@ public class PharmacyController implements Serializable {
         if (dosageForm != null) {
             sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df) ");
             parameters.put("df", dosageForm);
+        }
+        if (item != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item) ");
+            parameters.put("item", item);
         }
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             sql.append(" AND b.departmentType IN :departmentTypes ");
@@ -10532,12 +10528,16 @@ public class PharmacyController implements Serializable {
 
         List<BillTypeAtomic> bta = new ArrayList<>();
 
-        bta.add(BillTypeAtomic.PHARMACY_GRN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        if (!"direct".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        }
+        if (!"grn".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        }
 
         bills = new ArrayList<>();
 
@@ -10629,21 +10629,27 @@ public class PharmacyController implements Serializable {
         double total = 0.0;
 
         for (Bill b : bills) {
-            if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
+            BillTypeAtomic bta = b.getBillTypeAtomic();
+            if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN))) {
                 total -= b.getNetTotal();
-            } else if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)) {
+            } else if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))) {
                 total -= b.getNetTotal();
-            } else if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
+            } else if (bta != null && bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
                 // Direct purchases have no separate PO, so use the bill's own net total
                 total += b.getNetTotal();
             } else {
-                total += b.getReferenceBill().getNetTotal();
+                total += (b.getReferenceBill() != null ? b.getReferenceBill().getNetTotal() : 0);
             }
         }
         return total;
     }
 
    public void exportGRNAndDirectPurchaseDetailReportToExcel() {
+    if (bills == null || bills.isEmpty()) {
+        JsfUtil.addErrorMessage("No data available to export");
+        return;
+    }
+
     FacesContext context = FacesContext.getCurrentInstance();
     HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -10734,8 +10740,9 @@ public class PharmacyController implements Serializable {
             emptyRow.createCell(16).setCellValue("-");
             emptyRow.createCell(17).setCellValue("-");
             emptyRow.createCell(18).setCellValue("-");
-            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic() != null
+                    && (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN))
                     ? -1 *(bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 )  : (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 ));
             emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
@@ -10770,11 +10777,27 @@ public class PharmacyController implements Serializable {
                         (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
                         && billItem.getItem().getMeasurementUnit().getName() != null)
                         ? billItem.getItem().getMeasurementUnit().getName() : "-");
-                emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
-                emptyInnerRow.createCell(12).setCellValue(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                emptyInnerRow.createCell(13).setCellValue(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
+                } else {
+                    emptyInnerRow.createCell(11).setCellValue("-");
+                }
+                emptyInnerRow.createCell(12).setCellValue(
+                        billItem.getPharmaceuticalBillItem() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null
+                        ? billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "-");
+                emptyInnerRow.createCell(13).setCellValue(
+                        billItem.getPharmaceuticalBillItem() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire() != null
+                        ? sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()) : "-");
                 emptyInnerRow.createCell(14).setCellValue("-");
-                emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                } else {
+                    emptyInnerRow.createCell(15).setCellValue("-");
+                }
                 emptyInnerRow.createCell(16).setCellValue(billItem.getDiscount());
                 emptyInnerRow.createCell(17).setCellValue(billItem.getNetValue());
                 emptyInnerRow.createCell(18).setCellValue(billItem.getBill().getNetTotal());
@@ -10809,7 +10832,8 @@ public class PharmacyController implements Serializable {
         context.responseComplete();
 
     } catch (Exception e) {
-        e.printStackTrace();
+        Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating GRN/Direct Purchase detail Excel report", e);
+        context.responseComplete();
     }
 }
 
@@ -11208,6 +11232,14 @@ public class PharmacyController implements Serializable {
     
     // PostProcessor for grn and direct purchase summary report excel export
     public void postProcessGRNAndDirectPurchaseReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN and Direct Purchase Report");
+    }
+
+    public void postProcessGRNSummaryReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN Summary Report");
+    }
+
+    private void postProcessGRNAndDirectPurchaseReportExcel(Object document, String reportTitle) {
         if (document == null) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
             return;
@@ -11222,13 +11254,13 @@ public class PharmacyController implements Serializable {
             return;
         }
 
-        workbook.setSheetName(0, "GRN and Direct Purchase Report");
+        workbook.setSheetName(0, reportTitle);
         sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForGRNDetailReport();
 
         if (filters != null && !filters.isEmpty()) {
-            addMetaDataToExcelSheet(workbook, sheet, 0, "GRN and Direct Purchase Report", filters);
+            addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters);
         }
         int rowIndex = 5;
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
@@ -12220,6 +12252,14 @@ public class PharmacyController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getPurchaseType() {
+        return purchaseType;
+    }
+
+    public void setPurchaseType(String purchaseType) {
+        this.purchaseType = purchaseType;
     }
 
     public Department getDept() {

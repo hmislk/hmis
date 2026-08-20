@@ -95,11 +95,25 @@
                                         </p:inputText>
                                     </p:column>
 
+                                    <p:column headerText="Available Qty (Requesting Department)" class="text-end" width="10em">
+                                        <h:outputText
+                                            value="#{transferRequestController.getAvailableQtyAtRequestingDepartment(bi)}">
+                                            <f:convertNumber pattern="#,##0.#"/>
+                                        </h:outputText>
+                                    </p:column>
+
                                     <p:column headerText="Available Qty (Ordering Store)" class="text-end" width="10em">
                                         <h:outputText
                                             value="#{transferRequestController.getAvailableQtyAtOrderingStore(bi)}"
                                             styleClass="#{transferRequestController.isAvailableQtyShortAtOrderingStore(bi) ? 'text-danger fw-bold' : ''}">
                                             <f:convertNumber pattern="#,##0.#"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Total Drug Amount (Ordering Store)" class="text-end" width="10em">
+                                        <h:outputText
+                                            value="#{transferRequestController.getTotalDrugAmountAtOrderingStore(bi)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 

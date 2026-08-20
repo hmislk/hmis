@@ -296,7 +296,7 @@
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" styleClass="col-6">
                                     <p:commandButton
                                         value="Add Baby Admission"
-                                        disabled="#{admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
+                                        disabled="#{admissionController.current.id eq null or admissionController.current.patient eq null or admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
                                         title="#{admissionController.current.parentEncounter != null ? 'A baby admission cannot have its own baby admission' : (admissionController.current.discharged eq true ? 'Patient is discharged' : '')}"
                                         action="#{admissionController.navigateToAddBabyAdmission}"
                                         icon="fa fa-baby"
@@ -772,7 +772,7 @@
                                     <div class="col-6">
                                         <p:commandButton
                                             rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}"
-                                            value="Accept Patients"
+                                            value="Accept Patient"
                                             ajax="false"
                                             disabled="#{not patientTransferController.hasPendingRequestsForDepartment}"
                                             action="#{patientTransferController.navigateToPatientAcceptForAdmission(admissionController.current)}"
@@ -1272,7 +1272,7 @@
                                     <p:commandButton
                                         id="btnPharmacyIssues"
                                         value="Pharmacy Issue Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPharmacyIssueSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto()}"
                                         icon="fa fa-rocket"
                                         ajax="false"
@@ -1290,7 +1290,7 @@
                                     <p:commandButton
                                         id="btnServiceSummary"
                                         value="Service Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportServiceSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientServiceItemListDto()}"
                                         icon="fa fa-stethoscope"
                                         ajax="false"
@@ -1308,7 +1308,7 @@
                                     <p:commandButton
                                         id="btnServiceBills"
                                         value="All Inward Service Bills"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportServiceBills')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientServiceBillListDto()}"
                                         icon="fa fa-file-invoice"
                                         ajax="false"
@@ -1326,7 +1326,7 @@
                                     <p:commandButton
                                         id="btnPaymentsAndCancellations"
                                         value="Payments &amp; Cancellations"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPaymentsAndCancellations')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientPaymentBillListDto()}"
                                         icon="fa fa-money-bill-wave"
                                         ajax="false"
@@ -1344,7 +1344,7 @@
                                     <p:commandButton
                                         id="btnPharmacyAndServiceSummary"
                                         value="Pharmacy &amp; Services Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPharmacyAndServiceSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientPharmacyAndServiceItemListDto()}"
                                         icon="fa fa-list-alt"
                                         ajax="false"
@@ -1361,7 +1361,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Lab Bill Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportLabBillSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientLabItemList}"
                                         icon="fa fa-flask"
                                         ajax="false"
@@ -1377,7 +1377,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Lab Result Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportLabResultSummary')}"
                                         action="#{encounterLaboratoryChartViewController.navigateToProcessInvestigations(admissionController.current)}"
                                         ajax="false"
                                         icon="pi pi-chart-line"
@@ -1389,7 +1389,7 @@
                                         id="btnLegacy"
                                         ajax="false"
                                         value="Pharmacy Issue Summary (Legacy)"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPharmacyIssueSummaryLegacy')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}"
                                         icon="fa fa-prescription-bottle-alt"
                                         class="w-100 ui-button-secondary"

@@ -442,6 +442,23 @@
                                 action="#{inwardDepositController.makeNull}" >
                             </p:commandButton>
                             <p:commandButton
+                                id="btnToCancel"
+                                ajax="false" value="To Cancel"
+                                class="ui-button-danger"
+                                icon="fa fa-ban"
+                                action="#{inwardSearch.navigateToDepositBillCancellation()}"
+                                disabled="#{inwardDepositController.current.cancelled or inwardDepositController.current.refunded}">
+                                <f:setPropertyActionListener value="#{inwardDepositController.current}" target="#{inwardSearch.bill}"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnToRefund"
+                                ajax="false" value="Refund"
+                                class="ui-button-warning"
+                                icon="fa fa-money-bill-transfer"
+                                action="#{inwardRefundController.navigateToRefundFromDepositBill(inwardDepositController.current)}"
+                                disabled="#{inwardDepositController.current.cancelled or inwardDepositController.current.refunded}">
+                            </p:commandButton>
+                            <p:commandButton
                                 value="Print"
                                 ajax="false"
                                 icon="fa fa-print"

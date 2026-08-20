@@ -117,6 +117,7 @@ public class PharmacyStockTakeController implements Serializable {
     private Long viewBillId; // bound to f:viewParam on print page for state recovery
     /** Holds snapshot items as plain DTOs — no JPA entities, no EclipseLink EAGER triggers */
     private List<com.divudi.core.data.dto.SnapshotBillItemDTO> snapshotItems;
+    private Long snapshotItemsLoadedForBillId;
     private Bill physicalCountBill;
     private UploadedFile file;
     private Institution institution;
@@ -128,6 +129,7 @@ public class PharmacyStockTakeController implements Serializable {
     // Use Light DTOs via constructor-based JPQL to avoid heavy entity graphs
     private List<com.divudi.core.light.common.PharmacySnapshotBillLight> snapshotBillRows;
     private List<VarianceRow> varianceRows; // aggregated variance report rows
+    private List<VarianceDetailedRow> varianceDetailedRows; // before/after adjustment report rows
     private String approvalJobId; // background approval job id
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
     private com.divudi.core.entity.Category selectedDosageForm; // for dosage-form-specific downloads
@@ -2428,6 +2430,18 @@ public class PharmacyStockTakeController implements Serializable {
         return gotoViewVariance(b);
     }
 
+    // Navigate to the Variance Detailed Report (before/after adjustment quantities & values)
+    public String gotoViewVarianceDetailed(Bill b) {
+        if (b == null) {
+            return null;
+        }
+        this.snapshotBill = b;
+        this.institution = b.getInstitution();
+        this.department = b.getDepartment();
+        prepareVarianceDetailedRows();
+        return "/pharmacy/pharmacy_stock_take_variance_detailed?faces-redirect=true";
+    }
+
     // Build aggregated variance rows for the selected snapshot using scalar JPQL projections
     private void prepareVarianceRows() {
         varianceRows = new java.util.ArrayList<>();
@@ -2538,6 +2552,170 @@ public class PharmacyStockTakeController implements Serializable {
         // with multiple batches to appear twice: once with the real variance, once as a
         // zero-variance ghost row from the un-uploaded batch.
         varianceRows.removeIf(vr -> vr.getLastPhysicalQty() == null);
+    }
+
+    // Build detailed before/after-adjustment rows for the selected snapshot. Same scope as
+    // prepareVarianceRows() — every uploaded snapshot item, not just adjusted ones — but with
+    // before/after quantities and values instead of a variance sum. Qty Before/After come from
+    // the posted adjustment bill's authoritative beforeAdjustmentValue/afterAdjustmentValue where
+    // an adjustment was posted (non-zero variance); for uploaded items with zero variance (no
+    // adjustment line exists), before = after = the uploaded physical count quantity.
+    private void prepareVarianceDetailedRows() {
+        varianceDetailedRows = new java.util.ArrayList<>();
+        if (snapshotBill == null || snapshotBill.getId() == null) {
+            return;
+        }
+
+        // --- Step 1: load snapshot bill items as scalars (before-state + rates) ---
+        String jpqlSnap = "SELECT bi.id, bi.qty, "
+                + "ib.purcahseRate, ib.retailsaleRate, ib.costRate, "
+                + "ib.batchNo, it.code, it.name, cat.name, df.name "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN pbi.itemBatch ib "
+                + "LEFT JOIN ib.item it "
+                + "LEFT JOIN it.category cat "
+                + "LEFT JOIN it.dosageForm df "
+                + "WHERE bi.bill.id = :billId "
+                + "ORDER BY it.name, ib.batchNo";
+        HashMap<String, Object> sp = new HashMap<>();
+        sp.put("billId", snapshotBill.getId());
+        List<Object[]> snapRows = billItemFacade.findObjectArrayByJpql(jpqlSnap, sp, javax.persistence.TemporalType.TIMESTAMP);
+
+        java.util.Map<Long, VarianceDetailedRow> map = new java.util.LinkedHashMap<>();
+        java.util.Map<Long, Boolean> uploaded = new java.util.HashMap<>();
+        if (snapRows != null) {
+            for (Object[] r : snapRows) {
+                Long id = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+                Double qty = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : 0.0;
+
+                VarianceDetailedRow vr = new VarianceDetailedRow();
+                vr.setPurchaseRate(r[2] instanceof Number ? ((Number) r[2]).doubleValue() : 0.0);
+                vr.setRetailRate(r[3] instanceof Number ? ((Number) r[3]).doubleValue() : 0.0);
+                vr.setCostRate(r[4] instanceof Number ? ((Number) r[4]).doubleValue() : 0.0);
+                vr.setBatchNo(r[5] != null ? r[5].toString() : null);
+                vr.setCode(r[6] != null ? r[6].toString() : null);
+                vr.setItemName(r[7] != null ? r[7].toString() : null);
+                vr.setCategory(r[8] != null ? r[8].toString() : null);
+                vr.setDosageForm(r[9] != null ? r[9].toString() : null);
+                vr.setQtyBefore(qty);
+                vr.setQtyAfter(qty);
+                if (id != null) {
+                    map.put(id, vr);
+                    uploaded.put(id, false);
+                }
+                varianceDetailedRows.add(vr);
+            }
+        }
+
+        // --- Step 2: load physical count bill items — mark uploaded, default After = counted qty ---
+        String jpqlBillIds = "SELECT b.id FROM Bill b "
+                + "WHERE b.billType = :bt AND b.referenceBill.id = :rbId "
+                + "AND b.forwardReferenceBill IS NOT NULL "
+                + "ORDER BY b.createdAt ASC, b.id ASC";
+        HashMap<String, Object> bp = new HashMap<>();
+        bp.put("bt", BillType.PharmacyPhysicalCountBill);
+        bp.put("rbId", snapshotBill.getId());
+        List<Object> physBillIdObjs = billFacade.findObjects(jpqlBillIds, bp);
+        if (physBillIdObjs == null || physBillIdObjs.isEmpty()) {
+            varianceDetailedRows.clear();
+            return;
+        }
+        List<Long> physBillIds = new java.util.ArrayList<>();
+        for (Object o : physBillIdObjs) {
+            if (o instanceof Number) {
+                physBillIds.add(((Number) o).longValue());
+            }
+        }
+
+        // physBillItemId, refSnapshotBillItemId, physicalQty
+        String jpqlPhys = "SELECT bi.id, bi.referanceBillItem.id, bi.qty "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.id IN :pbs AND bi.referanceBillItem IS NOT NULL "
+                + "ORDER BY bi.bill.createdAt ASC, bi.bill.id ASC, bi.id ASC";
+        HashMap<String, Object> pp = new HashMap<>();
+        pp.put("pbs", physBillIds);
+        List<Object[]> physRows = billItemFacade.findObjectArrayByJpql(jpqlPhys, pp, javax.persistence.TemporalType.TIMESTAMP);
+
+        java.util.Map<Long, Long> physToSnapshot = new java.util.HashMap<>();
+        if (physRows != null) {
+            for (Object[] pr : physRows) {
+                Long physId = pr[0] instanceof Number ? ((Number) pr[0]).longValue() : null;
+                Long snapId = pr[1] instanceof Number ? ((Number) pr[1]).longValue() : null;
+                Double physQty = pr[2] instanceof Number ? ((Number) pr[2]).doubleValue() : null;
+                if (snapId == null) {
+                    continue;
+                }
+                VarianceDetailedRow vr = map.get(snapId);
+                if (vr == null) {
+                    continue;
+                }
+                vr.setQtyAfter(physQty != null ? physQty : 0.0);
+                uploaded.put(snapId, true);
+                if (physId != null) {
+                    physToSnapshot.put(physId, snapId);
+                }
+            }
+        }
+
+        // Drop snapshot rows that were never uploaded — same rule as the existing Variance Report.
+        varianceDetailedRows = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<Long, VarianceDetailedRow> e : map.entrySet()) {
+            if (Boolean.TRUE.equals(uploaded.get(e.getKey()))) {
+                varianceDetailedRows.add(e.getValue());
+            }
+        }
+
+        // --- Step 3: overlay authoritative before/after from the posted adjustment bill,
+        // for lines where an adjustment was actually posted (non-zero variance). ---
+        String jpqlAdjBillIds = "SELECT pcb.forwardReferenceBill.id FROM Bill pcb "
+                + "WHERE pcb.id IN :pbs AND pcb.forwardReferenceBill IS NOT NULL";
+        HashMap<String, Object> ap = new HashMap<>();
+        ap.put("pbs", physBillIds);
+        List<Object> adjBillIdObjs = billFacade.findObjects(jpqlAdjBillIds, ap);
+        if (adjBillIdObjs == null || adjBillIdObjs.isEmpty()) {
+            return;
+        }
+        List<Long> adjBillIds = new java.util.ArrayList<>();
+        for (Object o : adjBillIdObjs) {
+            if (o instanceof Number) {
+                adjBillIds.add(((Number) o).longValue());
+            }
+        }
+
+        // referanceBillItemId (physical count line), beforeAdjustmentValue, afterAdjustmentValue
+        String jpqlAdj = "SELECT abi.referanceBillItem.id, pbi.beforeAdjustmentValue, pbi.afterAdjustmentValue "
+                + "FROM BillItem abi "
+                + "LEFT JOIN abi.pharmaceuticalBillItem pbi "
+                + "WHERE abi.bill.id IN :abs";
+        HashMap<String, Object> adp = new HashMap<>();
+        adp.put("abs", adjBillIds);
+        List<Object[]> adjRows = billItemFacade.findObjectArrayByJpql(jpqlAdj, adp, javax.persistence.TemporalType.TIMESTAMP);
+        if (adjRows == null) {
+            return;
+        }
+        for (Object[] r : adjRows) {
+            Long physId = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+            if (physId == null) {
+                continue;
+            }
+            Long snapId = physToSnapshot.get(physId);
+            if (snapId == null) {
+                continue;
+            }
+            VarianceDetailedRow vr = map.get(snapId);
+            if (vr == null) {
+                continue;
+            }
+            Double before = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
+            Double after = r[2] instanceof Number ? ((Number) r[2]).doubleValue() : null;
+            if (before != null) {
+                vr.setQtyBefore(before);
+            }
+            if (after != null) {
+                vr.setQtyAfter(after);
+            }
+        }
     }
 
     /**
@@ -2883,6 +3061,7 @@ public class PharmacyStockTakeController implements Serializable {
             }
 
             snapshotItems = dtos;
+            snapshotItemsLoadedForBillId = snapshotBill.getId();
             System.out.println("[LoadLazy] DONE. items=" + dtos.size()
                     + " ms=" + (System.currentTimeMillis() - t0));
 
@@ -2912,7 +3091,9 @@ public class PharmacyStockTakeController implements Serializable {
      */
     public List<com.divudi.core.data.dto.SnapshotBillItemDTO> getSnapshotItems() {
         // Fast path — already loaded as plain DTOs, no EclipseLink involved
-        if (snapshotItems != null && !snapshotItems.isEmpty()) {
+        if (snapshotItems != null && !snapshotItems.isEmpty()
+                && snapshotBillDisplay != null
+                && Objects.equals(snapshotItemsLoadedForBillId, snapshotBillDisplay.getId())) {
             System.out.println("[GetLazy] CACHE HIT items=" + snapshotItems.size());
             return snapshotItems;
         }
@@ -4500,6 +4681,117 @@ public class PharmacyStockTakeController implements Serializable {
         return total;
     }
 
+    public List<VarianceDetailedRow> getVarianceDetailedRows() {
+        return varianceDetailedRows;
+    }
+
+    public double getVarianceDetailedTotalQtyBefore() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalQtyAfter() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueBeforeAtCostRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore() * r.getCostRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueAfterAtCostRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter() * r.getCostRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueBeforeAtRetailRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore() * r.getRetailRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueAfterAtRetailRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter() * r.getRetailRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueBeforeAtPurchaseRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyBefore() * r.getPurchaseRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalValueAfterAtPurchaseRate() {
+        if (varianceDetailedRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceDetailedRow r : varianceDetailedRows) {
+            total += r.getQtyAfter() * r.getPurchaseRate();
+        }
+        return total;
+    }
+
+    public double getVarianceDetailedTotalQtyVariance() {
+        return getVarianceDetailedTotalQtyAfter() - getVarianceDetailedTotalQtyBefore();
+    }
+
+    public double getVarianceDetailedTotalValueVarianceAtCostRate() {
+        return getVarianceDetailedTotalValueAfterAtCostRate() - getVarianceDetailedTotalValueBeforeAtCostRate();
+    }
+
+    public double getVarianceDetailedTotalValueVarianceAtRetailRate() {
+        return getVarianceDetailedTotalValueAfterAtRetailRate() - getVarianceDetailedTotalValueBeforeAtRetailRate();
+    }
+
+    public double getVarianceDetailedTotalValueVarianceAtPurchaseRate() {
+        return getVarianceDetailedTotalValueAfterAtPurchaseRate() - getVarianceDetailedTotalValueBeforeAtPurchaseRate();
+    }
+
+    /**
+     * Generate a sanitized filename for the variance detailed report Excel export.
+     *
+     * @return sanitized filename without extension (PrimeFaces appends .xlsx)
+     */
+    public String getVarianceDetailedExcelFilename() {
+        if (snapshotBill == null) {
+            return "pharmacy_stock_take_variance_detailed";
+        }
+        String datePart = "";
+        if (snapshotBill.getCreatedAt() != null) {
+            datePart = "_" + new java.text.SimpleDateFormat("yyyy-MM-dd").format(snapshotBill.getCreatedAt());
+        }
+        String billPart = (snapshotBill.getDeptId() != null && !snapshotBill.getDeptId().trim().isEmpty())
+                ? "_" + snapshotBill.getDeptId().replaceAll("[/\\\\:*?\"<>|,. ]", "_").trim()
+                : "";
+        return "pharmacy_stock_take_variance_detailed" + datePart + billPart;
+    }
+
     // Start asynchronous approval so it completes even if browser closes
     public void startApprovePhysicalCountAsync() {
         LOGGER.log(Level.INFO, "[StockTake] startApprovePhysicalCountAsync() called. pcBillId={0}, items={1}",
@@ -4730,6 +5022,63 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Alias used in XHTML column: r.batch
         public String getBatch() { return batchNo; }
+    }
+
+    // DTO for variance detailed report — before/after adjustment quantities & values, no entity references
+    public static class VarianceDetailedRow implements Serializable {
+
+        private String code;
+        private String itemName;
+        private String category;
+        private String dosageForm;
+        private String batchNo;
+        private Double purchaseRate;
+        private Double retailRate;
+        private Double costRate;
+        private Double qtyBefore;
+        private Double qtyAfter;
+
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+
+        public String getItemName() { return itemName; }
+        public void setItemName(String itemName) { this.itemName = itemName; }
+
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+
+        public String getDosageForm() { return dosageForm; }
+        public void setDosageForm(String dosageForm) { this.dosageForm = dosageForm; }
+
+        public String getBatchNo() { return batchNo; }
+        public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
+
+        public Double getPurchaseRate() { return purchaseRate != null ? purchaseRate : 0.0; }
+        public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
+
+        public Double getRetailRate() { return retailRate != null ? retailRate : 0.0; }
+        public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }
+
+        public Double getCostRate() { return costRate != null ? costRate : 0.0; }
+        public void setCostRate(Double costRate) { this.costRate = costRate; }
+
+        public Double getQtyBefore() { return qtyBefore != null ? qtyBefore : 0.0; }
+        public void setQtyBefore(Double qtyBefore) { this.qtyBefore = qtyBefore; }
+
+        public Double getQtyAfter() { return qtyAfter != null ? qtyAfter : 0.0; }
+        public void setQtyAfter(Double qtyAfter) { this.qtyAfter = qtyAfter; }
+
+        public Double getValueBeforeAtCostRate() { return getQtyBefore() * getCostRate(); }
+        public Double getValueAfterAtCostRate() { return getQtyAfter() * getCostRate(); }
+        public Double getValueBeforeAtRetailRate() { return getQtyBefore() * getRetailRate(); }
+        public Double getValueAfterAtRetailRate() { return getQtyAfter() * getRetailRate(); }
+        public Double getValueBeforeAtPurchaseRate() { return getQtyBefore() * getPurchaseRate(); }
+        public Double getValueAfterAtPurchaseRate() { return getQtyAfter() * getPurchaseRate(); }
+
+        public Double getQtyVariance() { return getQtyAfter() - getQtyBefore(); }
+        public Double getValueVarianceAtCostRate() { return getValueAfterAtCostRate() - getValueBeforeAtCostRate(); }
+        public Double getValueVarianceAtRetailRate() { return getValueAfterAtRetailRate() - getValueBeforeAtRetailRate(); }
+        public Double getValueVarianceAtPurchaseRate() { return getValueAfterAtPurchaseRate() - getValueBeforeAtPurchaseRate(); }
     }
 
     /** Scalar snapshot reference — replaces full BillItem entity pre-load. */

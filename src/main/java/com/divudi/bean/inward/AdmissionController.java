@@ -915,18 +915,38 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAddBabyAdmission() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("No Admission selected");
+        // The disabled attribute on the "Add Baby Admission" buttons (Admission
+        // Profile, Nursing Workbench) is a UI convenience only and can go stale
+        // (page left open past discharge) or be bypassed (direct action call
+        // with no admission selected). Re-check server-side before creating the
+        // baby admission, since getCurrent() would otherwise happily hand back
+        // a transient, unsaved Admission as the parent. (#22998 review)
+        if (current == null || current.getId() == null || current.getId() <= 0) {
+            JsfUtil.addErrorMessage("Select a saved admission before adding a baby admission.");
             return "";
         }
-        if (current.getParentEncounter() != null) {
+        // AdmissionController is @SessionScoped, so `current` can be a stale
+        // snapshot from earlier in the session (e.g. another tab/request
+        // discharged this same admission since it was loaded here). Re-read
+        // the parent from the DB rather than trusting the in-memory copy.
+        Admission persistedParent = getEjbFacade().findWithoutCache(current.getId());
+        if (persistedParent == null || persistedParent.getPatient() == null
+                || persistedParent.getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Select a saved admission before adding a baby admission.");
+            return "";
+        }
+        if (Boolean.TRUE.equals(persistedParent.getDischarged())) {
+            JsfUtil.addErrorMessage("A discharged admission cannot have a baby admission.");
+            return "";
+        }
+        if (persistedParent.getParentEncounter() != null) {
             // A baby admission's parentEncounter already points to the mother.
             // Do not allow a baby to have its own baby admission (e.g. grandmother
             // admits mother, mother admits daughter is not a realistic scenario).
             JsfUtil.addErrorMessage("A baby admission cannot have its own baby admission.");
             return "";
         }
-        parentAdmission = current;
+        parentAdmission = persistedParent;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
             ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
@@ -2181,7 +2201,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
+            // Baby admissions typically have no NIC of their own yet, so this
+            // admission-specific NIC-required check is skipped for them. (Issue #22998)
+            if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getNic() == null || getCurrent().getPatient().getPerson().getNic().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient NIC is Required");
                     return true;
@@ -2947,13 +2969,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // getRoomFacilityCharge() may be null; attempting to save it would NPE. (Issue #21183)
         if (getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = new PatientRoom();
-            if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
-                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
-                getCurrent().setRoomAdmitted(true);
-            } else {
-                getCurrent().setRoomAdmitted(false);
-                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), getCurrent(), getSessionController().getLoggedUser());
-            }
+            // Room is always fully set up (charges, admittedAt, admitted=true) at admission
+            // time, regardless of the "simultaneous processes" config — that config only
+            // controls whether a nurse handover request is also created below (Issue #23145).
+            currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
+            getCurrent().setRoomAdmitted(true);
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
 
@@ -2989,7 +3009,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 }
             }
 
-            if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)
+                    && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
                 handoverRequest.setAdmission(getCurrent());
                 handoverRequest.setFromPatientRoom(null);
