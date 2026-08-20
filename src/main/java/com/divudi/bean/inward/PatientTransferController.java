@@ -1057,6 +1057,18 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("No pending theatre return found for this patient.");
             return;
         }
+        // Same target-department constraint as loadPendingReturnsForWard() —
+        // without it, a user with WardAcceptTheatreReturn could accept a
+        // return bound for a different ward's department (CodeRabbit #23175).
+        Department userDepartment = sessionController.getDepartment();
+        Department targetDepartment = req.getToRoomFacilityCharge() != null
+                ? req.getToRoomFacilityCharge().getDepartment() : null;
+        if (userDepartment == null || userDepartment.getId() == null
+                || targetDepartment == null || targetDepartment.getId() == null
+                || !userDepartment.getId().equals(targetDepartment.getId())) {
+            JsfUtil.addErrorMessage("This theatre return belongs to a different ward.");
+            return;
+        }
         acceptReturnToWard(req);
         loadTheatreStatusForAdmission(admission);
     }

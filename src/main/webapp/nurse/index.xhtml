@@ -463,7 +463,7 @@
                                                             value="Theatre Status"
                                                             icon="fa fa-procedures"
                                                             ajax="false"
-                                                            rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                                            rendered="#{(webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')) and admissionController.current ne null}"
                                                             action="#{patientTransferController.navigateToTheatreStatus(admissionController.current)}"
                                                             class="w-100 ui-button-warning">
                                                         </p:commandButton>
