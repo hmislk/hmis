@@ -1927,6 +1927,20 @@ actually proves the WAR builds and packages the fix correctly. Verified while
 testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
 way in seconds instead of a multi-minute rebuild).
 
+## 75. `isXxx(arg)` boolean methods with a parameter don't resolve via the JSF EL property-getter convention — drop the `is` prefix
+
+A boolean bean method named `isHasPendingTheatreReturnForAdmission(Admission admission)` and called from EL as
+`#{bean.hasPendingTheatreReturnForAdmission(admissionController.current)}` (mirroring how existing no-arg booleans like
+`isHasPendingRequestsForDepartment()` are already referenced as `hasPendingRequestsForDepartment` elsewhere in the same
+page) throws `javax.el.MethodNotFoundException` at render time — caught immediately by a Playwright pass (500 error
+page) rather than silently misbehaving. The JavaBean `isXxx()`/`getXxx()` → property-name stripping is an EL
+*property-access* convention (`#{bean.propertyName}`, zero arguments only); once the call includes an argument list,
+EL falls back to literal method-name resolution and looks for a method named exactly `hasPendingTheatreReturnForAdmission`,
+not `isHasPendingTheatreReturnForAdmission`. **Fix**: for any boolean helper method that takes a parameter, name it
+*without* the `is` prefix (`hasPendingTheatreReturnForAdmission(Admission)`), matching how the call site will
+naturally read in EL — reserve the `is`/`get` prefix convention for genuine no-arg property getters. Verified while
+testing issue #23166 (theatre transfer per-patient page).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
