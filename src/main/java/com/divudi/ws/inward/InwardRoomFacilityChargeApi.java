@@ -12,11 +12,15 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.Room;
 import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.entity.inward.RoomFacilityTimedItem;
+import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.RoomCategoryFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.facade.RoomFacilityTimedItemFacade;
+import com.divudi.core.facade.TimedItemFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -78,6 +82,12 @@ public class InwardRoomFacilityChargeApi {
 
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
+
+    @EJB
+    private RoomFacilityTimedItemFacade roomFacilityTimedItemFacade;
+
+    @EJB
+    private TimedItemFacade timedItemFacade;
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -406,6 +416,158 @@ public class InwardRoomFacilityChargeApi {
     }
 
     // =========================================================================
+    // Timed Items (RoomFacilityTimedItem) — issue #23147
+    // =========================================================================
+
+    /**
+     * List active Timed Items attached to a room facility charge.
+     * GET /api/inward/room-facility-charges/{id}/timed-items
+     */
+    @GET
+    @Path("/{id}/timed-items")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listTimedItems(@PathParam("id") Long id) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            RoomFacilityCharge charge = roomFacilityChargeFacade.find(id);
+            if (charge == null || charge.isRetired()) {
+                return errorResponse("Room facility charge not found: " + id, 404);
+            }
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("rfc", charge);
+            List<RoomFacilityTimedItem> links = roomFacilityTimedItemFacade.findByJpql(
+                    "select r from RoomFacilityTimedItem r where r.roomFacilityCharge = :rfc and r.retired = false order by r.id",
+                    params);
+
+            List<Map<String, Object>> payload = new ArrayList<>();
+            if (links != null) {
+                for (RoomFacilityTimedItem link : links) {
+                    payload.add(toTimedItemDto(link));
+                }
+            }
+            return successResponse(payload);
+
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Attach a Timed Item to a room facility charge.
+     * POST /api/inward/room-facility-charges/{id}/timed-items
+     * Body: { "timedItemId" (required) }
+     */
+    @POST
+    @Path("/{id}/timed-items")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addTimedItem(@PathParam("id") Long id, String requestBody) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            RoomFacilityCharge charge = roomFacilityChargeFacade.find(id);
+            if (charge == null || charge.isRetired()) {
+                return errorResponse("Room facility charge not found: " + id, 404);
+            }
+
+            Map<?, ?> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            Long timedItemId = asLong(body.get("timedItemId"));
+            if (timedItemId == null) {
+                return errorResponse("timedItemId is required", 400);
+            }
+            TimedItem timedItem = timedItemFacade.find(timedItemId);
+            if (timedItem == null || timedItem.isRetired()) {
+                return errorResponse("Timed Item not found: " + timedItemId, 400);
+            }
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("rfc", charge);
+            params.put("ti", timedItem);
+            List<RoomFacilityTimedItem> existing = roomFacilityTimedItemFacade.findByJpql(
+                    "select r from RoomFacilityTimedItem r where r.roomFacilityCharge = :rfc and r.timedItem = :ti and r.retired = false",
+                    params);
+            if (existing != null && !existing.isEmpty()) {
+                return errorResponse("This Timed Item is already attached to this room facility charge", 409);
+            }
+
+            RoomFacilityTimedItem link = new RoomFacilityTimedItem();
+            link.setRoomFacilityCharge(charge);
+            link.setTimedItem(timedItem);
+            link.setCreater(user);
+            link.setCreatedAt(new Date());
+            roomFacilityTimedItemFacade.create(link);
+
+            return Response.status(201).entity(gson.toJson(successData(toTimedItemDto(link)))).build();
+
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Soft-retire a Timed Item attachment.
+     * DELETE /api/inward/room-facility-charges/{id}/timed-items/{linkId}?retireComments=reason
+     */
+    @DELETE
+    @Path("/{id}/timed-items/{linkId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response removeTimedItem(@PathParam("id") Long id, @PathParam("linkId") Long linkId) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            RoomFacilityCharge charge = roomFacilityChargeFacade.find(id);
+            if (charge == null || charge.isRetired()) {
+                return errorResponse("Room facility charge not found: " + id, 404);
+            }
+
+            RoomFacilityTimedItem link = roomFacilityTimedItemFacade.find(linkId);
+            if (link == null || link.getRoomFacilityCharge() == null
+                    || !link.getRoomFacilityCharge().getId().equals(charge.getId())) {
+                return errorResponse("Timed Item attachment not found: " + linkId, 404);
+            }
+            if (link.isRetired()) {
+                return errorResponse("Timed Item attachment is already retired: " + linkId, 400);
+            }
+
+            link.setRetired(true);
+            link.setRetiredAt(new Date());
+            link.setRetirer(user);
+            String retireComments = param("retireComments");
+            if (retireComments != null && !retireComments.trim().isEmpty()) {
+                link.setRetireComments(retireComments.trim());
+            }
+            roomFacilityTimedItemFacade.edit(link);
+
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("id", link.getId());
+            resp.put("retired", true);
+            return successResponse(resp);
+
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 
@@ -491,6 +653,22 @@ public class InwardRoomFacilityChargeApi {
         } else {
             row.put("timedItemFee", null);
         }
+        return row;
+    }
+
+    private Map<String, Object> toTimedItemDto(RoomFacilityTimedItem link) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("id", link.getId());
+        if (link.getTimedItem() != null) {
+            Map<String, Object> ti = new LinkedHashMap<>();
+            ti.put("id", link.getTimedItem().getId());
+            ti.put("name", link.getTimedItem().getName());
+            row.put("timedItem", ti);
+        } else {
+            row.put("timedItem", null);
+        }
+        row.put("createdAt", link.getCreatedAt());
+        row.put("retired", link.isRetired());
         return row;
     }
 

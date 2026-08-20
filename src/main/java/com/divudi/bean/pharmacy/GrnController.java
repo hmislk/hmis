@@ -423,6 +423,7 @@ public class GrnController implements Serializable {
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
         calGrossTotal();
+        calDifference();
     }
 
     public List<BillItem> findAllBillItemsRefernceToOriginalItem(BillItem referenceBillItem) {
@@ -473,6 +474,7 @@ public class GrnController implements Serializable {
             getBillItems().add(newBillItemCreatedByDuplication);
         }
         calGrossTotal();
+        calDifference();
     }
 
     public void removeSelected() {
@@ -488,6 +490,7 @@ public class GrnController implements Serializable {
             getBillItems().remove(b.getSearialNo());
             calGrossTotal();
         }
+        calDifference();
 
         selectedBillItems = null;
     }
@@ -1409,34 +1412,53 @@ public class GrnController implements Serializable {
     }
 
     public void createGrn() {
+        // insTotal/difference are @SessionScoped fields that can carry over from a
+        // previous GRN the user worked on in this session; reset them here so this
+        // entry point is self-contained regardless of whether the caller already
+        // reset state (CodeRabbit review on #23086/PR #23122).
+        insTotal = 0;
+        difference = 0;
         setFromInstitution(getApproveBill().getToInstitution());
         setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
         calGrossTotal();
+        // Difference must reflect the GRN total as soon as the items are loaded, not
+        // only after the user types into Invoice Total (issue #23086) - insTotal is
+        // still 0 here, so this correctly shows the full GRN total as the difference.
+        calDifference();
     }
 
     public void createGrn(Bill importGrn) {
+        insTotal = 0;
+        difference = 0;
         setFromInstitution(importGrn.getToInstitution());
         setReferenceInstitution(importGrn.getDepartment().getInstitution());
         generateBillComponent(importGrn);
         calGrossTotal();
+        calDifference();
     }
 
     public void createGrnAll() {
+        insTotal = 0;
+        difference = 0;
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
         getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponentAll();
         calGrossTotal();
+        calDifference();
     }
 
     public void createGrnWholesale() {
+        insTotal = 0;
+        difference = 0;
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
         getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
         calGrossTotal();
+        calDifference();
     }
 
     private double getRetailPrice(BillItem billItem) {
