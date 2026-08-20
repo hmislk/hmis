@@ -69,7 +69,7 @@
                                                                        var="ins"
                                                                        itemLabel="#{ins.name}"
                                                                        itemValue="#{ins}" />
-                                                        <p:ajax listener="#{bhtEditController.onInstitutionChange}" update="acPt pnlPatientPreview btnSelect" />
+                                                        <p:ajax listener="#{bhtEditController.onInstitutionChange}" update="admissionSearch pnlPatientPreview btnSelect" />
                                                     </p:selectOneMenu>
                                                 </div>
                                             </div>
@@ -81,6 +81,7 @@
                                                         Patient Search
                                                     </h:outputLabel>
                                                     <admcc:admission_search
+                                                        id="admissionSearch"
                                                         widgetVar="aPt"
                                                         inputId="acPt"
                                                         value="#{bhtEditController.current}"
