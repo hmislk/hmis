@@ -772,7 +772,7 @@
                                     <div class="col-6">
                                         <p:commandButton
                                             rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}"
-                                            value="Accept Patients"
+                                            value="Accept Patient"
                                             ajax="false"
                                             disabled="#{not patientTransferController.hasPendingRequestsForDepartment}"
                                             action="#{patientTransferController.navigateToPatientAcceptForAdmission(admissionController.current)}"
