@@ -61,10 +61,10 @@
 
                                             <div class="row mb-3">
                                                 <div class="col-12">
-                                                    <h:outputLabel styleClass="form-label fw-bold text-dark mb-2">
-                                                        <i class="fa-solid fa-user me-2 text-primary"></i>
-                                                        Patient Search
-                                                    </h:outputLabel>
+                                                    <h:panelGroup layout="block" styleClass="form-label fw-bold text-dark mb-2">
+                                                        <h:outputText styleClass="fa-solid fa-user me-2 text-primary" />
+                                                        <h:outputText value="Patient Search" />
+                                                    </h:panelGroup>
                                                     <admcc:admission_search
                                                         id="admissionSearch"
                                                         widgetVar="acAdmission"
