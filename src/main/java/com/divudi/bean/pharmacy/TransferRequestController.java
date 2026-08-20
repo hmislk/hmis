@@ -349,6 +349,26 @@ public class TransferRequestController implements Serializable {
         return getAvailableQtyAtOrderingStore(bi) < bi.getQty();
     }
 
+    private final Map<BillItem, Double> availableQtyAtRequestingDepartmentCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtRequestingDepartment(BillItem bi) {
+        if (bi == null || bi.getItem() == null
+                || getTransferRequestBillPre() == null
+                || getTransferRequestBillPre().getFromDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtRequestingDepartmentCache.computeIfAbsent(bi, this::calculateAvailableQtyAtRequestingDepartment);
+    }
+
+    private double calculateAvailableQtyAtRequestingDepartment(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(getTransferRequestBillPre().getFromDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
     // Value of the stock already available at the Ordering Store, priced at the
     // same config-selected transfer rate (see determineTransferRate) already
     // shown in the row's Transfer Rate/Transfer Value columns.
