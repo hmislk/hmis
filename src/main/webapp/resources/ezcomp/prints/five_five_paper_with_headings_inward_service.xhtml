@@ -285,7 +285,7 @@
                         <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{not empty bip.item.printName ? bip.item.printName : bip.item.name}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">

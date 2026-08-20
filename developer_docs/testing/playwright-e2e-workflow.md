@@ -1888,6 +1888,45 @@ the general `p:calendar` guidance in §3). Don't assume `dd/mm/yyyy` just
 because that's the most common pattern elsewhere in the app. Verified while
 testing issue #23005.
 
+## 73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`
+
+Running `asadmin.bat deploy --contextroot / --name rh <war>` from the Bash
+tool (Git Bash/MSYS) fails with a `ConfigurationException` complaining it
+can't parse `jndi:/server/D:/Program%20Files/Git//WEB-INF/faces-config.xml`.
+MSYS auto-converts any bare leading `/` argument (like `--contextroot /`) into
+an absolute Windows path rooted at the Git install dir before the argument
+ever reaches `asadmin`, corrupting the context root and breaking the app's own
+path resolution. `--port <n>` and named paths are unaffected — only a
+standalone `/` argument triggers it.
+
+**Fix**: prefix the command with `MSYS_NO_PATHCONV=1` to disable MSYS's
+argument path-mangling for that call:
+```bash
+MSYS_NO_PATHCONV=1 "D:/Payara/bin/asadmin.bat" deploy --contextroot / --name rh "<path>/target/rh-3.0.0.war"
+```
+Verified while testing issue #22993.
+
+## 74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit
+
+Local Payara deploys the WAR **exploded** (unzipped), not as a jar-in-place —
+confirmed at `<payara-install>\glassfish\domains\domain1\applications\rh\`.
+Facelets are not hot-reloaded in this configuration (production-mode
+caching), so an XHTML edit under `src/main/webapp` needs a redeploy to take
+effect — but for a JSF-only fix, copying the single corrected file straight
+into the exploded app directory is a much faster iterate-and-recheck loop
+than a full `package`/`asadmin redeploy` cycle:
+```bash
+cp "src/main/webapp/reports/inventoryReports/grn_summary_report.xhtml" \
+   "D:/Payara/glassfish/domains/domain1/applications/rh/reports/inventoryReports/grn_summary_report.xhtml"
+```
+A plain `browser_navigate` reload picks it up immediately (no restart, no
+session loss). This is a throwaway shortcut for iterating on a fix, not a
+deployment method — always finish with a real `package` + `asadmin undeploy`/
+`deploy` (§0a) before treating the change as verified, since that's what
+actually proves the WAR builds and packages the fix correctly. Verified while
+testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
+way in seconds instead of a multi-minute rebuild).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

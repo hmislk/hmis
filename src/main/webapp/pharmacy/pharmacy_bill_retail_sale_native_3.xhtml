@@ -177,18 +177,20 @@
                                                         accesskey="i"
                                                         inputStyleClass="w-100"
                                                         minQueryLength="3"
-                                                        maxResults="10"
+                                                        maxResults="30"
                                                         styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{retailSaleNativeSqlController3.stockDto}"
-                                                        queryDelay="300" completeMethod="#{retailSaleNativeSqlController3.completeAvailableStockOptimizedDto}"
+                                                        queryDelay="300"
+                                                        scrollHeight="450"
+                                                        completeMethod="#{retailSaleNativeSqlController3.completeAvailableStockOptimizedDto}"
                                                         converter="#{retailSaleNativeSqlController3.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
                                                         <p:column
                                                             headerText="Item"
-                                                            width="400"
+                                                            style="padding: 6px; width: 650px;"
                                                             styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputText value="#{i.itemName}" />
                                                             &#160;<p:tag
@@ -197,14 +199,14 @@
                                                                 severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'danger' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'warning' : ''}" />
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used', true)}"
                                                             headerText="Code"
                                                             styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputText value="#{i.code}" />
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
                                                             headerText="Rate"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.retailRate}">
@@ -212,7 +214,7 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
                                                             headerText="Stocks"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.stockQty}">
@@ -220,7 +222,16 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
+                                                            headerText="Total Stock"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKeyReadOnly('Pharmacy Retail Sale - Show Total AMP Stock in Autocomplete', false)}"
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.totalStockQty}">
+                                                                <f:convertNumber pattern="#,###" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+                                                        <p:column
+                                                            style="padding: 6px; width: 150px;"
                                                             headerText="Expiry"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.dateOfExpire}">
