@@ -1073,6 +1073,11 @@ public class PharmacyRequestForBhtController implements Serializable {
         // From: ward (patient's current room department)
         Department fromDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
 
+        if (fromDept == null || fromDept.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please set the department and institution for the patient's current room.");
+            return false;
+        }
+
         getPreBill().setDepartment(fromDept);
         getPreBill().setInstitution(fromDept.getInstitution());
 
