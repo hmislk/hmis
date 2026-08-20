@@ -769,8 +769,54 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Cannot confirm a cancelled bill");
             return;
         }
+        if (!newConfirmed.isApprovedFinalBill()) {
+            JsfUtil.addErrorMessage("Cannot confirm an unapproved bill");
+            return;
+        }
         setAsConfirmedFinalBillInternal(newConfirmed);
         JsfUtil.addSuccessMessage("Final Bill Version Confirmed");
+        finalBillVersions = null;
+    }
+
+    /**
+     * Navigates to the approval page for the given final bill version,
+     * mirroring {@link #prepareEmailFinalBillVersion(Bill)}'s use of the
+     * shared {@link #bill} session field for the target page.
+     */
+    public String navigateToApproveFinalBill(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        bill = b;
+        return "/inward/inward_final_bill_approve?faces-redirect=true";
+    }
+
+    /**
+     * User-facing action to approve a final bill version. Approval is a
+     * prerequisite for confirming a version ({@link #setAsConfirmedFinalBill})
+     * and for emailing it ({@link #emailFinalBillVersionInternal}). Privilege
+     * checks are done in the XHTML via {@code rendered}, not here.
+     */
+    public void approveFinalBillVersion(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        if (b.isApprovedFinalBill()) {
+            JsfUtil.addErrorMessage("Bill already approved");
+            return;
+        }
+        b.setApprovedFinalBill(true);
+        b.setFinalBillApprover(sessionController.getLoggedUser());
+        b.setFinalBillApprovedAt(new Date());
+        getBillFacade().edit(b);
+
+        auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
+                null, b.getId(), sessionController.getLoggedUser(),
+                "Bill", b.getId());
+
+        JsfUtil.addSuccessMessage("Final Bill Approved");
         finalBillVersions = null;
     }
 
@@ -990,6 +1036,10 @@ public class InwardSearch implements Serializable {
         if (b.getBillType() != BillType.InwardFinalBill
                 || b.getBillTypeAtomic() != BillTypeAtomic.INWARD_FINAL_BILL) {
             JsfUtil.addErrorMessage("Selected bill is not a Final Bill");
+            return false;
+        }
+        if (!b.isApprovedFinalBill()) {
+            JsfUtil.addErrorMessage("Cannot email an unapproved Final Bill");
             return false;
         }
         if (emailRecipient == null || emailRecipient.trim().isEmpty()) {

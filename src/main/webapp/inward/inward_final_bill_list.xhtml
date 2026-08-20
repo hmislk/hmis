@@ -91,12 +91,23 @@
                                 </p:column>
 
                                 <p:column headerText="Status">
-                                    <p:tag value="Confirmed" severity="success" rendered="#{b.confirmedFinalBill}" />
-                                    <p:tag value="Cancelled" severity="danger" rendered="#{not b.confirmedFinalBill and b.cancelled}" />
-                                    <p:tag value="Available" severity="secondary" rendered="#{not b.confirmedFinalBill and not b.cancelled}" />
+                                    <p:tag value="Pending Approval" severity="warning" rendered="#{not b.approvedFinalBill}" />
+                                    <p:tag value="Confirmed" severity="success" rendered="#{b.approvedFinalBill and b.confirmedFinalBill}" />
+                                    <p:tag value="Cancelled" severity="danger" rendered="#{b.approvedFinalBill and not b.confirmedFinalBill and b.cancelled}" />
+                                    <p:tag value="Available" severity="secondary" rendered="#{b.approvedFinalBill and not b.confirmedFinalBill and not b.cancelled}" />
                                 </p:column>
 
                                 <p:column headerText="Actions" width="420">
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-gavel"
+                                        class="ui-button-primary me-1"
+                                        value="Approve"
+                                        title="Review and Approve #{b.deptId}"
+                                        action="#{inwardSearch.navigateToApproveFinalBill(b)}"
+                                        rendered="#{not b.approvedFinalBill and webUserController.hasPrivilege('InwardFinalBillApprove')}">
+                                    </p:commandButton>
 
                                     <p:commandButton
                                         ajax="false"
@@ -104,7 +115,8 @@
                                         class="ui-button-info me-1"
                                         value="View / Print"
                                         title="View #{b.deptId}"
-                                        action="/inward/inward_reprint_bill_final?faces-redirect=true">
+                                        action="/inward/inward_reprint_bill_final?faces-redirect=true"
+                                        rendered="#{b.approvedFinalBill}">
                                         <f:setPropertyActionListener
                                             value="#{b}"
                                             target="#{inwardSearch.bill}">
@@ -118,7 +130,7 @@
                                         value="Set as Confirmed"
                                         title="Set as Confirmed #{b.deptId}"
                                         actionListener="#{inwardSearch.setAsConfirmedFinalBill(b)}"
-                                        rendered="#{not b.cancelled and not b.confirmedFinalBill and webUserController.hasPrivilege('InwardFinalBillSetConfirmed')}">
+                                        rendered="#{b.approvedFinalBill and not b.cancelled and not b.confirmedFinalBill and webUserController.hasPrivilege('InwardFinalBillSetConfirmed')}">
                                         <p:confirm header="Confirm" message="Set bill #{b.deptId} as the Confirmed Final Bill?" icon="pi pi-exclamation-triangle" />
                                     </p:commandButton>
 
@@ -150,7 +162,7 @@
                                         value="Email"
                                         title="Email #{b.deptId}"
                                         action="#{inwardSearch.prepareEmailFinalBillVersion(b)}"
-                                        rendered="#{webUserController.hasPrivilege('InwardFinalBillEmail')}">
+                                        rendered="#{b.approvedFinalBill and webUserController.hasPrivilege('InwardFinalBillEmail')}">
                                     </p:commandButton>
 
                                 </p:column>
