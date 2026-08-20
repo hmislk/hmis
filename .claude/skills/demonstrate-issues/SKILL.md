@@ -19,7 +19,8 @@ allowed-tools: Read, Glob, Grep, Bash, PowerShell, mcp__playwright__browser_navi
   mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot,
   mcp__playwright__browser_console_messages, mcp__playwright__browser_network_requests,
   mcp__playwright__browser_evaluate, mcp__playwright__browser_resize,
-  mcp__playwright__browser_tabs, mcp__playwright__browser_close
+  mcp__playwright__browser_tabs, mcp__playwright__browser_close,
+  mcp__playwright__browser_handle_dialog
 ---
 
 # Demonstrate Issues (HMIS)
@@ -123,6 +124,13 @@ happened yet) from "see this, X is broken" (the actual cue). Narration that
 describes what's coming next is not itself a capture cue — wait for the
 concrete bug before recording anything.
 
+The same non-capture handling applies to plain navigation/setup
+instructions interspersed between demos — "go to inpatient dashboard",
+"click room details", "now click admit" — where the user is just directing
+the browser to the next thing worth showing, with no bug implied. Follow
+the instruction, but don't treat it as a capture cue on its own; wait for
+the user to actually point out a problem.
+
 If a capture already happened and the user later clarifies that demo #N was not
 meant as a bug report (e.g. "no error in this page yet, just gathering
 facts"), treat that as an explicit instruction to drop the prior capture —
@@ -130,6 +138,33 @@ whether that clarification arrives in the very next message or a later one:
 acknowledge it ("Dropping demo #N — noted as context only") and exclude it
 from the investigation/filing phases. Don't carry the ambiguity forward and
 make the user re-resolve it during investigation.
+
+### Native JS dialogs mid-demo
+
+If a demo step triggers a native `confirm()`/`alert()` (e.g. clicking an
+"Accept" or "Delete" button that pops a browser-native confirmation), the
+page blocks until the dialog is resolved. Don't guess whether to accept or
+dismiss — pause and ask the user explicitly which one they want, especially
+if their reply is short or ambiguous. Once they've said which, call
+`browser_handle_dialog` with `accept: true` or `accept: false` accordingly.
+
+### When an element-targeted screenshot won't crop cleanly
+
+`browser_take_screenshot`'s `element`/`target` params can return the wrong
+region for a specific gridcell/badge/small element — most often after the
+page has scrolled or re-rendered and the accessibility-tree ref has gone
+stale. If that happens, fall back to a full-page screenshot and crop it
+manually (e.g. PowerShell `System.Drawing`) using coordinates read off the
+page's own layout description.
+
+When computing crop coordinates this way, remember the screenshot PNG is in
+**device pixels**, not the CSS pixels the accessibility snapshot reports
+element positions in — on a machine with a >1x device pixel ratio the two
+disagree by that ratio (e.g. a 2000px-wide described layout can produce a
+3455px-wide PNG, a ~1.73x factor). Derive the scale as
+`image_width / described_css_width` and multiply your target CSS
+coordinates by it before cropping, or the crop will land on the wrong
+region.
 
 **HARD STOP** — do not read application code, form a root-cause hypothesis,
 or otherwise start investigating any demo until the end signal in step 4.
@@ -164,7 +199,14 @@ evidence/attachments after redaction) — together for the user's review.
 
 Default is **one GitHub issue per demonstrated bug**, but if two demos seem
 to share a root cause (or one demo should split into two issues), ask the
-user before filing rather than deciding unilaterally.
+user before filing rather than deciding unilaterally. If the user asks for
+every demo in the batch to be filed as a single combined issue, structure it
+as one issue with a `## Part N` section per demo — each section keeping its
+own full template (summary, environment, repro, expected/actual, root
+cause, evidence) so the parts stay independently actionable/closeable via
+checkboxes despite sharing one issue number. Ask the user if it's unclear
+whether they want this per-section structure or a single merged narrative
+instead.
 
 **HARD STOP** — do not file anything until the user confirms the exact
 final body and attachments for this batch.

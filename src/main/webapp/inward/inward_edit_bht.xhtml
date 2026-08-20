@@ -17,7 +17,7 @@
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
             <h:form>
-                <h:panelGroup class="row" rendered="#{bhtEditController.current.bhtNo eq null}">
+                <h:panelGroup class="row" rendered="#{not bhtEditController.admissionEditFormReady}">
                     <div class="col-12">
                         <p:panel styleClass="shadow-sm">
                             <f:facet name="header">
@@ -68,7 +68,7 @@
                                                                        var="ins"
                                                                        itemLabel="#{ins.name}"
                                                                        itemValue="#{ins}" />
-                                                        <p:ajax listener="#{bhtEditController.onInstitutionChange}" update="acPt pnlPatientPreview" />
+                                                        <p:ajax listener="#{bhtEditController.onInstitutionChange}" update="acPt pnlPatientPreview btnSelect" />
                                                     </p:selectOneMenu>
                                                 </div>
                                             </div>
@@ -92,7 +92,7 @@
                                                         minQueryLength="2"
                                                         style="width: 100%;"
                                                         inputStyleClass="form-control form-control-lg">
-                                                        <p:ajax event="itemSelect" update="pnlPatientPreview" />
+                                                        <p:ajax event="itemSelect" update="pnlPatientPreview btnSelect" />
                                                         <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
                                                             <div class="d-flex align-items-center">
                                                                 <i class="fa-solid fa-id-card me-2 text-info"></i>
@@ -197,7 +197,7 @@
                     </div>
                 </h:panelGroup>
 
-                <h:panelGroup  rendered="#{bhtEditController.current.bhtNo ne null}"> 
+                <h:panelGroup  rendered="#{bhtEditController.admissionEditFormReady}">
                     <p:panel>
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">

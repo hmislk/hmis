@@ -1202,8 +1202,9 @@ public class RetailSaleNativeSqlController1 implements Serializable, ControllerW
         }
         qry = qry.replaceAll("[\\n\\r]", "").trim();
 
+        Department department = sessionController.getLoggedUser().getDepartment();
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", sessionController.getLoggedUser().getDepartment());
+        parameters.put("department", department);
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry + "%");
 
@@ -1235,9 +1236,75 @@ public class RetailSaleNativeSqlController1 implements Serializable, ControllerW
         }
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
+        Integer configuredMaxResult = configOptionApplicationController.getIntegerValueByKey(
+                "Pharmacy Retail Sale - Medicine Autocomplete Max Results", 20);
+        int maxResult = configuredMaxResult == null || configuredMaxResult < 1
+                ? 20
+                : configuredMaxResult;
+
         lastAutocompleteResults = (List<StockDTO>) stockFacade.findLightsByJpql(
-                sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
-        return lastAutocompleteResults != null ? lastAutocompleteResults : new ArrayList<>();
+                sql.toString(), parameters, TemporalType.TIMESTAMP, maxResult);
+        if (lastAutocompleteResults == null) {
+            lastAutocompleteResults = new ArrayList<>();
+        }
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Retail Sale - Show Total AMP Stock in Autocomplete", false)) {
+            populateTotalStockQty(lastAutocompleteResults, department);
+        }
+        return lastAutocompleteResults;
+    }
+
+    /**
+     * Populates the AMP-wide total stock quantity (summed across all batches
+     * of the item in the given department) onto each StockDTO's
+     * totalStockQty field. This is separate from the per-batch "Stocks"
+     * value already present on the DTO (dto.getStock()), which reflects only
+     * the single matched Stock row.
+     * <p>
+     * Gated behind the "Pharmacy Retail Sale - Show Total AMP Stock in
+     * Autocomplete" config key so it never runs unless explicitly enabled.
+     * Runs exactly one aggregate JPQL query regardless of list size (never a
+     * per-row subquery).
+     */
+    private void populateTotalStockQty(List<StockDTO> stocks, Department department) {
+        if (stocks == null || stocks.isEmpty()) {
+            return;
+        }
+        List<Long> itemIds = new ArrayList<>();
+        for (StockDTO dto : stocks) {
+            Long itemId = dto.getItemId();
+            if (itemId != null && !itemIds.contains(itemId)) {
+                itemIds.add(itemId);
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemIds", itemIds);
+        params.put("department", department);
+        String jpql = "SELECT s.itemBatch.item.id, SUM(s.stock) FROM Stock s "
+                + "WHERE s.itemBatch.item.id IN :itemIds AND s.department = :department "
+                + "GROUP BY s.itemBatch.item.id";
+        List<Object[]> rows = stockFacade.findAggregates(jpql, params);
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> totals = new HashMap<>();
+        for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) {
+                continue;
+            }
+            Long itemId = ((Number) row[0]).longValue();
+            Double totalStock = ((Number) row[1]).doubleValue();
+            totals.put(itemId, totalStock);
+        }
+
+        for (StockDTO dto : stocks) {
+            dto.setTotalStockQty(totals.get(dto.getItemId()));
+        }
     }
 
     public void handleSelect(SelectEvent<StockDTO> event) {
