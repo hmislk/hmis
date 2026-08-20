@@ -13,7 +13,7 @@
             <ui:define name="content">
                 <h:form id="formEmailFinalBill" enctype="multipart/form-data">
 
-                    <p:panel rendered="#{webUserController.hasPrivilege('InwardFinalBillEmail') and inwardSearch.bill ne null and inwardSearch.bill.approvedFinalBill and inwardSearch.bill.billType eq 'InwardFinalBill' and inwardSearch.bill.billTypeAtomic eq 'INWARD_FINAL_BILL'}">
+                    <p:panel rendered="#{webUserController.hasPrivilege('InwardFinalBillEmail') and inwardSearch.bill ne null and inwardSearch.bill.approveAt ne null and inwardSearch.bill.billType eq 'InwardFinalBill' and inwardSearch.bill.billTypeAtomic eq 'INWARD_FINAL_BILL'}">
 
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">

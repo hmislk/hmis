@@ -15,8 +15,8 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approvedFinalBill}">
-                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approvedFinalBill}" class="">
+                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt ne null}">
+                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt ne null}" class="">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
                                     <div class="d-flex">
@@ -1045,7 +1045,7 @@
 
                     </p:panel>
 
-                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and not inwardSearch.bill.approvedFinalBill}">
+                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt eq null}">
                         <h:outputText value="This final bill has not been approved yet and cannot be viewed or printed." styleClass="text-danger" />
                     </p:panel>
                 </h:form>

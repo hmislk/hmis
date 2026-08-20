@@ -373,12 +373,6 @@ public class Bill implements Serializable, RetirableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill previousVersion;           // the bill this version was created from; null for the first version; display-only, not used in any query
 
-    private boolean approvedFinalBill;
-    @ManyToOne(fetch = FetchType.LAZY)
-    private WebUser finalBillApprover;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date finalBillApprovedAt;
-
     @Transient
     private double tmpReturnTotal;
     @Transient
@@ -2142,30 +2136,6 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPreviousVersion(Bill previousVersion) {
         this.previousVersion = previousVersion;
-    }
-
-    public boolean isApprovedFinalBill() {
-        return approvedFinalBill;
-    }
-
-    public void setApprovedFinalBill(boolean approvedFinalBill) {
-        this.approvedFinalBill = approvedFinalBill;
-    }
-
-    public WebUser getFinalBillApprover() {
-        return finalBillApprover;
-    }
-
-    public void setFinalBillApprover(WebUser finalBillApprover) {
-        this.finalBillApprover = finalBillApprover;
-    }
-
-    public Date getFinalBillApprovedAt() {
-        return finalBillApprovedAt;
-    }
-
-    public void setFinalBillApprovedAt(Date finalBillApprovedAt) {
-        this.finalBillApprovedAt = finalBillApprovedAt;
     }
 
     public List<Bill> getForwardReferenceBills() {

@@ -36,7 +36,7 @@
                             </div>
                         </f:facet>
 
-                        <p:panel rendered="#{inwardSearch.bill.approvedFinalBill}" class="mb-3">
+                        <p:panel rendered="#{inwardSearch.bill.approveAt ne null}" class="mb-3">
                             <h:outputText value="This bill has already been approved." styleClass="text-success" />
                         </p:panel>
 
@@ -58,7 +58,7 @@
                                 title="Approve #{inwardSearch.bill.deptId}"
                                 actionListener="#{inwardSearch.approveFinalBillVersion(inwardSearch.bill)}"
                                 action="/inward/inward_final_bill_list?faces-redirect=true"
-                                rendered="#{not inwardSearch.bill.approvedFinalBill}">
+                                rendered="#{inwardSearch.bill.approveAt eq null}">
                                 <p:confirm header="Confirm Approval" message="Approve final bill #{inwardSearch.bill.deptId}? Once approved it can be viewed, printed, emailed, and confirmed." icon="pi pi-exclamation-triangle" />
                             </p:commandButton>
 
