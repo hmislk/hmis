@@ -264,15 +264,15 @@ DELETE /api/inward/room-facility-charges/{id}?retireComments=reason
 
 ## 4. Room Facility Timed Items — `/api/inward/room-facility-charges/{id}/timed-items`
 
-Manages the list of individual `TimedItem` services attached to a room facility charge (issue
-#23147), so each is auto-billed based on duration of stay alongside the fixed room charges. This
+Manages the list of individual `TimedItem` services attached to a room facility charge
+(issue `#23147`), so each is auto-billed based on duration of stay alongside the fixed room charges. This
 is distinct from the `timedItemFee` block-duration/overshoot config on the parent charge (§3
 above) — that config controls *how* time-based billing is calculated; this list controls *which*
 items get billed that way.
 
 ### GET — List attached timed items
 
-```
+```text
 GET /api/inward/room-facility-charges/{id}/timed-items
 ```
 
@@ -296,7 +296,7 @@ GET /api/inward/room-facility-charges/{id}/timed-items
 
 ### POST — Attach a timed item
 
-```
+```text
 POST /api/inward/room-facility-charges/{id}/timed-items
 Content-Type: application/json
 ```
@@ -310,18 +310,20 @@ Content-Type: application/json
 | timedItemId | Yes | ID of the `TimedItem` to attach |
 
 **Response 201** — created attachment record (same shape as the GET list rows).
+**Response 404** — room facility charge `{id}` not found or retired.
 **Response 409** — already attached (an active attachment for this `TimedItem` already exists on
 this room facility charge).
 **Response 400** — `timedItemId` missing, or the `TimedItem` doesn't exist / is retired.
 
 ### DELETE — Soft-retire an attachment
 
-```
+```text
 DELETE /api/inward/room-facility-charges/{id}/timed-items/{linkId}?retireComments=reason
 ```
 
 Retires the attachment (`{linkId}`), not the underlying `TimedItem`. Returns 404 if the
-attachment doesn't belong to `{id}` or doesn't exist; 400 if already retired.
+attachment doesn't belong to `{id}` or doesn't exist, or if the room facility charge `{id}` itself
+is not found or retired; 400 if already retired.
 
 ---
 

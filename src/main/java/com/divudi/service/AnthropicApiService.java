@@ -778,7 +778,8 @@ public class AnthropicApiService implements Serializable {
                         + "LIST_TIMED_ITEMS, ADD_TIMED_ITEM, REMOVE_TIMED_ITEM (attach/detach TimedItem services that "
                         + "auto-bill by duration of stay alongside a room facility charge's fixed fees; id = the "
                         + "room facility charge id, timedItemId = the TimedItem to attach for ADD_TIMED_ITEM, "
-                        + "id/linkId identify the attachment to remove for REMOVE_TIMED_ITEM). "
+                        + "id/linkId identify the attachment to remove for REMOVE_TIMED_ITEM; retireComments is "
+                        + "optional for REMOVE_TIMED_ITEM). "
                         + "Always confirm with the user before creating, updating, or retiring records.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
