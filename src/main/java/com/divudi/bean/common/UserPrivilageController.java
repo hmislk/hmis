@@ -261,6 +261,17 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment, "By Current Department - Logged Department"), admissionSearchScopeNode);
 
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReport, "Inward Reports"), inwardNode);
+
+        TreeNode inwardDashboardReportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inpatient Dashboard - Reports Panel Buttons"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPharmacyIssueSummary, "Pharmacy Issue Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportServiceSummary, "Service Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportServiceBills, "All Inward Service Bills"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPaymentsAndCancellations, "Payments & Cancellations"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPharmacyAndServiceSummary, "Pharmacy & Services Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportLabBillSummary, "Lab Bill Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportLabResultSummary, "Lab Result Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPharmacyIssueSummaryLegacy, "Pharmacy Issue Summary (Legacy)"), inwardDashboardReportsNode);
+
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPostDischargeReports, "Inward Post-Discharge Reports"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdministration, "Administration"), inwardNode);
 
