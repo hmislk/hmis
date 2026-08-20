@@ -262,6 +262,69 @@ DELETE /api/inward/room-facility-charges/{id}?retireComments=reason
 
 ---
 
+## 4. Room Facility Timed Items — `/api/inward/room-facility-charges/{id}/timed-items`
+
+Manages the list of individual `TimedItem` services attached to a room facility charge (issue
+#23147), so each is auto-billed based on duration of stay alongside the fixed room charges. This
+is distinct from the `timedItemFee` block-duration/overshoot config on the parent charge (§3
+above) — that config controls *how* time-based billing is calculated; this list controls *which*
+items get billed that way.
+
+### GET — List attached timed items
+
+```
+GET /api/inward/room-facility-charges/{id}/timed-items
+```
+
+`{id}` is the `RoomFacilityCharge` id. Returns 404 if not found / retired.
+
+**Response 200:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [
+    {
+      "id": 7,
+      "timedItem": { "id": 42, "name": "ICU Bed Charge" },
+      "createdAt": "2026-08-20 10:15:00",
+      "retired": false
+    }
+  ]
+}
+```
+
+### POST — Attach a timed item
+
+```
+POST /api/inward/room-facility-charges/{id}/timed-items
+Content-Type: application/json
+```
+
+```json
+{ "timedItemId": 42 }
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| timedItemId | Yes | ID of the `TimedItem` to attach |
+
+**Response 201** — created attachment record (same shape as the GET list rows).
+**Response 409** — already attached (an active attachment for this `TimedItem` already exists on
+this room facility charge).
+**Response 400** — `timedItemId` missing, or the `TimedItem` doesn't exist / is retired.
+
+### DELETE — Soft-retire an attachment
+
+```
+DELETE /api/inward/room-facility-charges/{id}/timed-items/{linkId}?retireComments=reason
+```
+
+Retires the attachment (`{linkId}`), not the underlying `TimedItem`. Returns 404 if the
+attachment doesn't belong to `{id}` or doesn't exist; 400 if already retired.
+
+---
+
 ## Bed-board SVG (issue #21592)
 
 A room is a **leaf** in the bed-board hierarchy (Site → Building → Floor → Unit →
@@ -317,6 +380,11 @@ curl -s -H "Finance: $KEY" -H "Content-Type: application/json" \
   -X POST "$BASE/api/inward/room-facility-charges" \
   -d '{"name":"Room 101 - Cash","roomId":10,"roomCategoryId":1,"roomCharge":1500,"timedItemFeeDurationHours":24}' | python -m json.tool
 
-# 4. Verify capabilities
+# 4. Attach a Timed Item to that charge (use the charge id from step 3, TimedItem id from /api/timed-items)
+curl -s -H "Finance: $KEY" -H "Content-Type: application/json" \
+  -X POST "$BASE/api/inward/room-facility-charges/20/timed-items" \
+  -d '{"timedItemId":42}' | python -m json.tool
+
+# 5. Verify capabilities
 curl -s "$BASE/api/capabilities" | python -m json.tool
 ```

@@ -225,6 +225,14 @@ public class CapabilityStatementResource {
                         + "timedItemFeeDurationDaysForMoCharge.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Facility Timed Items", "/api/inward/room-facility-charges/{id}/timed-items",
+                        "Manage the list of TimedItem services attached to a room facility charge (backs the "
+                        + "'Timed Items' section of /inward/inward_room_facility.xhtml), so they auto-bill "
+                        + "based on duration of stay alongside the fixed room charges. "
+                        + "POST body: timedItemId (required). A TimedItem cannot be attached twice while active "
+                        + "(409 conflict). DELETE soft-retires the attachment, not the TimedItem itself.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
                 .add(resource("Item Requests", "/api/itemrequests",
                         "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as "
                         + "InwardService items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's "

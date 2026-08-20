@@ -774,7 +774,11 @@ public class AnthropicApiService implements Serializable {
                         "Manage inward room master data: room categories, rooms, and room facility charges (room fee configs). "
                         + "Methods: LIST_CATEGORIES, POST_CATEGORY, PUT_CATEGORY, DELETE_CATEGORY, "
                         + "LIST_ROOMS, POST_ROOM, PUT_ROOM, DELETE_ROOM, "
-                        + "LIST_CHARGES, POST_CHARGE, PUT_CHARGE, DELETE_CHARGE. "
+                        + "LIST_CHARGES, POST_CHARGE, PUT_CHARGE, DELETE_CHARGE, "
+                        + "LIST_TIMED_ITEMS, ADD_TIMED_ITEM, REMOVE_TIMED_ITEM (attach/detach TimedItem services that "
+                        + "auto-bill by duration of stay alongside a room facility charge's fixed fees; id = the "
+                        + "room facility charge id, timedItemId = the TimedItem to attach for ADD_TIMED_ITEM, "
+                        + "id/linkId identify the attachment to remove for REMOVE_TIMED_ITEM). "
                         + "Always confirm with the user before creating, updating, or retiring records.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
@@ -784,11 +788,19 @@ public class AnthropicApiService implements Serializable {
                                         .add("enum", Json.createArrayBuilder()
                                                 .add("LIST_CATEGORIES").add("GET_CATEGORY").add("POST_CATEGORY").add("PUT_CATEGORY").add("DELETE_CATEGORY")
                                                 .add("LIST_ROOMS").add("GET_ROOM").add("POST_ROOM").add("PUT_ROOM").add("DELETE_ROOM")
-                                                .add("LIST_CHARGES").add("GET_CHARGE").add("POST_CHARGE").add("PUT_CHARGE").add("DELETE_CHARGE"))
+                                                .add("LIST_CHARGES").add("GET_CHARGE").add("POST_CHARGE").add("PUT_CHARGE").add("DELETE_CHARGE")
+                                                .add("LIST_TIMED_ITEMS").add("ADD_TIMED_ITEM").add("REMOVE_TIMED_ITEM"))
                                         .add("description", "Operation to perform."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Record id. Required for PUT and DELETE methods."))
+                                        .add("description", "Record id. Required for PUT and DELETE methods. "
+                                                + "For LIST_TIMED_ITEMS/ADD_TIMED_ITEM/REMOVE_TIMED_ITEM this is the room facility charge id."))
+                                .add("timedItemId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "TimedItem id to attach. Required for ADD_TIMED_ITEM."))
+                                .add("linkId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "RoomFacilityTimedItem attachment id to remove. Required for REMOVE_TIMED_ITEM."))
                                 .add("name", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Name of the record. Required for POST methods."))
@@ -2345,11 +2357,13 @@ public class AnthropicApiService implements Serializable {
                     String query          = toolInput.containsKey("query")                          ? toolInput.getString("query", "")                          : "";
                     String size           = toolInput.containsKey("size")                           ? toolInput.getString("size", "")                           : "";
                     String retireComments = toolInput.containsKey("retireComments")                 ? toolInput.getString("retireComments", "")                 : "";
+                    String timedItemId    = toolInput.containsKey("timedItemId")                    ? toolInput.getString("timedItemId", "")                    : "";
+                    String linkId         = toolInput.containsKey("linkId")                         ? toolInput.getString("linkId", "")                         : "";
                     return callInwardRoomsApi(method, id, name, code, desc, roomCategoryId, roomId,
                             departmentId, filled, svgChildView, roomCharge, maintCharge, linenCharge, nursingCharge,
                             moCharge, moAfterCharge, adminCharge, medCareCharge,
                             durationHours, overShoot, durationDays,
-                            query, size, retireComments, hmisBaseUrl, hmisApiKey);
+                            query, size, retireComments, timedItemId, linkId, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_bed_board_svg": {
                     String method        = toolInput.getString("method", "GET_SITE");
@@ -3872,7 +3886,7 @@ public class AnthropicApiService implements Serializable {
             String roomCharge, String maintananceCharge, String linenCharge, String nursingCharge,
             String moCharge, String moChargeForAfterDuration, String adminstrationCharge, String medicalCareCharge,
             String timedItemFeeDurationHours, String timedItemFeeOverShootHours, String timedItemFeeDurationDaysForMoCharge,
-            String query, String size, String retireComments,
+            String query, String size, String retireComments, String timedItemId, String linkId,
             String hmisBaseUrl, String hmisApiKey) {
 
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
@@ -4066,6 +4080,34 @@ public class AnthropicApiService implements Serializable {
                 case "DELETE_CHARGE": {
                     if (id == null || id.isEmpty()) return "Error: id is required for DELETE_CHARGE.";
                     StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-facility-charges/").append(id);
+                    if (retireComments != null && !retireComments.isEmpty()) url.append("?retireComments=").append(java.net.URLEncoder.encode(retireComments, java.nio.charset.StandardCharsets.UTF_8));
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .DELETE().build();
+                    break;
+                }
+                case "LIST_TIMED_ITEMS": {
+                    if (id == null || id.isEmpty()) return "Error: id (room facility charge id) is required for LIST_TIMED_ITEMS.";
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges/" + id + "/timed-items"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
+                case "ADD_TIMED_ITEM": {
+                    if (id == null || id.isEmpty()) return "Error: id (room facility charge id) is required for ADD_TIMED_ITEM.";
+                    if (timedItemId == null || timedItemId.isEmpty()) return "Error: timedItemId is required for ADD_TIMED_ITEM.";
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    bodyMap.put("timedItemId", Long.parseLong(timedItemId));
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges/" + id + "/timed-items"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "REMOVE_TIMED_ITEM": {
+                    if (id == null || id.isEmpty()) return "Error: id (room facility charge id) is required for REMOVE_TIMED_ITEM.";
+                    if (linkId == null || linkId.isEmpty()) return "Error: linkId is required for REMOVE_TIMED_ITEM.";
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-facility-charges/").append(id).append("/timed-items/").append(linkId);
                     if (retireComments != null && !retireComments.isEmpty()) url.append("?retireComments=").append(java.net.URLEncoder.encode(retireComments, java.nio.charset.StandardCharsets.UTF_8));
                     request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -5912,6 +5954,9 @@ public class AnthropicApiService implements Serializable {
           .append("POST_CATEGORY / POST_ROOM / POST_CHARGE to create new records. ")
           .append("PUT_CATEGORY / PUT_ROOM / PUT_CHARGE to update. ")
           .append("DELETE_CATEGORY / DELETE_ROOM / DELETE_CHARGE to soft-retire. ")
+          .append("LIST_TIMED_ITEMS / ADD_TIMED_ITEM / REMOVE_TIMED_ITEM manage the TimedItem services attached to a ")
+          .append("room facility charge so they auto-bill by duration of stay alongside its fixed fees ")
+          .append("(id = room facility charge id; timedItemId required for ADD_TIMED_ITEM; linkId required for REMOVE_TIMED_ITEM). ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward room billing.\n\n");
         sb.append("### manage_bed_board_svg\n");
         sb.append("Read and set the graphical bed-board SVG drawings used by the Inpatient Bed Board page. ")
@@ -6596,7 +6641,10 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/inward/room-facility-charges/{id}", "Fetch one room facility charge"},
                     {"POST",   "/inward/room-facility-charges",    "Create room facility charge. Body: name (required), roomId, roomCategoryId, departmentId, charge fields, timedItemFee fields"},
                     {"PUT",    "/inward/room-facility-charges/{id}", "Update room facility charge"},
-                    {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"}
+                    {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"},
+                    {"GET",    "/inward/room-facility-charges/{id}/timed-items", "List TimedItems attached to a room facility charge"},
+                    {"POST",   "/inward/room-facility-charges/{id}/timed-items", "Attach a TimedItem. Body: timedItemId (required)"},
+                    {"DELETE", "/inward/room-facility-charges/{id}/timed-items/{linkId}", "Soft-retire a TimedItem attachment"}
                 });
 
         appendModule(sb, "Inward - Item Requests", "/itemrequests",
