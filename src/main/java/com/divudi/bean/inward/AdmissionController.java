@@ -2969,13 +2969,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // getRoomFacilityCharge() may be null; attempting to save it would NPE. (Issue #21183)
         if (getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = new PatientRoom();
-            if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
-                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
-                getCurrent().setRoomAdmitted(true);
-            } else {
-                getCurrent().setRoomAdmitted(false);
-                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), getCurrent(), getSessionController().getLoggedUser());
-            }
+            // Room is always fully set up (charges, admittedAt, admitted=true) at admission
+            // time, regardless of the "simultaneous processes" config — that config only
+            // controls whether a nurse handover request is also created below (Issue #23145).
+            currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
+            getCurrent().setRoomAdmitted(true);
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
 
@@ -3011,7 +3009,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 }
             }
 
-            if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)
+                    && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
                 handoverRequest.setAdmission(getCurrent());
                 handoverRequest.setFromPatientRoom(null);
