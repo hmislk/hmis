@@ -7,6 +7,7 @@ on:
       - '*-prod'
       - 'staging'
       - 'hims-qa*'
+      - 'rh-local-staging'
 
 jobs:
   check-branch:
@@ -27,14 +28,19 @@ jobs:
               echo "❌ Merging from $SOURCE to $TARGET is not allowed. If this is a hot-fix, please check if branch name ends with '-hotfix'."
               exit 1
             fi
-          elif [[ "$TARGET" == "hims-qa1" || "$TARGET" == "hims-qa2" || "$TARGET" == "hims-qa3" ]]; then
+          elif [[ "$TARGET" == "hims-qa1" || "$TARGET" == "hims-qa2" || "$TARGET" == "hims-qa3" || "$TARGET" == "hims-qa4" || "$TARGET" == "hims-qa1-migrated" || "$TARGET" == "hims-qa2-migrated" || "$TARGET" == "hims-qa3-migrated" || "$TARGET" == "hims-qa4-migrated" ]]; then
             if [[ "$SOURCE" != "development" ]]; then
               echo "❌ Only development can merge to $TARGET (qa restriction)."
               exit 1
             fi
           elif [[ "$TARGET" == "staging" ]]; then
-            if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" && "$SOURCE" != "hims-qa3" ]]; then
-              echo "❌ Only hims-qa1, hims-qa2 and hims-qa3 can merge to $TARGET (staging restriction)."
+            if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" && "$SOURCE" != "hims-qa3" && "$SOURCE" != "hims-qa4" && "$SOURCE" != "hims-qa1-migrated" && "$SOURCE" != "hims-qa2-migrated" && "$SOURCE" != "hims-qa3-migrated" && "$SOURCE" != "hims-qa4-migrated" && "$SOURCE" != "development" ]]; then
+              echo "❌ Only the hims-qa branches or development can merge to $TARGET (staging restriction)."
+              exit 1
+            fi
+          elif [[ "$TARGET" == "rh-local-staging" ]]; then
+            if [[ "$SOURCE" != "development" ]]; then
+              echo "❌ Only development can merge to $TARGET (rh-local-staging restriction)."
               exit 1
             fi
           fi

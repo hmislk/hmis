@@ -1244,9 +1244,15 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
         }
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+        
+        Integer configuredMaxResult = configOptionApplicationController.getIntegerValueByKey(
+                "Pharmacy Retail Sale - Medicine Autocomplete Max Results", 20);
+        int maxResult = configuredMaxResult == null || configuredMaxResult < 1
+                ? 20
+                : configuredMaxResult;
 
         lastAutocompleteResults = (List<StockDTO>) stockFacade.findLightsByJpql(
-                sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+                sql.toString(), parameters, TemporalType.TIMESTAMP, maxResult);
         if (lastAutocompleteResults == null) {
             lastAutocompleteResults = new ArrayList<>();
         }
