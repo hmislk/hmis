@@ -84,7 +84,7 @@
                             <p:panel header="" >
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between">
-                                        <h:outputLabel value="Reference Bill Details" class="mt-2"/>
+                                        <h:outputText value="Reference Bill Details" class="mt-2"/>
                                         <p:commandButton 
                                             class="mx-2 ui-button-success" 
                                             icon="fas fa-file-excel"
@@ -107,31 +107,31 @@
                                     rowsPerPageTemplate="20,50,100">
 
                                     <p:column style="text-align: center; margin-left: 10%; padding: 6px;" width="3em;" headerText="#">
-                                        <h:outputLabel value="#{i+1}"/>
+                                        <h:outputText value="#{i+1}"/>
                                     </p:column>
 
                                     <p:column style="text-align: left; padding: 6px;" headerText="Bill No" width="12em;">
-                                        <h:outputLabel value="#{bip.referenceBill.deptId}"/>
+                                        <h:outputText value="#{bip.referenceBill.deptId}"/>
                                     </p:column>
 
                                     <p:column style="text-align: left; padding: 6px;" headerText="Bill At" width="12em;">
-                                        <h:outputLabel value="#{bip.referenceBill.createdAt}">
+                                        <h:outputText value="#{bip.referenceBill.createdAt}">
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column style="text-align: left; padding: 6px;" width="8em;" headerText="Ref. Number">
-                                        <h:outputLabel value="#{bip.referenceBill.referenceNumber}"/>
+                                        <h:outputText value="#{bip.referenceBill.referenceNumber}"/>
                                     </p:column>
 
                                     <p:column style="text-align: left; padding: 6px;" headerText="Patient Name">
-                                        <h:outputLabel value="#{bip.referenceBill.patient.person.nameWithTitle}"/>
+                                        <h:outputText value="#{bip.referenceBill.patient.person.nameWithTitle}"/>
                                     </p:column>
 
                                     <p:column style="text-align: right; width: 8em; padding: 6px;" headerText="Amount">
-                                        <h:outputLabel value="#{bip.netValue}" class="d-flex justify-content-end mx-2">
+                                        <h:outputText value="#{bip.netValue}" class="d-flex justify-content-end mx-2">
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        </h:outputText>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
