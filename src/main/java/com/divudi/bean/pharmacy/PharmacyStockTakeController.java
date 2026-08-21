@@ -27,6 +27,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import javax.faces.context.FacesContext;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.service.pharmacy.StockTakeApprovalService;
@@ -1576,6 +1577,13 @@ public class PharmacyStockTakeController implements Serializable {
                     snapshotBillDisplay.getNetTotal(), Boolean.FALSE);
         }
 
+        // doApprovalLogic() may have queued a warning that some lines were not applied
+        // to stock. Without this the redirect below discards it and the operator is told
+        // nothing - which is how the Southern Lanka partial adjustments went unnoticed.
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc != null) {
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+        }
         return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
     }
 
