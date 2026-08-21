@@ -2707,7 +2707,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public UserPreference getDepartmentPreference() {
-        //System.out.println("getting departmentPreference = " + departmentPreference);
+        if (departmentPreference == null) {
+            departmentPreference = getApplicationPreference();
+        }
         return departmentPreference;
     }
 
