@@ -11499,12 +11499,30 @@ public class PharmacyController implements Serializable {
         }
 
         workbook.setSheetName(0, reportTitle);
-        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
+        // Reserve exactly enough rows for the metadata block below: institution row +
+        // title row + ceil(filterCount / 3) filter rows (addMetaDataToExcelSheet packs
+        // 3 label/value pairs per row) + 1 blank spacer row (reused as the "Generated
+        // On" row) + 1 trailing blank spacer before the report's own header row.
+        // This used to be a hardcoded 7, tuned for exactly the GRN Summary Report's 7
+        // filters — with the GRN/Direct Purchase Report's 11 filters (one more filter
+        // row), the fixed rowIndex=5 for "Generated On" silently overwrote the last
+        // filter row's Supplier/report-type values instead of landing on the blank
+        // spacer. Computing both from the actual filter count keeps this correct for
+        // either caller. See issue #23170 (CodeRabbit review on PR #23195).
+        int filterCount = (filters != null) ? filters.size() : 0;
+        int filterRows = (int) Math.ceil(filterCount / 3.0);
+        int metadataContentRows = 2 + filterRows; // institution + title + filter rows
+        int shiftAmount = metadataContentRows + 2; // + blank spacer (Generated On) + trailing blank
+        sheet.shiftRows(0, sheet.getLastRowNum(), shiftAmount);
+
+        int rowIndex = 0;
         if (filters != null && !filters.isEmpty()) {
-            addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters);
+            // addMetaDataToExcelSheet() returns the row index just past its own
+            // trailing blank spacer row; back up one row to write "Generated On" into
+            // that spacer row instead of appending a whole extra row after it.
+            rowIndex = addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters) - 1;
         }
-        int rowIndex = 5;
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         // Add "Generated On" row with current date and time
         Row generatedOnRow = sheet.createRow(rowIndex++);
