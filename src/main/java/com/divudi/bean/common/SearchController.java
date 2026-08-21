@@ -4678,6 +4678,11 @@ public class SearchController implements Serializable {
         billedDepartment = null;
         visitType = null;
         methodType = null;
+        // Transfer Requests to Approve list (pharmacy_transfer_request_list_to_approve.xhtml) —
+        // navigateToTransferRequestApprove() calls makeNull() before navigating here, but this
+        // field was never included, so the previous search's results stayed on screen until the
+        // user searched again. See issue #23116.
+        transferRequestsToApproveDtos = null;
     }
 
     public void resetTotals() {
