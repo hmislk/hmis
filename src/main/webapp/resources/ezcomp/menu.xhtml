@@ -751,6 +751,26 @@
                         rendered="#{webUserController.hasPrivilege('InwardReport')}" >
                     </p:menuitem>
 
+                    <p:menuitem
+                        ajax="false"
+                        id="smTheatreDashboard"
+                        value="Theatre Dashboard"
+                        title="Theatre Dashboard"
+                        icon="fa fa-procedures"
+                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                        action="#{theatreDashboardController.navigateToTheatreDashboard()}">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        id="smTheatreSchedule"
+                        value="Theatre Schedule"
+                        title="Theatre Schedule"
+                        icon="fa fa-calendar-alt"
+                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                        action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}">
+                    </p:menuitem>
+
                 </p:submenu>
 
                 <!--            Collecting Centre Section-->

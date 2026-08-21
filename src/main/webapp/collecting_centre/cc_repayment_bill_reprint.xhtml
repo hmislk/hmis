@@ -35,7 +35,7 @@
                                         disabled="#{collectingCentrePaymentController.currentPaymentBill.cancelled}"
                                         icon="fa fa-times">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="ui-button-warning"
                                         ajax="false"
@@ -43,7 +43,7 @@
                                         action="/collecting_centre/collecting_centre_repayment_bill_search?faces-redirect=true"
                                         icon="fa fa-long-arrow-left">
                                     </p:commandButton>
-                                    
+
                                 </div>
                             </div>
 
@@ -68,6 +68,8 @@
                                     </p:panel>
                                 </p:panelGrid>
 
+
+
                             </div>
 
                             <div class="col-md-6">
@@ -76,6 +78,63 @@
                                 </h:panelGroup>
                             </div>
 
+                        </div>
+
+                        <div class="mt-3">
+                            <p:panel header="" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Reference Bill Details" class="mt-2"/>
+                                        <p:commandButton 
+                                            class="mx-2 ui-button-success" 
+                                            icon="fas fa-file-excel"
+                                            ajax="false" 
+                                            value="Export Excel">
+                                            <p:dataExporter type="xlsx" target="referenceBillDetails" fileName="CC Payment Reference Bill Details" />
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet>
+                                <p:dataTable 
+                                    value="#{billBeanController.fetchBillItems(collectingCentrePaymentController.currentPaymentBill)}"
+                                    var="bip" 
+                                    rowIndexVar="i"
+                                    style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " 
+                                    paginator="true" 
+                                    rows="20"
+                                    id="referenceBillDetails"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="20,50,100">
+
+                                    <p:column style="text-align: center; margin-left: 10%; padding: 6px;" width="3em;" headerText="#">
+                                        <h:outputText value="#{i+1}"/>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; padding: 6px;" headerText="Bill No" width="12em;">
+                                        <h:outputText value="#{bip.referenceBill.deptId}"/>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; padding: 6px;" headerText="Bill At" width="12em;">
+                                        <h:outputText value="#{bip.referenceBill.createdAt}">
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; padding: 6px;" width="8em;" headerText="Ref. Number">
+                                        <h:outputText value="#{bip.referenceBill.referenceNumber}"/>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; padding: 6px;" headerText="Patient Name">
+                                        <h:outputText value="#{bip.referenceBill.patient.person.nameWithTitle}"/>
+                                    </p:column>
+
+                                    <p:column style="text-align: right; width: 8em; padding: 6px;" headerText="Amount">
+                                        <h:outputText value="#{bip.netValue}" class="d-flex justify-content-end mx-2">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
                         </div>
                     </p:panel>
                 </h:form>
