@@ -1927,7 +1927,41 @@ actually proves the WAR builds and packages the fix correctly. Verified while
 testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
 way in seconds instead of a multi-minute rebuild).
 
-## 75. `isXxx(arg)` boolean methods with a parameter don't resolve via the JSF EL property-getter convention — drop the `is` prefix
+## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
+
+To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
+admission, the discharge steps on `admission_profile.xhtml` must run in this
+exact order — doing them out of order produces a visible error banner, not a
+silent failure:
+
+1. **Room discharge** (Room Management → "Discharge from Room") — must
+   happen before Nursing Discharge.
+2. **Nursing Discharge** (`inward_nursing_discharge.xhtml`, "Confirm Nursing
+   Discharge") and **Clinical Discharge** — both must complete before the
+   Interim Bill's own "Discharge" button will accept the bill.
+3. **Interim Bill → Discharge** (sets `PATIENTENCOUNTER.DISCHARGED=1`) —
+   only after step 2. Attempting it earlier shows "Nursing discharge must be
+   completed before the bill can be settled."
+4. **Create Final Bill** — only after step 3.
+5. **Physical Discharge** — counter-intuitively, this can only be confirmed
+   **after** the Final Bill already exists; attempting it earlier errors with
+   "administrative discharge (final bill) has not been completed."
+
+Verify each stage against `PATIENTENCOUNTER` (`NURSINGDISCHARGED`,
+`CLINICALLYDISCHARGED`, `DISCHARGED`, `PHYSICALDISCHARGED`) before moving to
+the next — see §32 below for why the UI alone can't be trusted here.
+
+A native `confirm()` dialog handled via `browser_handle_dialog(accept:true)`
+immediately returns a "Loading..." page title — that is not proof the
+server-side action succeeded. The actual result (success or an error banner)
+only appears in the *next* `browser_snapshot`/reload. Always re-snapshot (or
+re-query the DB) after handling the dialog before assuming the step passed;
+in one session `NURSINGDISCHARGED` stayed `0` for several tool calls after
+the dialog was accepted, because the click had actually been rejected
+server-side (wrong order) but nothing in the dialog-handling response showed
+that.
+
+## 76. `isXxx(arg)` boolean methods with a parameter don't resolve via the JSF EL property-getter convention — drop the `is` prefix
 
 A boolean bean method named `isHasPendingTheatreReturnForAdmission(Admission admission)` and called from EL as
 `#{bean.hasPendingTheatreReturnForAdmission(admissionController.current)}` (mirroring how existing no-arg booleans like
