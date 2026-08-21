@@ -1060,7 +1060,15 @@ public class PatientTransferController implements Serializable {
         // Same target-department constraint as loadPendingReturnsForWard() —
         // without it, a user with WardAcceptTheatreReturn could accept a
         // return bound for a different ward's department (CodeRabbit #23175).
+        // Falls back to the logged-in WebUser's own department for sessions
+        // established via loginForRequests(), which set loggedUser but never
+        // call sessionController.setDepartment() — getDepartment() itself must
+        // stay non-populating so it doesn't skip the interactive department
+        // selection screen for ordinary logins.
         Department userDepartment = sessionController.getDepartment();
+        if (userDepartment == null && sessionController.getLoggedUser() != null) {
+            userDepartment = sessionController.getLoggedUser().getDepartment();
+        }
         Department targetDepartment = req.getToRoomFacilityCharge() != null
                 ? req.getToRoomFacilityCharge().getDepartment() : null;
         if (userDepartment == null || userDepartment.getId() == null
