@@ -9,7 +9,8 @@
                 xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
     <ui:define name="content">
         <h:form id="form">
@@ -65,67 +66,25 @@
                                                                    var="ins"
                                                                    itemLabel="#{ins.name}"
                                                                    itemValue="#{ins}" />
-                                                    <p:ajax listener="#{bhtSummeryController.onInstitutionChange}" update="acPt2 pnlPatientPreview" />
+                                                    <p:ajax listener="#{bhtSummeryController.onInstitutionChange}" update="admissionSearch pnlPatientPreview" />
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
 
                                         <div class="row mb-3">
                                             <div class="col-12">
-                                                <h:outputLabel for="acPt2" styleClass="form-label fw-bold text-dark mb-2">
+                                                <h:outputLabel styleClass="form-label fw-bold text-dark mb-2">
                                                     <i class="fa-solid fa-user me-2 text-primary"></i>
                                                     Patient Search
                                                 </h:outputLabel>
-                                                <p:autoComplete
+                                                <admcc:admission_search
+                                                    id="admissionSearch"
                                                     widgetVar="aPt2"
-                                                    id="acPt2"
-                                                    forceSelection="true"
+                                                    inputId="acPt2"
                                                     value="#{billBhtController.patientEncounter}"
                                                     completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
-                                                    var="apt2"
-                                                    itemLabel="#{apt2.bhtNo}"
-                                                    itemValue="#{apt2}"
-                                                    placeholder="Type patient name, BHT number, or PHN..."
-                                                    minQueryLength="2"
-                                                    style="width: 100%;"
-                                                    inputStyleClass="form-control form-control-lg">
-                                                    <p:ajax event="itemSelect" update="pnlPatientPreview" />
-                                                    <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fa-solid fa-id-card me-2 text-info"></i>
-                                                            <strong>#{apt2.patient.phn}</strong>
-                                                        </div>
-                                                    </p:column>
-                                                    <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fa-solid fa-hospital me-2 text-warning"></i>
-                                                            <strong class="text-primary">#{apt2.bhtNo}</strong>
-                                                        </div>
-                                                    </p:column>
-                                                    <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fa-solid fa-user me-2 text-success"></i>
-                                                            <span class="fw-medium">#{apt2.patient.person.nameWithTitle}</span>
-                                                        </div>
-                                                    </p:column>
-                                                    <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
-                                                        <h:panelGroup rendered="#{apt2.currentPatientRoom ne null}">
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
-                                                                <span>#{apt2.currentPatientRoom.roomFacilityCharge.name}</span>
-                                                            </div>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{apt2.currentPatientRoom eq null}">
-                                                            <span class="text-muted">
-                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
-                                                            </span>
-                                                        </h:panelGroup>
-                                                    </p:column>
-                                                    <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
-                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
-                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!apt2.discharged}" />
-                                                    </p:column>
-                                                </p:autoComplete>
+                                                    continueClientId="form:btnSelect"
+                                                    itemSelectUpdate=":form:pnlPatientPreview" />
                                             </div>
                                         </div>
 
