@@ -81,6 +81,12 @@ public class PatientTransferController implements Serializable {
     private List<PatientTransferRequest> inTheatreRequests;
     private List<PatientTransferRequest> pendingReturnRequests;
 
+    // Focused single-admission theatre status view — the active theatre
+    // transfer and any pending return-to-ward request for one admission,
+    // used by the per-patient Theatre Status page (#23166)
+    private PatientTransferRequest currentTheatreRequest;
+    private PatientTransferRequest currentTheatreReturnRequest;
+
     public List<Admission> completePatientByInstitution(String query) {
         return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
     }
@@ -926,6 +932,153 @@ public class PatientTransferController implements Serializable {
                 + "ORDER BY b.createdAt";
         List<Bill> result = billFacade.findByJpql(jpql, params);
         return result != null ? result : new ArrayList<>();
+    }
+
+    /**
+     * Focused single-admission theatre status flow launched from the
+     * Inpatient Dashboard / Nursing WorkBench — shows the live theatre
+     * workflow milestones for just this admission instead of the
+     * department-wide theatre worklists (#23166, mirrors the
+     * navigateToPatientAcceptForAdmission pattern from #22420).
+     */
+    public String navigateToTheatreStatus(Admission admission) {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No patient selected.");
+            return "";
+        }
+        current = admission;
+        loadTheatreStatusForAdmission(admission);
+        return "/inward/inward_theatre_status?faces-redirect=true";
+    }
+
+    /**
+     * Loads the active theatre transfer and any pending return-to-ward
+     * request scoped to a single admission (#23166).
+     */
+    private void loadTheatreStatusForAdmission(Admission admission) {
+        if (admission == null) {
+            currentTheatreRequest = null;
+            currentTheatreReturnRequest = null;
+            return;
+        }
+        currentTheatreRequest = findActiveSendToTheatreRequest(admission);
+        currentTheatreReturnRequest = findPendingReturnRequestForAdmission(admission);
+    }
+
+    /**
+     * Finds the PENDING RETURN_TO_WARD request for a single admission, if
+     * any — mirrors findActiveSendToTheatreRequest (#23166).
+     */
+    public PatientTransferRequest findPendingReturnRequestForAdmission(Admission admission) {
+        if (admission == null) {
+            return null;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("type", TheatreTransferType.RETURN_TO_WARD);
+        params.put("status", TransferRequestStatus.PENDING);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status = :status "
+                + "AND r.retired = false "
+                + "ORDER BY r.createdAt DESC";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    /**
+     * True when there is a PENDING theatre return request for this admission
+     * (#23166). Named without the "is" prefix (unlike the no-arg
+     * isHasPendingTheatreRequestsForDepartment()-style booleans elsewhere in
+     * this class) because JSF EL only applies the isXxx()/getXxx() JavaBean
+     * property convention to no-argument property access — a parameterized
+     * call like #{bean.hasPendingTheatreReturnForAdmission(x)} resolves by
+     * the literal method name, not the "is"-stripped property name.
+     */
+    public boolean hasPendingTheatreReturnForAdmission(Admission admission) {
+        return findPendingReturnRequestForAdmission(admission) != null;
+    }
+
+    /**
+     * Accept from the single-admission focused theatre status view (#23166)
+     * — delegates to acceptInTheatre() then refreshes the admission-scoped
+     * theatre status instead of the department-wide worklists.
+     */
+    public void acceptInTheatreForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        acceptInTheatre(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Mark In Theatre from the single-admission focused theatre status view
+     * (#23166) — delegates to markInTheatre() then refreshes the
+     * admission-scoped theatre status.
+     */
+    public void markInTheatreForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        markInTheatre(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Mark Procedure Completed from the single-admission focused theatre
+     * status view (#23166) — delegates to markProcedureCompleted() then
+     * refreshes the admission-scoped theatre status.
+     */
+    public void markProcedureCompletedForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        markProcedureCompleted(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Return To Ward from the single-admission focused theatre status view
+     * (#23166) — delegates to returnToWard() then refreshes the
+     * admission-scoped theatre status.
+     */
+    public void returnToWardForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        returnToWard(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Accept Return To Ward from the single-admission focused theatre status
+     * view (#23166). Takes an Admission (not a request) since this is also
+     * called directly from the Inpatient Dashboard / Nursing WorkBench
+     * buttons, which only have the Admission in scope, not the return
+     * request object.
+     */
+    public void acceptReturnToWardForAdmission(Admission admission) {
+        PatientTransferRequest req = findPendingReturnRequestForAdmission(admission);
+        if (req == null) {
+            JsfUtil.addErrorMessage("No pending theatre return found for this patient.");
+            return;
+        }
+        // Same target-department constraint as loadPendingReturnsForWard() —
+        // without it, a user with WardAcceptTheatreReturn could accept a
+        // return bound for a different ward's department (CodeRabbit #23175).
+        Department userDepartment = sessionController.getDepartment();
+        Department targetDepartment = req.getToRoomFacilityCharge() != null
+                ? req.getToRoomFacilityCharge().getDepartment() : null;
+        if (userDepartment == null || userDepartment.getId() == null
+                || targetDepartment == null || targetDepartment.getId() == null
+                || !userDepartment.getId().equals(targetDepartment.getId())) {
+            JsfUtil.addErrorMessage("This theatre return belongs to a different ward.");
+            return;
+        }
+        acceptReturnToWard(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    public PatientTransferRequest getCurrentTheatreRequest() {
+        return currentTheatreRequest;
+    }
+
+    public PatientTransferRequest getCurrentTheatreReturnRequest() {
+        return currentTheatreReturnRequest;
     }
 
     public List<Bill> getSurgeryBillsForCurrentAdmission() {
