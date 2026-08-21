@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.ReservationDTO;
@@ -13,6 +14,7 @@ import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -58,6 +60,8 @@ public class InwardReservationController implements Serializable {
     ////////////////////////////
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -395,6 +399,13 @@ public class InwardReservationController implements Serializable {
     // -----------------------------------------------------------------------
 
     public String navigateToTheatreScheduleCalendar() {
+        // Server-side enforcement to match the rendered guard on the menu/
+        // button entry points — the UI-only check alone doesn't stop a
+        // direct navigation (CodeRabbit #23175).
+        if (!webUserController.hasPrivilege("TheatreAcceptPatient") && !webUserController.hasPrivilege("TheatreSendPatient")) {
+            JsfUtil.addErrorMessage("You are not authorized to view the Theatre Schedule.");
+            return "";
+        }
         currentReservationDTO = null;
         fromDate = CommonFunctions.getStartOfDay();
         Long noOfMonths = configOptionApplicationController.getLongValueByKey(

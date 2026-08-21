@@ -948,7 +948,12 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Department getDepartment() {
         if (department == null) {
-            if (loggedUser == null) {
+            // Fall back to the logged user's own department when nothing has
+            // been cached yet (e.g. sessions established via loginForRequests()
+            // that set loggedUser but never call setDepartment()). The null
+            // check here was previously inverted, NPE-ing whenever loggedUser
+            // was null instead of guarding against it (CodeRabbit #23175).
+            if (loggedUser != null) {
                 if (loggedUser.getDepartment() != null) {
                     department = loggedUser.getDepartment();
                 }
