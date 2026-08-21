@@ -3800,9 +3800,12 @@ public class PharmacyStockTakeController implements Serializable {
         adjustmentBill.setBackwardReferenceBill(physicalCountBill);
         physicalCountBill.setForwardReferenceBill(adjustmentBill);
         billFacade.create(adjustmentBill);
+        int expectedLines = 0;
+        int appliedLines = 0;
         for (BillItem bi : physicalCountBill.getBillItems()) {
             double variance = bi.getAdjustedValue();
             if (variance == 0) continue;
+            expectedLines++;
             BillItem abi = new BillItem();
             abi.setBill(adjustmentBill);
             abi.setItem(bi.getItem());
@@ -3834,8 +3837,17 @@ public class PharmacyStockTakeController implements Serializable {
             if (stock != null) {
                 double targetQty = apbi.getAfterAdjustmentValue();
                 boolean ok = pharmacyBean.resetStock(apbi, stock, targetQty, dept);
+                if (ok) {
+                    appliedLines++;
+                } else {
+                    LOGGER.log(Level.SEVERE, "[StockTake] resetStock returned false - quantity NOT applied. refItemId={0}, stockId={1}, target={2}",
+                            new Object[]{bi.getId(), stock.getId(), targetQty});
+                }
                 LOGGER.log(Level.INFO, "[StockTake] Posted adjustment line. adjItemId={0}, refItemId={1}, stockId={2}, before={3}, after={4}, variance={5}, resetOk={6}",
                         new Object[]{abi.getId(), bi.getId(), stock.getId(), apbi.getBeforeAdjustmentValue(), apbi.getAfterAdjustmentValue(), variance, ok});
+            } else {
+                LOGGER.log(Level.SEVERE, "[StockTake] No linked Stock row - quantity NOT applied. refItemId={0}, item={1}",
+                        new Object[]{bi.getId(), bi.getItem() != null ? bi.getItem().getName() : "null"});
             }
         }
         physicalCountBill.setApproveUser(sessionController.getLoggedUser());
@@ -3846,7 +3858,15 @@ public class PharmacyStockTakeController implements Serializable {
                 new Object[]{physicalCountBill.getId(), adjustmentBill.getId(), adjustmentBill.getBillItems() != null ? adjustmentBill.getBillItems().size() : 0});
         this.printPreview = true;
         this.comments = null;
-        JsfUtil.addSuccessMessage("Physical count approved");
+        if (appliedLines != expectedLines) {
+            LOGGER.log(Level.SEVERE, "[StockTake] Approval INCOMPLETE. pcBillId={0}, expectedLines={1}, appliedLines={2}",
+                    new Object[]{physicalCountBill.getId(), expectedLines, appliedLines});
+            JsfUtil.addErrorMessage("Physical count approved, but only " + appliedLines + " of " + expectedLines
+                    + " lines were applied to stock. " + (expectedLines - appliedLines)
+                    + " line(s) were NOT updated - please re-check before closing the stock take.");
+        } else {
+            JsfUtil.addSuccessMessage("Physical count approved. " + appliedLines + " stock line(s) updated.");
+        }
     }
 
     public void rejectPhysicalCount() {
