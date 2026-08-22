@@ -54,8 +54,14 @@ gh pr checks <PR>
 
 ```bash
 git fetch origin
+git checkout -- src/main/resources/META-INF/persistence.xml
 gh pr checkout <PR>
 ```
+
+The `git checkout --` discards the previous PR's uncommitted local-JNDI edit
+first — skip it and the branch switch can fail or behave inconsistently
+whenever the committed `persistence.xml` differs between branches. Safe
+no-op on the very first PR (nothing to discard).
 
 Then restore `persistence.xml` to local JNDI (`jdbc/coop` /
 `jdbc/ruhunuAudit`) per CLAUDE.md, left **unstaged**.
@@ -98,7 +104,11 @@ $env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
 & "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
 ```
 
-Check the server log for deployment errors before proceeding.
+Check the server log for deployment errors before proceeding. **If `mvn
+clean package` fails, `asadmin redeploy` fails, or the server log shows
+deployment errors, stop this PR here**: capture the failure output, record
+`BLOCKED-BUILD`, and move to the next PR — don't attempt Phase 3 against a
+stale or undeployed build.
 
 ### Phase 3 — End-to-end verification
 
@@ -125,9 +135,12 @@ motivating incident broke core flows unrelated to the changed code:
 
 A failure in any of the three (PR workflow or either baseline) is a real
 bug the gate caught: capture evidence (screenshots, DB query output) into
-the project `tmp/` folder, record `BLOCKED-E2E`, and stop this PR. Do not
-attempt a fix inline — report it and discuss next steps (per CLAUDE.md
-"discuss uncertainties"); fixing is separate `dev-issue` work.
+the project `tmp/` folder, record `BLOCKED-E2E`, and stop this PR. Redact
+patient identifiers, credentials, tokens, and other sensitive fields from
+that evidence before it leaves `tmp/` (referenced in chat, posted to a PR
+comment, etc.) — same rule as `dev-issue` §2a/§10. Do not attempt a fix
+inline — report it and discuss next steps (per CLAUDE.md "discuss
+uncertainties"); fixing is separate `dev-issue` work.
 
 All three pass → record `PASSED`.
 
@@ -138,17 +151,20 @@ After all PRs are processed, print a table:
 | PR # | Outcome | Workflows tested | Notes/links |
 |---|---|---|---|
 
-For every `PASSED` row, say it's ready for the user's final review and
-merge. For blocked rows, link the PR comment (Phase 1) or the evidence
-captured (Phase 3). Never merge, approve, or request changes on the user's
-behalf.
+Outcome is one of `PASSED`, `BLOCKED-CI`, `BLOCKED-REVIEW`, `BLOCKED-BUILD`,
+`BLOCKED-E2E`. For every `PASSED` row, say it's ready for the user's final
+review and merge. For blocked rows, link the PR comment (Phase 1), the
+build/deploy failure output (2a), or the evidence captured (Phase 3). Never
+merge, approve, or request changes on the user's behalf.
 
 ## Hygiene
 
-- Restore `persistence.xml` to local JNDI after every PR's checkout, left
-  unstaged — repeat for each PR in the batch, not just the first.
+- Discard and restore `persistence.xml` to local JNDI around every PR's
+  checkout (see step 1), left unstaged — repeat for each PR in the batch,
+  not just the first.
 - Screenshots/evidence go to the project `tmp/` folder (never system
-  `/tmp/`), per CLAUDE.md.
+  `/tmp/`), per CLAUDE.md — redacted of patient/sensitive data before they
+  leave `tmp/`.
 
 ## Required permissions
 
