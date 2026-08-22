@@ -109,10 +109,10 @@
                                     </p:commandButton>
                                     <p:commandButton styleClass="ui-button-info mx-1" icon="fas fa-print" value="Print"
                                                      actionListener="#{reportsStock.prepareForPrint()}"
-                                                     oncomplete="$('#frm\\:print').click()"
+                                                     oncomplete="alignStockByItemColumns(); $('#frm\\:print').click()"
                                                      update=":frm:tbl"/>
                                     <p:commandButton id="print" value="Actual print" style="display: none">
-                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl"/>
+                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" oncomplete="alignStockByItemColumns()"/>
                                         <p:printer target=":frm:tbl" />
                                     </p:commandButton>
                                 </h:panelGroup>
@@ -126,7 +126,18 @@
                                  wrapping long item names onto multiple lines. table-layout must be
                                  overridden from PrimeFaces' default "fixed" (which silently clips
                                  nowrap content to the container width) to "auto" so the table can
-                                 actually grow past the scrollable viewport. Issue #23052. -->
+                                 actually grow past the scrollable viewport. Issue #23052.
+
+                                 Because scrollable="true" renders the header/body/footer as three
+                                 independent <table> elements, letting each auto-size to its own content
+                                 means a long item name only widens the BODY table's Item column - the
+                                 header/footer tables have short content in that column and stay narrow,
+                                 so every column after Item drifts out of alignment (issue #23209).
+                                 alignStockByItemColumns() re-measures the widest cell per column across
+                                 all three tables and pins that width on all three, so they always match
+                                 regardless of item-name length. It reruns after every AJAX update
+                                 (paginate/sort/filter/print) since those redraw the body with different
+                                 content. -->
                             <style>
                                 [id="frm:tbl"] td, [id="frm:tbl"] th { white-space: nowrap; }
                                 [id="frm:tbl"] .ui-datatable-scrollable-header table,
@@ -135,10 +146,48 @@
                                     width: auto !important;
                                 }
                             </style>
+                            <script>
+                                function alignStockByItemColumns() {
+                                    var $wrapper = $('#frm\\:tbl');
+                                    var $headerTable = $wrapper.find('.ui-datatable-scrollable-header table').first();
+                                    var $bodyTable = $wrapper.find('.ui-datatable-scrollable-body table').first();
+                                    var $footerTable = $wrapper.find('.ui-datatable-scrollable-footer table').first();
+                                    var $headerCells = $headerTable.find('> thead > tr > th');
+                                    var $bodyRows = $bodyTable.find('> tbody > tr');
+                                    var $footerCells = $footerTable.find('> tfoot > tr > td');
+                                    if (!$headerCells.length || !$bodyRows.length) {
+                                        return;
+                                    }
+                                    $headerCells.css('width', '');
+                                    $bodyRows.find('> td').css('width', '');
+                                    $footerCells.css('width', '');
+                                    $headerCells.each(function(colIndex) {
+                                        var maxWidth = $(this).outerWidth() || 0;
+                                        $bodyRows.each(function() {
+                                            var cellWidth = $(this).find('> td').eq(colIndex).outerWidth() || 0;
+                                            if (cellWidth > maxWidth) {
+                                                maxWidth = cellWidth;
+                                            }
+                                        });
+                                        var footerWidth = $footerCells.eq(colIndex).outerWidth() || 0;
+                                        if (footerWidth > maxWidth) {
+                                            maxWidth = footerWidth;
+                                        }
+                                        $(this).css('width', maxWidth + 'px');
+                                        $bodyRows.each(function() {
+                                            $(this).find('> td').eq(colIndex).css('width', maxWidth + 'px');
+                                        });
+                                        $footerCells.eq(colIndex).css('width', maxWidth + 'px');
+                                    });
+                                }
+                                $(document).ready(function() {
+                                    alignStockByItemColumns();
+                                });
+                            </script>
 
                             <p:dataTable
-                                id="tbl" 
-                                rowIndexVar="ii" 
+                                id="tbl"
+                                rowIndexVar="ii"
                                 value="#{reportsStock.stockReportByItemDTOS}" var="i"
                                 rendered="#{reportsStock.stockReportByItemDTOS.size() ne 0 }"
                                 rows="#{reportsStock.paginator?'20':reportsStock.stockReportByItemDTOS.size()}"
@@ -147,6 +196,9 @@
                                 rowsPerPageTemplate="20, 50, 100"
                                 scrollable="true"
                                 scrollWidth="100%">
+                                <p:ajax event="page" oncomplete="alignStockByItemColumns()" />
+                                <p:ajax event="sort" oncomplete="alignStockByItemColumns()" />
+                                <p:ajax event="filter" oncomplete="alignStockByItemColumns()" />
                                 <f:facet name="header">
                                     <h:panelGroup layout="block">
                                         <h:outputLabel value="Stock Report by Item"/>
