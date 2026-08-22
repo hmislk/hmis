@@ -160,6 +160,15 @@ public class TimedItemFeeController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Fee Name.");
             return;
         }
+        // Same guard as saveCharge(). It matters more here: the row's Duration input
+        // is disabled while the row is a One Time Fee, and a disabled input submits
+        // nothing — so switching a row to a time-based unit could otherwise save a
+        // duration of 0, which prices every block at zero.
+        if (!tif.isOneTime() && tif.getDurationHours() <= 0) {
+            JsfUtil.addErrorMessage("Duration must be greater than 0 for a "
+                    + tif.getDurationUnit().getLabel() + " fee.");
+            return;
+        }
         tif.setEditedAt(new Date());
         tif.setCreater(getSessionController().getLoggedUser());
         getTimedItemFeeFacade().edit(tif);

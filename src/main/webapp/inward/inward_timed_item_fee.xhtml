@@ -173,13 +173,17 @@
                                                            var="du"
                                                            itemLabel="#{du.label}"
                                                            itemValue="#{du}"/>
+                                            <!-- Without this, switching a row away from One Time Fee leaves the two
+                                                 inputs below disabled. A disabled input submits nothing, so the row's
+                                                 Update would keep the old duration and silently price the fee at zero. -->
+                                            <p:ajax event="change" process="@this" update="rowDuration rowOverShoot"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                     <p:column headerText="Duration">
-                                        <p:inputText value="#{bi.durationHours}" autocomplete="off" disabled="#{bi.oneTime}" />
+                                        <p:inputText id="rowDuration" value="#{bi.durationHours}" autocomplete="off" disabled="#{bi.oneTime}" />
                                     </p:column>
                                     <p:column headerText="Over Shoot">
-                                        <p:inputText value="#{bi.overShootHours}" autocomplete="off" disabled="#{bi.oneTime}" />
+                                        <p:inputText id="rowOverShoot" value="#{bi.overShootHours}" autocomplete="off" disabled="#{bi.oneTime}" />
                                     </p:column>
                                     <p:column headerText="Slot Order" style="width: 90px">
                                         <p:inputText value="#{bi.sortOrder}" autocomplete="off" style="width: 60px;"/>

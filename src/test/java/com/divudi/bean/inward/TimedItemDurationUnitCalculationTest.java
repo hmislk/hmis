@@ -128,11 +128,32 @@ class TimedItemDurationUnitCalculationTest {
     }
 
     @Test
+    void oneTimeFeeIgnoresALeftoverDurationValue() {
+        // Switching a configured fee back to One Time on the fee page leaves the
+        // previous duration sitting on the row, so a one-time fee with a non-zero
+        // duration is a state the UI can produce. It must still charge once.
+        TimedItemFee f = fee(2, 1, TimedItemDurationUnit.ONE_TIME);
+        assertEquals(0.0, f.getDurationMinutes(), 0.0001);
+        assertEquals(0.0, f.getOverShootMinutes(), 0.0001);
+        assertEquals(1.0, count(f, 500), 0.0001);
+    }
+
+    @Test
     void oneTimeFeeIsChargedEvenWithNoElapsedTime() {
         // calCount returns 0 for a zero-length span on time-based fees; a one-time
         // fee is not time-based, so it must still be charged.
         assertEquals(1.0, count(fee(0, 0, TimedItemDurationUnit.ONE_TIME), 0), 0.0001);
         assertEquals(0.0, count(fee(1, 0, TimedItemDurationUnit.HOUR), 0), 0.0001);
+    }
+
+    @Test
+    void aMissingFeeCountsAsNothingToBillRatherThanThrowing() {
+        // RoomFacilityCharge.timedItemFee is a nullable mapping, so the room paths
+        // can hand these methods a null fee. That has to behave like an
+        // unconfigured fee (count 0), not break the page rendering the bill.
+        Date[] s = span(150);
+        assertEquals(0.0, inwardBean.calCount(null, s[0], s[1]), 0.0001);
+        assertEquals(0.0, inwardBean.calCountWithoutOverShoot(null, s[0], s[1]), 0.0001);
     }
 
     @Test
