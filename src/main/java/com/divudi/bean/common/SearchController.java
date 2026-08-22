@@ -1505,6 +1505,11 @@ public class SearchController implements Serializable {
         settledBillType = null;
         total = 0.0;
         pharmacyBillSearch.setSaleBillDtos(null);
+        // Transfer Receive list (pharmacy_transfer_issued_list.xhtml) — was never cleared here,
+        // so the previous search results stayed on screen until the user searched again on
+        // every navigation into the page (menu.xhtml, disbursement_index.xhtml, home.xhtml all
+        // call makeListNull() as their actionListener before navigating here). See issue #23117.
+        transferIssuedListDtos = new ArrayList<>();
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
