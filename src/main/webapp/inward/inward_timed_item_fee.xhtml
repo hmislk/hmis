@@ -144,11 +144,11 @@
 
                                 </h:panelGrid>
 
-                                <p:commandButton 
-                                    id="btnAddTo" 
-                                    value="Add" 
+                                <p:commandButton
+                                    id="btnAddTo"
+                                    value="Add"
                                     icon="fa fa-plus"
-                                    update="gpDetail dtbFee"
+                                    update="gpDetail dtbFee :growl"
                                     style="width: 150px;"
                                     action="#{timedItemFeeController.saveCharge}" 
                                     class="ui-button-success mt-2 mb-3">
