@@ -3337,6 +3337,14 @@ public class InwardBeanController implements Serializable {
         }
 
         double duration = tif.getDurationMinutes();
+
+        // Same guard calCount already applies. Persisted data can still carry a
+        // time-based fee with no duration set, and dividing by it below yields
+        // Infinity — which casts to a huge block count and overcharges the bill.
+        if (duration <= 0) {
+            return 0;
+        }
+
         double consumeTimeM = 0L;
 
         if (admittedAt == null) {

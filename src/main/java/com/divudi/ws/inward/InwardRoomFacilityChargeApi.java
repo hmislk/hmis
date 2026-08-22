@@ -254,6 +254,10 @@ public class InwardRoomFacilityChargeApi {
             if (durationDaysForMoCharge != null) timedItemFee.setDurationDaysForMoCharge(durationDaysForMoCharge);
             TimedItemDurationUnit durationUnit = asDurationUnit(body.get("timedItemFeeDurationUnit"));
             if (durationUnit != null) timedItemFee.setDurationUnit(durationUnit);
+            String durationError = validateBlockDuration(timedItemFee);
+            if (durationError != null) {
+                return errorResponse(durationError, 400);
+            }
             timedItemFeeFacade.create(timedItemFee);
 
             charge.setTimedItemFee(timedItemFee);
@@ -363,6 +367,10 @@ public class InwardRoomFacilityChargeApi {
                 if (newOverShootHours != null) timedItemFee.setOverShootHours(newOverShootHours);
                 if (newDurationDays != null) timedItemFee.setDurationDaysForMoCharge(newDurationDays);
                 if (newDurationUnit != null) timedItemFee.setDurationUnit(newDurationUnit);
+                String durationError = validateBlockDuration(timedItemFee);
+                if (durationError != null) {
+                    return errorResponse(durationError, 400);
+                }
                 if (needCreate) {
                     timedItemFeeFacade.create(timedItemFee);
                     charge.setTimedItemFee(timedItemFee);
@@ -721,6 +729,27 @@ public class InwardRoomFacilityChargeApi {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid numeric id: '" + o + "'");
         }
+    }
+
+    /**
+     * A time-based block with no duration bills nothing, for every stay, forever —
+     * {@code InwardBeanController.calCount()} returns 0 when the block length is 0.
+     * The sibling timed-item fee endpoint already rejects that combination
+     * (TimedItemFeeCreateRequestDTO.isValid); this keeps the two consistent rather
+     * than letting a room be created that silently never charges.
+     *
+     * @return an error message, or null when the fee is billable
+     */
+    private String validateBlockDuration(TimedItemFee fee) {
+        if (fee.isOneTime()) {
+            return null;
+        }
+        if (fee.getDurationHours() <= 0) {
+            return "timedItemFeeDurationHours must be greater than 0 for a "
+                    + fee.getDurationUnit().name() + " block"
+                    + " (use timedItemFeeDurationUnit=ONE_TIME for a flat charge).";
+        }
+        return null;
     }
 
     private TimedItemDurationUnit asDurationUnit(Object o) {

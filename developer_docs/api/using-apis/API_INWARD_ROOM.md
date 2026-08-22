@@ -244,7 +244,7 @@ Returns a single room facility charge or 404 if not found / retired.
 | moChargeForAfterDuration | No | MO charge for after-duration |
 | adminstrationCharge | No | Administration charge per block |
 | medicalCareCharge | No | Medical care charge per block |
-| timedItemFeeDurationHours | No | Block duration, counted in `timedItemFeeDurationUnit` |
+| timedItemFeeDurationHours | Yes, unless the unit is `ONE_TIME` | Block duration, counted in `timedItemFeeDurationUnit`. Must be greater than 0 — a time-based block of 0 bills nothing for every stay, so it is rejected with 400 |
 | timedItemFeeOverShootHours | No | Over-shoot for last block, in the same unit |
 | timedItemFeeDurationDaysForMoCharge | No | Duration days for MO charge calculation |
 | timedItemFeeDurationUnit | No | `ONE_TIME`, `MINUTE`, `HOUR` or `DAY` — what the two values above are counted in. Defaults to `HOUR`; `ONE_TIME` charges the block once regardless of the stay |

@@ -157,6 +157,17 @@ class TimedItemDurationUnitCalculationTest {
     }
 
     @Test
+    void aTimeBasedFeeWithNoDurationBillsNothingRatherThanOvercharging() {
+        // Persisted data can still carry a time-based fee with duration 0. Dividing
+        // by it yields Infinity, which casts to a huge block count — the failure mode
+        // to guard against here is an overcharge, not a crash.
+        Date[] s = span(150);
+        assertEquals(0.0, inwardBean.calCount(fee(0, 0, TimedItemDurationUnit.HOUR), s[0], s[1]), 0.0001);
+        assertEquals(0.0, inwardBean.calCountWithoutOverShoot(fee(0, 0, TimedItemDurationUnit.HOUR), s[0], s[1]), 0.0001);
+        assertEquals(0.0, inwardBean.calCountWithoutOverShoot(fee(0, 0, null), s[0], s[1]), 0.0001);
+    }
+
+    @Test
     void calCountWithoutOverShootAlsoHonoursUnits() {
         Date[] halfHour = span(30);
         assertEquals(30.0,
