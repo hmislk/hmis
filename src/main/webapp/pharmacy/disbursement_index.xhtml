@@ -46,7 +46,7 @@
                                     actionListener="#{searchController.makeListNull()}"
                                     styleClass="ui-button-stage-approve w-100"
                                     icon="fas fa-check-double"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}" />
                                 <p:commandButton
                                     value="Approved Requests"
                                     ajax="false"
@@ -55,7 +55,7 @@
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-secondary w-100"
                                     icon="fas fa-check-double"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}" />
                             </div>
                         </p:tab>
                         <p:tab title="Issues" >
