@@ -2175,27 +2175,27 @@ public class InwardBeanController implements Serializable {
             System.out.println("Department: " + dep.getName() + " has " + items.size() + " items");
 
             if (!items.isEmpty()) {
-                // BULK QUERY 1: Get all billed counts for all items in one query
-                Map<Long, Long> billedCounts = getBulkBillItemCounts(items, pts, forwardRefBill, BilledBill.class);
+                // BULK QUERY 1: Get all billed quantities for all items in one query
+                Map<Long, Double> billedCounts = getBulkBillItemCounts(items, pts, forwardRefBill, BilledBill.class);
 
-                // BULK QUERY 2: Get all cancelled counts
-                Map<Long, Long> cancelledCounts = getBulkBillItemCounts(items, pts, forwardRefBill, CancelledBill.class);
+                // BULK QUERY 2: Get all cancelled quantities
+                Map<Long, Double> cancelledCounts = getBulkBillItemCounts(items, pts, forwardRefBill, CancelledBill.class);
 
-                // BULK QUERY 3: Get all refund counts
-                Map<Long, Long> refundCounts = getBulkBillItemCounts(items, pts, forwardRefBill, RefundBill.class);
+                // BULK QUERY 3: Get all refund quantities
+                Map<Long, Double> refundCounts = getBulkBillItemCounts(items, pts, forwardRefBill, RefundBill.class);
 
-                // BULK QUERY 4: Get all checked counts
-                Map<Long, Long> checkedCounts = getBulkCheckedBillItemCounts(items, patientEncounter);
+                // BULK QUERY 4: Get all checked quantities
+                Map<Long, Double> checkedCounts = getBulkCheckedBillItemCounts(items, patientEncounter);
 
                 // BULK QUERY 5: Get Gross/Discount/Margin/Net/VAT value breakdown
                 Map<Long, double[]> valueBreakdown = getBulkBillItemValueBreakdown(items, pts);
 
                 // Apply the counts to items (no more database queries!)
                 for (Item itm : items) {
-                    long billed = billedCounts.getOrDefault(itm.getId(), 0L);
-                    long cancelled = cancelledCounts.getOrDefault(itm.getId(), 0L);
-                    long refund = refundCounts.getOrDefault(itm.getId(), 0L);
-                    long checked = checkedCounts.getOrDefault(itm.getId(), 0L);
+                    double billed = billedCounts.getOrDefault(itm.getId(), 0.0);
+                    double cancelled = cancelledCounts.getOrDefault(itm.getId(), 0.0);
+                    double refund = refundCounts.getOrDefault(itm.getId(), 0.0);
+                    double checked = checkedCounts.getOrDefault(itm.getId(), 0.0);
                     double[] values = valueBreakdown.getOrDefault(itm.getId(), new double[5]);
 
                     itm.setTransCheckedCount(checked);
@@ -2222,16 +2222,17 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Bulk query to get bill item counts for multiple items at once
-     * Returns a map of itemId -> count
+     * Bulk query to get bill item quantities for multiple items at once.
+     * Returns a map of itemId -> total quantity (sum of BillItem.qty, not
+     * a row count - a single BillItem can carry qty > 1).
      */
-    private Map<Long, Long> getBulkBillItemCounts(List<Item> items, List<PatientEncounter> pts, Bill forwardBill, Class billClass) {
+    private Map<Long, Double> getBulkBillItemCounts(List<Item> items, List<PatientEncounter> pts, Bill forwardBill, Class billClass) {
         if (items == null || items.isEmpty()) {
             return new HashMap<>();
         }
 
         HashMap hm = new HashMap();
-        String sql = "SELECT b.item.id, count(b) FROM BillItem b "
+        String sql = "SELECT b.item.id, SUM(ABS(b.qty)) FROM BillItem b "
                 + " WHERE b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.bill.patientEncounter IN :pe "
@@ -2252,11 +2253,11 @@ public class InwardBeanController implements Serializable {
 
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIME);
 
-        Map<Long, Long> countMap = new HashMap<>();
+        Map<Long, Double> countMap = new HashMap<>();
         if (results != null) {
             for (Object[] row : results) {
                 Long itemId = (Long) row[0];
-                Long count = (Long) row[1];
+                Double count = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
                 countMap.put(itemId, count);
             }
         }
@@ -2305,15 +2306,18 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Bulk query to get checked bill item counts for multiple items at once
+     * Bulk query to get checked bill item quantities for multiple items at
+     * once. Returns a map of itemId -> total checked quantity (sum of
+     * BillItem.qty), matching the quantity basis of getBulkBillItemCounts so
+     * Pending Check Count (billed - checked) stays in the same unit.
      */
-    private Map<Long, Long> getBulkCheckedBillItemCounts(List<Item> items, PatientEncounter patientEncounter) {
+    private Map<Long, Double> getBulkCheckedBillItemCounts(List<Item> items, PatientEncounter patientEncounter) {
         if (items == null || items.isEmpty()) {
             return new HashMap<>();
         }
 
         HashMap hm = new HashMap();
-        String sql = "SELECT b.item.id, count(b) FROM BillItem b "
+        String sql = "SELECT b.item.id, SUM(ABS(b.qty)) FROM BillItem b "
                 + " WHERE b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.bill.patientEncounter=:pe "
@@ -2330,11 +2334,11 @@ public class InwardBeanController implements Serializable {
 
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
 
-        Map<Long, Long> countMap = new HashMap<>();
+        Map<Long, Double> countMap = new HashMap<>();
         if (results != null) {
             for (Object[] row : results) {
                 Long itemId = (Long) row[0];
-                Long count = (Long) row[1];
+                Double count = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
                 countMap.put(itemId, count);
             }
         }
