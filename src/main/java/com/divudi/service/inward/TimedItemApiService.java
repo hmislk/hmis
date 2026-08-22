@@ -19,6 +19,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.data.inward.TimedItemDurationUnit;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemCategory;
 import com.divudi.core.entity.inward.TimedItemFee;
@@ -322,9 +323,12 @@ public class TimedItemApiService implements Serializable {
         fee.setDurationDaysForMoCharge(request.getDurationDaysForMoCharge());
         fee.setSortOrder(request.getSortOrder());
         fee.setRepeating(request.isRepeating());
-        // Omitted by older clients; the entity reads a null unit as HOUR, which
-        // is what every fee created before duration units existed meant.
-        fee.setDurationUnit(request.getDurationUnit());
+        // Omitted by older clients. Store the explicit HOUR default rather than
+        // leaving the column null — that is what the fee page writes for a
+        // UI-created fee, and it keeps new rows unambiguous. Reads still default
+        // a null unit to HOUR for rows created before duration units existed.
+        fee.setDurationUnit(request.getDurationUnit() != null
+                ? request.getDurationUnit() : TimedItemDurationUnit.HOUR);
         fee.setCreater(user);
         fee.setCreatedAt(Calendar.getInstance().getTime());
         fee.setRetired(false);

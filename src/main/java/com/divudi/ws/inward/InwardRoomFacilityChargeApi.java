@@ -244,8 +244,12 @@ public class InwardRoomFacilityChargeApi {
             charge.setCreatedAt(new Date());
             charge.setCreater(user);
 
-            // Build TimedItemFee (all parsing done above; now safe to persist)
+            // Build TimedItemFee (all parsing done above; now safe to persist).
+            // Start at the same explicit default RoomFacilityChargeController writes
+            // for a UI-created charge, so an omitted unit stores HOUR rather than
+            // leaving the column null and relying on the read-time default.
             TimedItemFee timedItemFee = new TimedItemFee();
+            timedItemFee.setDurationUnit(TimedItemDurationUnit.HOUR);
             Double durationHours = asDouble(body.get("timedItemFeeDurationHours"));
             if (durationHours != null) timedItemFee.setDurationHours(durationHours);
             Double overShootHours = asDouble(body.get("timedItemFeeOverShootHours"));
@@ -362,6 +366,7 @@ public class InwardRoomFacilityChargeApi {
                 boolean needCreate = timedItemFee == null;
                 if (needCreate) {
                     timedItemFee = new TimedItemFee();
+                    timedItemFee.setDurationUnit(TimedItemDurationUnit.HOUR);
                 }
                 if (newDurationHours != null) timedItemFee.setDurationHours(newDurationHours);
                 if (newOverShootHours != null) timedItemFee.setOverShootHours(newOverShootHours);
