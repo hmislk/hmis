@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 
+import com.divudi.core.data.inward.TimedItemDurationUnit;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
@@ -76,6 +77,11 @@ public class TimedItemFeeController implements Serializable {
         }
         if (currentFee == null) {
             JsfUtil.addErrorMessage("Please select a charge");
+            return;
+        }
+        if (!currentFee.isOneTime() && currentFee.getDurationHours() <= 0) {
+            JsfUtil.addErrorMessage("Duration must be greater than 0 for a "
+                    + currentFee.getDurationUnit().getLabel() + " fee.");
             return;
         }
         currentFee.setItem(currentIx);
@@ -243,8 +249,15 @@ public class TimedItemFeeController implements Serializable {
         if (currentFee == null) {
             currentFee = new TimedItemFee();
             currentFee.setBooleanValue(true);
+            // Hour is what every fee created before duration units existed used,
+            // so a new fee starts there too unless the user picks another unit.
+            currentFee.setDurationUnit(TimedItemDurationUnit.HOUR);
         }
         return currentFee;
+    }
+
+    public TimedItemDurationUnit[] getDurationUnits() {
+        return TimedItemDurationUnit.values();
     }
 
     public void setCurrentFee(TimedItemFee currentFee) {

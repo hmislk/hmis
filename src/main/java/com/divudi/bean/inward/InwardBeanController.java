@@ -3323,7 +3323,12 @@ public class InwardBeanController implements Serializable {
 
     public double calCountWithoutOverShoot(TimedItemFee tif, Date admittedAt, Date dischargedAt) {
 
-        double duration = tif.getDurationHours() * 60;
+        // A one-time fee is charged once for the whole service, however long it ran.
+        if (tif != null && tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
         double consumeTimeM = 0L;
 
         if (admittedAt == null) {
@@ -3419,8 +3424,14 @@ public class InwardBeanController implements Serializable {
 
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
-        double duration = tif.getDurationHours() * 60;
-        double overShoot = tif.getOverShootHours() * 60;
+        // A one-time fee is charged once for the whole service, however long it
+        // ran — no block counting, and no dependency on elapsed time at all.
+        if (tif != null && tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
+        double overShoot = tif.getOverShootMinutes();
         //  double tempFee = tif.getFee();
         double consumeTime = 0;
 

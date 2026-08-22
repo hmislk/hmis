@@ -191,7 +191,8 @@ GET /api/inward/room-facility-charges?query=&roomId=&roomCategoryId=&size=
         "id": 5,
         "durationHours": 24.0,
         "overShootHours": 6.0,
-        "durationDaysForMoCharge": 0
+        "durationDaysForMoCharge": 0,
+        "durationUnit": "HOUR"
       }
     }
   ]
@@ -224,7 +225,8 @@ Returns a single room facility charge or 404 if not found / retired.
   "medicalCareCharge": 0.0,
   "timedItemFeeDurationHours": 24.0,
   "timedItemFeeOverShootHours": 6.0,
-  "timedItemFeeDurationDaysForMoCharge": 0
+  "timedItemFeeDurationDaysForMoCharge": 0,
+  "timedItemFeeDurationUnit": "HOUR"
 }
 ```
 
@@ -242,9 +244,10 @@ Returns a single room facility charge or 404 if not found / retired.
 | moChargeForAfterDuration | No | MO charge for after-duration |
 | adminstrationCharge | No | Administration charge per block |
 | medicalCareCharge | No | Medical care charge per block |
-| timedItemFeeDurationHours | No | Block duration in hours |
-| timedItemFeeOverShootHours | No | Over-shoot hours for last block |
+| timedItemFeeDurationHours | No | Block duration, counted in `timedItemFeeDurationUnit` |
+| timedItemFeeOverShootHours | No | Over-shoot for last block, in the same unit |
 | timedItemFeeDurationDaysForMoCharge | No | Duration days for MO charge calculation |
+| timedItemFeeDurationUnit | No | `ONE_TIME`, `MINUTE`, `HOUR` or `DAY` — what the two values above are counted in. Defaults to `HOUR`; `ONE_TIME` charges the block once regardless of the stay |
 
 ### PUT — Update
 

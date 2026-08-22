@@ -322,6 +322,9 @@ public class TimedItemApiService implements Serializable {
         fee.setDurationDaysForMoCharge(request.getDurationDaysForMoCharge());
         fee.setSortOrder(request.getSortOrder());
         fee.setRepeating(request.isRepeating());
+        // Omitted by older clients; the entity reads a null unit as HOUR, which
+        // is what every fee created before duration units existed meant.
+        fee.setDurationUnit(request.getDurationUnit());
         fee.setCreater(user);
         fee.setCreatedAt(Calendar.getInstance().getTime());
         fee.setRetired(false);
@@ -372,6 +375,9 @@ public class TimedItemApiService implements Serializable {
         }
         if (request.getRepeating() != null) {
             fee.setRepeating(request.getRepeating());
+        }
+        if (request.getDurationUnit() != null) {
+            fee.setDurationUnit(request.getDurationUnit());
         }
 
         fee.setEditer(user);
@@ -531,6 +537,7 @@ public class TimedItemApiService implements Serializable {
         dto.setFfee(fee.getFfee());
         dto.setDurationHours(fee.getDurationHours());
         dto.setOverShootHours(fee.getOverShootHours());
+        dto.setDurationUnit(fee.getDurationUnit());
         dto.setDurationDaysForMoCharge(fee.getDurationDaysForMoCharge());
         dto.setSortOrder(fee.getSortOrder());
         dto.setRepeating(fee.isRepeating());
