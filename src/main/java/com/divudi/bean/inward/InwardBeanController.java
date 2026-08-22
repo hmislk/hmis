@@ -2190,6 +2190,9 @@ public class InwardBeanController implements Serializable {
                 // BULK QUERY 5: Get Gross/Discount/Margin/Net/VAT value breakdown
                 Map<Long, double[]> valueBreakdown = getBulkBillItemValueBreakdown(items, pts);
 
+                // BULK QUERY 6: Get pending-check bill counts (distinct bills, not quantity)
+                Map<Long, Long> pendingCheckBillCounts = getBulkPendingCheckBillCounts(items, pts, forwardRefBill);
+
                 // Apply the counts to items (no more database queries!)
                 for (Item itm : items) {
                     double billed = billedCounts.getOrDefault(itm.getId(), 0.0);
@@ -2197,6 +2200,7 @@ public class InwardBeanController implements Serializable {
                     double refund = refundCounts.getOrDefault(itm.getId(), 0.0);
                     double checked = checkedCounts.getOrDefault(itm.getId(), 0.0);
                     double[] values = valueBreakdown.getOrDefault(itm.getId(), new double[5]);
+                    long pendingCheckBillCount = pendingCheckBillCounts.getOrDefault(itm.getId(), 0L);
 
                     itm.setTransCheckedCount(checked);
                     itm.setTransBillItemCount(billed - (cancelled + refund));
@@ -2205,6 +2209,7 @@ public class InwardBeanController implements Serializable {
                     itm.setTransMarginValue(values[2]);
                     itm.setTransNetValue(values[3]);
                     itm.setTransVat(values[4]);
+                    itm.setTransPendingCheckBillCount(pendingCheckBillCount);
                 }
             }
 
@@ -2339,6 +2344,54 @@ public class InwardBeanController implements Serializable {
             for (Object[] row : results) {
                 Long itemId = (Long) row[0];
                 Double count = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                countMap.put(itemId, count);
+            }
+        }
+
+        return countMap;
+    }
+
+    /**
+     * Bulk query to get the pending-check bill count for multiple items at
+     * once. Unlike getBulkBillItemCounts/getBulkCheckedBillItemCounts (which
+     * are quantity-based), this counts distinct Bills - not summed qty -
+     * since "Pending Check Count" on the Service Details tab means "how many
+     * bills for this item still need checking", not a quantity.
+     */
+    private Map<Long, Long> getBulkPendingCheckBillCounts(List<Item> items, List<PatientEncounter> pts, Bill forwardBill) {
+        if (items == null || items.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT b.item.id, COUNT(DISTINCT b.bill) FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.bill.patientEncounter IN :pe "
+                + " and b.item IN :items "
+                + " and type(b.bill)=:cls "
+                + " and b.bill.checkedBy is null "
+                + " and b.bill.cancelled=false";
+
+        if (forwardBill != null) {
+            sql += " and b.bill.forwardReferenceBill=:fB";
+            hm.put("fB", forwardBill);
+        }
+
+        sql += " GROUP BY b.item.id";
+
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", pts);
+        hm.put("items", items);
+        hm.put("cls", BilledBill.class);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIME);
+
+        Map<Long, Long> countMap = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                Long itemId = (Long) row[0];
+                Long count = (Long) row[1];
                 countMap.put(itemId, count);
             }
         }
