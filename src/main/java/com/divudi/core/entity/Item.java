@@ -214,6 +214,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     @Transient
     double transCheckedCount;
     @Transient
+    private long transPendingCheckBillCount;
+    @Transient
     private double transGrossValue;
     @Transient
     private double transDiscount;
@@ -397,6 +399,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setTransCheckedCount(double transCheckedCount) {
         this.transCheckedCount = transCheckedCount;
+    }
+
+    public long getTransPendingCheckBillCount() {
+        return transPendingCheckBillCount;
+    }
+
+    public void setTransPendingCheckBillCount(long transPendingCheckBillCount) {
+        this.transPendingCheckBillCount = transPendingCheckBillCount;
     }
 
     public double getTransGrossValue() {
