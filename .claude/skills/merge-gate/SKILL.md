@@ -97,11 +97,18 @@ PR, because one lived in a file outside the diff and the anchor silently
 failed).
 
 Before trusting the sub-agent's "posted successfully" claim, verify for
-every finding classified as blocking:
+every finding classified as blocking. Get the actual poster identity first
+(don't hardcode a username or just exclude `coderabbitai[bot]` — an
+unrelated human/bot comment at the same path:line would then be
+misread as confirmation), and **always paginate** — the default page size
+silently truncates past ~30 comments, which would make a real PR with
+substantial CodeRabbit + human discussion look falsely under-verified (or
+mask a genuinely missing finding sitting past the cutoff):
 
 ```bash
-gh api repos/hmislk/hmis/pulls/<PR>/comments \
-  --jq '.[] | select(.user.login != "coderabbitai[bot]") | "\(.path):\(.line)"'
+me=$(gh api user --jq '.login')
+gh api --paginate repos/hmislk/hmis/pulls/<PR>/comments \
+  --jq --arg me "$me" '.[] | select(.user.login == $me) | "\(.path):\(.line)"'
 ```
 
 Cross-check this list against the findings returned. For any blocking
@@ -158,10 +165,11 @@ $env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
 
 Check the server log for deployment errors before proceeding. **If `mvn
 clean package` fails, `asadmin redeploy` fails, or the server log shows
-deployment errors, stop this PR here**: capture the failure output, post
-the PR status comment (see § PR status comment) with that output, record
-`BLOCKED-BUILD`, and move to the next PR — don't attempt Phase 3 against a
-stale or undeployed build.
+deployment errors, stop this PR here**: capture the failure output, redact
+it of credentials/connection strings/hostnames (same rule as § Phase 3's
+evidence redaction), post the PR status comment (see § PR status comment)
+with the redacted excerpt, record `BLOCKED-BUILD`, and move to the next
+PR — don't attempt Phase 3 against a stale or undeployed build.
 
 ### Phase 3 — End-to-end verification
 
@@ -222,7 +230,7 @@ Use an outcome-specific template so a PR author or a merger who wasn't in
 this session gets enough context without opening the chat transcript:
 
 **`PASSED`:**
-```
+```markdown
 ## 🚦 Merge Gate: PASSED
 
 **Tested:**
@@ -233,35 +241,48 @@ this session gets enough context without opening the chat transcript:
 Ready for final human review and merge.
 ```
 
-**`BLOCKED-CI`:**
-```
-## 🚦 Merge Gate: BLOCKED — CI failing
+**`BLOCKED-CI`:** covers both an explicit check failure and a check that
+never went green after the recheck — use wording that fits either.
+```markdown
+## 🚦 Merge Gate: BLOCKED — CI not passing
 
-Check `<check name>` failed: <run URL>. Merge-gate stopped before the
+CI did not reach a passing state: <failed check name and run URL, or
+"still pending after the ~270s recheck">. Merge-gate stopped before the
 code review pass.
 ```
 
 **`BLOCKED-REVIEW`:** keep this one short — the inline `--comment` findings
-from Phase 1 already carry the detail.
-```
-## 🚦 Merge Gate: BLOCKED — code review found regressions
+from Phase 1 already carry the detail. Covers correctness, regression, AND
+business-rule-violation findings, not just regressions — say "blocking
+findings," not "regressions."
+```markdown
+## 🚦 Merge Gate: BLOCKED — blocking code-review findings
 
 See the inline comments above for specifics. Merge-gate stopped here;
 Phase 2/3 (build, E2E, baselines) did not run.
 ```
 
-**`BLOCKED-BUILD`:**
-```
+**`BLOCKED-BUILD`:** redact the failure output the same way as the E2E
+evidence rule below — Maven/Payara/asadmin output can contain JDBC
+connection strings, JNDI names, hostnames, or other values CLAUDE.md's
+credentials rule forbids ever leaving the machine. Redact before this
+excerpt goes anywhere near `gh pr comment`, and cap its length.
+```markdown
 ## 🚦 Merge Gate: BLOCKED — build/deploy failed
 
-<relevant tail of the compile or asadmin failure output>
+<relevant tail of the compile or asadmin failure output, redacted of
+credentials, connection strings, hostnames, and other sensitive values>
 
 Merge-gate could not verify this PR end-to-end because the build/deploy
 step itself failed.
 ```
 
-**`BLOCKED-E2E`:**
-```
+**`BLOCKED-E2E`:** the description below is inline, redacted prose — **not**
+a link or attachment. Raw evidence (screenshots, DB output) stays local in
+`tmp/` and is never uploaded anywhere; there's no attachment mechanism in
+this workflow. Don't imply otherwise in the Final report either (see
+§ Final report).
+```markdown
 ## 🚦 Merge Gate: BLOCKED — end-to-end verification found a bug
 
 **Failed:** <PR workflow name, or "Baseline A: COGS variance", or
@@ -282,14 +303,17 @@ After all PRs are processed, print a table:
 |---|---|---|---|
 
 Outcome is one of `PASSED`, `BLOCKED-CI`, `BLOCKED-REVIEW`, `BLOCKED-BUILD`,
-`BLOCKED-E2E`. For every `PASSED` row, say it's ready for the user's final
-review and merge. For blocked rows, link the PR status comment (which
-itself links the Phase 1 inline comments, the build/deploy failure output,
-or the Phase 3 evidence, depending on where it stopped). Every PR should
-already have its status comment posted per § PR status comment by the time
-this table prints — the table is a summary for this chat, the comment is
-the durable record on GitHub. Never merge, approve, or request changes on
-the user's behalf.
+`BLOCKED-E2E`. Every row's `Notes/links` cell — PASSED included — should
+include the URL of that PR's status comment (see § PR status comment); this
+is the durable GitHub record, the table itself is just a summary for this
+chat. For every `PASSED` row, additionally say it's ready for the user's
+final review and merge. For blocked rows, the status comment itself points
+to whatever's relevant: the Phase 1 inline comments, the (redacted)
+build/deploy failure excerpt, or a redacted description of the Phase 3
+failure — evidence never leaves `tmp/` as a link or attachment, only as
+inline redacted prose (see § PR status comment). Every PR should already
+have its status comment posted by the time this table prints. Never merge,
+approve, or request changes on the user's behalf.
 
 ## Hygiene
 
