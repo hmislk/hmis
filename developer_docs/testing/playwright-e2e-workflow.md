@@ -2013,6 +2013,47 @@ window.setTimeout = function (fn, delay) { return delay >= 2500 ? 0 : window.__o
 The real growl then stays rendered for the screenshot (nothing about the message is faked — only the dismissal is
 deferred). Reload the page afterwards to drop the patch. Verified while testing issue #23206.
 
+## Icon-only PrimeFaces buttons: a raw DOM `.click()` does nothing
+
+On Inward pages (`inpatient_search.xhtml`, `admission_profile.xhtml`) the row-action buttons are
+`ui-button-icon-only` and carry **no `onclick` attribute** — PrimeFaces binds the submit handler through
+jQuery instead. A plain `element.click()` (and Playwright's own click, when the ref resolves to the inner
+icon) fires the DOM event without triggering the jQuery-bound handler, so the form never submits and the
+page silently stays put — no error, no server log entry. Trigger the jQuery handler explicitly:
+
+```js
+window.jQuery(document.getElementById('form:btnNursingDischarge')).trigger('click');
+```
+
+Inspect `$._data(el, 'events')` first if unsure — the absence of a `click` key alongside `mousedown`/`mouseup`
+is the tell. Verified while testing issue #23222.
+
+## A local "Unknown column" 500 is schema drift — use the app's own migration page
+
+A restored/older local DB can lag the entity model (e.g. `Unknown column 'DURATIONUNIT' in 'field list'`
+loading a `TimedItemFee`), producing a 500 on pages that are otherwise unrelated to what you're testing.
+The login screen flags this as **"Database Migration Pending"**. Fix it through the app's own UI —
+navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update Both Databases** — rather
+than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
+Verified while testing issue #23222.
+
+## Prove a server-side guard, not just a disabled button
+
+When a fix disables a button via `disabled="#{bean.someCheck()}"`, the disabled attribute alone is weak
+evidence — it proves the UI hint, not the guard that actually protects production. Strip it and submit
+anyway, then assert in the DB that nothing changed:
+
+```js
+const b = document.getElementById('formX:btnConfirm');
+b.disabled = false; b.classList.remove('ui-state-disabled');
+window.confirm = () => true;              // bypass the JS confirm guard too
+window.jQuery(b).trigger('click');
+```
+
+Always pair this with the **negative test** — a record with nothing pending must still succeed — otherwise
+you have not distinguished "correctly blocks" from "blocks everything". Undo any state the negative test
+creates through the app's own Cancel action, never with an `UPDATE`. Verified while testing issue #23222.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -2030,3 +2071,6 @@ deferred). Reload the page afterwards to drop the patch. Verified while testing 
       clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
 - [ ] Re-logged in and re-selected department after any redeploy before continuing.
 - [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
+- [ ] For icon-only PrimeFaces buttons, triggered the jQuery handler (`$(el).trigger('click')`) rather than a raw DOM `.click()`.
+- [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] For a guard fix: bypassed the disabled button and confirmed the **server-side** rejection in the DB, and ran the negative test (clean record still succeeds), reverting it through the app.
