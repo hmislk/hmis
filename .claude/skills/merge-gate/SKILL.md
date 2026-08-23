@@ -4,10 +4,12 @@ description: >
   Gate one or more open PRs before merge: CI check, then a code-level
   regression/business-rule review, then (only if that's clean) end-to-end
   Playwright verification of the PR's own workflow(s) plus two fixed
-  baseline checks. Use when asked to "gate PR(s) for merge", "run
-  merge-gate on #N", "check these PRs are safe to merge", or before merging
-  any PR that touches shared/core code (API, billing, pharmacy) where a
-  regression could silently break unrelated functions.
+  baseline checks. Posts one top-level status comment per PR per run
+  (PASSED or BLOCKED-*) so the outcome is visible on GitHub, not just in
+  chat. Use when asked to "gate PR(s) for merge", "run merge-gate on #N",
+  "check these PRs are safe to merge", or before merging any PR that
+  touches shared/core code (API, billing, pharmacy) where a regression
+  could silently break unrelated functions.
 argument-hint: "<pr-number> [pr-number...]"
 ---
 
@@ -45,9 +47,10 @@ after the last PR.
 gh pr checks <PR>
 ```
 
-- Failing → record `BLOCKED-CI`, stop this PR, move to the next.
+- Failing → record `BLOCKED-CI`, post the PR status comment (see
+  § PR status comment), stop this PR, move to the next.
 - Pending → `ScheduleWakeup` ~270s (same cadence as `dev-issue` §14), recheck
-  once. Still not green → `BLOCKED-CI`, stop this PR.
+  once. Still not green → `BLOCKED-CI`, post the comment, stop this PR.
 - Passing → continue.
 
 ### 1. Fetch and checkout
@@ -76,7 +79,7 @@ Classify the findings it returns:
 
 | Category | Effect |
 |---|---|
-| correctness, regression, business-rule violation | **Blocking.** Comments are already posted by `--comment`; summarize in chat; record `BLOCKED-REVIEW`; stop this PR — do not run Phase 2/3. |
+| correctness, regression, business-rule violation | **Blocking.** Inline comments are already posted by `--comment`; summarize in chat; post the PR status comment (see § PR status comment); record `BLOCKED-REVIEW`; stop this PR — do not run Phase 2/3. |
 | style, simplification, efficiency, reuse-only | **Non-blocking.** Note in chat, continue to Phase 2 regardless. |
 
 No findings at all → continue to Phase 2.
@@ -106,7 +109,8 @@ $env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
 
 Check the server log for deployment errors before proceeding. **If `mvn
 clean package` fails, `asadmin redeploy` fails, or the server log shows
-deployment errors, stop this PR here**: capture the failure output, record
+deployment errors, stop this PR here**: capture the failure output, post
+the PR status comment (see § PR status comment) with that output, record
 `BLOCKED-BUILD`, and move to the next PR — don't attempt Phase 3 against a
 stale or undeployed build.
 
@@ -140,9 +144,86 @@ patient identifiers, credentials, tokens, and other sensitive fields from
 that evidence before it leaves `tmp/` (referenced in chat, posted to a PR
 comment, etc.) — same rule as `dev-issue` §2a/§10. Do not attempt a fix
 inline — report it and discuss next steps (per CLAUDE.md "discuss
-uncertainties"); fixing is separate `dev-issue` work.
+uncertainties"); fixing is separate `dev-issue` work. Post the PR status
+comment (see § PR status comment) describing what failed, with the
+evidence redacted.
 
-All three pass → record `PASSED`.
+All three pass → record `PASSED` and post the PR status comment (see
+§ PR status comment).
+
+## PR status comment
+
+Post exactly **one top-level PR comment per PR per run**, at whatever
+terminal state that PR's pipeline reaches (whether it stops early or runs
+all the way to `PASSED`). This is an intentional, carved-out exception to
+the general "never post top-level PR comments, only reply to reviewer
+threads" rule — merge-gate is reporting its own factual outcome, not review
+opinion needing threading, so a fresh top-level comment each run is
+correct, not noise. Post via:
+
+```bash
+gh pr comment <PR> --body "..."
+```
+
+If merge-gate is re-run on the same PR later (e.g. after the author
+pushed fixes), post a **new** comment rather than editing/deleting the
+previous one — the history of gate runs staying visible is the point.
+
+Use an outcome-specific template so a PR author or a merger who wasn't in
+this session gets enough context without opening the chat transcript:
+
+**`PASSED`:**
+```
+## 🚦 Merge Gate: PASSED
+
+**Tested:**
+- PR workflow: <short description of what was exercised>
+- Baseline A (pharmacy sale → COGS variance): ✅ no unexplained variance
+- Baseline B (OPD sale → Cashier Details): ✅ sale appears correctly
+
+Ready for final human review and merge.
+```
+
+**`BLOCKED-CI`:**
+```
+## 🚦 Merge Gate: BLOCKED — CI failing
+
+Check `<check name>` failed: <run URL>. Merge-gate stopped before the
+code review pass.
+```
+
+**`BLOCKED-REVIEW`:** keep this one short — the inline `--comment` findings
+from Phase 1 already carry the detail.
+```
+## 🚦 Merge Gate: BLOCKED — code review found regressions
+
+See the inline comments above for specifics. Merge-gate stopped here;
+Phase 2/3 (build, E2E, baselines) did not run.
+```
+
+**`BLOCKED-BUILD`:**
+```
+## 🚦 Merge Gate: BLOCKED — build/deploy failed
+
+<relevant tail of the compile or asadmin failure output>
+
+Merge-gate could not verify this PR end-to-end because the build/deploy
+step itself failed.
+```
+
+**`BLOCKED-E2E`:**
+```
+## 🚦 Merge Gate: BLOCKED — end-to-end verification found a bug
+
+**Failed:** <PR workflow name, or "Baseline A: COGS variance", or
+"Baseline B: Cashier Details">
+
+<redacted description of what went wrong — no patient identifiers,
+credentials, or tokens>
+
+This was not auto-fixed — it needs discussion (per CLAUDE.md "discuss
+uncertainties") as separate `dev-issue` work.
+```
 
 ## Final report
 
@@ -153,9 +234,13 @@ After all PRs are processed, print a table:
 
 Outcome is one of `PASSED`, `BLOCKED-CI`, `BLOCKED-REVIEW`, `BLOCKED-BUILD`,
 `BLOCKED-E2E`. For every `PASSED` row, say it's ready for the user's final
-review and merge. For blocked rows, link the PR comment (Phase 1), the
-build/deploy failure output (2a), or the evidence captured (Phase 3). Never
-merge, approve, or request changes on the user's behalf.
+review and merge. For blocked rows, link the PR status comment (which
+itself links the Phase 1 inline comments, the build/deploy failure output,
+or the Phase 3 evidence, depending on where it stopped). Every PR should
+already have its status comment posted per § PR status comment by the time
+this table prints — the table is a summary for this chat, the comment is
+the durable record on GitHub. Never merge, approve, or request changes on
+the user's behalf.
 
 ## Hygiene
 
@@ -169,5 +254,6 @@ merge, approve, or request changes on the user's behalf.
 ## Required permissions
 
 Same as `playwright-e2e` (full `mcp__playwright__*` set, Maven +
-`asadmin`, `mysql` read access) plus `gh` for PR checkout/checks/diff and
-the `Agent` tool for the Phase 2 `Explore` dispatch.
+`asadmin`, `mysql` read access) plus `gh` for PR checkout/checks/diff/comment
+(`gh pr comment`, per § PR status comment) and the `Agent` tool for the
+Phase 2 `Explore` dispatch.

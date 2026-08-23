@@ -172,6 +172,24 @@ PRs: "ready for your final review to merge." The skill never merges or
 approves — that's always the user's call, matching every other skill's
 convention (`dev-issue` §15, `review-pr`).
 
+## Addendum (2026-08-23) — PR status comments
+
+The first real run (PRs #23214, #23082, #23073, #22929, #22841) exposed a
+gap: only Phase 1's `code-review --comment` left any trace on GitHub.
+`PASSED` PRs and `BLOCKED-CI`/`BLOCKED-BUILD`/`BLOCKED-E2E` outcomes were
+invisible outside the chat session that ran them — a PR author or a
+different merger had no way to see the gate ran at all.
+
+Decision: post exactly one top-level PR comment per PR per run, at the
+terminal state (whichever outcome that is), with an outcome-specific
+template. This is a deliberate, discussed exception to the project's
+general "no top-level PR comments, reply in threads only" rule (see the
+`feedback_pr_review_comments` memory) — that rule governs responding to
+*existing* reviewer feedback; this is the gate reporting its own factual
+outcome, not review opinion. If merge-gate is re-run on the same PR later,
+it posts a new comment rather than editing the old one, so the run history
+stays visible. Full templates: see the skill file's § PR status comment.
+
 ## Hygiene
 
 - `persistence.xml` discarded and restored to local JNDI around each PR's
