@@ -571,6 +571,16 @@ public class TimedItemApiService implements Serializable {
             existingById.put(f.getId(), f);
         }
 
+        // Retired fees are tracked only to tell "this id is not yours" apart from "this id
+        // is yours but retired" — a bulk write operates on the live slot list, so naming a
+        // retired fee is a mistake worth reporting accurately rather than as a wrong owner.
+        Set<Long> retiredIds = new HashSet<>();
+        for (TimedItemFee f : fetchFees(item, true)) {
+            if (f.isRetired()) {
+                retiredIds.add(f.getId());
+            }
+        }
+
         // Validate the entire submitted set before writing anything, so a bad slot in the
         // middle of the list does not leave the service half-reconfigured.
         Set<Integer> seenSlots = new HashSet<>();
@@ -584,6 +594,10 @@ public class TimedItemApiService implements Serializable {
                 throw new TimedItemFeeRuleException("Fee must be a non-negative value");
             }
             if (row.getId() != null && !existingById.containsKey(row.getId())) {
+                if (retiredIds.contains(row.getId())) {
+                    throw new TimedItemFeeRuleException("Fee with ID " + row.getId()
+                            + " is retired. Restore it first, or omit the id to add a new slot.");
+                }
                 throw new TimedItemFeeRuleException("Fee with ID " + row.getId()
                         + " does not belong to TimedItem with ID " + item.getId());
             }
