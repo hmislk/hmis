@@ -3226,6 +3226,12 @@ public class BhtSummeryController implements Serializable {
             billItem.setGrossValue(cit.getTotal());
             billItem.setAdjustedValue(cit.getTotal());
             billItem.setReferanceBillItem(getBillBean().fetchBillItem(patientEncounter, BillType.InwardIntrimBill, cit.getInwardChargeType()));
+            // Surface which Outside Charge item(s) this category's total
+            // includes, since this synthetic row has no single Item of its
+            // own to display (issue #22989).
+            if (!cit.getAdditionalChargeItemNames().isEmpty()) {
+                billItem.setDescreption(String.join(", ", cit.getAdditionalChargeItemNames()));
+            }
             getIntrimPrintController().getCurrentBill().getBillItems().add(billItem);
         }
 
@@ -4844,11 +4850,18 @@ public class BhtSummeryController implements Serializable {
     private void setChargeValueFromAdditional() {
         // OPTIMIZED: Fetch all totals in ONE bulk query
         Map<InwardChargeType, Double> bulkTotals = getInwardBean().caltValueFromAdditionalChargeBulk(getPatientEncounter(), childPatientEncouters);
+        // Item names behind those totals, so the Interim Bill can show which
+        // Outside Charge item(s) a category's total includes (issue #22989).
+        Map<InwardChargeType, List<String>> bulkItemNames = getInwardBean().caltAdditionalChargeItemNamesBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             double adj = bulkTotals.getOrDefault(cit.getInwardChargeType(), 0.0);
             double tot = cit.getTotal();
             cit.setTotal(tot + adj);
+            List<String> names = bulkItemNames.get(cit.getInwardChargeType());
+            if (names != null) {
+                cit.setAdditionalChargeItemNames(names);
+            }
         }
     }
 

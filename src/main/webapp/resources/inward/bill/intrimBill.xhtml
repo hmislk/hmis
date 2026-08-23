@@ -191,7 +191,10 @@
                                         <tr>
                                             <td style="text-align: left;" >
                                                 <h:outputLabel  value="#{bip.inwardChargeType.name}" />
-                                            </td>                                   
+                                                <h:panelGroup rendered="#{not empty bip.descreption}" layout="block">
+                                                    <h:outputLabel value="(#{bip.descreption})" style="font-size: 0.85em; font-style: italic;" />
+                                                </h:panelGroup>
+                                            </td>
                                             <td style="text-align: right;" >
                                                 <h:outputLabel value="#{bip.adjustedValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -208,7 +211,10 @@
                                         <tr>
                                             <td style="text-align: left;" >
                                                 <h:outputLabel  value="#{bip.inwardChargeType.name}" />
-                                            </td>                                   
+                                                <h:panelGroup rendered="#{not empty bip.descreption}" layout="block">
+                                                    <h:outputLabel value="(#{bip.descreption})" style="font-size: 0.85em; font-style: italic;" />
+                                                </h:panelGroup>
+                                            </td>
                                             <td style="text-align: right;" >
                                                 <h:outputLabel value="#{bip.adjustedValue}">
                                                     <f:convertNumber pattern="#,##0.00" />

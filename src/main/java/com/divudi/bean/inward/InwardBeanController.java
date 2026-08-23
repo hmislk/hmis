@@ -1866,6 +1866,47 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * Names of the specific Outside Charge items contributing to each
+     * charge type's total, so the Interim Bill can show which item(s) a
+     * category's total includes instead of only the category label
+     * (issue #22989). Companion to {@link #caltValueFromAdditionalChargeBulk}
+     * — same filter, but item names instead of a summed value.
+     */
+    public Map<InwardChargeType, List<String>> caltAdditionalChargeItemNamesBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT DISTINCT i.inwardChargeType, i.item.name"
+                + " FROM BillItem i "
+                + " WHERE i.retired=false "
+                + " AND i.bill.billType=:btp "
+                + " AND i.bill.patientEncounter IN :pe "
+                + " AND i.item IS NOT NULL";
+
+        HashMap m = new HashMap();
+        m.put("btp", BillType.InwardOutSideBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        m.put("pe", pts);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, m, TemporalType.DATE);
+
+        Map<InwardChargeType, List<String>> namesMap = new EnumMap<>(InwardChargeType.class);
+        if (results != null) {
+            for (Object[] row : results) {
+                InwardChargeType chargeType = (InwardChargeType) row[0];
+                String itemName = (String) row[1];
+                if (chargeType == null || itemName == null || itemName.isEmpty()) {
+                    continue;
+                }
+                namesMap.computeIfAbsent(chargeType, k -> new ArrayList<>()).add(itemName);
+            }
+        }
+
+        return namesMap;
+    }
+
     public List<PatientEncounter> fetchChildPatientEncounter(PatientEncounter patientEncounter) {
         List<PatientEncounter> cpt = new ArrayList<>();
 

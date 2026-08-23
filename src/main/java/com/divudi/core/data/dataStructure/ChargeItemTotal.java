@@ -28,6 +28,24 @@ public class ChargeItemTotal {
     private String comments;
     private List<PatientRoom> patientRooms;
     List<BillFee> billFees;
+    /**
+     * Names of the specific Outside Charge items whose value was folded into
+     * this charge type's total (issue #22989). Populated only for charge
+     * types that received an Outside Charge contribution; empty otherwise.
+     * Display-only — does not affect total/discount/validation calculations.
+     */
+    private List<String> additionalChargeItemNames;
+
+    public List<String> getAdditionalChargeItemNames() {
+        if (additionalChargeItemNames == null) {
+            additionalChargeItemNames = new ArrayList<>();
+        }
+        return additionalChargeItemNames;
+    }
+
+    public void setAdditionalChargeItemNames(List<String> additionalChargeItemNames) {
+        this.additionalChargeItemNames = additionalChargeItemNames;
+    }
 
     public List<BillFee> getBillFees() {
         return billFees;
