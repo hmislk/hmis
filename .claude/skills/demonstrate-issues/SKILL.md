@@ -142,13 +142,21 @@ letting them drive.
 
 So on every non-capture navigation/narration turn, silently note (don't
 announce it — this isn't a capture, just a running log) the menu
-path/button clicked and, if visible, the resulting page's title/breadcrumb
-and URL (`browser_snapshot`'s Page URL line, or ask if it's not obviously
-inferable from what the user said). Keep only the current admission's
-breadcrumb trail, most recent step last — this is scratch context, not a
-demo record, and gets discarded at end of session. When a capture cue
-finally lands, that trail becomes the "Steps to reproduce" backbone instead
-of having to ask the user to redo the walk.
+path/button clicked and, if visible from context already in front of you,
+the resulting page's title and URL. Don't spend an extra `browser_snapshot`
+call purely to fill in this log — use whatever page context you already
+have (the last snapshot/screenshot taken, or the user's own words). If a
+hop's destination truly isn't inferable that way, leave it unlabeled rather
+than interrupting the flow to ask; a gap in the trail is better than
+breaking the user's narration to ask a tracking question.
+
+Keep only the trail since the last capture (or session start, whichever is
+more recent), most recent step last — this is scratch context, not a demo
+record, and applies to whatever workflow is being demonstrated, not just
+inpatient/admission ones. When a capture cue lands, that trail becomes the
+"Steps to reproduce" backbone for that demo — then clear it before the next
+hop, so a later demo in the same session doesn't inherit an earlier demo's
+steps. Any trail still open at session end is simply discarded.
 
 If a capture already happened and the user later clarifies that demo #N was not
 meant as a bug report (e.g. "no error in this page yet, just gathering
