@@ -1735,6 +1735,18 @@ public class PriceMatrixController implements Serializable {
      * a.inwardChargeType IS NULL to keep service/pharmacy rows isolated from
      * room-charge-type rows.
      */
+    /**
+     * NOTE (2026-08, issue #23220): this JPQL calculation path filters
+     * `department` as an exact match only — unlike paymentMethod/admissionType
+     * in this same query, it does NOT wildcard-match rows where the matrix
+     * entry's department is null. This is a known gap, tracked separately in
+     * issue #23237 (https://github.com/hmislk/hmis/issues/23237). It is
+     * intentionally NOT fixed here: the equivalent native-SQL calculation path
+     * (PriceMatrixNativeSqlService.fetchDiscountPct), which is what inpatient
+     * pharmacy issuing actually uses in production, received the fix instead.
+     * This JPQL path is considered legacy/soon-to-be-superseded and should not
+     * be extended further — see #23237 before making changes here.
+     */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,
             InwardChargeType chargeType, boolean chargeTypeSpecific, Institution creditCompany) {
