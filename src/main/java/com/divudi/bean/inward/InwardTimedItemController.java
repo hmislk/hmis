@@ -710,9 +710,19 @@ public class InwardTimedItemController implements Serializable {
         if (getCurrent().getToTime() == null) {
             getCurrent().setToTime(new Date());
         }
+        // Price from the Start Time the user entered on this page, not from the
+        // date of admission. Both are stored on the item, but only fromTime is
+        // what the service actually ran for — and it is what the row's Update
+        // button (finalizeService) re-prices against, so pricing from the
+        // admission date made Add and Update disagree. A per-minute service made
+        // that glaring: a six-minute run on a two-week-old admission billed every
+        // minute since admission.
+        Date chargeFrom = getCurrent().getFromTime() != null
+                ? getCurrent().getFromTime()
+                : getCurrent().getPatientEncounter().getDateOfAdmission();
         double value = getInwardBean().calTotalTimedChargeForItem(
                 (TimedItem) getCurrent().getItem(),
-                getCurrent().getPatientEncounter().getDateOfAdmission(),
+                chargeFrom,
                 getCurrent().getToTime(),
                 getCurrent().getPatientEncounter().isForiegner());
         getCurrent().setServiceValue(value);

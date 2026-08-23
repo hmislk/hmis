@@ -53,6 +53,11 @@ public class ItemMappingController implements Serializable {
     private Item item;
     private ItemMapping selectedItemMapping;
     private List<Item> selectedItems;
+    // Outside-charge-specific mapping page state (issue #23250, Mode B) —
+    // kept separate from `institution`/`department` above so the general
+    // mapping pages and this one don't clobber each other's selection when
+    // both are open in the same session.
+    private Institution outsideChargeSite;
 
     public void addAllSelectedItemsToInstitution() {
         if (selectedItems == null) {
@@ -121,10 +126,14 @@ public class ItemMappingController implements Serializable {
     }
 
     public boolean mappingExists(Item i, Institution ins) {
+        // Excludes outside-charge-only mappings (issue #23250) so this
+        // general-purpose check/reactivate path never hijacks a row created
+        // by the dedicated outside-charge mapping page.
         String jpql = "select pavan "
                 + " from ItemMapping pavan "
                 + " where pavan.institution=:ins "
-                + " and pavan.item=:item ";
+                + " and pavan.item=:item "
+                + " and pavan.outsideChargeMapping=false ";
         Map m = new HashMap<>();
         m.put("ins", ins);
         m.put("item", i);
@@ -139,10 +148,12 @@ public class ItemMappingController implements Serializable {
     }
 
     public ItemMapping findItemMapping(Item i, Institution ins) {
+        // Excludes outside-charge-only mappings (issue #23250) — see mappingExists(Item, Institution).
         String jpql = "select pavan "
                 + " from ItemMapping pavan "
                 + " where pavan.institution=:ins "
-                + " and pavan.item=:item ";
+                + " and pavan.item=:item "
+                + " and pavan.outsideChargeMapping=false ";
         Map m = new HashMap<>();
         m.put("ins", ins);
         m.put("item", i);
@@ -239,14 +250,111 @@ public class ItemMappingController implements Serializable {
             JsfUtil.addErrorMessage("Institution");
             return;
         }
+        // Excludes outside-charge-only mappings (issue #23250) — see mappingExists(Item, Institution).
         String jpql = "SELECT im "
                 + "FROM ItemMapping im "
                 + "WHERE im.retired=false "
-                + "and im.institution = :inst";
+                + "and im.institution = :inst "
+                + "and im.outsideChargeMapping=false";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("inst", institution);
         List<ItemMapping> itemMappings = getFacade().findByJpql(jpql, parameters);
         items = itemMappings;
+    }
+
+    // ------------------------------------------------------------------
+    // Outside Charge Item Mapping (issue #23250, Mode B) — item eligibility
+    // for the Inward "Add Outside Charges" Item field, opt-in via the
+    // "Inward Outside Charge Requires Item Mapping" config key, keyed to
+    // the department's SITE (Department.getSite()), not the bare
+    // department. Kept on the same ItemMapping table but always guarded by
+    // outsideChargeMapping=true so it never overlaps with the generic
+    // mapping methods above.
+    // ------------------------------------------------------------------
+    public void addAllSelectedItemsToOutsideChargeSite() {
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No Items Selected");
+            return;
+        }
+        if (outsideChargeSite == null) {
+            JsfUtil.addErrorMessage("No Site Selected");
+            return;
+        }
+        if (items == null) {
+            items = new ArrayList<>();
+        }
+        for (Item i : selectedItems) {
+            ItemMapping im = findOutsideChargeItemMapping(i, outsideChargeSite);
+            if (im == null) {
+                im = new ItemMapping();
+                im.setItem(i);
+                im.setInstitution(outsideChargeSite);
+                im.setOutsideChargeMapping(true);
+                im.setCreater(sessionController.getLoggedUser());
+                im.setCreatedAt(new Date());
+                getFacade().create(im);
+                items.add(im);
+            } else if (im.isRetired()) {
+                im.setRetired(false);
+                getFacade().edit(im);
+                items.add(im);
+            }
+        }
+        selectedItems = new ArrayList<>();
+        JsfUtil.addSuccessMessage("All Added");
+    }
+
+    public ItemMapping findOutsideChargeItemMapping(Item i, Institution site) {
+        String jpql = "select im "
+                + " from ItemMapping im "
+                + " where im.institution=:site "
+                + " and im.item=:item "
+                + " and im.outsideChargeMapping=true ";
+        Map<String, Object> m = new HashMap<>();
+        m.put("site", site);
+        m.put("item", i);
+        List<ItemMapping> ims = getFacade().findByJpql(jpql, m);
+        if (ims == null || ims.isEmpty()) {
+            return null;
+        }
+        return ims.get(0);
+    }
+
+    public void fillItemMappingsForSelectedOutsideChargeSite() {
+        if (outsideChargeSite == null) {
+            JsfUtil.addErrorMessage("Site ?");
+            return;
+        }
+        String jpql = "SELECT im "
+                + "FROM ItemMapping im "
+                + "WHERE im.retired=false "
+                + "AND im.institution = :site "
+                + "AND im.outsideChargeMapping=true";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("site", outsideChargeSite);
+        items = getFacade().findByJpql(jpql, parameters);
+    }
+
+    public void removeSelectedItemMappingForOutsideChargeSite() {
+        if (selectedItemMappings == null || selectedItemMappings.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        removeSelectedItemMapping();
+        fillItemMappingsForSelectedOutsideChargeSite();
+    }
+
+    // Navigation method for managing Outside Charge Item Mappings
+    public String navigateToManageOutsideChargeItemMappings() {
+        return "/admin/items/manage_outside_charge_item_mappings?faces-redirect=true";
+    }
+
+    public Institution getOutsideChargeSite() {
+        return outsideChargeSite;
+    }
+
+    public void setOutsideChargeSite(Institution outsideChargeSite) {
+        this.outsideChargeSite = outsideChargeSite;
     }
 
     // Navigation method for managing Department Item Mappings
@@ -261,6 +369,14 @@ public class ItemMappingController implements Serializable {
 
     public List<Item> completeItemByInstitution(String qry, Institution institution) {
         List<Item> results;
+        // NOTE: deliberately NOT filtering out outsideChargeMapping=true rows here.
+        // This is a live OPD/Optician/Collecting-Centre billing autocomplete path
+        // (a projection query that otherwise never needs to touch the new column),
+        // and adding that filter would make it require OUTSIDECHARGEMAPPING to exist
+        // in the DB from the moment this deploys, before an admin has necessarily
+        // run the "Add Missing Fields" DDL step (issue #23250). The admin-only
+        // mapping-management methods below already require that column regardless
+        // (they SELECT the full entity), so the isolation is enforced there instead.
         String jpql = "SELECT im.item FROM ItemMapping im "
                 + "WHERE (LOWER(im.item.name) LIKE :qry OR LOWER(im.item.fullName) LIKE :qry OR LOWER(im.item.code) LIKE :qry) "
                 + "AND im.institution = :institution "
@@ -304,6 +420,10 @@ public class ItemMappingController implements Serializable {
 
     public List<Item> fillItemByInstitution(Institution institution) {
         List<Item> results;
+        // NOTE: deliberately not filtering outsideChargeMapping here — see
+        // completeItemByInstitution(String, Institution) above. Also, outside-charge
+        // mappings never set `department`, so they cannot match `im.department.institution`
+        // regardless.
         String jpql = "SELECT im.item FROM ItemMapping im "
                 + " WHERE im.retired = false "
                 + " AND im.department.institution = :ins "
@@ -386,9 +506,11 @@ public class ItemMappingController implements Serializable {
         List<ItemMapping> list;
         String jpql;
         HashMap<String, Object> parameters = new HashMap<>();
+        // Excludes outside-charge-only mappings (issue #23250) — see mappingExists(Item, Institution).
         jpql = "SELECT im FROM ItemMapping im "
                 + "WHERE im.institution = :institution "
                 + "AND im.retired = false "
+                + "AND im.outsideChargeMapping = false "
                 + "ORDER BY im.item.name";
         parameters.put("institution", institution);
         list = getFacade().findByJpql(jpql, parameters);

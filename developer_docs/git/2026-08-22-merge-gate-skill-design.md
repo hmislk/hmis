@@ -172,6 +172,61 @@ PRs: "ready for your final review to merge." The skill never merges or
 approves — that's always the user's call, matching every other skill's
 convention (`dev-issue` §15, `review-pr`).
 
+## Addendum (2026-08-23) — PR status comments
+
+The first real run (PRs #23214, #23082, #23073, #22929, #22841) exposed a
+gap: only Phase 1's `code-review --comment` left any trace on GitHub.
+`PASSED` PRs and `BLOCKED-CI`/`BLOCKED-BUILD`/`BLOCKED-E2E` outcomes were
+invisible outside the chat session that ran them — a PR author or a
+different merger had no way to see the gate ran at all.
+
+Decision: post exactly one top-level PR comment per PR per run, at the
+terminal state (whichever outcome that is), with an outcome-specific
+template. This is a deliberate, discussed exception to the project's
+general "no top-level PR comments, reply in threads only" rule (see the
+`feedback_pr_review_comments` memory) — that rule governs responding to
+*existing* reviewer feedback; this is the gate reporting its own factual
+outcome, not review opinion. If merge-gate is re-run on the same PR later,
+it posts a new comment rather than editing the old one, so the run history
+stays visible. Full templates: see the skill file's § PR status comment.
+
+## Addendum (2026-08-23) — missing-comment fallback
+
+Posting the PR status comments (previous addendum) surfaced a second bug:
+PR #23082's two blocking findings from the original run had never actually
+been posted, despite the sub-agent reporting them as posted. Root cause:
+GitHub's PR-review-comment API can only anchor a comment on a line inside
+the PR's own diff; one finding's defect lived in a file (`ChannelService.java`)
+that PR #23082 doesn't touch — it's only *called* by the new code — so the
+anchor had nowhere to attach and silently failed with no error surfaced
+back to the caller.
+
+Added a verification step to Phase 1: after `code-review --comment` runs,
+cross-check the findings it returned against what's actually present via
+`gh api .../pulls/<PR>/comments`, rather than trusting the "posted
+successfully" claim at face value. For anything missing, a documented
+fallback: anchor on the nearest related line that IS in the diff (usually
+the calling line) and cite the real file:line in the comment body text; if
+no related diff line exists at all, fold the finding into the top-level PR
+status comment instead, since that one isn't line-anchored. Full steps:
+see the skill file's § Fallback (under Phase 1).
+
+CodeRabbit's own review of that addition caught a real ordering bug: the
+Fallback section was written *after* the classification table's "record
+`BLOCKED-REVIEW`; stop this PR" instruction, so a linear read could stop
+the PR before ever running the verification meant to catch a silent drop
+— defeating the point. Reordered so the Fallback runs immediately after
+invoking `code-review --comment` and *before* classification; classifying
+now happens once every returned finding is confirmed actually posted (or
+folded into the status comment). Also incorporated CodeRabbit's other 6
+findings on the same review pass: markdown-tagged all 5 status-comment
+template fences, made BLOCKED-CI/BLOCKED-REVIEW wording cover their full
+trigger range, redacted the BLOCKED-BUILD failure excerpt the same way as
+E2E evidence, corrected BLOCKED-E2E to not overclaim a link/attachment
+exists (it's inline redacted prose — building real attachment support was
+discussed and deliberately deferred), and required the status-comment URL
+in every Final report row, not just blocked ones.
+
 ## Hygiene
 
 - `persistence.xml` discarded and restored to local JNDI around each PR's

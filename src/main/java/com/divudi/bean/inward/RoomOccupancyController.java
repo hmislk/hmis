@@ -184,6 +184,26 @@ public class RoomOccupancyController implements Serializable {
         return roomFacilityCharges;
     }
 
+    /**
+     * What a full day in this room costs, for the vacant-room list. The room
+     * charge is per configured block, and the block can be defined in minutes,
+     * hours or days — so it is scaled by however many blocks fit in 24 hours. A
+     * one-time charge is not time-based and is shown as-is.
+     */
+    public double getDailyEquivalentRoomCharge(RoomFacilityCharge charge) {
+        if (charge == null || charge.getTimedItemFee() == null || charge.getRoomCharge() == null) {
+            return 0.0;
+        }
+        if (charge.getTimedItemFee().isOneTime()) {
+            return charge.getRoomCharge();
+        }
+        double blockHours = charge.getTimedItemFee().getDurationInHours();
+        if (blockHours <= 0) {
+            return 0.0;
+        }
+        return charge.getRoomCharge() * (24.0 / blockHours);
+    }
+
     public void setRoomFacilityCharges(List<RoomFacilityCharge> roomFacilityCharges) {
         this.roomFacilityCharges = roomFacilityCharges;
     }

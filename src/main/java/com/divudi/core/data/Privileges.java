@@ -694,6 +694,7 @@ public enum Privileges {
     PharmacyTransfer("Pharmacy Transfer"),
     PharmacyTransferViewRates("Pharmacy Transfer View Rates"),
     NursingIPBillingViewRates("Nursing IP Billing View Rates"),
+    IPBillingViewDiscount("IP Billing View Discount"),
     IPRequestViewRates("IP Request View Rates"),
     StockRequestViewRates("Stock Request View Rates"),
     ConsumptionViewRates("Consumption View Rates"),
@@ -1380,6 +1381,7 @@ public enum Privileges {
             case PharmacyTransfer:
             case PharmacyTransferViewRates:
             case NursingIPBillingViewRates:
+            case IPBillingViewDiscount:
             case IPRequestViewRates:
             case StockRequestViewRates:
             case ConsumptionViewRates:

@@ -8,12 +8,17 @@ package com.divudi.core.data.dto.timeditem;
 import com.divudi.core.data.inward.TimedItemDurationUnit;
 
 /**
- * DTO representing a single TimedItemFee.
+ * One slot in a bulk fee write ({@code PUT /timed-items/{id}/fees}).
+ *
+ * <p>{@code id} is what distinguishes an update from a create: present means "this is
+ * the existing fee with that id", absent means "add a new slot". Any live fee whose id
+ * is missing from the submitted list is retired by the bulk write.
  *
  * @author Buddhika
  */
-public class TimedItemFeeDTO {
+public class TimedItemFeeUpsertDTO {
 
+    /** Existing fee to update. Null/absent creates a new fee. */
     private Long id;
     private String name;
     private double fee;
@@ -23,10 +28,9 @@ public class TimedItemFeeDTO {
     private long durationDaysForMoCharge;
     private int sortOrder;
     private boolean repeating;
-    private boolean retired;
     private TimedItemDurationUnit durationUnit;
 
-    public TimedItemFeeDTO() {
+    public TimedItemFeeUpsertDTO() {
     }
 
     public Long getId() {
@@ -99,14 +103,6 @@ public class TimedItemFeeDTO {
 
     public void setRepeating(boolean repeating) {
         this.repeating = repeating;
-    }
-
-    public boolean isRetired() {
-        return retired;
-    }
-
-    public void setRetired(boolean retired) {
-        this.retired = retired;
     }
 
     public TimedItemDurationUnit getDurationUnit() {

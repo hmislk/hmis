@@ -11,6 +11,7 @@
         <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
         <cc:attribute name="showRate" default="true" />
+        <cc:attribute name="showDiscount" default="true" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -314,6 +315,8 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showDiscount}">
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
@@ -324,6 +327,8 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showRate}">
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
@@ -331,10 +336,11 @@
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>                          
-                        </td>                        
+                            </h:outputLabel>
+                        </td>
                     </tr>
-
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showDiscount}">
                     <tr>
 
                         <td  class="totalsBlock" style="text-align: left;">
@@ -631,6 +637,7 @@
 
                 <table style="width: 100%;">
 
+                    <ui:fragment rendered="#{cc.attrs.showRate}">
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Total" />
@@ -641,6 +648,8 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showDiscount}">
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
@@ -651,6 +660,8 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showRate}">
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
@@ -658,10 +669,11 @@
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>                          
-                        </td>                        
+                            </h:outputLabel>
+                        </td>
                     </tr>
-
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showDiscount}">
                     <tr>
 
                         <td  class="totalsBlock" style="text-align: left;">
@@ -676,6 +688,7 @@
 
                         </td>
                     </tr>
+                    </ui:fragment>
 
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">

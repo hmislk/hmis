@@ -676,8 +676,8 @@
                                                     </f:facet>
                                                 </p:column>
 
-                                                <p:column >
-                                                    <f:facet name="header">
+                                                <p:column styleClass="text-end">
+                                                    <f:facet name="header" >
                                                         <h:outputLabel value="Count"/>
                                                     </f:facet>
                                                 </p:column>
@@ -760,7 +760,7 @@
                                                 <h:outputLabel value="#{ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
                                             <p:column styleClass="text-end">
-                                                <h:outputLabel value="#{ser.transBillItemCount - ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}">
+                                                <h:outputLabel value="#{ser.transPendingCheckBillCount}" rendered="#{ser.transBillItemCount ne 0}">
                                                     <f:convertNumber pattern="#,##0"/>
                                                 </h:outputLabel>
                                             </p:column>

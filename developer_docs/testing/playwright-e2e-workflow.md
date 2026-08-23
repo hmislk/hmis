@@ -306,10 +306,46 @@ show the fixed control without private information.
    project `tmp/` folder.
 2. For user-facing documentation, copy final screenshots into the sibling wiki
    repo under `../hmis.wiki/images/`.
-3. Reference wiki images in markdown as `images/example_name.png`.
-4. Commit and push the wiki immediately from `../hmis.wiki`.
+3. **Embed each image in the wiki page for the feature** — this is the step
+   that is most often skipped, and skipping it is why the wiki currently holds
+   ~600 images but only ~55 pages reference any. An image nobody links to
+   documents nothing.
+
+   Find the page by feature name, screen title, or menu path — pages are named
+   after the user-facing screen (e.g. `Inpatient-Nursing-Discharge.md`):
+
+   ```bash
+   cd ../hmis.wiki
+   ls *.md | grep -iE "<feature|module keyword>"
+   grep -ril "<feature name>" *.md | head
+   ```
+
+   Reference the image with a relative path. Markdown alt text is *not* a
+   rendered caption, so add a visible italic line beneath it — readers
+   skimming a long page rely on that, and screen readers use the alt text:
+
+   ```markdown
+   ![Nursing discharge blocked by pending pharmacy items](images/23222-fixed-discharge-blocked.png)
+
+   *Nursing discharge blocked: the pending pharmacy items are listed and Confirm stays disabled.*
+   ```
+
+   **Replace outdated screenshots rather than accumulating them.** If the page
+   already shows a screen your change altered — or one that no longer matches
+   the current UI at all — swap it out. Two contradictory screenshots of the
+   same screen are worse than one stale one.
+
+   If no page covers the feature: create one when the change is user-visible
+   (screen, workflow, report, setting), following a neighbouring page in the
+   same module. Skip it when the change is invisible to end users (internal
+   query fix, refactor, build change) — there the screenshot is evidence for
+   the issue/PR only.
+4. Commit and push the wiki immediately from `../hmis.wiki` — images and page
+   edits together.
 5. To embed the same image in a GitHub issue or PR comment, use the raw wiki
-   URL:
+   URL (and link the page itself as
+   `https://github.com/hmislk/hmis/wiki/<Page-Name>`, so the reader can see the
+   feature documented in context rather than a floating screenshot):
 
 ```text
 https://raw.githubusercontent.com/wiki/hmislk/hmis/images/example_name.png
@@ -451,8 +487,20 @@ return against it. For issues, create a purchase → issue → return. The
 For qty fields with `async="true"` blur handlers, use slow `browser_type` + Tab key to commit — do not rely on jQuery-blur (see §3).
 
 Never close a QA session with "code looks correct" as the only evidence.
-If you cannot generate data through the app, stop and discuss alternatives
-with the developer before falling back.
+
+If the app genuinely can't get you to the required state (the path is blocked
+by unrelated broken data, or needs a second user session you lack credentials
+for), **write the local database directly** — `INSERT`/`UPDATE` against a
+local DB is fine, and a local DB is disposable: don't revert test data or
+treat local rows as precious. Going through the app stays the preference
+because it exercises the same validation and business logic the fix has to
+survive, so a hand-built fixture that bypasses that validation proves less —
+weigh that when it matters, and note in the PR how the data was made.
+
+**This applies to local databases only.** A remote or SSH-tunnelled database
+(production, staging) is read-only, always. No development environment is ever
+set up on a hosting server, so "localhost, no tunnel" is a reliable proxy for
+"safe to modify freely".
 
 ## 16. List pages that filter by `toDepartment = session department`
 
@@ -1975,6 +2023,136 @@ not `isHasPendingTheatreReturnForAdmission`. **Fix**: for any boolean helper met
 naturally read in EL — reserve the `is`/`get` prefix convention for genuine no-arg property getters. Verified while
 testing issue #23166 (theatre transfer per-patient page).
 
+## 77. `p:autoComplete` with `<p:column>` children renders suggestions as a `<table>` of `<tr data-item-label>`, not `<li>` — a `li`-only selector reports "no matches" on a working autocomplete
+
+`.ui-autocomplete-panel li` is the right selector only for a plain autocomplete. As soon as the component declares
+`<p:column>` children (the multi-column suggestion form used by the timed-service, admission and item pickers), the
+panel renders a `<table class="ui-autocomplete-items ui-autocomplete-table">` whose rows are
+`<tr id="<clientId>_item_N" data-item-value="…" data-item-label="…">`. Querying only `li` returns an empty list, which
+looks exactly like "the server found nothing" and sends you off debugging the `completeMethod`'s JPQL. Diagnose by
+reading the actual AJAX response (`browser_network_request` → `response-body`) — if the partial response contains the
+rows, the query is fine and only the selector is wrong. **Fix**: select `tr[id^="<clientId>_item_"]` (or query both
+`tr, li`), and click the row by `data-item-label`. Verified while testing issue #23206.
+
+## 78. Typing into an input that a `p:ajax` just re-rendered prepends to the restored model value — set the dropdown first, then the numbers, and always confirm in the DB
+
+A `p:ajax` on a `p:selectOneMenu` with `update="txtDuration txtOverShoot"` re-renders those inputs *from the server-side
+model*. Clearing them client-side beforehand is undone by that re-render, so a later `pressSequentially('1')` lands in a
+field that once again reads `0.0` and produces **`10.0`**, not `1`. Nothing errors and the page looks right at a glance —
+the wrong value only shows up in the database. **Fix**: choose the dropdown value *first*, let the AJAX settle, then fill
+the dependent inputs; and verify every configuration value with a `SELECT` after saving rather than trusting the form.
+Related: `p:datePicker` ignores a direct `input.value = '…'` assignment (it re-formats from its own internal model) —
+drive it with `PF('widgetVar').setDate(new Date(...))`, resolving the widget via
+`Object.keys(PrimeFaces.widgets).find(k => PrimeFaces.widgets[k].id === '<clientId>')` when the page sets no
+`widgetVar`. Verified while testing issue #23206.
+
+## 79. Capturing a `p:growl` message in a screenshot: suppress its auto-hide timer, don't race it
+
+§68 says snapshot immediately — but with `life="3000"` even a single `browser_take_screenshot` round-trip usually misses
+it. Reading the DOM inside one `browser_evaluate` (click, `await` ~900ms, read `#growl_container.innerText`) proves the
+message *arrived*, and `getBoundingClientRect()` on `.ui-growl-item-container` proves it was actually on screen — but
+neither produces a screenshot. To capture one, suppress only the fade timer before triggering the action:
+
+```js
+window.__origSetTimeout = window.setTimeout;
+window.setTimeout = function (fn, delay) { return delay >= 2500 ? 0 : window.__origSetTimeout.apply(window, arguments); };
+```
+
+The real growl then stays rendered for the screenshot (nothing about the message is faked — only the dismissal is
+deferred). Reload the page afterwards to drop the patch. Verified while testing issue #23206.
+
+## 80. A `p:dataTable` column present in `browser_snapshot` can still be 0px wide and invisible to the user — measure `offsetWidth`
+
+PrimeFaces renders its DataTable with `table-layout: fixed`. Under that layout the browser honours the columns that
+carry an explicit `width` first and hands the leftovers to the rest — and when the widths already declared exceed the
+table width, "the rest" gets **zero**. Those columns still render their `<th>`/`<td>` with the correct text, so they
+appear in `browser_snapshot`, in `get_page_text`, and in `innerText`. They are simply not on screen.
+
+This is how issue #23224 was misdiagnosed at first: the accessibility snapshot listed all 17 headers including
+`COST RATE` and `COST VALUE`, the footer totals were right, and the DB reconciled — so the report looked finished. The
+columns the user was asking for were 0px wide, exactly as their screenshot showed.
+
+Whenever a report "already has" a column a user says is missing, measure before concluding:
+
+```js
+[...document.querySelectorAll('.ui-datatable thead th')]
+    .map(th => ({ h: th.innerText.trim(), w: Math.round(th.offsetWidth) }))
+```
+
+Any `w: 0` is an invisible column. The fix is in the XHTML, not the test: once *any* `p:column` on a fixed-layout table
+declares a `width`, **every** column must declare one, or the undeclared ones collapse. Widening the viewport does not
+reveal them — it makes it worse, because the extra space goes to the columns that did declare a width.
+
+## Some PrimeFaces buttons need a jQuery-triggered click
+
+Most `p:commandButton`s submit fine with a normal Playwright click — including
+`ajax="false"` text-valued buttons such as `form:btnNursingDischarge` on
+`admission_profile.xhtml`, which navigate correctly on a plain
+`page.locator('#form\:btnNursingDischarge').click()`.
+
+The exception is **icon-only row controls** inside a `p:dataTable` (e.g. the
+`ui-button-icon-only` action buttons on `inpatient_search.xhtml`, which render with
+no `value` and no `onclick`). There, PrimeFaces binds the handler through jQuery and a
+raw `element.click()` from inside `browser_evaluate` can fire the DOM event without
+invoking it — the form never submits and the page silently stays put, with no error and
+no server-log entry. Fall back to triggering the jQuery handler for those:
+
+```js
+window.jQuery(document.getElementById('form:tblBills:0:j_idt638')).trigger('click');
+```
+
+Inspect `$._data(el, 'events')` if unsure — the absence of a `click` key alongside
+`mousedown`/`mouseup` is the tell. Either way, **assert the outcome** (URL change, or the
+expected element on the destination page) rather than assuming the click worked.
+Verified while testing issue #23222.
+
+## A local "Unknown column" 500 is schema drift — use the app's own migration page
+
+A restored/older local DB can lag the entity model (e.g. `Unknown column 'DURATIONUNIT' in 'field list'`
+loading a `TimedItemFee`), producing a 500 on pages that are otherwise unrelated to what you're testing.
+The login screen flags this as **"Database Migration Pending"**. Fix it through the app's own UI —
+navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update Both Databases** — rather
+than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
+Verified while testing issue #23222.
+
+## An unchanged database does NOT prove a server-side guard ran
+
+When a fix disables a button via `disabled="#{bean.someCheck()}"`, it is tempting to strip the
+attribute, submit, observe the DB unchanged, and call the server-side guard proven. **That
+inference is invalid** — and on JSF it is usually wrong.
+
+JSF **skips the action of a component it rendered as `disabled`**: the decode phase ignores the
+activation, so the action method is never invoked. The postback returns 200, the page re-renders,
+and the database is unchanged — identical to what a working guard looks like from the outside.
+Confirmed on `inward_nursing_discharge.xhtml`, whose Confirm button carries
+`disabled="#{nursingDischargeController.hasPendingPharmacyItems()}"`: re-POSTing the form produced
+`msgs:[]` (no growl message at all), proving `confirmNursingDischarge()` never ran.
+
+So before asserting DB state, **assert the action executed** — the expected message is the cheapest
+signal. Re-POST the form and inspect the response body directly:
+
+```js
+const fd = new FormData(document.getElementById('formNursingDischarge'));
+fd.set('formNursingDischarge:btnConfirmNursingDischarge', '');   // use the button's real (often empty) value
+const html = await (await fetch(location.href, {
+  method: 'POST', body: new URLSearchParams(fd),
+  headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+})).text();
+// msgs:[...] populated => the action ran; msgs:[] => it did not
+```
+
+An `ajax="false"` button reloads the page, so a growl is usually gone before any screenshot or
+follow-up `browser_evaluate` — read it out of the raw response as above rather than from the DOM.
+
+To exercise a guard that is unreachable while the button renders disabled, recreate the **race it
+exists for**: load the page while the record is clean (button enabled), make the blocking condition
+true, then submit the stale page.
+
+Always pair this with the **negative test** — a record with nothing pending must still succeed —
+otherwise you have not distinguished "correctly blocks" from "blocks everything". Undo any state the
+negative test creates through the app's own Cancel action, never with an `UPDATE`.
+Verified while testing issue #23222.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -1992,3 +2170,6 @@ testing issue #23166 (theatre transfer per-patient page).
       clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
 - [ ] Re-logged in and re-selected department after any redeploy before continuing.
 - [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
+- [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
+- [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
