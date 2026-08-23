@@ -131,6 +131,25 @@ the browser to the next thing worth showing, with no bug implied. Follow
 the instruction, but don't treat it as a capture cue on its own; wait for
 the user to actually point out a problem.
 
+### Keep a running navigation breadcrumb, even when not capturing
+
+The user is driving the browser, not you — when they say "I'm on page X"
+or narrate a click, you often can't reconstruct that path from code (it may
+depend on session state: a selected patient, department, in-progress form)
+and the user may not be able to repeat the exact clicks on request. Losing
+the trail forces them to redo manual navigation, which defeats the point of
+letting them drive.
+
+So on every non-capture navigation/narration turn, silently note (don't
+announce it — this isn't a capture, just a running log) the menu
+path/button clicked and, if visible, the resulting page's title/breadcrumb
+and URL (`browser_snapshot`'s Page URL line, or ask if it's not obviously
+inferable from what the user said). Keep only the current admission's
+breadcrumb trail, most recent step last — this is scratch context, not a
+demo record, and gets discarded at end of session. When a capture cue
+finally lands, that trail becomes the "Steps to reproduce" backbone instead
+of having to ask the user to redo the walk.
+
 If a capture already happened and the user later clarifies that demo #N was not
 meant as a bug report (e.g. "no error in this page yet, just gathering
 facts"), treat that as an explicit instruction to drop the prior capture —
