@@ -306,10 +306,43 @@ show the fixed control without private information.
    project `tmp/` folder.
 2. For user-facing documentation, copy final screenshots into the sibling wiki
    repo under `../hmis.wiki/images/`.
-3. Reference wiki images in markdown as `images/example_name.png`.
-4. Commit and push the wiki immediately from `../hmis.wiki`.
+3. **Embed each image in the wiki page for the feature** — this is the step
+   that is most often skipped, and skipping it is why the wiki currently holds
+   ~600 images but only ~55 pages reference any. An image nobody links to
+   documents nothing.
+
+   Find the page by feature name, screen title, or menu path — pages are named
+   after the user-facing screen (e.g. `Inpatient-Nursing-Discharge.md`):
+
+   ```bash
+   cd ../hmis.wiki
+   ls *.md | grep -iE "<feature|module keyword>"
+   grep -ril "<feature name>" *.md | head
+   ```
+
+   Reference the image with a relative path and a caption saying what the
+   reader is looking at:
+
+   ```markdown
+   ![Nursing discharge blocked by pending pharmacy items](images/23222-fixed-discharge-blocked.png)
+   ```
+
+   **Replace outdated screenshots rather than accumulating them.** If the page
+   already shows a screen your change altered — or one that no longer matches
+   the current UI at all — swap it out. Two contradictory screenshots of the
+   same screen are worse than one stale one.
+
+   If no page covers the feature: create one when the change is user-visible
+   (screen, workflow, report, setting), following a neighbouring page in the
+   same module. Skip it when the change is invisible to end users (internal
+   query fix, refactor, build change) — there the screenshot is evidence for
+   the issue/PR only.
+4. Commit and push the wiki immediately from `../hmis.wiki` — images and page
+   edits together.
 5. To embed the same image in a GitHub issue or PR comment, use the raw wiki
-   URL:
+   URL (and link the page itself as
+   `https://github.com/hmislk/hmis/wiki/<Page-Name>`, so the reader can see the
+   feature documented in context rather than a floating screenshot):
 
 ```text
 https://raw.githubusercontent.com/wiki/hmislk/hmis/images/example_name.png
@@ -451,8 +484,20 @@ return against it. For issues, create a purchase → issue → return. The
 For qty fields with `async="true"` blur handlers, use slow `browser_type` + Tab key to commit — do not rely on jQuery-blur (see §3).
 
 Never close a QA session with "code looks correct" as the only evidence.
-If you cannot generate data through the app, stop and discuss alternatives
-with the developer before falling back.
+
+If the app genuinely can't get you to the required state (the path is blocked
+by unrelated broken data, or needs a second user session you lack credentials
+for), **write the local database directly** — `INSERT`/`UPDATE` against a
+local DB is fine, and a local DB is disposable: don't revert test data or
+treat local rows as precious. Going through the app stays the preference
+because it exercises the same validation and business logic the fix has to
+survive, so a hand-built fixture that bypasses that validation proves less —
+weigh that when it matters, and note in the PR how the data was made.
+
+**This applies to local databases only.** A remote or SSH-tunnelled database
+(production, staging) is read-only, always. No development environment is ever
+set up on a hosting server, so "localhost, no tunnel" is a reliable proxy for
+"safe to modify freely".
 
 ## 16. List pages that filter by `toDepartment = session department`
 

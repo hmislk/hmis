@@ -87,10 +87,20 @@ documented here, and warrants stopping and asking rather than guessing.
   evidence-backed part of the approved fix. Applying that DDL to any
   database — even local — stays a human's call via the admin UI's "Add
   Missing..." page, same as it always is; this skill never runs it.
-- Never create test data with a direct database write (`INSERT`/`UPDATE`).
-  Same rule as `playwright-e2e`
-  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
-  generate it through the app, or stop — see step 4.
+- Never write to a **remote** database — production, staging, or anything
+  reached over an SSH tunnel. Read-only there, always, no exceptions.
+  A **local** database (localhost, no tunnel) is a disposable test
+  environment: no development environment is ever set up on a hosting
+  server, so "the database is local" is a reliable proxy for "this is safe
+  to modify freely". Create, mutate, and abandon local test data as needed —
+  do **not** revert it afterwards or treat local rows as precious.
+  Preferring to generate data *through the app* still applies as guidance
+  (`playwright-e2e`
+  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification)),
+  because a fixture that bypasses the app's own validation can pass a test
+  while proving nothing — but locally that is a judgement call, not a hard
+  limit, and direct SQL is fine when it is simply the faster route. See
+  step 4.
 - Never put institution names, patient/doctor names, or credentials in any
   GitHub issue, PR, or comment (same rule as `dev-issue`, non-negotiable here
   too since there's no human proofreading before it posts).
@@ -268,20 +278,23 @@ SELECT ... FROM <entity-table> WHERE <feature-relevant condition>
 ORDER BY <recency> LIMIT 5;
 ```
 
-- Prefer an existing record over creating one — it's already representative
-  and needs no cleanup.
+- Prefer an existing record over creating one — it's already representative.
 - If nothing suitable exists, **generate it through the app** (per
   `playwright-e2e`
   [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
   create a purchase before a return, a shift-start before a shift-end, etc.)
-  instead of asking which record to use.
-- If the app itself can't produce what's needed either (e.g. the only path
-  to the required state is blocked by unrelated broken data, or requires a
-  second user session you don't have credentials for): this is a hard-limit
-  stop, same as an unreproducible bug in step 2a — post what was tried and
-  why it didn't work, and end the run. Do not paper over it with a direct
-  database write; a fixture that skips the app's own validation/business
-  logic can pass a test while proving nothing real.
+  instead of asking which record to use. Going through the app is preferred
+  because it exercises the same validation and business logic the fix has to
+  survive.
+- If the app can't get you there (the path is blocked by unrelated broken
+  data, or needs a second user session you don't have credentials for),
+  **write the local database directly** — `INSERT`/`UPDATE` is fine on a
+  local DB. Say so in the PR, and be aware of what a hand-built fixture
+  skips: if it bypasses the very validation the fix depends on, the test
+  proves less, so prefer the app route when the difference matters.
+- **Never** do any of this against a remote/tunnelled database (see Hard
+  limits). Locally, don't revert or clean up test data afterwards — a local
+  DB is disposable and the next run can reset it.
 - Environment is local Payara unless the issue explicitly requires otherwise
   — never assume a remote/production environment unattended (hard limit).
 
@@ -324,13 +337,27 @@ findings, end the run.
 Same as `dev-issue` step 9 — append new Playwright/dev gotchas to
 `developer_docs/testing/playwright-e2e-workflow.md` if any surfaced.
 
-## 10. Publish evidence (wiki, issue, PR)
+## 10. Publish evidence and update the wiki
 
-Same as `dev-issue` step 10 (screenshots to `../hmis.wiki/images/`, wiki
-commit/push, issue comment with embedded raw wiki-image URLs, clean up
-`tmp/`) — with extra weight on redaction since no human reviews the
-screenshots before they're published: when in doubt about a screenshot,
-crop tighter or drop it rather than publish it uncertain.
+Same as `dev-issue` step 10 — including its **required** wiki-page update
+(find the page, embed the screenshots, replace outdated images, correct any
+text the change makes wrong, or create/skip the page with the reason stated),
+and linking the updated page(s) in the issue comment. Publishing an image
+without wiring it into a page leaves it orphaned; that is not a completed
+step 10.
+
+Two additions for unattended runs:
+
+- **Extra weight on redaction**, since no human reviews the screenshots
+  before they're published: when in doubt about a screenshot, crop tighter or
+  drop it rather than publish it uncertain. This applies to the wiki page too
+  — a page edit is as public as an issue comment.
+- **Wiki prose is a judgment call, so record it.** Rewriting a page's text
+  unattended is exactly the kind of decision step 3 exists to document: note
+  what you changed and why in the "Decisions made without approval" section
+  of the PR (step 13). Correcting text that a fix has made wrong is expected;
+  rewriting a page's structure or scope beyond the change at hand is not —
+  leave that and say so.
 
 ## 11. Pre-push check
 
@@ -348,10 +375,13 @@ limit above before writing it, same as an issue or PR body.
 
 ## 13. Create the PR
 
-Same as `dev-issue` step 13, plus a **"Decisions made without approval"**
-section up front listing every step-3 judgment call in one place, so the
-user can scan exactly what to double-check first. Redact this body per the
-hard limit above too — same as every other publication point.
+Same as `dev-issue` step 13 — including its required **Documentation**
+section linking the wiki page(s) updated in step 10 (or stating that none was
+needed, and why) — plus a **"Decisions made without approval"** section up
+front listing every step-3 judgment call in one place, so the user can scan
+exactly what to double-check first. Any wiki prose you rewrote belongs in
+that list. Redact this body per the hard limit above too — same as every
+other publication point.
 
 ## 14. Review loop (until mergeable) — waiting without the user present
 
