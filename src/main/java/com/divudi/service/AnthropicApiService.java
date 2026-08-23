@@ -1789,6 +1789,7 @@ public class AnthropicApiService implements Serializable {
                         "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots. "
                         + "TimedItems are consumed by the inward timed service page to bill patients for duration-based charges. "
                         + "Fees are ordered by sortOrder; each fee defines a durationHours block with an optional overShootHours grace window. "
+                        + "durationUnit says what durationHours/overShootHours are counted in (ONE_TIME, MINUTE, HOUR, DAY) and defaults to HOUR. "
                         + "Methods for items: LIST, GET, POST, PUT, DELETE, ACTIVATE, DEACTIVATE. "
                         + "Methods for fees: LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE. "
                         + "Always confirm with the user before creating, updating, or retiring records.")
@@ -1840,10 +1841,13 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "Foreigner fee amount. Optional; defaults to fee if omitted."))
                                 .add("durationHours", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Block duration in hours this fee tier covers. Required for POST_FEE (must be > 0)."))
+                                        .add("description", "Block duration this fee tier covers, counted in durationUnit. Required for POST_FEE unless durationUnit is ONE_TIME (must be > 0)."))
+                                .add("durationUnit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "ONE_TIME, MINUTE, HOUR or DAY — the unit durationHours/overShootHours are counted in. Optional; defaults to HOUR. ONE_TIME charges the fee once regardless of duration."))
                                 .add("overShootHours", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Grace hours beyond durationHours before the next tier applies. Optional."))
+                                        .add("description", "Grace period beyond durationHours, in the same durationUnit, before the next tier applies. Optional."))
                                 .add("durationDaysForMoCharge", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Duration days for monthly charge calculation. Optional."))
@@ -2487,12 +2491,13 @@ public class AnthropicApiService implements Serializable {
                     String durationDays = toolInput.containsKey("durationDaysForMoCharge") ? toolInput.getString("durationDaysForMoCharge", "") : "";
                     String sortOrder    = toolInput.containsKey("sortOrder")         ? toolInput.getString("sortOrder", "")         : "";
                     String repeating    = toolInput.containsKey("repeating")         ? toolInput.getString("repeating", "")         : "";
+                    String durationUnit = toolInput.containsKey("durationUnit")      ? toolInput.getString("durationUnit", "")      : "";
                     String query        = toolInput.containsKey("query")             ? toolInput.getString("query", "")             : "";
                     String size         = toolInput.containsKey("size")              ? toolInput.getString("size", "")              : "";
                     String retireComments = toolInput.containsKey("retireComments")  ? toolInput.getString("retireComments", "")    : "";
                     return callTimedItemsApi(method, id, feeId, name, code, deptType, chargeType,
                             departmentId, institutionId, categoryId, inactive,
-                            fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating,
+                            fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating, durationUnit,
                             query, size, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 default:
@@ -5668,7 +5673,7 @@ public class AnthropicApiService implements Serializable {
     private String callTimedItemsApi(String method, String id, String feeId, String name, String code,
             String departmentType, String inwardChargeType, String departmentId, String institutionId,
             String categoryId, String inactive, String fee, String ffee, String durationHours, String overShootHours,
-            String durationDaysForMoCharge, String sortOrder, String repeating,
+            String durationDaysForMoCharge, String sortOrder, String repeating, String durationUnit,
             String query, String size, String retireComments,
             String hmisBaseUrl, String hmisApiKey) {
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
@@ -5763,13 +5768,15 @@ public class AnthropicApiService implements Serializable {
                 case "POST_FEE": {
                     if (id.isEmpty()) return "Error: id is required for POST_FEE.";
                     if (name.isEmpty()) return "Error: name is required for POST_FEE.";
-                    if (durationHours.isEmpty()) return "Error: durationHours is required for POST_FEE.";
-                    double dh = Double.parseDouble(durationHours);
-                    if (dh <= 0) return "Error: durationHours must be > 0.";
+                    boolean oneTime = "ONE_TIME".equalsIgnoreCase(durationUnit.trim());
+                    if (durationHours.isEmpty() && !oneTime) return "Error: durationHours is required for POST_FEE.";
+                    double dh = durationHours.isEmpty() ? 0.0 : Double.parseDouble(durationHours);
+                    if (dh <= 0 && !oneTime) return "Error: durationHours must be > 0.";
                     javax.json.JsonObjectBuilder b = Json.createObjectBuilder()
                             .add("name", name)
                             .add("durationHours", dh)
                             .add("fee", fee.isEmpty() ? 0.0 : Double.parseDouble(fee));
+                    if (!durationUnit.isEmpty()) b.add("durationUnit", durationUnit.trim().toUpperCase(java.util.Locale.ROOT));
                     if (!ffee.isEmpty()) b.add("ffee", Double.parseDouble(ffee));
                     if (!overShootHours.isEmpty()) b.add("overShootHours", Double.parseDouble(overShootHours));
                     if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
@@ -5793,6 +5800,7 @@ public class AnthropicApiService implements Serializable {
                     if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
                     if (!sortOrder.isEmpty()) b.add("sortOrder", Integer.parseInt(sortOrder));
                     if (!repeating.isEmpty()) b.add("repeating", Boolean.parseBoolean(repeating));
+                    if (!durationUnit.isEmpty()) b.add("durationUnit", durationUnit.trim().toUpperCase(java.util.Locale.ROOT));
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees/" + feeId))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
                             .header("Content-Type", "application/json")
@@ -6016,7 +6024,8 @@ public class AnthropicApiService implements Serializable {
           .append("Use PUT to update name, code, departmentType, inwardChargeType, departmentId, institutionId, categoryId, or inactive flag. ")
           .append("Use DELETE to soft-retire an item. Use ACTIVATE / DEACTIVATE to toggle availability without retiring. ")
           .append("For tiered fee management: LIST_FEES lists all fees ordered by sortOrder. ")
-          .append("POST_FEE creates a fee tier — required: name, durationHours (> 0). fee, ffee, overShootHours, sortOrder, repeating are optional. ")
+          .append("POST_FEE creates a fee tier — required: name, durationHours (> 0, not needed when durationUnit is ONE_TIME). fee, ffee, overShootHours, sortOrder, repeating, durationUnit are optional. ")
+          .append("durationUnit (ONE_TIME | MINUTE | HOUR | DAY, default HOUR) sets what durationHours/overShootHours count in. ")
           .append("PUT_FEE updates an existing fee tier (requires feeId). DELETE_FEE soft-retires a fee tier. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — changes affect live inward timed billing.\n\n");
         sb.append("### manage_inpatient_templates\n");
@@ -6678,7 +6687,7 @@ public class AnthropicApiService implements Serializable {
                     {"PATCH",  "/timed-items/{id}/activate", "Set inactive=false"},
                     {"PATCH",  "/timed-items/{id}/deactivate", "Set inactive=true"},
                     {"GET",    "/timed-items/{id}/fees",     "List fee tiers for an item (ordered by sortOrder)"},
-                    {"POST",   "/timed-items/{id}/fees",     "Add fee tier. Body: name, durationHours (required); fee, ffee, overShootHours, sortOrder, repeating optional"},
+                    {"POST",   "/timed-items/{id}/fees",     "Add fee tier. Body: name, durationHours (required unless durationUnit=ONE_TIME); fee, ffee, overShootHours, sortOrder, repeating, durationUnit optional"},
                     {"PUT",    "/timed-items/{id}/fees/{feeId}", "Update fee tier"},
                     {"DELETE", "/timed-items/{id}/fees/{feeId}", "Soft-retire fee tier"}
                 });

@@ -3380,7 +3380,28 @@ public class InwardBeanController implements Serializable {
 
     public double calCountWithoutOverShoot(TimedItemFee tif, Date admittedAt, Date dischargedAt) {
 
-        double duration = tif.getDurationHours() * 60;
+        // No fee configured at all counts the same as a fee with no duration set:
+        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
+        // so this is reachable from the room paths, and a missing configuration
+        // should not break the page that is rendering the bill.
+        if (tif == null) {
+            return 0;
+        }
+
+        // A one-time fee is charged once for the whole service, however long it ran.
+        if (tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
+
+        // Same guard calCount already applies. Persisted data can still carry a
+        // time-based fee with no duration set, and dividing by it below yields
+        // Infinity — which casts to a huge block count and overcharges the bill.
+        if (duration <= 0) {
+            return 0;
+        }
+
         double consumeTimeM = 0L;
 
         if (admittedAt == null) {
@@ -3476,8 +3497,22 @@ public class InwardBeanController implements Serializable {
 
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
-        double duration = tif.getDurationHours() * 60;
-        double overShoot = tif.getOverShootHours() * 60;
+        // No fee configured at all counts the same as a fee with no duration set:
+        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
+        // so this is reachable from the room paths, and a missing configuration
+        // should not break the page that is rendering the bill.
+        if (tif == null) {
+            return 0;
+        }
+
+        // A one-time fee is charged once for the whole service, however long it
+        // ran — no block counting, and no dependency on elapsed time at all.
+        if (tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
+        double overShoot = tif.getOverShootMinutes();
         //  double tempFee = tif.getFee();
         double consumeTime = 0;
 

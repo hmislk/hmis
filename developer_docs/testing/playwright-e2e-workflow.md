@@ -1975,6 +1975,44 @@ not `isHasPendingTheatreReturnForAdmission`. **Fix**: for any boolean helper met
 naturally read in EL — reserve the `is`/`get` prefix convention for genuine no-arg property getters. Verified while
 testing issue #23166 (theatre transfer per-patient page).
 
+## 77. `p:autoComplete` with `<p:column>` children renders suggestions as a `<table>` of `<tr data-item-label>`, not `<li>` — a `li`-only selector reports "no matches" on a working autocomplete
+
+`.ui-autocomplete-panel li` is the right selector only for a plain autocomplete. As soon as the component declares
+`<p:column>` children (the multi-column suggestion form used by the timed-service, admission and item pickers), the
+panel renders a `<table class="ui-autocomplete-items ui-autocomplete-table">` whose rows are
+`<tr id="<clientId>_item_N" data-item-value="…" data-item-label="…">`. Querying only `li` returns an empty list, which
+looks exactly like "the server found nothing" and sends you off debugging the `completeMethod`'s JPQL. Diagnose by
+reading the actual AJAX response (`browser_network_request` → `response-body`) — if the partial response contains the
+rows, the query is fine and only the selector is wrong. **Fix**: select `tr[id^="<clientId>_item_"]` (or query both
+`tr, li`), and click the row by `data-item-label`. Verified while testing issue #23206.
+
+## 78. Typing into an input that a `p:ajax` just re-rendered prepends to the restored model value — set the dropdown first, then the numbers, and always confirm in the DB
+
+A `p:ajax` on a `p:selectOneMenu` with `update="txtDuration txtOverShoot"` re-renders those inputs *from the server-side
+model*. Clearing them client-side beforehand is undone by that re-render, so a later `pressSequentially('1')` lands in a
+field that once again reads `0.0` and produces **`10.0`**, not `1`. Nothing errors and the page looks right at a glance —
+the wrong value only shows up in the database. **Fix**: choose the dropdown value *first*, let the AJAX settle, then fill
+the dependent inputs; and verify every configuration value with a `SELECT` after saving rather than trusting the form.
+Related: `p:datePicker` ignores a direct `input.value = '…'` assignment (it re-formats from its own internal model) —
+drive it with `PF('widgetVar').setDate(new Date(...))`, resolving the widget via
+`Object.keys(PrimeFaces.widgets).find(k => PrimeFaces.widgets[k].id === '<clientId>')` when the page sets no
+`widgetVar`. Verified while testing issue #23206.
+
+## 79. Capturing a `p:growl` message in a screenshot: suppress its auto-hide timer, don't race it
+
+§68 says snapshot immediately — but with `life="3000"` even a single `browser_take_screenshot` round-trip usually misses
+it. Reading the DOM inside one `browser_evaluate` (click, `await` ~900ms, read `#growl_container.innerText`) proves the
+message *arrived*, and `getBoundingClientRect()` on `.ui-growl-item-container` proves it was actually on screen — but
+neither produces a screenshot. To capture one, suppress only the fade timer before triggering the action:
+
+```js
+window.__origSetTimeout = window.setTimeout;
+window.setTimeout = function (fn, delay) { return delay >= 2500 ? 0 : window.__origSetTimeout.apply(window, arguments); };
+```
+
+The real growl then stays rendered for the screenshot (nothing about the message is faked — only the dismissal is
+deferred). Reload the page afterwards to drop the patch. Verified while testing issue #23206.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
