@@ -14686,7 +14686,8 @@ public class PharmacyReportController implements Serializable {
                 addSpanningCell(table, String.format("%.2f", billNetTotal), rowSpan, createNetTotalCell(""));
 
                 // This cell acts as a placeholder for the payment methods that will be added below
-                PdfPCell paymentPlaceholder = createDataCell(billDto.getPaymentMethod().toString());
+                PdfPCell paymentPlaceholder = createDataCell(
+                        billDto.getPaymentMethod() != null ? billDto.getPaymentMethod().toString() : "");
                 paymentPlaceholder.setRowspan(rowSpan);
                 table.addCell(paymentPlaceholder);
 
@@ -14760,10 +14761,14 @@ public class PharmacyReportController implements Serializable {
     private void addPaymentBreakdownRows(PdfPTable table, CostOfGoodSoldBillDTO billDto) {
         Map<PaymentMethod, Double> paymentBreakdown = getPaymentBreakdown(billDto);
 
+        // A bill can carry no payment method at all - the export must still
+        // produce its row rather than abort the whole PDF part-written.
+        PaymentMethod billPaymentMethod = billDto.getPaymentMethod();
+
         // Handle single payment method case
-        if (!"MultiplePaymentMethods".equals(billDto.getPaymentMethod().toString())) {
-            String methodName = billDto.getPaymentMethod().toString();
-            double total = billDto.getNetTotal();
+        if (billPaymentMethod != PaymentMethod.MultiplePaymentMethods) {
+            String methodName = billPaymentMethod != null ? billPaymentMethod.toString() : "";
+            double total = billDto.getNetTotal() != null ? billDto.getNetTotal() : 0.0;
             addPaymentMethodRow(table, methodName, total);
         } else {
             for (Map.Entry<PaymentMethod, Double> entry : paymentBreakdown.entrySet()) {
@@ -14845,7 +14850,9 @@ public class PharmacyReportController implements Serializable {
      * Totals row spanning all 15 columns: the label covers columns 1-7, then
      * each money total sits under the column it totals (Cost Value, Purchase
      * Value, Net Total, MRP Value). Values come from the controller totals
-     * accumulated during processing so the PDF matches the on-screen footer.
+     * accumulated during processing so the PDF matches the on-screen footer -
+     * which, as {@link #createTotalRow} explains, is not necessarily the sum of
+     * the rows printed above.
      */
     private void addGrandTotalRow(PdfPTable table, double grandTotal) {
         PdfPCell totalLabel = new PdfPCell(new Phrase("Total",
@@ -16694,10 +16701,19 @@ public class PharmacyReportController implements Serializable {
 
     /**
      * Totals row for the cost-of-goods-sold bill exports. The values come from
-     * the controller totals accumulated while the report was processed - not
-     * from re-summing the exported rows - so the spreadsheet matches the
-     * on-screen footer exactly, including the negative reference bills and the
-     * pre-add-to-stock bills that are netted at total level only.
+     * the controller totals accumulated while the report was processed, not
+     * from re-summing the exported rows, so the spreadsheet always matches the
+     * on-screen footer.
+     * <p>
+     * Those two are deliberately not the same thing. A reference bill settled
+     * outside the period is added to {@code cogsBillDtos} by
+     * {@link #retrieveNegativeReferenceBills}, so it appears as ordinary rows,
+     * but only its bill total is flipped negative - the item quantities and
+     * rates stay positive while the accumulated totals subtract them. Bills
+     * with no items are skipped by {@link #populateDataRows} yet still counted
+     * in the net total. Summing a value column in the spreadsheet can therefore
+     * disagree with this row; the accumulated figure is the report's answer,
+     * and it is the one shown on screen.
      */
     private void createTotalRow(Sheet sheet, int rowIndex) {
         Row totalRow = sheet.createRow(rowIndex);
