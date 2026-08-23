@@ -3301,7 +3301,11 @@ public class InwardBeanController implements Serializable {
         }
         HashMap hm = new HashMap();
         hm.put("id", ti.getId());
-        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC";
+        // The id tiebreak matters: getFeeForBlock() indexes into this list positionally,
+        // so any two fees sharing a sortOrder would otherwise order arbitrarily and the
+        // same stay could be billed at a different tier on different runs. New fees can
+        // no longer collide (TimedItemFeeRules), but rows saved before that still can.
+        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC, tif.id ASC";
         List<TimedItemFee> fees = getTimedItemFeeFacade().findByJpql(sql, hm);
         return fees != null ? fees : new ArrayList<>();
     }
