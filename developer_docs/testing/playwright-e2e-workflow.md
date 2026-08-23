@@ -2083,6 +2083,19 @@ Any `w: 0` is an invisible column. The fix is in the XHTML, not the test: once *
 declares a `width`, **every** column must declare one, or the undeclared ones collapse. Widening the viewport does not
 reveal them — it makes it worse, because the extra space goes to the columns that did declare a width.
 
+## 81. `theater/inward_search_surgery.xhtml`'s "Search All" checkbox does not widen the date filter
+
+`SearchController.searchSurgery()` always applies `b.createdAt between :fromDate
+and :toDate` — the From/To Date calendars default to **today only**. The
+"Search All" checkbox does *not* bypass that; it toggles a separate, required
+"select a Surgery Name to search all" filter (`searchKeyword.activeAdvanceOption`)
+and throws a validation error ("You Need To select Surgury to Search All") if
+checked with no item picked. To find an older surgery bill by BHT/bill number,
+leave "Search All" unchecked and widen the **From Date** via the calendar grid
+(§18) to cover the record's actual `createdAt` — a plain BHT-number search with
+today's default date range silently returns "No records found." for anything
+not created today. Verified while testing issue #23249.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
