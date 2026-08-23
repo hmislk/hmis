@@ -24,6 +24,28 @@
                 align-items: center;
                 gap: 6px;
             }
+            .pending-receive-menu-banner {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.75rem;
+                padding: 0.75rem 1.25rem;
+                border: 1px solid #ffe08a;
+                border-left: 5px solid #f0ad4e;
+                background: linear-gradient(90deg, #fff8e6 0%, #fffdf7 100%);
+                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            }
+            .pending-receive-menu-banner .pi,
+            .pending-receive-menu-banner .fa {
+                color: #f0ad4e;
+                font-size: 24px;
+            }
+            .pending-receive-menu-banner-text {
+                font-weight: 700;
+                font-size: 20px;
+                color: #8a6416;
+                text-align: center;
+            }
         </style>
 
         <h:form id="notificationPushForm">
@@ -64,6 +86,24 @@
                     <div class="d-flex justify-content-center shadow-4 p-2" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}; font-weight: 700; font-size: 18px;">
                         <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Message to system users')}" style="font-weight: 700; font-size: 25px;"></h:outputText>
                     </div>
+                </div>
+            </h:panelGroup>
+            
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Pending Disbursement Recieve Notice',false) and searchController.pendingTransferReceiveCountForLoggedDepartment > 0}">
+                <div class="pending-receive-menu-banner">
+                    <i class="pi pi-exclamation-triangle"/>
+                    <h:outputFormat styleClass="pending-receive-menu-banner-text" value="You have {0} transfer issue(s) pending to receive for {1}.">
+                        <f:param value="#{searchController.pendingTransferReceiveCountForLoggedDepartment}"/>
+                        <f:param value="#{sessionController.department.name}"/>
+                    </h:outputFormat>
+                    <p:commandButton
+                        value="Receive Now"
+                        ajax="false"
+                        title="Go to the Receive Issued Items list"
+                        action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"
+                        actionListener="#{searchController.makeListNull()}"
+                        styleClass="ui-button-warning"
+                        icon="fas fa-truck-loading"/>
                 </div>
             </h:panelGroup>
 
@@ -1581,8 +1621,8 @@
 
                     <p:menuitem  ajax="false"  value="Channel BIll Search" icon="fa fa-search-dollar"  action="/channel/channel_bill_search?faces-redirect=true"></p:menuitem>
                     <p:submenu label="Doctor Leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}"  icon="fa fa-user-clock" >
-                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.resetToStartFromSpeciality}"  icon="fa fa-calendar-day" ></p:menuitem>
-                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.resetToStartFromSpeciality}"  icon="fa fa-user-md" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.resetToStartFromSelectingSpeciality}"  icon="fa fa-calendar-day" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.resetToStartFromSelectingSpeciality}"  icon="fa fa-user-md" ></p:menuitem>
                     </p:submenu>
                     <p:menuitem  
                         ajax="false"  

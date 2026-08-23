@@ -1510,6 +1510,11 @@ public class SearchController implements Serializable {
         // every navigation into the page (menu.xhtml, disbursement_index.xhtml, home.xhtml all
         // call makeListNull() as their actionListener before navigating here). See issue #23117.
         transferIssuedListDtos = new ArrayList<>();
+        // Transfer Issue list (pharmacy_transfer_request_list.xhtml) — the "Issue for Requests"
+        // navigation button fires this as its actionListener before navigating, but this field
+        // was never included, so the previous search's results stayed on screen until the user
+        // searched again. See issue #23115.
+        transferRequestDtos = null;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -4282,6 +4287,26 @@ public class SearchController implements Serializable {
         fetchTransferIssuedListDtos(Boolean.FALSE);
     }
 
+    public long getPendingTransferReceiveCountForLoggedDepartment() {
+        if (getSessionController().getDepartment() == null) {
+            return 0;
+        }
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_ISSUE);
+        Map<String, Object> params = new HashMap<>();
+        params.put("toDep", getSessionController().getDepartment());
+        params.put("bTp", btas);
+        params.put("fromDate", CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -3L)));
+        String jpql = "SELECT COUNT(b) FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.toDepartment = :toDep "
+                + "AND b.billTypeAtomic IN :bTp "
+                + "AND b.cancelled = false "
+                + "AND b.fullyIssued = false "
+                + "AND b.createdAt >= :fromDate ";
+        return getBillFacade().findLongByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     private void fetchTransferIssuedListDtos(Boolean fullyIssuedFilter) {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_ISSUE);
@@ -4683,6 +4708,11 @@ public class SearchController implements Serializable {
         billedDepartment = null;
         visitType = null;
         methodType = null;
+        // Transfer Requests to Approve list (pharmacy_transfer_request_list_to_approve.xhtml) —
+        // navigateToTransferRequestApprove() calls makeNull() before navigating here, but this
+        // field was never included, so the previous search's results stayed on screen until the
+        // user searched again. See issue #23116.
+        transferRequestsToApproveDtos = null;
     }
 
     public void resetTotals() {

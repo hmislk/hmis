@@ -64,7 +64,7 @@
                         </p:column>
 
                         <p:column headerText="Room Charges for 24 Hrs" width="10em" styleClass="text-end">
-                            <h:outputText value="#{pr.timedItemFee != null and pr.timedItemFee.durationHours > 0 ? pr.roomCharge * (24 / pr.timedItemFee.durationHours) : 0}">
+                            <h:outputText value="#{roomOccupancyController.getDailyEquivalentRoomCharge(pr)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>

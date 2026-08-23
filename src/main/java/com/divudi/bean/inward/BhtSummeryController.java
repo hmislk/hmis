@@ -2215,12 +2215,14 @@ public class BhtSummeryController implements Serializable {
         }
         TimedItemFee timedFee = pr.getRoomFacilityCharge().getTimedItemFee();
         double liveEquivalent = facilityRoomCharge * getInwardBean().calCount(timedFee, pr.getAdmittedAt(), pr.getDischargedAt());
-        // RoomFacilityCharge.roomCharge is a rate per TimedItemFee.durationHours block (see
+        // RoomFacilityCharge.roomCharge is a rate per TimedItemFee block (see
         // InwardBeanController.calCount: charge = roomCharge * count, where count is the number
-        // of durationHours-sized blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
+        // of blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
         // configs are conventionally 24-hour ("per day") blocks, so we use the actual configured
-        // durationHours here (falling back to 24.0 if unset) rather than hardcoding 24.
-        double blockHours = (timedFee != null && timedFee.getDurationHours() > 0) ? timedFee.getDurationHours() : 24.0;
+        // block length here (falling back to 24.0 if unset) rather than hardcoding 24.
+        // getDurationInHours() honours the configured duration unit, so a block defined in
+        // minutes or days converts to hours instead of being read as a raw hour count.
+        double blockHours = (timedFee != null && timedFee.getDurationInHours() > 0) ? timedFee.getDurationInHours() : 24.0;
         double includedEquivalent = facilityRoomCharge * (pr.getIncludedRoomDurationHours() / blockHours);
         return Math.max(0.0, liveEquivalent - includedEquivalent);
     }
@@ -5626,8 +5628,15 @@ public class BhtSummeryController implements Serializable {
         Date dischargedAt = pr.getDischargedAt() != null ? pr.getDischargedAt() : new Date();
 
         long totalMinutes = CommonFunctions.calculateDurationMin(pr.getAdmittedAt(), dischargedAt);
-        double slotMinutes = tif.getDurationHours() * 60.0;
-        double overshootMinutes = tif.getOverShootHours() * 60.0;
+
+        // A one-time charge is billed as a single slot regardless of the stay,
+        // matching what calCount() returns for it.
+        if (tif.isOneTime()) {
+            return new RoomDurationBreakdown(totalMinutes, 0, 0, totalMinutes, 0, false, 1);
+        }
+
+        double slotMinutes = tif.getDurationMinutes();
+        double overshootMinutes = tif.getOverShootMinutes();
 
         if (slotMinutes == 0) {
             return new RoomDurationBreakdown(totalMinutes, slotMinutes, 0, totalMinutes, overshootMinutes, false, 0);

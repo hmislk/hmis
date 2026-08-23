@@ -291,12 +291,12 @@
 
                             <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                          sortBy="#{iss.bill.deptId}">
-                                <p:column headerText="ID">
+                                <p:column headerText="ID" style="width: 3em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="ID"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{iss.id}"/>                                    
-                                </p:column>                  
+                                    <h:outputLabel value="#{iss.id}"/>
+                                </p:column>
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>

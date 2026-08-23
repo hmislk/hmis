@@ -19,6 +19,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.data.inward.TimedItemDurationUnit;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemCategory;
 import com.divudi.core.entity.inward.TimedItemFee;
@@ -322,6 +323,12 @@ public class TimedItemApiService implements Serializable {
         fee.setDurationDaysForMoCharge(request.getDurationDaysForMoCharge());
         fee.setSortOrder(request.getSortOrder());
         fee.setRepeating(request.isRepeating());
+        // Omitted by older clients. Store the explicit HOUR default rather than
+        // leaving the column null — that is what the fee page writes for a
+        // UI-created fee, and it keeps new rows unambiguous. Reads still default
+        // a null unit to HOUR for rows created before duration units existed.
+        fee.setDurationUnit(request.getDurationUnit() != null
+                ? request.getDurationUnit() : TimedItemDurationUnit.HOUR);
         fee.setCreater(user);
         fee.setCreatedAt(Calendar.getInstance().getTime());
         fee.setRetired(false);
@@ -372,6 +379,9 @@ public class TimedItemApiService implements Serializable {
         }
         if (request.getRepeating() != null) {
             fee.setRepeating(request.getRepeating());
+        }
+        if (request.getDurationUnit() != null) {
+            fee.setDurationUnit(request.getDurationUnit());
         }
 
         fee.setEditer(user);
@@ -531,6 +541,7 @@ public class TimedItemApiService implements Serializable {
         dto.setFfee(fee.getFfee());
         dto.setDurationHours(fee.getDurationHours());
         dto.setOverShootHours(fee.getOverShootHours());
+        dto.setDurationUnit(fee.getDurationUnit());
         dto.setDurationDaysForMoCharge(fee.getDurationDaysForMoCharge());
         dto.setSortOrder(fee.getSortOrder());
         dto.setRepeating(fee.isRepeating());

@@ -5,6 +5,8 @@
  */
 package com.divudi.core.data.dto.timeditem;
 
+import com.divudi.core.data.inward.TimedItemDurationUnit;
+
 /**
  * DTO for adding a fee to a TimedItem.
  *
@@ -15,18 +17,19 @@ public class TimedItemFeeCreateRequestDTO {
     private String name; // required
     private double fee; // required, >= 0
     private double ffee; // optional, defaults to fee if 0
-    private double durationHours; // required for tiered billing
+    private double durationHours; // required for tiered billing, except for ONE_TIME
     private double overShootHours;
     private long durationDaysForMoCharge;
     private int sortOrder;
     private boolean repeating;
+    private TimedItemDurationUnit durationUnit; // optional, defaults to HOUR
 
     public TimedItemFeeCreateRequestDTO() {
     }
 
     public boolean isValid() {
         return name != null && !name.trim().isEmpty()
-                && durationHours > 0
+                && (durationHours > 0 || durationUnit == TimedItemDurationUnit.ONE_TIME)
                 && fee >= 0;
     }
 
@@ -92,5 +95,13 @@ public class TimedItemFeeCreateRequestDTO {
 
     public void setRepeating(boolean repeating) {
         this.repeating = repeating;
+    }
+
+    public TimedItemDurationUnit getDurationUnit() {
+        return durationUnit;
+    }
+
+    public void setDurationUnit(TimedItemDurationUnit durationUnit) {
+        this.durationUnit = durationUnit;
     }
 }

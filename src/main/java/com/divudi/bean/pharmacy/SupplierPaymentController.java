@@ -514,7 +514,7 @@ public class SupplierPaymentController implements Serializable {
             BillItem availableBillItem = new BillItem();
             availableBillItem.setSearialNo(generatedSerialNumber++);
             availableBillItem.setReferenceBill(b);
-            double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill(), billTypesListReturn));
+            double returned = Math.abs(getCreditBean().getGrnReturnValue(b, billTypesListReturn));
             availableBillItem.getReferenceBill().setTmpReturnTotal(returned);
             fillNetValueForBillItems(availableBillItem);
             billItems.add(availableBillItem);
