@@ -28,6 +28,50 @@ public class ChargeItemTotal {
     private String comments;
     private List<PatientRoom> patientRooms;
     List<BillFee> billFees;
+    /**
+     * The specific Outside Charge items (name + amount) whose value was
+     * folded into this charge type's total (issue #22989). Populated only
+     * for charge types that received an Outside Charge contribution; empty
+     * otherwise. Display-only — the amounts here are already included in
+     * {@link #total}; they are broken out separately so a caller can list
+     * the items in place of the shared category total instead of double
+     * counting. Does not itself affect total/discount/validation.
+     */
+    private List<AdditionalChargeItem> additionalChargeItems;
+
+    public List<AdditionalChargeItem> getAdditionalChargeItems() {
+        if (additionalChargeItems == null) {
+            additionalChargeItems = new ArrayList<>();
+        }
+        return additionalChargeItems;
+    }
+
+    public void setAdditionalChargeItems(List<AdditionalChargeItem> additionalChargeItems) {
+        this.additionalChargeItems = additionalChargeItems;
+    }
+
+    /**
+     * One Outside Charge item's name and the amount it contributed to its
+     * charge type's total. See {@link #additionalChargeItems}.
+     */
+    public static class AdditionalChargeItem {
+
+        private final String name;
+        private final double amount;
+
+        public AdditionalChargeItem(String name, double amount) {
+            this.name = name;
+            this.amount = amount;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+    }
 
     public List<BillFee> getBillFees() {
         return billFees;
