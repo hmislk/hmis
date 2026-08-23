@@ -18,6 +18,8 @@ import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.TimedItemFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.inward.TimedItemFeeRuleException;
+import com.divudi.service.inward.TimedItemFeeRules;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,6 +52,12 @@ public class TimedItemFeeController implements Serializable {
     private TimedItemFeeFacade itemFeeFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+    /**
+     * Slot-order and duration rules, shared with the REST API so an identical fee is
+     * accepted or rejected identically on both surfaces (issue #23236 §3).
+     */
+    @EJB
+    private TimedItemFeeRules timedItemFeeRules;
     private List<TimedItemFee> fees;
     private TimedItem currentIx;
     private TimedItemFee currentFee;
@@ -79,26 +87,15 @@ public class TimedItemFeeController implements Serializable {
             JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
-        if (!currentFee.isOneTime() && currentFee.getDurationHours() <= 0) {
-            JsfUtil.addErrorMessage("Duration must be greater than 0 for a "
-                    + currentFee.getDurationUnit().getLabel() + " fee.");
+        currentFee.setItem(currentIx);
+        boolean isNew = currentFee.getId() == null || currentFee.getId() == 0;
+        try {
+            currentFee.setSortOrder(timedItemFeeRules.applyToFee(currentFee, getCharges()));
+        } catch (TimedItemFeeRuleException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
             return;
         }
-        currentFee.setItem(currentIx);
-        if (currentFee.getId() == null || currentFee.getId() == 0) {
-            if (currentFee.getSortOrder() == 0) {
-                currentFee.setSortOrder(getCharges().size() + 1);
-            }
-            if (currentFee.getSortOrder() < 1) {
-                JsfUtil.addErrorMessage("Slot Order must be 1 or greater.");
-                return;
-            }
-            boolean duplicateSortOrder = getCharges().stream()
-                    .anyMatch(f -> f.getSortOrder() == currentFee.getSortOrder());
-            if (duplicateSortOrder) {
-                JsfUtil.addErrorMessage("Slot Order must be unique per service.");
-                return;
-            }
+        if (isNew) {
             currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getTimedItemFeeFacade().create(currentFee);
@@ -160,13 +157,17 @@ public class TimedItemFeeController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Fee Name.");
             return;
         }
-        // Same guard as saveCharge(). It matters more here: the row's Duration input
-        // is disabled while the row is a One Time Fee, and a disabled input submits
-        // nothing — so switching a row to a time-based unit could otherwise save a
-        // duration of 0, which prices every block at zero.
-        if (!tif.isOneTime() && tif.getDurationHours() <= 0) {
-            JsfUtil.addErrorMessage("Duration must be greater than 0 for a "
-                    + tif.getDurationUnit().getLabel() + " fee.");
+        // Same rules as saveCharge(), from the same place. The duration guard matters
+        // more here: the row's Duration input is disabled while the row is a One Time
+        // Fee, and a disabled input submits nothing — so switching a row to a
+        // time-based unit could otherwise save a duration of 0, which prices every
+        // block at zero. The slot-order guard closes the matching hole: editing a row's
+        // Slot Order to one already in use makes the billing tier order ambiguous.
+        try {
+            timedItemFeeRules.validateDuration(tif.getDurationUnit(), tif.getDurationHours());
+            timedItemFeeRules.validateSlotOrder(tif.getSortOrder(), getCharges(), tif.getId());
+        } catch (TimedItemFeeRuleException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
             return;
         }
         tif.setEditedAt(new Date());
