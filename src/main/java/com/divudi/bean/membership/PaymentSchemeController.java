@@ -565,6 +565,19 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getPaymentSchemesForInward() {
+        return getPaymentSchemesForInward(null);
+    }
+
+    /**
+     * Discount schemes valid for inpatient bills, restricted to those
+     * applicable to the given Payment Method via {@link AllowedPaymentMethod}
+     * (issue #23223). A scheme with no configured allowed-payment-method
+     * rows is treated as unrestricted (shown for every payment method) —
+     * same default-permissive convention {@code DiscountSchemeValidationService}
+     * uses for {@link com.divudi.core.entity.membership.RestrictedPaymentMethod}.
+     * Pass {@code null} to skip the payment-method filter entirely.
+     */
+    public List<PaymentScheme> getPaymentSchemesForInward(PaymentMethod paymentMethod) {
         StringBuilder jpql = new StringBuilder("SELECT i FROM PaymentScheme i WHERE i.retired = false AND i.validForInpatientBills = true");
         Map<String, Object> parameters = new HashMap<>();
         if (sessionController.getDepartment() != null) {
@@ -575,6 +588,11 @@ public class PaymentSchemeController implements Serializable {
                 jpql.append(" AND i.department = :dep");
                 parameters.put("dep", sessionController.getDepartment());
             }
+        }
+        if (paymentMethod != null) {
+            jpql.append(" AND (i NOT IN (SELECT apm.paymentScheme FROM AllowedPaymentMethod apm WHERE apm.retired = false AND apm.paymentScheme IS NOT NULL)")
+                    .append(" OR i IN (SELECT apm2.paymentScheme FROM AllowedPaymentMethod apm2 WHERE apm2.retired = false AND apm2.paymentMethod = :pm))");
+            parameters.put("pm", paymentMethod);
         }
         jpql.append(" ORDER BY i.orderNo, i.name");
         return getFacade().findByJpql(jpql.toString(), parameters);
