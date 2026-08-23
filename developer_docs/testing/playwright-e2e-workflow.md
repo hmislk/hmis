@@ -2061,6 +2061,28 @@ window.setTimeout = function (fn, delay) { return delay >= 2500 ? 0 : window.__o
 The real growl then stays rendered for the screenshot (nothing about the message is faked — only the dismissal is
 deferred). Reload the page afterwards to drop the patch. Verified while testing issue #23206.
 
+## 80. A `p:dataTable` column present in `browser_snapshot` can still be 0px wide and invisible to the user — measure `offsetWidth`
+
+PrimeFaces renders its DataTable with `table-layout: fixed`. Under that layout the browser honours the columns that
+carry an explicit `width` first and hands the leftovers to the rest — and when the widths already declared exceed the
+table width, "the rest" gets **zero**. Those columns still render their `<th>`/`<td>` with the correct text, so they
+appear in `browser_snapshot`, in `get_page_text`, and in `innerText`. They are simply not on screen.
+
+This is how issue #23224 was misdiagnosed at first: the accessibility snapshot listed all 17 headers including
+`COST RATE` and `COST VALUE`, the footer totals were right, and the DB reconciled — so the report looked finished. The
+columns the user was asking for were 0px wide, exactly as their screenshot showed.
+
+Whenever a report "already has" a column a user says is missing, measure before concluding:
+
+```js
+[...document.querySelectorAll('.ui-datatable thead th')]
+    .map(th => ({ h: th.innerText.trim(), w: Math.round(th.offsetWidth) }))
+```
+
+Any `w: 0` is an invisible column. The fix is in the XHTML, not the test: once *any* `p:column` on a fixed-layout table
+declares a `width`, **every** column must declare one, or the undeclared ones collapse. Widening the viewport does not
+reveal them — it makes it worse, because the extra space goes to the columns that did declare a width.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
