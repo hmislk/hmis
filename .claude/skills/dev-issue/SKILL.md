@@ -191,10 +191,14 @@ Follow playwright-e2e
       (e.g. `Inpatient-Nursing-Discharge.md`), so the page usually exists
       even for a narrow bug fix.
 
-   b. **Embed the screenshots** with a relative path and a caption that says
-      what the reader is looking at:
+   b. **Embed the screenshots** with a relative path, plus a visible caption
+      beneath. Markdown alt text is not a rendered caption — it serves screen
+      readers, while an italic line under the image is what a sighted reader
+      skimming the page actually sees:
       ```markdown
       ![Nursing discharge blocked by pending pharmacy items](images/23222-fixed-discharge-blocked.png)
+
+      *Nursing discharge blocked: the pending pharmacy items are listed and Confirm stays disabled.*
       ```
 
    c. **Replace outdated images.** If the page already has a screenshot of a

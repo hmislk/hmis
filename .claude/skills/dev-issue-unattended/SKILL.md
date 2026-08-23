@@ -92,7 +92,10 @@ documented here, and warrants stopping and asking rather than guessing.
   A **local** database (localhost, no tunnel) is a disposable test
   environment: no development environment is ever set up on a hosting
   server, so "the database is local" is a reliable proxy for "this is safe
-  to modify freely". Create, mutate, and abandon local test data as needed —
+  to modify freely". Confirm it genuinely is local before the first write —
+  the JNDI name in `persistence.xml` plus a `localhost` host with no active
+  tunnel on the DB port. If a datasource points anywhere else, treat it as
+  remote and stop. Create, mutate, and abandon local test data as needed —
   do **not** revert it afterwards or treat local rows as precious.
   Preferring to generate data *through the app* still applies as guidance
   (`playwright-e2e`
@@ -352,12 +355,22 @@ Two additions for unattended runs:
   before they're published: when in doubt about a screenshot, crop tighter or
   drop it rather than publish it uncertain. This applies to the wiki page too
   — a page edit is as public as an issue comment.
-- **Wiki prose is a judgment call, so record it.** Rewriting a page's text
-  unattended is exactly the kind of decision step 3 exists to document: note
-  what you changed and why in the "Decisions made without approval" section
-  of the PR (step 13). Correcting text that a fix has made wrong is expected;
-  rewriting a page's structure or scope beyond the change at hand is not —
-  leave that and say so.
+- **Wiki prose: only publish what you can verify.** A wrong page edit is
+  public the moment it's pushed, and noting it in the PR afterwards doesn't
+  unpublish it. So the test is not "am I confident?" but **"can I point at the
+  code, or at evidence from this run, that shows the current text is wrong?"**
+  - **Publish** — inserting verified screenshots, and correcting text that
+    demonstrably contradicts the code or the behaviour you just verified.
+    Cite the evidence in the PR (e.g. *"page documented room discharge via
+    `roomDischargeDateTime`; `hasActiveRoom()` deliberately stopped using
+    that field in #21935"*).
+  - **Leave it and flag it** — anything you'd be *inferring*: prose that
+    merely reads as unclear or outdated, claims about behaviour outside what
+    this run touched, or restructuring a page's scope. Note it in the PR as a
+    documentation issue for a human, rather than rewriting it unattended.
+
+  Record every prose change either way in the "Decisions made without
+  approval" section of the PR (step 13).
 
 ## 11. Pre-push check
 

@@ -320,11 +320,14 @@ show the fixed control without private information.
    grep -ril "<feature name>" *.md | head
    ```
 
-   Reference the image with a relative path and a caption saying what the
-   reader is looking at:
+   Reference the image with a relative path. Markdown alt text is *not* a
+   rendered caption, so add a visible italic line beneath it — readers
+   skimming a long page rely on that, and screen readers use the alt text:
 
    ```markdown
    ![Nursing discharge blocked by pending pharmacy items](images/23222-fixed-discharge-blocked.png)
+
+   *Nursing discharge blocked: the pending pharmacy items are listed and Confirm stays disabled.*
    ```
 
    **Replace outdated screenshots rather than accumulating them.** If the page
