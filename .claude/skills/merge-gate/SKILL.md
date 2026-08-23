@@ -75,16 +75,14 @@ Invoke the `code-review` skill against this PR at **high** effort with
 `--comment`, so findings post directly to the PR (reuses the existing
 review engine instead of duplicating its logic).
 
-Classify the findings it returns:
+**Before classifying anything, run the fallback below** to confirm every
+finding the sub-agent claims to have posted actually landed — do this
+*before* the classification step decides to record `BLOCKED-REVIEW` and
+stop, not after. Running it after the stop decision defeats the point:
+by the time you've stopped this PR and moved to the next one, an
+unverified silent drop stays silently dropped.
 
-| Category | Effect |
-|---|---|
-| correctness, regression, business-rule violation | **Blocking.** Inline comments are already posted by `--comment`; summarize in chat; post the PR status comment (see § PR status comment); record `BLOCKED-REVIEW`; stop this PR — do not run Phase 2/3. |
-| style, simplification, efficiency, reuse-only | **Non-blocking.** Note in chat, continue to Phase 2 regardless. |
-
-No findings at all → continue to Phase 2.
-
-#### Fallback — verify every blocking finding actually landed as a comment
+#### Fallback — verify every finding actually landed as a comment
 
 `code-review --comment` posts via GitHub's PR-review-comment API, which can
 only anchor a comment on a line that appears in **this PR's own diff**. A
@@ -97,7 +95,8 @@ PR, because one lived in a file outside the diff and the anchor silently
 failed).
 
 Before trusting the sub-agent's "posted successfully" claim, verify for
-every finding classified as blocking. Get the actual poster identity first
+every finding it returned (classification happens after this, once you
+know what's actually posted). Get the actual poster identity first
 (don't hardcode a username or just exclude `coderabbitai[bot]` — an
 unrelated human/bot comment at the same path:line would then be
 misread as confirmation), and **always paginate** — the default page size
@@ -111,8 +110,9 @@ gh api --paginate repos/hmislk/hmis/pulls/<PR>/comments \
   --jq --arg me "$me" '.[] | select(.user.login == $me) | "\(.path):\(.line)"'
 ```
 
-Cross-check this list against the findings returned. For any blocking
-finding missing from it:
+Cross-check this list against the findings returned. For any finding
+missing from it (blocking or not — verify all of them, since
+classification hasn't happened yet):
 
 1. Check whether its file is part of the PR's diff at all:
    `gh pr diff <PR> --name-only`.
@@ -136,9 +136,21 @@ finding missing from it:
 Post any recovered findings with `gh api repos/hmislk/hmis/pulls/<PR>/comments
 -f commit_id=<head-sha> -f path=<path> -F line=<n> -f side=RIGHT -f
 body=<text>` (head SHA from `gh pr view <PR> --json commits -q
-'.commits[-1].oid'`). Re-run the verification query once more before moving
-on — don't proceed to Phase 2 on an unconfirmed assumption that everything
-posted.
+'.commits[-1].oid'`). Re-run the verification query once more before
+classifying anything — don't classify or stop on an unconfirmed assumption
+that everything posted.
+
+#### Classify
+
+Now that every finding is confirmed actually posted (or folded into the
+status comment per case 4 above), classify what the sub-agent returned:
+
+| Category | Effect |
+|---|---|
+| correctness, regression, business-rule violation | **Blocking.** Inline comments are already confirmed posted; summarize in chat; post the PR status comment (see § PR status comment); record `BLOCKED-REVIEW`; stop this PR — do not run Phase 2/3. |
+| style, simplification, efficiency, reuse-only | **Non-blocking.** Note in chat, continue to Phase 2 regardless. |
+
+No findings at all → continue to Phase 2.
 
 ### Phase 2 — Identify affected workflows
 

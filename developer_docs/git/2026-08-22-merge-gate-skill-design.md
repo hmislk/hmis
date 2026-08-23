@@ -211,6 +211,22 @@ no related diff line exists at all, fold the finding into the top-level PR
 status comment instead, since that one isn't line-anchored. Full steps:
 see the skill file's § Fallback (under Phase 1).
 
+CodeRabbit's own review of that addition caught a real ordering bug: the
+Fallback section was written *after* the classification table's "record
+`BLOCKED-REVIEW`; stop this PR" instruction, so a linear read could stop
+the PR before ever running the verification meant to catch a silent drop
+— defeating the point. Reordered so the Fallback runs immediately after
+invoking `code-review --comment` and *before* classification; classifying
+now happens once every returned finding is confirmed actually posted (or
+folded into the status comment). Also incorporated CodeRabbit's other 6
+findings on the same review pass: markdown-tagged all 5 status-comment
+template fences, made BLOCKED-CI/BLOCKED-REVIEW wording cover their full
+trigger range, redacted the BLOCKED-BUILD failure excerpt the same way as
+E2E evidence, corrected BLOCKED-E2E to not overclaim a link/attachment
+exists (it's inline redacted prose — building real attachment support was
+discussed and deliberately deferred), and required the status-comment URL
+in every Final report row, not just blocked ones.
+
 ## Hygiene
 
 - `persistence.xml` discarded and restored to local JNDI around each PR's
