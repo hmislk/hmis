@@ -190,10 +190,7 @@
                                     <h:panelGroup rendered="#{bip.adjustedValue !=0}">
                                         <tr>
                                             <td style="text-align: left;" >
-                                                <h:outputLabel  value="#{bip.inwardChargeType.name}" />
-                                                <h:panelGroup rendered="#{not empty bip.descreption}" layout="block">
-                                                    <h:outputLabel value="(#{bip.descreption})" style="font-size: 0.85em; font-style: italic;" />
-                                                </h:panelGroup>
+                                                <h:outputLabel value="#{not empty bip.descreption ? bip.descreption : bip.inwardChargeType.name}" />
                                             </td>
                                             <td style="text-align: right;" >
                                                 <h:outputLabel value="#{bip.adjustedValue}">
@@ -210,10 +207,7 @@
                                     <h:panelGroup rendered="#{bip.adjustedValue != 0 and bip.inwardChargeType ne 'LinenCharges' and bip.inwardChargeType ne 'MOCharges' and bip.inwardChargeType ne 'NursingCharges' and bip.inwardChargeType ne 'MaintainCharges' and bip.inwardChargeType ne 'MedicalCareICU' and bip.inwardChargeType ne 'AdministrationCharge'}">
                                         <tr>
                                             <td style="text-align: left;" >
-                                                <h:outputLabel  value="#{bip.inwardChargeType.name}" />
-                                                <h:panelGroup rendered="#{not empty bip.descreption}" layout="block">
-                                                    <h:outputLabel value="(#{bip.descreption})" style="font-size: 0.85em; font-style: italic;" />
-                                                </h:panelGroup>
+                                                <h:outputLabel value="#{not empty bip.descreption ? bip.descreption : bip.inwardChargeType.name}" />
                                             </td>
                                             <td style="text-align: right;" >
                                                 <h:outputLabel value="#{bip.adjustedValue}">

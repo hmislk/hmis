@@ -3220,19 +3220,37 @@ public class BhtSummeryController implements Serializable {
         getIntrimPrintController().getCurrentBill().setAdjustedTotal(grantTotal);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
+            // Outside Charge items folded into this category's total are
+            // listed as their own rows below (issue #22989) — the charge
+            // type is derivable from each item, so they don't need to be
+            // hidden inside the category row. Subtract their combined value
+            // back out here so the category row shows only its non-Outside
+            // Charge (service) portion, avoiding double counting; the
+            // overall bill total is unaffected since it is set separately
+            // above from grantTotal.
+            double additionalTotal = 0.0;
+            for (ChargeItemTotal.AdditionalChargeItem item : cit.getAdditionalChargeItems()) {
+                additionalTotal += item.getAmount();
+            }
+            double categoryOnlyValue = cit.getTotal() - additionalTotal;
+
             BillItem billItem = new BillItem();
             billItem.setInwardChargeType(cit.getInwardChargeType());
             billItem.setBill(getIntrimPrintController().getCurrentBill());
-            billItem.setGrossValue(cit.getTotal());
-            billItem.setAdjustedValue(cit.getTotal());
+            billItem.setGrossValue(categoryOnlyValue);
+            billItem.setAdjustedValue(categoryOnlyValue);
             billItem.setReferanceBillItem(getBillBean().fetchBillItem(patientEncounter, BillType.InwardIntrimBill, cit.getInwardChargeType()));
-            // Surface which Outside Charge item(s) this category's total
-            // includes, since this synthetic row has no single Item of its
-            // own to display (issue #22989).
-            if (!cit.getAdditionalChargeItemNames().isEmpty()) {
-                billItem.setDescreption(String.join(", ", cit.getAdditionalChargeItemNames()));
-            }
             getIntrimPrintController().getCurrentBill().getBillItems().add(billItem);
+
+            for (ChargeItemTotal.AdditionalChargeItem item : cit.getAdditionalChargeItems()) {
+                BillItem outsideChargeItemBillItem = new BillItem();
+                outsideChargeItemBillItem.setInwardChargeType(cit.getInwardChargeType());
+                outsideChargeItemBillItem.setBill(getIntrimPrintController().getCurrentBill());
+                outsideChargeItemBillItem.setDescreption(item.getName());
+                outsideChargeItemBillItem.setGrossValue(item.getAmount());
+                outsideChargeItemBillItem.setAdjustedValue(item.getAmount());
+                getIntrimPrintController().getCurrentBill().getBillItems().add(outsideChargeItemBillItem);
+            }
         }
 
         return "inward_bill_intrim_print";
@@ -4850,17 +4868,18 @@ public class BhtSummeryController implements Serializable {
     private void setChargeValueFromAdditional() {
         // OPTIMIZED: Fetch all totals in ONE bulk query
         Map<InwardChargeType, Double> bulkTotals = getInwardBean().caltValueFromAdditionalChargeBulk(getPatientEncounter(), childPatientEncouters);
-        // Item names behind those totals, so the Interim Bill can show which
-        // Outside Charge item(s) a category's total includes (issue #22989).
-        Map<InwardChargeType, List<String>> bulkItemNames = getInwardBean().caltAdditionalChargeItemNamesBulk(getPatientEncounter(), childPatientEncouters);
+        // The individual Outside Charge items (name + amount) behind those
+        // totals, so callers can list the items themselves in place of the
+        // category total instead of just the charge-type label (issue #22989).
+        Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> bulkItems = getInwardBean().caltAdditionalChargeItemDetailsBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             double adj = bulkTotals.getOrDefault(cit.getInwardChargeType(), 0.0);
             double tot = cit.getTotal();
             cit.setTotal(tot + adj);
-            List<String> names = bulkItemNames.get(cit.getInwardChargeType());
-            if (names != null) {
-                cit.setAdditionalChargeItemNames(names);
+            List<ChargeItemTotal.AdditionalChargeItem> items = bulkItems.get(cit.getInwardChargeType());
+            if (items != null) {
+                cit.setAdditionalChargeItems(items);
             }
         }
     }

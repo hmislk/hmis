@@ -13,6 +13,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ChargeItemTotal;
 import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.inward.InwardChargeType;
 
@@ -67,6 +68,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.EnumMap;
 import java.util.Map;
@@ -1867,14 +1869,17 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Names of the specific Outside Charge items contributing to each
-     * charge type's total, so the Interim Bill can show which item(s) a
-     * category's total includes instead of only the category label
-     * (issue #22989). Companion to {@link #caltValueFromAdditionalChargeBulk}
-     * — same filter, but item names instead of a summed value.
+     * The specific Outside Charge items (name + amount, summed per item
+     * name) contributing to each charge type's total, so the Interim Bill
+     * can list the actual items instead of only the category label
+     * (issue #22989) — the InwardChargeType a charge belongs to is already
+     * derivable from the item, so callers can show the item directly rather
+     * than the shared category row. Companion to
+     * {@link #caltValueFromAdditionalChargeBulk} — same filter, broken out
+     * per item instead of summed into one value.
      */
-    public Map<InwardChargeType, List<String>> caltAdditionalChargeItemNamesBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        String sql = "SELECT DISTINCT i.inwardChargeType, i.item.name"
+    public Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> caltAdditionalChargeItemDetailsBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT i.inwardChargeType, i.item.name, i.netValue"
                 + " FROM BillItem i "
                 + " WHERE i.retired=false "
                 + " AND i.bill.billType=:btp "
@@ -1892,19 +1897,32 @@ public class InwardBeanController implements Serializable {
 
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, m, TemporalType.DATE);
 
-        Map<InwardChargeType, List<String>> namesMap = new EnumMap<>(InwardChargeType.class);
+        // Group by charge type, then merge same-named items within a type
+        // (e.g. the same Outside Charge item added twice) into one summed row.
+        Map<InwardChargeType, Map<String, Double>> amountsByTypeAndName = new EnumMap<>(InwardChargeType.class);
         if (results != null) {
             for (Object[] row : results) {
                 InwardChargeType chargeType = (InwardChargeType) row[0];
                 String itemName = (String) row[1];
+                double amount = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
                 if (chargeType == null || itemName == null || itemName.isEmpty()) {
                     continue;
                 }
-                namesMap.computeIfAbsent(chargeType, k -> new ArrayList<>()).add(itemName);
+                amountsByTypeAndName.computeIfAbsent(chargeType, k -> new LinkedHashMap<>())
+                        .merge(itemName, amount, Double::sum);
             }
         }
 
-        return namesMap;
+        Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> itemsMap = new EnumMap<>(InwardChargeType.class);
+        for (Map.Entry<InwardChargeType, Map<String, Double>> byType : amountsByTypeAndName.entrySet()) {
+            List<ChargeItemTotal.AdditionalChargeItem> items = new ArrayList<>();
+            for (Map.Entry<String, Double> byName : byType.getValue().entrySet()) {
+                items.add(new ChargeItemTotal.AdditionalChargeItem(byName.getKey(), byName.getValue()));
+            }
+            itemsMap.put(byType.getKey(), items);
+        }
+
+        return itemsMap;
     }
 
     public List<PatientEncounter> fetchChildPatientEncounter(PatientEncounter patientEncounter) {
