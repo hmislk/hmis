@@ -84,6 +84,55 @@ Classify the findings it returns:
 
 No findings at all → continue to Phase 2.
 
+#### Fallback — verify every blocking finding actually landed as a comment
+
+`code-review --comment` posts via GitHub's PR-review-comment API, which can
+only anchor a comment on a line that appears in **this PR's own diff**. A
+finding whose defect lives in a file the PR doesn't touch (e.g. a downstream
+method the new code merely *calls*) has nowhere to anchor — and can be
+silently dropped instead of posted, with no error surfaced back. Confirmed
+happening in practice (PR #23082, 2026-08-22: two blocking findings were
+returned by the sub-agent as "posted" but never actually appeared on the
+PR, because one lived in a file outside the diff and the anchor silently
+failed).
+
+Before trusting the sub-agent's "posted successfully" claim, verify for
+every finding classified as blocking:
+
+```bash
+gh api repos/hmislk/hmis/pulls/<PR>/comments \
+  --jq '.[] | select(.user.login != "coderabbitai[bot]") | "\(.path):\(.line)"'
+```
+
+Cross-check this list against the findings returned. For any blocking
+finding missing from it:
+
+1. Check whether its file is part of the PR's diff at all:
+   `gh pr diff <PR> --name-only`.
+2. **File is in the diff, but the exact line isn't inside a commentable
+   hunk** (GitHub only allows anchoring within a hunk's context window —
+   posting will fail with `"could not be resolved"`): get the real hunk
+   boundaries with `gh api repos/hmislk/hmis/pulls/<PR>/files --jq
+   '.[] | select(.filename=="<path>") | .patch'` and anchor on the nearest
+   line that's actually inside it instead.
+3. **File isn't in the diff at all**: anchor the comment on the *calling*
+   line in a file that IS in the diff (typically the new code that invokes
+   the problematic downstream method) and cite the true file:line of the
+   actual defect explicitly in the comment body text, since the anchor
+   line is just the closest available hook, not the defect's real
+   location.
+4. **No related diff line exists at all**: don't force a mis-anchored
+   comment. Fold the finding into the top-level PR status comment instead
+   (see § PR status comment) — that comment isn't line-anchored, so it can
+   reference any file/line freely.
+
+Post any recovered findings with `gh api repos/hmislk/hmis/pulls/<PR>/comments
+-f commit_id=<head-sha> -f path=<path> -F line=<n> -f side=RIGHT -f
+body=<text>` (head SHA from `gh pr view <PR> --json commits -q
+'.commits[-1].oid'`). Re-run the verification query once more before moving
+on — don't proceed to Phase 2 on an unconfirmed assumption that everything
+posted.
+
 ### Phase 2 — Identify affected workflows
 
 ```bash

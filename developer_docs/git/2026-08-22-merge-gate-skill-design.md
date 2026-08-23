@@ -190,6 +190,27 @@ outcome, not review opinion. If merge-gate is re-run on the same PR later,
 it posts a new comment rather than editing the old one, so the run history
 stays visible. Full templates: see the skill file's § PR status comment.
 
+## Addendum (2026-08-23) — missing-comment fallback
+
+Posting the PR status comments (previous addendum) surfaced a second bug:
+PR #23082's two blocking findings from the original run had never actually
+been posted, despite the sub-agent reporting them as posted. Root cause:
+GitHub's PR-review-comment API can only anchor a comment on a line inside
+the PR's own diff; one finding's defect lived in a file (`ChannelService.java`)
+that PR #23082 doesn't touch — it's only *called* by the new code — so the
+anchor had nowhere to attach and silently failed with no error surfaced
+back to the caller.
+
+Added a verification step to Phase 1: after `code-review --comment` runs,
+cross-check the findings it returned against what's actually present via
+`gh api .../pulls/<PR>/comments`, rather than trusting the "posted
+successfully" claim at face value. For anything missing, a documented
+fallback: anchor on the nearest related line that IS in the diff (usually
+the calling line) and cite the real file:line in the comment body text; if
+no related diff line exists at all, fold the finding into the top-level PR
+status comment instead, since that one isn't line-anchored. Full steps:
+see the skill file's § Fallback (under Phase 1).
+
 ## Hygiene
 
 - `persistence.xml` discarded and restored to local JNDI around each PR's
