@@ -131,6 +131,44 @@ the browser to the next thing worth showing, with no bug implied. Follow
 the instruction, but don't treat it as a capture cue on its own; wait for
 the user to actually point out a problem.
 
+### Keep a running navigation breadcrumb, even when not capturing
+
+The user is driving the browser, not you — when they say "I'm on page X"
+or narrate a click, you often can't reconstruct that path from code (it may
+depend on session state: a selected patient, department, in-progress form)
+and the user may not be able to repeat the exact clicks on request. Losing
+the trail forces them to redo manual navigation, which defeats the point of
+letting them drive.
+
+So on every non-capture navigation/narration turn, silently note (don't
+announce it — this isn't a capture, just a running log) the menu
+path/button clicked and, if visible from context already in front of you,
+the resulting page's title and URL. Don't spend an extra `browser_snapshot`
+call purely to fill in this log — use whatever page context you already
+have (the last snapshot/screenshot taken, or the user's own words). If a
+hop's destination truly isn't inferable that way, leave it unlabeled rather
+than interrupting the flow to ask; a gap in the trail is better than
+breaking the user's narration to ask a tracking question.
+
+**Sanitize before storing, not just before filing.** URLs and page
+titles/breadcrumbs routinely carry patient identifiers (BHT number, PHN,
+patient name) even at this scratch stage — strip or generalize those as
+you log each hop (e.g. `BHT/56757` → `[selected admission]`). Don't rely
+on the step-7 filing-time redaction pass alone for this: by then the trail
+has already been promoted into "Steps to reproduce" text, so anything left
+unredacted here flows straight into the draft issue body.
+
+Keep only the trail since the last completed capture (or session start,
+whichever is more recent), most recent step last — this is scratch
+context, not a demo record, and applies to whatever workflow is being
+demonstrated, not just inpatient/admission ones. When a demo is actually
+captured — not merely cued; a content-free cue (previous section) leaves
+the trail open while it waits for the required description — that trail
+becomes the "Steps to reproduce" backbone for that demo. Clear it once the
+capture is consumed, so a later demo in the same session doesn't inherit
+an earlier demo's steps. Any trail still open at session end is simply
+discarded.
+
 If a capture already happened and the user later clarifies that demo #N was not
 meant as a bug report (e.g. "no error in this page yet, just gathering
 facts"), treat that as an explicit instruction to drop the prior capture —
