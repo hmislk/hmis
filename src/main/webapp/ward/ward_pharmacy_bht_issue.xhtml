@@ -65,6 +65,17 @@
                                 action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
                                 ajax="false" >
                             </p:commandButton>
+
+                            <p:commandButton
+                                id="btnConfig"
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('inward/pharmacy_bill_issue_bht')}"
+                                ajax="false"
+                                class="ui-button-secondary">
+                            </p:commandButton>
                         </div>
                     </div>
 
@@ -245,12 +256,12 @@
                                                rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
                                                            and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"
                                                style="background-color:#{pharmacySaleBhtController.bhtRequestBill.priority.priorityColor}; color:#212529;"></p:tag>
-                                        <p:outputLabel value="Discount" ></p:outputLabel>
-                                        <p:outputLabel value=":" ></p:outputLabel>
-                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
-                                        <p:outputLabel value="Net Total" ></p:outputLabel>
-                                        <p:outputLabel value=":" ></p:outputLabel>
-                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Discount" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Net Total" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                         <p:outputLabel value="Comment" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ></p:outputLabel>
@@ -462,18 +473,18 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </div>
-                                <div class="col-md-3">
-                                    <strong>Matrix Value: </strong>
-                                    <h:outputLabel value="#{bItm.marginValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </div>
                                 <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{webUserController.hasPrivilege('Developers')}">
                                     <strong>Available Stock: </strong>
                                     <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.stock}">
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
                                 </h:panelGroup>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                <strong>Matrix Value: </strong>
+                                <h:outputLabel value="#{bItm.marginValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
                             </h:panelGroup>
                         </p:rowExpansion>
 
