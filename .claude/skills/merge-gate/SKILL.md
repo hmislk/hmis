@@ -104,10 +104,14 @@ silently truncates past ~30 comments, which would make a real PR with
 substantial CodeRabbit + human discussion look falsely under-verified (or
 mask a genuinely missing finding sitting past the cutoff):
 
+`gh api --jq` only accepts one filter-string argument — piping `--arg` and
+its value straight after it fails with `accepts 1 arg(s), received 4`.
+Pipe to a standalone `jq` instead:
+
 ```bash
 me=$(gh api user --jq '.login')
-gh api --paginate repos/hmislk/hmis/pulls/<PR>/comments \
-  --jq --arg me "$me" '.[] | select(.user.login == $me) | "\(.path):\(.line)"'
+gh api --paginate repos/hmislk/hmis/pulls/<PR>/comments | \
+  jq --arg me "$me" '.[] | select(.user.login == $me) | "\(.path):\(.line)"'
 ```
 
 Cross-check this list against the findings returned. For any finding
