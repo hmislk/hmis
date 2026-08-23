@@ -13,6 +13,7 @@
         <cc:attribute name="cancelled" />
         <cc:attribute name="title" default="Issue Bill" />
         <cc:attribute name="showRate" default="true" />
+        <cc:attribute name="showDiscount" default="true" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -372,7 +373,7 @@
                             </td>
                         </tr>
                     </ui:fragment>
-                    <ui:fragment rendered="#{cc.attrs.showRate}">
+                    <ui:fragment rendered="#{cc.attrs.showDiscount}">
                         <tr>
                             <td  class="totalsBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
@@ -383,6 +384,8 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showRate}">
                         <tr>
                             <td  class="totalsBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
@@ -393,7 +396,8 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-
+                    </ui:fragment>
+                    <ui:fragment rendered="#{cc.attrs.showDiscount}">
                         <tr>
 
                             <td  class="totalsBlock" style="text-align: left;">

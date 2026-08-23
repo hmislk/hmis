@@ -20,11 +20,13 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Fee;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.facade.BillFeeFacade;
@@ -343,15 +345,56 @@ public class InwardAdditionalChargeController implements Serializable {
         this.itemComment = itemComment;
     }
 
+    /**
+     * Autocomplete backing the Item field on Add Outside Charges (issue
+     * #23250). Restricted to items that are actually eligible for an
+     * outside charge:
+     * <ul>
+     * <li><b>Mode A (default):</b> among the item's non-retired site-level
+     * {@code ItemFee}s for the logged department's site, the only fee type
+     * present is {@link FeeType#OtherInstitution} (Outside Fee).</li>
+     * <li><b>Mode B (opt-in via config key "Inward Outside Charge Requires
+     * Item Mapping"):</b> the item must also be explicitly mapped to that
+     * site on the Outside Charge Item Mapping page
+     * ({@code ItemMapping.outsideChargeMapping = true}).</li>
+     * </ul>
+     * The site is the logged department's <b>site</b>
+     * ({@link Department#getSite()}), not the bare department — matching
+     * how site-level fees are already scoped elsewhere in Inward billing
+     * (see {@code BillBhtController}). If the logged department has no site
+     * configured, this falls back to the original unrestricted behavior
+     * (any non-retired Service/InwardService item) rather than returning an
+     * empty list, so departments without a site configured are not broken.
+     */
     public List<Item> completeItem(String qry) {
+        Department department = getSessionController().getDepartment();
+        Institution site = department != null ? department.getSite() : null;
+
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         params.put("name", "%" + qry.toUpperCase() + "%");
-        return itemFacade.findByJpql(
-                "select i from Item i where i.retired=false "
+        String jpql = "select i from Item i where i.retired=false "
                 + "and (type(i) = InwardService or type(i) = Service) "
-                + "and upper(i.name) like :name "
-                + "order by i.name",
-                params);
+                + "and upper(i.name) like :name ";
+
+        if (site != null) {
+            params.put("site", site);
+            params.put("outsideFeeType", FeeType.OtherInstitution);
+            jpql += "and exists (select 1 from ItemFee f1 where f1.item = i "
+                    + "and f1.forInstitution = :site and f1.retired = false "
+                    + "and f1.feeType = :outsideFeeType) "
+                    + "and not exists (select 1 from ItemFee f2 where f2.item = i "
+                    + "and f2.forInstitution = :site and f2.retired = false "
+                    + "and f2.feeType <> :outsideFeeType) ";
+
+            if (configOptionController.getBooleanValueByKey("Inward Outside Charge Requires Item Mapping", false)) {
+                jpql += "and exists (select 1 from ItemMapping im where im.item = i "
+                        + "and im.institution = :site and im.retired = false "
+                        + "and im.outsideChargeMapping = true) ";
+            }
+        }
+
+        jpql += "order by i.name";
+        return itemFacade.findByJpql(jpql, params);
     }
 
     public void onItemSelect() {

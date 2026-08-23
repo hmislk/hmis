@@ -7,11 +7,12 @@ package com.divudi.ws.inward;
 
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.data.dto.timeditem.TimedItemCreateRequestDTO;
+import com.divudi.core.data.dto.timeditem.TimedItemFeeBulkRequestDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemFeeCreateRequestDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemFeeDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemFeeUpdateRequestDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemResponseDTO;
-import com.divudi.core.data.dto.timeditem.TimedItemSearchResultDTO;
+import com.divudi.core.data.dto.timeditem.TimedItemSearchPageDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemUpdateRequestDTO;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Category;
@@ -19,6 +20,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.TimedItemCategory;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.service.inward.TimedItemApiService;
+import com.divudi.service.inward.TimedItemFeeRuleException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -93,8 +95,10 @@ public class TimedItemApi {
 
             String query = uriInfo.getQueryParameters().getFirst("query");
             String departmentType = uriInfo.getQueryParameters().getFirst("departmentType");
+            String inwardChargeType = uriInfo.getQueryParameters().getFirst("inwardChargeType");
             String inactiveStr = uriInfo.getQueryParameters().getFirst("inactive");
             String limitStr = uriInfo.getQueryParameters().getFirst("limit");
+            String offsetStr = uriInfo.getQueryParameters().getFirst("offset");
 
             Boolean inactive = null;
             if (inactiveStr != null && !inactiveStr.trim().isEmpty()) {
@@ -103,6 +107,22 @@ public class TimedItemApi {
                     return errorResponse("Invalid inactive value. Use true or false.", 400);
                 }
                 inactive = Boolean.parseBoolean(raw);
+            }
+
+            Boolean includeRetired = parseBooleanParam("includeRetired");
+            if (includeRetired == null) {
+                return errorResponse("Invalid includeRetired value. Use true or false.", 400);
+            }
+
+            Long categoryId;
+            Long departmentId;
+            Long institutionId;
+            try {
+                categoryId = parseLongParam("categoryId");
+                departmentId = parseLongParam("departmentId");
+                institutionId = parseLongParam("institutionId");
+            } catch (NumberFormatException e) {
+                return errorResponse(e.getMessage(), 400);
             }
 
             int limit = 30;
@@ -115,12 +135,26 @@ public class TimedItemApi {
                 }
             }
 
-            List<TimedItemSearchResultDTO> results = timedItemApiService.searchTimedItems(
-                    query, departmentType, inactive, limit);
+            int offset = 0;
+            if (offsetStr != null && !offsetStr.trim().isEmpty()) {
+                try {
+                    offset = Math.max(Integer.parseInt(offsetStr.trim()), 0);
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid offset format", 400);
+                }
+            }
+
+            TimedItemSearchPageDTO results = timedItemApiService.searchTimedItems(
+                    query, departmentType, inactive, categoryId, inwardChargeType,
+                    departmentId, institutionId, includeRetired, limit, offset);
             return successResponse(results);
 
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
+            }
+            return errorResponse("An error occurred: " + msg, 500);
         }
     }
 
@@ -138,18 +172,16 @@ public class TimedItemApi {
                 return errorResponse("Not a valid key", 401);
             }
 
-            TimedItemResponseDTO result = timedItemApiService.findTimedItemById(id);
+            Boolean includeRetired = parseBooleanParam("includeRetired");
+            if (includeRetired == null) {
+                return errorResponse("Invalid includeRetired value. Use true or false.", 400);
+            }
+
+            TimedItemResponseDTO result = timedItemApiService.findTimedItemById(id, includeRetired);
             return successResponse(result);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
-            }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+            return mapError(e);
         }
     }
 
@@ -216,14 +248,7 @@ public class TimedItemApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
-            }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+            return mapError(e);
         }
     }
 
@@ -246,14 +271,29 @@ public class TimedItemApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
+            return mapError(e);
+        }
+    }
+
+    /**
+     * Un-retire a timed item, undoing DELETE /api/timed-items/{id}.
+     * PATCH /api/timed-items/{id}/restore
+     */
+    @PATCH
+    @Path("/{id}/restore")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response restoreTimedItem(@PathParam("id") Long id) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
             }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+
+            TimedItemResponseDTO response = timedItemApiService.restoreTimedItem(id, user);
+            return successResponse(response);
+
+        } catch (Exception e) {
+            return mapError(e);
         }
     }
 
@@ -275,14 +315,7 @@ public class TimedItemApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
-            }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+            return mapError(e);
         }
     }
 
@@ -304,14 +337,7 @@ public class TimedItemApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
-            }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+            return mapError(e);
         }
     }
 
@@ -333,18 +359,16 @@ public class TimedItemApi {
                 return errorResponse("Not a valid key", 401);
             }
 
-            List<TimedItemFeeDTO> fees = timedItemApiService.listFees(id);
+            Boolean includeRetired = parseBooleanParam("includeRetired");
+            if (includeRetired == null) {
+                return errorResponse("Invalid includeRetired value. Use true or false.", 400);
+            }
+
+            List<TimedItemFeeDTO> fees = timedItemApiService.listFees(id, includeRetired);
             return successResponse(fees);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
-            }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+            return mapError(e);
         }
     }
 
@@ -378,14 +402,7 @@ public class TimedItemApi {
             return successResponse(201, response);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
-            }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+            return mapError(e);
         }
     }
 
@@ -419,14 +436,7 @@ public class TimedItemApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
-            }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
-            }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+            return mapError(e);
         }
     }
 
@@ -448,14 +458,66 @@ public class TimedItemApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("not found")) {
-                return errorResponse(msg, 404);
+            return mapError(e);
+        }
+    }
+
+    /**
+     * Un-retire a fee, undoing DELETE /api/timed-items/{id}/fees/{feeId}.
+     * PATCH /api/timed-items/{id}/fees/{feeId}/restore
+     */
+    @PATCH
+    @Path("/{id}/fees/{feeId}/restore")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response restoreFee(@PathParam("id") Long id, @PathParam("feeId") Long feeId) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
             }
-            if (msg != null && msg.contains("Invalid")) {
-                return errorResponse(msg, 400);
+
+            TimedItemResponseDTO response = timedItemApiService.restoreFee(id, feeId, user);
+            return successResponse(response);
+
+        } catch (Exception e) {
+            return mapError(e);
+        }
+    }
+
+    /**
+     * Replace the whole fee slot list in one atomic call.
+     * PUT /api/timed-items/{id}/fees
+     * Body: { "fees": [ { "id": 123, "name": "First hour", "fee": 500, "durationHours": 1,
+     *                     "durationUnit": "HOUR", "sortOrder": 1 }, ... ] }
+     * Fees present in the item but absent from the list are retired.
+     */
+    @PUT
+    @Path("/{id}/fees")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response replaceFees(@PathParam("id") Long id, String requestBody) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
             }
-            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+
+            TimedItemFeeBulkRequestDTO request;
+            try {
+                request = gson.fromJson(requestBody, TimedItemFeeBulkRequestDTO.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+
+            if (request == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            TimedItemResponseDTO response = timedItemApiService.replaceFees(id, request, user);
+            return successResponse(response);
+
+        } catch (Exception e) {
+            return mapError(e);
         }
     }
 
@@ -683,6 +745,72 @@ public class TimedItemApi {
     // =========================================================================
     // Private helpers
     // =========================================================================
+
+    /**
+     * Maps a service-layer exception onto an HTTP status.
+     *
+     * <p>"is retired" / "is not retired" are 404 and 409 rather than the 500 they used to
+     * fall through to — a retired record is a real, findable state now that
+     * includeRetired and restore exist, not an internal failure (issue #23236 §2).
+     */
+    private Response mapError(Exception e) {
+        String msg = e.getMessage();
+        // A broken rule is always the caller's payload, never a server fault — checked by
+        // type so the status does not depend on how the message happens to be worded.
+        if (e instanceof TimedItemFeeRuleException) {
+            return errorResponse(msg, 400);
+        }
+        if (msg == null) {
+            return errorResponse("An error occurred: Unknown error", 500);
+        }
+        if (msg.contains("not found")) {
+            return errorResponse(msg, 404);
+        }
+        if (msg.contains("is retired")) {
+            return errorResponse(msg + " — use ?includeRetired=true to read it, "
+                    + "or PATCH the restore endpoint to bring it back.", 404);
+        }
+        if (msg.contains("is not retired") || msg.contains("is already retired")) {
+            return errorResponse(msg, 409);
+        }
+        if (msg.contains("Invalid") || msg.contains("required") || msg.contains("does not belong")
+                || msg.contains("must be") || msg.contains("Slot Order") || msg.contains("Duration must")) {
+            return errorResponse(msg, 400);
+        }
+        return errorResponse("An error occurred: " + msg, 500);
+    }
+
+    /**
+     * @return the flag, or null when the caller sent something that is neither true nor
+     *         false — silently treating a typo as false would hide retired rows the
+     *         caller explicitly asked for
+     */
+    private Boolean parseBooleanParam(String name) {
+        String raw = uriInfo.getQueryParameters().getFirst(name);
+        if (raw == null || raw.trim().isEmpty()) {
+            return Boolean.FALSE;
+        }
+        String v = raw.trim().toLowerCase();
+        if ("true".equals(v)) {
+            return Boolean.TRUE;
+        }
+        if ("false".equals(v)) {
+            return Boolean.FALSE;
+        }
+        return null;
+    }
+
+    private Long parseLongParam(String name) {
+        String raw = uriInfo.getQueryParameters().getFirst(name);
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(raw.trim());
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Invalid " + name + " format");
+        }
+    }
 
     private WebUser validateApiKey(String key) {
         if (key == null || key.trim().isEmpty()) {
