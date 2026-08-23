@@ -3232,7 +3232,11 @@ public class BhtSummeryController implements Serializable {
             for (ChargeItemTotal.AdditionalChargeItem item : cit.getAdditionalChargeItems()) {
                 additionalTotal += item.getAmount();
             }
-            double categoryOnlyValue = cit.getTotal() - additionalTotal;
+            // additionalTotal and cit.getTotal() come from two separate bulk
+            // queries (setChargeValueFromAdditional()), so a charge committed
+            // between them could in theory make additionalTotal exceed the
+            // total. Clamp rather than let the category row go negative.
+            double categoryOnlyValue = Math.max(0.0, cit.getTotal() - additionalTotal);
 
             BillItem billItem = new BillItem();
             billItem.setInwardChargeType(cit.getInwardChargeType());
