@@ -2013,6 +2013,76 @@ window.setTimeout = function (fn, delay) { return delay >= 2500 ? 0 : window.__o
 The real growl then stays rendered for the screenshot (nothing about the message is faked — only the dismissal is
 deferred). Reload the page afterwards to drop the patch. Verified while testing issue #23206.
 
+## Some PrimeFaces buttons need a jQuery-triggered click
+
+Most `p:commandButton`s submit fine with a normal Playwright click — including
+`ajax="false"` text-valued buttons such as `form:btnNursingDischarge` on
+`admission_profile.xhtml`, which navigate correctly on a plain
+`page.locator('#form\:btnNursingDischarge').click()`.
+
+The exception is **icon-only row controls** inside a `p:dataTable` (e.g. the
+`ui-button-icon-only` action buttons on `inpatient_search.xhtml`, which render with
+no `value` and no `onclick`). There, PrimeFaces binds the handler through jQuery and a
+raw `element.click()` from inside `browser_evaluate` can fire the DOM event without
+invoking it — the form never submits and the page silently stays put, with no error and
+no server-log entry. Fall back to triggering the jQuery handler for those:
+
+```js
+window.jQuery(document.getElementById('form:tblBills:0:j_idt638')).trigger('click');
+```
+
+Inspect `$._data(el, 'events')` if unsure — the absence of a `click` key alongside
+`mousedown`/`mouseup` is the tell. Either way, **assert the outcome** (URL change, or the
+expected element on the destination page) rather than assuming the click worked.
+Verified while testing issue #23222.
+
+## A local "Unknown column" 500 is schema drift — use the app's own migration page
+
+A restored/older local DB can lag the entity model (e.g. `Unknown column 'DURATIONUNIT' in 'field list'`
+loading a `TimedItemFee`), producing a 500 on pages that are otherwise unrelated to what you're testing.
+The login screen flags this as **"Database Migration Pending"**. Fix it through the app's own UI —
+navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update Both Databases** — rather
+than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
+Verified while testing issue #23222.
+
+## An unchanged database does NOT prove a server-side guard ran
+
+When a fix disables a button via `disabled="#{bean.someCheck()}"`, it is tempting to strip the
+attribute, submit, observe the DB unchanged, and call the server-side guard proven. **That
+inference is invalid** — and on JSF it is usually wrong.
+
+JSF **skips the action of a component it rendered as `disabled`**: the decode phase ignores the
+activation, so the action method is never invoked. The postback returns 200, the page re-renders,
+and the database is unchanged — identical to what a working guard looks like from the outside.
+Confirmed on `inward_nursing_discharge.xhtml`, whose Confirm button carries
+`disabled="#{nursingDischargeController.hasPendingPharmacyItems()}"`: re-POSTing the form produced
+`msgs:[]` (no growl message at all), proving `confirmNursingDischarge()` never ran.
+
+So before asserting DB state, **assert the action executed** — the expected message is the cheapest
+signal. Re-POST the form and inspect the response body directly:
+
+```js
+const fd = new FormData(document.getElementById('formNursingDischarge'));
+fd.set('formNursingDischarge:btnConfirmNursingDischarge', '');   // use the button's real (often empty) value
+const html = await (await fetch(location.href, {
+  method: 'POST', body: new URLSearchParams(fd),
+  headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+})).text();
+// msgs:[...] populated => the action ran; msgs:[] => it did not
+```
+
+An `ajax="false"` button reloads the page, so a growl is usually gone before any screenshot or
+follow-up `browser_evaluate` — read it out of the raw response as above rather than from the DOM.
+
+To exercise a guard that is unreachable while the button renders disabled, recreate the **race it
+exists for**: load the page while the record is clean (button enabled), make the blocking condition
+true, then submit the stale page.
+
+Always pair this with the **negative test** — a record with nothing pending must still succeed —
+otherwise you have not distinguished "correctly blocks" from "blocks everything". Undo any state the
+negative test creates through the app's own Cancel action, never with an `UPDATE`.
+Verified while testing issue #23222.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -2030,3 +2100,6 @@ deferred). Reload the page afterwards to drop the patch. Verified while testing 
       clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
 - [ ] Re-logged in and re-selected department after any redeploy before continuing.
 - [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
+- [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
+- [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
