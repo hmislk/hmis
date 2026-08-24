@@ -401,6 +401,7 @@ public class ConfigOptionController implements Serializable {
             int importedCount = 0;
             int updatedCount = 0;
             int skippedCount = 0;
+            int skippedInwardLabelCount = 0;
 
             for (int i = 1; i < lines.length; i++) {
                 String line = lines[i].trim();
@@ -418,7 +419,7 @@ public class ConfigOptionController implements Serializable {
                     if (optionKey != null && !optionKey.trim().isEmpty() && isInwardChargeTypeLabelKey(optionKey.trim())) {
                         // Inward Charge Type Labels are managed exclusively via
                         // inward/inward_charge_type_labels.xhtml - see saveOption().
-                        skippedCount++;
+                        skippedInwardLabelCount++;
                         continue;
                     }
 
@@ -492,7 +493,11 @@ public class ConfigOptionController implements Serializable {
                 message += updatedCount + " options updated. ";
             }
             if (skippedCount > 0) {
-                message += skippedCount + " existing options skipped.";
+                message += skippedCount + " existing options skipped. ";
+            }
+            if (skippedInwardLabelCount > 0) {
+                message += skippedInwardLabelCount
+                        + " Inward Charge Type Label option(s) skipped; manage them from the Inward Charge Type Labels page.";
             }
             JsfUtil.addSuccessMessage(message);
 
@@ -1092,6 +1097,10 @@ public class ConfigOptionController implements Serializable {
 
     public void retireDuplicateGroup(ConfigOptionDuplicateGroup g) {
         if (g == null || g.getOptions() == null || g.getOptions().size() < 2) {
+            return;
+        }
+        if (isInwardChargeTypeLabelKey(g.getOptions().get(0).getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         g.getOptions().sort((a, b) -> a.getId().compareTo(b.getId()));
