@@ -117,8 +117,18 @@ public class BhtPaymentSummaryDTO implements Serializable {
         return getPostFinalPaymentForMethod(PaymentMethod.Card);
     }
 
+    /**
+     * Post-final-bill payments made via {@link PaymentMethod#Credit} (settling
+     * the final bill on credit) — broken out from {@link #getPostFinalOther()}
+     * per issue #23262, so a distinct "Final Credit" column can be shown
+     * alongside Final Cash / Final Other.
+     */
+    public double getPostFinalCredit() {
+        return getPostFinalPaymentForMethod(PaymentMethod.Credit);
+    }
+
     public double getPostFinalOther() {
-        return getTotalPostFinalPayments() - getPostFinalCash() - getPostFinalCard();
+        return getTotalPostFinalPayments() - getPostFinalCash() - getPostFinalCard() - getPostFinalCredit();
     }
 
     public void addCreditCompanyBill(double billedAmount, double settledAmount, String companyName) {
