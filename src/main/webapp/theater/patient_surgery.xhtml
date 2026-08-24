@@ -403,6 +403,19 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        value="Add Outside Charges"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddOutSideCharges')}"
+                                        action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromInpatientProfile()}"
+                                        icon="fa fa-external-link-square-alt"
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
+                                        <f:setPropertyActionListener
+                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                            target="#{inwardAdditionalChargeController.current.patientEncounter}"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         value="View Professional Fees"
                                         ajax="false"
                                         action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(surgeryBillController.surgeryBill)}"
