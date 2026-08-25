@@ -6,15 +6,15 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="content">
-        <h:form>
-            <div class="row">
-                <div class="col-12">
-                    <p:messages id="messages" showDetail="true" closable="true" />
-                </div>
+        <div class="row">
+            <div class="col-12">
+                <p:messages id="messages" showDetail="true" closable="true" />
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col-2">
+        <div class="row">
+            <div class="col-2">
+                <h:form>
                     <p:accordionPanel activeIndex="#{grnReturnWorkflowController.activeIndexForReturnsAndCancellations}" >
                         <p:ajax event="tabChange" process="@this"/>
                         <p:tab title="GRN Returns" >
@@ -75,17 +75,17 @@
                                     rendered="#{webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}" />
                             </p:panelGrid>
                         </p:tab>
-                        <p:tab title="Disposal Returns" >
+                        <p:tab title="Consumption Returns" >
                             <p:panelGrid columns="1" >
                                 <p:commandButton
-                                    value="Create Disposal Return"
+                                    value="Create Consumption Return"
                                     ajax="false"
                                     action="#{disposalReturnWorkflowController.navigateToCreateDisposalReturn()}"
                                     class="ui-button-success w-100"
                                     icon="fas fa-plus-circle"
                                     rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}" />
                                 <p:commandButton
-                                    value="Finalize Disposal Return"
+                                    value="Finalize Consumption Return"
                                     ajax="false"
                                     action="#{disposalReturnWorkflowController.navigateToFinalizeDisposalReturn()}"
                                     actionListener="#{disposalReturnWorkflowController.makeNull()}"
@@ -93,7 +93,7 @@
                                     icon="fas fa-tasks"
                                     rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}" />
                                 <p:commandButton
-                                    value="Approve Disposal Return"
+                                    value="Approve Consumption Return"
                                     ajax="false"
                                     action="#{disposalReturnWorkflowController.navigateToApproveDisposalReturn()}"
                                     class="ui-button-info w-100"
@@ -106,7 +106,7 @@
                                     icon="fas fa-check-double"
                                     styleClass="ui-button-secondary  w-100"
                                     rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
-                                    title="View Completed Disposal Returns">
+                                    title="View Completed Consumption Returns">
                                 </p:commandButton>
                             </p:panelGrid>
                         </p:tab>
@@ -151,19 +151,19 @@
 
 
                     </p:accordionPanel>
-                </div>
-                <div class="col-10">
-                    <ui:insert name="subcontent">
-                    </ui:insert>
-                </div>
+                </h:form>
             </div>
+            <div class="col-10">
+                <ui:insert name="subcontent">
+                </ui:insert>
+            </div>
+        </div>
 
 
 
 
 
 
-        </h:form>
     </ui:define>
 
 </ui:composition>

@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form>
+                    <p:panel header="Duration Service Report Print" styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Duration Service Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="duration_service_report?faces-redirect=true">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+                            @media screen {
+                                .paper {
+                                    position: static !important;
+                                    width: 420mm !important;
+                                    zoom: 1.35;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 9px !important;
+                                    margin-top: 1mm !important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 1px 2px !important;
+                                    margin: 2px !important;
+                                    text-align: left;
+                                    vertical-align: top;
+                                }
+
+                                .header {
+                                    font-size: 16px !important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A3 landscape;
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper {
+                                    position: static !important;
+                                    width: 420mm !important;
+                                }
+
+                                .header {
+                                    line-height: 1.1;
+                                    margin: 0mm !important;
+                                    font-size: 13px !important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 8px !important;
+                                    margin-top: 1mm !important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 1px 2px !important;
+                                    margin: 2px !important;
+                                    text-align: left;
+                                    vertical-align: top;
+                                }
+                            }
+
+                            .numeric-cell {
+                                text-align: right;
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="Duration Service Report"/>
+                                        <h:panelGroup rendered="#{reportController.serviceDepartment ne null}">
+                                            <div class="d-flex gap-2">
+                                                <h:outputText value="-" style="width: 1em !important;" class="text-center"/>
+                                                <h:outputText value="#{reportController.serviceDepartment.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+
+                                    <div class="d-flex justify-content-center mt-2" style="font-size:12px; flex-wrap:wrap; gap:16px;">
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Discharge From" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Discharge To" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Service Added From" style="font-weight:600;"/>
+                                            <h:panelGroup>
+                                                <h:outputText value="All" rendered="#{empty reportController.serviceAddedFromDate}"/>
+                                                <h:outputText value="#{reportController.serviceAddedFromDate}" rendered="#{not empty reportController.serviceAddedFromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Service Added To" style="font-weight:600;"/>
+                                            <h:panelGroup>
+                                                <h:outputText value="All" rendered="#{empty reportController.serviceAddedToDate}"/>
+                                                <h:outputText value="#{reportController.serviceAddedToDate}" rendered="#{not empty reportController.serviceAddedToDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Invoice From" style="font-weight:600;"/>
+                                            <h:panelGroup>
+                                                <h:outputText value="All" rendered="#{empty reportController.invoiceFromDate}"/>
+                                                <h:outputText value="#{reportController.invoiceFromDate}" rendered="#{not empty reportController.invoiceFromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Invoice To" style="font-weight:600;"/>
+                                            <h:panelGroup>
+                                                <h:outputText value="All" rendered="#{empty reportController.invoiceToDate}"/>
+                                                <h:outputText value="#{reportController.invoiceToDate}" rendered="#{not empty reportController.invoiceToDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Service" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportController.item ? 'All Services' : reportController.item.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Service Department" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportController.serviceDepartment ? 'All Service Departments' : reportController.serviceDepartment.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Billed Department" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportController.billedDepartment ? 'All Billed Departments' : reportController.billedDepartment.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Visit Type" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportController.visitType ? 'All' : reportController.visitType}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Service Group" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportController.serviceGroup ? 'All' : reportController.serviceGroup}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Admission Types" style="font-weight:600;"/>
+                                            <h:panelGroup>
+                                                <h:outputText value="All" rendered="#{empty reportController.admissionTypes}"/>
+                                                <ui:repeat value="#{reportController.admissionTypes}" var="admissionType" varStatus="i">
+                                                    <h:outputText value="#{i.index eq 0 ? '' : ', '}#{admissionType.name}"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Room Categories" style="font-weight:600;"/>
+                                            <h:panelGroup>
+                                                <h:outputText value="All" rendered="#{empty reportController.roomCategories}"/>
+                                                <ui:repeat value="#{reportController.roomCategories}" var="roomCategory" varStatus="i">
+                                                    <h:outputText value="#{i.index eq 0 ? '' : ', '}#{roomCategory.name}"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="font-weight: 700;"><h:outputText value="S. No" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="BHT No" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="MRN No" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Consultant Name" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Surgery Name" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Service Department" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Billed Department" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Service Name" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Service Group" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Start Time" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="End Time" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Duration" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Base Price" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Discount Amount" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Sponsor Discount" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Sponsor Net." style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Patient Amt" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Adjusted Amt" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Creator" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Checked By" style="margin-left: 1mm;"/></th>
+                                                <th style="font-weight: 700;"><h:outputText value="Checked At" style="margin-left: 1mm;"/></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{reportController.durationServiceReportRows}" var="row" varStatus="i">
+                                                <tr>
+                                                    <td><h:outputText value="#{i.index + 1}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.bhtNo}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.mrnNo}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.consultantName}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.surgeryName}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.serviceDepartmentName}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.creatingLocation}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.serviceName}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.serviceGroupName}" style="margin-left: 1mm;"/></td>
+                                                    <td>
+                                                        <h:outputText value="#{row.startTime}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{row.endTime}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td><h:outputText value="#{row.duration}" style="margin-left: 1mm;"/></td>
+                                                    <td class="numeric-cell">
+                                                        <h:outputText value="#{row.basePrice}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="numeric-cell">
+                                                        <h:outputText value="#{row.discountAmount}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="numeric-cell">
+                                                        <h:outputText value="#{row.sponsorDiscount}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="numeric-cell">
+                                                        <h:outputText value="#{row.sponsorNet}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="numeric-cell">
+                                                        <h:outputText value="#{row.patientAmount}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="numeric-cell">
+                                                        <h:outputText value="#{row.adjustedAmount}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td><h:outputText value="#{row.creatorName}" style="margin-left: 1mm;"/></td>
+                                                    <td><h:outputText value="#{row.checkedByName}" style="margin-left: 1mm;"/></td>
+                                                    <td>
+                                                        <h:outputText value="#{row.checkedAt}" rendered="#{not empty row.checkedAt}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                        <h:outputText value="-" rendered="#{empty row.checkedAt}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -204,7 +204,7 @@ public class ReportFormatController implements Serializable {
         String jpql = "select f "
                 + " from ReportFormat f"
                 + " where f.retired=:ret"
-                + " order by f.id desc";
+                + " order by f.id asc";
         Map params = new HashMap();
         params.put("ret", false);
         ReportFormat r = getFacade().findFirstByJpql(jpql, params);
@@ -243,7 +243,7 @@ public class ReportFormatController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

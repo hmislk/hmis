@@ -186,7 +186,7 @@ public class ApiKeyController implements Serializable {
             getFacade().edit(removing);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         listMyApiKeys();

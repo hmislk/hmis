@@ -31,14 +31,24 @@
                                             target="#{patientController.current}" >
                                         </f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        value="Print to Original Bill" 
+                                    <p:commandButton
+                                        value="Print to Original Bill"
                                         class="ui-button-info m-1"
                                         icon="fa fa-print"
                                         action="#{opdBillController.navigateToOpdOriginalBillPrint()}"
                                         rendered="#{webUserController.hasPrivilege('OpdReprintOriginalBill')}"
                                         ajax="false">
                                     </p:commandButton>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Page Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('opd/package_bill_reprint')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary ui-button-sm p-button-outlined m-1">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
 
                             </div> 
@@ -58,14 +68,15 @@
                                                                                 </p:commandButton>-->
 
 
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
-                                            value="To Cancel" 
+                                            value="To Cancel"
                                             title="To Cancel Bill"
-                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded or billSearch.bill.backwardReferenceBill.cancelled}" 
+                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded or billSearch.bill.backwardReferenceBill.cancelled}"
                                             class="ui-button-danger m-1"
                                             icon="fa fa-times"
-                                            action="#{billPackageController.navigateToCancelOpdPackageBill()}">
+                                            action="#{billPackageController.navigateToCancelOpdPackageBill()}"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Individual Bill Cancellation in Package Bills', true)}">
                                             <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billPackageController.bill}"/>
                                         </p:commandButton>
 
@@ -82,23 +93,23 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
-                                            ajax="false" 
+                                            ajax="false"
                                             value="To Refund"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Refund Allow for OPD Bill',true)}"
-                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
-                                            action="#{billSearch.navigateToRefundOpdBill}" 
-                                            class="ui-button-warning m-1 w-25" 
-                                            icon="fa fa-money-bill-wave">                          
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Refund Allow for OPD Bill',true) and configOptionApplicationController.getBooleanValueByKey('Allow Individual Bill Refunds in Package Bills', true)}"
+                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}"
+                                            action="#{billSearch.navigateToRefundOpdBill}"
+                                            class="ui-button-warning m-1 w-25"
+                                            icon="fa fa-money-bill-wave">
                                         </p:commandButton>
                                         <p:commandButton
-                                            ajax="false" 
+                                            ajax="false"
                                             value="To Return"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Return Allow for OPD Bill',true)}"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Return Allow for OPD Bill',true) and configOptionApplicationController.getBooleanValueByKey('Allow Individual Bill Returns in Package Bills', true)}"
                                             actionListener="#{billReturnController.clear()}"
-                                            disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
+                                            disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}"
                                             action="#{billReturnController.navigateToReturnOpdBill()}"
-                                            class="ui-button-warning m-1 w-25" 
-                                            icon="fa fa-money-bill-wave"> 
+                                            class="ui-button-warning m-1 w-25"
+                                            icon="fa fa-money-bill-wave">
                                             <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                     </h:panelGroup>

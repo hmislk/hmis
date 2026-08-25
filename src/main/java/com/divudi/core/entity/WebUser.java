@@ -34,7 +34,7 @@ public class WebUser implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    Drawer drawer;
@@ -109,6 +109,9 @@ public class WebUser implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date lastPasswordResetAt;
+
+    private boolean restrictLoginByIp = false;
+    private String allowedIpAddresses;
 
     public Staff getStaff() {
         return staff;
@@ -377,6 +380,15 @@ public class WebUser implements Serializable {
         return lastPasswordResetAt;
     }
 
+    /**
+     * Returns the raw persisted value without the self-initializing side effect
+     * of {@link #getLastPasswordResetAt()}. Use this when null needs to be
+     * distinguished from "never reset" (e.g. password expiration checks).
+     */
+    public Date getLastPasswordResetAtRaw() {
+        return lastPasswordResetAt;
+    }
+
     public void setLastPasswordResetAt(Date lastPasswordResetAt) {
         this.lastPasswordResetAt = lastPasswordResetAt;
     }
@@ -387,6 +399,37 @@ public class WebUser implements Serializable {
 
     public void setNeedToResetPassword(boolean needToResetPassword) {
         this.needToResetPassword = needToResetPassword;
+    }
+
+    public boolean isRestrictLoginByIp() {
+        return restrictLoginByIp;
+    }
+
+    public void setRestrictLoginByIp(boolean restrictLoginByIp) {
+        this.restrictLoginByIp = restrictLoginByIp;
+    }
+
+    public String getAllowedIpAddresses() {
+        return allowedIpAddresses;
+    }
+
+    public void setAllowedIpAddresses(String allowedIpAddresses) {
+        this.allowedIpAddresses = allowedIpAddresses;
+    }
+
+    public boolean isIpAllowed(String requestIp) {
+        if (!restrictLoginByIp) {
+            return true;
+        }
+        if (requestIp == null || allowedIpAddresses == null || allowedIpAddresses.trim().isEmpty()) {
+            return false;
+        }
+        for (String allowed : allowedIpAddresses.split(",")) {
+            if (allowed.trim().equalsIgnoreCase(requestIp.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Institution getSite() {

@@ -213,7 +213,8 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tbl"
-                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
                         <p:commandButton
                                 value="To Print"
@@ -228,7 +229,13 @@
                                 icon="pi pi-print">
                             <p:printer target="tbl"/>
                         </p:commandButton>
-
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillToPdf()}" />
+          
                         <p:dataTable
                                 id="tbl"
                                 style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
@@ -238,6 +245,7 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
                             <p:column headerText="Bill No" width="16em"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText value="#{row.bill.deptId}"
@@ -248,7 +256,8 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Patient" style="padding: 0px!important; margin: 0px!important;">
+                            <p:column headerText="Patient" style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportPatientVisible}">
                                 <h:outputText value="#{row.bill.patient.person.nameWithTitle}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
@@ -258,7 +267,8 @@
                                 <h:outputText value="#{row.bill.billTypeAtomic}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
-                            <p:column headerText="Date" width="10em">
+                            <p:column headerText="Date" width="10em"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportDateVisible}">
                                 <h:outputText value="#{row.bill.createdAt}"
                                               style="padding: 0px!important; margin: 0px!important;">
                                     <f:convertDateTime
@@ -266,7 +276,8 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Net Total" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportNetTotalVisible}">
                                 <h:outputText value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -278,7 +289,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Cash" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportCashVisible}">
                                 <h:outputText value="#{row.cashValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -290,7 +302,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Card" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportCardVisible}">
                                 <h:outputText value="#{row.cardValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -302,7 +315,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Cheque" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportChequeVisible}">
                                 <h:outputText value="#{row.chequeValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -315,7 +329,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Slip" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportSlipVisible}">
                                 <h:outputText value="#{row.slipValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -328,7 +343,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Staff Welfare" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportStaffWelfareVisible}">
                                 <h:outputText value="#{row.staffWelfareValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -341,7 +357,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="eWallet" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportEWalletVisible}">
                                 <h:outputText value="#{row.eWalletValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -354,7 +371,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Voucher" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportVoucherVisible}">
                                 <h:outputText value="#{row.voucherValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -367,7 +385,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="IOU" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportIouVisible}">
                                 <h:outputText value="#{row.iouValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -380,7 +399,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Patient Deposit" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportPatientDepositVisible}">
                                 <h:outputText value="#{row.patientDepositValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -393,7 +413,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Inpatient Credit" width="10em" class="text-end light-grey-background"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportInpatientCreditVisible}">
                                 <h:outputText value="#{row.inpatientCreditValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -406,7 +427,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Outpatient Credit" width="10em" class="text-end light-grey-background"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportOutpatientCreditVisible}">
                                 <h:outputText value="#{row.opdCreditValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -419,7 +441,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Staff Credit" width="10em" class="text-end light-grey-background"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportStaffCreditVisible}">
                                 <h:outputText value="#{row.staffValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -432,7 +455,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Agent Credit" width="10em" class="text-end light-grey-background"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportAgentCreditVisible}">
                                 <h:outputText value="#{row.agentValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -445,7 +469,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Total" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportTotalVisible}">
                                 <h:outputText value="#{row.grossTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -458,7 +483,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Discount" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportDiscountVisible}">
                                 <h:outputText value="#{commonFunctionsProxy.reverseSign(row.discount)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -471,7 +497,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Service Charge" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportServiceChargeVisible}">
                                 <h:outputText value="#{row.serviceCharge}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -484,12 +511,13 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Actual Total" width="10em" class="text-end"
-                                      style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.netTotal}">
+                                      style="padding: 0px!important; margin: 0px!important;"
+                                      rendered="#{userSettingsController.pharmacyIncomeReportActualTotalVisible}">
+                                <h:outputText value="#{row.actualTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}"
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}"
                                                   style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -518,6 +546,140 @@
                                 </p:commandLink>
                             </p:column>
                         </p:dataTable>
+
+                        <!-- Subtle Column Visibility Controls -->
+                        <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                            <p:panel toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Customize Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-3" style="font-size: 0.8rem;">
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkPatient" value="#{userSettingsController.pharmacyIncomeReportPatientVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkPatient" value="Patient" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkDate" value="#{userSettingsController.pharmacyIncomeReportDateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkDate" value="Date" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkNetTotal" value="#{userSettingsController.pharmacyIncomeReportNetTotalVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkNetTotal" value="Net Total" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkCash" value="#{userSettingsController.pharmacyIncomeReportCashVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCash" value="Cash" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkCard" value="#{userSettingsController.pharmacyIncomeReportCardVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCard" value="Card" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkCheque" value="#{userSettingsController.pharmacyIncomeReportChequeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCheque" value="Cheque" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkSlip" value="#{userSettingsController.pharmacyIncomeReportSlipVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkSlip" value="Slip" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkStaffWelfare" value="#{userSettingsController.pharmacyIncomeReportStaffWelfareVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkStaffWelfare" value="Staff Welfare" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkEWallet" value="#{userSettingsController.pharmacyIncomeReportEWalletVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkEWallet" value="eWallet" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkVoucher" value="#{userSettingsController.pharmacyIncomeReportVoucherVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkVoucher" value="Voucher" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkIou" value="#{userSettingsController.pharmacyIncomeReportIouVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkIou" value="IOU" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkPatientDeposit" value="#{userSettingsController.pharmacyIncomeReportPatientDepositVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkPatientDeposit" value="Patient Deposit" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkInpatientCredit" value="#{userSettingsController.pharmacyIncomeReportInpatientCreditVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkInpatientCredit" value="Inpatient Credit" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkOutpatientCredit" value="#{userSettingsController.pharmacyIncomeReportOutpatientCreditVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkOutpatientCredit" value="Outpatient Credit" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkStaffCredit" value="#{userSettingsController.pharmacyIncomeReportStaffCreditVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkStaffCredit" value="Staff Credit" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkAgentCredit" value="#{userSettingsController.pharmacyIncomeReportAgentCreditVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkAgentCredit" value="Agent Credit" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkTotal" value="#{userSettingsController.pharmacyIncomeReportTotalVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkTotal" value="Total" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkDiscount" value="#{userSettingsController.pharmacyIncomeReportDiscountVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkDiscount" value="Discount" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkServiceCharge" value="#{userSettingsController.pharmacyIncomeReportServiceChargeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkServiceCharge" value="Service Charge" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <h:selectBooleanCheckbox id="chkActualTotal" value="#{userSettingsController.pharmacyIncomeReportActualTotalVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkActualTotal" value="Actual Total" styleClass="ms-1" />
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL_TYPE'}">
@@ -529,15 +691,28 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblBillType"
-                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
+                        <p:commandButton 
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_bill_type_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblBillType"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeToPdf()}" />
 
                         <p:dataTable
                                 id="tblBillType"
@@ -548,6 +723,7 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
                             <p:column headerText="Bill Type" width="18em">
                                 <h:outputText value="#{row.billTypeAtomic}"/>
                             </p:column>
@@ -771,11 +947,11 @@
                             </p:column>
                             <p:column headerText="Actual Total" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.netTotal}">
+                                <h:outputText value="#{row.actualTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}"
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}"
                                                   style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -807,15 +983,28 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByDiscountAndAdmission"
-                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_discount_admission_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByDiscountAndAdmission"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeAdmissionDiscountToPdf()}" />
 
                         <p:dataTable
                                 id="tblGroupedByDiscountAndAdmission"
@@ -826,6 +1015,7 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
                             <p:column headerText="Group" width="24em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>
@@ -1046,11 +1236,11 @@
                             </p:column>
                             <p:column headerText="Actual Total" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.netTotal}">
+                                <h:outputText value="#{row.actualTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}"
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}"
                                                   style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -1082,15 +1272,28 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByBillTypeAndDiscountAdmission"
-                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"
+                                    postProcessor="#{pharmacySummaryReportController.postProcessExcel}"/>
                         </p:commandButton>
+                        <p:commandButton 
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_bill_type_discount_admission_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByBillTypeAndDiscountAdmission"/>
                         </p:commandButton>
+                       <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeAdmissionDiscountToPdf()}" />
 
                         <p:dataTable
                                 id="tblGroupedByBillTypeAndDiscountAdmission"
@@ -1101,6 +1304,7 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen},5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
                             <p:column headerText="Bill Type + Group" width="32em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>

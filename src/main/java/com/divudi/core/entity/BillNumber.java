@@ -11,6 +11,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.RequestType;
+import com.divudi.core.entity.inward.AdmissionType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -31,7 +32,7 @@ public class BillNumber implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long lastBillNumber;
     @ManyToOne
@@ -59,11 +60,15 @@ public class BillNumber implements Serializable {
     // Boolean fields for OPD and Inpatient service bill tracking
     private boolean opdAndInpatientServiceBills;
     private boolean opdAndInpatientServiceBatchBills;
+    // Marks a never-resetting, per-department voucher number counter (billYear is left null for these rows)
+    private boolean voucherNumber;
     @Enumerated(EnumType.STRING)
     private RequestType requestType;
     @Enumerated(EnumType.STRING)
     private AppointmentType appointmentType;
-    
+    @ManyToOne
+    private AdmissionType admissionType;
+
 
     public boolean isRetired() {
         return retired;
@@ -236,6 +241,14 @@ public class BillNumber implements Serializable {
         this.opdAndInpatientServiceBatchBills = opdAndInpatientServiceBatchBills;
     }
 
+    public boolean isVoucherNumber() {
+        return voucherNumber;
+    }
+
+    public void setVoucherNumber(boolean voucherNumber) {
+        this.voucherNumber = voucherNumber;
+    }
+
     public RequestType getRequestType() {
         return requestType;
     }
@@ -250,6 +263,14 @@ public class BillNumber implements Serializable {
 
     public void setAppointmentType(AppointmentType appointmentType) {
         this.appointmentType = appointmentType;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
     }
 
 }

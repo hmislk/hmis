@@ -12,10 +12,42 @@
         <h:form>
             <h:panelGroup rendered="#{!bhtIssueReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
-                    <f:facet name="header" >      
-                        <div class="d-flex justify-content-between">
-                            <div class="d-flex gap-3 mt-2">
-                                <h:outputText value="BHT Issue Return"  />  
+                    <f:facet name="header" >
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex gap-3 align-items-center">
+                                <h:outputText value="BHT Issue Return"  />
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    id="btnBhtReturnBillView"
+                                    ajax="false"
+                                    value="Bill View"
+                                    icon="fa fa-eye"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill()}">
+                                    <f:setPropertyActionListener
+                                        value="#{bhtIssueReturnController.bill}"
+                                        target="#{pharmacyBillSearch.bill}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnBhtReturnInterimBill"
+                                    ajax="false"
+                                    value="Interim Bill"
+                                    icon="fa fa-backward"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="/inward/inward_bill_intrim" />
+                                <p:commandButton
+                                    id="btnBhtReturnInpatientDashboard"
+                                    ajax="false"
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}"
+                                    rendered="#{bhtIssueReturnController.bill.patientEncounter ne null}">
+                                    <f:setPropertyActionListener
+                                        value="#{bhtIssueReturnController.bill.patientEncounter}"
+                                        target="#{admissionController.current}" />
+                                </p:commandButton>
                             </div>
                             <div class="d-flex gap-3">
                                 <h:outputLabel value="Reason for Return" class="mt-2" style="font-weight: 600;"/>
@@ -36,13 +68,15 @@
                                         itemValue="#{option}"/>
                                 </p:selectOneMenu>
 
-                                <p:commandButton  
-                                    value="Return" 
+                                <p:commandButton
+                                    id="btnBhtReturnSettle"
+                                    value="Return"
                                     icon="fa fa-undo"
-                                    action="#{bhtIssueReturnController.settle}" 
-                                    ajax="false" 
+                                    action="#{bhtIssueReturnController.settle}"
+                                    ajax="false"
                                     onclick="return confirm('Are you sure you want to return this items ?')"
-                                    class="ui-button-warning">
+                                    styleClass="ui-button-success"
+                                    style="min-width:120px">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -72,17 +106,47 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </p:outputLabel> 
 
-                        <p:outputLabel  
-                            value="Recievable Net Amount" 
-                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
-                        <p:outputLabel  
+                        <p:outputLabel
+                            value="Recievable Discount Amount"
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" />
+                        <p:outputLabel
                             value=":" style="text-align: center; width: 20px;"/>
-                        <p:outputLabel 
-                            id="netTotal"  
-                            value="#{bhtIssueReturnController.returnBill.netTotal}" 
+                        <p:outputLabel
+                            id="discountTotal"
+                            value="#{bhtIssueReturnController.discountTotal}"
                             rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
                             <f:convertNumber pattern="#,##0.00" />
-                        </p:outputLabel> 
+                        </p:outputLabel>
+
+                        <p:outputLabel
+                            value="Recievable Net Amount"
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" />
+                        <p:outputLabel
+                            value=":" style="text-align: center; width: 20px;"/>
+                        <p:outputLabel
+                            id="netTotal"
+                            value="#{bhtIssueReturnController.returnBill.netTotal}"
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="3" id="originalTotal" class="mt-2">
+                        <p:outputLabel
+                            value="Original Bill Gross/Net"
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}"
+                            style="font-style: italic; color: #666;" />
+                        <p:outputLabel
+                            value=":" style="text-align: center; width: 20px; font-style: italic; color: #666;"/>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <h:outputText value="#{bhtIssueReturnController.bill.total}" style="font-style: italic; color: #666;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <h:outputText value=" / " style="font-style: italic; color: #666;" />
+                            <h:outputText value="#{bhtIssueReturnController.bill.netTotal}" style="font-style: italic; color: #666;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </h:panelGroup>
                     </h:panelGrid>
 
                     <p:panel header="Returning Item" class="mt-3">
@@ -100,9 +164,9 @@
                                 <h:outputText value=" #{ph.item.name}"  />                     
                             </p:column>  
 
-                            <p:column headerText="Balance Qty in Unit" style="padding: 9px; width: 12em;"> 
-                                <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" >  
-                                    <f:convertNumber pattern="#0" />
+                            <p:column headerText="Balance Qty in Unit" style="padding: 9px; width: 12em;">
+                                <h:outputText value="#{ph.remainingQty}" >
+                                    <f:convertNumber pattern="#0.####" />
                                 </h:outputText>
                             </p:column>  
 
@@ -112,17 +176,23 @@
                                 </h:outputText>                      
                             </p:column>   
 
-                            <p:column headerText="Margin Rate" style="padding: 9px; width: 9em;"> 
+                            <p:column headerText="Margin Rate" style="padding: 9px; width: 9em;">
                                 <h:outputText value="#{ph.marginRate}">
-                                    <f:convertNumber pattern="#,##0.00" />                                
-                                </h:outputText>                      
-                            </p:column>   
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
 
-                            <p:column headerText="Net Rate" style="padding: 9px; width: 9em;"> 
+                            <p:column headerText="Discount Rate" style="padding: 9px; width: 9em;">
+                                <h:outputText value="#{ph.discountRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Net Rate" style="padding: 9px; width: 9em;">
                                 <h:outputText value="#{ph.netRate}" >
-                                    <f:convertNumber pattern="#,##0.00" />                                
-                                </h:outputText>                      
-                            </p:column>                
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
 
                             <p:column headerText="Batch No" style="width:6em; padding: 9px; width: 9em;">                       
                                 <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
@@ -146,7 +216,7 @@
                                         execute="@this" 
                                         listener="#{bhtIssueReturnController.onEdit(ph)}" >
                                     </f:ajax>                               
-                                    <f:convertNumber pattern="#,##" />
+                                    <f:convertNumber pattern="#,##0.####" />
                                 </p:inputText>
                             </p:column>  
 
@@ -156,18 +226,25 @@
             </h:panelGroup>
 
             <p:panel rendered="#{bhtIssueReturnController.printPreview}">
-                <f:facet name="header" >      
+                <f:facet name="header" >
                     <h:outputLabel value="Bill Preview" class="mt-2"></h:outputLabel>
-                    <p:commandButton 
-                        ajax="false" 
+                    <p:commandButton
+                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                        icon="fas fa-cog"
+                        styleClass="ui-button-secondary ui-button-outlined m-1"
+                        type="button"
+                        title="Service Charge Print Format Settings"
+                        onclick="PF('idiReturnBillPaperConfigDialog').show();" />
+                    <p:commandButton
+                        ajax="false"
                         icon="fa fa-plus"
                         class="ui-button-warning"
-                        action="/inward/pharmacy_search_sale_bill_bht" 
+                        action="/inward/pharmacy_search_sale_bill_bht"
                         actionListener="#{searchController.makeListNull}"
                         value="Pharmacy Sale Search"
                         style="float: right;"
                         >
-                    </p:commandButton> 
+                    </p:commandButton>
                 </f:facet>
 
                 <div class="d-flex justify-content-end mb-2" >
@@ -198,11 +275,23 @@
 
                             <h:panelGroup   id="gpBillPreview2">
 
-                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3Original" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                <h:panelGroup id="gpBillPreview2A4Sc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false)}">
+                                    <phi:inward_direct_issue_bill_a4 bill="#{bhtIssueReturnController.bill}" duplicate="true" />
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreview2FiveFiveSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true)}">
+                                    <phi:inward_direct_issue_bill_five_five_sc bill="#{bhtIssueReturnController.bill}" duplicate="true" />
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreview2PosSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
+                                    <phi:inward_direct_issue_bill_pos bill="#{bhtIssueReturnController.bill}" duplicate="true" />
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3Original" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',false)}">
                                     <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{bhtIssueReturnController.bill}"/>
                                 </h:panelGroup>
 
-                                <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                             <ph:issueBill  bill="#{bhtIssueReturnController.bill}"/>
@@ -210,7 +299,7 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewDouble2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                <h:panelGroup id="gpBillPreviewDouble2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
                                     <div >
                                         <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
                                             <phi:saleBill_prabodha bill="#{bhtIssueReturnController.bill}"></phi:saleBill_prabodha>
@@ -218,7 +307,7 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewFiveFive2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                <h:panelGroup id="gpBillPreviewFiveFive2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                             <phi:saleBill_five_five bill="#{bhtIssueReturnController.bill}"></phi:saleBill_five_five>
@@ -247,17 +336,29 @@
 
                             <h:panelGroup   id="gpBillPreview1">
 
-                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                <h:panelGroup id="gpBillPreview1A4Sc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false)}">
+                                    <phi:inward_direct_issue_return_bill_a4 bill="#{bhtIssueReturnController.returnBill}" duplicate="true" />
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreview1FiveFiveSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true)}">
+                                    <phi:inward_direct_issue_return_bill_five_five_sc bill="#{bhtIssueReturnController.returnBill}" duplicate="true" />
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreview1PosSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
+                                    <phi:inward_direct_issue_return_bill_pos bill="#{bhtIssueReturnController.returnBill}" duplicate="true" />
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',false)}">
                                     <phi:inward_direct_issue_return_bill_five_five_custom_3 bill="#{bhtIssueReturnController.returnBill}"/>
                                 </h:panelGroup>
 
-                                <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:returnBill bill="#{bhtIssueReturnController.returnBill}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
                                     <div >
                                         <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
                                             <phi:saleBill_prabodha bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_prabodha>
@@ -265,7 +366,7 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                             <phi:saleBill_five_five bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_five_five>
@@ -273,7 +374,7 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
                                     <phi:saleBill_Header_Return bill="#{bhtIssueReturnController.returnBill}" ></phi:saleBill_Header_Return>
                                 </h:panelGroup>
 
@@ -284,7 +385,37 @@
                 </div>
 
             </p:panel>
+
         </h:form>
-    </ui:define>  
+
+        <p:dialog id="idiReturnBillPaperConfigDialog"
+                  header="Direct Issue Bill - Print Format Settings"
+                  widgetVar="idiReturnBillPaperConfigDialog"
+                  modal="true" width="500" resizable="false" closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiReturnBillPaperConfigForm" />
+                <h:form id="idiReturnBillPaperConfigForm">
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="cbRetA4" value="#{pharmacyConfigController.inwardDirectIssueBillA4}" />
+                        <h:outputLabel for="cbRetA4" value="A4 Paper" class="ms-2" />
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="cbRetFiveFive" value="#{pharmacyConfigController.inwardDirectIssueBillFiveFive}" />
+                        <h:outputLabel for="cbRetFiveFive" value="5 x 5 Paper" class="ms-2" />
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="cbRetPos" value="#{pharmacyConfigController.inwardDirectIssueBillPos}" />
+                        <h:outputLabel for="cbRetPos" value="POS Paper" class="ms-2" />
+                    </div>
+                    <p:messages showDetail="true" closable="true" />
+                    <div class="d-flex gap-2">
+                        <p:commandButton value="Apply &amp; Close" icon="fas fa-save"
+                                         styleClass="ui-button-success" ajax="false"
+                                         action="#{pharmacyConfigController.saveInwardDirectIssueBillPaperConfig}" />
+                        <p:commandButton value="Cancel" icon="fas fa-times" styleClass="ui-button-secondary"
+                                         onclick="PF('idiReturnBillPaperConfigDialog').hide(); return false;" type="button" />
+                    </div>
+                </h:form>
+            </p:dialog>
+    </ui:define>
 
 </ui:composition>

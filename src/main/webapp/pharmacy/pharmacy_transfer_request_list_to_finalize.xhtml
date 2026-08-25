@@ -43,6 +43,12 @@
                             <p:column headerText="To Department" >
                                 <h:outputLabel value="#{b.toDepartment.name}"/>
                             </p:column>
+                            <p:column headerText="Department Type">
+                                <h:outputText value="#{b.departmentType.label}"
+                                              rendered="#{b.departmentType != null}"/>
+                                <h:outputText value="-"
+                                              rendered="#{b.departmentType == null}"/>
+                            </p:column>
                             <p:column headerText="Requested At" >
                                 <h:outputLabel value="#{b.createdAt}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -76,7 +82,7 @@
                                     ajax="false" 
                                     value="Edit and Finalize Request"
                                     title="Edit and Finalize Request"
-                                    icon="fas fa-check-circle" class="ui-button-success mx-2"
+                                    icon="fas fa-lock" styleClass="ui-button-stage-finalize mx-2"
                                     action="#{transferRequestController.navigateToEditRequest}"
                                     disabled="#{b.checkedBy ne null or b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>

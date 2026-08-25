@@ -15,6 +15,8 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.DoctorFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.service.AuditService;
+import com.divudi.service.PersonService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,12 +55,20 @@ public class DoctorController implements Serializable {
     private DoctorFacade ejbFacade;
     @EJB
     private PersonFacade personFacade;
+    @EJB
+    private PersonService personService;
+    @EJB
+    private AuditService auditService;
+    
     List<Doctor> selectedItems;
     private Doctor current;
     private List<Doctor> items = null;
     String selectText = "";
     List<Doctor> doctors;
     Speciality speciality;
+    
+    private Map<String, Object> initialPerson;
+
 
     public Doctor getDoctorsByName(String name) {
         String jpql = "select d "
@@ -122,6 +132,13 @@ public class DoctorController implements Serializable {
         return selectedItems;
     }
 
+    public void changeStaff() {
+        initialPerson = new HashMap<>();
+        if (current.getPerson() != null) {            
+            personService.personToAuditMap(initialPerson, current.getPerson());
+        }
+    }
+    
     public String navigateToDoctorsIncludingConsultants() {
         fillDoctorsIncludingConsultants();
         return "/admin/staff/doctors_including_consultants?faces-redirect=true";
@@ -141,6 +158,14 @@ public class DoctorController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         selectedItems = getFacade().findByJpql(j, m);
+    }
+
+    public void reloadDoctorsIncludingConsultants() {
+        fillDoctorsIncludingConsultants();
+    }
+
+    public void reloadDoctorsExcludingConsultants() {
+        fillDoctorsExcludingConsultants();
     }
 
     private void fillDoctorsExcludingConsultants() {
@@ -171,6 +196,19 @@ public class DoctorController implements Serializable {
        List<Doctor> docList = getFacade().findByJpql(j, m);
 
        return docList;
+    }
+    
+    // used in specialty/doctor wise income report
+    public List<Doctor> fillDoctorsAndConsultants() {
+        String j;
+        j = "select c "
+                + " from Doctor c "
+                + " where c.retired=:ret"
+                + " order by c.person.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Doctor> docList = getFacade().findByJpql(j, m);
+        return docList;
     }
 
     public void prepareAdd() {
@@ -204,13 +242,15 @@ public class DoctorController implements Serializable {
             int rowNum = 1;
             for (Doctor doctor : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(doctor.getName());
-                row.createCell(1).setCellValue(doctor.getPerson().getPhone());
-                row.createCell(2).setCellValue(doctor.getPerson().getFax());
-                row.createCell(3).setCellValue(doctor.getPerson().getMobile());
-                row.createCell(4).setCellValue(doctor.getPerson().getAddress());
+                Person person = doctor.getPerson();
+                String name = person != null ? person.getNameWithTitle() : doctor.getName();
+                row.createCell(0).setCellValue(name);
+                row.createCell(1).setCellValue(person != null ? person.getPhone() : null);
+                row.createCell(2).setCellValue(person != null ? person.getFax() : null);
+                row.createCell(3).setCellValue(person != null ? person.getMobile() : null);
+                row.createCell(4).setCellValue(person != null ? person.getAddress() : null);
                 row.createCell(5).setCellValue(doctor.getCode());
-                row.createCell(6).setCellValue(doctor.getSpeciality().getName());
+                row.createCell(6).setCellValue(doctor.getSpeciality() != null ? doctor.getSpeciality().getName() : null);
                 row.createCell(7).setCellValue(doctor.getRegistration());
                 row.createCell(8).setCellValue(doctor.getQualification());
                 row.createCell(9).setCellValue(doctor.getCharge());
@@ -241,7 +281,7 @@ public class DoctorController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();
@@ -310,10 +350,24 @@ public class DoctorController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Speciality for Doctor");
             return;
         }
+        
+        // Prepare editedPersonMap for audit logging
+        Map<String, Object> editedPerson = new HashMap<>();
+        personService.personToAuditMap(editedPerson, current.getPerson());
+        
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
-            getPersonFacade().create(current.getPerson());
+            getPersonFacade().createAndFlush(current.getPerson());
+
+            // Refresh the map now that the Person has been assigned an ID
+            personService.personToAuditMap(editedPerson, current.getPerson());
+
+            // Person created, log the creation event
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", current.getPerson().getId());
         } else {
             getPersonFacade().edit(current.getPerson());
+            
+            // Person edited, log the creation event
+            auditService.logAudit(initialPerson, editedPerson, sessionController.getLoggedUser(), "Person", "updatePerson", current.getPerson().getId());
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -326,6 +380,8 @@ public class DoctorController implements Serializable {
         }
         current = new Doctor();
         recreateModel();
+        initialPerson = null;
+        
         // getItems();
         fillDoctorsExcludingConsultants();
     }

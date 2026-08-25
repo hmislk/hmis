@@ -115,26 +115,26 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient ne null}" >
                         <tr>
                             <td style="padding: 2px; font-size: 12px;font-weight: 700;">Patient Name </td>
                             <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
                             </td>
                         </tr>
                     </h:panelGroup>
 
                     <tr>
-                        <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.ageAsShortString ne null}" >
                             <td  style="padding: 2px;">Age / Sex </td>
                             <td style="padding: 2px;">
-                                <h:outputText value="#{empty cc.attrs.bill.patient.person.ageAsShortString ? 'N/A' : cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                                <h:outputText value="#{empty cc.attrs.bill.patientEncounter.patient.person.ageAsShortString ? 'N/A' : cc.attrs.bill.patientEncounter.patient.person.ageAsShortString} / #{cc.attrs.bill.patientEncounter.patient.person.sex.label}"/>
                             </td>
                         </h:panelGroup>
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px;">Mobile</td>
                         <td style="padding: 2px;">
-                            <h:outputLabel value="#{not empty cc.attrs.bill.patient.person.phone ? cc.attrs.bill.patient.person.phone : 'N/A'}" />
+                            <h:outputLabel value="#{not empty cc.attrs.bill.patientEncounter.patient.person.phone ? cc.attrs.bill.patientEncounter.patient.person.phone : 'N/A'}" />
                         </td>
                     </tr>
 
@@ -173,8 +173,10 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Particular</th>
-                            <th style="text-align: right">Amount</th>
+                            <th style="text-align: left">Particular</th>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                <th style="text-align: right">Amount</th>
+                            </h:panelGroup>
                         </tr>
                     </thead>
 
@@ -188,12 +190,29 @@
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
-                                <td style="text-align: right">
-                                    <h:outputLabel value="#{item.netValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                <td>
+                                    <h:outputLabel value="#{item.item.name}"/>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Priority in InwardBill Preview.',false)}" >
+                                        <h:outputLabel 
+                                            value="(#{item.priority.displayName})" 
+                                            class="mx-1" 
+                                            rendered="#{!item.priority.shortName.blank and item.item.allowedForBillingPriority}"/>
+                                    </h:panelGroup>
                                 </td>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                    <td style="text-align: right">
+                                        <h:outputText value="#{item.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <ui:fragment rendered="#{item.vat ne 0.0}">
+                                            <br/>
+                                            <h:outputText value="VAT "/>
+                                            <h:outputText value="#{item.vat}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </ui:fragment>
+                                    </td>
+                                </h:panelGroup>
                             </tr>
                         </ui:repeat>
                     </tbody>
@@ -233,33 +252,54 @@
                     </div>
                     <div class="w-100">
                         <table class="total-table" style="line-height: 1.0;">
-                            <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}">
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}">
+                                    <tr>
+                                        <td >Total Amount</td>
+                                        <td  style="text-align: right;">
+                                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td >Discount</td>
+                                        <td  style="text-align: right;">
+                                            <h:outputLabel  value="#{- cc.attrs.bill.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
                                 <tr>
-                                    <td >Total Amount</td>
-                                    <td  style="text-align: right;">
-                                        <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <td >Net Amount</td>
+                                    <td style="text-align: right;">
+                                        <h:outputLabel value="#{cc.attrs.bill.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
                                 </tr>
 
-                                <tr>
-                                    <td >Discount</td>
-                                    <td  style="text-align: right;">
-                                        <h:outputLabel  value="#{- cc.attrs.bill.discount}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
+                                <ui:fragment rendered="#{cc.attrs.bill.vat ne 0.0}">
+                                    <tr>
+                                        <td >VAT</td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{cc.attrs.bill.vat}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td >Net Amount + VAT</td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{cc.attrs.bill.vatPlusNetTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </ui:fragment>
                             </h:panelGroup>
-                            <tr>
-                                <td >Net Amount</td>
-                                <td style="text-align: right;">
-                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
                             <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null 
                                                       and cc.attrs.billCount eq 1 
                                                       and cc.attrs.bill.paymentMethod eq 'Cash'}">
@@ -284,6 +324,14 @@
                         </table>
                     </div>
                 </div>
+                
+                <h:panelGroup rendered="#{cc.attrs.bill.priority ne 'NORMAL'}">
+                    <div class="d-flex justify-content-center">
+                        <div class="p-1 m-2 d-flex justify-content-center" style="border: 2px solid red; border-radius: 10px; color: red; min-width: 150px;">
+                            <h:outputLabel value="#{cc.attrs.bill.priority.displayName}" style="font-weight: 700; font-size: 16px;"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
 
                 <table  style="font-size: 8pt;">
                     <tr>

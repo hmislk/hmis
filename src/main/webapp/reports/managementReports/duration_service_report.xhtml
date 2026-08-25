@@ -1,265 +1,346 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-<h:body>
+    <h:body>
 
-<ui:composition template="/reports/index.xhtml">
-<ui:define name="subcontent">
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
 
-<h:form class="w-100">
+                <h:form id="drsForm">
 
-    <p:panel header="Duration Service Report" styleClass="w-100 shadow-2 border-round-lg p-3">
-        <p:panel styleClass="mb-3 p-3 border-round-lg" header="Filters">
-            <h:panelGrid columns="6" styleClass="w-100"
-                         columnClasses="col-2,col-2,col-1,col-2,col-2,col-1">
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                    <p:outputLabel value="Discharge Date" class="mx-3"/>
-                </h:panelGroup>
+                    <p:panel header="Duration Service Report" styleClass="w-100">
 
-                <p:datePicker showTime="true" value="" 
-                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                    styleClass="w-100" inputStyleClass="w-100 mb-3"/>
+                        <style>
+                            .drs-filter-grid {
+                                display: grid;
+                                grid-template-columns: repeat(2, minmax(0, 1fr));
+                                column-gap: 2.5em;
+                                row-gap: 0.75em;
+                                margin: 0 1em 1em 1em;
+                            }
+                            .drs-filter-row {
+                                display: grid;
+                                grid-template-columns: 13em 1fr;
+                                align-items: center;
+                                column-gap: 0.75em;
+                                margin-bottom: 1em;
+                            }
+                            .drs-filter-label {
+                                display: flex;
+                                align-items: center;
+                                gap: 0.5em;
+                                white-space: normal;
+                                line-height: 1.2;
+                            }
+                            .drs-filter-row .p-inputtext,
+                            .drs-filter-row .p-datepicker,
+                            .drs-filter-row .p-selectonemenu,
+                            .drs-filter-row .p-multiselect,
+                            .drs-filter-row .ui-selectcheckboxmenu-label-container {
+                                width: 100% !important;
+                            }
+                        </style>
 
-                <p:spacer width="20"/>
+                        <div class="drs-filter-grid">
 
-                
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                    <p:outputLabel value="Service Added Date" class="mx-3"/>
-                </h:panelGroup>
+                            <!-- LEFT COLUMN -->
+                            <div>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Discharge Date From"/>
+                                    </span>
+                                    <p:datePicker showTime="true"
+                                                  value="#{reportController.fromDate}"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                  styleClass="w-100" inputStyleClass="w-100"/>
+                                </div>
 
-                <p:datePicker showTime="true" value="" 
-                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                    styleClass="w-100" inputStyleClass="w-100 mb-3"/>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Service Added Date From"/>
+                                    </span>
+                                    <p:datePicker showTime="true"
+                                                  value="#{reportController.serviceAddedFromDate}"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                  styleClass="w-100" inputStyleClass="w-100"/>
+                                </div>
 
-                <p:spacer width="20"/>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Invoice Date From"/>
+                                    </span>
+                                    <p:datePicker showTime="true"
+                                                  value="#{reportController.invoiceFromDate}"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                  styleClass="w-100" inputStyleClass="w-100"/>
+                                </div>
 
-           
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                    <p:outputLabel value="Invoice Date" class="mx-3"/>
-                </h:panelGroup>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf19c;" styleClass="fa"/>
+                                        <h:outputText value="Service Name"/>
+                                    </span>
+                                    <p:selectOneMenu value="#{reportController.item}" styleClass="w-100 form-control">
+                                        <f:selectItem itemLabel="All Services" itemValue="#{null}"/>
+                                        <f:selectItems value="#{timedItemController.items}" var="s"
+                                                       itemLabel="#{s.name}" itemValue="#{s}"/>
+                                    </p:selectOneMenu>
+                                </div>
 
-                <p:datePicker showTime="true" value="" 
-                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                    styleClass="w-100" inputStyleClass="w-100 mb-3"/>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf084;" styleClass="fa"/>
+                                        <h:outputText value="Admission Types"/>
+                                    </span>
+                                    <p:selectCheckboxMenu id="admType"
+                                                          value="#{reportController.admissionTypes}"
+                                                          converter="admissionTypeConverter"
+                                                          styleClass="w-100"
+                                                          label="Select Types"
+                                                          updateLabel="true">
+                                        <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                       itemLabel="#{at.name}" itemValue="#{at}"/>
+                                    </p:selectCheckboxMenu>
+                                </div>
 
-                <p:spacer width="20"/>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Billed Department"/>
+                                    </span>
+                                    <p:selectOneMenu value="#{reportController.billedDepartment}" styleClass="w-100" filter="true">
+                                        <f:selectItem itemLabel="All Billed Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.items}" var="d"
+                                                       itemLabel="#{d.name}" itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                </div>
 
-           
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> 
-                    <h:outputLabel value="Service Name" class="mx-3"/>
-                </h:panelGroup>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Service Group"/>
+                                    </span>
+                                    <p:inputText value="#{reportController.serviceGroup}" styleClass="w-100"/>
+                                </div>
+                            </div>
 
-                <p:selectOneMenu value="#{reportController.service}" 
-                                 styleClass="w-100 form-control mb-3">
-                    <f:selectItem itemLabel="Select Service"/>
-                    <f:selectItems value="#{serviceController.items}" var="s"
-                                   itemLabel="#{s.name}" itemValue="#{s}"/>
-                </p:selectOneMenu>
+                            <!-- RIGHT COLUMN -->
+                            <div>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Discharge Date To"/>
+                                    </span>
+                                    <p:datePicker showTime="true"
+                                                  value="#{reportController.toDate}"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                  styleClass="w-100" inputStyleClass="w-100"/>
+                                </div>
 
-                <p:spacer width="20"/>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Service Added Date To"/>
+                                    </span>
+                                    <p:datePicker showTime="true"
+                                                  value="#{reportController.serviceAddedToDate}"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                  styleClass="w-100" inputStyleClass="w-100"/>
+                                </div>
 
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> 
-                    <h:outputLabel value="Admission Type" class="mx-3"/>
-                </h:panelGroup>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Invoice Date To"/>
+                                    </span>
+                                    <p:datePicker showTime="true"
+                                                  value="#{reportController.invoiceToDate}"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                  styleClass="w-100" inputStyleClass="w-100"/>
+                                </div>
 
-                <p:selectManyCheckbox id="admType" widgetVar="blub" layout="grid" columns="3" styleClass="w-100 form-group mb-3">
-                    <f:selectItem itemValue="A" itemLabel="Normal"/>
-                    <f:selectItem itemValue="B" itemLabel="Dialysis"/>
-                    <f:selectItem itemValue="P" itemLabel="ETU"/>
-                    <f:selectItem itemValue="W" itemLabel="Day Care"/>
-                    <f:selectItem itemValue="K" itemLabel="Cath Lab"/>
-                </p:selectManyCheckbox>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Service Department"/>
+                                    </span>
+                                    <p:selectOneMenu value="#{reportController.serviceDepartment}" styleClass="w-100" filter="true">
+                                        <f:selectItem itemLabel="All Service Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.items}" var="d"
+                                                       itemLabel="#{d.name}" itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                </div>
 
-                <p:spacer width="20"/>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf236;" styleClass="fa"/>
+                                        <h:outputText value="Room Categories"/>
+                                    </span>
+                                    <p:selectCheckboxMenu id="roomCat"
+                                                          value="#{reportController.roomCategories}"
+                                                          converter="#{roomCategoryConverter}"
+                                                          styleClass="w-100"
+                                                          label="Select Categories"
+                                                          updateLabel="true">
+                                        <f:selectItems value="#{roomCategoryController.items}" var="rc"
+                                                       itemLabel="#{rc.name}" itemValue="#{rc}"/>
+                                    </p:selectCheckboxMenu>
+                                </div>
 
-            
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Room Category" class="mx-3"/>
-                </h:panelGroup>
+                                <div class="drs-filter-row">
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Visit Type"/>
+                                    </span>
+                                    <p:selectOneMenu value="#{reportController.visitType}" styleClass="w-100">
+                                        <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                                        <f:selectItem itemLabel="OP" itemValue="OP"/>
+                                        <f:selectItem itemLabel="IP" itemValue="IP"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                <p:selectManyCheckbox id="roomCat" widgetVar="blub"  layout="grid" columns="3" styleClass="w-100 form-group mb-3">
-                    <f:selectItem itemValue="A" itemLabel="Superior A"/>
-                    <f:selectItem itemValue="B" itemLabel="Superior B"/>
-                    <f:selectItem itemValue="P" itemLabel="Premium Range"/>
-                    <f:selectItem itemValue="W" itemLabel="Bay Window"/>
-                    <f:selectItem itemValue="K" itemLabel="King Court"/>
-                </p:selectManyCheckbox>
+                        </div>
 
-                <p:spacer width="20"/>
+                        <h:panelGrid columns="5" styleClass="my-3">
+                            <p:spacer width="20"/>
 
-             
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Service Department" class="mx-3"/>
-                </h:panelGroup>
+                            <p:commandButton id="processBtn" ajax="false" value="Process"
+                                             icon="fas fa-cogs"
+                                             action="#{reportController.createDurationServiceReport}"
+                                             styleClass="ui-button-warning mx-1"/>
 
-                <p:selectOneMenu filter="true" styleClass="w-100 mb-3">
-                    <f:selectItem itemLabel="All Service Departments"/>
-                    <f:selectItems/>
-                </p:selectOneMenu>
+                            <p:commandButton id="printBtn" ajax="false" value="To Print"
+                                             icon="fas fa-print"
+                                             action="duration_service_report_view?faces-redirect=true"
+                                             styleClass="ui-button-info mx-1"/>
 
-                <p:spacer width="20"/>
+                            <p:commandButton id="downloadBtn" ajax="false" value="Download"
+                                             icon="fas fa-file-excel"
+                                             styleClass="ui-button-success mx-1">
+                                <p:dataExporter fileName="Duration_Service_Report" 
+                                                type="xlsx"
+                                                target="tbl"
+                                                postProcessor="#{reportController.postProcessDurationServiceReportExcel}" />
+                            </p:commandButton>
 
-               
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Billed Department" class="mx-3"/>
-                </h:panelGroup>
+                            <p:commandButton id="pdfBtn" ajax="false" value="PDF"
+                                             icon="fas fa-file-pdf"
+                                             styleClass="ui-button-danger mx-1"
+                                             action="#{reportController.exportDurationServiceReportToPDF()}">
+                            </p:commandButton>
+                        </h:panelGrid>
 
-                <p:selectOneMenu filter="true" styleClass="w-100 mb-3">
-                    <f:selectItem itemLabel="All Billed Departments"/>
-                    <f:selectItems/>
-                </p:selectOneMenu>
+                        <div id="tableScrollContainer" style="overflow-x: auto; overflow-y: visible; width: 100%; margin: 0.5em 1em 1em 1em;">
+                            <p:panel styleClass="border-round-md shadow-1" style="width: 210em;">
+                                <p:dataTable var="c" id="tbl"
+                                             value="#{reportController.durationServiceReportRows}"
+                                             style="width:206em;"
+                                             rows="10"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                <p:spacer width="20"/>
+                                    <p:column headerText="BHT No" style="width: 100px">
+                                        <h:outputText value="#{c.bhtNo}"/>
+                                    </p:column>
+                                    <p:column headerText="MRN No">
+                                        <h:outputText value="#{c.mrnNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Consultant Name">
+                                        <h:outputText value="#{c.title.label } #{c.consultantName}"/>
+                                    </p:column>
+                                    <p:column headerText="Surgery Name">
+                                        <h:outputText value="#{c.surgeryName}"/>
+                                    </p:column>
+                                    <p:column headerText="Service Name">
+                                        <h:outputText value="#{c.serviceName}"/>
+                                    </p:column>
+                                    <p:column headerText="Service Department">
+                                        <h:outputText value="#{c.serviceDepartmentName}"/>
+                                    </p:column>
+                                    <p:column headerText="Billed Department">
+                                        <h:outputText value="#{c.creatingLocation}"/>
+                                    </p:column>
+                                    <p:column headerText="Service Group">
+                                        <h:outputText value="#{c.serviceGroupName}"/>
+                                    </p:column>
+                                    <p:column headerText="Start Time">
+                                        <h:outputText value="#{c.startTime}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="End Time">
+                                        <h:outputText value="#{c.endTime}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Duration">
+                                        <h:outputText value="#{c.duration}"/>
+                                    </p:column>
+                                    <p:column headerText="Base Price">
+                                        <h:outputText value="#{c.basePrice}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Discount Amount">
+                                        <h:outputText value="#{c.discountAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Sponsor Discount">
+                                        <h:outputText value="#{c.sponsorDiscount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Sponsor Net.">
+                                        <h:outputText value="#{c.sponsorNet}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient Amt">
+                                        <h:outputText value="#{c.patientAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Adjusted Amt">
+                                        <h:outputText value="#{c.adjustedAmount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Creator">
+                                        <h:outputText value="#{c.creatorName}"/>
+                                    </p:column>
+                                    <p:column headerText="Checked By">
+                                        <h:outputText value="#{c.checkedByName}"/>
+                                    </p:column>
+                                    <p:column headerText="Checked At">
+                                        <h:outputText value="#{c.checkedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
 
-    
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Visit Type" class="mx-3"/>
-                </h:panelGroup>
+                                </p:dataTable>
+                            </p:panel>
+                        </div><!-- end tableScrollContainer -->
 
-                <p:selectOneMenu styleClass="w-100 mb-3">
-                    <f:selectItem itemLabel="OP"/>
-                    <f:selectItem itemLabel="IP"/>
-                </p:selectOneMenu>
+                    </p:panel>
 
-                <p:spacer width="20"/>
+                </h:form>
 
-           
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Service Group" class="mx-3"/>
-                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
 
-                <p:inputText styleClass="w-100 mb-3"/>
-
-                <p:spacer width="20"/>
-
-        
-                <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Service Name" class="mx-3"/>
-                </h:panelGroup>
-
-                <p:inputText styleClass="w-100 mb-3"/>
-
-                <p:spacer width="20"/>
-
-            </h:panelGrid>
-        </p:panel>
-
-      
-        <h:panelGrid columns="6" styleClass="my-3">
-            <p:spacer width="20"/>
-
-            <p:commandButton ajax="false" value="Process"
-                             icon="fas fa-cogs"
-                             styleClass="ui-button-warning mx-1"/>
-
-            <p:commandButton ajax="false" value="Print All"
-                             icon="fas fa-print"
-                             styleClass="ui-button-info mx-1">
-                <p:printer target="tbl"/>
-            </p:commandButton>
-
-            <p:commandButton ajax="false" value="Download"
-                             icon="fas fa-file-excel"
-                             styleClass="ui-button-success mx-1">
-                <p:dataExporter fileName="Duration_Service_Report" 
-                                type="xlsx" target="tbl" />
-            </p:commandButton>
-
-            <p:commandButton ajax="false" value="PDF"
-                             icon="fas fa-file-pdf"
-                             styleClass="ui-button-danger mx-1"/>
-        </h:panelGrid>
-
-        <!-- TABLE -->
-        <p:panel header="Duration Service Report" styleClass="m-3 border-round-md shadow-1">
-            <p:dataTable value="null" var="c" id="tbl"
-                         styleClass="p-datatable-striped p-datatable-gridlines">
-
-           
-                <p:column headerText="BHT No" style="width: 100px">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="MRN No">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Consultant Name">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Surgery Name">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Service Department">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Service Name">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Service Group">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Start Time">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="End Time">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Duration">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Base Price">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Discount Amount">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Sponser Discount">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Sponser Net.">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Patient Amt">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Adjusted Amt">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Creator">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Checked By">
-                    <h:outputText value="null"/>
-                </p:column>
-                <p:column headerText="Checked At">
-                    <h:outputText value="null"/>
-                </p:column>
-
-            </p:dataTable>
-        </p:panel>
-
-    </p:panel>
-
-</h:form>
-
-</ui:define>
-</ui:composition>
-
-</h:body>
+    </h:body>
 </html>

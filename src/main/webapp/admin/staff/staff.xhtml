@@ -60,7 +60,7 @@
                                     <p:inputText  class="form-control" value="#{staffController.current.person.lastName}"></p:inputText>
 
                                     <p:outputLabel value="Date of Birth"></p:outputLabel>
-                                    <p:calendar navigator="true"  class="w-100" inputStyleClass="w-100" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
+                                    <p:calendar navigator="true" yearRange="c-100:c" class="w-100" inputStyleClass="w-100" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                     <p:outputLabel value="Details"></p:outputLabel>
                                     <p:inputTextarea  class="form-control" value="#{staffController.current.person.description}"></p:inputTextarea>

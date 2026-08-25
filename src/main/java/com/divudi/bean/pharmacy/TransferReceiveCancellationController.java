@@ -6,10 +6,12 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -32,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -96,6 +100,7 @@ import javax.transaction.Transactional;
 public class TransferReceiveCancellationController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(TransferReceiveCancellationController.class.getName());
 
     // EJB Dependencies
     @EJB
@@ -116,6 +121,8 @@ public class TransferReceiveCancellationController implements Serializable {
     private BillController billController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private WebUserController webUserController;
 
     // Properties
     private Bill originalReceiveBill;
@@ -240,6 +247,13 @@ public class TransferReceiveCancellationController implements Serializable {
         cancellationBill.setFromInstitution(originalReceiveBill.getFromInstitution());
         cancellationBill.setToDepartment(originalReceiveBill.getToDepartment());
         cancellationBill.setToInstitution(originalReceiveBill.getToInstitution());
+        cancellationBill.setDepartmentType(originalReceiveBill.getDepartmentType());
+        if (cancellationBill.getDepartmentType() == null) {
+            // Legacy receive bills predate departmentType stamping (#22056);
+            // derive from the original items so the cancellation stays visible
+            // in department-type-filtered reports.
+            cancellationBill.setDepartmentType(singleDepartmentTypeOfItems(originalReceiveBill.getBillItems()));
+        }
 
         // Set audit fields
         cancellationBill.setCreater(sessionController.getLoggedUser());
@@ -258,6 +272,26 @@ public class TransferReceiveCancellationController implements Serializable {
 
         // Initialize collections
         cancellationBill.setBillItems(new ArrayList<>());
+    }
+
+    // Returns the department type shared by all non-null item types, or null
+    // when items are mixed/untyped — never guess from a partial match (#22056).
+    private DepartmentType singleDepartmentTypeOfItems(List<BillItem> items) {
+        if (items == null) {
+            return null;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : items) {
+            if (bi.isRetired() || bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return null;
+            }
+        }
+        return found;
     }
 
     /**
@@ -539,6 +573,9 @@ public class TransferReceiveCancellationController implements Serializable {
      */
     @Transactional
     public void confirmCancellation() {
+        if (!isAuthorized("CANCEL", "PharmacyTransferReceiveCancel")) {
+            return;
+        }
         try {
             // Validation: Check cancellation reason
             if (cancellationReason == null || cancellationReason.trim().isEmpty()) {
@@ -658,12 +695,27 @@ public class TransferReceiveCancellationController implements Serializable {
 
             if (phItem != null && phItem.getItemBatch() != null) {
                 double qtyToReverse = Math.abs(phItem.getQty());
-                ItemBatch batch = phItem.getItemBatch();
 
-                // 1. Deduct from receiving department stock
+                if (qtyToReverse <= 0) {
+                    // Nothing was actually received for this line (e.g. a phantom
+                    // line left over from a partially-failed receive), so there is
+                    // no stock movement to reverse.
+                    continue;
+                }
+
+                // 1. Deduct from receiving department stock.
+                // Uses the ItemBatch+PharmaceuticalBillItem+Department overload rather
+                // than the bare ItemBatch+Department one, because only overloads that
+                // take a PharmaceuticalBillItem call addToStockHistory() — the bare one
+                // silently skips it, so the department's Stock total was correct but the
+                // reversal never showed up on the Bin Card (issue #19837). Resolving the
+                // Stock row by batch (rather than trusting phItem.getStock(), which is
+                // just copied from the original receive item and may be stale or unset)
+                // also avoids rejecting a cancellation when department stock does exist.
                 boolean deductSuccess = pharmacyBean.deductFromStock(
-                    batch,
+                    phItem.getItemBatch(),
                     qtyToReverse,
+                    phItem,
                     originalReceiveBill.getToDepartment()
                 );
 
@@ -884,5 +936,34 @@ public class TransferReceiveCancellationController implements Serializable {
 
     public BillController getBillController() {
         return billController;
+    }
+
+    /**
+     * Authorization helper method to check Transfer Receive Cancellation
+     * privileges and audit denied access.
+     *
+     * @param action The action being attempted (CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, originalReceiveBillId});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Receive Cancellation access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, originalReceiveBillId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer receive requests.");
+            return false;
+        }
+
+        return true;
     }
 }

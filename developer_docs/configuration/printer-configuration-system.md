@@ -4,6 +4,22 @@
 
 The Printer Configuration System provides a unified interface for managing paper formats and printer settings across various operations. This system centralizes printer configurations for receipts, bills, and reports, making it easier for administrators to control paper types without code changes.
 
+## ⚠️ Deprecated Pattern — Do Not Use
+
+**`p:selectOneMenu` / `sessionController.departmentPreference.opdBillPaperType` for paper selection is DEPRECATED.**
+
+Do NOT add new print pages using this pattern:
+```xhtml
+<!-- ❌ OLD — do not use -->
+<p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}">
+    <f:selectItem itemLabel="A4 Paper" itemValue="A4Paper"/>
+    <f:selectItem itemLabel="5x5 Paper" itemValue="FiveFivePaper"/>
+    <f:selectItem itemLabel="POS Paper" itemValue="PosPaper"/>
+</p:selectOneMenu>
+```
+
+**All new department-specific print pages should use the config button pattern** described below — a gear/settings button that opens a `p:dialog` with `h:selectBooleanCheckbox` options, persisted via `configOptionController`. The persistence mechanism is shared across modules; the backing bean and action methods should live in the owning module's controller (not necessarily `PharmacyConfigController`, which is pharmacy-specific). `PharmacyConfigController` is referenced in the example steps below only as an illustration.
+
 ## Architecture
 
 ### Core Components
@@ -90,6 +106,30 @@ The Printer Configuration System provides a unified interface for managing paper
 - `Pharmacy Transfer Receive Receipt is A4 Custom 1`
 - `Pharmacy Transfer Receive Receipt is A4 Custom 2`
 
+### Inward Final Bill - Custom Bills Configuration
+
+**Page:** `inward/inward_reprint_bill_final.xhtml` (Custom Bills tab)
+**Controller:** `BhtSummeryController`
+
+⚠️ **Key numbering is offset by one from the UI labels** — the composite
+component names (`finalBillCustom2`/`3`/`4`) predate the config keys, and
+the keys inherited that numbering. Anyone editing `CONFIGOPTION` rows
+directly should use this table, not guess from the on-screen label:
+
+| UI label (Custom Bills tab) | Composite component | Config key |
+|---|---|---|
+| "Custom Bill" | `finalBillCustom2` | `Inward Final Bill - Show Custom Bill 2 Format` |
+| "Custom Bill 2" | `finalBillCustom3` | `Inward Final Bill - Show Custom Bill 3 Format` |
+| "Custom Bill 3 (Letterhead)" | `finalBillCustom4` | `Inward Final Bill - Show Custom Bill 4 Format` |
+
+All three default `false` except `Show Custom Bill 2 Format` (default
+`true`), so a fresh department sees only "Custom Bill" until an admin
+opts into the others via the tab's Settings dialog. Unlike the samples
+above, these gate whole print *formats* rather than paper sizes for one
+format — only the format(s) switched on actually render on the page;
+the rest are absent from the DOM entirely (`h:panelGroup rendered="..."`),
+not merely hidden.
+
 
 ## Implementation Guide
 
@@ -159,10 +199,10 @@ The Printer Configuration System provides a unified interface for managing paper
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <p:selectBooleanCheckbox
+                            <h:selectBooleanCheckbox
                                 id="yourOptionId"
                                 value="#{pharmacyConfigController.yourProperty}" />
-                            <p:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
+                            <h:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
                             <small class="form-text text-muted d-block">Description of what this option does</small>
                         </div>
                         <!-- Add more options as needed -->
@@ -305,6 +345,7 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
 - Include descriptive help text for each option
 - Use consistent button styling (`ui-button-secondary` for settings, at the left of the page)
 - Place settings buttons in the right button area
+- **Use JSF checkboxes (`h:selectBooleanCheckbox`) instead of PrimeFaces (`p:selectBooleanCheckbox`)** for configuration options to avoid loading/status selection issues
 
 ### 2. Backend Consistency
 - Group related properties together with comments
@@ -321,6 +362,32 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
 - Set appropriate default values
 - Use boolean flags for enable/disable options
 - Ensure configuration keys are unique and descriptive
+
+### 5. Component Selection Guidelines
+
+**✅ Recommended: JSF Native Components**
+```xhtml
+<!-- Use h:selectBooleanCheckbox for configuration options -->
+<h:selectBooleanCheckbox
+    id="yourOptionId"
+    value="#{pharmacyConfigController.yourProperty}" />
+<h:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
+```
+
+**❌ Avoid: PrimeFaces Components for Configuration**
+```xhtml
+<!-- AVOID p:selectBooleanCheckbox for configuration dialogs -->
+<p:selectBooleanCheckbox
+    id="yourOptionId"
+    value="#{pharmacyConfigController.yourProperty}" />
+<p:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
+```
+
+**Reasoning:**
+- **Loading Issues**: PrimeFaces checkboxes sometimes fail to properly reflect the correct initial state when configuration dialogs are opened
+- **AJAX Complications**: Native JSF components have more reliable binding to backend boolean properties
+- **Simpler Lifecycle**: JSF checkboxes avoid the complexity of PrimeFaces AJAX processing for simple boolean operations
+- **Better Performance**: Native components have less overhead for basic form controls
 
 ## Troubleshooting
 
@@ -345,6 +412,19 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
    - Check if page caching is affecting configuration display
    - Verify `loadCurrentConfig()` is called after saving
    - Remember: `configOptionController` provides department-specific values
+
+5. **Configuration Checkbox Loading Issues**
+   - **Problem**: Configuration checkboxes don't reflect correct initial state when dialog opens
+   - **Solution**: Replace `p:selectBooleanCheckbox` with `h:selectBooleanCheckbox`
+   - **Reason**: PrimeFaces AJAX processing can interfere with proper binding to backend boolean properties
+   - **Example Fix**:
+     ```xhtml
+     <!-- Replace this -->
+     <p:selectBooleanCheckbox value="#{controller.property}" />
+
+     <!-- With this -->
+     <h:selectBooleanCheckbox value="#{controller.property}" />
+     ```
 
 ### Debug Tips
 

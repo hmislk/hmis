@@ -7,7 +7,8 @@ public enum SummaryReports implements IReportType {
     DAILY_STOCK_BALANCE_REPORT("Daily Stock Balance Report"),
     PHARMACY_INCOME_AND_COST_REPORT("Pharmacy Income and Cost Report"),
     PHARMACY_MOVEMENT_OUT_REPORT("Pharmacy Movement Out Report"),
-    BILL_TYPE_LIST_REPORT("Bill Type List Report"),;
+    BILL_TYPE_LIST_REPORT("Bill Type List Report"),
+    PHARMACY_F9B_REPORT("Pharmacy F 9B Report"),;
 
 
     private final String displayName;

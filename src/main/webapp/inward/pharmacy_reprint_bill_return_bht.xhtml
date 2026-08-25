@@ -20,8 +20,15 @@
                                     <h:outputLabel value="BHT Issue Return Reprint" class="mt-2"></h:outputLabel>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        value="Reprint" 
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        icon="fas fa-cog"
+                                        styleClass="ui-button-secondary ui-button-outlined"
+                                        type="button"
+                                        title="Service Charge Print Format Settings"
+                                        onclick="PF('idiReprintReturnPaperConfigDialog').show();" />
+                                    <p:commandButton
+                                        value="Reprint"
                                         icon="fa fa-print"
                                         class="ui-button-info"
                                         ajax="false">
@@ -108,7 +115,16 @@
 
                                         <p:column style="text-align: right;">
                                             <f:facet name="header">
-                                                <h:outputLabel value="Matrix Value"/>
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Service Charge"/>
                                             </f:facet>
                                             <h:outputLabel value="#{bip.marginValue}">
                                                 <f:convertNumber pattern="#0.00" />
@@ -127,7 +143,7 @@
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column  style="text-align: right;" colspan="4">
+                                                <p:column  style="text-align: right;" colspan="5">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
@@ -161,10 +177,19 @@
                                         </div> 
                                     </f:facet>
                                     <h:panelGroup id="gpBillPreview">
-                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                        <h:panelGroup id="gpBillPreviewA4Sc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false)}">
+                                            <ph:inward_direct_issue_return_bill_a4 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+                                        <h:panelGroup id="gpBillPreviewFiveFiveSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true)}">
+                                            <ph:inward_direct_issue_return_bill_five_five_sc bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+                                        <h:panelGroup id="gpBillPreviewPosSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
+                                            <ph:inward_direct_issue_return_bill_pos bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
                                             <ph:saleBill_Header_Return bill="#{pharmacyBillSearch.bill}" duplicate="true" ></ph:saleBill_Header_Return>
                                         </h:panelGroup>
-                                        <h:panelGroup id="gpBillPreviewOther" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                        <h:panelGroup id="gpBillPreviewOther" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                             <ph:returnBill_1 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                         </h:panelGroup>
 
@@ -174,6 +199,35 @@
                         </div>
                     </p:panel>
                 </h:form>
+
+                <p:dialog id="idiReprintReturnPaperConfigDialog"
+                          header="Direct Issue Bill - Print Format Settings"
+                          widgetVar="idiReprintReturnPaperConfigDialog"
+                          modal="true" width="500" resizable="false" closeOnEscape="true">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiReprintReturnPaperConfigForm" />
+                        <h:form id="idiReprintReturnPaperConfigForm">
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cbRrA4" value="#{pharmacyConfigController.inwardDirectIssueBillA4}" />
+                                <h:outputLabel for="cbRrA4" value="A4 Paper" class="ms-2" />
+                            </div>
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cbRrFiveFive" value="#{pharmacyConfigController.inwardDirectIssueBillFiveFive}" />
+                                <h:outputLabel for="cbRrFiveFive" value="5 x 5 Paper" class="ms-2" />
+                            </div>
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cbRrPos" value="#{pharmacyConfigController.inwardDirectIssueBillPos}" />
+                                <h:outputLabel for="cbRrPos" value="POS Paper" class="ms-2" />
+                            </div>
+                            <p:messages showDetail="true" closable="true" />
+                            <div class="d-flex gap-2">
+                                <p:commandButton value="Apply &amp; Close" icon="fas fa-save"
+                                                 styleClass="ui-button-success" ajax="false"
+                                                 action="#{pharmacyConfigController.saveInwardDirectIssueBillPaperConfig}" />
+                                <p:commandButton value="Cancel" icon="fas fa-times" styleClass="ui-button-secondary"
+                                                 onclick="PF('idiReprintReturnPaperConfigDialog').hide(); return false;" type="button" />
+                            </div>
+                        </h:form>
+                    </p:dialog>
             </ui:define>
         </ui:composition>
     </h:body>

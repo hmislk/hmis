@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+                >
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardAppointmentAdmission')}">
+                <na:not_authorize />
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">  
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputText styleClass="fa-solid fa-warehouse" />
+                        <h:outputLabel  class="mx-4" value="Reservation Admit"/>
+                    </f:facet>
+
+                    <h:panelGroup 
+                        class="row"
+                        layout="block" >
+                        <div class="col-md-3">
+                            <p:outputLabel class="mt-1" value="Select Reservation Details"></p:outputLabel>
+                        </div>
+                        <div class="col-md-6">
+                            <p:autoComplete
+                                value="#{appointmentController.reservation}" 
+                                forceSelection="true" 
+                                id="acColl"
+                                completeMethod="#{appointmentController.searcheservations}" 
+                                var="res"                             
+                                itemLabel="#{res.appointment.appointmentNumber}" 
+                                itemValue="#{res}" 
+                                maxResults="15"
+                                class="w-100 mb-1"
+                                required="true"
+                                requiredMessage="Appointment is Required"
+                                placeholder="Search by appointment number or patient name"
+                                inputStyleClass="form-control">
+                                <p:column headerText="Appointment Number" style="padding: 6px; ">#{res.appointment.appointmentNumber}</p:column>
+                                <p:column headerText="Patient Name" style="padding: 6px;">#{res.patient.person.name}</p:column>
+                            </p:autoComplete>
+                        </div>
+                        <div class="col-md-3">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Select" 
+                                action="#{appointmentController.navigatePatientAdmit()}" >
+                            </p:commandButton>
+                        </div>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:panelGroup>
+        </h:form>
+
+    </ui:define>
+</ui:composition>

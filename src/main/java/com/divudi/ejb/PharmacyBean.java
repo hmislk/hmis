@@ -4,10 +4,12 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.core.data.dto.ItemRatesDTO;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBatchQty;
 import com.divudi.core.data.StockQty;
@@ -35,6 +37,9 @@ import com.divudi.core.entity.pharmacy.StoreItemCategory;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
 import com.divudi.core.facade.BillFacade;
@@ -803,6 +808,14 @@ public class PharmacyBean {
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
+    public double getStockWithoutPurchaseValue(Item item) {
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(s.stock) from Stock s where s.itemBatch.item=:i";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
     public double getStockByPurchaseValue(Item item, Institution ins) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
@@ -911,6 +924,14 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            // The ItemBatch may be a minimal DTO-constructed object (id set, but no item/dateOfExpire).
+            // Load the full entity so metadata fields on the Staff Stock row are populated correctly.
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
@@ -1035,6 +1056,25 @@ public class PharmacyBean {
         return true;
     }
 
+    /**
+     * Deducts department stock for a batch, resolving the persisted Stock row
+     * by (batch, department) instead of requiring a caller-supplied Stock
+     * reference. Unlike {@link #deductFromStock(ItemBatch, double, Department)},
+     * this overload records StockHistory via {@link #deductFromStock(Stock, double, PharmaceuticalBillItem, Department)}
+     * so the movement appears on the Bin Card (issue #19837).
+     */
+    public boolean deductFromStock(ItemBatch batch, double qty, PharmaceuticalBillItem pbi, Department department) {
+        String sql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
+        HashMap hm = new HashMap();
+        hm.put("bch", batch);
+        hm.put("dep", department);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm, true);
+        if (s == null || s.getId() == null) {
+            return false;
+        }
+        return deductFromStock(s, qty, pbi, department);
+    }
+
     public boolean deductFromStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Staff staff) {
         String sql;
         HashMap hm = new HashMap();
@@ -1048,6 +1088,12 @@ public class PharmacyBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
@@ -1203,6 +1249,57 @@ public class PharmacyBean {
         return list;
     }
 
+    /**
+     * Extracted verbatim from the {@code Amp} branch of
+     * {@link #getStockByQty(Item, double, Department)} (same JPQL, same
+     * hardcoded {@code q=1.0}, same {@code findByJpqlWithoutCache}, same
+     * FEFO {@code order by}), so callers that evaluate multiple candidate
+     * quantities for the same Amp/Department (e.g.
+     * {@code PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest})
+     * can fetch the raw stock list once and reuse it via
+     * {@link #depleteStockForQty(List, double)} instead of re-querying per
+     * candidate. {@link #getStockByQty(Item, double, Department)} itself is
+     * left untouched.
+     */
+    public List<Stock> getRawStockListForAmp(Amp amp, Department department) {
+        String jpql = "select s "
+                + " from Stock s "
+                + " where s.itemBatch.item=:amp "
+                + " and s.department=:d and s.stock >=:q "
+                + " and s.itemBatch.dateOfExpire > :doe "
+                + " order by s.itemBatch.dateOfExpire ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("amp", amp);
+        params.put("d", department);
+        params.put("q", 1.0);
+        params.put("doe", new Date());
+        return getStockFacade().findByJpqlWithoutCache(jpql, params);
+    }
+
+    /**
+     * Extracted verbatim from the greedy depletion loop at the end of
+     * {@link #getStockByQty(Item, double, Department)}, so both that method
+     * and the cached {@link #getRawStockListForAmp(Amp, Department)} path
+     * share one implementation of the FEFO greedy-take logic.
+     */
+    public List<StockQty> depleteStockForQty(List<Stock> rawStocks, double qty) {
+        List<StockQty> list = new ArrayList<>();
+        if (rawStocks == null) {
+            return list;
+        }
+        double toAddQty = qty;
+        for (Stock s : rawStocks) {
+            if (s.getStock() >= toAddQty) {
+                list.add(new StockQty(s, toAddQty));
+                break;
+            } else {
+                toAddQty = toAddQty - s.getStock();
+                list.add(new StockQty(s, s.getStock()));
+            }
+        }
+        return list;
+    }
+
     public List<Stock> getStockByQty(Item item, Department department) {
         List<Amp> amps = resolveAmps(item);
         if (amps == null || amps.isEmpty()) {
@@ -1256,12 +1353,86 @@ public class PharmacyBean {
     }
 
     /**
-     * Resolve the underlying AMP records for any pharmacy Item subclass.
+     * Batched form of {@link #findAmpsForVmp(Vmp)} — resolves the AMPs for
+     * many VMPs in a single query instead of one query per VMP, to fix the
+     * N+1 pattern in
+     * {@code PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest}.
+     * An explicit {@code order by amp.id} is added for determinism (the
+     * single-VMP query above has no ordering guarantee either, so this is a
+     * strict improvement, not a behavior change).
+     *
+     * @return map of Vmp.id -> list of Amp under that Vmp (missing/empty for
+     * VMPs with no AMPs)
+     */
+    public Map<Long, List<Amp>> findAmpsForVmpsBatch(List<Vmp> vmps) {
+        Map<Long, List<Amp>> result = new HashMap<>();
+        if (vmps == null || vmps.isEmpty()) {
+            return result;
+        }
+        for (Vmp vmp : vmps) {
+            if (vmp != null && vmp.getId() != null) {
+                result.putIfAbsent(vmp.getId(), new ArrayList<>());
+            }
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("vmps", vmps);
+        m.put("ret", false);
+        String jpql = "select amp "
+                + " from Amp amp "
+                + " where amp.retired=:ret "
+                + " and amp.vmp in :vmps "
+                + " order by amp.id";
+        List<Amp> amps = ampFacade.findByJpql(jpql, m);
+        if (amps == null) {
+            return result;
+        }
+        for (Amp amp : amps) {
+            if (amp.getVmp() == null || amp.getVmp().getId() == null) {
+                continue;
+            }
+            Long vmpId = amp.getVmp().getId();
+            result.computeIfAbsent(vmpId, id -> new ArrayList<>()).add(amp);
+        }
+        return result;
+    }
+
+    /**
+     * Resolve the underlying AMP records for any pharmacy Item subclass,
+     * <b>exactly</b> — an AMP (or Ampp) resolves to itself only. This preserves
+     * brand-faithful stock lookup for prescription / discharge-dispensing flows
+     * (e.g. {@code PharmacySaleBhtController.findFefoStockDtosForItem},
+     * {@code PatientEncounterController}), where the prescribed brand must not be
+     * silently swapped for a sibling. VMP/VMPP/VTM/ATM still resolve to every AMP
+     * under that node, as those are inherently generic.
+     *
+     * <p>For the on-demand "Alternatives" substitute panel, which deliberately
+     * offers sibling brands of the same VMP for the cashier to choose, use
+     * {@link #resolveSubstituteAmps(Item)} instead.
      *
      * @param item item to resolve
      * @return list of AMP objects, or an empty list if none found
      */
     public List<Amp> resolveAmps(Item item) {
+        return resolveAmps(item, null);
+    }
+
+    /**
+     * Cache-aware overload of {@link #resolveAmps(Item)} — behaves
+     * identically, except the {@code Vmp} and {@code Vmpp}-derived-{@code Vmp}
+     * branches consult {@code vmpAmpCache} (as produced by
+     * {@link #findAmpsForVmpsBatch(List)}) before falling back to
+     * {@link #findAmpsForVmp(Vmp)}. Pass {@code null} for the cache to get
+     * the exact behavior of {@link #resolveAmps(Item)}. Added to fix the N+1
+     * pattern in {@code PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest}
+     * — {@code Vtm}/{@code Atm} branches are out of scope (not part of the
+     * confirmed hot path for ward BHT requests) and stay uncached.
+     *
+     * @param item item to resolve
+     * @param vmpAmpCache pre-batched Vmp.id -> Amp list cache, or null to
+     * always query
+     * @return list of AMP objects, or an empty list if none found
+     */
+    public List<Amp> resolveAmps(Item item, Map<Long, List<Amp>> vmpAmpCache) {
         if (item == null) {
             return new ArrayList<>();
         }
@@ -1283,7 +1454,11 @@ public class PharmacyBean {
         }
 
         if (item instanceof Vmp) {
-            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            Vmp vmp = (Vmp) item;
+            if (vmpAmpCache != null && vmp.getId() != null && vmpAmpCache.containsKey(vmp.getId())) {
+                return vmpAmpCache.get(vmp.getId());
+            }
+            List<Amp> amps = findAmpsForVmp(vmp);
             return amps == null ? new ArrayList<>() : amps;
         }
 
@@ -1293,11 +1468,171 @@ public class PharmacyBean {
             if (vmp == null) {
                 return new ArrayList<>();
             }
+            if (vmpAmpCache != null && vmp.getId() != null && vmpAmpCache.containsKey(vmp.getId())) {
+                return vmpAmpCache.get(vmp.getId());
+            }
             List<Amp> amps = findAmpsForVmp(vmp);
             return amps == null ? new ArrayList<>() : amps;
         }
 
+        if (item instanceof Vtm) {
+            return findAmpsForVtm((Vtm) item);
+        }
+
+        if (item instanceof Atm) {
+            return findAmpsForAtm((Atm) item);
+        }
+
         return new ArrayList<>();
+    }
+
+    /**
+     * Resolve the candidate AMPs for the on-demand "Alternatives" substitute
+     * panel (issue #21697). Unlike {@link #resolveAmps(Item)} this expands an
+     * AMP / Ampp to itself <b>plus its sibling AMPs sharing the same VMP</b>
+     * (alternative brands of the same virtual product), so the cashier can pick
+     * a different brand. For VMP/VMPP/VTM/ATM the result is identical to
+     * {@code resolveAmps} (those are already generic and cover every brand).
+     *
+     * <p>This is intentionally separate from {@code resolveAmps} so that
+     * brand-faithful prescription / dispensing flows are never affected — only
+     * the explicit substitute path opts into sibling expansion.
+     *
+     * @param item item to resolve substitute candidates for
+     * @return AMP list including sibling brands, or empty if none found
+     */
+    public List<Amp> resolveSubstituteAmps(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+        if (item instanceof Amp) {
+            return resolveAmpWithVmpSiblings((Amp) item);
+        }
+        if (item instanceof Ampp) {
+            return resolveAmpWithVmpSiblings(((Ampp) item).getAmp());
+        }
+        // VMP / VMPP / VTM / ATM are already generic — same as exact resolution.
+        return resolveAmps(item);
+    }
+
+    /**
+     * Resolve an AMP to itself plus its sibling AMPs that share the same VMP
+     * (true alternative brands of the same virtual product). The original AMP
+     * is always included even if its VMP is null or has no siblings.
+     */
+    private List<Amp> resolveAmpWithVmpSiblings(Amp amp) {
+        List<Amp> list = new ArrayList<>();
+        if (amp == null) {
+            return list;
+        }
+        list.add(amp);
+        Vmp vmp = amp.getVmp();
+        if (vmp == null) {
+            return list;
+        }
+        List<Amp> siblings = findAmpsForVmp(vmp);
+        if (siblings != null) {
+            for (Amp sibling : siblings) {
+                if (sibling != null && sibling.getId() != null
+                        && !sibling.getId().equals(amp.getId())) {
+                    list.add(sibling);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<Amp> findAmpsForVtm(Vtm vtm) {
+        if (vtm == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("vtm", vtm);
+        m.put("ret", false);
+
+        // Primary path: VirtualProductIngredient join table
+        String vpiJpql = "select vpi from VirtualProductIngredient vpi "
+                + " where vpi.retired=:ret and vpi.vtm=:vtm";
+        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(vpiJpql, m);
+        List<Amp> allAmps = new ArrayList<>();
+        if (vpis != null) {
+            for (VirtualProductIngredient vpi : vpis) {
+                if (vpi.getVmp() != null) {
+                    List<Amp> amps = findAmpsForVmp(vpi.getVmp());
+                    if (amps != null) {
+                        allAmps.addAll(amps);
+                    }
+                }
+            }
+        }
+        if (!allAmps.isEmpty()) {
+            return allAmps;
+        }
+
+        // Fallback: VirtualProductIngredient table is unpopulated on many deployments.
+        // VMPs carry a direct vtm reference (VMP.VTM_ID) — use that instead.
+        String vmpJpql = "select vmp from Vmp vmp where vmp.retired=:ret and vmp.vtm=:vtm";
+        List<Vmp> vmps = vmpFacade.findByJpql(vmpJpql, m);
+        if (vmps != null) {
+            for (Vmp vmp : vmps) {
+                List<Amp> amps = findAmpsForVmp(vmp);
+                if (amps != null) {
+                    allAmps.addAll(amps);
+                }
+            }
+        }
+        return allAmps;
+    }
+
+    public List<Amp> findAmpsForAtm(Atm atm) {
+        if (atm == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("atm", atm);
+        m.put("ret", false);
+        String jpql = "select amp from Amp amp "
+                + " where amp.retired=:ret and amp.atm=:atm";
+        return ampFacade.findByJpql(jpql, m);
+    }
+
+    public double calculateIssueQuantity(Prescription prescription, Amp targetAmp) {
+        if (prescription == null || targetAmp == null) {
+            return 0.0;
+        }
+        Double dose = prescription.getDose();
+        if (dose == null || dose <= 0) {
+            return 0.0;
+        }
+        double durationInHours = 0.0;
+        if (prescription.getDuration() != null && prescription.getDuration() > 0
+                && prescription.getDurationUnit() != null
+                && prescription.getDurationUnit().getDurationInHours() != null
+                && prescription.getDurationUnit().getDurationInHours() > 0) {
+            durationInHours = prescription.getDuration() * prescription.getDurationUnit().getDurationInHours();
+        }
+        double frequencyInHours = 0.0;
+        if (prescription.getFrequencyUnit() != null
+                && prescription.getFrequencyUnit().getFrequencyInHours() != null
+                && prescription.getFrequencyUnit().getFrequencyInHours() > 0) {
+            frequencyInHours = prescription.getFrequencyUnit().getFrequencyInHours();
+        }
+        if (durationInHours <= 0 || frequencyInHours <= 0) {
+            return 0.0;
+        }
+        double totalDoses = durationInHours / frequencyInHours;
+        double strengthRatio = 1.0;
+        Double prescribedStrength = null;
+        if (prescription.getItem() != null) {
+            prescribedStrength = prescription.getItem().getStrengthOfAnIssueUnit();
+        }
+        Double ampStrength = targetAmp.getStrengthOfAnIssueUnit();
+        if (prescribedStrength != null && prescribedStrength > 0
+                && ampStrength != null && ampStrength > 0) {
+            strengthRatio = prescribedStrength / ampStrength;
+        }
+        double issueQty = dose * totalDoses * strengthRatio;
+        return Math.ceil(issueQty);
     }
 
     public List<StockQty> getStockByQty(Amp item, double qty, Department department) {
@@ -1377,9 +1712,23 @@ public class PharmacyBean {
 //                }
 //            }
 //        }
-        stock = getStockFacade().findWithoutCache(stock.getId());
-        stock.setStock(stock.getStock() - qty);
-        getStockFacade().editAndCommit(stock);
+        // Atomic check-and-decrement via JPQL UPDATE to prevent TOCTOU races
+        // where the in-memory Stock is stale vs the committed DB value (issue:
+        // Cetapin XR 500mg batch 1528539 went to -144 on 2025-10-12).
+        // Using a conditional UPDATE avoids loading the full EAGER cascade
+        // (Stock → ItemBatch → Item → ...) that findWithoutCache triggered,
+        // cutting per-item cold latency from ~800ms to ~50ms. Issue #20138.
+        // The WHERE s.stock >= :qty clause is the atomicity guard — 0 rows
+        // updated means insufficient stock at commit time.
+        Map<String, Object> params = new HashMap<>();
+        params.put("qty", qty);
+        params.put("id", stock.getId());
+        int updated = getStockFacade().updateByJpql(
+                "UPDATE Stock s SET s.stock = s.stock - :qty WHERE s.id = :id AND s.stock >= :qty",
+                params);
+        if (updated == 0) {
+            return false;
+        }
         addToStockHistory(pbi, stock, d);
         return true;
     }
@@ -1396,10 +1745,30 @@ public class PharmacyBean {
         if (stock.getStock() < qty) {
             return false;
         }
+        // Re-check with fresh DB state (see deductFromStock for rationale).
         stock = getStockFacade().findWithoutCache(stock.getId());
+        if (stock == null || stock.getStock() < qty) {
+            return false;
+        }
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
         return true;
+    }
+
+    /**
+     * Returns all Stock records across every department for a given ItemBatch.
+     * Used by rate-adjustment workflows to record stock history in every
+     * department affected by the shared ItemBatch rate change.
+     */
+    public List<Stock> getStocksForItemBatch(ItemBatch itemBatch) {
+        if (itemBatch == null || itemBatch.getId() == null) {
+            return java.util.Collections.emptyList();
+        }
+        String jpql = "select s from Stock s where s.itemBatch.id = :batchId and s.stock > 0";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("batchId", itemBatch.getId());
+        List<Stock> result = getStockFacade().findByJpql(jpql, params);
+        return result != null ? result : java.util.Collections.emptyList();
     }
 
     /**
@@ -1438,6 +1807,7 @@ public class PharmacyBean {
         Date now = new Date();
         Calendar cal = Calendar.getInstance();
 
+        sh.setHistoryType(resolveStockHistoryType(phItem));
         sh.setFromDate(now);
         sh.setPbItem(phItem);
         sh.setHxDate(cal.get(Calendar.DATE));
@@ -1474,11 +1844,12 @@ public class PharmacyBean {
 
         // Record itemBatch rates
         if (fetchedStock.getItemBatch() != null) {
-            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
-            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setCostRate(costRate);
             sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
@@ -1522,6 +1893,28 @@ public class PharmacyBean {
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
 
+    private HistoryType resolveStockHistoryType(PharmaceuticalBillItem phItem) {
+        if (phItem == null || phItem.getBillItem() == null || phItem.getBillItem().getBill() == null) {
+            return null;
+        }
+        BillType bt = phItem.getBillItem().getBill().getBillType();
+        if (bt == null) return null;
+        switch (bt) {
+            case PharmacySale:
+            case PharmacySaleWithoutStock:
+                return HistoryType.Sale;
+            case PharmacyIssue:
+            case PharmacyTransferIssue:
+                return HistoryType.Issue;
+            case PharmacyGrnBill:
+            case PharmacyGrnBillImport:
+            case PharmacyGrnReturn:
+            case PharmacyTransferReceive:
+                return HistoryType.GoodReceive;
+            default:
+                return HistoryType.Stock;
+        }
+    }
 
     public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
         if (billItem == null) {
@@ -1578,11 +1971,12 @@ public class PharmacyBean {
 
         // Record itemBatch rates
         if (fetchedStock.getItemBatch() != null) {
-            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
-            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setCostRate(costRate);
             sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
@@ -1647,6 +2041,7 @@ public class PharmacyBean {
         }
 
         StockHistory sh = new StockHistory();
+        sh.setHistoryType(resolveStockHistoryType(phItem));
         sh.setFromDate(Calendar.getInstance().getTime());
         sh.setPbItem(phItem);
         sh.setHxDate(Calendar.getInstance().get(Calendar.DATE));
@@ -2351,6 +2746,49 @@ public class PharmacyBean {
         return getBillItemFacade().findFirstByJpql(jpql, params);
     }
 
+    /**
+     * Fetches purchase, retail and cost rates for {@code rateItem} in a single
+     * database query (manageCosting=true path) instead of three separate
+     * entity-loading calls. Falls back to two PharmaceuticalBillItem queries
+     * when manageCosting is disabled.
+     *
+     * @param rateItem the Amp or Vmp item used for rate lookup (callers must
+     *                 resolve Ampp→Amp and Vmpp→Vmp before calling)
+     * @param dept     department for the non-costing fallback query
+     */
+    public ItemRatesDTO getLastRatesForItem(Item rateItem, Department dept) {
+        if (rateItem == null) {
+            return new ItemRatesDTO(0.0, 0.0, 0.0);
+        }
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            String jpql = "SELECT f.lineGrossRate, f.retailSaleRate, f.totalCostRate "
+                    + "FROM BillItem bi JOIN bi.billItemFinanceDetails f "
+                    + "WHERE bi.retired = false "
+                    + "AND bi.bill.cancelled = false "
+                    + "AND bi.item = :i "
+                    + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                    + "ORDER BY bi.id DESC";
+            Map<String, Object> params = new HashMap<>();
+            params.put("i", rateItem);
+            params.put("t", BillType.PharmacyGrnBill);
+            params.put("t1", BillType.PharmacyPurchaseBill);
+            List<?> rows = getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 1);
+            if (!rows.isEmpty()) {
+                Object[] row = (Object[]) rows.get(0);
+                double purchase = row[0] instanceof java.math.BigDecimal ? ((java.math.BigDecimal) row[0]).doubleValue() : 0.0;
+                double retail   = row[1] instanceof java.math.BigDecimal ? ((java.math.BigDecimal) row[1]).doubleValue() : 0.0;
+                double cost     = row[2] instanceof java.math.BigDecimal ? ((java.math.BigDecimal) row[2]).doubleValue() : 0.0;
+                return new ItemRatesDTO(purchase, retail, cost);
+            }
+            return new ItemRatesDTO(0.0, 0.0, 0.0);
+        } else {
+            double purchaseRate = getLastPurchaseRateByPharmaceuticalBillItem(rateItem, dept);
+            double retailRate   = getLastRetailRateByPharmaceuticalBillItem(rateItem, dept);
+            return new ItemRatesDTO(purchaseRate, retailRate, purchaseRate);
+        }
+    }
+
     public double getLastPurchaseRate(Item item, Department dept) {
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
@@ -2416,7 +2854,7 @@ public class PharmacyBean {
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         if (f == null || f.getRetailSaleRate() == null) {
-            return 0.0;
+            return getLastRetailRateByPharmaceuticalBillItem(item, dept);
         }
 
         return f.getRetailSaleRate().doubleValue();

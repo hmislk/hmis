@@ -9,7 +9,19 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Add to Stock Bills" >
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputLabel value="Add to Stock Bills" class="mx-1" />
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('reports/inventoryReports/add_to_stock_bills')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
+                            </p:commandButton>
+                        </f:facet>
 
                         <h:panelGrid columns="8" class="w-100">
 
@@ -148,7 +160,32 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
+                            <p:spacer width="20"/>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    updateLabel="true"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                         </h:panelGrid>
 
@@ -209,7 +246,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Bill Number" sortBy="#{b.billDeptId}" width="16em">
+                            <p:column headerText="Bill Number" sortBy="#{b.billDeptId}" width="10em">
                                 <p:commandLink value="#{b.billDeptId}" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false" styleClass="ui-button-info">
                                     <f:setPropertyActionListener value="#{b.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
@@ -222,7 +259,7 @@
                                 <h:outputText value="-" rendered="#{b.bill.referenceBill eq null}" />
                             </p:column>
 
-                            <p:column headerText="Ref. Bill Number" width="16em">
+                            <p:column headerText="Ref. Bill Number" width="10em">
                                 <h:panelGroup rendered="#{b.bill.referenceBill ne null}">
                                     <p:commandLink value="#{b.bill.referenceBill.deptId}" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false" styleClass="ui-button-warning">
                                         <f:setPropertyActionListener value="#{b.bill.referenceBill}" target="#{billSearch.bill}" />
@@ -231,32 +268,32 @@
                                 <h:outputText value="-" rendered="#{b.bill.referenceBill eq null}" />
                             </p:column>
 
-                            <p:column headerText="NAME" width="50em">
+                            <p:column headerText="NAME" width="20em">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
                                     <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="CODE">
+                            <p:column headerText="CODE" width="8em">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.itemCode}" /><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="BATCH NO">
+                            <p:column headerText="BATCH NO" width="8em">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.batchNo}" /><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="QTY">
+                            <p:column headerText="QTY" width="5em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty}" ><f:convertNumber pattern="#,##0"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="COST RATE">
+                            <p:column headerText="COST RATE" width="7em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="COST VALUE">
+                            <p:column headerText="COST VALUE" width="8em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
@@ -266,12 +303,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="PURCHASE RATE">
+                            <p:column headerText="PURCHASE RATE" width="7em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="PURCHASE VALUE">
+                            <p:column headerText="PURCHASE VALUE" width="8em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>

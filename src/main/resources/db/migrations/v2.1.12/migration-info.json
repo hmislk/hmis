@@ -1,0 +1,65 @@
+{
+    "version": "v2.1.12",
+    "description": "Backfill missing approval tracking fields for historical direct purchase bills",
+    "author": "Claude AI Assistant",
+    "githubIssue": "#17317",
+    "branch": "17317-unable-to-settle-petty-cash-payments-due-to-error-validation-messages-being-displayed-when-selecting-cash-credit-or-cheque-payment-methods",
+    "estimatedDurationMinutes": 5,
+    "requiresDowntime": false,
+    "affectedTables": ["BILLEDBILL", "BILL"],
+    "affectedModules": ["Pharmacy", "Direct Purchase", "Audit Trail"],
+    "dependencies": ["Approval tracking fields must exist in BILL table"],
+    "preRequisites": [
+        "Database backup completed",
+        "Verify BILL table has approve_user, approve_at, editor, edited_at columns",
+        "Confirm no active direct purchase transactions during migration"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Count existing direct purchase bills missing approval data",
+            "sql": "SELECT COUNT(*) FROM billedbill WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND (approve_user IS NULL OR approve_at IS NULL);"
+        },
+        {
+            "step": 2,
+            "description": "Update approveUser field using completedBy for completed direct purchase bills",
+            "sql": "UPDATE billedbill SET approve_user = completed_by WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE AND approve_user IS NULL AND completed_by IS NOT NULL;"
+        },
+        {
+            "step": 3,
+            "description": "Update approveAt field using completedAt for completed direct purchase bills",
+            "sql": "UPDATE billedbill SET approve_at = completed_at WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE AND approve_at IS NULL AND completed_at IS NOT NULL;"
+        },
+        {
+            "step": 4,
+            "description": "Update editor field using completedBy for completed direct purchase bills",
+            "sql": "UPDATE billedbill SET editor = completed_by WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE AND editor IS NULL AND completed_by IS NOT NULL;"
+        },
+        {
+            "step": 5,
+            "description": "Update editedAt field using completedAt for completed direct purchase bills",
+            "sql": "UPDATE billedbill SET edited_at = completed_at WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE AND edited_at IS NULL AND completed_at IS NOT NULL;"
+        },
+        {
+            "step": 6,
+            "description": "Verify migration results and count updated records",
+            "sql": "SELECT COUNT(*) as updated_bills FROM billedbill WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE AND approve_user IS NOT NULL AND approve_at IS NOT NULL AND editor IS NOT NULL AND edited_at IS NOT NULL;"
+        }
+    ],
+    "verificationQueries": [
+        "SELECT COUNT(*) as missing_approval_data FROM billedbill WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE AND (approve_user IS NULL OR approve_at IS NULL OR editor IS NULL OR edited_at IS NULL);",
+        "SELECT COUNT(*) as total_completed_direct_purchases FROM billedbill WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE;",
+        "SELECT 'Data Consistency Check' as check_name, (SELECT COUNT(*) FROM billedbill WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE' AND completed = TRUE AND approve_user = completed_by AND approve_at = completed_at AND editor = completed_by AND edited_at = completed_at) as consistent_records;"
+    ],
+    "postMigrationVerification": [
+        "Verify no completed direct purchase bills have NULL approval fields",
+        "Confirm approval timestamps match completion timestamps for historical data",
+        "Test direct purchase settle process creates all required approval fields",
+        "Validate audit trail completeness for direct purchase transactions"
+    ],
+    "rollbackNotes": [
+        "Rollback sets approval fields back to NULL for records where they matched completion fields",
+        "Only affects historical data - current workflow continues to work normally",
+        "Safe to rollback as this migration only adds missing audit data"
+    ]
+}

@@ -6,18 +6,26 @@ public class InvestigationDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private Long id;
+    private String code;
     private String name;
     private String categoryName;
     private String institutionName;
     private String machineName;
     private Boolean retired;
     private String departmentName;
+    private Long count;
 
     public InvestigationDTO() {
     }
 
-    public InvestigationDTO(Long id, String name, String categoryName, String institutionName,
-                             String machineName, Boolean retired, String departmentName) {
+    public InvestigationDTO(
+            Long id, 
+            String name, 
+            String categoryName, 
+            String institutionName,
+            String machineName, 
+            Boolean retired, 
+            String departmentName) {
         this.id = id;
         this.name = name;
         this.categoryName = categoryName;
@@ -30,6 +38,41 @@ public class InvestigationDTO implements Serializable {
     public InvestigationDTO(Long id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public InvestigationDTO(Long id, String name, Long count) {
+        this.id = id;
+        this.name = name;
+        this.count = count;
+    }
+
+    public InvestigationDTO(Long id) {
+        this.id = id;
+    }
+
+    public InvestigationDTO(
+            Long id,
+            String code,
+            String name,
+            String categoryName,
+            String institutionName,
+            String departmentName,
+            Boolean retired) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+        this.categoryName = categoryName;
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
+        this.retired = retired;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public Long getId() {
@@ -86,6 +129,14 @@ public class InvestigationDTO implements Serializable {
 
     public void setDepartmentName(String departmentName) {
         this.departmentName = departmentName;
+    }
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
     }
 }
 

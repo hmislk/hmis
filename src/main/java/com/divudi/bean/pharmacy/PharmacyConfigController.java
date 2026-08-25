@@ -63,10 +63,16 @@ public class PharmacyConfigController implements Serializable {
     private boolean grnReceiptA4;
     private boolean grnReceiptCustom1;
     private boolean grnReceiptCustom2;
+    private boolean grnReceiptCustom3;
     
     // GRN Return Settings
     private boolean grnReturnReceiptCustom1;
     private boolean grnReturnReceiptCustom2;
+
+    // BHT Issue Receive Settings
+    private boolean bhtIssueReceiveReceiptA4;
+    private boolean bhtIssueReceiveReceiptPos;
+    private boolean bhtIssueReceiveReceiptFiveFive;
 
     // Transfer Receive Settings
     private boolean transferReceiveA4;
@@ -154,6 +160,74 @@ public class PharmacyConfigController implements Serializable {
     private boolean creditSettlementCancellationPosHeader;
     private boolean creditSettlementCancellationPosCustom1;
 
+    // Patient Deposit Settings
+    private boolean patientDepositPosPaper;
+    private boolean patientDepositA4Paper;
+    private boolean patientDepositCustomPaper;
+
+    // Inward Copayment Bill Settings
+    private boolean inwardCopaymentPosPaper;
+    private boolean inwardCopaymentFiveFivePaper;
+    private boolean inwardCopaymentA4Paper;
+
+    // Inward Payment Bill Settings
+    private boolean inwardPaymentPosPaper;
+    private boolean inwardPaymentFiveFivePaper;
+    private boolean inwardPaymentFiveFiveCustom3Paper;
+    private boolean inwardPaymentA4Paper;
+
+    // Petty Cash Settings
+    private boolean pettyCashPosPaper;
+    private boolean pettyCashA4Paper;
+    private boolean pettyCashCustomPaper;
+
+    // Fund Transfer Receive Bill Settings
+    private boolean fundTransferReceivePosPaper;
+    private boolean fundTransferReceivePosPrintedPaper;
+    private boolean fundTransferReceiveFiveFivePaper;
+    private boolean fundTransferReceiveFiveFivePrintedPaper;
+    private boolean fundTransferReceiveA4Paper;
+    private boolean fundTransferReceiveA4PrintedPaper;
+
+    // Miscellaneous Staff Fee Settings
+    private boolean miscStaffFeePosPaper;
+    private boolean miscStaffFeeFiveFivePaper;
+    private boolean miscStaffFeeA4Paper;
+
+    // OPD Doctor Payment Settings
+    private boolean opdDoctorPaymentA4Paper;
+    private boolean opdDoctorPaymentFiveFivePaper;
+    private boolean opdDoctorPaymentPosPaper;
+    private boolean opdDoctorPaymentHideDetails;
+    private boolean opdDoctorPaymentHideFiveFiveHeader;
+
+    // Inward BHT Direct Issue Bill Settings
+    private boolean bhtIssuePosPaper;
+    private boolean bhtIssueFiveFivePaper;
+    private boolean bhtIssueA4Paper;
+
+    // Inward Direct Issue Bill — Service Charge/Discount print formats (Issue #22035)
+    private boolean inwardDirectIssueBillA4;
+    private boolean inwardDirectIssueBillFiveFive;
+    private boolean inwardDirectIssueBillPos;
+
+    // BHT Pharmacy Issue Request Receipt print formats
+    private boolean bhtIssueRequestReceiptA4;
+    private boolean bhtIssueRequestReceiptFiveFive;
+    private boolean bhtIssueRequestReceiptPos;
+
+    // Fast Retail Sale Settings (pharmacy_fast_retail_sale*.xhtml, issue #22349)
+    private boolean fastSalePosPaper;
+    private boolean fastSaleWithItemsPaper;
+    private boolean fastSalePrabodhaPaper;
+    private boolean fastSaleFiveFivePaper;
+    private boolean fastSalePosHeaderPaper;
+    private boolean fastSaleCustom3Paper;
+
+    // Fast Retail Sale for Cashier Settings (pharmacy_fast_retail_sale_for_cashier.xhtml, issue #22349)
+    private boolean fastSaleCashierPosPaper;
+    private boolean fastSaleCashierCustom3Paper;
+
     public PharmacyConfigController() {
     }
     
@@ -200,10 +274,16 @@ public class PharmacyConfigController implements Serializable {
         grnReceiptA4 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true);
         grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
         grnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 2", true);
+        grnReceiptCustom3 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 3", true);
         
         // GRN Return Settings
         grnReturnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 1", false);
         grnReturnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 2", true);
+
+        // BHT Issue Receive Settings
+        bhtIssueReceiveReceiptA4 = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", true);
+        bhtIssueReceiveReceiptPos = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", false);
+        bhtIssueReceiveReceiptFiveFive = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", false);
 
         // Transfer Receive Settings
         transferReceiveA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", true);
@@ -291,6 +371,74 @@ public class PharmacyConfigController implements Serializable {
         creditSettlementCancellationPosHeader = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", false);
         creditSettlementCancellationPosCustom1 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", false);
 
+        // Patient Deposit Settings
+        patientDepositPosPaper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt POS Paper", true);
+        patientDepositA4Paper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt A4 Paper", false);
+        patientDepositCustomPaper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt Custom Paper", false);
+
+        // Inward Copayment Bill Settings
+        inwardCopaymentPosPaper = configOptionController.getBooleanValueByKey("Inward Copayment Bill POS Paper", true);
+        inwardCopaymentFiveFivePaper = configOptionController.getBooleanValueByKey("Inward Copayment Bill Five Five Paper", false);
+        inwardCopaymentA4Paper = configOptionController.getBooleanValueByKey("Inward Copayment Bill A4 Paper", false);
+
+        // Inward Payment Bill Settings
+        inwardPaymentPosPaper = configOptionController.getBooleanValueByKey("Inward Payment Bill POS Paper", true);
+        inwardPaymentFiveFivePaper = configOptionController.getBooleanValueByKey("Inward Payment Bill Five Five Paper", false);
+        inwardPaymentFiveFiveCustom3Paper = configOptionController.getBooleanValueByKey("Inward Payment Bill Five Five Custom 3 Paper", false);
+        inwardPaymentA4Paper = configOptionController.getBooleanValueByKey("Inward Payment Bill A4 Paper", false);
+
+        // Petty Cash Settings
+        pettyCashPosPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt POS Paper", true);
+        pettyCashA4Paper = configOptionController.getBooleanValueByKey("Petty Cash Receipt A4 Paper", false);
+        pettyCashCustomPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt Custom Paper", false);
+
+        // Fund Transfer Receive Bill Settings
+        fundTransferReceivePosPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is POS Paper", false);
+        fundTransferReceivePosPrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is POS Printed Paper", false);
+        fundTransferReceiveFiveFivePaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is 5x5 Paper", true);
+        fundTransferReceiveFiveFivePrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is 5x5 Printed Paper", false);
+        fundTransferReceiveA4Paper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is A4 Paper", false);
+        fundTransferReceiveA4PrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is A4 Printed Paper", false);
+
+        // Miscellaneous Staff Fee Settings
+        miscStaffFeePosPaper = configOptionController.getBooleanValueByKey("Miscellaneous Staff Fee Bill is POS Paper", false);
+        miscStaffFeeFiveFivePaper = configOptionController.getBooleanValueByKey("Miscellaneous Staff Fee Bill is Five Five Paper", true);
+        miscStaffFeeA4Paper = configOptionController.getBooleanValueByKey("Miscellaneous Staff Fee Bill is A4 Paper", true);
+
+        // OPD Doctor Payment Settings
+        opdDoctorPaymentA4Paper = configOptionApplicationController.getBooleanValueByKey("OPD Doctor payment bill is A4 paper", true);
+        opdDoctorPaymentFiveFivePaper = configOptionApplicationController.getBooleanValueByKey("OPD Doctor payment bill is five five paper.", false);
+        opdDoctorPaymentPosPaper = configOptionApplicationController.getBooleanValueByKey("OPD Doctor payment bill is POS paper", false);
+        opdDoctorPaymentHideDetails = configOptionApplicationController.getBooleanValueByKey("Hide the details on the OPD Doctor Payment Bill", false);
+        opdDoctorPaymentHideFiveFiveHeader = configOptionApplicationController.getBooleanValueByKey("Hide the Header Details on the OPD Doctor Payment 5x5 Bill", false);
+
+        // Inward BHT Direct Issue Bill Settings
+        bhtIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS Paper", false);
+        bhtIssueFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive Paper", false);
+        bhtIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4 Paper", false);
+
+        // Inward Direct Issue Bill print formats (Issue #22035) — application-wide
+        inwardDirectIssueBillA4 = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4", false);
+        inwardDirectIssueBillFiveFive = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive", true);
+        inwardDirectIssueBillPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS", false);
+
+        // BHT Pharmacy Issue Request Receipt print formats — application-wide
+        bhtIssueRequestReceiptA4 = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is A4", false);
+        bhtIssueRequestReceiptFiveFive = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is FiveFive", true);
+        bhtIssueRequestReceiptPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is POS", false);
+
+        // Fast Retail Sale Settings (issue #22349) — application-wide, matches existing pharmacy_fast_retail_sale*.xhtml keys
+        fastSalePosPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper", true);
+        fastSaleWithItemsPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill with Items is PosPaper", true);
+        fastSalePrabodhaPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper(prabodha)", true);
+        fastSaleFiveFivePaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFivePaper", true);
+        fastSalePosHeaderPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", true);
+        fastSaleCustom3Paper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFiveCustom3", true);
+
+        // Fast Retail Sale for Cashier Settings (issue #22349) — application-wide, matches existing pharmacy_fast_retail_sale_for_cashier.xhtml keys
+        fastSaleCashierPosPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", false);
+        fastSaleCashierCustom3Paper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", false);
+
     }
 
     /**
@@ -336,10 +484,16 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4", grnReceiptA4);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 1", grnReceiptCustom1);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 2", grnReceiptCustom2);
+            configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 3", grnReceiptCustom3);
             
             // GRN Return Settings
             configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 1", grnReturnReceiptCustom1);
             configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 2", grnReturnReceiptCustom2);
+
+            // BHT Issue Receive Settings
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", bhtIssueReceiveReceiptA4);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", bhtIssueReceiveReceiptPos);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", bhtIssueReceiveReceiptFiveFive);
 
             // Transfer Receive Settings
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", transferReceiveA4);
@@ -412,6 +566,24 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", creditSettlementCancellationCustom3);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", creditSettlementCancellationPosHeader);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", creditSettlementCancellationPosCustom1);
+
+            // Patient Deposit Settings
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt POS Paper", patientDepositPosPaper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt A4 Paper", patientDepositA4Paper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt Custom Paper", patientDepositCustomPaper);
+
+            // Petty Cash Settings
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt POS Paper", pettyCashPosPaper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt A4 Paper", pettyCashA4Paper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt Custom Paper", pettyCashCustomPaper);
+
+            // Fund Transfer Receive Bill Settings
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Paper", fundTransferReceivePosPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Printed Paper", fundTransferReceivePosPrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Paper", fundTransferReceiveFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Printed Paper", fundTransferReceiveFiveFivePrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Paper", fundTransferReceiveA4Paper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Printed Paper", fundTransferReceiveA4PrintedPaper);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -640,6 +812,227 @@ public class PharmacyConfigController implements Serializable {
         }
     }
 
+    /**
+     * Save Inward BHT Direct Issue Bill configuration changes specifically
+     */
+    public void saveBhtIssueConfig() {
+        try {
+            configOptionController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS Paper", bhtIssuePosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive Paper", bhtIssueFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4 Paper", bhtIssueA4Paper);
+
+            JsfUtil.addSuccessMessage("BHT Direct Issue Bill configuration saved successfully");
+
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving BHT Direct Issue Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Inward Copayment Bill configuration changes specifically
+     */
+    public void saveInwardCopaymentConfig() {
+        try {
+            configOptionController.setBooleanValueByKey("Inward Copayment Bill POS Paper", inwardCopaymentPosPaper);
+            configOptionController.setBooleanValueByKey("Inward Copayment Bill Five Five Paper", inwardCopaymentFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Inward Copayment Bill A4 Paper", inwardCopaymentA4Paper);
+            JsfUtil.addSuccessMessage("Inward Copayment Bill configuration saved successfully");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Inward Copayment Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Inward Payment Bill configuration changes specifically
+     */
+    public void saveInwardPaymentConfig() {
+        try {
+            configOptionController.setBooleanValueByKey("Inward Payment Bill POS Paper", inwardPaymentPosPaper);
+            configOptionController.setBooleanValueByKey("Inward Payment Bill Five Five Paper", inwardPaymentFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Inward Payment Bill Five Five Custom 3 Paper", inwardPaymentFiveFiveCustom3Paper);
+            configOptionController.setBooleanValueByKey("Inward Payment Bill A4 Paper", inwardPaymentA4Paper);
+            JsfUtil.addSuccessMessage("Inward Payment Bill configuration saved successfully");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Inward Payment Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Patient Deposit configuration changes specifically
+     */
+    public void savePatientDepositConfig() {
+        try {
+            // Patient Deposit Settings
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt POS Paper", patientDepositPosPaper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt A4 Paper", patientDepositA4Paper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt Custom Paper", patientDepositCustomPaper);
+
+            JsfUtil.addSuccessMessage("Patient Deposit configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Patient Deposit configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Petty Cash configuration changes specifically
+     */
+    public void savePettyCashConfig() {
+        try {
+            // Petty Cash Settings
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt POS Paper", pettyCashPosPaper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt A4 Paper", pettyCashA4Paper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt Custom Paper", pettyCashCustomPaper);
+
+            JsfUtil.addSuccessMessage("Petty Cash configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Petty Cash configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Fund Transfer Receive Bill configuration changes specifically
+     */
+    public void saveFundTransferReceiveConfig() {
+        try {
+            // Fund Transfer Receive Bill Settings
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Paper", fundTransferReceivePosPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Printed Paper", fundTransferReceivePosPrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Paper", fundTransferReceiveFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Printed Paper", fundTransferReceiveFiveFivePrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Paper", fundTransferReceiveA4Paper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Printed Paper", fundTransferReceiveA4PrintedPaper);
+
+            JsfUtil.addSuccessMessage("Fund Transfer Receive configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Fund Transfer Receive configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Miscellaneous Staff Fee Bill configuration changes specifically
+     */
+    public void saveMiscStaffFeeConfig() {
+        try {
+            // Miscellaneous Staff Fee Settings
+            configOptionController.setBooleanValueByKey("Miscellaneous Staff Fee Bill is POS Paper", miscStaffFeePosPaper);
+            configOptionController.setBooleanValueByKey("Miscellaneous Staff Fee Bill is Five Five Paper", miscStaffFeeFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Miscellaneous Staff Fee Bill is A4 Paper", miscStaffFeeA4Paper);
+
+            JsfUtil.addSuccessMessage("Miscellaneous Staff Fee configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Miscellaneous Staff Fee configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save OPD Doctor Payment configuration changes specifically
+     */
+    public void saveOpdDoctorPaymentConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("OPD Doctor payment bill is A4 paper", opdDoctorPaymentA4Paper);
+            configOptionApplicationController.setBooleanValueByKey("OPD Doctor payment bill is five five paper.", opdDoctorPaymentFiveFivePaper);
+            configOptionApplicationController.setBooleanValueByKey("OPD Doctor payment bill is POS paper", opdDoctorPaymentPosPaper);
+            configOptionApplicationController.setBooleanValueByKey("Hide the details on the OPD Doctor Payment Bill", opdDoctorPaymentHideDetails);
+            configOptionApplicationController.setBooleanValueByKey("Hide the Header Details on the OPD Doctor Payment 5x5 Bill", opdDoctorPaymentHideFiveFiveHeader);
+
+            JsfUtil.addSuccessMessage("OPD Doctor Payment configuration saved successfully");
+
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving OPD Doctor Payment configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Inward Direct Issue Bill print format configuration changes specifically
+     */
+    public void saveInwardDirectIssueBillPaperConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4", inwardDirectIssueBillA4);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive", inwardDirectIssueBillFiveFive);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS", inwardDirectIssueBillPos);
+            JsfUtil.addSuccessMessage("Inward Direct Issue Bill print format settings saved");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save BHT Pharmacy Issue Request Receipt print format configuration changes
+     */
+    public void saveBhtIssueRequestReceiptConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is A4", bhtIssueRequestReceiptA4);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is FiveFive", bhtIssueRequestReceiptFiveFive);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is POS", bhtIssueRequestReceiptPos);
+            JsfUtil.addSuccessMessage("BHT Issue Request Receipt print format settings saved");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Fast Retail Sale configuration changes specifically (issue #22349)
+     */
+    public void saveFastRetailSaleConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper", fastSalePosPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill with Items is PosPaper", fastSaleWithItemsPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper(prabodha)", fastSalePrabodhaPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFivePaper", fastSaleFiveFivePaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", fastSalePosHeaderPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFiveCustom3", fastSaleCustom3Paper);
+
+            JsfUtil.addSuccessMessage("Fast Retail Sale configuration saved successfully");
+
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Fast Retail Sale configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Fast Retail Sale for Cashier configuration changes specifically (issue #22349)
+     */
+    public void saveFastSaleCashierConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", fastSaleCashierPosPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", fastSalePosHeaderPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", fastSaleCashierCustom3Paper);
+
+            JsfUtil.addSuccessMessage("Fast Retail Sale for Cashier configuration saved successfully");
+
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Fast Retail Sale for Cashier configuration: " + e.getMessage());
+        }
+    }
+
     // Getters and Setters
     public boolean isPosPaper() {
         return posPaper;
@@ -849,6 +1242,30 @@ public class PharmacyConfigController implements Serializable {
         this.grnReceiptCustom2 = grnReceiptCustom2;
     }
     
+
+    public boolean isBhtIssueReceiveReceiptA4() {
+        return bhtIssueReceiveReceiptA4;
+    }
+
+    public void setBhtIssueReceiveReceiptA4(boolean bhtIssueReceiveReceiptA4) {
+        this.bhtIssueReceiveReceiptA4 = bhtIssueReceiveReceiptA4;
+    }
+
+    public boolean isBhtIssueReceiveReceiptPos() {
+        return bhtIssueReceiveReceiptPos;
+    }
+
+    public void setBhtIssueReceiveReceiptPos(boolean bhtIssueReceiveReceiptPos) {
+        this.bhtIssueReceiveReceiptPos = bhtIssueReceiveReceiptPos;
+    }
+
+    public boolean isBhtIssueReceiveReceiptFiveFive() {
+        return bhtIssueReceiveReceiptFiveFive;
+    }
+
+    public void setBhtIssueReceiveReceiptFiveFive(boolean bhtIssueReceiveReceiptFiveFive) {
+        this.bhtIssueReceiveReceiptFiveFive = bhtIssueReceiveReceiptFiveFive;
+    }
 
     public boolean isTransferReceiveA4() {
         return transferReceiveA4;
@@ -1345,6 +1762,376 @@ public class PharmacyConfigController implements Serializable {
 
     public void setRetailSaleReturnRefundBillPosPaperCustom1(boolean retailSaleReturnRefundBillPosPaperCustom1) {
         this.retailSaleReturnRefundBillPosPaperCustom1 = retailSaleReturnRefundBillPosPaperCustom1;
+    }
+
+    // Inward Copayment Bill Getters and Setters
+    public boolean isInwardCopaymentPosPaper() {
+        return inwardCopaymentPosPaper;
+    }
+
+    public void setInwardCopaymentPosPaper(boolean inwardCopaymentPosPaper) {
+        this.inwardCopaymentPosPaper = inwardCopaymentPosPaper;
+    }
+
+    public boolean isInwardCopaymentFiveFivePaper() {
+        return inwardCopaymentFiveFivePaper;
+    }
+
+    public void setInwardCopaymentFiveFivePaper(boolean inwardCopaymentFiveFivePaper) {
+        this.inwardCopaymentFiveFivePaper = inwardCopaymentFiveFivePaper;
+    }
+
+    public boolean isInwardCopaymentA4Paper() {
+        return inwardCopaymentA4Paper;
+    }
+
+    public void setInwardCopaymentA4Paper(boolean inwardCopaymentA4Paper) {
+        this.inwardCopaymentA4Paper = inwardCopaymentA4Paper;
+    }
+
+    // Inward Payment Bill Getters and Setters
+    public boolean isInwardPaymentPosPaper() {
+        return inwardPaymentPosPaper;
+    }
+
+    public void setInwardPaymentPosPaper(boolean inwardPaymentPosPaper) {
+        this.inwardPaymentPosPaper = inwardPaymentPosPaper;
+    }
+
+    public boolean isInwardPaymentFiveFivePaper() {
+        return inwardPaymentFiveFivePaper;
+    }
+
+    public void setInwardPaymentFiveFivePaper(boolean inwardPaymentFiveFivePaper) {
+        this.inwardPaymentFiveFivePaper = inwardPaymentFiveFivePaper;
+    }
+
+    public boolean isInwardPaymentFiveFiveCustom3Paper() {
+        return inwardPaymentFiveFiveCustom3Paper;
+    }
+
+    public void setInwardPaymentFiveFiveCustom3Paper(boolean inwardPaymentFiveFiveCustom3Paper) {
+        this.inwardPaymentFiveFiveCustom3Paper = inwardPaymentFiveFiveCustom3Paper;
+    }
+
+    public boolean isInwardPaymentA4Paper() {
+        return inwardPaymentA4Paper;
+    }
+
+    public void setInwardPaymentA4Paper(boolean inwardPaymentA4Paper) {
+        this.inwardPaymentA4Paper = inwardPaymentA4Paper;
+    }
+
+    // Patient Deposit Getters and Setters
+    public boolean isPatientDepositPosPaper() {
+        return patientDepositPosPaper;
+    }
+
+    public void setPatientDepositPosPaper(boolean patientDepositPosPaper) {
+        this.patientDepositPosPaper = patientDepositPosPaper;
+    }
+
+    public boolean isPatientDepositA4Paper() {
+        return patientDepositA4Paper;
+    }
+
+    public void setPatientDepositA4Paper(boolean patientDepositA4Paper) {
+        this.patientDepositA4Paper = patientDepositA4Paper;
+    }
+
+    public boolean isPatientDepositCustomPaper() {
+        return patientDepositCustomPaper;
+    }
+
+    public void setPatientDepositCustomPaper(boolean patientDepositCustomPaper) {
+        this.patientDepositCustomPaper = patientDepositCustomPaper;
+    }
+
+    // Petty Cash Getters and Setters
+    public boolean isPettyCashPosPaper() {
+        return pettyCashPosPaper;
+    }
+
+    public void setPettyCashPosPaper(boolean pettyCashPosPaper) {
+        this.pettyCashPosPaper = pettyCashPosPaper;
+    }
+
+    public boolean isPettyCashA4Paper() {
+        return pettyCashA4Paper;
+    }
+
+    public void setPettyCashA4Paper(boolean pettyCashA4Paper) {
+        this.pettyCashA4Paper = pettyCashA4Paper;
+    }
+
+    public boolean isPettyCashCustomPaper() {
+        return pettyCashCustomPaper;
+    }
+
+    public void setPettyCashCustomPaper(boolean pettyCashCustomPaper) {
+        this.pettyCashCustomPaper = pettyCashCustomPaper;
+    }
+
+    // Fund Transfer Receive Bill Getters and Setters
+    public boolean isFundTransferReceivePosPaper() {
+        return fundTransferReceivePosPaper;
+    }
+
+    public void setFundTransferReceivePosPaper(boolean fundTransferReceivePosPaper) {
+        this.fundTransferReceivePosPaper = fundTransferReceivePosPaper;
+    }
+
+    public boolean isFundTransferReceivePosPrintedPaper() {
+        return fundTransferReceivePosPrintedPaper;
+    }
+
+    public void setFundTransferReceivePosPrintedPaper(boolean fundTransferReceivePosPrintedPaper) {
+        this.fundTransferReceivePosPrintedPaper = fundTransferReceivePosPrintedPaper;
+    }
+
+    public boolean isFundTransferReceiveFiveFivePaper() {
+        return fundTransferReceiveFiveFivePaper;
+    }
+
+    public void setFundTransferReceiveFiveFivePaper(boolean fundTransferReceiveFiveFivePaper) {
+        this.fundTransferReceiveFiveFivePaper = fundTransferReceiveFiveFivePaper;
+    }
+
+    public boolean isFundTransferReceiveFiveFivePrintedPaper() {
+        return fundTransferReceiveFiveFivePrintedPaper;
+    }
+
+    public void setFundTransferReceiveFiveFivePrintedPaper(boolean fundTransferReceiveFiveFivePrintedPaper) {
+        this.fundTransferReceiveFiveFivePrintedPaper = fundTransferReceiveFiveFivePrintedPaper;
+    }
+
+    public boolean isFundTransferReceiveA4Paper() {
+        return fundTransferReceiveA4Paper;
+    }
+
+    public void setFundTransferReceiveA4Paper(boolean fundTransferReceiveA4Paper) {
+        this.fundTransferReceiveA4Paper = fundTransferReceiveA4Paper;
+    }
+
+    public boolean isFundTransferReceiveA4PrintedPaper() {
+        return fundTransferReceiveA4PrintedPaper;
+    }
+
+    public void setFundTransferReceiveA4PrintedPaper(boolean fundTransferReceiveA4PrintedPaper) {
+        this.fundTransferReceiveA4PrintedPaper = fundTransferReceiveA4PrintedPaper;
+    }
+
+    public boolean isMiscStaffFeePosPaper() {
+        return miscStaffFeePosPaper;
+    }
+
+    public void setMiscStaffFeePosPaper(boolean miscStaffFeePosPaper) {
+        this.miscStaffFeePosPaper = miscStaffFeePosPaper;
+    }
+
+    public boolean isMiscStaffFeeFiveFivePaper() {
+        return miscStaffFeeFiveFivePaper;
+    }
+
+    public void setMiscStaffFeeFiveFivePaper(boolean miscStaffFeeFiveFivePaper) {
+        this.miscStaffFeeFiveFivePaper = miscStaffFeeFiveFivePaper;
+    }
+
+    public boolean isMiscStaffFeeA4Paper() {
+        return miscStaffFeeA4Paper;
+    }
+
+    public void setMiscStaffFeeA4Paper(boolean miscStaffFeeA4Paper) {
+        this.miscStaffFeeA4Paper = miscStaffFeeA4Paper;
+    }
+
+    // OPD Doctor Payment Getters and Setters
+    public boolean isOpdDoctorPaymentA4Paper() {
+        return opdDoctorPaymentA4Paper;
+    }
+
+    public void setOpdDoctorPaymentA4Paper(boolean opdDoctorPaymentA4Paper) {
+        this.opdDoctorPaymentA4Paper = opdDoctorPaymentA4Paper;
+    }
+
+    public boolean isOpdDoctorPaymentFiveFivePaper() {
+        return opdDoctorPaymentFiveFivePaper;
+    }
+
+    public void setOpdDoctorPaymentFiveFivePaper(boolean opdDoctorPaymentFiveFivePaper) {
+        this.opdDoctorPaymentFiveFivePaper = opdDoctorPaymentFiveFivePaper;
+    }
+
+    public boolean isOpdDoctorPaymentPosPaper() {
+        return opdDoctorPaymentPosPaper;
+    }
+
+    public void setOpdDoctorPaymentPosPaper(boolean opdDoctorPaymentPosPaper) {
+        this.opdDoctorPaymentPosPaper = opdDoctorPaymentPosPaper;
+    }
+
+    public boolean isOpdDoctorPaymentHideDetails() {
+        return opdDoctorPaymentHideDetails;
+    }
+
+    public void setOpdDoctorPaymentHideDetails(boolean opdDoctorPaymentHideDetails) {
+        this.opdDoctorPaymentHideDetails = opdDoctorPaymentHideDetails;
+    }
+
+    public boolean isOpdDoctorPaymentHideFiveFiveHeader() {
+        return opdDoctorPaymentHideFiveFiveHeader;
+    }
+
+    public void setOpdDoctorPaymentHideFiveFiveHeader(boolean opdDoctorPaymentHideFiveFiveHeader) {
+        this.opdDoctorPaymentHideFiveFiveHeader = opdDoctorPaymentHideFiveFiveHeader;
+    }
+
+    public boolean isGrnReceiptCustom3() {
+        return grnReceiptCustom3;
+    }
+
+    public void setGrnReceiptCustom3(boolean grnReceiptCustom3) {
+        this.grnReceiptCustom3 = grnReceiptCustom3;
+    }
+
+    // Inward BHT Direct Issue Bill Getters and Setters
+    public boolean isBhtIssuePosPaper() {
+        return bhtIssuePosPaper;
+    }
+
+    public void setBhtIssuePosPaper(boolean bhtIssuePosPaper) {
+        this.bhtIssuePosPaper = bhtIssuePosPaper;
+    }
+
+    public boolean isBhtIssueFiveFivePaper() {
+        return bhtIssueFiveFivePaper;
+    }
+
+    public void setBhtIssueFiveFivePaper(boolean bhtIssueFiveFivePaper) {
+        this.bhtIssueFiveFivePaper = bhtIssueFiveFivePaper;
+    }
+
+    public boolean isBhtIssueA4Paper() {
+        return bhtIssueA4Paper;
+    }
+
+    public void setBhtIssueA4Paper(boolean bhtIssueA4Paper) {
+        this.bhtIssueA4Paper = bhtIssueA4Paper;
+    }
+
+    // Inward Direct Issue Bill Getters and Setters
+    public boolean isInwardDirectIssueBillA4() {
+        return inwardDirectIssueBillA4;
+    }
+
+    public void setInwardDirectIssueBillA4(boolean inwardDirectIssueBillA4) {
+        this.inwardDirectIssueBillA4 = inwardDirectIssueBillA4;
+    }
+
+    public boolean isInwardDirectIssueBillFiveFive() {
+        return inwardDirectIssueBillFiveFive;
+    }
+
+    public void setInwardDirectIssueBillFiveFive(boolean inwardDirectIssueBillFiveFive) {
+        this.inwardDirectIssueBillFiveFive = inwardDirectIssueBillFiveFive;
+    }
+
+    public boolean isInwardDirectIssueBillPos() {
+        return inwardDirectIssueBillPos;
+    }
+
+    public void setInwardDirectIssueBillPos(boolean inwardDirectIssueBillPos) {
+        this.inwardDirectIssueBillPos = inwardDirectIssueBillPos;
+    }
+
+    // BHT Pharmacy Issue Request Receipt Getters and Setters
+    public boolean isBhtIssueRequestReceiptA4() {
+        return bhtIssueRequestReceiptA4;
+    }
+
+    public void setBhtIssueRequestReceiptA4(boolean bhtIssueRequestReceiptA4) {
+        this.bhtIssueRequestReceiptA4 = bhtIssueRequestReceiptA4;
+    }
+
+    public boolean isBhtIssueRequestReceiptFiveFive() {
+        return bhtIssueRequestReceiptFiveFive;
+    }
+
+    public void setBhtIssueRequestReceiptFiveFive(boolean bhtIssueRequestReceiptFiveFive) {
+        this.bhtIssueRequestReceiptFiveFive = bhtIssueRequestReceiptFiveFive;
+    }
+
+    public boolean isBhtIssueRequestReceiptPos() {
+        return bhtIssueRequestReceiptPos;
+    }
+
+    public void setBhtIssueRequestReceiptPos(boolean bhtIssueRequestReceiptPos) {
+        this.bhtIssueRequestReceiptPos = bhtIssueRequestReceiptPos;
+    }
+
+    // Fast Retail Sale Getters and Setters (issue #22349)
+    public boolean isFastSalePosPaper() {
+        return fastSalePosPaper;
+    }
+
+    public void setFastSalePosPaper(boolean fastSalePosPaper) {
+        this.fastSalePosPaper = fastSalePosPaper;
+    }
+
+    public boolean isFastSaleWithItemsPaper() {
+        return fastSaleWithItemsPaper;
+    }
+
+    public void setFastSaleWithItemsPaper(boolean fastSaleWithItemsPaper) {
+        this.fastSaleWithItemsPaper = fastSaleWithItemsPaper;
+    }
+
+    public boolean isFastSalePrabodhaPaper() {
+        return fastSalePrabodhaPaper;
+    }
+
+    public void setFastSalePrabodhaPaper(boolean fastSalePrabodhaPaper) {
+        this.fastSalePrabodhaPaper = fastSalePrabodhaPaper;
+    }
+
+    public boolean isFastSaleFiveFivePaper() {
+        return fastSaleFiveFivePaper;
+    }
+
+    public void setFastSaleFiveFivePaper(boolean fastSaleFiveFivePaper) {
+        this.fastSaleFiveFivePaper = fastSaleFiveFivePaper;
+    }
+
+    public boolean isFastSalePosHeaderPaper() {
+        return fastSalePosHeaderPaper;
+    }
+
+    public void setFastSalePosHeaderPaper(boolean fastSalePosHeaderPaper) {
+        this.fastSalePosHeaderPaper = fastSalePosHeaderPaper;
+    }
+
+    public boolean isFastSaleCustom3Paper() {
+        return fastSaleCustom3Paper;
+    }
+
+    public void setFastSaleCustom3Paper(boolean fastSaleCustom3Paper) {
+        this.fastSaleCustom3Paper = fastSaleCustom3Paper;
+    }
+
+    public boolean isFastSaleCashierPosPaper() {
+        return fastSaleCashierPosPaper;
+    }
+
+    public void setFastSaleCashierPosPaper(boolean fastSaleCashierPosPaper) {
+        this.fastSaleCashierPosPaper = fastSaleCashierPosPaper;
+    }
+
+    public boolean isFastSaleCashierCustom3Paper() {
+        return fastSaleCashierCustom3Paper;
+    }
+
+    public void setFastSaleCashierCustom3Paper(boolean fastSaleCashierCustom3Paper) {
+        this.fastSaleCashierCustom3Paper = fastSaleCashierCustom3Paper;
     }
 
 }

@@ -15,6 +15,9 @@ public class InpatientPharmacyIssueDTO implements Serializable {
     private String departmentName;
     private Boolean billCancelled;
     private Long referenceBillItemId;
+    private Double grossValue;
+    private Double discount;
+    private Double marginValue;
 
     public InpatientPharmacyIssueDTO() {
     }
@@ -46,6 +49,22 @@ public class InpatientPharmacyIssueDTO implements Serializable {
         this.referenceBillItemId = referenceBillItemId;
     }
 
+    public InpatientPharmacyIssueDTO(Long billItemId, String itemName, Double qty, Double netValue,
+            Date billCreatedAt, BillTypeAtomic billTypeAtomic, String departmentName,
+            Long referenceBillItemId, Double grossValue, Double discount, Double marginValue) {
+        this.billItemId = billItemId;
+        this.itemName = itemName;
+        this.qty = qty;
+        this.netValue = netValue;
+        this.billCreatedAt = billCreatedAt;
+        this.billTypeAtomic = billTypeAtomic;
+        this.departmentName = departmentName;
+        this.referenceBillItemId = referenceBillItemId;
+        this.grossValue = grossValue;
+        this.discount = discount;
+        this.marginValue = marginValue;
+    }
+
     // Calculated field for rate
     public Double getRate() {
         if (qty != null && qty != 0 && netValue != null) {
@@ -62,6 +81,8 @@ public class InpatientPharmacyIssueDTO implements Serializable {
         return billTypeAtomic == BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                 || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN;
     }
@@ -142,5 +163,29 @@ public class InpatientPharmacyIssueDTO implements Serializable {
 
     public void setReferenceBillItemId(Long referenceBillItemId) {
         this.referenceBillItemId = referenceBillItemId;
+    }
+
+    public Double getGrossValue() {
+        return grossValue;
+    }
+
+    public void setGrossValue(Double grossValue) {
+        this.grossValue = grossValue;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public Double getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(Double marginValue) {
+        this.marginValue = marginValue;
     }
 }

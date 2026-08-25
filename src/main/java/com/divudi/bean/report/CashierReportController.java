@@ -2316,13 +2316,40 @@ public class CashierReportController implements Serializable {
         c.setAgentCancelCheque(calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.AgentPaymentReceiveBill));
         c.setAgentCancelSlip(calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.AgentPaymentReceiveBill));
 
-        c.setInwardPaymentCash(calTotOwn(w, new BilledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill));
-        c.setInwardPaymentCheque(calTotOwn(w, new BilledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill));
-        c.setInwardPaymentSlip(calTotOwn(w, new BilledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill));
+        setInwardPaymentFields(c, w, true);
+    }
 
-        c.setInwardCancelCash(calTotOwn(w, new CancelledBill(), PaymentMethod.Cash, BillType.InwardPaymentBill));
-        c.setInwardCancelCheque(calTotOwn(w, new CancelledBill(), PaymentMethod.Cheque, BillType.InwardPaymentBill));
-        c.setInwardCancelSlip(calTotOwn(w, new CancelledBill(), PaymentMethod.Slip, BillType.InwardPaymentBill));
+    /**
+     * Shared by findSummeryOwn() and findSummery(). Sums both
+     * BillType.InwardPaymentBill (pre-final deposit) and
+     * BillType.PostFinalBillInwardPayment (#22617) into the same "Inward
+     * Payment" bucket, and folds RefundBill amounts into the cancel/reversal
+     * totals alongside CancelledBill (issue #22629 — refunds were previously
+     * never counted in either report).
+     */
+    private void setInwardPaymentFields(CashierSummeryData c, WebUser w, boolean own) {
+        c.setInwardPaymentCash(sumInwardPayment(w, new BilledBill(), PaymentMethod.Cash, own));
+        c.setInwardPaymentCheque(sumInwardPayment(w, new BilledBill(), PaymentMethod.Cheque, own));
+        c.setInwardPaymentSlip(sumInwardPayment(w, new BilledBill(), PaymentMethod.Slip, own));
+
+        c.setInwardCancelCash(
+                sumInwardPayment(w, new CancelledBill(), PaymentMethod.Cash, own)
+                + sumInwardPayment(w, new RefundBill(), PaymentMethod.Cash, own));
+        c.setInwardCancelCheque(
+                sumInwardPayment(w, new CancelledBill(), PaymentMethod.Cheque, own)
+                + sumInwardPayment(w, new RefundBill(), PaymentMethod.Cheque, own));
+        c.setInwardCancelSlip(
+                sumInwardPayment(w, new CancelledBill(), PaymentMethod.Slip, own)
+                + sumInwardPayment(w, new RefundBill(), PaymentMethod.Slip, own));
+    }
+
+    private static final List<BillType> INWARD_PAYMENT_BILL_TYPES
+            = Arrays.asList(BillType.InwardPaymentBill, BillType.PostFinalBillInwardPayment);
+
+    private double sumInwardPayment(WebUser w, Bill billClass, PaymentMethod pm, boolean own) {
+        return own
+                ? calTotOwn(w, billClass, pm, INWARD_PAYMENT_BILL_TYPES)
+                : calTot(w, billClass, pm, INWARD_PAYMENT_BILL_TYPES);
     }
 
     double calTotOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
@@ -2358,6 +2385,37 @@ public class CashierReportController implements Serializable {
         }
         return tot;
 
+    }
+
+    /**
+     * Same as calTotOwn(WebUser, Bill, PaymentMethod, BillType) but sums
+     * across several bill types in one query (b.billType IN :billTps)
+     * instead of one query per type.
+     */
+    private double calTotOwn(WebUser w, Bill billClass, PaymentMethod pM, List<BillType> billTypes) {
+        if (getSessionController().getInstitution() == null) {
+            return 0.0;
+        }
+
+        String sql = "select b from Bill b where type(b)=:bill and b.creater=:cret and "
+                + " b.paymentMethod=:payMethod  and b.institution=:ins"
+                + " and b.billType in :billTps and b.createdAt between :fromDate and :toDate ";
+
+        Map temMap = new HashMap();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTps", billTypes);
+        temMap.put("payMethod", pM);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("cret", w);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        double tot = 0;
+        for (Bill b : bills) {
+            tot += b.getNetTotal();
+        }
+        return tot;
     }
 
     public Date getFromDate() {
@@ -2400,7 +2458,8 @@ public class CashierReportController implements Serializable {
         List<BillType> btpList = Arrays.asList(btpArr);
         sql = "select DISTINCT(b.creater) from "
                 + " Bill b "
-                + " where b.institution=:ins "
+                + " where b.retired=false "
+                + " and b.institution=:ins "
                 + " and b.billType in :btp "
                 + " and b.createdAt between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
@@ -2561,18 +2620,43 @@ public class CashierReportController implements Serializable {
         c.setAgentCancelCheque(calTot(w, new CancelledBill(), PaymentMethod.Cheque, BillType.AgentPaymentReceiveBill));
         c.setAgentCancelSlip(calTot(w, new CancelledBill(), PaymentMethod.Slip, BillType.AgentPaymentReceiveBill));
 
+        setInwardPaymentFields(c, w, false);
     }
 
     double calTot(WebUser w, Bill bill, PaymentMethod paymentMethod, BillType billType) {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from Bill b  where type(b)=:bill and b.creater=:web and "
+        sql = "select b from Bill b  where b.retired=false and type(b)=:bill and b.creater=:web and "
                 + "b.paymentMethod= :pm "
                 + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTp", billType);
+        temMap.put("pm", paymentMethod);
+        temMap.put("bill", bill.getClass());
+        temMap.put("web", w);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        double tot = 0;
+        for (Bill b : bills) {
+            tot += b.getNetTotal();
+        }
+        return tot;
+    }
+
+    /**
+     * Same as calTot(WebUser, Bill, PaymentMethod, BillType) but sums across
+     * several bill types in one query (b.billType IN :billTps) instead of
+     * one query per type.
+     */
+    private double calTot(WebUser w, Bill bill, PaymentMethod paymentMethod, List<BillType> billTypes) {
+        String sql = "select b from Bill b  where b.retired=false and type(b)=:bill and b.creater=:web and "
+                + "b.paymentMethod= :pm "
+                + " and b.billType in :billTps and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTps", billTypes);
         temMap.put("pm", paymentMethod);
         temMap.put("bill", bill.getClass());
         temMap.put("web", w);

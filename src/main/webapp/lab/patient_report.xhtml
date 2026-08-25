@@ -15,6 +15,19 @@
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" >
                 <h:form>
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
+
+                    <style>
+                        /* Preserve consecutive spaces typed into the microbiology
+                           memo Text Editor (Quill), so extra in-line spacing is
+                           not collapsed while entering the result. */
+                        .micMemoEditor .ql-editor {
+                            white-space: pre-wrap;
+                        }
+                    </style>
+
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js" integrity="sha512-pdCVFUWsxl1A4g0uV6fyJ3nrnTGeWnZN2Tl/56j45UvZ1OMdm9CIbctuIHj+yBIRTUUyv6I9+OivXj4i0LPEYA==" crossorigin="anonymous"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js" integrity="sha512-VKjwFVu/mmKGk0Z0BxgDzmn10e590qk3ou/jkmRugAkSTMSIRkd4nEnk+n7r5WBbJquusQEQjBidrBD3IQQISQ==" crossorigin="anonymous"></script>
+
                     <p:panel>
                         <f:facet  name="header" >
                             <div class="row d-flex align-items-center">
@@ -97,6 +110,8 @@
                                                 rendered ="#{(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   
                                                 value="Cancel Approval"
                                                 icon="fa-solid fa-times"
+                                                onclick="if (!confirm('Are you sure you want to cancel the approval of this report?'))
+                                                            return false;"
                                                 class=" ui-button-danger"
                                                 action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false"   >
                                             </p:commandButton>
@@ -104,34 +119,88 @@
 
                                         <div class="d-flex gap-2">
 
-                                            <p:commandButton   
-                                                ajax="false" 
+                                            <p:remoteCommand 
+                                                name="recordExportHistory"
+                                                actionListener="#{patientReportController.reportExport()}"
+                                                async="true">
+                                            </p:remoteCommand>
+
+                                            <p:remoteCommand 
+                                                name="recordPrintHistory"
+                                                actionListener="#{patientReportController.printPatientReport()}"
+                                                async="true">
+                                            </p:remoteCommand>
+
+                                            <p:remoteCommand name="recordUnapprovedExportHistory"
+                                                             actionListener="#{patientReportController.exportUnapprovedReport()}"
+                                                             async="true">
+                                            </p:remoteCommand>
+
+                                            <p:remoteCommand name="recordUnapprovedPrintHistory"
+                                                             actionListener="#{patientReportController.printUnapprovedReport()}"
+                                                             async="true">
+                                            </p:remoteCommand>
+
+                                            <p:commandButton
+                                                value="Export PDF"
+                                                class="ui-button-channelling"
+                                                icon="fas fa-file-pdf"
+                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
+                                                disabled="#{not patientReportController.currentPatientReport.approved}"
+                                                onclick="downloadPdf()"
+                                                type="button"
+                                                ajax="false">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                type="button"
                                                 icon="fa-solid fa-print"
                                                 class="mx-1 ui-button-info"
-                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
-                                                value="Print" 
-                                                onclick="#{patientReportController.printPatientReport()}"
+                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
+                                                value="Print"
+                                                onclick="recordPrintHistory();"
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
 
-                                            <p:commandButton   
-                                                ajax="false" 
+                                            <p:commandButton
+                                                type="button"
                                                 icon="fa-solid fa-print"
                                                 class="mx-1 ui-button-info"
-                                                rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
-                                                value="Print" 
-                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}"
-                                                onclick="#{patientReportController.printPatientReport()}">
+                                                rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
+                                                value="Print"
+                                                onclick="recordPrintHistory();"
+                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
+                           
+                                            <p:commandButton
+                                                id="btnDraftExportPdf"
+                                                value="Draft Export PDF"
+                                                class="ui-button-channelling"
+                                                icon="fas fa-file-pdf"
+                                                rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved}"
+                                                onclick="printDraftReport();"
+                                                type="button"
+                                                ajax="false">
+                                            </p:commandButton>
 
-                                            <p:commandButton    
-                                                value="Patient Report Search" 
+                                            <p:commandButton
+                                                id="btnDraftPrint"
+                                                type="button"
+                                                icon="fa-solid fa-print"
+                                                class="mx-1 ui-button-info"
+                                                rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved}"
+                                                value="Draft Print"
+                                                onclick="printDraftReport();">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Patient Report Search"
                                                 icon="fa-solid fa-search"
                                                 rendered="false"
                                                 class=" ui-button-warning"
-                                                action="/lab/patient_reports_search?faces-redirect=true" 
+                                                action="/lab/patient_reports_search?faces-redirect=true"
                                                 ajax="false" >
                                             </p:commandButton>
 
@@ -140,7 +209,7 @@
                                                 value="Back"
                                                 action="#{laboratoryManagementController.navigateToBackFormPatientReportEditingView()}"
                                                 icon="fa-solid fa-arrow-left"
-                                                style="float: right;"  >
+                                                style="float: right;">
                                             </p:commandButton>
 
                                         </div>
@@ -152,10 +221,84 @@
 
                         <p:growl id="messages" showDetail="false" /> 
 
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the priority Alert Note in Patient Report View',false)}">
+
+                            <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority eq 'HIGH'}">
+                                <div class="alert alert-link" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
+                                    <div class="d-grid justify-content-center" style="line-height: 0.8; z-index: 10000">
+                                        <h2 class="alert-heading"><b>⚠ #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.displayName} Priority Report. </b></h2>
+                                        <br/>
+                                        <h4 class="d-flex justify-content-center">#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.description}</h4>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority eq 'URGENT'}">
+                                <div class="alert alert-warning" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
+                                    <div class="d-grid justify-content-center" style="line-height: 0.8; z-index: 10000">
+                                        <h2 class="alert-heading"><b>🚨 #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.displayName} Priority Report. </b></h2>
+                                        <br/>
+                                        <h4 class="d-flex justify-content-center">#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.description}</h4>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority eq 'CRITICAL'}">
+                                <div class="alert alert-danger" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
+                                    <div class="d-grid justify-content-center" style="line-height: 0.8; z-index: 10000">
+                                        <h2 class="alert-heading"><b>🔥 #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.displayName} Priority Report. </b></h2>
+                                        <br/>
+                                        <h4 class="d-flex justify-content-center">#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.description}</h4>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to record the history of issuing lab reports.',true) and patientReportController.currentPatientReport.approved}">
+                            <div class="row mb-4">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patientEncounter ne null}" class="d-flex gap-2">
+                                        <p:autoComplete 
+                                            completeMethod="#{staffController.completeStaff}"
+                                            value="#{laboratoryManagementController.reportHandoverStaff}" 
+                                            var="mys"
+                                            style="width: 400px;"
+                                            maxResults="15"
+                                            placeholder="Please Add a Staff"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{mys.person.nameWithTitle}" 
+                                            panelStyleClass="custom-dropdown-panel"
+                                            itemValue="#{mys}">
+                                            <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
+                                            <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                        </p:autoComplete>
+
+                                        <p:commandButton 
+                                            ajax="false"
+                                            value="Handover to Ward Staff" 
+                                            icon="fa-solid fa-people-carry-box"
+                                            style="float: right"
+                                            class="ui-button-stores" 
+                                            action="#{laboratoryManagementController.addIssueHistory()}">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Handover to Patient" 
+                                        icon="fa-solid fa-people-carry-box"
+                                        rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patientEncounter eq null}"
+                                        style="float: right"
+                                        class="ui-button-stores" 
+                                        action="#{laboratoryManagementController.addIssueHistory()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
                         <div class="row">
 
                             <div class="col-5">
-
                                 <!--                            Enter Values                        -->
                                 <p:panel header="Enter Values"  
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
@@ -168,23 +311,45 @@
                                                     <td style="min-width: 200px!important;">
                                                         <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                     </td>
-                                                    <td >
-                                                        <p:inputText class="mx-2" autocomplete="off" value="#{pvv.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                     rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and empty pvv.investigationItem.investigationItemValues}" >
+                                                    <td class="w-100">
+                                                        <p:inputText 
+                                                            class="mx-2" 
+                                                            autocomplete="off" 
+                                                            value="#{pvv.strValue}" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and empty pvv.investigationItem.investigationItemValues}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        <p:selectOneMenu class="mx-2" value="#{pvv.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and !empty pvv.investigationItem.investigationItemValues}" 
-                                                                         editable="true"  style="min-width: 300px!important;" >
+
+                                                        <p:selectOneMenu 
+                                                            class="mx-2" 
+                                                            value="#{pvv.strValue}" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and !empty pvv.investigationItem.investigationItemValues}" 
+                                                            editable="true"  
+                                                            style="min-width: 300px!important;" >
                                                             <f:selectItems value="#{pvv.investigationItem.investigationItemValues}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv.name}" ></f:selectItems>
                                                             <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:selectOneMenu>
-                                                        <p:inputText class="mx-2" id="txtValDbl" autocomplete="off" value="#{pvv.doubleValue}" validatorMessage="Entered value not valid. Please recheck." converterMessage="Entered value not valid. Please recheck."
-                                                                     rendered="#{pvv.investigationItem.ixItemValueType eq 'Double'}" disabled="#{patientReportController.currentPatientReport.approved}">
+
+                                                        <p:inputText 
+                                                            class="mx-2" 
+                                                            id="txtValDbl" 
+                                                            autocomplete="off" 
+                                                            value="#{pvv.doubleValue}" 
+                                                            validatorMessage="Entered value not valid. Please recheck." 
+                                                            converterMessage="Entered value not valid. Please recheck."
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Double'}" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}">
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        <p:inputTextarea class="mx-2" value="#{pvv.lobValue}" queryDelay="0" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo'}" >
+
+                                                        <p:inputTextarea 
+                                                            class="mx-2 w-100" 
+                                                            value="#{pvv.lobValue}" 
+                                                            queryDelay="0" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo'}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputTextarea>
                                                     </td>
@@ -193,6 +358,23 @@
                                         </ui:repeat>
                                     </table>
                                 </p:panel>
+
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('MLT allows marking on the report that immediate review by a physician is required.',false)}">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing') and patientReportController.hasWarningFlagInPatientReport()}">
+                                        <div class="card my-5 sample-card shadow">
+                                            <div class="d-flex justify-content-between m-2 p-2">
+                                                <h:outputLabel value="Requires Immediate Doctor Review" class="text-danger" style="font-weight: 700; font-size: 18px;"></h:outputLabel>
+                                                <p:toggleSwitch 
+                                                    id="reqDoctorReview"
+                                                    disabled ="#{!patientReportController.currentPatientReport.dataEntered or patientReportController.currentPatientReport.approved}"   
+                                                    value="#{patientReportController.currentPatientReport.requiresImmediateDoctorReview}" 
+                                                    onIcon="pi pi-check" 
+                                                    offIcon="pi pi-times">
+                                                </p:toggleSwitch>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
 
                                 <!--                            Calculations                        -->
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
@@ -209,12 +391,19 @@
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
-                                                            <p:inputText autocomplete="off" value="#{pvcal.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvcal.investigationItem.ixItemValueType eq 'Varchar'}" >
+                                                            <p:inputText 
+                                                                autocomplete="off" 
+                                                                value="#{pvcal.strValue}" 
+                                                                disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                rendered="#{pvcal.investigationItem.ixItemValueType eq 'Varchar'}" >
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
                                                             </p:inputText>
-                                                            <p:inputText autocomplete="off" value="#{pvcal.doubleValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvcal.investigationItem.ixItemValueType eq 'Double'}" >
+
+                                                            <p:inputText 
+                                                                autocomplete="off" 
+                                                                value="#{pvcal.doubleValue}" 
+                                                                disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                rendered="#{pvcal.investigationItem.ixItemValueType eq 'Double'}" >
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
                                                             </p:inputText>
                                                         </td>
@@ -227,24 +416,28 @@
                                 </h:panelGroup>
 
                                 <!--                            Flags                               -->
-                                <p:panel class="my-2" header="Flags" id="tblFlags"
-                                         rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" 
-                                         >
+                                <p:panel 
+                                    class="my-2" 
+                                    header="Flags" 
+                                    id="tblFlags"
+                                    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" >
 
                                     <h:panelGroup rendered="true" >
-
                                         <table >
-                                            <ui:repeat  
-                                                value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
-                                                var="pvf" 
-                                                >
+                                            <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="pvf" >
                                                 <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
                                                     <tr>
                                                         <td  style="min-width: 200px!important;">
                                                             <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td>
-                                                            <p:selectOneMenu class="mx-2 w-100" id="cmbStrFlag" value="#{pvf.strValue}" editable="true" style="min-width: 200px;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                            <p:selectOneMenu 
+                                                                class="mx-2 w-100" 
+                                                                id="cmbStrFlag" 
+                                                                value="#{pvf.strValue}" 
+                                                                editable="true" 
+                                                                style="min-width: 200px;" 
+                                                                disabled="#{patientReportController.currentPatientReport.approved}">
                                                                 <f:selectItems value="#{testFlagController.getIxItemFlagsString(pvf.investigationItem)}" var="iivfh" itemLabel="#{iivfh}" itemValue="#{iivfh}" ></f:selectItems>
                                                             </p:selectOneMenu>
                                                         </td>
@@ -252,8 +445,6 @@
                                                 </h:panelGroup>
                                             </ui:repeat>
                                         </table>
-
-
                                     </h:panelGroup>
 
                                 </p:panel>
@@ -261,9 +452,10 @@
                                 <!--                            Dynamic Labels                      -->
                                 <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                     <table >
-                                        <ui:repeat id="tblDls" 
-                                                   value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
-                                                   var="pvd"  >
+                                        <ui:repeat 
+                                            id="tblDls" 
+                                            value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
+                                            var="pvd"  >
                                             <h:panelGroup rendered="#{pvd.investigationItem.ixItemType eq 'DynamicLabel'}" >
                                                 <tr>
                                                     <td >
@@ -280,8 +472,8 @@
                                                                 value="#{investigationItemDynamicLabelController.getDynamicLabelsByIxItId(pvd.investigationItem)}" 
                                                                 var="iivd" 
                                                                 itemLabel="#{iivd.flagMessage}" 
-                                                                itemValue="#{iivd.flagMessage}" ></f:selectItems>
-
+                                                                itemValue="#{iivd.flagMessage}" >
+                                                            </f:selectItems>
                                                             <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:selectOneMenu>
                                                     </td>
@@ -296,169 +488,165 @@
                                     header="Microbiology"    
                                     id="panelDataEntryForMicrobiology"
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
-                                    <f:view contentType="text/html">
-                                        <h:panelGroup >
-                                            <table class="w-100">
-                                                <ui:repeat id="tblMicValsExceptAntibiotics" 
-                                                           value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
-                                                           var="pvm"   
-                                                           >
-                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value'}" >
-                                                        <tr>
-                                                            <td  style="min-width: 280px!important;">
-                                                                <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
-                                                            </td>
-                                                            <td >
-                                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                    <p:inputTextarea 
-                                                                        rendered="true" id="txtMicMemoVal" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
-                                                                        completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                        value="#{pvm.lobValue}" >
-                                                                        <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                    </p:inputTextarea>
-                                                                </h:panelGroup>
-                                                            </td>
-                                                        </tr>
-                                                    </h:panelGroup>
-                                                </ui:repeat>
-                                            </table>
-                                        </h:panelGroup>
-
-                                        <p:divider >
-                                            <b>Add Group</b>
-                                        </p:divider>
-                                        <div class="d-flex gap-3 justify-content-between">
-                                            <p:outputLabel 
-                                                for="txtGroupName"
-                                                class="mt-2"
-                                                value="Group Name" >
-                                            </p:outputLabel>
-                                            <p:inputText
-                                                id="txtGroupName"
-                                                class="w-50"
-                                                value="#{patientReportController.groupName}" >
-                                            </p:inputText>
-                                            <p:commandButton 
-                                                id="btnAddPatientReportGroupForMicrobiology"
-                                                value="Add Group"
-                                                icon="fa fa-plus"
-                                                ajax="false"
-                                                class="ui-button-warning"
-                                                action="#{patientReportController.addPatientReportGroupForMicrobiology()}">
-                                            </p:commandButton>
-                                        </div>
-
-                                        <p:divider />
-
-                                        <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
-                                            <table >
-                                                <ui:repeat id="tblMicVals" 
-                                                           value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
-                                                           var="pvm"   
-                                                           >
-                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value' or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
-                                                        <tr>
-                                                            <td  style="min-width: 280px!important;">
-                                                                <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
-                                                            </td>
-                                                            <td >
-
-                                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                    <p:inputTextarea rendered="true" id="txtMicMemoVal" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
-                                                                                     completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                                     value="#{pvm.lobValue}" >
-                                                                        <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                    </p:inputTextarea>
-                                                                </h:panelGroup>
-                                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
-                                                                    <p:selectOneMenu id="cmbMicStrVal" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                                        <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
-                                                                        <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
-                                                                        <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
-                                                                        <f:ajax event="change"  execute="@this" 
-                                                                                listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
-                                                                    </p:selectOneMenu>
-                                                                </h:panelGroup>
-
-                                                            </td>
-                                                        </tr>
-                                                    </h:panelGroup>
-                                                </ui:repeat>
-                                            </table>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
-                                            <table >
-
-                                                <ui:repeat 
-                                                    id="tblMicValsGroupes" 
-                                                    value="#{patientReportController.currentPatientReport.patientReportGroups}"  
-                                                    var="group"   
-                                                    >
+                                    <h:panelGroup >
+                                        <table class="w-100">
+                                            <ui:repeat id="tblMicValsExceptAntibiotics"
+                                                       value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
+                                                       var="pvm"   
+                                                       >
+                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value'}" >
                                                     <tr>
-                                                        <td  colspan="3">
-                                                            <h:outputText 
-                                                                escape="false"
-                                                                class="h4"
-                                                                value="#{group.groupName}" >
-                                                            </h:outputText>
+                                                        <td  style="width: 280px!important;">
+                                                            <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
                                                         </td>
+                                                        <td >
+                                                            <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                                <p:textEditor
+                                                                    id="txtMicMemoVal"
+                                                                    class="w-100 mt-1 micMemoEditor"
+                                                                    secure="false"
+                                                                    allowFormatting="true"
+                                                                    allowBlocks="true"
+                                                                    allowStyles="true"
+                                                                    disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                    value="#{pvm.lobValue}" >
+                                                                    <f:facet name="toolbar">
+                                                                        <span class="ql-formats">
+                                                                            <button class="ql-bold"></button>
+                                                                            <button class="ql-italic"></button>
+                                                                            <button class="ql-underline"></button>
+                                                                            <button class="ql-strike"></button>
+                                                                        </span>
 
-                                                    </tr>
+                                                                        <span class="ql-formats">
+                                                                            <select class="ql-font"></select>
+                                                                            <select class="ql-size"></select>
+                                                                        </span>
 
-                                                    <ui:repeat id="tblMicValsGrouped" 
-                                                               value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
-                                                               var="pvm"   
-                                                               >
-                                                        <h:panelGroup 
-                                                            rendered="#{pvm.patientReportGroup.groupName eq group.groupName}" >
+                                                                        <span class="ql-formats">
+                                                                            <button class="ql-script" value="sub"></button>
+                                                                            <button class="ql-script" value="super"></button>
+                                                                        </span>
 
-                                                            <h:panelGroup 
-                                                                rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
-                                                                <tr>
-                                                                    <td  style="min-width: 280px!important;">
-                                                                        <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
-                                                                    </td>
-                                                                    <td >
-                                                                        <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                            <p:inputTextarea 
-                                                                                rendered="true" 
-                                                                                id="txtMicMemoValGrouped" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
-                                                                                completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                                value="#{pvm.lobValue}" >
-                                                                                <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                            </p:inputTextarea>
-                                                                        </h:panelGroup>
-                                                                        <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
-                                                                            <p:selectOneMenu 
-                                                                                id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                                                <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
-                                                                                <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
-                                                                                <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
-                                                                                <f:ajax event="change"  execute="@this" 
-                                                                                        listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
-                                                                            </p:selectOneMenu>
-                                                                        </h:panelGroup>
+                                                                        <span class="ql-formats">
+                                                                            <button class="ql-list" value="ordered"></button>
+                                                                            <button class="ql-list" value="bullet"></button>
+                                                                            <button class="ql-indent" value="-1"></button>
+                                                                            <button class="ql-indent" value="+1"></button>
+                                                                        </span>
 
-                                                                    </td>
-                                                                </tr>
+                                                                        <span class="ql-formats">
+                                                                            <select class="ql-align"></select>
+                                                                        </span>
+
+                                                                    </f:facet>
+                                                                    <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
+                                                                </p:textEditor>
                                                             </h:panelGroup>
-
-                                                        </h:panelGroup>
-                                                    </ui:repeat>
-
-                                                    <tr>
-                                                        <td colspan="4">
-                                                            <p:divider />
                                                         </td>
                                                     </tr>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+                                        </table>
+                                    </h:panelGroup>
 
+                                    <p:divider>
+                                        <div class="d-flex justify-content-center">
+                                            <b>Add Antibiotic Group</b>
+                                        </div>
+                                    </p:divider>
+                                    <div class="d-flex gap-3 justify-content-between">
+                                        <p:outputLabel 
+                                            for="txtGroupName"
+                                            class="mt-2"
+                                            value="Group Name" >
+                                        </p:outputLabel>
+                                        <p:inputText
+                                            id="txtGroupName"
+                                            class="w-50"
+                                            value="#{patientReportController.groupName}" >
+                                        </p:inputText>
+                                        <p:commandButton
+                                            id="btnAddPatientReportGroupForMicrobiology"
+                                            value="Add Group"
+                                            icon="fa fa-plus"
+                                            process="@this txtGroupName"
+                                            update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId}"
+                                            class="ui-button-warning"
+                                            action="#{patientReportController.addPatientReportGroupForMicrobiology()}">
+                                        </p:commandButton>
+                                    </div>
+
+                                    <p:divider />
+
+                                    <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
+                                        <table >
+
+                                            <ui:repeat 
+                                                id="tblMicValsGroupes" 
+                                                value="#{patientReportController.currentPatientReport.patientReportGroups}"  
+                                                var="group"   
+                                                >
+                                                <tr>
+                                                    <td  colspan="3">
+                                                        <h:outputText 
+                                                            escape="false"
+                                                            class="h4"
+                                                            value="#{group.groupName}" >
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+
+                                                <ui:repeat id="tblMicValsGrouped" 
+                                                           value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
+                                                           var="pvm"   
+                                                           >
+                                                    <h:panelGroup 
+                                                        rendered="#{pvm.patientReportGroup.groupName eq group.groupName}" >
+
+                                                        <h:panelGroup 
+                                                            rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
+                                                            <tr>
+                                                                <td  style="min-width: 280px!important;">
+                                                                    <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
+                                                                </td>
+                                                                <td >
+                                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                                        <p:inputTextarea 
+                                                                            rendered="true" 
+                                                                            id="txtMicMemoValGrouped" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
+                                                                            completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                            value="#{pvm.lobValue}" >
+                                                                            <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
+                                                                        </p:inputTextarea>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
+                                                                        <p:selectOneMenu 
+                                                                            id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                            <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
+                                                                            <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
+                                                                            <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
+                                                                            <f:ajax event="change"  execute="@this" 
+                                                                                    listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
+                                                                        </p:selectOneMenu>
+                                                                    </h:panelGroup>
+
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
+
+                                                    </h:panelGroup>
                                                 </ui:repeat>
-                                            </table>
-                                        </h:panelGroup>
 
+                                                <tr>
+                                                    <td colspan="4">
+                                                        <p:divider />
+                                                    </td>
+                                                </tr>
 
-                                    </f:view>
+                                            </ui:repeat>
+                                        </table>
+                                    </h:panelGroup>
 
                                 </p:panel>
 
@@ -576,6 +764,7 @@
                                         <p:outputLabel for="sampleIDs" value="sample IDs" ></p:outputLabel>
                                         <p:inputText 
                                             id="sampleIDs" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.sampleIDs}"
                                             class="w-100">
                                         </p:inputText>
@@ -584,6 +773,7 @@
                                         <p:autoComplete 
                                             id="refIns" 
                                             forceSelection="true" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referenceInstitution}"
                                             completeMethod="#{institutionController.completeIns}"
                                             var="ri" 
@@ -602,6 +792,7 @@
                                             <p:autoComplete 
                                                 forceSelection="true" 
                                                 id="cmbDoc" 
+                                                readonly="#{patientReportController.currentPatientReport.approved}"
                                                 value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy}" 
                                                 completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                 itemLabel="#{ix.person.nameWithTitle}" 
@@ -669,6 +860,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -677,6 +869,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -685,6 +878,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -693,6 +887,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}"  
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -701,6 +896,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -709,6 +905,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.createdAt}" 
                                             class="w-100"
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -717,6 +914,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.approveAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -737,43 +935,18 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
 
                                     </p:panelGrid>
 
-                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
-
-                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers') and (patientReportController.currentPatientReport.patientName ne null or patientReportController.currentPatientReport.patientGender ne null or patientReportController.currentPatientReport.patientAge ne null)}">
-
-                                        <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientName" 
-                                            value="#{patientReportController.currentPatientReport.patientName}" 
-                                            class="w-100">
-                                        </p:inputText>
-
-                                        <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientAge" 
-                                            value="#{patientReportController.currentPatientReport.patientAge}" 
-                                            class="w-100">
-                                        </p:inputText>
-
-                                        <p:outputLabel for="PatientGender" value="Patient Gender" ></p:outputLabel>
-                                        <p:inputText 
-                                            id="PatientGender" 
-                                            value="#{patientReportController.currentPatientReport.patientGender}" 
-                                            class="w-100">
-                                        </p:inputText>
-
-                                    </p:panelGrid>
                                 </p:panel>
 
                             </div>
 
                             <div class="col-7 ">
-                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end">
+                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface', false)}">
                                     <p:commandButton 
                                         value="Back to Other patient Investigations" 
                                         icon="fa-solid fa-circle-left"
@@ -792,9 +965,83 @@
                                 </h:panelGroup>
 
                                 <div class="mb-1 row w-100" >
-                                    <p:panel class="mx-2" header="Patient details" >
-                                        <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>
-                                    </p:panel>
+                                    <div class="col-md-5">
+                                        <p:panel header="Patient Details" >
+                                            <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>
+                                        </p:panel>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <p:panel >
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between">
+                                                    <p:outputLabel value="Patient Details (Report Header)" class="mt-2"></p:outputLabel>
+                                                    <p:commandButton
+                                                        ajax="false"
+                                                        class="ui-button-channelling"
+                                                        icon="fa fa-refresh"
+                                                        disabled="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') }"
+                                                        action="#{patientReportController.reloadPatientDetailsInReport()}"
+                                                        value="Reload Patient Details" >
+                                                    </p:commandButton>
+                                                </div>
+                                            </f:facet>
+                                            <div>
+                                                <div class="row">
+                                                    <div class="col-md-5">
+                                                        <p:outputLabel for="PatientName" value="Patient Name"  class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p:inputText
+                                                            id="PatientName"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientName}"
+                                                            class="w-100">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                               
+                                                <div class="row my-2">
+                                                    <div class="col-md-5">
+                                                        <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p:inputText
+                                                            id="PatientAge"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientAge}"
+                                                            class="w-100">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-5">
+                                                        <p:outputLabel for="PatientGender" value="Patient Gender"  class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p:inputText
+                                                            id="PatientGender"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientGender}"
+                                                            class="w-100">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <f:facet name="footer">
+                                                <div class="alert alert-warning" role="alert" style="padding: 5px;">
+                                                    <div class="d-flex gap-2">
+                                                        <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size: 70px;  padding: 10px; color: #f39c12;"></i>
+                                                        <div class="card-body d-flex justify-content-center text-center" style="font-weight: 700; font-size: 18px;">
+                                                            When updating patient information,<br/> please verify that the reference range and flag are consistent with <br/>the patient’s age and gender to ensure accurate result interpretation.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+
+                                        </p:panel>
+                                    </div>
+
                                 </div>
 
                                 <style>
@@ -806,9 +1053,85 @@
                                             position: static !important;
                                         }
                                         /* Repeat for other elements as needed */
+
+                                        /* Draft print: show only the report (#pdf) and hide the rest of
+                                           the page. Scoped to a body class so it only applies when the
+                                           Draft Print button triggers window.print(), never affecting the
+                                           regular p:printer button or Ctrl+P. */
+                                        body.draft-printing * {
+                                            visibility: hidden !important;
+                                        }
+                                        body.draft-printing #pdf,
+                                        body.draft-printing #pdf * {
+                                            visibility: visible !important;
+                                        }
+                                        body.draft-printing #pdf {
+                                            position: absolute;
+                                            left: 0;
+                                            top: 0;
+                                            width: 100%;
+                                        }
                                     }
 
                                 </style>
+
+                                <script>
+                                    function downloadPdf() {
+                                        console.log("Downloading PDF...");
+                                        recordExportHistory();
+                                        console.log("Add History to Downloading PDF ...");
+                                        const element = document.getElementById('pdf');
+                                        element.classList.remove('print-only');
+
+                                        const opt = {
+                                            margin: [0, 0, 0, 0], // top, left, bottom, right
+                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                            image: {type: 'jpeg', quality: 1.00},
+                                            html2canvas: {
+                                                scale: 2,
+                                                useCORS: true,
+                                                allowTaint: false
+                                            },
+                                            jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
+                                        };
+
+                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                                            pdf.deletePage(2); // Remove the second page if it exists
+                                        }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        });
+                                    }
+
+                                    // Draft print for unapproved microbiology reports: record the
+                                    // draft-print history, then print only the report (#pdf) via a
+                                    // scoped @media print rule. Self-contained so it does not depend on
+                                    // the PrimeFaces p:printer behaviour.
+                                    function printDraftReport() {
+                                        console.log("Downloading PDF...");
+                                        recordUnapprovedPrintHistory();
+                                        console.log("Add History to Downloading PDF ...");
+                                        const element = document.getElementById('pdf');
+                                        element.classList.remove('print-only');
+
+                                        const opt = {
+                                            margin: [0, 0, 0, 0], // top, left, bottom, right
+                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                            image: {type: 'jpeg', quality: 1.00},
+                                            html2canvas: {
+                                                scale: 2,
+                                                useCORS: true,
+                                                allowTaint: false
+                                            },
+                                            jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
+                                        };
+
+                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                                            pdf.deletePage(2); // Remove the second page if it exists
+                                        }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        });
+                                    }
+                                </script>
 
                                 <div class="d-flex justify-content-end m-3">
                                     <h:outputLabel value="Show Background" class="mt-2" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
@@ -820,17 +1143,20 @@
                                 <div class="d-flex justify-content-center">
                                     <h:panelGroup  id="divPrint" >
 
-                                        <!--HtmlTemplate-->
-                                        <lab:html_patient_report/>
+                                        <div id="pdf">
+                                            <!--HtmlTemplate-->
+                                            <lab:html_patient_report/>
 
-                                        <!--General-->
-                                        <lab:general_patient_report/>
+                                            <!--General-->
+                                            <lab:general_patient_report/>
 
-                                        <!--Microbiology-->
-                                        <lab:microbiology_patient_report/>
+                                            <!--Microbiology-->
+                                            <lab:microbiology_patient_report/>
 
-                                        <!--PathologyOrHaematology-->
-                                        <lab:pathology_patient_report/>
+                                            <!--PathologyOrHaematology-->
+                                            <lab:pathology_patient_report/>
+                                        </div>
+
 
                                     </h:panelGroup>
                                 </div>
@@ -930,7 +1256,8 @@
                                     id="btnCloseEmailDialogForApprovedReport" 
                                     icon="fa fa-close" 
                                     value="Close"
-                                    onclick="PF('wvDlgEmailForApprovedReport').hide(); return false;"
+                                    onclick="PF('wvDlgEmailForApprovedReport').hide();
+                                            return false;"
                                     class="ui-button-secondary m-1"
                                     />
                             </h:panelGroup>

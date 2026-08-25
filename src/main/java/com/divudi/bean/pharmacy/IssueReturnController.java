@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.PageMetadataRegistry;
@@ -27,6 +28,8 @@ import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.pharmacy.Ampp;
@@ -44,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -57,6 +62,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class IssueReturnController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(IssueReturnController.class.getName());
 
     ///////
     @EJB
@@ -79,6 +86,8 @@ public class IssueReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -210,14 +219,123 @@ public class IssueReturnController implements Serializable {
         pageMetadataRegistry.registerPage(metadata);
     }
 
-    public void saveDisposalIssueReturnBill() {
-        // No validation required for saving drafts - users can save incomplete data
-        saveBill();
-        saveBillComponents();
-        JsfUtil.addSuccessMessage("Saved");
+    /**
+     * Guards every write entry point (save / finalize / settle) against acting
+     * on a bill whose CURRENT database state is already completed or closed.
+     *
+     * The @SessionScoped bean (and the browser page) can hold a STALE copy of
+     * the return bill - e.g. the bill was settled, then Save/Finalize/Settle is
+     * clicked again from an old screen or list row. Merging that stale copy
+     * reverts the settled bill to a draft (completed/deptId/insId cleared)
+     * while its items and stock movements remain - the #21266 RC5 orphan-return
+     * corruption (Ruhunu bills 4336218 / 4337297, 2026-03-25). Reads bypass the
+     * L2 cache because another app server may have written the bill under
+     * dual-version operation.
+     *
+     * @return true if processing must stop (with a user-facing message).
+     */
+    private boolean disposalReturnAlreadyProcessed() {
+        if (getReturnBill() == null || getReturnBill().getId() == null) {
+            return false; // new, never-persisted draft - nothing to clobber
+        }
+        Bill fresh = getBillFacade().findWithoutCache(getReturnBill().getId());
+        if (fresh == null) {
+            return false;
+        }
+        if (fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This disposal return (" + (fresh.getDeptId() != null ? fresh.getDeptId() : fresh.getId())
+                    + ") has already been settled. Reload the page before continuing.");
+            return true;
+        }
+        if (fresh.isBillClosed()) {
+            JsfUtil.addErrorMessage("This disposal return has been closed. Create a new return instead.");
+            return true;
+        }
+        if (fresh.isCancelled() || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("This disposal return is cancelled or retired and can no longer be processed.");
+            return true;
+        }
+        return false;
     }
 
-    public void finalizeDisposalIssueReturnBill() {
+    /**
+     * Authorization helper method to check Pharmacy Disposal Return
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    new Object[]{action});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Disposal Return access attempt - action={0}, userId={1}, requiredPrivilege={2}",
+                    new Object[]{action, userId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " this disposal return.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public void saveDisposalIssueReturnBill() {
+        if (!isAuthorized("SAVE", "CreateDisposalReturn")) {
+            return;
+        }
+        doSaveDisposalIssueReturnBill();
+    }
+
+    /**
+     * Unguarded core of {@link #saveDisposalIssueReturnBill()}. Called
+     * directly (bypassing the CreateDisposalReturn check) by
+     * {@link #finalizeDisposalIssueReturnBill()}, which auto-saves a
+     * not-yet-persisted draft as part of a Finalize action already
+     * authorized under FinalizeDisposalReturn.
+     */
+    private boolean doSaveDisposalIssueReturnBill() {
+        if (disposalReturnAlreadyProcessed()) {
+            return false;
+        }
+        // No validation required for saving drafts - users can save incomplete data
+        if (!saveBill()) {
+            return false;
+        }
+        saveBillComponents();
+        JsfUtil.addSuccessMessage("Saved");
+        return true;
+    }
+
+    // synchronized: no double-click guard exists on the Finalize action. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating the finalize save (same bug
+    // class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized void finalizeDisposalIssueReturnBill() {
+        if (!isAuthorized("FINALIZE", "FinalizeDisposalReturn")) {
+            return;
+        }
+        if (disposalReturnAlreadyProcessed()) {
+            return;
+        }
+        // disposalReturnAlreadyProcessed() does not check checkedBy (settleDisposalIssueReturnBill()
+        // relies on that same helper and requires checkedBy already set), so a queued double-submit
+        // reaching this point after the first call finished would re-finalize and overwrite the
+        // checkeAt/checkedBy/editedAt audit fields (CodeRabbit finding on #22194/PR #22197).
+        if (getReturnBill().getId() != null) {
+            Bill freshForFinalizeCheck = getBillFacade().findWithoutCache(getReturnBill().getId());
+            if (freshForFinalizeCheck != null && freshForFinalizeCheck.getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("This disposal return has already been finalized. Reload the page before continuing.");
+                return;
+            }
+        }
         // Validate return comment is provided
         if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Return Comment is required. Please provide a reason for the return.");
@@ -229,15 +347,21 @@ public class IssueReturnController implements Serializable {
             return;
         }
 
-        saveDisposalIssueReturnBill();
-        getReturnBill().setEditedAt(new Date());
-        getReturnBill().setEditor(sessionController.getLoggedUser());
-        getReturnBill().setChecked(true);
-        getReturnBill().setCheckeAt(new Date());
-        getReturnBill().setCheckedBy(sessionController.getLoggedUser());
-        getBillFacade().edit(getReturnBill());
+        if (!doSaveDisposalIssueReturnBill()) {
+            return;
+        }
+        // Reload from DB so we don't trigger orphan-removal on billItems
+        returnBill = billService.reloadBill(getReturnBill());
+        if (returnBill != null) {
+            returnBill.setEditedAt(new Date());
+            returnBill.setEditor(sessionController.getLoggedUser());
+            returnBill.setChecked(true);
+            returnBill.setCheckeAt(new Date());
+            returnBill.setCheckedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(returnBill);
+        }
 
-        // Refresh the bill and reload bill items for print preview
+        // Refresh again and reload bill items for print preview
         returnBill = billService.reloadBill(getReturnBill());
         if (returnBill != null) {
             returnBillItems = billService.fetchBillItems(returnBill);
@@ -247,7 +371,20 @@ public class IssueReturnController implements Serializable {
         JsfUtil.addSuccessMessage("Finalized");
     }
 
-    public void settleDisposalIssueReturnBill() {
+    // synchronized: no double-click guard existed prior to #22194. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating stock movements/payment.
+    public synchronized void settleDisposalIssueReturnBill() {
+        if (!isAuthorized("APPROVE", "ApproveDisposalReturn")) {
+            return;
+        }
+        // Re-settling an already-settled bill (double-click, stale screen, stale
+        // list row) would write a second set of items and stock movements and
+        // then clobber the bill header (#21266 RC5).
+        if (disposalReturnAlreadyProcessed()) {
+            return;
+        }
         if (getReturnBill().getCheckedBy() == null) {
             JsfUtil.addErrorMessage("Pleace Finalise Bill First. Can not Return");
             return;
@@ -266,19 +403,31 @@ public class IssueReturnController implements Serializable {
             return;
         }
         calculateBillTotal();
-        saveSettlingBill();
-        saveSettlingBillComponents();
+        if (!saveSettlingBill()) {
+            return;
+        }
+        if (!saveSettlingBillComponents()) {
+            return;
+        }
 
+        // Reload both bills so EclipseLink doesn't orphan-remove existing billItems
+        Bill freshReturn = billService.reloadBill(getReturnBill());
+        if (freshReturn != null) {
+            returnBill = freshReturn;
+        }
         getReturnBill().setReferenceBill(getOriginalBill());
         getReturnBill().setCompleted(true);
         getReturnBill().setCompletedAt(new Date());
         getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
         getBillFacade().edit(getReturnBill());
 
+        Bill freshOriginal = billService.reloadBill(getOriginalBill());
+        if (freshOriginal != null) {
+            originalBill = freshOriginal;
+        }
         getOriginalBill().setRefundedBill(getReturnBill());
         getOriginalBill().setRefunded(true);
         getOriginalBill().getRefundBills().add(getReturnBill());
-
         getBillFacade().edit(getOriginalBill());
 
         printPreview = true;
@@ -303,13 +452,14 @@ public class IssueReturnController implements Serializable {
      * @return true if all return quantities are valid, false otherwise
      */
     public boolean validateReturnQuantities() {
-        if (returnBillItems == null || returnBillItems.isEmpty()) {
+        List<BillItem> activeItems = getReturnBillItems();
+        if (activeItems == null || activeItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items found to return");
             return false;
         }
 
         boolean hasErrors = false;
-        for (BillItem returnItem : returnBillItems) {
+        for (BillItem returnItem : activeItems) {
             if (returnItem == null || returnItem.getReferanceBillItem() == null) {
                 continue;
             }
@@ -433,7 +583,7 @@ public class IssueReturnController implements Serializable {
         originalBillItems = null;
     }
 
-    private void saveBill() {
+    private boolean saveBill() {
         if (getReturnBill().getReferenceBill() == null) {
             getReturnBill().setReferenceBill(originalBill);
         }
@@ -441,17 +591,54 @@ public class IssueReturnController implements Serializable {
             getReturnBill().setToDepartment(originalBill.getToDepartment()); // Same consumption department
             getReturnBill().setFromDepartment(originalBill.getFromDepartment()); // Same pharmacy department
             getReturnBill().setDepartment(sessionController.getDepartment());
+            if (originalBill.getDepartmentType() != null) {
+                getReturnBill().setDepartmentType(originalBill.getDepartmentType());
+            }
             getReturnBill().setInstitution(sessionController.getInstitution());
             getReturnBill().setSite(sessionController.getLoggedSite());
             getReturnBill().setCreatedAt(new Date());
             getReturnBill().setCreater(sessionController.getLoggedUser());
             getBillFacade().create(getReturnBill());
         } else {
+            // Reload from DB so we don't trigger orphan-removal on billItems.
+            // Bill items are managed independently by saveBillComponents() / billItemFacade.
+            // Capture in-memory fields set directly by the UI (JSF binds returnBill.comments)
+            // before the reload replaces the entity, or they'd be silently lost.
+            Bill referenceBill = getReturnBill().getReferenceBill();
+            String comments = getReturnBill().getComments();
+            Bill fresh = billService.reloadBill(getReturnBill());
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+                return false;
+            }
+            returnBill = fresh;
+            // Recompute bill-level totals onto the fresh entity - calculateBillItemTotals()
+            // (the per-item Return Qty ajax handler) writes total/netTotal/billFinanceDetails
+            // directly onto the in-memory bill, which the reload above just replaced.
+            calculateBillTotal();
+            getReturnBill().setReferenceBill(referenceBill);
+            getReturnBill().setComments(comments);
             getBillFacade().edit(getReturnBill());
         }
+        return true;
     }
 
-    private void saveSettlingBill() {
+    private boolean saveSettlingBill() {
+        // Reload from DB so we don't trigger orphan-removal on billItems.
+        // Bill items are managed independently by saveSettlingBillComponents() / billItemFacade.
+        // Capture comments (bound directly to returnBill by the UI) before the reload
+        // replaces the entity, or the user's typed comment would be silently lost.
+        String comments = getReturnBill().getComments();
+        Bill fresh = billService.reloadBill(getReturnBill());
+        if (fresh == null) {
+            JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+            return false;
+        }
+        returnBill = fresh;
+        // Recompute bill-level totals onto the fresh entity - calculateBillTotal() was just
+        // called by settleDisposalIssueReturnBill() before this method, and the reload above
+        // discarded whatever it had computed onto the previous in-memory bill.
+        calculateBillTotal();
 
         getReturnBill().setBillType(BillType.PharmacyIssue);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
@@ -474,7 +661,7 @@ public class IssueReturnController implements Serializable {
 
         // Copy reference information from original bill for traceability
         getReturnBill().setReferenceNumber(originalBill.getReferenceNumber());
-        getReturnBill().setComments(returnBill.getComments());
+        getReturnBill().setComments(comments);
 
         // Handle Department ID generation (independent)
         String deptId;
@@ -510,9 +697,10 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setDeptId(deptId);
         getReturnBill().setInsId(insId);
         billFacade.edit(returnBill);
+        return true;
     }
 
-    private void saveSettlingBillComponents() {
+    private boolean saveSettlingBillComponents() {
         boolean fullyReturned = true;
         List<BillItem> itemsToProcess = new ArrayList<>(getReturnBillItems());
         for (BillItem i : itemsToProcess) {
@@ -542,11 +730,8 @@ public class IssueReturnController implements Serializable {
                 } else {
                     fullyReturned = false;
                 }
-                i.setBill(null);
                 i.setRetired(true);
                 billItemFacade.edit(i);
-                getReturnBill().getBillItems().remove(i);
-                returnBill = billService.reloadBill(returnBill);
                 continue;
             }
 
@@ -743,13 +928,28 @@ public class IssueReturnController implements Serializable {
 
         }
         if (fullyReturned) {
+            // Reload from DB so we don't trigger orphan-removal on billItems.
+            Bill freshOriginal = billService.reloadBill(getOriginalBill());
+            if (freshOriginal == null) {
+                JsfUtil.addErrorMessage("The original disposal issue bill no longer exists. Please reload the page and try again.");
+                return false;
+            }
+            originalBill = freshOriginal;
             getOriginalBill().setFullReturned(true);
             getOriginalBill().setFullReturnedAt(new Date());
             getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
             getBillFacade().edit(getOriginalBill());
         }
+        // Reload from DB so we don't trigger orphan-removal on billItems.
+        Bill freshReturn = billService.reloadBill(getReturnBill());
+        if (freshReturn == null) {
+            JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+            return false;
+        }
+        returnBill = freshReturn;
         getBillFacade().edit(getReturnBill());
 
+        return true;
     }
 
     private void saveBillComponents() {
@@ -765,11 +965,28 @@ public class IssueReturnController implements Serializable {
         }
     }
 
+    /**
+     * The room category of the patient's current room, or null when the patient
+     * is not in a room (or the room has no facility charge / category). Drives the
+     * room-category dimension of the inward pharmacy-margin matrix (issue #21981);
+     * null means "wildcard row only", preserving legacy behaviour.
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
         double rate = Math.abs(bi.getRate());
         double margin = 0;
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
+        PatientEncounter encounter = bi.getBill() != null ? bi.getBill().getPatientEncounter() : null;
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod, null,
+                encounter != null ? encounter.getAdmissionType() : null, resolveCurrentRoomCategory(encounter));
 
         if (priceMatrix != null) {
             margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -795,6 +1012,7 @@ public class IssueReturnController implements Serializable {
 
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
+        bill.setBillItems(null);
         getBillFacade().edit(bill);
 
     }
@@ -991,7 +1209,6 @@ public class IssueReturnController implements Serializable {
         }
         for (BillItem selectedItem : selectedBillItems) {
             if (selectedItem.getId() != null) {
-                selectedItem.setBill(null);
                 selectedItem.setRetired(true);
                 billItemFacade.edit(selectedItem);
             }
@@ -1008,7 +1225,6 @@ public class IssueReturnController implements Serializable {
             return;
         }
         if (itemToDelete.getId() != null) {
-            itemToDelete.setBill(null);
             itemToDelete.setRetired(true);
             billItemFacade.edit(itemToDelete);
         }
@@ -1057,7 +1273,12 @@ public class IssueReturnController implements Serializable {
     }
 
     public List<BillItem> getReturnBillItems() {
-        return returnBillItems;
+        if (returnBillItems == null) {
+            return java.util.Collections.emptyList();
+        }
+        return returnBillItems.stream()
+                .filter(bi -> bi != null && !bi.isRetired())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public void setReturnBillItems(List<BillItem> returnBillItems) {
@@ -1168,11 +1389,8 @@ public class IssueReturnController implements Serializable {
         }
         double qty = bi.getQty();
 
-        // Comprehensive validation with auto-correction for user input
-        if (!validateItemReturnQuantity(bi, true)) {
-            // Validation failed, quantity has been auto-corrected
-            // Re-calculate with the corrected quantity
-            qty = bi.getQty();
+        if (!validateItemReturnQuantity(bi, false)) {
+            return;
         }
 
         // Get rates from item batch - these are always in units
@@ -1290,11 +1508,8 @@ public class IssueReturnController implements Serializable {
     }
 
     public void calculateBillTotal() {
-        if (returnBillItems == null || returnBillItems.isEmpty()) {
-            return;
-        }
-        // Always calculate from returnBillItems for issue returns
-        calculateReturnBillTotalFromItems(returnBillItems);
+        List<BillItem> activeItems = getReturnBillItems();
+        calculateReturnBillTotalFromItems(activeItems);
     }
 
     /**

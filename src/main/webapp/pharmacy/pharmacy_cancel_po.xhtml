@@ -10,6 +10,10 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
                 <h:form>
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel>
@@ -23,8 +27,9 @@
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyPoCancel()}" >
-                                    </p:commandButton>  
+                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyPoCancel}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
+                                    </p:commandButton>
                                 </h:panelGrid>
                             </f:facet>
                             <p:panel>
@@ -90,7 +95,7 @@
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         ajax="false" 
-                                        action="pharmacy_purchase_order_list_for_recieve"
+                                        action="pharmacy_purchase_order_list_for_recieve_dto"
                                         class="ui-button-warning"
                                         icon="fa fa-arrow-left"
                                         actionListener="#{grnController.viewPoList()}" 
@@ -118,7 +123,8 @@
                     </p:panel>
 
 
-                </h:form>                
+                </h:form>
+                </h:panelGroup>
             </ui:define>
         </ui:composition>
     </h:body>

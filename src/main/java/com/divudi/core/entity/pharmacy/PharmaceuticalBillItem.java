@@ -32,7 +32,7 @@ public class PharmaceuticalBillItem implements Serializable {
     private StockHistory stockHistory;
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER)
@@ -42,6 +42,9 @@ public class PharmaceuticalBillItem implements Serializable {
     private Date doe;
     @ManyToOne
     private ItemBatch itemBatch;
+
+    @ManyToOne
+    private ItemBatchArchive archivedItemBatch;
     private String stringValue;
 
     private double qty;
@@ -142,6 +145,16 @@ public class PharmaceuticalBillItem implements Serializable {
     private boolean transThisIsStockOut;
     @Transient
     private boolean transThisIsStockIn;
+    @Transient
+    private String transDisplayItemName;
+
+    public String getTransDisplayItemName() {
+        return transDisplayItemName;
+    }
+
+    public void setTransDisplayItemName(String transDisplayItemName) {
+        this.transDisplayItemName = transDisplayItemName;
+    }
 
     public String getSerialNo() {
         return serialNo;
@@ -425,6 +438,32 @@ public class PharmaceuticalBillItem implements Serializable {
             purchaseRate = itemBatch.getPurcahseRate();
 
         }
+    }
+
+    /**
+     * Attach an ItemBatch reference without dereferencing it to read rates.
+     * The legacy {@link #setItemBatch(ItemBatch)} reads retailRate and
+     * purchaseRate off the argument, which triggers lazy-proxy initialization.
+     * That pulls in the whole ItemBatch object graph eagerly (Item, Category,
+     * Institution, BillItem, chains of WebUser/Staff/Person) — ~46 SQL queries
+     * the first time any user hits it. See issue #20138.
+     *
+     * Callers that already know the rates (e.g. from a StockDTO) should use
+     * this method to pass them in directly, so a thin
+     * {@code em.getReference()} proxy can be attached without a round-trip.
+     */
+    public void setItemBatchWithRates(ItemBatch itemBatch, double retailRate, double purchaseRate) {
+        this.itemBatch = itemBatch;
+        this.retailRate = retailRate;
+        this.purchaseRate = purchaseRate;
+    }
+
+    public ItemBatchArchive getArchivedItemBatch() {
+        return archivedItemBatch;
+    }
+
+    public void setArchivedItemBatch(ItemBatchArchive archivedItemBatch) {
+        this.archivedItemBatch = archivedItemBatch;
     }
 
     public double getQty() {

@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
@@ -21,6 +22,7 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
@@ -49,6 +51,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -61,6 +65,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class GrnReturnWithCostingController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(GrnReturnWithCostingController.class.getName());
 
     /**
      * EJBs
@@ -95,6 +101,8 @@ public class GrnReturnWithCostingController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     /**
@@ -641,8 +649,12 @@ public class GrnReturnWithCostingController implements Serializable {
         // getReturnBill().setReferenceBill(getBill());
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
-        
+
         getReturnBill().setCompleted(true);
+        getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
+        getReturnBill().setCompletedAt(Calendar.getInstance().getTime());
+        getReturnBill().setApproveAt(Calendar.getInstance().getTime());
+        getReturnBill().setApproveUser(getSessionController().getLoggedUser());
 
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());
@@ -1145,6 +1157,9 @@ public class GrnReturnWithCostingController implements Serializable {
     }
 
     public void settleGrnReturn() {
+        if (!isAuthorized("SETTLE_GRN_RETURN", "ReturnReceviedGoods")) {
+            return;
+        }
         if (returnBill == null) {
             JsfUtil.addErrorMessage("No GRN Return bill");
             return;
@@ -1558,8 +1573,17 @@ public class GrnReturnWithCostingController implements Serializable {
     // These should update bill item lelvel txtLineReturnValue and Bill Level panelReturnBillDetails
     // have to prefil 
     public void onEditItem(PharmacyItemData tmp) {
-        double pur = getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
-        double ret = getPharmacyBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
+        BillItem billItem = tmp.getPharmaceuticalBillItem().getBillItem();
+        BillItem referanceBillItem = billItem.getReferanceBillItem();
+        Department department = null;
+        if (referanceBillItem != null && referanceBillItem.getBill() != null) {
+            department = referanceBillItem.getBill().getDepartment();
+        } else if (billItem.getBill() != null) {
+            department = billItem.getBill().getDepartment();
+        }
+
+        double pur = getPharmacyBean().getLastPurchaseRate(billItem.getItem(), department);
+        double ret = getPharmacyBean().getLastRetailRate(billItem.getItem(), department);
 
         tmp.getPharmaceuticalBillItem().setPurchaseRateInUnit(pur);
         tmp.getPharmaceuticalBillItem().setRetailRateInUnit(ret);
@@ -1724,6 +1748,41 @@ public class GrnReturnWithCostingController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    /**
+     * Authorization helper method to check GRN Return (costing) privileges
+     * and audit denied access
+     *
+     * @param action The action being attempted (SETTLE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    action);
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = null;
+            if (returnBill != null) {
+                billId = returnBill.getId();
+            } else if (bill != null) {
+                billId = bill.getId();
+            }
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN Return access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " GRN return requests.");
+            return false;
+        }
+
+        return true;
     }
 
 }

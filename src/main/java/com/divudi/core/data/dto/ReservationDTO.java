@@ -22,6 +22,10 @@ public class ReservationDTO implements Serializable {
     private String patientAge;
     private String patientGender;
     private String patientMobile;
+    private String ageAndGender;
+    private Title refDoctorTitle;
+    private String refDoctorName;
+    private String refDoctorNameWithTitle;
     private AppointmentStatus status;
     
     public ReservationDTO() {
@@ -29,7 +33,7 @@ public class ReservationDTO implements Serializable {
     }
     
     // Using searchAppointments() in AppointmentController
-    public ReservationDTO(Long id, Date reservedFrom, Date reservedTo,String appointmentNumber, Date createdAt,String roomNo, Title patientTitle, String patientName,Date patientDob, String patientGender, String patientMobile, AppointmentStatus status) {
+    public ReservationDTO(Long id, Date reservedFrom, Date reservedTo,String appointmentNumber, Date createdAt,String roomNo, Title patientTitle, String patientName,Date patientDob, String patientGender, String patientMobile,Title refDoctorTitle, String refDoctorName, AppointmentStatus status) {
         this.id = id;
         this.reservedFrom = reservedFrom;
         this.reservedTo = reservedTo;
@@ -41,6 +45,8 @@ public class ReservationDTO implements Serializable {
         this.patientDob = patientDob;
         this.patientGender = patientGender;
         this.patientMobile = patientMobile;
+        this.refDoctorTitle = refDoctorTitle;
+        this.refDoctorName = refDoctorName;
         this.status = status;
         
     }
@@ -164,6 +170,47 @@ public class ReservationDTO implements Serializable {
 
     public void setPatientGender(String patientGender) {
         this.patientGender = patientGender;
+    }
+
+    public String getAgeAndGender() {
+        ageAndGender = getPatientAge() + " / " + getPatientGender();
+        return ageAndGender;
+    }
+
+    public void setAgeAndGender(String ageAndGender) {
+        this.ageAndGender = ageAndGender;
+    }
+
+    public Title getRefDoctorTitle() {
+        return refDoctorTitle;
+    }
+
+    public void setRefDoctorTitle(Title refDoctorTitle) {
+        this.refDoctorTitle = refDoctorTitle;
+    }
+
+    public String getRefDoctorName() {
+        return refDoctorName;
+    }
+
+    public void setRefDoctorName(String refDoctorName) {
+        this.refDoctorName = refDoctorName;
+    }
+
+    public String getRefDoctorNameWithTitle() {
+        String temT;
+        Title t = getRefDoctorTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
+        }
+        refDoctorNameWithTitle = temT + " " + getRefDoctorName();
+        return refDoctorNameWithTitle;
+    }
+
+    public void setRefDoctorNameWithTitle(String refDoctorNameWithTitle) {
+        this.refDoctorNameWithTitle = refDoctorNameWithTitle;
     }
 
 }

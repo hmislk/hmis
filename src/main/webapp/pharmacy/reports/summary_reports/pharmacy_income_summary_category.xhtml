@@ -1,0 +1,788 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:body>
+    <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+        <ui:define name="subcontent">
+            <p:panel header="Income Summary Category">
+                <h:form>
+                    <style>
+                        .custom-grid {
+                            table-layout: fixed;
+                            width: 100%;
+                        }
+
+                        .col-label1,
+                        .col-label2,
+                        .col-label3 {
+                            width: 14%;
+                        }
+
+                        .col-input1,
+                        .col-input2,
+                        .col-input3 {
+                            width: 18%;
+                        }
+                        
+                        .col-space1,
+                        .col-space2 {
+                            width: 2%; 
+                        }
+                    </style>
+                    <h:panelGroup layout="block">
+                        <h:panelGrid columns="8" 
+                                     class="w-100 ui-fluid custom-grid"
+                                    columnClasses="col-label1,col-input1,col-space1,
+                                                    col-label2,col-input2,col-space2,
+                                                    col-label3,col-input3">
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
+
+                                <div>
+                                    <h:outputText value="&#xf073;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 60px;">
+                                    <h:outputLabel value="From" for="fromDate"/>
+                                </div>
+                           </h:panelGroup>
+                           <p:calendar
+                                   styleClass="w-100"
+                                   inputStyleClass="w-100 form-control"
+                                   id="fromDate"
+                                   value="#{pharmacySummaryReportController.fromDate}"
+                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                           <p:spacer/>
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
+
+                                <div>
+                                    <h:outputText value="&#xf073;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 50px;">
+                                    <h:outputLabel value="To" for="toDate"/>
+                                </div>
+                           </h:panelGroup>
+                           <p:calendar
+                                   styleClass="w-100"
+                                   inputStyleClass="w-100 form-control"
+                                   id="toDate"
+                                   value="#{pharmacySummaryReportController.toDate}"
+                                   navigator="false"
+                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                           />
+                           
+                           <p:spacer/>
+                           <p:spacer width="50"/>
+                           <p:spacer width="50"/>
+
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
+
+                                <div>
+                                    <h:outputText value="&#xf19c;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 90px;">
+                                    <h:outputLabel value="Institution" for="cmbIns"/>
+                                </div>
+                            </h:panelGroup>
+                           <p:selectOneMenu
+                                   id="cmbIns"
+                                   styleClass="w-100 form-control"
+                                   value="#{pharmacySummaryReportController.institution}"
+                                   filter="true">
+                               <f:selectItem itemLabel="All Institutions"/>
+                               <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                              itemValue="#{ins}"/>
+                               <p:ajax process="cmbIns" update="cmbDept"/>
+                           </p:selectOneMenu>
+
+                           <p:spacer/>
+                           
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
+
+                                <div>
+                                    <h:outputText value="&#xf3c5;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 60px;">
+                                    <h:outputLabel value="Site" for="siteMenu"/>
+                                </div>
+                            </h:panelGroup>
+                           <p:selectOneMenu
+                                   id="siteMenu"
+                                   styleClass="w-100 form-control"
+                                   value="#{pharmacySummaryReportController.site}"
+                                   filter="true">
+                               <f:selectItem itemLabel="All Sites"/>
+                               <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                              itemValue="#{site}"/>
+                               <p:ajax process="siteMenu" update="cmbDept"/>
+                           </p:selectOneMenu>
+
+                           <p:spacer/>
+                           
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
+
+                                <div>
+                                    <h:outputText value="&#xf0e8;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 90px;">
+                                    <h:outputLabel value="Department" for="cmbDept"/>
+                                </div>
+                            </h:panelGroup>
+                           <h:panelGroup id="cmbDept">
+
+                               <!-- Component 1: Without Institution and Site -->
+                               <p:selectOneMenu
+                                       rendered="#{pharmacySummaryReportController.institution eq null and pharmacySummaryReportController.site eq null}"
+                                       styleClass="w-100 form-control"
+                                       value="#{pharmacySummaryReportController.department}"
+                                       filterMatchMode="contains"
+                                       filter="true">
+                                   <f:selectItem itemLabel="All Departments"/>
+                                   <f:selectItems
+                                           value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                           var="d"
+                                           itemLabel="#{d.name}"
+                                           itemValue="#{d}"/>
+                               </p:selectOneMenu>
+
+                               <!-- Component 2: With Site Only -->
+                               <p:selectOneMenu
+                                       rendered="#{pharmacySummaryReportController.institution eq null and pharmacySummaryReportController.site ne null}"
+                                       styleClass="w-100 form-control"
+                                       value="#{pharmacySummaryReportController.department}"
+                                       filterMatchMode="contains"
+                                       filter="true">
+                                   <f:selectItem itemLabel="All Departments"/>
+                                   <f:selectItems
+                                           value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacySummaryReportController.site)}"
+                                           var="d"
+                                           itemLabel="#{d.name}"
+                                           itemValue="#{d}"/>
+                               </p:selectOneMenu>
+
+                               <!-- Component 3: With Institution Only -->
+                               <p:selectOneMenu
+                                       rendered="#{pharmacySummaryReportController.institution ne null and pharmacySummaryReportController.site eq null}"
+                                       styleClass="w-100 form-control"
+                                       value="#{pharmacySummaryReportController.department}"
+                                       filterMatchMode="contains"
+                                       filter="true">
+                                   <f:selectItem itemLabel="All Departments"/>
+                                   <f:selectItems
+                                           value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacySummaryReportController.institution)}"
+                                           var="d"
+                                           itemLabel="#{d.name}"
+                                           itemValue="#{d}"/>
+                               </p:selectOneMenu>
+
+                               <!-- Component 4: With Both Institution and Site -->
+                               <p:selectOneMenu
+                                       rendered="#{pharmacySummaryReportController.institution ne null and pharmacySummaryReportController.site ne null}"
+                                       styleClass="w-100 form-control"
+                                       value="#{pharmacySummaryReportController.department}"
+                                       filterMatchMode="contains"
+                                       filter="true">
+                                   <f:selectItem itemLabel="All Departments"/>
+                                   <f:selectItems
+                                           value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacySummaryReportController.institution, pharmacySummaryReportController.site)}"
+                                           var="d"
+                                           itemLabel="#{d.name}"
+                                           itemValue="#{d}"/>
+                               </p:selectOneMenu>
+                           </h:panelGroup>
+
+
+                       </h:panelGrid>
+                    </h:panelGroup>
+
+                    
+
+                    <h:panelGroup >
+                        <div style="margin-top: 20px;"
+                             class="flex-row">
+                            <p:commandButton
+                                    value="Process"
+                                    ajax="false"
+                                    styleClass="ui-button-success m-1"
+                                    icon="pi pi-cog">
+                            </p:commandButton>
+                            
+                            <p:commandButton
+                                    value="Download"
+                                    ajax="false"
+                                    styleClass="ui-button-info m-1"
+                                    icon="pi pi-download">
+                                <!-- data exporter -->
+                            </p:commandButton>
+                            <p:commandButton
+                                    value="To Print"
+                                    styleClass="ui-button-warning m-1"
+                                    icon="pi pi-print"/>
+                        </div>
+                        
+                        
+                        
+                         <p:panel
+                             header="Pharmacy Income Summary Report"
+                             style="margin-top: 20px">
+                             <div style="overflow-x: auto; width: 100%;">
+                                 <table class="w-100 ui-datatable ui-datatable-borderless compact-datatable table-no-vertical"
+                                        style="font-size: larger">
+                                    <!-- TABLE HEADER -->
+                                    <thead class="ui-datatable-thead">
+                                        <tr>
+                                            <th class="text-center" style="width: 12em; border: 1px solid">Category</th>
+                                            <th class="text-center" style="border: 1px solid">Cash</th>
+                                            <th class="text-center" style="border: 1px solid">Card</th>
+                                            <th class="text-center" style="border: 1px solid">Online</th>
+                                            <th class="text-center" style="border: 1px solid">Credit</th>
+                                            <th class="text-center" style="border: 1px solid">Total</th>
+                                            <th class="text-center" style="border: 1px solid">Refund</th>
+                                            <th class="text-center" style="border: 1px solid">Cancel</th>
+                                            <th class="text-center" style="border: 1px solid">Discount</th>
+                                            <th class="text-center" style="border: 1px solid">Net Sales</th>
+                                        </tr>
+                                    </thead>
+
+                                    <!-- TABLE BODY -->
+                                    <tbody class="ui-datatable-tbody">
+                                        <!-- Row 1 -->
+                                        <tr>
+                                            <td style="font-weight: 500;">
+                                                <h:outputLabel value="Cash"/>
+                                            </td>
+                                            <ui:repeat value="#{['', '', '', '', '', '', '', '', '']}" 
+                                                       var="v">
+                                                <td class="text-end">
+                                                    <h:outputLabel value="#{v}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            </ui:repeat>
+                                        </tr>
+
+                                        <!-- Row 2 -->
+                                        <tr>
+                                            <td style="font-weight: 500;">
+                                                <h:outputLabel value="Inpatient"/>
+                                            </td>
+                                            <ui:repeat value="#{['', '', '', '', '', '', '', '', '']}" 
+                                                       var="v">
+                                                <td class="text-end">
+                                                    <h:outputLabel value="#{v}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            </ui:repeat>
+                                        </tr>
+
+                                        <!-- Row 3 -->
+                                        <tr>
+                                            <td style="font-weight: 500;">
+                                                <h:outputLabel value="Home Delivery"/>
+                                            </td>
+                                            <ui:repeat value="#{['', '', '', '', '', '', '', '', '']}" 
+                                                       var="v">
+                                                <td class="text-end">
+                                                    <h:outputLabel value="#{v}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            </ui:repeat>
+                                        </tr>
+
+                                        <!-- row 4 -->
+                                        <tr>
+                                            <td style="font-weight: 500;">
+                                                <h:outputLabel value="Transfer"/>
+                                            </td>
+                                            <ui:repeat value="#{['', '', '', '', '', '', '', '', '']}" 
+                                                       var="v">
+                                                <td class="text-end">
+                                                    <h:outputLabel value="#{v}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            </ui:repeat>
+                                        </tr>
+
+                                        <!-- row 5 -->
+                                        <tr>
+                                            <td style="font-weight: 500;">
+                                                <h:outputLabel value="Free Issue"/>
+                                            </td>
+                                            <ui:repeat value="#{['', '', '', '', '', '', '', '', '']}" 
+                                                       var="v">
+                                                <td class="text-end"> 
+                                                    <h:outputLabel value="#{v}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            </ui:repeat>
+                                        </tr>
+
+                                        <!-- row 6 -->
+                                        <tr>
+                                            <td style="font-weight: 500;">
+                                                <h:outputLabel value="OPD Transfer"/>
+                                            </td>
+                                            <ui:repeat value="#{['', '', '', '', '', '', '', '', '']}" 
+                                                       var="v">
+                                                <td class="text-end">
+                                                    <h:outputLabel value="#{v}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            </ui:repeat>
+                                        </tr>
+                                    </tbody>
+
+                                    <!-- TABLE FOOTER -->
+                                    <tfoot class="ui-datatable-tfoot">
+                                        <tr>
+                                            <td style="border: 1px solid">
+                                               <h:outputLabel value="Total"/>
+                                            </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                            </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                    <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                    <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                    <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                            </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                    <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                    <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                            </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                    <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                            </td>
+                                            <td class="text-end" style="border: 1px solid">
+                                                    <h:outputLabel value="">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                             </div>
+                         </p:panel>
+                        
+                        
+                        <p:panel
+                            header="Pharmacy Department Transfer"
+                            style="margin-top: 20px">
+                            
+                            <div style="overflow-x: auto; width: 100%;">
+                                <table class="w-100 ui-datatable compact-datatable table-no-vertical"
+                                       style="font-size: larger">
+                                    <!-- TABLE HEADER -->
+                                    <thead class="ui-datatable-thead">
+                                        <tr>
+                                            <th style="width: 20em; border: 1px solid">
+                                               <h:outputLabel value=""/>
+                                           </th>
+                                           <ui:repeat value="#{['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']}"
+                                                      var="s">
+                                               <th class="text-end"
+                                                   style="width: 20em; border: 1px solid">
+                                                   <h:outputLabel value="#{s}"/>
+                                               </th>
+                                           </ui:repeat>
+                                       </tr>
+                                    </thead>
+
+                                    <!-- TABLE BODY -->
+                                    <tbody class="ui-datatable-tbody">
+                                       <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Channel Room 1"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Channel Room 2"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Channel Room 3"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Channel Room 4"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Channel Room 5"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Channel Room 6"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="OPD"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Lab"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Ambulance"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Theater"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="3rd floor"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="4th floor"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Labour room"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Dental"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="X-ray"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Accounts"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="HR"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Marketing"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="House Keeping"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Kitchen"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Suwaseth"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                        <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Suwanetha"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                       <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Hospital center"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                       <tr>
+                                           <td style="font-weight: 500">
+                                               <h:outputLabel value="Medical camp"/>
+                                           </td>
+                                           <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
+                                                      var="v">
+                                               <td>
+                                                   <h:outputLabel value="#{v != null ? v : 0}">
+                                                       <f:convertNumber pattern="#,##0.00"/>
+                                                   </h:outputLabel>
+                                               </td>
+                                           </ui:repeat>
+                                       </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </p:panel>
+
+                    </h:panelGroup>
+
+                </h:form>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
+
+

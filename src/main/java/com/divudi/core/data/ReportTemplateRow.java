@@ -1208,7 +1208,16 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Bill bill) {
-        this.bill = bill;
+        if (bill == null) {
+            this.bill = null;
+            return;
+        }
+        try {
+            this.bill = bill;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public Payment getPayment() {

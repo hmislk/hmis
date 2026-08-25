@@ -17,7 +17,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-clipboard-list text-warning me-2"></i>
-                            <h:outputText value="Finalize Disposal Return Requests" styleClass="mb-0 text-warning" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
+                            <h:outputText value="Finalize Consumption Return Requests" styleClass="mb-0 text-warning" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
                         </div>
                         <div class="d-flex gap-2">
                             <p:commandButton
@@ -27,7 +27,7 @@
                                 icon="fas fa-plus-circle"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
-                                title="Create a new Disposal Return Request">
+                                title="Create a new Consumption Return Request">
                             </p:commandButton>
                             <p:commandButton
                                 value="List Returns to Finalize"
@@ -36,7 +36,7 @@
                                 icon="fas fa-tasks"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
-                                title="Finalize Disposal Return Requests">
+                                title="Finalize Consumption Return Requests">
                             </p:commandButton>
                             <p:commandButton
                                 value="List Returns To Approve"
@@ -45,7 +45,7 @@
                                 icon="fas fa-check-circle"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
-                                title="Approve Disposal Return Requests">
+                                title="Approve Consumption Return Requests">
                             </p:commandButton>
                             <p:commandButton
                                 value="Completed Returns"
@@ -54,7 +54,7 @@
                                 icon="fas fa-check-double"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
-                                title="View Completed Disposal Returns">
+                                title="View Completed Consumption Returns">
                             </p:commandButton>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                                 <p:commandButton
                                     class="ui-button-warning w-100"
                                     icon="fas fa-search"
-                                    value="Search Disposal Returns"
+                                    value="Search Consumption Returns"
                                     action="#{disposalReturnWorkflowController.fillDisposalReturnsToFinalize()}"
                                     ajax="false"
                                     style="min-height: 45px;">
@@ -116,24 +116,24 @@
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel header="Disposal Return Requests to Finalize" styleClass="shadow-sm">
+                        <p:panel header="Consumption Return Requests to Finalize" styleClass="shadow-sm">
                             <p:dataTable
                                 id="tbl"
                                 value="#{disposalReturnWorkflowController.disposalReturnsToFinalize}"
                                 var="b"
-                                rows="15"
+                                rows="#{userSettingsController.pharmacyDisposalReturnFinalizePageSize}"
                                 paginator="true"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
-                                emptyMessage="No disposal return requests found matching your criteria"
+                                emptyMessage="No consumption return requests found matching your criteria"
                                 filteredValue="#{disposalReturnWorkflowController.filteredDisposalReturnsToFinalize}"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
 
-                            <p:column headerText="Created At" sortBy="#{b.createdAt}" styleClass="text-nowrap">
+                            <p:column headerText="Created At" sortBy="#{b.createdAt}" styleClass="text-nowrap" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedAtVisible}">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-clock text-info me-2"></i>
@@ -155,7 +155,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}">
+                            <p:column headerText="Created By" sortBy="#{b.creater.webUserPerson.name}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedByVisible}">
                                 <div class="d-flex flex-column">
                                     <div class="d-flex align-items-center mb-1">
                                         <i class="fas fa-user text-primary me-2"></i>
@@ -170,35 +170,35 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}">
+                            <p:column headerText="Patient" sortBy="#{b.patient.person.nameWithTitle}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizePatientVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-user-injured text-success me-2"></i>
                                     <span class="fw-medium">#{b.patient.person.nameWithTitle}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Return No" sortBy="#{b.deptId}">
+                                <p:column headerText="Return No" sortBy="#{b.deptId}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnNoVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-hashtag text-info me-2"></i>
                                     <span class="fw-medium">#{b.deptId}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Original Issue Bill" sortBy="#{b.referenceBill.deptId}">
+                                <p:column headerText="Original Issue Bill" sortBy="#{b.referenceBill.deptId}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeOriginalIssueBillVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-link text-secondary me-2"></i>
                                     <span class="fw-medium">#{b.referenceBill.deptId}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Department" sortBy="#{b.department.name}">
+                                <p:column headerText="Department" sortBy="#{b.department.name}" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeDepartmentVisible}">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-hospital text-info me-2"></i>
                                     <span class="fw-medium">#{b.department.name}</span>
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Return Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <p:column headerText="Return Value" sortBy="#{b.netTotal}" styleClass="text-end" rendered="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnValueVisible}">
                                 <div class="d-flex align-items-center justify-content-end">
                                     <i class="fas fa-coins text-success me-2"></i>
                                     <span class="fw-bold text-success fs-6">
@@ -214,7 +214,7 @@
                                     <p:commandButton
                                         id="finalize"
                                         ajax="false"
-                                        title="#{b.checkedBy ne null ? 'Already Finalized' : (b.billClosed eq true ? 'Closed Return' : 'Edit and Finalize Disposal Return')}"
+                                        title="#{b.checkedBy ne null ? 'Already Finalized' : (b.billClosed eq true ? 'Closed Return' : 'Edit and Finalize Consumption Return')}"
                                         icon="fas #{b.checkedBy ne null ? 'fa-check-double' : 'fa-edit'}"
                                         class="#{b.checkedBy ne null ? 'ui-button-success ui-button-outlined' : (b.billClosed eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-warning')}"
                                         value="#{b.checkedBy ne null ? 'Finalized' : 'Finalize'}"
@@ -225,7 +225,7 @@
                                     <p:commandButton
                                         id="close"
                                         ajax="false"
-                                        title="Close this disposal return"
+                                        title="Close this consumption return"
                                         icon="fas fa-times"
                                         class="ui-button-danger ui-button-outlined"
                                         value="Close"
@@ -234,7 +234,7 @@
                                         rendered="#{b.billClosed ne true and b.checkedBy eq null}"
                                         style="min-width: 70px;">
                                         <p:confirm header="Confirm Close"
-                                                   message="Are you sure you want to close this disposal return? This will allow creating a new return for the same bill."
+                                                   message="Are you sure you want to close this consumption return? This will allow creating a new return for the same bill."
                                                    icon="pi pi-exclamation-triangle"/>
                                     </p:commandButton>
                                 </div>
@@ -250,6 +250,49 @@
                                 </h:panelGroup>
                             </p:column>
                         </p:dataTable>
+                            
+                            <!-- Column Visibility Settings -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+
+                                    <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedAtVisible}"
+                                                                         itemLabel="Created At">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeCreatedByVisible}"
+                                                                         itemLabel="Created by">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizePatientVisible}"
+                                                                           itemLabel="Patient">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnNoVisible}"
+                                                                           itemLabel="Return No">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeOriginalIssueBillVisible}"
+                                                                           itemLabel="Original Issue Bill">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeDepartmentVisible}"
+                                                                           itemLabel="Department">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDisposalReturnFinalizeReturnValueVisible}"
+                                                                           itemLabel="Return Value">
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                        <div class="flex">
+                                            <p:commandButton
+                                                value="Apply"
+                                                ajax="false" />
+                                        </div>
+                                    </div>
+                                </p:panel>
+                             </div>
                         </p:panel>
                     </div>
                 </div>

@@ -47,7 +47,7 @@
                                     </p:commandButton>
                                 </div>
                             </div>
-                            
+
                             <p:dataTable  
                                 id="investigationTable"
                                 class="w-100 mt-2"
@@ -61,9 +61,14 @@
                                 selectionMode="multiple"
                                 paginatorPosition="bottom"
                                 rows="15"
+                                rowIndexVar="i"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="15,25,50"
                                 style="table-layout: fixed; width: 100%;">
+                                
+                                <p:column headerText="#" style="width: 2em; vertical-align: top;">
+                    <h:outputLabel value="#{i+1}"/>
+                </p:column>
 
                                 <p:column headerText="Bill Number" style="width: 13em; vertical-align: top;">
                                     <p:commandLink 
@@ -108,6 +113,16 @@
                                         rendered="#{webUserController.hasPrivilege('Developers')}" 
                                         action="#{patientInvestigationController.navigateToManageInvestigation(pi.investigationId)}">
                                     </p:commandLink>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <h:panelGroup class=" w-100" id="priority" rendered="#{!pi.priority.shortName.blank and pi.priority ne null }" >
+                                            <div 
+                                                class="card p-1"
+                                                style="font-weight: 700; background-color: #{pi.priority.priorityColor}; text-align: center;" >
+                                                #{pi.priority.displayName}
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                    <p:tooltip for="priority" value="#{pi.priority.description}" position="bottom"/>
                                 </p:column>
 
                                 <p:column headerText="Sample IDs" style="width:10em; vertical-align: top;">

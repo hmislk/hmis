@@ -18,7 +18,14 @@ public enum RequestType {
     EDIT_REQUEST("Edit Request", RequestCategory.EDIT,"EDT"),
     INFORMATION_UPDATE("Information Update", RequestCategory.EDIT,"UPT"),
     QUANTITY_CHANGE("Quantity Change", RequestCategory.EDIT,"QCH"),
-    DATE_MODIFICATION("Date Modification", RequestCategory.EDIT,"DMOD");
+    DATE_MODIFICATION("Date Modification", RequestCategory.EDIT,"DMOD"),
+
+    // Adjustment types
+    DRAWER_ADJUSTMENT("Drawer Adjustment", RequestCategory.ADJUSTMENT, "DRADJ"),
+    
+    PETTYCASH_APROVEL("Petty Cash Request" ,RequestCategory.APROVEL, "PTY-CH"),
+    PETTYCASH_CANCELLATION("Cancel Petty Cash" ,RequestCategory.APROVEL, "CAN-PTY-CH"),
+    PHARMACY_RETAIL_SALE_RETURN_APPROVAL("Pharmacy Retail Sale Return Approval", RequestCategory.APROVEL, "PH-RET-APV");
     
     private final String displayName;
     private final RequestCategory category;

@@ -47,6 +47,19 @@
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
 
+                            <p:outputLabel value="Date Basis"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt"     itemLabel="Payment/Bill Date" />
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.dept}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
                             <h:outputLabel value="B H T No :" ></h:outputLabel>
 
                             <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 

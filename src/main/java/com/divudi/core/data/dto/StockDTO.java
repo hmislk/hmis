@@ -9,6 +9,7 @@ public class StockDTO implements Serializable {
     private Long id;
     private Long stockId;
     private Long itemBatchId;
+    private Long itemId;
     private String itemName;
     private String code;
     private String genericName;
@@ -35,6 +36,11 @@ public class StockDTO implements Serializable {
     private Double totalStockQty;
     // Whether the underlying Item allows fractional quantities
     private Boolean allowFractions = false;
+    // Whether the underlying Item allows discounts (prevents database queries during rate calculation)
+    private Boolean discountAllowed = true;  // Default to true for safety
+    // Category ID for price matrix discount calculations
+    private Long categoryId;
+    private String dosageFormName;
 
     public StockDTO() {
     }
@@ -48,6 +54,62 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
         this.stockQty = stockQty;
         this.dateOfExpire = dateOfExpire;
+    }
+
+    // Constructor for optimized direct-issue autocomplete: includes stock/itemBatch/item IDs
+    // Double variant (EclipseLink autoboxes primitive double entity fields to Double)
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, Double retailRate, Double stockQty, Date dateOfExpire) {
+        this.id = stockId;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+    }
+
+    // Primitive double variant for strict EclipseLink type matching
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double retailRate, double stockQty, Date dateOfExpire) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
+    }
+
+    // Constructor for optimized wholesale sale autocomplete (mirrors the retail one, populates wholesaleRate).
+    // The trailing batchNo param disambiguates this overload's erasure from the retail 9-arg constructor above.
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, Double wholesaleRate, Double stockQty, Date dateOfExpire, String batchNo) {
+        this.id = stockId;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.wholesaleRate = wholesaleRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+    }
+
+    // Primitive double variant of the wholesale autocomplete constructor above, for strict
+    // EclipseLink type matching (ItemBatch.wholesaleRate is a primitive double on the entity).
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double wholesaleRate, double stockQty, Date dateOfExpire, String batchNo) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) wholesaleRate, (Double) stockQty, dateOfExpire, batchNo);
+    }
+
+    // Optimized FEFO discharge-issue projection: ids + name/code/generic + retail
+    // AND purchase rate (for COGS) + stock + expiry. (issue #21334)
+    // ItemBatch.purcahseRate is primitive double on the entity, so EclipseLink
+    // requires an exact-type constructor parameter for the projection.
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double retailRate, double purchaseRate, double stockQty, Date dateOfExpire) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
+        this.purchaseRate = purchaseRate;
     }
 
     // Same as above, with allowFractions
@@ -160,6 +222,54 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
     }
 
+    // Constructor for department stock report by batch using DTO (with dosage form)
+    public StockDTO(Long id,
+                    String categoryName,
+                    String itemName,
+                    DepartmentType departmentType,
+                    String code,
+                    String genericName,
+                    Date dateOfExpire,
+                    String batchNo,
+                    Double stockQty,
+                    Double purchaseRate,
+                    Double costRate,
+                    Double retailRate,
+                    String dosageFormName) {
+        this.id = id;
+        this.stockId = id;
+        this.categoryName = categoryName;
+        this.itemName = itemName;
+        this.departmentType = departmentType;
+        this.code = code;
+        this.genericName = genericName;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.stockQty = stockQty;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
+        this.retailRate = retailRate;
+        this.dosageFormName = dosageFormName;
+    }
+
+    // Constructor for department stock report by batch (without genericName)
+    // Uses exact field types from entities: Stock.stock=Double, ItemBatch.purcahseRate=double,
+    // ItemBatch.costRate=Double, ItemBatch.retailsaleRate=double (EclipseLink requires exact match)
+    public StockDTO(Long id,
+                    String categoryName,
+                    String itemName,
+                    DepartmentType departmentType,
+                    String code,
+                    Date dateOfExpire,
+                    String batchNo,
+                    Double stockQty,
+                    double purchaseRate,
+                    Double costRate,
+                    double retailRate,
+                    String dosageFormName) {
+        this(id, categoryName, itemName, departmentType, code, "", dateOfExpire, batchNo, stockQty, purchaseRate, costRate, retailRate, dosageFormName);
+    }
+
     // Constructor for stock count bill generation (optimized for performance)
     public StockDTO(Long stockId, Long itemBatchId, Long itemId,
                     String categoryName, String itemName, String batchNo,
@@ -173,6 +283,25 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
         this.stockQty = stockQty;
         this.costRate = costRate;
+    }
+
+    // Constructor for stock count bill generation with purchase and retail rates
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId,
+                    String categoryName, String itemName, String batchNo,
+                    Date dateOfExpire, Double stockQty, Double costRate,
+                    double purchaseRate, double retailRate) {
+        this(stockId, itemBatchId, itemId, categoryName, itemName, batchNo, dateOfExpire, stockQty, costRate);
+        this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+    }
+
+    // Constructor for stock count bill generation with purchase, retail rates and dosage form
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId,
+                    String categoryName, String itemName, String batchNo,
+                    Date dateOfExpire, Double stockQty, Double costRate,
+                    double purchaseRate, double retailRate, String dosageFormName) {
+        this(stockId, itemBatchId, itemId, categoryName, itemName, batchNo, dateOfExpire, stockQty, costRate, purchaseRate, retailRate);
+        this.dosageFormName = dosageFormName;
     }
 
 
@@ -197,6 +326,77 @@ public class StockDTO implements Serializable {
         this.allowFractions = allowFractions;
     }
 
+    // Constructor for optimized retail sale autocomplete (includes itemBatchId and itemId for zero-query conversion)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+    }
+
+    // Constructor for optimized retail sale autocomplete with category ID for price matrix discount calculation
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, Long categoryId) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.categoryId = categoryId;
+    }
+
+    // Constructor for optimized retail sale autocomplete with costRate (for cashier sale)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, Double costRate) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.costRate = costRate;
+    }
+
+    // Constructor for optimized retail sale autocomplete with departmentType (for department type filtering)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, DepartmentType departmentType) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.departmentType = departmentType;
+    }
+
     public Long getId() {
         return id;
     }
@@ -219,6 +419,14 @@ public class StockDTO implements Serializable {
 
     public void setItemBatchId(Long itemBatchId) {
         this.itemBatchId = itemBatchId;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 
     public String getItemName() {
@@ -388,5 +596,34 @@ public class StockDTO implements Serializable {
 
     public void setTotalStockQty(Double totalStockQty) {
         this.totalStockQty = totalStockQty;
+    }
+
+    public Boolean getDiscountAllowed() {
+        return discountAllowed;
+    }
+
+    public void setDiscountAllowed(Boolean discountAllowed) {
+        this.discountAllowed = discountAllowed;
+    }
+
+    // Prefer boolean accessor for EL friendliness
+    public boolean isDiscountAllowed() {
+        return discountAllowed != null && discountAllowed;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getDosageFormName() {
+        return dosageFormName;
+    }
+
+    public void setDosageFormName(String dosageFormName) {
+        this.dosageFormName = dosageFormName;
     }
 }

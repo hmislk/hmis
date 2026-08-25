@@ -1091,6 +1091,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 return true;
             }
         }
+        
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return true;
+        }
 
 //        if (getPaymentMethod() == null) {
 //            JsfUtil.addErrorMessage("Select Payment Method.");

@@ -4,6 +4,8 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.data.PatientRegistrationSource;
+import com.divudi.core.data.SpecificPatientStatus;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -13,6 +15,8 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,6 +24,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -37,7 +42,7 @@ public class Patient implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     private Long patientPhoneNumber;
@@ -117,7 +122,7 @@ public class Patient implements Serializable, RetirableEntity {
     Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     Date toDate;
-    @Size(max = 15)
+    @Size(max = 20)
     String phn;
 
     private Boolean hasAnAccount;
@@ -136,6 +141,23 @@ public class Patient implements Serializable, RetirableEntity {
     private String mobileNumberStringTransient;
 
     private Boolean cardIssues;
+    
+    @Enumerated(EnumType.STRING) //This is defined for mark patient labels as vip, vvip and normal.
+    private SpecificPatientStatus specificStatus = SpecificPatientStatus.NORMAL;
+    private String specificStatusComment;
+    
+    /**
+     * How this patient was first registered. Set once at creation and never
+     * changed. Null for patients created before this feature. (Issue #21181)
+     *
+     * <p>{@code updatable = false} keeps the value out of UPDATE statements, so
+     * once it is written on INSERT (by an explicit entry point or the
+     * {@code @PrePersist} default) no later edit flow can change it in the
+     * database — enforcing the "set once" identity anchor.</p>
+     */
+    @Column(updatable = false)
+    @Enumerated(EnumType.STRING)
+    private PatientRegistrationSource registrationSource;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
@@ -202,6 +224,21 @@ public class Patient implements Serializable, RetirableEntity {
     @Deprecated
     private void onLoad() {
         calAgeFromDob();
+    }
+
+    /**
+     * Records how this patient was first registered. The value is set once, at
+     * creation. Entry points that know their context set it explicitly before
+     * persist (e.g. inward admission, newborn, online self-registration). Any
+     * other brand-new patient — i.e. one registered at an OPD or pharmacy
+     * counter, or in the EMR — falls through to {@code WALK_IN} here. Existing
+     * patients are never touched, because this fires only on insert. (Issue #21181)
+     */
+    @PrePersist
+    private void defaultRegistrationSourceOnCreate() {
+        if (registrationSource == null) {
+            registrationSource = PatientRegistrationSource.WALK_IN;
+        }
     }
 
     @Deprecated
@@ -752,5 +789,34 @@ public class Patient implements Serializable, RetirableEntity {
         calShortAgeFromDob(billDate);
         return shortAgeOnBilledDate;
 
+    }
+
+    public SpecificPatientStatus getSpecificStatus() {
+        return specificStatus;
+    }
+
+    public void setSpecificStatus(SpecificPatientStatus specificStatus) {
+        this.specificStatus = specificStatus;
+    }
+
+    public String getSpecificStatusComment() {
+        return specificStatusComment;
+    }
+
+    public void setSpecificStatusComment(String specificStatusComment) {
+        this.specificStatusComment = specificStatusComment;
+    }
+
+    public PatientRegistrationSource getRegistrationSource() {
+        return registrationSource;
+    }
+
+    public void setRegistrationSource(PatientRegistrationSource registrationSource) {
+        // Set once: refuse to overwrite an already-assigned source so the
+        // identity anchor cannot be silently changed by a later edit. (Issue #21181)
+        if (this.registrationSource != null && this.registrationSource != registrationSource) {
+            throw new IllegalStateException("registrationSource cannot be changed once set");
+        }
+        this.registrationSource = registrationSource;
     }
 }

@@ -24,6 +24,7 @@ public class SearchKeyword {
 
     private String billNo;
     private String refBillNo;
+    private String phn;
     private String patientName;
     private String requestNo;
     private String patientPhone;
@@ -469,6 +470,14 @@ public class SearchKeyword {
     }
 
     // distributor removed
+
+    public String getPhn() {
+        return phn;
+    }
+
+    public void setPhn(String phn) {
+        this.phn = phn;
+    }
 
 
 

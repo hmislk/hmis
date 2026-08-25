@@ -11,6 +11,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
@@ -23,6 +24,7 @@ import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import java.util.ArrayList;
@@ -52,6 +54,9 @@ public class PharmacyService {
 
     @EJB
     private AmpFacade ampFacade;
+
+    @EJB
+    private BillItemFacade billItemFacade;
 
     public List<ClinicalFindingValue> getAllergyListForPatient(Patient patient) {
 
@@ -209,6 +214,125 @@ public class PharmacyService {
         return "";
     }
 
+    /**
+     * Allergy check that takes an {@link Item} directly, for callers that do not
+     * have a {@link BillItem} available (e.g. native-SQL retail sale flow).
+     * Uses the same VTM-hierarchy traversal as {@link #getAllergyMessageForPatient}.
+     */
+    public String getAllergyMessageForItem(Patient patient, Item item, List<ClinicalFindingValue> allergyListOfPatient) {
+        if (item == null) {
+            return "";
+        }
+        if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
+            allergyListOfPatient = getAllergyListForPatient(patient);
+        }
+        if (allergyListOfPatient.isEmpty()) {
+            return "";
+        }
+
+        Amp amp = null;
+        Vmp vmp = null;
+        if (item instanceof Ampp) {
+            amp = ((Ampp) item).getAmp();
+        } else if (item instanceof Amp) {
+            amp = (Amp) item;
+        } else if (item instanceof Vmp) {
+            vmp = (Vmp) item;
+        }
+
+        Atm atm = null;
+        Vtm vtm = null;
+        if (amp != null) {
+            atm = amp.getAtm();
+            vmp = amp.getVmp();
+        } else if (vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+        }
+        if (atm != null && vtm == null) {
+            vtm = (Vtm) atm.getVtm();
+        }
+        if (vtm == null && vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+        }
+        if (vtm == null) {
+            vtm = (Vtm) item.getVtm();
+        }
+
+        for (ClinicalFindingValue c : allergyListOfPatient) {
+            if (c.getItemValue() == null) continue;
+            Item allergyItem = c.getItemValue();
+            Vtm allergyVtm = null;
+            if (allergyItem instanceof Vtm) {
+                allergyVtm = (Vtm) allergyItem;
+            } else if (allergyItem instanceof Amp) {
+                allergyVtm = allergyItem.getVmp() != null ? (Vtm) allergyItem.getVmp().getVtm() : (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Vmp) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Atm) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            }
+            if (vtm != null && allergyVtm != null && vtm.equals(allergyVtm)) {
+                return item.getName() + " is not allowed as patient has allergic to " + allergyVtm.getName();
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Checks whether the given item already has an ACTIVE (non-cancelled,
+     * non-retired) prior order somewhere earlier in the same admission
+     * (patient encounter). This is a soft/informational check only - it does
+     * NOT block re-ordering, since doctors legitimately re-order the same
+     * medicine multiple times within one admission (e.g. reverting to an
+     * earlier antibiotic after culture/ABST results come back).
+     *
+     * @param patientEncounter the current inward admission
+     * @param item the medicine item being added
+     * @return true if an active prior order for this item exists in this
+     * admission
+     */
+    public boolean hasActiveInwardMedicineOrder(PatientEncounter patientEncounter, Item item) {
+        if (patientEncounter == null || patientEncounter.getId() == null
+                || item == null || item.getId() == null) {
+            return false;
+        }
+        String jpql = "SELECT COUNT(bi) FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.bill.patientEncounter = :pe "
+                + "AND bi.item = :item "
+                + "AND bi.bill.billTypeAtomic IN :atomics";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", patientEncounter);
+        params.put("item", item);
+        params.put("atomics", Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.REQUEST_MEDICINE_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD));
+        return billItemFacade.findLongByJpql(jpql, params) > 0;
+    }
+
+    /**
+     * Builds a soft, non-blocking warning message when the given item
+     * already has an active prior order earlier in the same admission.
+     *
+     * @param patientEncounter the current inward admission
+     * @param item the medicine item being added
+     * @return a warning message, or an empty string if there is no prior
+     * active order
+     */
+    public String getReorderWarningMessage(PatientEncounter patientEncounter, Item item) {
+        if (!hasActiveInwardMedicineOrder(patientEncounter, item)) {
+            return "";
+        }
+        return "NOTE: " + item.getName()
+                + " has already been ordered earlier during this admission. "
+                + "Re-ordering is allowed if clinically appropriate.";
+    }
+
     public void addBillItemInstructions(BillItem billItem) {
         if (billItem == null) {
             return;
@@ -342,6 +466,44 @@ public class PharmacyService {
 
     }
 
+    public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+
+        PharmacyBundle bundle;
+
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+
+        return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDto.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of sales atomics without affecting F15. Falls back to getPharmacyIncomeBillTypes()
+     * when the list is null or empty. F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDtoForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+
+        PharmacyBundle bundle;
+
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyIncomeBillTypes()
+                : billTypeAtomics;
+
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
+
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyStockPurchaseValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
@@ -355,6 +517,36 @@ public class PharmacyService {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
         List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
+    /**
+     * Fetch pharmacy stock purchase value by bill type DTO with completed filter.
+     * Only includes bills where completed = true.
+     */
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDtoCompleted(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsCompleted(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyStockPurchaseValueByBillTypeDtoCompleted.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of purchase atomics without affecting F15. Falls back to getPharmacyPurchaseBillTypes()
+     * when the list is null or empty. F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDtoCompletedForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyPurchaseBillTypes()
+                : billTypeAtomics;
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsCompleted(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
         bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
@@ -378,6 +570,24 @@ public class PharmacyService {
         return bundle;
     }
 
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyTransferValueByBillTypeDto.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of transfer atomics without affecting F15. Falls back to
+     * getPharmacyInternalTransferBillTypes() when the list is null or empty.
+     * F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyTransferValueByBillTypeDtoForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyInternalTransferBillTypes()
+                : billTypeAtomics;
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyAdjustmentValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
@@ -390,10 +600,93 @@ public class PharmacyService {
     public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
-        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        // Use the adjustment-specific fetch that prefers bfd.grossTotal/netTotal over bill.total/netTotal
+        // because some adjustment bills (e.g. retail rate adjustment) have bill.total=0 but correct BFD values
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
         bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 1) variant of fetchPharmacyAdjustmentValueByBillTypeDto.
+     * Accepts a caller-supplied list of BillTypeAtomic so Level 1 can summarise a user-chosen
+     * subset of adjustment atomics without affecting F15. Falls back to
+     * getPharmacyAdjustmentBillTypes() when the list is null or empty.
+     * F15 itself does NOT call this method.
+     */
+    public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDtoForAtomics(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, List<BillTypeAtomic> billTypeAtomics) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> effectiveAtomics = (billTypeAtomics == null || billTypeAtomics.isEmpty())
+                ? getPharmacyAdjustmentBillTypes()
+                : billTypeAtomics;
+        // Use the adjustment-specific fetch that prefers bfd.grossTotal/netTotal over bill.total/netTotal
+        // because some adjustment bills (e.g. retail rate adjustment) have bill.total=0 but correct BFD values
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, effectiveAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual sales BillLights behind a single
+     * Level 1 sales row. Returns the raw, ungrouped BillLight list so the L2 page can
+     * render one row per bill. AdmissionType + PaymentScheme are required because L1
+     * groups sales by BillTypeAtomic + AdmissionType + PaymentScheme.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyIncomeBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual purchase BillLights behind a single
+     * Level 1 purchase row. Returns the raw, ungrouped BillLight list. Mirrors
+     * fetchPharmacyStockPurchaseValueByBillTypeDtoCompletedForAtomics so the L2 figures
+     * tally with L1 (completed bills only).
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyPurchaseBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetailsCompleted(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual transfer BillLights behind a single
+     * Level 1 transfer row. Returns the raw, ungrouped BillLight list.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyTransferBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
+    }
+
+    /**
+     * F15 drill-down (Level 2) — fetch the individual adjustment BillLights behind a single
+     * Level 1 adjustment row. Returns the raw, ungrouped BillLight list. Uses the
+     * adjustment-specific fetch (BFD-aware) so the L2 figures tally with L1.
+     * F15 itself does NOT call this method.
+     *
+     * Issue: #20240. Parent epic: #20236.
+     */
+    public List<BillLight> fetchPharmacyAdjustmentBillLightsForLevel2(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme, BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return new ArrayList<>();
+        }
+        return billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, Arrays.asList(billTypeAtomic), admissionType, paymentScheme);
     }
 
     public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
@@ -403,7 +696,6 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
                 BillTypeAtomic.PHARMACY_WHOLESALE,
                 BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
                 BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
@@ -411,6 +703,9 @@ public class PharmacyService {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -421,6 +716,35 @@ public class PharmacyService {
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
         );
+    }
+
+    /**
+     * Returns the two bill types that represent pre-bill retail sale stock movements.
+     * These are shown as a separate informational section on the F15 report to explain
+     * stock discrepancies caused by stock that moved (via pre-bill) but whose financial
+     * settlement has not yet been recorded within the report period:
+     * - PRE_TO_SETTLE_AT_CASHIER: stock flowed out when the pre-bill was saved
+     * - CANCELLED_PRE: stock was restored when a pre-bill was cancelled before settlement
+     */
+    public List<BillTypeAtomic> getPharmacyF15StockMovementBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE
+        );
+    }
+
+    /**
+     * Fetches the pharmacy sales bundle for F15 stock movement reconciliation.
+     * Uses getPharmacyF15StockMovementBillTypes() instead of getPharmacyIncomeBillTypes()
+     * so that the report tracks stock movement events (pre-bill creation/cancellation)
+     * rather than financial settlement events.
+     */
+    public PharmacyBundle fetchPharmacyF15StockMovementBundleDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyF15StockMovementBillTypes();
+        List<BillLight> billLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        PharmacyBundle bundle = new PharmacyBundle(billLights);
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+        return bundle;
     }
 
     public List<BillTypeAtomic> getPharmacyPurchaseBillTypes() {
@@ -457,8 +781,175 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
+        );
+    }
+
+    /**
+     * Bill types that take stock OUT of a department as genuine demand, used by
+     * the Ordering Requirement Report (issue #22466) to compute consumption.
+     *
+     * Only the stock-moving side of each transaction appears here. A retail sale
+     * writes two PharmaceuticalBillItem rows for one physical movement - the
+     * "pre" row (which is where deductFromStock actually runs, see
+     * PharmacySaleController) and the settled/financial row (whose deductFromStock
+     * calls are commented out in PharmacyPreSettleController). Listing both would
+     * roughly double every retail figure, so the financial mirrors
+     * (PHARMACY_RETAIL_SALE, PHARMACY_RETAIL_SALE_CANCELLED,
+     * PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+     * PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+     * PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) are deliberately absent.
+     * This is the same split already documented on
+     * getPharmacyF15StockMovementBillTypes() vs getPharmacyIncomeBillTypes().
+     *
+     * Reversals (cancellations and returns) are included: they carry
+     * positive-signed quantities, so summing signed quantities over this list
+     * yields consumption already net of returns.
+     *
+     * Internal transfers out are treated as demand on the issuing department,
+     * which is correct for the report's intended per-department use. At a scope
+     * spanning several departments an internal transfer inflates consumption;
+     * the report page carries a note to that effect.
+     */
+    public List<BillTypeAtomic> getOrderingOutwardBillTypes() {
+        return Arrays.asList(
+                // Retail sale - stock-moving ("pre") side only
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK_BATCH_BILL,
+                // Wholesale - "pre" side by analogy with retail (the coop data set
+                // contains no wholesale rows, so this pairing is unverified against
+                // live data; PHARMACY_WHOLESALE is treated as the financial mirror)
+                BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                // Inward / theatre direct issues
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+                BillTypeAtomic.WARD_MEDICINE_ADMINISTRATION_CONSUMPTION,
+                // Issues against a request
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+                BillTypeAtomic.RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
+                BillTypeAtomic.RETURN_MEDICINE_THEATRE,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE,
+                // Internal transfers out and disposals
+                BillTypeAtomic.PHARMACY_ISSUE,
+                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+        );
+    }
+
+    /**
+     * Bill types that change department stock without being demand: receipts,
+     * supplier returns and stock-taking adjustments.
+     *
+     * These NEVER contribute to consumption, the average, the target, the order
+     * quantity or the decision. The Ordering Requirement Report uses them for
+     * two things only: sourcing the most recent purchase rate behind Estimated
+     * Cost, and completing the set of known stock-moving types so the
+     * unclassified-movement guard does not flag them.
+     *
+     * Rate adjustments (PHARMACY_PURCHASE_RATE_ADJUSTMENT and friends) are
+     * excluded on purpose: they carry a non-zero qty that is the stock quantity
+     * being re-rated, not a delta. PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT is
+     * excluded for the same reason.
+     */
+    public List<BillTypeAtomic> getOrderingInboundBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_GRN_CANCELLED,
+                BillTypeAtomic.PHARMACY_GRN_RETURN,
+                BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION,
+                BillTypeAtomic.PHARMACY_GRN_REFUND,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+                BillTypeAtomic.PHARMACY_RECEIVE,
+                BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED,
+                // Return to supplier - reduces stock but is not consumption
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING,
+                BillTypeAtomic.PHARMACY_DONATION_BILL,
+                BillTypeAtomic.PHARMACY_DONATION_BILL_CANCELLED,
+                BillTypeAtomic.PHARMACY_DONATION_BILL_REFUND,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
+        );
+    }
+
+    /**
+     * Every bill type that moves department stock - the union of the outward and
+     * inbound lists. Used by the unclassified-movement guard to decide whether a
+     * stock-touching row is one this report already knows about.
+     */
+    public List<BillTypeAtomic> getOrderingStockMovingBillTypes() {
+        List<BillTypeAtomic> all = new ArrayList<>(getOrderingOutwardBillTypes());
+        all.addAll(getOrderingInboundBillTypes());
+        return all;
+    }
+
+    /**
+     * Bill types that write a PharmaceuticalBillItem carrying a stock reference
+     * but which have been deliberately judged NOT to move stock.
+     *
+     * Two groups:
+     *
+     * 1. Financial mirrors of a movement already counted on its stock-moving
+     *    "pre" side. The stock reference is copied onto the settlement bill, so
+     *    the presence of p.stock cannot be used to tell the two apart - only the
+     *    bill type atomic can.
+     * 2. Rate and expiry-date adjustments. These carry a non-zero qty that is
+     *    the stock quantity being re-rated, not a delta.
+     *
+     * Kept separate from the stock-moving lists so that
+     * PharmacyOrderingRequirementService.countUnclassifiedMovements() can tell
+     * "deliberately ignored" apart from "never seen before", and only warn about
+     * the latter.
+     */
+    public List<BillTypeAtomic> getOrderingNonStockMovingBillTypes() {
+        return Arrays.asList(
+                // Financial mirrors - the movement is counted on the "pre" side
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION,
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                // Rate and expiry adjustments - qty is a re-rated quantity, not a delta
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
         );
     }
 

@@ -251,7 +251,7 @@ public class AgentAndCcPaymentController implements Serializable {
 
 //        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
         createAndAddBillItemToCcPaymentReceiptBill();
-//        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 

@@ -5,6 +5,7 @@ package com.divudi.core.data.reports;
  */
 public enum CommonReports implements IReportType {
     LAB_DASHBOARD("Lab Dashboard"),
+    OPD_REPORTS("OPD Reports"),
     LAB_REPORTS("Lab Reports");
 
     private final String displayName;

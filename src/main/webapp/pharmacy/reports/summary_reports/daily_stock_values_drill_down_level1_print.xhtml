@@ -1,0 +1,414 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+
+                <style>
+                    .screen-only { display: block; }
+                    .print-only { display: none; }
+
+                    @media print {
+                        @page { size: A4 portrait; margin: 12mm; }
+
+                        .screen-only { display: none !important; }
+                        .print-only { display: block !important; }
+
+                        .ui-panel-titlebar,
+                        .card-header,
+                        .sidebar,
+                        nav,
+                        footer,
+                        .navbar,
+                        .btn,
+                        .ui-button,
+                        .p-button,
+                        .no-print,
+                        .col-md-2,
+                        .p-panel,
+                        .p-accordionpanel,
+                        .row > .col-md-2,
+                        .ui-panel-content:has(.p-accordionpanel),
+                        .p-accordion,
+                        .p-tab,
+                        .d-grid {
+                            display: none !important;
+                        }
+
+                        .col-md-10,
+                        .report-container {
+                            width: 100% !important;
+                            max-width: 100% !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+
+                        .ui-panel,
+                        .ui-panel-content {
+                            border: none !important;
+                            background: transparent !important;
+                            box-shadow: none !important;
+                        }
+
+                        body * { visibility: hidden; }
+                        .report-container, .report-container * { visibility: visible; }
+
+                        .report-container {
+                            position: absolute !important;
+                            left: 0 !important;
+                            top: 0 !important;
+                            width: 100% !important;
+                        }
+
+                        .print-table {
+                            border-collapse: collapse;
+                            width: 100%;
+                            font-size: 10px;
+                            margin: 0;
+                            page-break-inside: auto;
+                        }
+
+                        .print-table th,
+                        .print-table td {
+                            border: 1px solid #000;
+                            padding: 4px;
+                            font-size: 10px;
+                            line-height: 1.2;
+                        }
+
+                        .print-table th {
+                            background-color: #f0f0f0 !important;
+                            font-weight: bold;
+                            text-align: center;
+                        }
+
+                        .print-table .text-end { text-align: right; }
+
+                        .section-header {
+                            background-color: #e0e0e0 !important;
+                            font-weight: bold;
+                            text-align: center;
+                            page-break-after: avoid;
+                        }
+
+                        .total-row {
+                            background-color: #f8f8f8 !important;
+                            font-weight: bold;
+                            border-top: 2px solid #000;
+                        }
+
+                        .print-title {
+                            text-align: center;
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin-bottom: 8px;
+                            color: #000;
+                        }
+
+                        .print-info {
+                            margin-bottom: 8px;
+                            font-size: 11px;
+                        }
+
+                        .print-info .info-row {
+                            margin-bottom: 2px;
+                        }
+
+                        .section-break { page-break-inside: avoid; }
+
+                        body, * {
+                            color: #000 !important;
+                            background: white !important;
+                        }
+                    }
+
+                    @media screen {
+                        .report-container {
+                            max-width: 100%;
+                            margin: 20px auto;
+                            background: white;
+                            padding: 20px;
+                            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                        }
+
+                        .screen-table {
+                            border-collapse: collapse;
+                            width: 100%;
+                            margin-bottom: 20px;
+                            font-size: 12px;
+                        }
+
+                        .screen-table th,
+                        .screen-table td {
+                            border: 1px solid #dee2e6;
+                            padding: 8px;
+                            text-align: left;
+                        }
+
+                        .screen-table th {
+                            background-color: #f8f9fa;
+                            font-weight: bold;
+                            color: #495057;
+                        }
+
+                        .screen-table .text-end { text-align: right; }
+
+                        .section-title {
+                            background-color: #e3f2fd;
+                            font-weight: bold;
+                            text-align: center;
+                            color: #1976d2;
+                        }
+
+                        .total-row {
+                            background-color: #f5f5f5;
+                            font-weight: bold;
+                        }
+
+                        .report-title {
+                            text-align: center;
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #2c3e50;
+                            margin-bottom: 20px;
+                        }
+
+                        .report-info {
+                            background-color: #f8f9fa;
+                            padding: 15px;
+                            border-radius: 5px;
+                            margin-bottom: 20px;
+                        }
+
+                        .info-label {
+                            font-weight: bold;
+                            color: #495057;
+                        }
+                    }
+                </style>
+
+                <h:form id="drillDownLevel1PrintForm">
+
+                    <!-- Screen-only control buttons -->
+                    <div class="card mb-4 screen-only">
+                        <div class="card-header bg-info text-white">
+                            <h:outputText value="&#xf02f;" styleClass="fa me-2"/>
+                            <h:outputText value="Print Controls" styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Print Report"
+                                    onclick="window.print(); return false;"
+                                    styleClass="ui-button-success"
+                                    icon="fa fa-print"
+                                    title="Print this report"/>
+                                <p:commandButton
+                                    value="Back to Level 1"
+                                    action="#{pharmacyDailyStockDrillDownLevel1Controller.navigateToLevel1()}"
+                                    styleClass="ui-button-secondary"
+                                    icon="fa fa-arrow-left"
+                                    ajax="false"
+                                    title="Return to Level 1"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report container -->
+                    <div class="report-container">
+
+                        <!-- Print-only header -->
+                        <div class="print-only">
+                            <div class="print-title">F15 Drill-Down — Level 1 (Date-Range Summary)</div>
+                            <div class="print-info">
+                                <div class="info-row">
+                                    <strong>From:</strong>
+                                    <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                    &nbsp;&nbsp;
+                                    <strong>To:</strong>
+                                    <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                </div>
+                                <div class="info-row">
+                                    <strong>Institution:</strong>
+                                    <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.institution.name}"/>
+                                    &nbsp;&nbsp;
+                                    <strong>Site:</strong>
+                                    <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.site.name}"/>
+                                    &nbsp;&nbsp;
+                                    <strong>Department:</strong>
+                                    <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.department.name}"/>
+                                </div>
+                                <div class="info-row">
+                                    <strong>Transaction Type:</strong>
+                                    <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.transactionType}"/>
+                                </div>
+                                <div class="info-row">
+                                    <strong>Selected Atomics:</strong>
+                                    <ui:repeat value="#{pharmacyDailyStockDrillDownLevel1Controller.selectedAtomics}" var="a" varStatus="st">
+                                        <h:outputText value="#{a.label}"/>
+                                        <h:outputText value=", " rendered="#{!st.last}"/>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Screen-only header -->
+                        <div class="screen-only">
+                            <div class="report-title">F15 Drill-Down — Level 1 (Date-Range Summary)</div>
+                            <div class="report-info">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <span class="info-label">From:</span>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="info-label">To:</span>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="info-label">Institution:</span>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.institution.name}"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="info-label">Site:</span>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.site.name}"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="info-label">Department:</span>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.department.name}"/>
+                                    </div>
+                                    <div class="col-md-12 mt-2">
+                                        <span class="info-label">Transaction Type:</span>
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.transactionType}"/>
+                                    </div>
+                                    <div class="col-md-12 mt-2">
+                                        <span class="info-label">Selected Atomics:</span>
+                                        <ui:repeat value="#{pharmacyDailyStockDrillDownLevel1Controller.selectedAtomics}" var="a" varStatus="st">
+                                            <h:outputText value="#{a.label}"/>
+                                            <h:outputText value=", " rendered="#{!st.last}"/>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main report table -->
+                        <table class="screen-table print-table">
+                            <tbody class="section-break">
+                                <tr>
+                                    <th colspan="8" class="section-title section-header">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.transactionType} Transactions"/>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Row Type</th>
+                                    <th class="text-end">Gross Value</th>
+                                    <th class="text-end">Discount</th>
+                                    <th class="text-end">Service Charge</th>
+                                    <th class="text-end">Net Value</th>
+                                    <th class="text-end">Stock Value (Cost)</th>
+                                    <th class="text-end">Stock Value (Purchase)</th>
+                                    <th class="text-end">Stock Value (Retail)</th>
+                                </tr>
+                                <ui:repeat value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.rows}" var="row">
+                                    <tr>
+                                        <td><h:outputText value="#{row.rowType}"/></td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{row.grossTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{row.discount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{row.serviceCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{row.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{row.valueOfStocksAtCostRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{row.valueOfStocksAtPurchaseRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="text-end">
+                                            <h:outputText value="#{row.valueOfStocksAtRetailSaleRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                                <tr class="total-row">
+                                    <td><strong>Total</strong></td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.grossTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.serviceCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.valueOfStocksAtCostRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.valueOfStocksAtPurchaseRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -20,10 +20,11 @@
                     <p:accordionPanel activeIndex="#{searchController.activeIndexForDisbursement}" >
                         <p:ajax event="tabChange" process="@this"/>
                         <p:tab title="Transfer Requests" >
-                            <p:panelGrid columns="1" >
+                            <div class="d-grid gap-2">
                                 <p:commandButton
                                     value="Create Request"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="#{transferRequestController.navigateToCreateANewTransferRequest()}"
                                     class="ui-button-success w-100"
                                     icon="fas fa-hand-holding-medical"
@@ -31,71 +32,114 @@
                                 <p:commandButton
                                     value="Finalize Requests"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="#{searchController.navigateToTransferRequestFinalize}"
                                     actionListener="#{searchController.makeListNull()}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-tasks"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
                                 <p:commandButton
                                     value="Approve Requests"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="#{searchController.navigateToTransferRequestApprove()}"
                                     actionListener="#{searchController.makeListNull()}"
-                                    class="ui-button-info w-100"
-                                    icon="fas fa-check-circle"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
+                                    styleClass="ui-button-stage-approve w-100"
+                                    icon="fas fa-check-double"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}" />
                                 <p:commandButton
                                     value="Approved Requests"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="/pharmacy/pharmacy_transfer_request_list_approved?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-secondary w-100"
                                     icon="fas fa-check-double"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
-                            </p:panelGrid>
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}" />
+                            </div>
                         </p:tab>
                         <p:tab title="Issues" >
-                            <p:panelGrid columns="1" >
+                            <div class="d-grid gap-2">
                                 <p:commandButton
                                     value="Issue for Requests"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="#{transferIssueController.navigateToListPharmacyIssueRequests}"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-success w-100"
                                     icon="fas fa-prescription-bottle-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}" />
                                 <p:commandButton
+                                    value="Finalize Issues"
+                                    ajax="false"
+                                    style="text-align: left"
+                                    action="#{searchController.navigateToIssueForRequestListToFinalize()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    icon="fas fa-lock"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}" />
+                                <p:commandButton
+                                    value="Approve Issues"
+                                    ajax="false"
+                                    style="text-align: left"
+                                    action="#{searchController.navigateToIssueForRequestListToApprove()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    styleClass="ui-button-stage-approve w-100"
+                                    icon="fas fa-check-double"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyIssueForRequestApprove')}" />
+                                <p:commandButton
                                     value="Direct Issue"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="#{transferIssueDirectController.navigateToDirectPharmacyIssue}"
                                     actionListener="#{transferIssueController.makeNull()}"
                                     class="ui-button-info w-100"
                                     icon="fas fa-pills"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
                         <p:tab title="Receive" >
-                            <p:panelGrid columns="1" >
+                            <div class="d-grid gap-2">
                                 <p:commandButton
                                     value="Receive Issued Items"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-success w-100"
                                     icon="fas fa-truck-loading"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}" />
-                            </p:panelGrid>
+                                <p:commandButton
+                                    value="Finalize Receives"
+                                    ajax="false"
+                                    style="text-align: left"
+                                    action="#{searchController.navigateToReceiveListToFinalize()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    icon="fas fa-lock"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyReceiveFinalize')}" />
+                                <p:commandButton
+                                    value="Approve Receives"
+                                    ajax="false"
+                                    style="text-align: left"
+                                    action="#{searchController.navigateToReceiveListToApprove()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    styleClass="ui-button-stage-approve w-100"
+                                    icon="fas fa-check-double"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyReceiveApprove')}" />
+                            </div>
                         </p:tab>
                         <p:tab title="Reports" >
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
                                     value="Transfer Reports"
                                     ajax="false"
+                                    style="text-align: left"
                                     action="#{reportsTransfer.navigateToPharmacyTransferReports()}"
                                     class="ui-button-info w-100"
                                     icon="fas fa-file-alt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementReports')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
                     </p:accordionPanel>
                 </h:form>

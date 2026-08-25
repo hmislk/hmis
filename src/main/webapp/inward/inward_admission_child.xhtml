@@ -7,47 +7,78 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
-
+xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
         <h:form>
             <h:panelGroup rendered="#{!admissionController.printPreview}" >
                 <p:panel>
                     <f:facet name="header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h:outputText styleClass="fa fa-hospital"></h:outputText>
-                                <h:outputText class="mx-4" value="Admit a Baby"/>
-                            </div>
-                            <div>
-                                <p:commandButton 
-                                    id="admt" 
-                                    action="#{admissionController.saveSelected}" 
-                                    ajax="false" 
-                                    class="ui-button-success mx-1"
-                                    value="Admit"  />
-                                <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
-                                <p:commandButton 
-                                    ajax="false" 
-                                    immediate="true"
-                                    value="Patient Lookup" 
-                                    class="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToSearchPatients()}" 
-                                    icon="fa fa-search" /> <!-- Font Awesome icon for search -->
+                        <!--
+                            Three-zone panel header layout (see UI guidelines § Panel Header Three-Zone Layout):
+                            LEFT  : panel title
+                            CENTER: entity-level navigation buttons (Inpatient Dashboard, Patient Lookup, Patient Profile)
+                            RIGHT : page actions ordered left→right by ascending importance; primary action rightmost
+                        -->
+                        <div class="d-flex justify-content-between align-items-center w-100">
 
-                                <p:commandButton 
-                                    ajax="false" 
+                            <!-- LEFT: title -->
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fa fa-hospital" />
+                                <h:outputText value="Admit a Baby"/>
+                            </div>
+
+                            <!-- CENTER: navigation (page-to-page, entity-related) -->
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    ajax="false"
                                     immediate="true"
-                                    class="ui-button-warning mx-1" 
-                                    value="Patient Profile" 
-                                    action="#{patientController.navigateToOpdPatientProfile()}" 
-                                    icon="fa fa-user" > <!-- Font Awesome icon for user -->
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    title="Cancel this baby admission draft and return to the mother's Inpatient Dashboard"
+                                    rendered="#{admissionController.parentAdmission ne null and admissionController.parentAdmission.id ne null}"
+                                    action="#{admissionController.navigateCancelBabyAdmission()}">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    immediate="true"
+                                    value="Patient Lookup"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    title="Search for an existing patient"
+                                    action="#{patientController.navigateToSearchPatients()}"
+                                    icon="fa fa-search" />
+                                <p:commandButton
+                                    ajax="false"
+                                    immediate="true"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    value="Patient Profile"
+                                    title="View this patient's profile"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    icon="fa fa-user">
                                     <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                             </div>
+
+                            <!-- RIGHT: actions — left=least important, right=primary -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Clear"
+                                    icon="fas fa-eraser"
+                                    title="Clear the form and start over"
+                                    styleClass="ui-button-secondary"
+                                    actionListener="#{admissionController.makeNull}" />
+                                <p:commandButton
+                                    id="admt"
+                                    action="#{admissionController.saveSelected}"
+                                    ajax="false"
+                                    icon="pi pi-check-circle"
+                                    style="min-width:120px"
+                                    styleClass="ui-button-success"
+                                    value="Admit"  />
+                            </div>
+
                         </div>
                     </f:facet>
                     
@@ -79,21 +110,23 @@
                                 class="m-1 w-100 form-control" />
                         </div>
                         <div class="col-md-3 p-2">
-                            <p:outputLabel 
+                            <h:outputText
                                 class="m-1 form-label"
-                                value="Room No* :" />
-                            <p:autoComplete 
+                                value="Room No (optional) :"
+                                title="Leave blank if the baby will stay in the mother's room — assigning a separate room here would charge the room fee twice" />
+                            <p:autoComplete
                                 forceSelection="true"
                                 id="cmbDoc"
                                 inputStyleClass="w-100"
                                 class="m-1 w-100"
+                                placeholder="Leave blank to stay in mother's room"
                                 disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
-                                value="#{admissionController.patientRoom.roomFacilityCharge}" 
+                                value="#{admissionController.patientRoom.roomFacilityCharge}"
                                 completeMethod="#{roomFacilityChargeController.completeRoom}"
                                 var="rf"
                                 itemLabel="#{rf.name}"
                                 itemValue="#{rf}"
-                                size="30" >                                
+                                size="30" >
                             </p:autoComplete>
                         </div>
                         <div class="col-md-3 p-2">
@@ -113,7 +146,17 @@
                             <div class="row my-2">
                                 <p:panel>
                                     <f:facet name="header">
-                                        <h:outputLabel value="Parent Details" />
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <h:outputLabel value="Parent Details" />
+                                            <p:commandButton
+                                                value="Copy Address &amp; Phone to Baby"
+                                                icon="fa fa-copy"
+                                                styleClass="ui-button-info ui-button-outlined"
+                                                title="Copy the mother's address and phone/mobile numbers onto the baby's own patient details"
+                                                process="@this"
+                                                update="@form"
+                                                action="#{admissionController.copyPatientDetailsFromParent()}" />
+                                        </div>
                                     </f:facet>
                                     <common:patient patient="#{admissionController.parentAdmission.patient}" class="w-100"/>
                                 </p:panel>
@@ -123,22 +166,7 @@
                             </div>
                         </div>
                         <div class="col-4 my-2">
-                            <p:panel header="Patient Detail">
-                                <p:tabView  id="tvPt"  style="min-height: 250px;"  >
-                                    <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
-                                    <p:tab  title="New Patient" id="tabNewPt">
-
-                                        <in:inputPatientDetail patient="#{admissionController.current.patient}"/>
-
-                                    </p:tab>
-                                    <p:tab id="tabSearchPt" title="Search Patient">
-                                        <h:panelGrid columns="1" >
-                                            <in:searchPatient patient="#{admissionController.parentAdmission.patient}"/>
-                                        </h:panelGrid>
-
-                                    </p:tab>
-                                </p:tabView>
-                            </p:panel>
+                            <common:patient_details_for_addmission editable="true" controller="#{admissionController}" />
                         </div>
                         <div class="col-4">
                             <div class="row my-2">
@@ -190,25 +218,6 @@
                                         </p:autoComplete>
 
                                     </h:panelGrid>
-                                </p:panel>
-                            </div>
-                            <div class="row my-2">
-                                <p:panel header="Payment Detail">
-
-                                    <h:panelGrid columns="2">
-                                        <h:outputLabel value="BHT Type"/>
-                                        <p:selectOneMenu   id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select" />                           
-                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                            <p:ajax process="@this" update="crd" event="change" />
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
-
-                                    <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
-                                        <credit:inputCredit  patientEncounter="#{admissionController.current}"/>
-                                    </h:panelGroup>
-
-
                                 </p:panel>
                             </div>
                         </div>
@@ -281,7 +290,22 @@
                 </h:panelGrid>
             </h:panelGroup>
             <p:panel rendered="#{admissionController.printPreview}">
-                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" />                   
+                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" class="mx-1" />
+                <p:commandButton
+                    ajax="false"
+                    immediate="true"
+                    value="Baby Inpatient Profile"
+                    icon="fa fa-child"
+                    class="ui-button-info mx-1"
+                    action="#{admissionController.navigateToAdmissionProfilePage()}" />
+                <p:commandButton
+                    ajax="false"
+                    immediate="true"
+                    value="Mother's Inpatient Profile"
+                    icon="fa fa-female"
+                    class="ui-button-secondary mx-1"
+                    rendered="#{admissionController.current.parentEncounter != null}"
+                    action="#{admissionController.navigateToAdmissionProfileById(admissionController.current.parentEncounter.id)}" />
                 <bill:bht admission="#{admissionController.current}"/>
             </p:panel>
 

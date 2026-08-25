@@ -7,11 +7,13 @@ package com.divudi.core.entity;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.cashTransaction.CashTransaction;
 import com.divudi.core.entity.hr.BankAccount;
 import com.divudi.core.entity.membership.MembershipScheme;
@@ -51,7 +53,7 @@ import javax.persistence.JoinColumn;
 public class Bill implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -114,6 +116,21 @@ public class Bill implements Serializable, RetirableEntity {
     private String comments;
     @Lob
     private String paymentMemo;
+    /**
+     * Serialised breakdown of a Multiple Payment Methods settlement, held as a JSON
+     * array of {@code {label, value, reference}} entries.
+     *
+     * Written where the components are entered but no {@link Payment} rows are created
+     * yet - notably the pharmacy Sale for Cashier pre-bill, where the cashier collects
+     * the money and writes the real Payment rows later against the settled bill. Without
+     * this the split exists only in session state, so a reprint of the pre-bill loses the
+     * breakdown that the slip handed to the customer showed (#22487).
+     *
+     * Print-only. It is never summed and must not be treated as evidence that money was
+     * received - persisted Payment rows remain the single source of truth for that.
+     */
+    @Lob
+    private String paymentBreakdown;
     @Lob
     private String indication;
     // Bank Detail
@@ -146,6 +163,8 @@ public class Bill implements Serializable, RetirableEntity {
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private DepartmentType departmentType;
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem singleBillItem;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -157,6 +176,23 @@ public class Bill implements Serializable, RetirableEntity {
     private String referenceNumber; //referenceNumber
 
     //Values
+    /**
+     * IMPORTANT: Despite the name, this field stores the SERVICE CHARGE value
+     * for pharmacy bills. This is the PRIMARY field used for service charges.
+     *
+     * Data analysis (Dec 2024) shows:
+     * - 23,065 bills have margin != 0 with serviceCharge = 0
+     * - 7,476 bills have both fields with equal values
+     * - 0 bills have serviceCharge used independently
+     *
+     * Current usage:
+     * - Pharmacy reports use this field to display "Service Charge" column
+     * - PharmacyBundle.populateRowFromBill() maps this to serviceCharge in PharmacyRow
+     * - actualTotal is calculated as: total - margin
+     *
+     * @see #serviceCharge
+     * @see com.divudi.core.data.PharmacyBundle#populateRowFromBill
+     */
     private double margin;
 
     private double total;
@@ -176,6 +212,20 @@ public class Bill implements Serializable, RetirableEntity {
     private double settledAmountBySponsor;
     private double refundAmount;
     private double balance;
+    /**
+     * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
+     *
+     * Data analysis (Dec 2024) confirms:
+     * - This field is NEVER used independently (always 0 or equals margin)
+     * - When populated, it mirrors the 'margin' field value exactly
+     * - All pharmacy reports should use 'margin' for service charge values
+     *
+     * This naming confusion caused a bug in PharmacyBundle where actualTotal
+     * was incorrectly calculated using this field instead of margin.
+     *
+     * @see #margin
+     * @deprecated Use {@link #margin} for service charge values
+     */
     private double serviceCharge;
     private Double tax = 0.0;
     private Double cashPaid = 0.0;
@@ -238,6 +288,7 @@ public class Bill implements Serializable, RetirableEntity {
     //Id's
     private String deptId;
     private String insId;
+    private Long voucherNo;
     private String catId;
     private String sessionId;
     @Deprecated
@@ -316,6 +367,11 @@ public class Bill implements Serializable, RetirableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
+
+    private Integer finalBillVersionSerial; // 1, 2, 3... for this admission's final-bill lineage; null for non-final-bill types
+    private boolean confirmedFinalBill;     // denormalized flag, true iff pe.finalBill == this bill
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill previousVersion;           // the bill this version was created from; null for the first version; display-only, not used in any query
 
     @Transient
     private double tmpReturnTotal;
@@ -476,6 +532,22 @@ public class Bill implements Serializable, RetirableEntity {
     
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Request currentRequest;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Patient chiefHouseHolder;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Family memberFamily;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
+
+    // Collecting Centre repayment voucher values (recorded at settlement time so
+    // the CC payment voucher can be reprinted with the same figures later).
+    private double ccBalanceBeforeTransaction;
+    private double ccBalanceAfterTransaction;
+    private double ccTotalReceived;
+    private double ccTransactionAmount;
+    private double ccTotalCenterValue;
+    private double ccExcessAmount;
 
     public Bill() {
         if (status == null) {
@@ -490,6 +562,7 @@ public class Bill implements Serializable, RetirableEntity {
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
+        priority = Priority.NORMAL;
     }
 
     public OnlineBooking getOnlineBooking() {
@@ -1290,6 +1363,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.paymentMethod = paymentMethod;
     }
 
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
+
     public Item getBillPackege() {
         return billPackege;
     }
@@ -1340,6 +1421,22 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    /**
+     * Bill items excluding retired ones. Bill print templates should use
+     * this instead of getBillItems() directly, so a line item removed
+     * during draft editing (retired = true) doesn't still appear on the
+     * printed bill (issue #21856).
+     */
+    public List<BillItem> getActiveBillItems() {
+        List<BillItem> active = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if (!bi.isRetired()) {
+                active.add(bi);
+            }
+        }
+        return active;
     }
 
     public Date getBillDate() {
@@ -1556,6 +1653,15 @@ public class Bill implements Serializable, RetirableEntity {
         this.createdAt = createdAt;
     }
 
+    /**
+     * Read-only accessor for createdAt. Unlike getCreatedAt(), never computes or
+     * persists a fallback value - returns null if createdAt was never set. Use
+     * for display/reporting where triggering a backfill write is undesirable.
+     */
+    public Date peekCreatedAt() {
+        return createdAt;
+    }
+
     public boolean isRetired() {
         return retired;
     }
@@ -1589,9 +1695,6 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Patient getPatient() {
-        if (patientEncounter != null) {
-            patient = patientEncounter.getPatient();
-        }
         return patient;
     }
 
@@ -1683,6 +1786,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setDeptId(String deptId) {
         this.deptId = deptId;
+    }
+
+    public Long getVoucherNo() {
+        return voucherNo;
+    }
+
+    public void setVoucherNo(Long voucherNo) {
+        this.voucherNo = voucherNo;
     }
 
     public String getInsId() {
@@ -1827,6 +1938,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPaymentMemo(String paymentMemo) {
         this.paymentMemo = paymentMemo;
+    }
+
+    public String getPaymentBreakdown() {
+        return paymentBreakdown;
+    }
+
+    public void setPaymentBreakdown(String paymentBreakdown) {
+        this.paymentBreakdown = paymentBreakdown;
     }
 
     public Bill getReferenceBill() {
@@ -1993,6 +2112,30 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setBackwardReferenceBill(Bill backwardReferenceBill) {
         this.backwardReferenceBill = backwardReferenceBill;
+    }
+
+    public Integer getFinalBillVersionSerial() {
+        return finalBillVersionSerial;
+    }
+
+    public void setFinalBillVersionSerial(Integer finalBillVersionSerial) {
+        this.finalBillVersionSerial = finalBillVersionSerial;
+    }
+
+    public boolean isConfirmedFinalBill() {
+        return confirmedFinalBill;
+    }
+
+    public void setConfirmedFinalBill(boolean confirmedFinalBill) {
+        this.confirmedFinalBill = confirmedFinalBill;
+    }
+
+    public Bill getPreviousVersion() {
+        return previousVersion;
+    }
+
+    public void setPreviousVersion(Bill previousVersion) {
+        this.previousVersion = previousVersion;
     }
 
     public List<Bill> getForwardReferenceBills() {
@@ -3017,6 +3160,16 @@ public class Bill implements Serializable, RetirableEntity {
         return billFinanceDetails;
     }
 
+    /**
+     * Null-check for billFinanceDetails that does NOT auto-vivify a new instance
+     * (unlike getBillFinanceDetails(), which lazily creates one on first call).
+     * Use this when the presence/absence of BillFinanceDetails is itself meaningful,
+     * e.g. as the fingerprint of "bill created before BFD population existed".
+     */
+    public boolean hasBillFinanceDetails() {
+        return billFinanceDetails != null;
+    }
+
     public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
         this.billFinanceDetails = billFinanceDetails;
         if (billFinanceDetails != null && billFinanceDetails.getBill() != this) {
@@ -3069,7 +3222,77 @@ public class Bill implements Serializable, RetirableEntity {
     public void setCurrentRequest(Request currentRequest) {
         this.currentRequest = currentRequest;
     }
-    
-    
-    
+
+    public Patient getChiefHouseHolder() {
+        return chiefHouseHolder;
+    }
+
+    public void setChiefHouseHolder(Patient chiefHouseHolder) {
+        this.chiefHouseHolder = chiefHouseHolder;
+    }
+
+    public Family getMemberFamily() {
+        return memberFamily;
+    }
+
+    public void setMemberFamily(Family memberFamily) {
+        this.memberFamily = memberFamily;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public double getCcBalanceBeforeTransaction() {
+        return ccBalanceBeforeTransaction;
+    }
+
+    public void setCcBalanceBeforeTransaction(double ccBalanceBeforeTransaction) {
+        this.ccBalanceBeforeTransaction = ccBalanceBeforeTransaction;
+    }
+
+    public double getCcBalanceAfterTransaction() {
+        return ccBalanceAfterTransaction;
+    }
+
+    public void setCcBalanceAfterTransaction(double ccBalanceAfterTransaction) {
+        this.ccBalanceAfterTransaction = ccBalanceAfterTransaction;
+    }
+
+    public double getCcTotalReceived() {
+        return ccTotalReceived;
+    }
+
+    public void setCcTotalReceived(double ccTotalReceived) {
+        this.ccTotalReceived = ccTotalReceived;
+    }
+
+    public double getCcTransactionAmount() {
+        return ccTransactionAmount;
+    }
+
+    public void setCcTransactionAmount(double ccTransactionAmount) {
+        this.ccTransactionAmount = ccTransactionAmount;
+    }
+
+    public double getCcTotalCenterValue() {
+        return ccTotalCenterValue;
+    }
+
+    public void setCcTotalCenterValue(double ccTotalCenterValue) {
+        this.ccTotalCenterValue = ccTotalCenterValue;
+    }
+
+    public double getCcExcessAmount() {
+        return ccExcessAmount;
+    }
+
+    public void setCcExcessAmount(double ccExcessAmount) {
+        this.ccExcessAmount = ccExcessAmount;
+    }
+
 }

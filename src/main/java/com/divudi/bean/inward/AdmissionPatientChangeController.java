@@ -9,6 +9,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -21,11 +22,13 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -48,6 +51,8 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     SessionController sessionController;
     @Inject
     com.divudi.bean.common.PatientController patientController;
+    @Inject
+    AdmissionController admissionController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -71,15 +76,31 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     private boolean showConfirmation;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
+    private Institution institution;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Functions">
 
     /**
-     * Navigate to the Change Patient for Admission page
+     * Navigate to the Change Patient for Admission page with no pre-selected
+     * admission (user must search and pick one on the page).
      */
     public String navigateToChangeAdmissionPatient() {
         prepareForNew();
+        return "/inward/inward_change_patient?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the Change Patient page with the admission already loaded
+     * from the Admission Profile context. Skips the admission-search step so
+     * the user goes straight to selecting the new patient.
+     */
+    public String navigateToChangeAdmissionPatientFromProfile() {
+        prepareForNew();
+        current = admissionController.getCurrent();
+        if (current != null) {
+            loadAdmission();
+        }
         return "/inward/inward_change_patient?faces-redirect=true";
     }
 
@@ -107,6 +128,22 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
             suggestions = admissionFacade.findByJpql(sql, h, 20);
         }
         return suggestions;
+    }
+
+    public List<Admission> completeAdmissionByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+    }
+
+    public void onInstitutionChange() {
+        current = null;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     /**
@@ -151,49 +188,72 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         showConfirmation = true;
         JsfUtil.addSuccessMessage("Please confirm the patient change");
     }
+    
+    @EJB
+    private ClinicalFindingValueFacade clinicalFindingValueFacade;
+    
+    public void fillCurrentPatientAllergies(Patient pt) {
+        if (pt == null) {
+            return;
+        }
+        patientAllergies = new ArrayList<>();
+        Map params = new HashMap<>();
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
+        params.put("pt", pt);
+        params.put("type", ClinicalFindingValueType.PatientAllergy);
+        patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
+    }
 
     /**
-     * Confirm and save the patient change
+     * Confirm and save the patient change, then navigate to the admission
+     * profile so the user can see the updated record immediately.
      */
-    public void confirmPatientChange() {
+    public String confirmPatientChange() {
         if (current == null || newPatient == null) {
             JsfUtil.addErrorMessage("Invalid operation");
-            return;
+            return "";
         }
 
         if (originalPatient.getId().equals(newPatient.getId())) {
             JsfUtil.addErrorMessage("Cannot change to the same patient");
-            return;
+            return "";
         }
 
         try {
-            // Create audit record BEFORE making the change
-            auditService.logAudit(
-                originalPatient,
-                newPatient,
-                sessionController.getLoggedUser(),
-                "Admission Patient Change",
+            // Update the admission's patient reference
+            current.setPatient(newPatient);
+            admissionFacade.edit(current);
+
+            // Record audit only after the change has successfully persisted
+            auditService.logEncounterAudit(
+                current,
                 "Patient changed for BHT: " + current.getBhtNo() +
                 " from " + originalPatient.getPerson().getName() +
                 " (ID: " + originalPatient.getId() + ")" +
                 " to " + newPatient.getPerson().getName() +
-                " (ID: " + newPatient.getId() + ")"
+                " (ID: " + newPatient.getId() + ")",
+                originalPatient,
+                newPatient,
+                sessionController.getLoggedUser(),
+                "Admission Patient Change",
+                current.getId()
             );
-
-            // Update the admission's patient reference
-            current.setPatient(newPatient);
-            admissionFacade.edit(current);
 
             JsfUtil.addSuccessMessage("Patient changed successfully. " +
                 "BHT: " + current.getBhtNo() +
                 " is now assigned to " + newPatient.getPerson().getName());
 
-            // Reset for next operation
+            // Explicitly sync admissionController before navigating — when this
+            // flow is launched from the search page (not the profile), current may
+            // differ from admissionController.current. (Issue #21275)
+            admissionController.setCurrent(current);
+            String destination = admissionController.navigateToAdmissionProfilePage();
             prepareForNew();
+            return destination;
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error changing patient: " + e.getMessage());
-            e.printStackTrace();
+            return "";
         }
     }
 
@@ -217,6 +277,7 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         patientDetailsEditable = false;
         selectText = "";
         showConfirmation = false;
+        institution = sessionController.getInstitution();
     }
 
     /**

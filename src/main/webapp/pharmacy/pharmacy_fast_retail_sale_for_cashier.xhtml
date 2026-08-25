@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -120,7 +120,7 @@
                                                         class="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacyFastRetailSaleForCashierController.selectedAmp}"
-                                                        completeMethod="#{pharmacyFastRetailSaleForCashierController.completeAmp}"
+                                                        queryDelay="300" completeMethod="#{pharmacyFastRetailSaleForCashierController.completeAmp}"
                                                         var="amp"
                                                         itemLabel="#{amp.name}"
                                                         itemValue="#{amp}">
@@ -203,6 +203,16 @@
                                                 <p:column headerText="Item" style="padding: 6px;">
                                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
                                                     <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
+                                                    <p:commandButton
+                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Show alternative medicines available during retail sale', true)}"
+                                                        id="btnSelectSubstitute"
+                                                        icon="pi pi-refresh"
+                                                        title="Show Alternatives"
+                                                        action="#{pharmacyFastRetailSaleForCashierController.prepareSubstitute(bi)}"
+                                                        update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
+                                                        oncomplete="PF('substituteDialog').show();"
+                                                        process="@this"
+                                                        styleClass="ui-button-warning ui-button-icon-only mx-1" />
 
                                                     <ui:include src="fragments/item_details_dialog.xhtml"/>
                                                 </p:column>
@@ -423,6 +433,11 @@
 
 
                                             </p:dataTable>
+
+                                            <ui:include src="fragments/substitute_dialog.xhtml">
+                                                <ui:param name="ctrl" value="#{pharmacyFastRetailSaleForCashierController}"/>
+                                                <ui:param name="updateTarget" value=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelPayment',view).clientId}"/>
+                                            </ui:include>
                                         </p:panel>
 
 
@@ -673,6 +688,24 @@
                                                                                 class="w-100"/>
                                                                         </div>
                                                                     </div>
+                                                                    
+                                                                     <div class="row">
+                                                                        <div class="col-md-4 p-1">
+
+                                                                            <div class="input-group">
+                                                                                <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}">
+                                                                                    <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                                </p:selectOneMenu>
+
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-8 p-1">
+                                                                            <div class="input-group">
+                                                                                <p:inputText placeholder="Comment for Patient Specific Status" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
 
                                                                     <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                     <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -699,9 +732,22 @@
                                                     <h:panelGroup  rendered="#{not pharmacyFastRetailSaleForCashierController.patientDetailsEditable}"  >
                                                         <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                             <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacyFastRetailSaleForCashierController.patient ne null}" >
-                                                                <h:outputLabel value="Name " class="mx-3"/>
+                                                                
+                                                                 <h:outputLabel value="Name " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" />
+
+                                                                <h:panelGroup class="d-flex">
+
+                                                                    
+                                                                    <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleForCashierController.patient.specificStatus != null and pharmacyFastRetailSaleForCashierController.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}" severity="danger">
+                                                                        <p:outputLabel value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" />
+                                                                    </p:badge> 
+
+                                                                    <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleForCashierController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacyFastRetailSaleForCashierController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                                    </p:badge>
+
+                                                                </h:panelGroup>
 
                                                                 <h:outputLabel value="Gender " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
@@ -727,19 +773,19 @@
 
                                                                 <h:outputLabel value="Email " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.email}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.email ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.email}" />
 
                                                                 <h:outputLabel value="National ID No. " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.nic}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.nic ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.nic}" />
 
                                                                 <h:outputLabel value="Address " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.address}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.address ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.address}" />
 
                                                                 <h:outputLabel value="Area " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.area.name}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.area.name ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.area.name}" />
 
                                                             </h:panelGrid>
                                                         </h:panelGroup>
@@ -897,6 +943,12 @@
                                             <f:selectItems value="#{enumController.paperTypes}" />
                                         </p:selectOneMenu>
                                         <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                        <p:commandButton
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            class="ui-button-secondary mx-1"
+                                            type="button"
+                                            onclick="PF('fastSaleCashierConfigDialog').show();" />
                                     </h:panelGroup>
 
                                     <p:commandButton
@@ -1054,6 +1106,63 @@
                             </h:panelGroup>
                         </p:panel>
                     </h:form>
+
+                    <!-- Fast Retail Sale for Cashier Configuration Dialog (issue #22349) -->
+                    <p:dialog id="fastSaleCashierConfigDialog"
+                              rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                              header="Pharmacy Fast Retail Sale for Cashier Printer Configuration"
+                              widgetVar="fastSaleCashierConfigDialog"
+                              modal="true"
+                              width="600"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="fastSaleCashierConfigForm" />
+
+                        <h:form id="fastSaleCashierConfigForm">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-file-alt"></i> Fast Retail Sale for Cashier Paper Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h:selectBooleanCheckbox id="fastSaleCashierPosPaper" value="#{pharmacyConfigController.fastSaleCashierPosPaper}" />
+                                        <h:outputLabel for="fastSaleCashierPosPaper" value="POS Paper" class="ms-2" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <h:selectBooleanCheckbox id="fastSaleCashierPosHeaderPaper" value="#{pharmacyConfigController.fastSalePosHeaderPaper}" />
+                                        <h:outputLabel for="fastSaleCashierPosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <h:selectBooleanCheckbox id="fastSaleCashierCustom3Paper" value="#{pharmacyConfigController.fastSaleCashierCustom3Paper}" />
+                                        <h:outputLabel for="fastSaleCashierCustom3Paper" value="5x5 Custom Format 3" class="ms-2" />
+                                    </div>
+                                    <p:outputLabel value="5x5 Paper is controlled by the Paper Type dropdown above (no config option yet)." styleClass="text-muted d-block mt-2" style="font-size: 0.85em;" />
+                                </div>
+                            </div>
+
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <p:messages id="fastSaleCashierConfigMessages" showDetail="true" closable="true" />
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.saveFastSaleCashierConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('fastSaleCashierConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
 
                 </h:panelGroup>
             </ui:define>

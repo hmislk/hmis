@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.PageMetadataRegistry;
@@ -28,6 +29,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
@@ -68,6 +70,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.TemporalType;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -79,6 +83,7 @@ import javax.inject.Named;
 import com.divudi.core.util.CommonFunctions;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
+import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.RoundingMode;
 import javax.faces.component.UIComponent;
@@ -96,6 +101,11 @@ import javax.faces.convert.Converter;
 @Named
 @SessionScoped
 public class PharmacyIssueController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(PharmacyIssueController.class.getName());
+
+    @Inject
+    private WebUserController webUserController;
 
     String errorMessage = null;
     private static final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
@@ -263,6 +273,13 @@ public class PharmacyIssueController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Disposal Issue - Allow Issuing Expired Item Batches",
+            "When enabled, expired item batches can be added to a disposal issue with a warning instead of being blocked. Useful for hospitals that use disposal issue to physically discard expired stock.",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -326,6 +343,8 @@ public class PharmacyIssueController implements Serializable {
     private CashTransactionBean cashTransactionBean;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    private BillService billService;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -491,8 +510,14 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void setQty(Double qty) {
-        if (qty != null && qty <= 0) {
-            JsfUtil.addErrorMessage("Can not enter a minus value");
+        if (qty != null && qty == 0) {
+            this.qty = null;
+            JsfUtil.addErrorMessage("Quantity must be greater than 0");
+            return;
+        }
+        if (qty != null && qty < 0) {
+            this.qty = null;
+            JsfUtil.addErrorMessage("Cannot enter a negative quantity");
             return;
         }
         this.qty = qty;
@@ -561,6 +586,7 @@ public class PharmacyIssueController implements Serializable {
         List<Item> items;
         String sql;
         sql = "select i from Item i where i.retired=false "
+                + " and i.inactive=false "
                 + " and (i.name) like :n and type(i)=:t "
                 + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
@@ -583,9 +609,9 @@ public class PharmacyIssueController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.retired=false and i.itemBatch.item.inactive=false and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.retired=false and i.itemBatch.item.inactive=false and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         stockList = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeIssueItems(qry);
@@ -638,6 +664,8 @@ public class PharmacyIssueController implements Serializable {
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
             .append("AND s.department = :department ")
+            .append("AND s.itemBatch.item.retired = false ")
+            .append("AND s.itemBatch.item.inactive = false ")
             .append("AND (");
 
         sql.append("UPPER(s.itemBatch.item.name) LIKE :query ");
@@ -670,6 +698,11 @@ public class PharmacyIssueController implements Serializable {
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry.toUpperCase() + "%");
+
+        // Add department type filter if set
+        if (getPreBill().getDepartmentType() != null) {
+            parameters.put("departmentType", getPreBill().getDepartmentType());
+        }
 
         // Check if consumption restriction is enabled
         boolean restrictConsumption = configOptionApplicationController.getBooleanValueByKey(
@@ -707,7 +740,14 @@ public class PharmacyIssueController implements Serializable {
 
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
-            .append("AND s.department = :department ");
+            .append("AND s.department = :department ")
+            .append("AND s.itemBatch.item.retired = false ")
+            .append("AND s.itemBatch.item.inactive = false ");
+
+        // Add department type filter if set
+        if (getPreBill().getDepartmentType() != null) {
+            sql.append("AND s.itemBatch.item.departmentType = :departmentType ");
+        }
 
         // Add consumption allowed filter if enabled (null-safe for legacy data)
         if (restrictConsumption) {
@@ -770,7 +810,7 @@ public class PharmacyIssueController implements Serializable {
             return true;
         }
         if (preBill.getInvoiceNumber() == null || preBill.getInvoiceNumber().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please Fill Invoice Number");
+            JsfUtil.addErrorMessage("Please Fill Request Number");
             return true;
         }
         return false;
@@ -891,19 +931,16 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private boolean checkAllBillItem() {
-        if (getPreBill().getBillItems().isEmpty()) {
+        if (getActiveBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items");
             return true;
         }
-        for (BillItem b : getPreBill().getBillItems()) {
-
+        for (BillItem b : getActiveBillItems()) {
             if (onEdit(b)) {
                 return true;
             }
         }
-
         return false;
-
     }
 
 //    public void settlePreBill() {
@@ -946,6 +983,19 @@ public class PharmacyIssueController implements Serializable {
                 return;
             }
         }
+
+        // Validate department type consistency
+        if (getPreBill().getDepartmentType() != null && !getActiveBillItems().isEmpty()) {
+            for (BillItem bi : getActiveBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(getPreBill().getDepartmentType())) {
+                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                        return;
+                    }
+                }
+            }
+        }
+
         if (checkAllBillItem()) {
             return;
         }
@@ -972,13 +1022,501 @@ public class PharmacyIssueController implements Serializable {
 
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // Save → Finalize → Approve workflow for Disposal Issue
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Authorization helper method to check Pharmacy Disposal Issue
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE, CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    new Object[]{action});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Disposal Issue access attempt - action={0}, userId={1}, requiredPrivilege={2}",
+                    new Object[]{action, userId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " this disposal issue.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public String saveDisposalIssueDraft() {
+        if (!isAuthorized("SAVE", "PharmacyDisposalIssue")) {
+            return null;
+        }
+        return doSaveDisposalIssueDraft();
+    }
+
+    /**
+     * Unguarded core of {@link #saveDisposalIssueDraft()}. Called directly
+     * (bypassing the PharmacyDisposalIssue check) by
+     * {@link #finalizeCurrentDraft()}, which auto-saves a not-yet-persisted
+     * draft as part of a Finalize action that has already been authorized
+     * under PharmacyDisposalIssueFinalize.
+     */
+    private String doSaveDisposalIssueDraft() {
+        editingQty = null;
+        errorMessage = null;
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a Department");
+            return null;
+        }
+
+        if (getPreBill().getId() == null) {
+            getPreBill().setDepartment(sessionController.getLoggedUser().getDepartment());
+            getPreBill().setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+            getPreBill().setCreatedAt(new Date());
+            getPreBill().setCreater(sessionController.getLoggedUser());
+            getPreBill().setBillDate(new Date());
+            getPreBill().setBillTime(new Date());
+        }
+        getPreBill().setToDepartment(toDepartment);
+        getPreBill().setFromDepartment(sessionController.getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setBillType(BillType.PharmacyDisposalIssue);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
+
+        if (getPreBill().getId() == null) {
+            // First save — no persisted BillItems yet; safe to null the collection before create
+            List<BillItem> tmpBillItems = getActiveBillItems();
+            getPreBill().setBillItems(null);
+            getBillFacade().createAndFlush(getPreBill());
+            for (BillItem tbi : tmpBillItems) {
+                tbi.setInwardChargeType(InwardChargeType.Medicine);
+                tbi.setBill(getPreBill());
+                tbi.setCreatedAt(new Date());
+                tbi.setCreater(sessionController.getLoggedUser());
+                getBillItemFacade().createAndFlush(tbi);
+            }
+            getPreBill().setBillItems(tmpBillItems);
+        } else {
+            // Subsequent save — reload from DB before editing.
+            // Setting billItems(null) on a session-scoped entity and then calling
+            // editAndFlush triggers EclipseLink orphan-removal, which issues
+            // DELETE FROM BILLITEM and fails with FK violation on PHARMACEUTICALBILLITEM.
+            Bill freshBill = getBillFacade().find(getPreBill().getId());
+            if (freshBill == null) {
+                JsfUtil.addErrorMessage("Draft no longer exists.");
+                return null;
+            }
+            freshBill.setToDepartment(toDepartment);
+            freshBill.setFromDepartment(sessionController.getLoggedUser().getDepartment());
+            freshBill.setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+            freshBill.setComments(getPreBill().getComments());
+            freshBill.setInvoiceNumber(getPreBill().getInvoiceNumber());
+            freshBill.setReferenceNumber(getPreBill().getReferenceNumber());
+            freshBill.setDepartmentType(getPreBill().getDepartmentType());
+            getBillFacade().editAndFlush(freshBill);
+
+            // Persist new/updated BillItems individually — never touch freshBill.billItems
+            for (BillItem tbi : getActiveBillItems()) {
+                tbi.setInwardChargeType(InwardChargeType.Medicine);
+                tbi.setBill(getPreBill());
+                if (tbi.getId() == null) {
+                    tbi.setCreatedAt(new Date());
+                    tbi.setCreater(sessionController.getLoggedUser());
+                    getBillItemFacade().createAndFlush(tbi);
+                } else {
+                    getBillItemFacade().editAndFlush(tbi);
+                }
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Disposal Issue Draft Saved Successfully");
+        billPreview = false;
+        return null;
+    }
+
+    public String finalizeCurrentDraft() {
+        if (!isAuthorized("FINALIZE", "PharmacyDisposalIssueFinalize")) {
+            return null;
+        }
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a Department first.");
+            return null;
+        }
+        boolean canIssueToSameDept = configOptionApplicationController
+                .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
+        if (!canIssueToSameDept
+                && Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+            return null;
+        }
+        if (getActiveBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add at least one item before finalizing.");
+            return null;
+        }
+        if (checkAllBillItem()) {
+            return null;
+        }
+        if (errorCheckForSaleBill()) {
+            return null;
+        }
+        doSaveDisposalIssueDraft();
+        if (getPreBill().getId() == null) {
+            JsfUtil.addErrorMessage("Could not save draft. Cannot finalize.");
+            return null;
+        }
+        return finalizeDisposalIssue(getPreBill().getId());
+    }
+
+    public String loadDraftForEdit(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(draft.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(draft.getDepartment())) {
+            JsfUtil.addErrorMessage("This draft does not belong to your department.");
+            return null;
+        }
+        if (draft.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("This draft has already been finalized. Use View to Approve instead.");
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> draftItems = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
+
+        clearBill();
+        clearBillItem();
+        billPreview = false;
+
+        if (draft instanceof PreBill) {
+            preBill = (PreBill) draft;
+        } else {
+            preBill = new PreBill();
+            preBill.setId(draft.getId());
+            preBill.setCheckedBy(draft.getCheckedBy());
+            preBill.setCompleted(draft.isCompleted());
+            preBill.setComments(draft.getComments());
+            preBill.setInvoiceNumber(draft.getInvoiceNumber());
+            preBill.setReferenceNumber(draft.getReferenceNumber());
+            preBill.setDepartmentType(draft.getDepartmentType());
+            preBill.setBillTypeAtomic(draft.getBillTypeAtomic());
+            preBill.setBillType(draft.getBillType());
+            preBill.setCreatedAt(draft.getCreatedAt());
+            preBill.setCreater(draft.getCreater());
+            preBill.setDepartment(draft.getDepartment());
+            preBill.setToDepartment(draft.getToDepartment());
+            preBill.setFromDepartment(draft.getFromDepartment());
+        }
+        preBill.setBillItems(draftItems);
+        toDepartment = draft.getToDepartment();
+        return "/pharmacy/pharmacy_issue?faces-redirect=true";
+    }
+
+    public String loadFinalizedForApprove(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return null;
+        }
+        Bill bill = getBillFacade().find(billId);
+        if (bill == null || bill.isRetired()) {
+            JsfUtil.addErrorMessage("Bill not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(bill.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type for approval.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(bill.getDepartment())) {
+            JsfUtil.addErrorMessage("This disposal issue does not belong to your department.");
+            return null;
+        }
+        if (bill.getCheckedBy() == null) {
+            JsfUtil.addErrorMessage("This bill has not been finalized yet.");
+            return null;
+        }
+        if (bill.isCompleted()) {
+            JsfUtil.addErrorMessage("This bill has already been approved.");
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> items = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
+
+        clearBill();
+        clearBillItem();
+        billPreview = false;
+
+        if (bill instanceof PreBill) {
+            preBill = (PreBill) bill;
+        } else {
+            preBill = new PreBill();
+            preBill.setId(bill.getId());
+            preBill.setCheckedBy(bill.getCheckedBy());
+            preBill.setCompleted(bill.isCompleted());
+            preBill.setComments(bill.getComments());
+            preBill.setInvoiceNumber(bill.getInvoiceNumber());
+            preBill.setDepartmentType(bill.getDepartmentType());
+            preBill.setBillTypeAtomic(bill.getBillTypeAtomic());
+            preBill.setBillType(bill.getBillType());
+            preBill.setCreatedAt(bill.getCreatedAt());
+            preBill.setCreater(bill.getCreater());
+            preBill.setDepartment(bill.getDepartment());
+            preBill.setToDepartment(bill.getToDepartment());
+            preBill.setFromDepartment(bill.getFromDepartment());
+        }
+        preBill.setBillItems(items);
+        toDepartment = bill.getToDepartment();
+        return "/pharmacy/pharmacy_issue?faces-redirect=true";
+    }
+
+    public String finalizeDisposalIssue(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(draft.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type for disposal issue finalization.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(draft.getDepartment())) {
+            JsfUtil.addErrorMessage("This disposal issue does not belong to your department.");
+            return null;
+        }
+        if (draft.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Already finalized.");
+            return null;
+        }
+        draft.setCheckedBy(sessionController.getLoggedUser());
+        draft.setCheckeAt(new Date());
+        draft.setEditor(sessionController.getLoggedUser());
+        draft.setEditedAt(new Date());
+        getBillFacade().edit(draft);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> items = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
+        if (preBill != null && preBill.getId() != null && preBill.getId().equals(billId)) {
+            preBill.setCheckedBy(draft.getCheckedBy());
+            preBill.setBillItems(items);
+        }
+        setPrintBill(draft);
+        getPrintBill().setBillItems(items);
+        billPreview = true;
+        JsfUtil.addSuccessMessage("Disposal Issue Finalized Successfully");
+        return null;
+    }
+
+    public String approveDisposalIssue(Long billId) {
+        if (!isAuthorized("APPROVE", "PharmacyDisposalIssueApprove")) {
+            return null;
+        }
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(draft.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type for disposal issue approval.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(draft.getDepartment())) {
+            JsfUtil.addErrorMessage("This disposal issue does not belong to your department.");
+            return null;
+        }
+        if (draft.getCheckedBy() == null) {
+            JsfUtil.addErrorMessage("Bill must be finalized before approval.");
+            return null;
+        }
+        if (draft.isCompleted()) {
+            JsfUtil.addErrorMessage("Already approved.");
+            return null;
+        }
+        // Concurrency guard — persist completed=true BEFORE stock deduction loop
+        draft.setCompleted(true);
+        draft.setCompletedAt(new Date());
+        draft.setCompletedBy(sessionController.getLoggedUser());
+        draft.setEditor(sessionController.getLoggedUser());
+        draft.setEditedAt(new Date());
+        getBillFacade().editAndFlush(draft);
+
+        // Temporarily populate preBill so the existing private bill-number
+        // generation methods (which reference preBill.from/toDepartment) work correctly
+        preBill = new PreBill();
+        preBill.setFromDepartment(draft.getFromDepartment());
+        preBill.setToDepartment(draft.getToDepartment());
+
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else {
+            boolean strategyFromDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
+            boolean strategyToDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
+            boolean strategyFromAndToDepts = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+            if (strategyFromDept) {
+                deptId = generateBillNumberForFromDepartment();
+            } else if (strategyToDept) {
+                deptId = generateBillNumberForToDepartment();
+            } else if (strategyFromAndToDepts) {
+                deptId = generateBillNumberForFromAndToDepartmentsCorrected();
+            } else {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            }
+        }
+
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            insId = deptId;
+        } else {
+            boolean strategyFromDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department", false);
+            boolean strategyToDept = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department", false);
+            boolean strategyFromAndToDepts = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination", false);
+            if (strategyFromDept || strategyToDept || strategyFromAndToDepts) {
+                insId = deptId;
+            } else {
+                insId = generateInstitutionBillNumberForInstitution();
+            }
+        }
+
+        preBill = null; // clean up temporary state
+
+        draft.setDeptId(deptId);
+        draft.setInsId(insId);
+        draft.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+        getBillFacade().edit(draft);
+
+        // Deduct stock for each saved item
+        String jpql = "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> items = getBillItemFacade().findByJpql(jpql, params);
+        boolean anyDeductionFailed = false;
+        for (BillItem tbi : items) {
+            if (tbi.getPharmaceuticalBillItem() == null || tbi.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            double qtyL = tbi.getPharmaceuticalBillItem().getQty() + tbi.getPharmaceuticalBillItem().getFreeQty();
+            boolean success = getPharmacyBean().deductFromStock(
+                    tbi.getPharmaceuticalBillItem().getStock(),
+                    Math.abs(qtyL),
+                    tbi.getPharmaceuticalBillItem(),
+                    draft.getDepartment());
+            if (!success) {
+                anyDeductionFailed = true;
+                tbi.setTmpQty(0);
+                getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+                getBillItemFacade().edit(tbi);
+            }
+        }
+
+        setPrintBill(getBillFacade().find(billId));
+        getPrintBill().setBillItems(items);
+        preBill = null;
+        toDepartment = null;
+        billPreview = true;
+        if (anyDeductionFailed) {
+            JsfUtil.addErrorMessage("Warning: Insufficient stock for one or more items. Those items were recorded with zero quantity.");
+        }
+        JsfUtil.addSuccessMessage("Disposal Issue Approved Successfully");
+        return null;
+    }
+
+    public String cancelPendingDisposalIssue(Long billId) {
+        if (!isAuthorized("CANCEL", "PharmacyDisposalIssueCancel")) {
+            return null;
+        }
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        draft.setRetired(true);
+        draft.setRetireComments("Cancelled by " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        getBillFacade().edit(draft);
+        JsfUtil.addSuccessMessage("Disposal Issue Cancelled");
+        return "/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true";
+    }
+
+    public String cancelFinalizedDisposalIssue(Long billId) {
+        if (!isAuthorized("CANCEL", "PharmacyDisposalIssueCancel")) {
+            return null;
+        }
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        draft.setRetired(true);
+        draft.setRetireComments("Cancelled by " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        getBillFacade().edit(draft);
+        JsfUtil.addSuccessMessage("Disposal Issue Cancelled");
+        return "/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true";
+    }
+
     private boolean checkItemBatch() {
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null ||
             getBillItem().getPharmaceuticalBillItem().getStock() == null) {
             return false;
         }
 
-        for (BillItem bItem : getPreBill().getBillItems()) {
+        for (BillItem bItem : getActiveBillItems()) {
             if (bItem == null || bItem.getPharmaceuticalBillItem() == null ||
                 bItem.getPharmaceuticalBillItem().getStock() == null) {
                 continue;
@@ -1023,9 +1561,46 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Item");
             return 0.0;
         }
-        if (getQty() == null) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Please enter a quentity");
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
+            return 0.0;
+        }
+
+        // Items with no departmentType are legacy pharmacy items; treat as Pharmacy
+        if (getPreBill().getDepartmentType() == null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType effectiveType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
+            getPreBill().setDepartmentType(effectiveType);
+        }
+
+        // Validate item's department type matches bill's department type
+        {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
+
+            if (!itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return 0.0;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
+                return 0.0;
+            }
+        }
+        if (getQty() == null || getQty() <= 0) {
+            errorMessage = "Please enter a quantity greater than zero";
+            JsfUtil.addErrorMessage("Please enter a quantity greater than zero");
             return 0.0;
         }
 
@@ -1052,11 +1627,21 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
 
-//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-//            errorMessage = "This batch is Expire With in 31 Days.";
-//            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
-//            return 0.0;
-//        }
+        Date expiryDate = getStock().getItemBatch().getDateOfExpire();
+        if (expiryDate != null) {
+            Calendar expiryEnd = Calendar.getInstance();
+            expiryEnd.setTime(CommonFunctions.getEndOfDay(expiryDate));
+            if (expiryEnd.before(Calendar.getInstance())) {
+                boolean allowExpired = configOptionApplicationController.getBooleanValueByKey(
+                        "Disposal Issue - Allow Issuing Expired Item Batches", false);
+                if (allowExpired) {
+                    JsfUtil.addWarningMessage("Warning: issuing an expired item batch (expired: " + expiryDate + ")");
+                } else {
+                    JsfUtil.addErrorMessage("Cannot issue an expired item batch (expired: " + expiryDate + ")");
+                    return 0.0;
+                }
+            }
+        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
@@ -1105,14 +1690,47 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Item");
             return;
         }
-        if (getQty() == null) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Please enter a quentity");
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
             return;
         }
-        if (getQty() == 0.0) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Quentity Zero?");
+
+        // Items with no departmentType are legacy pharmacy items; treat as Pharmacy
+        if (getPreBill().getDepartmentType() == null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType effectiveType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
+            getPreBill().setDepartmentType(effectiveType);
+        }
+
+        // Validate item's department type matches bill's department type
+        {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
+
+            if (!itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
+                return;
+            }
+        }
+
+        if (getQty() == null || getQty() <= 0) {
+            errorMessage = "Please enter a quantity greater than zero";
+            JsfUtil.addErrorMessage("Please enter a quantity greater than zero");
             return;
         }
 
@@ -1221,7 +1839,7 @@ public class PharmacyIssueController implements Serializable {
         // that were causing double-counting. Now using totalCost, totalPurchase, totalRetail, totalWholesale directly.
 
         for (BillItem bi : billItems) {
-            if (bi == null) {
+            if (bi == null || bi.isRetired()) {
                 continue;
             }
 
@@ -1348,9 +1966,37 @@ public class PharmacyIssueController implements Serializable {
 
     public void removeBillItem(BillItem b) {
         userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
-        getPreBill().getBillItems().remove(b.getSearialNo());
+
+        if (b.getId() == null) {
+            // Transient row — not yet persisted, safe to remove from the list entirely.
+            // Keeping it would let checkItemBatch() block re-adding the same batch.
+            getPreBill().getBillItems().remove(b);
+        } else {
+            // Persisted row — must soft-retire in place; removing from an orphanRemoval
+            // collection triggers cascade DELETE which violates the PHARMACEUTICALBILLITEM FK.
+            b.setRetired(true);
+            b.setRetiredAt(new Date());
+            getBillItemFacade().edit(b);
+        }
+
+        if (getActiveBillItems().isEmpty()) {
+            getPreBill().setDepartmentType(null);
+        }
 
         calTotal();
+    }
+
+    public List<BillItem> getActiveBillItems() {
+        if (getPreBill() == null || getPreBill().getBillItems() == null) {
+            return new ArrayList<>();
+        }
+        List<BillItem> active = new ArrayList<>();
+        for (BillItem bi : getPreBill().getBillItems()) {
+            if (bi != null && !bi.isRetired()) {
+                active.add(bi);
+            }
+        }
+        return active;
     }
 
     private BigDecimal determineIssueRate(ItemBatch itemBatch) {
@@ -1580,6 +2226,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private void clearBill() {
+        if (preBill != null) {
+            preBill.setDepartmentType(null);
+        }
         preBill = null;
         newPatient = null;
         searchedPatient = null;
@@ -2282,6 +2931,8 @@ public class PharmacyIssueController implements Serializable {
                     + " where b.retired=false "
                     + " and b.billTypeAtomic=:bt "
                     + " and b.fromDepartment=:fd "
+                    + " and b.toDepartment.retired=false "
+                    + " and b.toDepartment.inactive=false "
                     + " order by b.id desc";
             Map<String, Object> m = new HashMap<>();
             m.put("bt", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
@@ -2300,6 +2951,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void changeDepartment() {
+        if (preBill != null) {
+            preBill.setDepartmentType(null);
+        }
         preBill = null;
         setToDepartment(null);
     }
@@ -2309,13 +2963,19 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Select a Department");
             return "";
         }
-        if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
-            JsfUtil.addErrorMessage("Cannot Make an Issue to the Same Department");
-            return "";
+        if (Objects.equals(toDepartment, sessionController.getDepartment())) {
+            // Check if department preference allows same-department issues
+            boolean allowSameDept = configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                    "Pharmacy - Allow Issue to Same Department", sessionController.getDepartment(), false);
+            if (!allowSameDept) {
+                JsfUtil.addErrorMessage("Your department does not allow pharmacy disposal issues to the same department. Contact your department administrator to enable this feature.");
+                return "";
+            }
         }
         getPreBill().setFromInstitution(sessionController.getInstitution());
         getPreBill().setFromDepartment(sessionController.getDepartment());
         getPreBill().setToDepartment(toDepartment);
+        getPreBill().setDepartmentType(null);
         return "";
     }
 }

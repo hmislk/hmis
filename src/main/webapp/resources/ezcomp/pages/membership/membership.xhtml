@@ -101,7 +101,7 @@
                                 <p:selectOneMenu
                                     filter="true"
                                     filterMatchMode="contains"
-                                    id="lstDiscountScheme"   
+                                    id="lstDiscountScheme"
                                     class="w-100 mb-1"
                                     value="#{membershipSchemeController.current.paymentScheme}" >
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
@@ -109,6 +109,20 @@
                                     <f:ajax render="gpDetail" execute="lstSelect" >
                                     </f:ajax>
                                 </p:selectOneMenu>
+
+                                <p:outputLabel for="txtCompany" id="lblCompany" value="Company (blank = personal scheme)" ></p:outputLabel>
+                                <p:autoComplete
+                                    id="txtCompany"
+                                    class="w-100 mb-1"
+                                    inputStyleClass="w-100"
+                                    value="#{membershipSchemeController.current.institution}"
+                                    completeMethod="#{institutionController.completeIns}"
+                                    var="ins"
+                                    itemLabel="#{ins.name}"
+                                    itemValue="#{ins}"
+                                    forceSelection="true" >
+                                    <p:ajax process="txtCompany" update="gpDetailText" />
+                                </p:autoComplete>
                             </p:panelGrid>
                         </p:panel>
 

@@ -149,7 +149,7 @@ public class InvestigationCategoryController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -317,7 +317,7 @@ public class InvestigationCategoryController implements Serializable {
 
 
     public String navigateToRelationships() {
-        return "/admin/items/relationships.xhtml?faces-redirect=true";
+        return "/admin/patients/relationships.xhtml?faces-redirect=true";
     }
 
     public String navigateToReligion() {

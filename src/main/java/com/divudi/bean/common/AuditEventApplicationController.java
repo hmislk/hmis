@@ -13,6 +13,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.ejb.EJB;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -21,6 +23,8 @@ import javax.ejb.EJB;
 @Named
 @ApplicationScoped
 public class AuditEventApplicationController {
+
+    private static final Logger LOGGER = Logger.getLogger(AuditEventApplicationController.class.getName());
 
     @EJB
     AuditEventFacade auditEventFacade;
@@ -62,6 +66,8 @@ public class AuditEventApplicationController {
                 auditEventFacade.edit(auditEvent);
             }
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to persist AuditEvent id={0}: {1}",
+                    new Object[]{auditEvent.getId(), e.getMessage()});
         }
     }
 

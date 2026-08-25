@@ -23,11 +23,18 @@
                                         action="#{itemMappingController.navigateToManageDepartmentItemMappings}" />
 
                                     <!-- Button to navigate to Manage Institution Item Mappings -->
-                                    <p:commandButton 
-                                        class="w-100"  
-                                        ajax="false" 
-                                        value="Manage Institution Item Mappings" 
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Manage Institution Item Mappings"
                                         action="#{itemMappingController.navigateToManageInstitutionItemMappings}" />
+
+                                    <!-- Button to navigate to Manage Outside Charge Item Mappings (issue #23250) -->
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Manage Outside Charge Item Mappings"
+                                        action="#{itemMappingController.navigateToManageOutsideChargeItemMappings}" />
                                 </div>
 
                             </p:tab>
@@ -134,11 +141,17 @@
                             <p:tab title="Metadata">
                                 <div class="d-grid gap-2">
 
-                                    <p:commandButton   
-                                        class="w-100"  
-                                        ajax="false" 
-                                        value="Bill Expenses" 
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Bill Expenses"
                                         action="#{billExpenseController.navigateToManageBillExpenses()}" />
+
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Payment Categories"
+                                        action="#{paymentItemController.navigateToManagePaymentItems()}" />
 
                                     <p:commandButton   
                                         class="w-100"  
@@ -147,18 +160,39 @@
                                         action="#{investigationCategoryController.navigateToRelationships()}" >
                                     </p:commandButton>
 
-                                    <p:commandButton   
-                                        class="w-100"  
-                                        ajax="false" 
-                                        value="Religions" 
-                                        action="#{investigationCategoryController.navigateToReligion()}" >
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Religions"
+                                        action="#{clinicalEntityController.navigateToManageReligions()}" >
                                     </p:commandButton>
 
-                                    <p:commandButton   
-                                        class="w-100"  
-                                        ajax="false" 
-                                        value="Nationalities" 
-                                        action="#{investigationCategoryController.navigateToReligion()}" >
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Blood Groups"
+                                        action="#{clinicalEntityController.navigateToManageBloodGroups()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Civil Statuses"
+                                        action="#{clinicalEntityController.navigateToManageCivilStatuses()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Occupations"
+                                        action="#{clinicalEntityController.navigateToManageOccupations()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Races"
+                                        action="#{clinicalEntityController.navigateToManageRaces()}" >
                                     </p:commandButton>
 
                                     <p:commandButton   

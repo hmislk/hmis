@@ -45,21 +45,29 @@
                                                 ajax="false" 
                                                 value="Manage Units" 
                                                 action="#{measurementUnitController.navigateToManageMeasurementUnit()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="#{pharmacyController.navigateToDiscardCategory()}" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Issue Categories" action="#{pharmacyController.navigateToDiscardCategory()}" rendered="#{webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Medicine Component Management">
+                                    <p:tab title="Pharmacy Item Management">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="VTMs" 
-                                                action="#{pharmacyController.navigateToVtm()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="ATMs" 
+                                            <!--                                            <p:commandButton
+                                                                                            class="w-100"
+                                                                                            ajax="false"
+                                                                                            value="VTMs (Entity)"
+                                                                                            action="#{pharmacyController.navigateToVtm()}"
+                                                                                            title="Traditional VTM management with full entity operations" />-->
+                                            <p:commandButton
+                                                class="w-100 ui-button-success"
+                                                ajax="false"
+                                                value="VTMs"
+                                                action="#{pharmacyController.navigateToVtmDto()}"
+                                                icon="fa fa-rocket"
+                                                title="VTM management" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="ATMs"
                                                 action="#{pharmacyController.navigateToAtm()}" />
                                             <p:commandButton 
                                                 class="w-100" 
@@ -81,6 +89,76 @@
                                                 ajax="false" 
                                                 value="AMPPs" 
                                                 action="#{pharmacyController.navigateToAmpp()}" />
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Store Item Management">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="VTMs"
+                                                action="#{pharmacyController.navigateToStoreVtm()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="ATMs"
+                                                action="#{pharmacyController.navigateToStoreAtm()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="VMPs"
+                                                action="#{pharmacyController.navigateToStoreVmp()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToStoreAmp()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="VMPPs"
+                                                action="#{pharmacyController.navigateToStoreVmpp()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPPs"
+                                                action="#{pharmacyController.navigateToStoreAmpp()}" />
+
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Lab Item Management">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="VTMs"
+                                                action="#{pharmacyController.navigateToLabVtm()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="ATMs"
+                                                action="#{pharmacyController.navigateToLabAtm()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="VMPs"
+                                                action="#{pharmacyController.navigateToLabVmp()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToLabAmp()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="VMPPs"
+                                                action="#{pharmacyController.navigateToLabVmpp()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPPs"
+                                                action="#{pharmacyController.navigateToLabAmpp()}" />
+
                                         </div>
                                     </p:tab>
 
@@ -160,7 +238,7 @@
                                                 action="#{dataUploadController.toUploadAmpsMin()}"  ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Update Bulk Categery" 
                                                              action="/pharmacy/pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                           
+
                                             <p:commandButton class="w-100" ajax="false" value="Stock Item List" 
                                                              action="/pharmacy/pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
 
@@ -182,6 +260,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection By Date" icon="fa fa-calendar-check" action="#{pharmacyController.navigateToErrorCheckingByDate()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection Report" icon="fa fa-file-alt" action="#{pharmacyController.navigateToDepartmentErrorReport()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Department Stock By Batch minus" icon="fa fa-minus-circle" action="#{pharmacyController.navigateToDepartmentStockByBatchMinus()}" />
+                                            <p:commandButton id="btnPossibleDuplicateItems" class="w-100" ajax="false" value="Possible Duplicate Items" icon="fa fa-clone" action="#{duplicatePharmaceuticalItemController.navigateToPossibleDuplicateItems()}" />
                                             <p:commandButton   class="w-100" ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
                                         </div>
                                     </p:tab>

@@ -8,6 +8,7 @@ import com.divudi.core.data.BillItemStatus;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.clinical.Prescription;
+import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -41,7 +42,7 @@ import javax.persistence.Transient;
 public class BillItem implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -74,11 +75,18 @@ public class BillItem implements Serializable, RetirableEntity {
 
     double grossValue;
     double discount;
+    // Manual discount entered at inward-charge-type level on the final bill
+    // (level 2 of 3). `discount` on final-bill lines holds the combined
+    // item-level + charge-type-level value.
+    double chargeTypeDiscount;
     double vat;
     double netValue;
     @Transient
     private double absoluteNetValue;
     private double vatPlusNetValue;
+    // Snapshot of item.vatPercentage at billing time, so later changes to the
+    // item's VAT % don't retroactively alter historical bills/prints/reports.
+    private double vatPercentage;
 
     private double marginValue;
     private double adjustedValue;
@@ -143,6 +151,10 @@ public class BillItem implements Serializable, RetirableEntity {
     Bill referenceBill;
     @Enumerated(EnumType.STRING)
     InwardChargeType inwardChargeType;
+    private Double overriddenRate;
+    private boolean fromPackage;
+    @ManyToOne
+    private InpatientPackageItem sourcePackageItem;
     String agentRefNo;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date billTime;
@@ -182,6 +194,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private double previousRecieveFreeQtyInUnit;
     @Transient
     private double issuedPhamaceuticalItemQty;
+    @ManyToOne
+    private Staff primaryStaff;
 
     public double getIssuedPhamaceuticalItemQty() {
         return issuedPhamaceuticalItemQty;
@@ -200,7 +214,10 @@ public class BillItem implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
-    @OrderBy("feeAdjusted")
+    // orderNo holds the manual (drag-and-drop) display order set at settle time;
+    // feeAdjusted is the secondary key so historical bills (orderNo all 0) keep
+    // their original adjusted-fee ordering.
+    @OrderBy("orderNo, feeAdjusted")
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
@@ -211,6 +228,10 @@ public class BillItem implements Serializable, RetirableEntity {
     double transWithOutCCFee;
     @Transient
     boolean transRefund;
+    @Transient
+    private boolean autoSubstituted = false;
+    @Transient
+    private String requestedItemName = null;
 
     public double getVat() {
         return vat;
@@ -218,6 +239,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setVat(double vat) {
         this.vat = vat;
+    }
+
+    public double getVatPercentage() {
+        return vatPercentage;
+    }
+
+    public void setVatPercentage(double vatPercentage) {
+        this.vatPercentage = vatPercentage;
     }
 
     public double getHospitalFee() {
@@ -266,6 +295,7 @@ public class BillItem implements Serializable, RetirableEntity {
         grossValue = billItem.getGrossValue();
         netValue = billItem.getNetValue();
         discount = billItem.getDiscount();
+        chargeTypeDiscount = billItem.getChargeTypeDiscount();
         adjustedValue = billItem.getAdjustedValue();
         discountRate = billItem.getDiscountRate();
         staffFee = billItem.getStaffFee();
@@ -283,8 +313,13 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
+        vatPercentage = billItem.getVatPercentage();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
+        overriddenRate = billItem.getOverriddenRate();
+        fromPackage = billItem.isFromPackage();
+        sourcePackageItem = billItem.getSourcePackageItem();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
         if (billItem.billItemFinanceDetails != null) {
@@ -308,6 +343,7 @@ public class BillItem implements Serializable, RetirableEntity {
         grossValue = billItem.getGrossValue();
         netValue = billItem.getNetValue();
         discount = billItem.getDiscount();
+        chargeTypeDiscount = billItem.getChargeTypeDiscount();
         adjustedValue = billItem.getAdjustedValue();
         discountRate = billItem.getDiscountRate();
         staffFee = billItem.getStaffFee();
@@ -325,8 +361,13 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
+        vatPercentage = billItem.getVatPercentage();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
+        overriddenRate = billItem.getOverriddenRate();
+        fromPackage = billItem.isFromPackage();
+        sourcePackageItem = billItem.getSourcePackageItem();
 
         // Access field directly to avoid auto-creation, then use getter for cloning
         if (billItem.billItemFinanceDetails != null) {
@@ -334,7 +375,7 @@ public class BillItem implements Serializable, RetirableEntity {
             clonedFinanceDetails.setBillItem(this);
             this.setBillItemFinanceDetails(clonedFinanceDetails);
         }
-        
+
         PharmaceuticalBillItem clonedPharmaceuticalBillItem = new PharmaceuticalBillItem();
         clonedPharmaceuticalBillItem.copy(billItem.getPharmaceuticalBillItem());
         clonedPharmaceuticalBillItem.setBillItem(this);
@@ -359,6 +400,9 @@ public class BillItem implements Serializable, RetirableEntity {
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
+        fromPackage = billItem.isFromPackage();
+        sourcePackageItem = billItem.getSourcePackageItem();
     }
 
     public void resetValue() {
@@ -366,6 +410,7 @@ public class BillItem implements Serializable, RetirableEntity {
         grossValue = 0;
         netValue = 0;
         discount = 0;
+        chargeTypeDiscount = 0;
         adjustedValue = 0;
         discountRate = 0.0;
         staffFee = 0.0;
@@ -377,6 +422,7 @@ public class BillItem implements Serializable, RetirableEntity {
         marginValue = 0.0;
         vat = 0.0;
         vatPlusNetValue = 0.0;
+        vatPercentage = 0.0;
     }
 
     public BillItem() {
@@ -399,6 +445,7 @@ public class BillItem implements Serializable, RetirableEntity {
         // Rates should remain positive - they are unit prices, not values
         Rate = billItem.getRate();
         discount = 0 - billItem.getDiscount();
+        chargeTypeDiscount = 0 - billItem.getChargeTypeDiscount();
         netRate = billItem.getNetRate();
         marginRate = billItem.getMarginRate();
         grossValue = 0 - billItem.getGrossValue();
@@ -409,6 +456,8 @@ public class BillItem implements Serializable, RetirableEntity {
         hospitalFee = 0 - billItem.getHospitalFee();
         vat = 0 - billItem.getVat();
         vatPlusNetValue = 0 - billItem.getVatPlusNetValue();
+        // Percentage rate, not a value - stays positive like Rate/netRate/marginRate above
+        vatPercentage = billItem.getVatPercentage();
         collectingCentreFee = 0 - billItem.getCollectingCentreFee();
         otherFee = 0 - billItem.getOtherFee();
         reagentFee = 0 - billItem.getReagentFee();
@@ -422,6 +471,7 @@ public class BillItem implements Serializable, RetirableEntity {
         // Rates should remain positive - they are unit prices, not values
         // Rate = 0 - getRate(); // Do not invert rates
         discount = 0 - getDiscount();
+        chargeTypeDiscount = 0 - getChargeTypeDiscount();
         // netRate = 0 - getNetRate(); // Do not invert rates
         grossValue = 0 - getGrossValue();
         marginValue = 0 - getMarginValue();
@@ -531,6 +581,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public double getChargeTypeDiscount() {
+        return chargeTypeDiscount;
+    }
+
+    public void setChargeTypeDiscount(double chargeTypeDiscount) {
+        this.chargeTypeDiscount = chargeTypeDiscount;
     }
 
     public double getNetValue() {
@@ -775,6 +833,30 @@ public class BillItem implements Serializable, RetirableEntity {
         this.inwardChargeType = inwardChargeType;
     }
 
+    public Double getOverriddenRate() {
+        return overriddenRate;
+    }
+
+    public void setOverriddenRate(Double overriddenRate) {
+        this.overriddenRate = overriddenRate;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public InpatientPackageItem getSourcePackageItem() {
+        return sourcePackageItem;
+    }
+
+    public void setSourcePackageItem(InpatientPackageItem sourcePackageItem) {
+        this.sourcePackageItem = sourcePackageItem;
+    }
+
     public String getAgentRefNo() {
         return agentRefNo;
     }
@@ -993,6 +1075,22 @@ public class BillItem implements Serializable, RetirableEntity {
         this.transRefund = transRefund;
     }
 
+    public boolean isAutoSubstituted() {
+        return autoSubstituted;
+    }
+
+    public void setAutoSubstituted(boolean autoSubstituted) {
+        this.autoSubstituted = autoSubstituted;
+    }
+
+    public String getRequestedItemName() {
+        return requestedItemName;
+    }
+
+    public void setRequestedItemName(String requestedItemName) {
+        this.requestedItemName = requestedItemName;
+    }
+
     public double getVatPlusNetValue() {
         return vatPlusNetValue;
     }
@@ -1175,6 +1273,16 @@ public class BillItem implements Serializable, RetirableEntity {
         return prescription;
     }
 
+    /**
+     * Returns true only when a Prescription has been explicitly associated with
+     * this BillItem (i.e. it was persisted before or carries meaningful data).
+     * Use this instead of {@code getPrescription() != null} to avoid the
+     * auto-create side-effect of the getter.
+     */
+    public boolean hasPrescription() {
+        return prescription != null && prescription.getId() != null;
+    }
+
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
     }
@@ -1229,6 +1337,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setConsideredForCosting(boolean consideredForCosting) {
         this.consideredForCosting = consideredForCosting;
+    }
+
+    public Staff getPrimaryStaff() {
+        return primaryStaff;
+    }
+
+    public void setPrimaryStaff(Staff primaryStaff) {
+        this.primaryStaff = primaryStaff;
     }
 
 }

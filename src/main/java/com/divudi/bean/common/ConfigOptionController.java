@@ -45,6 +45,17 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class ConfigOptionController implements Serializable {
 
+    /**
+     * Prefix shared by every Inward Charge Type Label ConfigOption key
+     * (e.g. "Inward Charge Type Label - ROOM_CHARGE"). These options are
+     * dedicated a single-purpose editor at inward/inward_charge_type_labels.xhtml
+     * (InwardChargeTypeLabelController); editing them from the generic
+     * Application Options screen created two out-of-sync places to change the
+     * same value (issue #23257), so this generic screen refuses to
+     * create/edit/delete them.
+     */
+    private static final String INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX = "Inward Charge Type Label - ";
+
     @EJB
     private ConfigOptionFacade optionFacade;
 
@@ -69,12 +80,14 @@ public class ConfigOptionController implements Serializable {
     private List<ConfigOption> selectedOptions = new ArrayList<>();
     private List<ConfigOptionDuplicateGroup> duplicateGroups;
     private UploadedFile uploadedFile;
+    private boolean importReplaceMode = true; // Default to replace mode (current behavior)
 
     private String key;
     private String value;
     private String enumType;
     private String enumValue;
     private OptionValueType optionValueType;
+    private String globalFilter;
 
     /**
      * Creates a new instance of OptionController
@@ -161,6 +174,29 @@ public class ConfigOptionController implements Serializable {
         }
     }
 
+    /**
+     * Read-only variant of {@link #getBooleanValueByKey(String, boolean)} —
+     * resolves the same department-scoped-key-first lookup, but never
+     * persists a new ConfigOption row for either the department-scoped or
+     * the plain key when neither exists yet. Use this for {@code rendered}
+     * gates and other pure reads; use the mutating method only where reading
+     * a not-yet-configured key is meant to seed its default value.
+     */
+    public boolean getBooleanValueByKeyReadOnly(String key, boolean defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getBooleanValueByKeyReadOnly(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.BOOLEAN) {
+            defaultValue = configOptionApplicationController.getBooleanValueByKeyReadOnly(key, defaultValue);
+        }
+        return configOptionApplicationController.getBooleanValueByKeyReadOnly(deptKey, defaultValue);
+    }
+
     public String navigateToDepartmentOptions() {
         institution = null;
         department = sessionController.getDepartment();
@@ -174,6 +210,24 @@ public class ConfigOptionController implements Serializable {
         webUser = null;
         options = getApplicationOptions();
         return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
+    }
+
+    public String navigateToApplicationOptionsWithFilter(String filterKeyword) {
+        institution = null;
+        department = null;
+        webUser = null;
+        if (filterKeyword != null && !filterKeyword.trim().isEmpty()) {
+            options = searchApplicationOptions(filterKeyword);
+        } else {
+            options = getApplicationOptions();
+        }
+        return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
+    }
+
+    private List<ConfigOption> searchApplicationOptions(String filterKeyword) {
+        List<ConfigOption> results = searchOptions(filterKeyword);
+        results.removeIf(o -> o.getDepartment() != null || o.getInstitution() != null || o.getWebUser() != null);
+        return results;
     }
 
     public String navigateToInstitutionOptions() {
@@ -193,6 +247,10 @@ public class ConfigOptionController implements Serializable {
     public void deleteOption(ConfigOption delo) {
         if (delo == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (isInwardChargeTypeLabelKey(delo.getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = new HashMap<>();
@@ -223,8 +281,14 @@ public class ConfigOptionController implements Serializable {
         }
 
         int deletedCount = 0;
+        int skippedInwardLabelCount = 0;
         for (ConfigOption option : selectedOptions) {
             if (option != null) {
+                if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
+                    skippedInwardLabelCount++;
+                    continue;
+                }
+
                 Map<String, Object> before = new HashMap<>();
                 before.put("optionKey", option.getOptionKey());
                 before.put("optionValue", option.getOptionValue());
@@ -248,7 +312,12 @@ public class ConfigOptionController implements Serializable {
         selectedOptions.clear();
         configOptionApplicationController.loadApplicationOptions();
         listApplicationOptions();
-        JsfUtil.addSuccessMessage("Deleted " + deletedCount + " options");
+        String message = "Deleted " + deletedCount + " options";
+        if (skippedInwardLabelCount > 0) {
+            message += ". Skipped " + skippedInwardLabelCount
+                    + " Inward Charge Type Label option(s) - change those from the Inward Charge Type Labels page.";
+        }
+        JsfUtil.addSuccessMessage(message);
     }
 
     public StreamedContent exportSelectedOptions() {
@@ -331,6 +400,8 @@ public class ConfigOptionController implements Serializable {
 
             int importedCount = 0;
             int updatedCount = 0;
+            int skippedCount = 0;
+            int skippedInwardLabelCount = 0;
 
             for (int i = 1; i < lines.length; i++) {
                 String line = lines[i].trim();
@@ -345,6 +416,13 @@ public class ConfigOptionController implements Serializable {
                     String valueTypeStr = parts[2];
                     String enumType = parts.length > 3 ? parts[3] : null;
 
+                    if (optionKey != null && !optionKey.trim().isEmpty() && isInwardChargeTypeLabelKey(optionKey.trim())) {
+                        // Inward Charge Type Labels are managed exclusively via
+                        // inward/inward_charge_type_labels.xhtml - see saveOption().
+                        skippedInwardLabelCount++;
+                        continue;
+                    }
+
                     if (optionKey != null && !optionKey.trim().isEmpty()) {
                         OptionValueType valueType;
                         try {
@@ -356,23 +434,29 @@ public class ConfigOptionController implements Serializable {
                         ConfigOption existingOption = getOptionValueByKey(optionKey, OptionScope.APPLICATION, null, null, null);
 
                         if (existingOption != null) {
-                            Map<String, Object> before = new HashMap<>();
-                            before.put("optionKey", existingOption.getOptionKey());
-                            before.put("optionValue", existingOption.getOptionValue());
+                            if (importReplaceMode) {
+                                // Replace mode: Update existing option
+                                Map<String, Object> before = new HashMap<>();
+                                before.put("optionKey", existingOption.getOptionKey());
+                                before.put("optionValue", existingOption.getOptionValue());
 
-                            existingOption.setOptionValue(optionValue);
-                            existingOption.setValueType(valueType);
-                            if (enumType != null && !enumType.trim().isEmpty()) {
-                                existingOption.setEnumType(enumType);
+                                existingOption.setOptionValue(optionValue);
+                                existingOption.setValueType(valueType);
+                                if (enumType != null && !enumType.trim().isEmpty()) {
+                                    existingOption.setEnumType(enumType);
+                                }
+                                saveOption(existingOption);
+
+                                Map<String, Object> after = new HashMap<>();
+                                after.put("optionKey", existingOption.getOptionKey());
+                                after.put("optionValue", existingOption.getOptionValue());
+
+                                auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Update Config Option");
+                                updatedCount++;
+                            } else {
+                                // Import missing only mode: Skip existing options
+                                skippedCount++;
                             }
-                            saveOption(existingOption);
-
-                            Map<String, Object> after = new HashMap<>();
-                            after.put("optionKey", existingOption.getOptionKey());
-                            after.put("optionValue", existingOption.getOptionValue());
-
-                            auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Update Config Option");
-                            updatedCount++;
                         } else {
                             ConfigOption newOption = new ConfigOption();
                             newOption.setOptionKey(optionKey);
@@ -400,18 +484,36 @@ public class ConfigOptionController implements Serializable {
             configOptionApplicationController.loadApplicationOptions();
             listApplicationOptions();
 
-            String message = "Import completed. ";
+            String mode = importReplaceMode ? "Import and Replace" : "Import Missing Only";
+            String message = mode + " completed. ";
             if (importedCount > 0) {
                 message += importedCount + " new options created. ";
             }
             if (updatedCount > 0) {
-                message += updatedCount + " options updated.";
+                message += updatedCount + " options updated. ";
+            }
+            if (skippedCount > 0) {
+                message += skippedCount + " existing options skipped. ";
+            }
+            if (skippedInwardLabelCount > 0) {
+                message += skippedInwardLabelCount
+                        + " Inward Charge Type Label option(s) skipped; manage them from the Inward Charge Type Labels page.";
             }
             JsfUtil.addSuccessMessage(message);
 
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error processing file: " + e.getMessage());
         }
+    }
+
+    public String importAndReplaceOptionsFromCsv() {
+        importReplaceMode = true;
+        return importOptionsFromCsv();
+    }
+
+    public String importMissingOnlyOptionsFromCsv() {
+        importReplaceMode = false;
+        return importOptionsFromCsv();
     }
 
     private String[] parseCsvLine(String line) {
@@ -467,9 +569,22 @@ public class ConfigOptionController implements Serializable {
         JsfUtil.addSuccessMessage("Saved");
     }
 
+    /**
+     * Inward Charge Type Labels are edited exclusively via
+     * inward/inward_charge_type_labels.xhtml (InwardChargeTypeLabelController).
+     * See {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX}.
+     */
+    public boolean isInwardChargeTypeLabelKey(String optionKey) {
+        return optionKey != null && optionKey.startsWith(INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX);
+    }
+
     public void saveOption(ConfigOption option) {
         if (option == null) {
             JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = null;
@@ -873,7 +988,15 @@ public class ConfigOptionController implements Serializable {
     public void listWebUserOptions() {
         options = getWebUserOptions(webUser);
     }
+    
+    public String getGlobalFilter() {
+        return globalFilter;
+    }
 
+    public void setGlobalFilter(String globalFilter) {
+        this.globalFilter = globalFilter;
+    }
+    
     public boolean isPreventPasswordReuse() {
         return configOptionApplicationController.isPreventPasswordReuse();
     }
@@ -976,6 +1099,10 @@ public class ConfigOptionController implements Serializable {
         if (g == null || g.getOptions() == null || g.getOptions().size() < 2) {
             return;
         }
+        if (isInwardChargeTypeLabelKey(g.getOptions().get(0).getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            return;
+        }
         g.getOptions().sort((a, b) -> a.getId().compareTo(b.getId()));
         ConfigOption keep = g.getOptions().get(0);
         for (int i = 1; i < g.getOptions().size(); i++) {
@@ -988,6 +1115,14 @@ public class ConfigOptionController implements Serializable {
         detectDuplicateOptions();
         configOptionApplicationController.loadApplicationOptions();
         JsfUtil.addSuccessMessage("Duplicates retired for " + keep.getOptionKey());
+    }
+
+    public boolean isImportReplaceMode() {
+        return importReplaceMode;
+    }
+
+    public void setImportReplaceMode(boolean importReplaceMode) {
+        this.importReplaceMode = importReplaceMode;
     }
 
     public static class ConfigOptionDuplicateGroup {

@@ -26,6 +26,10 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     private String cancellerName;
     private Boolean completed;
     private Boolean fullyIssued;
+    private String toDepartmentName;
+    private Boolean checked;
+    private Boolean approved;
+    private Double netTotal;
     private List<PharmacyTransferRequestIssueDTO> issuedBills = new ArrayList<>();
 
     // ------------------------------------------------------------------
@@ -123,7 +127,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     // Basic constructor without cancellation details
     public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
             Object fromDepartmentName, Object creatorName) {
-        
+
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";
         this.createdAt = createdAt;
@@ -132,6 +136,38 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.cancelled = false;  // Default to not cancelled
         this.cancelledAt = null;
         this.cancellerName = "";
+    }
+
+    /**
+     * Constructor for the transfer-request search-for-approval page, adding
+     * checked/approved flags on top of the existing 8-arg constructor.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName, Boolean cancelled,
+            Date cancelledAt, String cancellerName, Boolean checked, Boolean approved) {
+        this(billId, deptId, createdAt, fromDepartmentName, creatorName, cancelled, cancelledAt, cancellerName);
+        this.checked = checked;
+        this.approved = approved;
+    }
+
+    /**
+     * Constructor for the transfer-request "to approve" list page, which shows
+     * the destination department and requested value instead of the requester's
+     * own department name.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String toDepartmentName, String creatorName, Boolean cancelled,
+            Date cancelledAt, String cancellerName, Double netTotal) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.toDepartmentName = toDepartmentName;
+        this.creatorName = creatorName;
+        this.cancelled = cancelled;
+        this.cancelledAt = cancelledAt;
+        this.cancellerName = cancellerName;
+        this.completed = false;
+        this.netTotal = netTotal;
     }
 
     // ------------------------------------------------------------------
@@ -200,6 +236,38 @@ public class PharmacyTransferRequestListDTO implements Serializable {
 
     public void setFullyIssued(Boolean fullyIssued) {
         this.fullyIssued = fullyIssued;
+    }
+
+    public String getToDepartmentName() {
+        return toDepartmentName;
+    }
+
+    public void setToDepartmentName(String toDepartmentName) {
+        this.toDepartmentName = toDepartmentName;
+    }
+
+    public Boolean getChecked() {
+        return checked;
+    }
+
+    public void setChecked(Boolean checked) {
+        this.checked = checked;
+    }
+
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
+    }
+
+    public Double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(Double netTotal) {
+        this.netTotal = netTotal;
     }
 
     public Date getCancelledAt() {

@@ -201,6 +201,7 @@ public class DealerController implements Serializable {
     public Institution getCurrent() {
         if (current == null) {
             current = new Institution();
+            current.setInstitutionType(InstitutionType.Dealer);
         }
         return current;
     }
@@ -218,7 +219,7 @@ public class DealerController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         //      getItems();

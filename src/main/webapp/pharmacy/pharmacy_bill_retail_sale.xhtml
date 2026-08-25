@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -19,13 +19,6 @@
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
-                        <i
-                            type="button"
-                            class="fas fa-shopping-cart rounded-circle shadow-lg"
-                            onclick="PF('findAMP').show()"
-                            style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
-                        </i>
-
                         <p:dialog
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}"
                             header="Search Any Medicine..."
@@ -34,7 +27,6 @@
                             width="1100"
                             position="top"
                             modal="true"
-
                             closeOnEscape="true">
                             <p:autoComplete
                                 id="exItem"
@@ -44,7 +36,7 @@
                                 maxResults="20"
                                 minQueryLength="3"
                                 inputStyleClass="w-100"
-                                completeMethod="#{itemController.completeAmpItem}"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                                 var="vt"
                                 onfocus="this.select()"
                                 itemLabel="#{vt.name}"
@@ -87,6 +79,7 @@
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                <p:commandButton class="m-1 ui-button-warning" icon="fas fa-bolt" value="Fast Sale" action="pharmacy_bill_retail_sale_native?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{retailSaleNativeSqlController.resetAll()}" />
                                 <!-- Admin Configuration Button (only for administrators) -->
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
@@ -98,6 +91,17 @@
                                         class="ui-button-secondary mx-2">
                                     </p:commandButton>
                                 </h:panelGroup>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
+                                    <i class="fas fa-shopping-cart rounded-circle shadow-lg m-1"
+                                       onclick="PF('findAMP').show()"
+                                       onkeypress="if(event.key==='Enter'||event.key===' ')PF('findAMP').show()"
+                                       role="button"
+                                       tabindex="0"
+                                       title="Find AMP"
+                                       aria-label="Open Find AMP dialog"
+                                       style="font-size: 20px; color: purple; padding: 8px; background-color: #A9CCE3; cursor: pointer; vertical-align: middle; float: right;">
+                                    </i>
+                                </ui:fragment>
                                 <p:commandButton
                                     accesskey="n"
                                     icon="fa fa-plus"
@@ -160,7 +164,7 @@
                                                         styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stockDto}"
-                                                        completeMethod="#{pharmacySaleController.completeAvailableStockOptimizedDto}"
+                                                        queryDelay="300" completeMethod="#{pharmacySaleController.completeAvailableStockOptimizedDto}"
                                                         converter="#{pharmacySaleController.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
@@ -315,6 +319,16 @@
                                             <p:column headerText="Item" style="padding: 6px;">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
                                                 <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
+                                                <p:commandButton
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show alternative medicines available during retail sale', true)}"
+                                                    id="btnSelectSubstitute"
+                                                    icon="pi pi-refresh"
+                                                    title="Show Alternatives"
+                                                    action="#{pharmacySaleController.prepareSubstitute(bi)}"
+                                                    update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
+                                                    oncomplete="PF('substituteDialog').show();"
+                                                    process="@this"
+                                                    styleClass="ui-button-warning ui-button-icon-only mx-1" />
 
                                                 <p:dialog
                                                     id="panDoc"
@@ -579,19 +593,17 @@
 
 
                                         </p:dataTable>
+
+                                        <ui:include src="fragments/substitute_dialog.xhtml">
+                                            <ui:param name="ctrl" value="#{pharmacySaleController}"/>
+                                            <ui:param name="updateTarget" value=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelPayment',view).clientId}"/>
+                                        </ui:include>
                                     </p:panel>
-
-
-
-
-
-
 
                                 </div>
                                 <div class="col-md-5"  >
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
                                         <p:panel id="panelPatient">
-                                            <p:growl id="msg"/>
                                             <f:facet name="header">
                                                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                                                     <h:panelGroup id="headerFacet">
@@ -830,6 +842,24 @@
                                                                     </div>
                                                                 </div>
 
+                                                                <div class="row">
+                                                                    <div class="col-md-4 p-1">
+                                                                      
+                                                                        <div class="input-group">
+                                                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacySaleController.patient.specificStatus}">
+                                                                                <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                            </p:selectOneMenu>
+
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-8 p-1">
+                                                                        <div class="input-group">
+                                                                            <p:inputText placeholder="Comment for Patient Specific Status" value="#{pharmacySaleController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
                                                                 <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                 <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                 <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -855,9 +885,22 @@
                                                 <h:panelGroup  rendered="#{not pharmacySaleController.patientDetailsEditable}"  >
                                                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacySaleController.patient ne null}" >
+
                                                             <h:outputLabel value="Name " class="mx-3"/>
                                                             <h:outputLabel value=" : " class="mx-3"/>
-                                                            <h:outputText value="#{pharmacySaleController.patient.person.nameWithTitle}" />
+
+                                                            <h:panelGroup class="d-flex">
+
+                                                                
+                                                                <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.specificStatus != null and pharmacySaleController.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{pharmacySaleController.patient.specificStatus}" severity="danger">
+                                                                    <p:outputLabel value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle}" />
+                                                                </p:badge> 
+
+                                                                <p:badge style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                                </p:badge>
+
+                                                            </h:panelGroup>
 
                                                             <h:outputLabel value="Gender " class="mx-3"/>
                                                             <h:outputLabel value=" : " class="mx-3"/>
@@ -907,6 +950,27 @@
                                                         </h:panelGrid>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
+                                            </h:panelGroup>
+                                        </p:panel>
+                                        <p:panel id="panelPrescription"
+                                                 class="my-1 w-100"
+                                                 toggleable="true"
+                                                 rendered="#{not empty pharmacySaleController.prescriptionHtml}">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-prescription" />
+                                                <h:outputLabel value="Prescription" class="mx-4"/>
+                                            </f:facet>
+                                            <style>
+                                                .rx-preview { line-height: 1.5; overflow-x: hidden; }
+                                                .rx-preview p { margin: 0; }
+                                                .rx-preview h1 { font-size: 1.4rem; margin: 0.2rem 0; }
+                                                .rx-preview h2 { font-size: 1.1rem; margin: 0.4rem 0 0.2rem 0; }
+                                                .rx-preview .ql-align-center { text-align: center; }
+                                                .rx-preview .ql-align-right { text-align: right; }
+                                                .rx-preview .ql-align-justify { text-align: justify; }
+                                            </style>
+                                            <h:panelGroup id="prescriptionView" layout="block" styleClass="rx-preview p-2">
+                                                <h:outputText value="#{pharmacySaleController.prescriptionHtml}" escape="false"/>
                                             </h:panelGroup>
                                         </p:panel>
                                         <div class="row">
@@ -1136,6 +1200,9 @@
                                                                         <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
                                                                     </h:panelGroup>
 
+                                                                    <h:panelGroup id="iou" rendered="#{pharmacySaleController.paymentMethod eq 'IOU'}">
+                                                                        <pa:iouDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                                    </h:panelGroup>
 
                                                                     <h:panelGroup
                                                                         class="row my-1 w-100"
@@ -1181,7 +1248,7 @@
                                                                         inputStyleClass="form-control">
                                                         </p:autoComplete>
                                                         <p:outputLabel value="Comments" ></p:outputLabel>
-                                                        <p:inputTextarea class="w-100 mx-4" value="#{pharmacySaleController.comment}" id="comment"/>
+                                                        <p:inputTextarea id="txtComment" class="w-100 mx-4" value="#{pharmacySaleController.comment}"/>
 
 
 
@@ -1314,6 +1381,7 @@
                                     <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                     <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                     <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1 ui-button-warning" icon="fas fa-bolt" value="Fast Sale" action="pharmacy_bill_retail_sale_native?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{retailSaleNativeSqlController.resetAll()}" />
                                 </div>
                             </div>
                             <div class="col-3">

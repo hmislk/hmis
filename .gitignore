@@ -8,20 +8,39 @@
 /faces-config.NavData
 
 .idea
+
+# Wiki temp folders - these are GitHub wiki submodules cloned locally for editing
+# Do not track as they are separate repositories
+/wiki/
+/hmis.wiki/
 .vscode
 nb-configuration.xml
 *.stackdump
 
 # Temporary files
 /tmp/
+*~
+*.swp
+*.swo
+.LCK*
+*.LCK*
 
 # Claude Code local settings
 .claude/settings.local.json
+.claude/settings.local.json.tmp*
 
 # Wiki sync temporary directories
 wiki/
 wiki-temp/
 wiki-backup/
+hmis.wiki/
+temp-wiki/
+wiki-tmp/
+*.wiki/
+
+# macOS metadata files
+.DS_Store
+**/.DS_Store
 
 # Windows reserved filename
 nul
@@ -30,3 +49,76 @@ nul
 *.log
 logs/
 hs_err_pid*.log
+
+# AI session transcripts/logs
+*-caveat-the-messages-below-*.txt
+claude-*.jsonl
+.claude-session*
+[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]*-*.txt
+
+# Claude Code temporary working directories
+tmpclaude-*
+
+# Claude Code runtime artifacts
+.claude/*.lock
+
+# Playwright MCP screenshots / artifacts
+.playwright-mcp/
+
+# Node modules (ad-hoc npm dependencies at project root)
+node_modules/
+
+# Ad-hoc artifacts dropped at repo root (screenshots, scratch configs, scripts)
+/*.png
+/*.yml
+/*.yaml
+!mkdocs.yml
+/*.sql
+/*.py
+/package.json
+/package-lock.json
+/automate_login_and_screenshot.js
+/open_browser_for_interaction.js
+/CODE-CHANGES-SUMMARY.md
+/COMPILATION-FIX.md
+/PERFORMANCE-FIX-SUMMARY.md
+
+# Codex AI temporary backup files
+.codex-backup/
+
+# Compiled Java classes (should only exist in target/)
+*.class
+
+# Backup files
+*.backup
+
+# Unknown/broken binary libraries
+lib/unknown/
+
+# One-time database migration scripts (docs kept in developer_docs/)
+db/
+
+# GitHub issues scratch workspace
+github-issues/
+
+# Miscellaneous docs (content moved to developer_docs/ or wiki)
+docs/
+site/
+
+# Wiki documentation lives in sibling repo ../hmis.wiki — not here
+wiki-docs/
+
+# User-facing documentation (belongs in wiki or developer_docs/)
+user_documentation/
+
+# One-off SQL migration scripts
+sql-scripts/
+
+# Project management artifacts
+pm/
+
+# AI prompt scratch files
+prompts/
+
+# Superpowers subagent-driven-development scratch state
+.superpowers/

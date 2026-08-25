@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/disbursement_index.xhtml"
@@ -48,21 +48,27 @@
                             <div>
                                 <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
                                 <h:outputLabel value="Transfer Request To #{transferRequestController.toDepartment} From #{sessionController.department}" class="mx-4" />
+                                <h:panelGroup rendered="#{transferRequestController.bill.departmentType != null}">
+                                    <h:outputLabel value=" | Department Type: #{transferRequestController.bill.departmentType.label}" class="text-info fw-bold" />
+                                </h:panelGroup>
                             </div>
                             <div>
                                 <p:commandButton
                                     value="Save"
                                     action="#{transferRequestController.saveTranserRequest()}"
                                     ajax="false"
-                                    icon="fas fa-check"
-                                    class="mx-1 ui-button-success">
+                                    icon="fas fa-floppy-disk"
+                                    styleClass="mx-1 ui-button-stage-save"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequest')}">
                                 </p:commandButton>
                                 <p:commandButton
-                                    value="Send For Approvel"
+                                    value="Send For Approval"
                                     action="#{transferRequestController.finalizeTranserRequest}"
                                     ajax="false"
-                                    icon="fas fa-check"
-                                    class="mx-1 ui-button-success">
+                                    icon="fas fa-lock"
+                                    styleClass="mx-1 ui-button-stage-finalize"
+                                    onclick="return confirm('Are you sure you want to send this request for approval? This cannot be undone.');"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}">
                                 </p:commandButton>
                                 <p:commandButton
                                     value="New Bill"
@@ -96,7 +102,7 @@
                                     <div class="col-7">
                                         <p:autoComplete  id="items" value="#{transferRequestController.currentBillItem.item}"
                                                          forceSelection="true"  class="w-100" inputStyleClass="w-100"
-                                                         completeMethod="#{itemController.completeAmpItem}"
+                                                         minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
                                                          >
                                             <p:column headerText="Item" >

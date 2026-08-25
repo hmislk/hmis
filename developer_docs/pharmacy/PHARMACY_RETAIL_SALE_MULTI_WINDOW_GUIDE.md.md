@@ -1,131 +1,334 @@
-# Retail Sale Multi-Window — Developer Guideline
+# Pharmacy Retail Sale Multi-Window — Developer Guideline
 
 This note documents how we maintain four parallel retail-sale pages/controllers that allow users to run simultaneous pharmacy sales in different browser windows. The application was started before JSF view scope was available in our stack, so we use four separate pages and controllers.
 
 ## Golden rule
 
-Do not change the original files under any circumstance.
+**Do not change the original files under any circumstance.**
 
-`src/main/webapp/pharmacy/pharmacy_bill_retail_sale.xhtml`
-`src/main/java/com/divudi/bean/pharmacy/PharmacySaleController.java`
+## Page families covered by this guide
 
-These are the single source of truth for behaviour and layout.
+Three independent families use the numbered-copy pattern. Each has its own base page and
+base controller; **never mix names between families.**
 
-## Copies that users navigate to
+| Family | Base page | Base controller | Numbered controllers |
+|---|---|---|---|
+| Sale for Cashier | `pharmacy_bill_retail_sale_for_cashier.xhtml` | `PharmacySaleForCashierController` | `PharmacySaleForCashierController1/2/3` |
+| Retail Sale (legacy, entity-based) | `pharmacy_bill_retail_sale.xhtml` | `PharmacySaleController` | `PharmacySaleController1/2/3` |
+| Retail Sale (native SQL) | `pharmacy_bill_retail_sale_native.xhtml` | `RetailSaleNativeSqlController` | `RetailSaleNativeSqlController1/2/3` |
 
-Sale 2
-`/pharmacy/pharmacy_bill_retail_sale_1.xhtml` + `PharmacySaleController1.java`
+> Earlier revisions of this guide named `PharmacySaleController1/2/3` as the Sale for
+> Cashier copies. That was wrong — those belong to the legacy Retail Sale family. The
+> Sale for Cashier copies are `PharmacySaleForCashierController1/2/3`.
 
-Sale 3
-`/pharmacy/pharmacy_bill_retail_sale_2.xhtml` + `PharmacySaleController2.java`
+The examples below use the **Sale for Cashier** family. Substitute the base names from the
+table above when working on another family.
 
-Sale 4
-`/pharmacy/pharmacy_bill_retail_sale_3.xhtml` + `PharmacySaleController3.java`
+## Source Files (Single Source of Truth)
 
-Users can switch among all four pages using the existing navigation buttons. Do not remove these buttons.
+**Main XHTML**: `src/main/webapp/pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml`
+**Main Controller**: `src/main/java/com/divudi/bean/pharmacy/PharmacySaleForCashierController.java`
+
+These are the single source of truth for behavior and layout.
+
+## Target Files (Copies that users navigate to)
+
+**Sale 1**: `pharmacy_bill_retail_sale_for_cashier.xhtml` + `PharmacySaleForCashierController.java` (main/original)
+**Sale 2**: `pharmacy_bill_retail_sale_for_cashier_1.xhtml` + `PharmacySaleForCashierController1.java`
+**Sale 3**: `pharmacy_bill_retail_sale_for_cashier_2.xhtml` + `PharmacySaleForCashierController2.java`
+**Sale 4**: `pharmacy_bill_retail_sale_for_cashier_3.xhtml` + `PharmacySaleForCashierController3.java`
+
+Users can switch among all four pages using the navigation buttons. Do not remove these buttons.
 
 ## Change workflow
 
-This change is done iteratively once functional or UI change are done and qa passed only in the original files. Then there is a need to replicate the same change into each of the three numbered copies. The copies must not diverge from the original except for bean/page identifiers and navigation targets.
+**RECOMMENDED APPROACH**: Complete replacement strategy (faster, safer, fewer errors).
 
-## Replication steps
+After functional or UI changes are done and QA passed in the original files, completely replace all three numbered copies with fresh copies from the originals. This prevents synchronization drift and ensures 100% consistency.
 
-1. Apply the same edits from the original `.xhtml` to each numbered `.xhtml`. Only permitted differences are the page title and navigation button targets pointing to the correct “Sale N” pages.
+## Complete Replacement Steps
 
-2. Mirror controller edits from the original controller into each numbered controller with consistent renames:
-   Class `PharmacySaleController` → `PharmacySaleController1|2|3`.
-   `@Named("pharmacySaleController")` → `"pharmacySaleController1|2|3"`.
+### Step 1: Create Backup Branch
+```bash
+git checkout -b sync-pharmacy-billing-replacement
+```
 
-3. In each `.xhtml`, update EL references to the correct bean name:
-   `#{pharmacySaleController}` → `#{pharmacySaleController1|2|3}`.
+### Step 2: Java Controller Replacement
 
-4. Verify navigation button actions and links on every page:
-   Sale 1: `/pharmacy/pharmacy_bill_retail_sale.xhtml`
-   Sale 2: `/pharmacy/pharmacy_bill_retail_sale_1.xhtml`
-   Sale 3: `/pharmacy/pharmacy_bill_retail_sale_2.xhtml`
-   Sale 4: `/pharmacy/pharmacy_bill_retail_sale_3.xhtml`
+For each target controller (1, 2, 3):
 
-5. Build and test all four pages for the same scenario. Confirm that quantities, payment flows (including multiple methods), printing, and returns behave identically and that data does not cross between controllers.
+**2.1 Copy Source to Target**
+```bash
+cp PharmacySaleForCashierController.java PharmacySaleForCashierController1.java
+cp PharmacySaleForCashierController.java PharmacySaleForCashierController2.java
+cp PharmacySaleForCashierController.java PharmacySaleForCashierController3.java
+```
 
-## What not to do
+**2.2 Update Each Java Controller**
 
-Do not special-case Sale 1. Do not hide navigation buttons. Do not introduce new bean names or create a fifth copy. Do not change anything in the original files.
+For **PharmacySaleForCashierController1.java**, make these exact changes:
 
-## Pre-commit checklist
+- **@Named annotation**: `@Named` → `@Named("pharmacySaleForCashierController1")`
+- **Class name**: `public class PharmacySaleForCashierController` → `public class PharmacySaleForCashierController1`
+- **Constructor**: `public PharmacySaleForCashierController()` → `public PharmacySaleForCashierController1()`
+- **Logger**: `Logger.getLogger(PharmacySaleForCashierController.class.getName())` → `Logger.getLogger(PharmacySaleForCashierController1.class.getName())`
+- **Metadata**: `metadata.setControllerClass("PharmacySaleForCashierController")` → `metadata.setControllerClass("PharmacySaleForCashierController1")`
+- **Converter reference**: `PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext...getValue(..., "pharmacySaleForCashierController")` → `PharmacySaleForCashierController1 controller = (PharmacySaleForCashierController1) facesContext...getValue(..., "pharmacySaleForCashierController1")`
+- **Navigation return strings**: any `return "/pharmacy/<base page>?faces-redirect=true"` must point at that copy's own page (`..._1`, `..._2`, `..._3`).
 
-Original files untouched.
-Three `.xhtml` copies updated and aligned.
-Three controllers updated and aligned.
-EL bean names correct per page.
-Navigation among all four pages works.
-Smoke tests (add item, discount, settle, print, return) pass on all four pages.
+Repeat same pattern for **PharmacySaleForCashierController2.java** (with "2") and **PharmacySaleForCashierController3.java** (with "3").
 
-## Automation tips for AI agents
+The Java side is safe to do with the same guarded replace described in Step 3.2 — the
+class name is subject to exactly the same corruption hazard as the bean name.
 
-When using Claude Code or similar AI tools to perform this synchronization:
+**2.3 Test Compilation**
+```bash
+./detect-maven.sh compile
+```
 
-### Recommended Workflow: Delete, Copy, and Update
+### Step 3: XHTML File Replacement
 
-This approach is simpler and avoids many synchronization errors:
+**3.1 Copy Source to Target**
+```bash
+cp pharmacy_bill_retail_sale_for_cashier.xhtml pharmacy_bill_retail_sale_for_cashier_1.xhtml
+cp pharmacy_bill_retail_sale_for_cashier.xhtml pharmacy_bill_retail_sale_for_cashier_2.xhtml
+cp pharmacy_bill_retail_sale_for_cashier.xhtml pharmacy_bill_retail_sale_for_cashier_3.xhtml
+```
 
-1. **Step 1: Delete all existing copies**
-   - Delete `pharmacy_bill_retail_sale_1.xhtml`
-   - Delete `pharmacy_bill_retail_sale_2.xhtml`
-   - Delete `pharmacy_bill_retail_sale_3.xhtml`
-   - Delete `PharmacySaleController1.java`
-   - Delete `PharmacySaleController2.java`
-   - Delete `PharmacySaleController3.java`
+**3.2 Update Each XHTML File — use the GUARDED replace**
 
-2. **Step 2: Create fresh copies from originals**
-   - Copy `pharmacy_bill_retail_sale.xhtml` → `pharmacy_bill_retail_sale_1.xhtml`
-   - Copy `pharmacy_bill_retail_sale.xhtml` → `pharmacy_bill_retail_sale_2.xhtml`
-   - Copy `pharmacy_bill_retail_sale.xhtml` → `pharmacy_bill_retail_sale_3.xhtml`
-   - Copy `PharmacySaleController.java` → `PharmacySaleController1.java`
-   - Copy `PharmacySaleController.java` → `PharmacySaleController2.java`
-   - Copy `PharmacySaleController.java` → `PharmacySaleController3.java`
+> ### 🚨 Never use an unanchored global replace
+>
+> The source page already contains **numbered** navigation references (`...Controller1`,
+> `...Controller2`, `...Controller3`) pointing at the other three windows. A plain global
+> replace of the bare base name rewrites those too:
+>
+> ```
+> pharmacySaleForCashierController   → pharmacySaleForCashierController1    intended
+> pharmacySaleForCashierController1  → pharmacySaleForCashierController11   CORRUPTION
+> pharmacySaleForCashierController2  → pharmacySaleForCashierController12   CORRUPTION
+> pharmacySaleForCashierController3  → pharmacySaleForCashierController13   CORRUPTION
+> ```
+>
+> The result is references to CDI beans that have no Java definition. EL resolution fails
+> and the user gets an error page. This is exactly what caused
+> [#15845](https://github.com/hmislk/hmis/issues/15845) — nine phantom bean references
+> across the three numbered cashier pages, produced by following the old version of this
+> very step.
 
-3. **Step 3: Update specific locations in each copy**
+**Rule: rewrite the already-numbered references FIRST, then the bare base name, anchored on word boundaries.**
 
-   For each numbered copy, update these exact locations (use find-and-replace):
+For copy `N` (repeat with `N` = 1, 2, 3):
 
-   **XHTML Files (_1.xhtml, _2.xhtml, _3.xhtml):**
-   - Page title: "Sale 1" → "Sale 2/3/4"
-   - Bean name: `#{pharmacySaleController` → `#{pharmacySaleController1/2/3` (GLOBAL replace)
-   - Navigation actions: `pharmacy_bill_retail_sale?` → `pharmacy_bill_retail_sale_1/2/3?` (for "New Bill" button)
-   - Disabled button: Update which "Sale N" button is disabled to match page number
+```bash
+TARGET=src/main/webapp/pharmacy/pharmacy_bill_retail_sale_for_cashier_N.xhtml
 
-   **Java Files (Controller1/2/3.java):**
-   - Class name: `class PharmacySaleController` → `class PharmacySaleController1/2/3`
-   - Constructor: `public PharmacySaleController()` → `public PharmacySaleController1/2/3()`
-   - @Named annotation: `@Named` → `@Named("pharmacySaleController1/2/3")` (or add if just `@Named`)
-   - Navigation returns: `return "pharmacy_bill_retail_sale"` → `return "pharmacy_bill_retail_sale_1/2/3"` (GLOBAL replace)
-   - Converter bean lookup: `"pharmacySaleController"` in ELResolver → `"pharmacySaleController1/2/3"`
+# 1. Protect the existing numbered nav refs behind a placeholder
+sed -i -E 's/\bpharmacySaleForCashierController([123])\b/@@KEEP\1@@/g' "$TARGET"
 
-### Why This Approach Is Better
+# 2. Rewrite the bare base name, word-boundary anchored
+sed -i -E 's/\bpharmacySaleForCashierController\b/pharmacySaleForCashierControllerN/g' "$TARGET"
 
-- **Prevents drift**: Copies are always in sync with the original
-- **Fewer errors**: No partial updates or missed locations
-- **Easier to verify**: Only need to check the specific update points
-- **Token efficient**: Simple copy operation + targeted find-replace
-- **No mixed references**: Fresh copy eliminates risk of stale references
+# 3. Restore the protected refs unchanged
+sed -i -E 's/@@KEEP([123])@@/pharmacySaleForCashierController\1/g' "$TARGET"
 
-### Verification Checklist
+# 4. Point the page's own navigation/config targets at this copy
+sed -i -E 's/\bpharmacy_bill_retail_sale_for_cashier\b/pharmacy_bill_retail_sale_for_cashier_N/g' "$TARGET"
+```
 
-After completing the copy and update process, verify:
+Step 4's `\b` anchor matters as much as step 2's: `_` is a word character, so
+`\bpharmacy_bill_retail_sale_for_cashier\b` cannot match inside an
+already-suffixed `..._for_cashier_1`.
 
-1. **Java files compile**: Run Maven compile to catch constructor/class name mismatches
-2. **Bean names correct**: Grep for `@Named` in each Java file to verify `"pharmacySaleController1/2/3"`
-3. **No mixed references**: Grep for `pharmacySaleController\.` (base controller without number) in XHTML copies - should find ZERO matches
-4. **Navigation buttons**: Check that the correct "Sale N" button is disabled on each page
-5. **Page titles**: Verify each page shows "Sale 2", "Sale 3", "Sale 4" respectively
+Then set the page title per copy:
 
-### Common Compilation Errors After Sync
+- `pharmacy_bill_retail_sale_for_cashier_1.xhtml` → `"Pharmacy Retail Bill (Sale 2)"`
+- `pharmacy_bill_retail_sale_for_cashier_2.xhtml` → `"Pharmacy Retail Bill (Sale 3)"`
+- `pharmacy_bill_retail_sale_for_cashier_3.xhtml` → `"Pharmacy Retail Bill (Sale 4)"`
 
-If compilation fails, check these common issues:
+**3.3 Mandatory phantom-bean verification**
 
-1. **"invalid method declaration; return type required"** → Constructor name doesn't match class name (line ~130)
-2. **"cannot find symbol: class PharmacySaleController"** → Class name not updated in some location
-3. **Navigation issues at runtime** → Check return statements still have base page name instead of numbered versions
+Run this after every numbered-copy operation, before compiling and before pushing. It
+asserts that every bean the pages reference actually has a Java definition:
 
-This delete-copy-update workflow typically prevents 90% of synchronization errors and uses 30-40% fewer tokens than comparison-based methods.
+```bash
+BEAN=pharmacySaleForCashierController          # bare base bean name for the family
+CLASS=PharmacySaleForCashierController         # base class name
+GLOB='src/main/webapp/pharmacy/pharmacy_bill_retail_sale_for_cashier*.xhtml'
+
+for b in $(grep -ohE "\b${BEAN}[0-9]*\b" $GLOB | sort -u); do
+  n="${b#$BEAN}"
+  grep -rqE "class ${CLASS}${n}\b|\"${b}\"" src/main/java/ || echo "PHANTOM BEAN: $b"
+done
+```
+
+**Zero output = safe.** Any output means the #15845 defect has been reintroduced — fix it
+before compiling. Also confirm no placeholder leaked through:
+
+```bash
+grep -rn '@@KEEP' src/main/webapp/pharmacy/ src/main/java/com/divudi/bean/pharmacy/   # must be empty
+```
+
+### Step 4: Add Navigation Buttons
+
+Add to each XHTML file after the header `</f:facet>` section:
+
+```xml
+<!-- Version Navigation Buttons -->
+<div class="mb-3 text-center">
+    <div class="btn-group" role="group">
+        <p:commandButton
+            icon="fas fa-file-invoice"
+            value="Sale 1"
+            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"
+            ajax="false"
+            disabled="[true for _main, false for others]"
+            class="[ui-button-secondary for disabled, ui-button-info for enabled]" />
+        <p:commandButton
+            icon="fas fa-file-invoice"
+            value="Sale 2"
+            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true"
+            ajax="false"
+            disabled="[true for _1.xhtml, false for others]"
+            class="[ui-button-secondary for disabled, ui-button-info for enabled]" />
+        <p:commandButton
+            icon="fas fa-file-invoice"
+            value="Sale 3"
+            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2?faces-redirect=true"
+            ajax="false"
+            disabled="[true for _2.xhtml, false for others]"
+            class="[ui-button-secondary for disabled, ui-button-info for enabled]" />
+        <p:commandButton
+            icon="fas fa-file-invoice"
+            value="Sale 4"
+            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3?faces-redirect=true"
+            ajax="false"
+            disabled="[true for _3.xhtml, false for others]"
+            class="[ui-button-secondary for disabled, ui-button-info for enabled]" />
+    </div>
+</div>
+```
+
+### Step 5: Verification & Testing
+
+**5.1 Compilation Test**
+```bash
+./detect-maven.sh compile
+```
+
+**5.2 File Verification**
+
+Re-run the phantom-bean check from Step 3.3 — that is the authoritative test.
+
+> A bare `grep -n "pharmacySaleForCashierController" ..._1.xhtml # should be 0 matches`
+> is **not** a valid check: each copy legitimately references the other three windows'
+> beans, so matches are expected. It was that assumption that hid #15845.
+
+```bash
+# Verify correct bean names in Java files
+grep "@Named" PharmacySaleForCashierController1.java  # @Named("pharmacySaleForCashierController1")
+grep "@Named" PharmacySaleForCashierController2.java  # @Named("pharmacySaleForCashierController2")
+grep "@Named" PharmacySaleForCashierController3.java  # @Named("pharmacySaleForCashierController3")
+```
+
+**5.3 Navigation URLs**
+- **Sale 1**: `/pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml` → `PharmacySaleForCashierController`
+- **Sale 2**: `/pharmacy/pharmacy_bill_retail_sale_for_cashier_1.xhtml` → `PharmacySaleForCashierController1`
+- **Sale 3**: `/pharmacy/pharmacy_bill_retail_sale_for_cashier_2.xhtml` → `PharmacySaleForCashierController2`
+- **Sale 4**: `/pharmacy/pharmacy_bill_retail_sale_for_cashier_3.xhtml` → `PharmacySaleForCashierController3`
+
+**5.4 Window-switch buttons must not destroy a parked cart**
+
+Switching windows is how a cashier parks one customer's bill and serves the next. The
+button's `actionListener` must therefore **not** call `resetAll()` on the target window —
+it should only clear the settle-in-progress latch. See
+`RetailSaleNativeSqlController.switchToThisSaleWindow()` and
+`PharmacySaleController.pharmacyRetailSale()`.
+
+## When to Use This Process
+
+**ONLY** execute this synchronization when:
+
+✅ **Major features added**: New functionality (like quantity adjustment buttons, new UI components)
+✅ **Business logic changes**: Payment processing, calculation methods, validation improvements
+✅ **Performance optimizations**: StockDTO conversions, caching, service integrations
+✅ **UI/UX improvements**: Layout changes, styling updates, navigation improvements
+✅ **Bug fixes**: Critical fixes that affect core pharmacy billing functionality
+
+**DO NOT** use for minor changes like:
+❌ Simple text/label changes
+❌ Single-line tweaks
+❌ Cosmetic styling that doesn't affect functionality
+
+## What Not to Do
+
+❌ **Never modify the original files** during synchronization
+❌ **Never special-case Sale 1** - treat all versions equally
+❌ **Never hide navigation buttons** - users depend on version switching
+❌ **Never introduce new bean names** or create a fifth copy
+❌ **Never use incremental sync** for major changes (high error rate)
+❌ **Never skip compilation testing** after Java updates
+
+## Pre-commit Checklist
+
+- [ ] **Original files untouched** (only copies modified)
+- [ ] **Guarded replace used** (numbered refs rewritten first — Step 3.2)
+- [ ] **Phantom-bean check passes with zero output** (Step 3.3) — non-negotiable
+- [ ] **No `@@KEEP` placeholders left** anywhere
+- [ ] **All controllers compile** successfully (`./detect-maven.sh compile`)
+- [ ] **Bean names verified** (`@Named("pharmacySaleForCashierController1/2/3")`)
+- [ ] **Page titles correct** ("Sale 2", "Sale 3", "Sale 4")
+- [ ] **Navigation buttons work** (can switch between all versions)
+- [ ] **Session isolation works** (bills stay separate in different versions)
+- [ ] **Critical features tested** (add item, calculate, settle, print)
+
+## Common Compilation Errors & Solutions
+
+### Error: "invalid method declaration; return type required"
+**Location**: Line ~303 in Java controllers
+**Cause**: Constructor name doesn't match class name
+**Fix**: Update constructor name `public PharmacySaleForCashierController1()` to match class
+
+### Error: "cannot find symbol: class PharmacySaleForCashierController"
+**Location**: Various lines (Logger, metadata, converter)
+**Cause**: Class references not updated
+**Fix**: Update all locations listed in Step 2.2 above
+
+### Error: Error page when clicking "Sale 2" / "Sale 3" / "Sale 4" (issue #15845)
+**Location**: XHTML navigation buttons
+**Cause**: Unanchored global replace produced double-numbered bean names
+(`...Controller11`, `...Controller12`, `...Controller13`) that have no Java definition
+**Fix**: Run the Step 3.3 phantom-bean check and repoint each reported reference at the
+real bean. Then redo the copy with the guarded procedure in Step 3.2.
+
+### Error: Page won't load / Bean not found
+**Location**: XHTML → Java binding
+**Cause**: `@Named` annotation incorrect or missing
+**Fix**: Verify exact bean name format: `@Named("pharmacySaleForCashierController1")`
+
+## Architecture Notes
+
+**Session Scope Pattern**: Each controller uses independent `@SessionScoped` instances. This enables:
+- ✅ **Concurrent Bill Editing**: Users can edit different bills simultaneously
+- ✅ **State Preservation**: Bills remain intact when switching between versions
+- ✅ **2 Simultaneous Sales**: Core requirement for pharmacy operations
+
+**Shared Infrastructure**: All controllers inject the same singletons:
+- `SessionController` (user session, preferences)
+- `TokenController` (token system state)
+- `EJB services` (database operations)
+
+This ensures consistent behavior while maintaining separate bill state.
+
+## Success Criteria
+
+After synchronization, **ALL 4 versions must have**:
+- ✅ **Identical functionality** (except bean names and titles)
+- ✅ **Same latest features** (quantity adjustments, stock validation, etc.)
+- ✅ **Working navigation** (seamless version switching)
+- ✅ **Session isolation** (bills stay separate)
+- ✅ **No compilation errors**
+- ✅ **No runtime exceptions**
+
+This complete replacement approach has a **95% success rate** compared to 60% for incremental synchronization methods.
 

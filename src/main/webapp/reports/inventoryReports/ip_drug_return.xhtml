@@ -45,18 +45,39 @@
                                 />
 
 
-                            <p:spacer width="20"></p:spacer>  
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    updateLabel="true"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
                                 <p:outputLabel value="Institution" for="phmIns" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
+                            <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
                                 value="#{pharmacyReportController.institution}"
@@ -64,7 +85,7 @@
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>        
+                            </p:selectOneMenu>
 
 
                             <p:spacer width="20"></p:spacer>
@@ -180,19 +201,17 @@
                                 class="ui-button- mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
+                                value="To Print"
+                                action="ip_drug_return_print?faces-redirect=true">
+                               
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="IP Drug Return Report" 
-                                    target="tbl"  />
+                                value="Download"
+                                action="#{pharmacyReportController.exportIpDrugReturnToExcel()}">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -200,7 +219,7 @@
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
                                 value="PDF"
-                                action="#{pharmacyReportController.exportIpDrugReturnPdf}">
+                                action="#{pharmacyReportController.exportIpDrugReturnToPDF()}">
                             </p:commandButton>
 
                         </div>
@@ -257,7 +276,7 @@
                             </p:column>
 
                             <p:column headerText="QTY">
-                                <h:outputText value="#{row.qty}">
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveQty(row)}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
@@ -269,7 +288,7 @@
                             </p:column>
 
                             <p:column headerText="Cost Value" width="5em">
-                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" >
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveCostValue(row)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -287,7 +306,7 @@
                             </p:column>
 
                             <p:column headerText="Purchase Value">
-                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate * row.qty}">
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectivePurchaseValue(row)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -315,7 +334,7 @@
                             </p:column>
 
                             <p:column headerText="MRP Value">
-                                <h:outputText value="#{0.0 - row.pharmaceuticalBillItem.retailRate * row.qty}">
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveRetailValue(row)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">

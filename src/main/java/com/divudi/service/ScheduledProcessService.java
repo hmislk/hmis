@@ -1,7 +1,9 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.data.ScheduledFrequency;
+import com.divudi.core.data.dto.ArchiveResult;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.entity.Institution;
@@ -9,15 +11,22 @@ import com.divudi.core.entity.ScheduledProcessConfiguration;
 import com.divudi.core.facade.ScheduledProcessConfigurationFacade;
 import com.divudi.service.HistoricalRecordService;
 import com.divudi.service.StockService;
+import com.divudi.service.archival.StockHistoryArchivalService;
+import com.divudi.service.archival.ItemBatchArchivalService;
 import com.divudi.core.data.StockValueRow;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 @Stateless
 public class ScheduledProcessService {
+
+    private static final Logger LOGGER = Logger.getLogger(ScheduledProcessService.class.getName());
 
     @EJB
     private ScheduledProcessConfigurationFacade configFacade;
@@ -27,6 +36,15 @@ public class ScheduledProcessService {
 
     @EJB
     private StockService stockService;
+
+    @EJB
+    private StockHistoryArchivalService stockHistoryArchivalService;
+
+    @EJB
+    private ItemBatchArchivalService itemBatchArchivalService;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionController;
 
     @Asynchronous
     public void executeScheduledProcess(ScheduledProcessConfiguration config) {
@@ -132,8 +150,78 @@ public class ScheduledProcessService {
             case All_Credit_Company_Balances:
                 // TODO: implement process
                 break;
+            case Archive_Old_StockHistory_Records:
+                archiveOldStockHistoryRecords();
+                break;
+            case Archive_Old_ItemBatch_Records:
+                archiveOldItemBatchRecords();
+                break;
             default:
         }
+    }
+
+    /**
+     * Scheduled handler for {@code Archive_Old_StockHistory_Records}.
+     *
+     * Reads the retention/batch/max-batches knobs from
+     * {@link ConfigOptionApplicationController} (defaults: 730 days, 2000,
+     * 50) and runs one archival pass. The pass is capped at
+     * {@code batchSize * maxBatches} rows so a scheduled invocation can't
+     * monopolize the database; subsequent scheduled runs drain the
+     * remaining backlog.
+     */
+    private void archiveOldStockHistoryRecords() {
+        int retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Retention Days", 730), 730);
+        int batchSize = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Batch Size", 2000), 2000);
+        int maxBatches = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "StockHistory Archive - Max Batches Per Run", 50), 50);
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -retentionDays);
+        Date cutoff = cal.getTime();
+
+        try {
+            ArchiveResult result = stockHistoryArchivalService.archive(cutoff, batchSize, maxBatches, false);
+            LOGGER.log(Level.INFO,
+                    "StockHistory archive run: cutoff={0}, archived={1}, batches={2}, durationMs={3}, message={4}",
+                    new Object[]{cutoff, result.getArchivedCount(), result.getBatchesRun(),
+                            result.getDurationMillis(), result.getMessage()});
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "StockHistory archive run failed", ex);
+            // Rethrow so executeScheduledProcess() does not mark
+            // lastProcessCompleted=true when the archive actually failed.
+            throw new RuntimeException("StockHistory archive run failed", ex);
+        }
+    }
+
+    private void archiveOldItemBatchRecords() {
+        int retentionDays = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "ItemBatch Archive - Retention Days", 365), 365);
+        int batchSize = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "ItemBatch Archive - Batch Size", 1000), 1000);
+        int maxBatches = sanitisePositive(configOptionController.getIntegerValueByKey(
+                "ItemBatch Archive - Max Batches Per Run", 20), 20);
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -retentionDays);
+        Date cutoff = cal.getTime();
+
+        try {
+            ArchiveResult result = itemBatchArchivalService.archive(cutoff, batchSize, maxBatches, false);
+            LOGGER.log(Level.INFO,
+                    "ItemBatch archive run: cutoff={0}, archived={1}, batches={2}, durationMs={3}, message={4}",
+                    new Object[]{cutoff, result.getArchivedCount(), result.getBatchesRun(),
+                            result.getDurationMillis(), result.getMessage()});
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "ItemBatch archive run failed", ex);
+            throw new RuntimeException("ItemBatch archive run failed", ex);
+        }
+    }
+
+    private static int sanitisePositive(Integer raw, int fallback) {
+        return (raw == null || raw <= 0) ? fallback : raw;
     }
 
     public Date calculateNextSupposedAt(ScheduledFrequency frequency, Date from) {

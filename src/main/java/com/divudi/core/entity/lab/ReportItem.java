@@ -46,7 +46,7 @@ public class ReportItem implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     Long id;
     //Main Properties
@@ -205,7 +205,9 @@ public class ReportItem implements Serializable {
 
     private double absoluteLowValue;
     private double absoluteHighValue;
-
+    
+    private boolean allowToExportChart;
+    
     public CssTextDecoration getCssTextDecoration() {
         return cssTextDecoration;
     }
@@ -1071,6 +1073,7 @@ public class ReportItem implements Serializable {
         toRi.referenceHeader = fromRi.referenceHeader;
         toRi.testLabel = fromRi.testLabel;
         toRi.valueValue = fromRi.valueValue;
+        toRi.allowToExportChart = fromRi.allowToExportChart;
 
     }
 
@@ -1256,6 +1259,14 @@ public class ReportItem implements Serializable {
 
     public void setCustomCss(String customCss) {
         this.customCss = customCss;
+    }
+
+    public boolean isAllowToExportChart() {
+        return allowToExportChart;
+    }
+
+    public void setAllowToExportChart(boolean allowToExportChart) {
+        this.allowToExportChart = allowToExportChart;
     }
 
 }

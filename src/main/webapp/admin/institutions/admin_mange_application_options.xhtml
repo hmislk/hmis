@@ -127,7 +127,7 @@
                             </p:column>
 
                             <p:column width="14em" style="padding: 7px;" >
-                                <div class="text-center w-100">
+                                <h:panelGroup layout="block" styleClass="text-center w-100" rendered="#{!configOptionController.isInwardChargeTypeLabelKey(option.optionKey)}">
                                     <p:commandButton
                                         icon="pi pi-pencil"
                                         styleClass="ui-button-success mx-1"
@@ -145,7 +145,12 @@
                                         action="#{configOptionController.deleteOption(option)}"
                                         title="Delete Option">
                                     </p:commandButton>
-                                </div>
+                                </h:panelGroup>
+                                <h:panelGroup styleClass="text-center w-100 d-block text-muted" rendered="#{configOptionController.isInwardChargeTypeLabelKey(option.optionKey)}"
+                                              title="Edit this label from Inward &gt; Inward Charge Type Labels instead">
+                                    <i class="pi pi-lock" style="font-size: 0.9em;"></i>
+                                    <h:outputText value=" Managed on Inward Charge Type Labels page" style="font-size: 0.8em;"/>
+                                </h:panelGroup>
                                 <f:facet name="exportable">
                                     <h:outputText value="" />
                                 </f:facet>
@@ -222,6 +227,14 @@
                                         formatToggle="true" 
                                         theme="large">
                                     </p:colorPicker>
+                                    
+                                    <!-- For INTEGER -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputInteger" 
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'INTEGER'}" >
+                                    </p:inputText>
 
                                     <p:selectOneMenu 
                                         id="enumValueSelector"
@@ -279,7 +292,13 @@
                             <div class="mb-3">
                                 <p>Upload a CSV file with the following format:</p>
                                 <p><strong>Option Key, Option Value, Value Type, Enum Type</strong></p>
-                                <p class="text-muted">Note: If an option key already exists, its value will be replaced with the imported value.</p>
+                                <div class="text-info">
+                                    <p><strong>Import Modes:</strong></p>
+                                    <ul>
+                                        <li><strong>Import and Replace:</strong> Updates existing options and creates new ones</li>
+                                        <li><strong>Import Missing Only:</strong> Only creates new options, skips existing ones</li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div class="mb-3">
@@ -292,17 +311,25 @@
                             </div>
 
                             <div class="mb-3">
-                                <p:commandButton 
-                                    value="Import CSV" 
+                                <p:commandButton
+                                    value="Import and Replace"
                                     icon="pi pi-upload"
                                     ajax="false"
-                                    action="#{configOptionController.importOptionsFromCsv}"
-                                    styleClass="ui-button-success" />
-                                <p:commandButton 
-                                    value="Cancel" 
+                                    action="#{configOptionController.importAndReplaceOptionsFromCsv}"
+                                    styleClass="ui-button-success mr-2"
+                                    title="Updates existing options and creates new ones" />
+                                <p:commandButton
+                                    value="Import Missing Only"
+                                    icon="pi pi-plus"
+                                    ajax="false"
+                                    action="#{configOptionController.importMissingOnlyOptionsFromCsv}"
+                                    styleClass="ui-button-warning mr-2"
+                                    title="Only creates new options, skips existing ones" />
+                                <p:commandButton
+                                    value="Cancel"
                                     icon="pi pi-times"
                                     onclick="PF('importDialog').hide();"
-                                    styleClass="ui-button-secondary ml-2" />
+                                    styleClass="ui-button-secondary" />
                             </div>
 
                             <div class="mt-3">

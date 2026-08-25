@@ -10,9 +10,8 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns:ia="http://xmlns.jcp.org/jsf/composite/inward/bht_1"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
-
-
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
 
     <ui:define name="content">
 
@@ -21,255 +20,490 @@
         <h:panelGroup styleClass="opdPanel"  >
             <h:form id="form">
 
-                <h:panelGroup rendered="#{!appointmentController.printPreview}"  >
-                    <p:panel > 
-                        <f:facet name="header">
-                            <h:outputLabel class="mt-2" value="Inward Appointments"/>
-                            <div class="d-flex" style="float: right;">
-                                <p:commandButton  
-                                    value="Make Appointment" 
-                                    action="#{appointmentController.settleBill}" 
-                                    ajax="false"
-                                    icon="fa fa-check"
-                                    class="ui-button-success mx-1 "
-                                    >
-                                </p:commandButton>
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AddInwardAppointment')}">
+                    <na:not_authorize />
+                </h:panelGroup>
 
-                                <p:commandButton 
-                                    value="Patient Lookup"
-                                    ajax="false" 
-                                    icon="fa fa-search"
-                                    action="#{opdBillController.navigateToSearchPatients()}"
-                                    class="ui-button-warning mx-1 ">
-                                </p:commandButton>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AddInwardAppointment')}">
+                    <h:panelGroup rendered="#{!appointmentController.printPreview}"  >
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputLabel class="mt-2" value="Inward Appointments"/>
+                                <div class="d-flex" style="float: right;">
+                                    <p:commandButton
+                                        value="Make Appointment"
+                                        action="#{appointmentController.settleBill}"
+                                        ajax="false"
+                                        icon="fa fa-check"
+                                        class="ui-button-success mx-1 ">
+                                    </p:commandButton>
 
-                                <p:commandButton 
-                                    value="Profile"
-                                    ajax="false" 
-                                    icon="fa fa-user"
-                                    action="#{patientController.navigateToOpdPatientProfile()}"
-                                    class="ui-button-secondary mx-1 ">
-                                    <f:setPropertyActionListener 
-                                        target="#{patientController.current}" 
-                                        value="#{appointmentController.patient}">
+                                    <p:commandButton
+                                        icon="fa fa-calendar"
+                                        ajax="false"
+                                        value="To Appointment Calendar"
+                                        class="ui-button-administration "
+                                        action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" >
+                                    </p:commandButton>
 
-                                    </f:setPropertyActionListener>
-                                </p:commandButton>
+                                </div>
+                            </f:facet>
+
+                            <!-- Appointment Category Selector -->
+                            <div class="row mt-3 mb-2">
+                                <div class="col-md-6">
+                                    <h:panelGrid columns="3" cellpadding="5"
+                                                 columnClasses="col-4,col-1,col-7">
+                                        <p:outputLabel value="Appointment Type"
+                                                       style="width:140px; display:inline-block; font-weight:bold;" />
+                                        <h:outputLabel value=":"
+                                                       style="width:10px; display:inline-block;" />
+                                        <p:selectOneMenu id="cmbAppointmentCategory"
+                                                         value="#{appointmentController.appointmentCategory}"
+                                                         style="width:100%;">
+                                            <f:selectItems value="#{appointmentController.appointmentCategories}"
+                                                           var="cat"
+                                                           itemLabel="#{cat.displayName}"
+                                                           itemValue="#{cat}" />
+                                            <p:ajax process="@this"
+                                                    update="pnlCategoryDetails"
+                                                    listener="#{appointmentController.onAppointmentCategoryChanged()}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>
+                                </div>
                             </div>
-                        </f:facet>
 
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <h:panelGroup id="panelPatient" >
-                                    <p:panel>
-                                        <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-user-circle" />
-                                            <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
-                                        </f:facet>
-
+                            <h:panelGroup id="pnlCategoryDetails" layout="block">
+                                <div class="row">
+                                    <div class="col-md-6">
                                         <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
 
-                                    </p:panel>
-                                </h:panelGroup>
-                            </div>
-
-                            <div class="col-md-6">
-                                <p:panel class="mb-3">
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fa-solid fa-money-bill-1-wave" />
-                                        <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
-                                    </f:facet>
-                                    <div class=" justify-content-between align-items-center my-2">
-                                        <div class="my-3">
-                                            <p:outputLabel value="Payment Method "></p:outputLabel>
-                                            <p:outputLabel class="mx-4" value=" : "></p:outputLabel>
-                                            <p:selectOneMenu   
-                                                id="cmbPs" 
-                                                style="width: 20em;"
-                                                class="mx-0"
-                                                value="#{appointmentController.currentBill.paymentMethod}">                                                                     
-                                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                                <p:ajax process="cmbPs @this" update="paymentMethods" event="change" />
-                                            </p:selectOneMenu>
-                                            <br></br>
-                                        </div>
-                                        <h:panelGroup id="paymentMethods" class="my-3">
-                                            <h:panelGroup 
-                                                id="cash" 
-                                                rendered="#{appointmentController.currentBill.paymentMethod eq 'Cash'}">
-                                                
-                                                <div class=" d-flex gap-5">
-                                                    <h:outputLabel value="Amount" class="mt-2"></h:outputLabel>
-                                                    <p:outputLabel class="mt-2 mx-2" value=" : "></p:outputLabel>
-                                                    <p:inputText 
-                                                        autocomplete="off"
-                                                        id="pBillDetails"
-                                                        onfocus="this.select();"
+                                        <!-- Consultant field -->
+                                        <h:panelGroup rendered="#{appointmentController.appointmentCategory.needsConsultant()}">
+                                            <p:panel class="my-2">
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Consultant Details" />
+                                                </f:facet>
+                                                <h:panelGrid columns="3" class="w-100 my-2" cellpadding="10"
+                                                             columnClasses="col-4,col-1,col-7">
+                                                    <h:outputLabel value="Consultant"
+                                                                   for="acSchedConsultant"
+                                                                   style="width:140px; display:inline-block;" />
+                                                    <h:outputLabel value=":"
+                                                                   style="width:10px; display:inline-block;" />
+                                                    <p:autoComplete
+                                                        forceSelection="true"
+                                                        id="acSchedConsultant"
                                                         class="my-1"
-                                                        value="#{appointmentController.currentBill.total}" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </p:inputText>
-                                                </div>
-                                            </h:panelGroup>
-                                            
-                                            <h:panelGroup 
-                                                id="creditCard" 
-                                                rendered="#{appointmentController.currentBill.paymentMethod eq 'Card'}">
-                                                <pa:creditCard paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                            </h:panelGroup>
+                                                        value="#{appointmentController.selectedConsultant}"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="s"
+                                                        placeholder="Select Consultant"
+                                                        inputStyleClass="w-100"
+                                                        itemLabel="#{s.person.nameWithTitle}"
+                                                        itemValue="#{s}"
+                                                        style="width:100%; height:38px;">
+                                                        <p:ajax event="itemSelect"
+                                                                listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                                update="pnlScheduleInfo" />
+                                                    </p:autoComplete>
+                                                </h:panelGrid>
+                                            </p:panel>
+                                        </h:panelGroup>
 
-                                            <h:panelGroup 
-                                                id="cheque"
-                                                rendered="#{appointmentController.currentBill.paymentMethod eq 'Cheque'}">
-                                                <pa:cheque paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                            </h:panelGroup>
+                                        <!-- Procedure field -->
+                                        <h:panelGroup rendered="#{appointmentController.appointmentCategory.needsProcedure()}">
+                                            <p:panel class="my-2">
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Procedure Details" />
+                                                </f:facet>
+                                                <h:panelGrid columns="3" class="w-100 my-2" cellpadding="10"
+                                                             columnClasses="col-4,col-1,col-7">
+                                                    <h:outputLabel value="Procedure"
+                                                                   for="acSchedProcedure"
+                                                                   style="width:140px; display:inline-block;" />
+                                                    <h:outputLabel value=":"
+                                                                   style="width:10px; display:inline-block;" />
+                                                    <p:autoComplete
+                                                        forceSelection="true"
+                                                        id="acSchedProcedure"
+                                                        class="my-1"
+                                                        value="#{appointmentController.selectedProcedure}"
+                                                        completeMethod="#{itemController.completeItem}"
+                                                        var="item"
+                                                        placeholder="Select Procedure"
+                                                        inputStyleClass="w-100"
+                                                        itemLabel="#{item.name}"
+                                                        itemValue="#{item}"
+                                                        style="width:100%; height:38px;">
+                                                        <p:ajax event="itemSelect"
+                                                                listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                                update="pnlScheduleInfo" />
+                                                    </p:autoComplete>
+                                                </h:panelGrid>
+                                            </p:panel>
+                                        </h:panelGroup>
 
-                                            <h:panelGroup 
-                                                id="slip" 
-                                                rendered="#{appointmentController.currentBill.paymentMethod eq 'Slip'}">
-                                                <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                        <!-- Department field -->
+                                        <h:panelGroup rendered="#{appointmentController.appointmentCategory.needsDepartment()}">
+                                            <p:panel class="my-2">
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Department Details" />
+                                                </f:facet>
+                                                <h:panelGrid columns="3" class="w-100 my-2" cellpadding="10"
+                                                             columnClasses="col-4,col-1,col-7">
+                                                    <h:outputLabel value="Department"
+                                                                   for="acSchedDept"
+                                                                   style="width:140px; display:inline-block;" />
+                                                    <h:outputLabel value=":"
+                                                                   style="width:10px; display:inline-block;" />
+                                                    <p:autoComplete
+                                                        forceSelection="true"
+                                                        id="acSchedDept"
+                                                        class="my-1"
+                                                        value="#{appointmentController.selectedDepartment}"
+                                                        completeMethod="#{departmentController.completeDepartments}"
+                                                        var="d"
+                                                        placeholder="Select Department"
+                                                        inputStyleClass="w-100"
+                                                        itemLabel="#{d.name}"
+                                                        itemValue="#{d}"
+                                                        style="width:100%; height:38px;">
+                                                        <p:ajax event="itemSelect"
+                                                                listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                                update="pnlScheduleInfo" />
+                                                    </p:autoComplete>
+                                                </h:panelGrid>
+                                            </p:panel>
+                                        </h:panelGroup>
+
+                                        <!-- Schedule info (for non-room categories) -->
+                                        <h:panelGroup rendered="#{not appointmentController.appointmentCategory.needsRoom()}">
+                                            <h:panelGroup id="pnlScheduleInfo" layout="block">
+                                                <h:panelGroup rendered="#{appointmentController.availableInstances ne null and not empty appointmentController.availableInstances}">
+                                                    <p:panel class="my-2">
+                                                        <f:facet name="header">
+                                                            <h:outputLabel value="Available Schedule Slots" />
+                                                        </f:facet>
+                                                        <p:dataTable value="#{appointmentController.availableInstances}"
+                                                                     var="inst"
+                                                                     selection="#{appointmentController.selectedScheduleInstance}"
+                                                                     rowKey="#{inst.id}"
+                                                                     selectionMode="single"
+                                                                     class="my-2">
+                                                            <p:ajax event="rowSelect" />
+                                                            <p:column headerText="Template">
+                                                                <h:outputText value="#{inst.template.name}" />
+                                                            </p:column>
+                                                            <p:column headerText="Date">
+                                                                <h:outputText value="#{inst.instanceDate}">
+                                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                                </h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="Time Window">
+                                                                <h:outputText value="#{inst.startTime}" rendered="#{inst.startTime ne null}">
+                                                                    <f:convertDateTime pattern="hh:mm a" />
+                                                                </h:outputText>
+                                                                <h:outputText value=" - " rendered="#{inst.startTime ne null}" />
+                                                                <h:outputText value="#{inst.endTime}" rendered="#{inst.endTime ne null}">
+                                                                    <f:convertDateTime pattern="hh:mm a" />
+                                                                </h:outputText>
+                                                                <h:outputText value="Date Based" rendered="#{inst.startTime eq null}" />
+                                                            </p:column>
+                                                            <p:column headerText="Available Slots">
+                                                                <h:outputText value="#{inst.availableCount} of #{inst.maxCount}" />
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </p:panel>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{appointmentController.availableInstances ne null and empty appointmentController.availableInstances}">
+                                                    <div class="alert alert-info my-2">
+                                                        No schedule constraints found. Booking proceeds without schedule limits.
+                                                    </div>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                         </h:panelGroup>
 
+                                        <!-- Room / Reservation details (only for Room Admission) -->
+                                        <h:panelGroup rendered="#{appointmentController.appointmentCategory.needsRoom()}">
+                                            <p:panel class="my-2">
+                                                <f:facet name="header" >
+                                                    <h:outputLabel value="Reservation Details" />
+                                                </f:facet>
+                                                <h:panelGroup class="w-100">
+                                                    <h:panelGrid
+                                                        columns="3"
+                                                        class="w-50"
+                                                        cellpadding="10"
+                                                        columnClasses="labelCol,colonCol,inputCol">
+
+                                                        <h:outputLabel
+                                                            for="cmbRspRoom"
+                                                            value="Room No"
+                                                            style="width:140px; display:inline-block;" />
+                                                        <h:outputLabel
+                                                            value=":"
+                                                            style="width:10px; display:inline-block;" />
+                                                        <p:autoComplete
+                                                            forceSelection="true"
+                                                            id="cmbRspRoom"
+                                                            value="#{appointmentController.reservedRoom}"
+                                                            completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                                            var="rf"
+                                                            placeholder="Select Room"
+                                                            inputStyleClass="w-100"
+                                                            itemLabel="#{rf.name}"
+                                                            itemValue="#{rf}"
+                                                            size="30"
+                                                            maxResults="25"
+                                                            style="width:100%; height:38px;" />
+
+                                                        <h:outputLabel
+                                                            for="reserveFromTimeStamp"
+                                                            value="Reserve From"
+                                                            class="my-2"
+                                                            style="width:140px; display:inline-block;" />
+                                                        <h:outputLabel
+                                                            value=":"
+                                                            class="my-2"
+                                                            style="width:10px; display:inline-block;" />
+                                                        <p:datePicker
+                                                            id="reserveFromTimeStamp"
+                                                            value="#{appointmentController.reservedFromDate}"
+                                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                            placeholder="Reservation Start"
+                                                            inputStyleClass="form-control w-100"
+                                                            style="width:100%; height:38px;"
+                                                            timeInput="true"
+                                                            showTime="true"
+                                                            showButtonBar="true"
+                                                            class="my-2"/>
+
+                                                        <h:outputLabel
+                                                            for="reserveToTimeStamp"
+                                                            value="Reserve To"
+                                                            style="width:140px; display:inline-block;" />
+                                                        <h:outputLabel
+                                                            value=":"
+                                                            style="width:10px; display:inline-block;" />
+                                                        <p:datePicker
+                                                            id="reserveToTimeStamp"
+                                                            value="#{appointmentController.reservedToDate}"
+                                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                            placeholder="Reservation End"
+                                                            inputStyleClass="form-control w-100"
+                                                            style="width:100%; height:38px;"
+                                                            timeInput="true"
+                                                            showTime="true"
+                                                            showButtonBar="true"/>
+
+                                                    </h:panelGrid>
+                                                </h:panelGroup>
+                                            </p:panel>
+                                        </h:panelGroup>
                                     </div>
-                                </p:panel>
 
-                                <p:panel>
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fas fa-info-circle" />
-                                        <h:outputLabel value="Referring Details" class="mx-4"></h:outputLabel>
-                                    </f:facet>
+                                    <div class="col-md-6">
+                                        <p:panel class="mb-3">
+                                            <f:facet name="header" >
+                                                <h:outputText styleClass="fa-solid fa-money-bill-1-wave" />
+                                                <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
+                                            </f:facet>
+                                            <div class=" justify-content-between align-items-center my-2">
+                                                <div class="my-3">
+                                                    <p:outputLabel value="Payment Method "></p:outputLabel>
+                                                    <p:outputLabel class="mx-4" value=" : "></p:outputLabel>
+                                                    <p:selectOneMenu
+                                                        id="cmbPs"
+                                                        style="width: 20em;"
+                                                        class="mx-0"
+                                                        value="#{appointmentController.currentBill.paymentMethod}">
+                                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                        <f:selectItems value="#{enumController.getPaymentMethodsForIwardDeposit()}" />
+                                                        <p:ajax process="cmbPs @this" update="paymentMethods" event="change" listener="#{appointmentController.updatePaymentData()}"/>
+                                                    </p:selectOneMenu>
+                                                    <br></br>
+                                                </div>
+                                                <h:panelGroup id="paymentMethods" class="my-3">
+                                                    <h:panelGroup
+                                                        id="cash"
+                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'Cash'}">
+                                                        <div class=" d-flex gap-5">
+                                                            <h:outputLabel value="Amount" class="mt-2"></h:outputLabel>
+                                                            <p:outputLabel class="mt-2 mx-2" value=" : "></p:outputLabel>
+                                                            <p:inputText
+                                                                autocomplete="off"
+                                                                id="pBillDetails"
+                                                                onfocus="this.select();"
+                                                                class="my-1"
+                                                                value="#{appointmentController.currentBill.total}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:inputText>
+                                                        </div>
+                                                    </h:panelGroup>
 
-                                    <h:panelGrid columns="2" class="w-100"  id="refferingDr">
-                                        <p:outputLabel value="Referring Doctor" 
-                                                       class="form-label"/>
-                                        <p:autoComplete 
-                                            forceSelection="true"
-                                            class="w-100 my-1"
-                                            inputStyleClass="w-100"
-                                            id="cmbDoc" 
-                                            value="#{appointmentController.currentBill.referredBy}"
-                                            completeMethod="#{doctorController.completeDoctor}" 
-                                            var="doc" 
-                                            maxResults="20"
-                                            itemLabel="#{doc.person.nameWithTitle}" 
-                                            itemValue="#{doc}" 
-                                            size="30"  >
-                                        </p:autoComplete>
+                                                    <h:panelGroup
+                                                        id="creditCard"
+                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'Card'}">
+                                                        <pa:creditCard paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Appointment Date"/>
-                                        <p:datePicker 
-                                            inputStyleClass="w-100"
-                                            class="w-100 my-1"
-                                            showTime="true"
-                                            showButtonBar="true"
-                                            timeInput="true"
-                                            value="#{appointmentController.currentAppointment.appointmentDate}" 
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                            >                            
-                                        </p:datePicker>
+                                                    <h:panelGroup
+                                                        id="cheque"
+                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'Cheque'}">
+                                                        <pa:cheque paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                                    </h:panelGroup>
 
+                                                    <h:panelGroup
+                                                        id="slip"
+                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'Slip'}">
+                                                        <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                                    </h:panelGroup>
 
-                                    </h:panelGrid>
-                                </p:panel>
+                                                    <h:panelGroup
+                                                        id="eWallet"
+                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'ewallet'}" >
+                                                        <pa:ewallet paymentMethodData="#{appointmentController.paymentMethodData}" />
+                                                    </h:panelGroup>
 
+                                                    <h:panelGroup
+                                                        id="patientDeposit"
+                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'PatientDeposit'}" >
+                                                        <pa:patient_deposit_with_paid_value paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup
+                                                        id="onlinePayment"
+                                                        rendered="#{appointmentController.currentBill.paymentMethod eq 'OnlineSettlement'}" >
+                                                        <pa:online_settlement paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+                                            </div>
+                                        </p:panel>
+
+                                        <p:panel>
+                                            <f:facet name="header" >
+                                                <h:outputText styleClass="fas fa-info-circle" />
+                                                <h:outputLabel value="Referring Details" class="mx-4"></h:outputLabel>
+                                            </f:facet>
+
+                                            <h:panelGrid columns="2" class="w-100"  id="refferingDr">
+                                                <p:outputLabel value="Referring Doctor"
+                                                               class="form-label"/>
+                                                <p:autoComplete
+                                                    forceSelection="true"
+                                                    class="w-100 my-1"
+                                                    inputStyleClass="w-100"
+                                                    id="cmbDoc"
+                                                    value="#{appointmentController.currentBill.referredBy}"
+                                                    completeMethod="#{doctorController.completeDoctor}"
+                                                    var="doc"
+                                                    placeholder="Select Referring Doctor"
+                                                    maxResults="20"
+                                                    itemLabel="#{doc.person.nameWithTitle}"
+                                                    itemValue="#{doc}"
+                                                    size="30"  >
+                                                </p:autoComplete>
+
+                                                <p:outputLabel value="Appointment Date"/>
+                                                <p:datePicker
+                                                    id="appointmentDate"
+                                                    value="#{appointmentController.currentAppointment.appointmentDate}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="dateTimePicker"
+                                                    class="w-100 mt-2"
+                                                    placeholder="Select Appointment Date"
+                                                    inputStyleClass="form-control"
+                                                    timeInput="true"
+                                                    showTime="true"
+                                                    showButtonBar="true">
+                                                <p:ajax event="dateSelect"
+                                                        listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                        update="pnlScheduleInfo"
+                                                        process="@this" />
+                                                </p:datePicker>
+
+                                            </h:panelGrid>
+
+                                            <!-- Time From/To only for non-room categories -->
+                                            <h:panelGroup rendered="#{not appointmentController.appointmentCategory.needsRoom()}">
+                                                <h:panelGrid columns="2" class="w-100">
+                                                    <p:outputLabel value="Appointment Time From"/>
+                                                    <p:datePicker
+                                                        id="appointmentTimeFrom"
+                                                        value="#{appointmentController.currentAppointment.appointmentTimeFrom}"
+                                                        timeOnly="true"
+                                                        showTime="true"
+                                                        pattern="hh:mm a"
+                                                        class="w-100 mt-2"
+                                                        inputStyleClass="form-control">
+                                                        <p:ajax event="dateSelect"
+                                                                listener="#{appointmentController.onAppointmentTimeFromChanged()}"
+                                                                update="appointmentTimeTo"
+                                                                process="@this" />
+                                                    </p:datePicker>
+
+                                                    <p:outputLabel value="Appointment Time To"/>
+                                                    <p:datePicker
+                                                        id="appointmentTimeTo"
+                                                        value="#{appointmentController.currentAppointment.appointmentTimeTo}"
+                                                        timeOnly="true"
+                                                        showTime="true"
+                                                        pattern="hh:mm a"
+                                                        class="w-100 mt-2"
+                                                        inputStyleClass="form-control" />
+                                                </h:panelGrid>
+                                            </h:panelGroup>
+                                        </p:panel>
+
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                        </p:panel>
+                    </h:panelGroup>
+
+                    <p:panel rendered="#{appointmentController.printPreview}" >
+                        <f:facet name="header">
+                            <h:outputLabel class="mt-2" value="Appointment"/>
+                            <div class="d-flex gap-2" style="float: right;">
+                                <p:commandButton
+                                    value="New Appointment"
+                                    action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
+                                    class="ui-button-success"
+                                    icon="fa fa-plus"
+                                    ajax="false">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Patient Lookup"
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    action="#{opdBillController.navigateToSearchPatients()}"
+                                    class="ui-button-warning">
+                                </p:commandButton>
+
+                            </div>
+                        </f:facet>
+
+                        <div class="row my-3">
+                            <div class="d-flex justify-content-end">
+                                <p:commandButton
+                                    class="ui-button-info"
+                                    icon="fa fa-print"
+                                    value="Print Appointment"
+                                    ajax="false" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
                             </div>
                         </div>
 
-                        <p:panel class="my-2">
-                            <f:facet name="header" >
-                                <h:outputLabel value="Reservation Details" />
-                            </f:facet>
-                            <h:panelGroup class="my-2 w-100" >
-                                <h:panelGrid columns="3" class="w-50 my-2">
-                                    <h:outputLabel value="Room No"/>
-                                    <h:outputLabel value=":"/>
-                                    <p:autoComplete  
-                                        forceSelection="true"  
-                                        id="cmbRspRoom" 
-                                        class="mx-4 my-2"
-                                        value="#{appointmentController.reservation.room}" 
-                                        completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
-                                        var="rf" 
-                                        inputStyleClass="w-100"
-                                        itemLabel="#{rf.name}" 
-                                        itemValue="#{rf}" 
-                                        size="30"
-                                        maxResults="25"
-                                        >                            
-                                    </p:autoComplete>
-                                    <h:outputLabel value="Reserve From"/>
-                                    <h:outputLabel value=":"/>
-                                    <p:datePicker 
-                                        value="#{appointmentController.reservation.reservedFrom}" 
-                                        id="reserveFromTimeStamp"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        styleClass="form-control w-100"
-                                        showButtonBar="true"
-                                        timeInput="true"
-                                        showTime="true"
-                                        class="w-50 mx-4 my-2" 
-                                        inputStyleClass="w-100" >                               
-                                    </p:datePicker>     
-                                    <h:outputLabel value="Reserve To"/>
-                                    <h:outputLabel value=":"/>
-                                    <p:datePicker 
-                                        value="#{appointmentController.reservation.reservedTo}" 
-                                        id="reserveToTimeStamp"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        styleClass="form-control w-100"
-                                        showButtonBar="true"
-                                        timeInput="true"
-                                        showTime="true"
-                                        class="w-50 mx-4 my-2" 
-                                        inputStyleClass="w-100" >                               
-                                    </p:datePicker>     
-                                </h:panelGrid>
-                            </h:panelGroup>
-                        </p:panel>
+                        <h:panelGroup id="gpBillPreview">
+                            <ez:inward_appointment_print reservation="#{appointmentController.reservation}"/>
+                        </h:panelGroup>
+
                     </p:panel>
                 </h:panelGroup>
-
-                <p:panel rendered="#{appointmentController.printPreview}" >
-                    <f:facet name="header">
-                        <h:outputLabel class="mt-2" value="Appointment"/>
-                        <div class="d-flex gap-2" style="float: right;">
-                            <p:commandButton 
-                                value="New Appointment" 
-                                action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" 
-                                class="ui-button-success"
-                                icon="fa fa-plus"
-                                ajax="false">
-                            </p:commandButton>
-                            <p:commandButton 
-                                value="Patient Lookup"
-                                ajax="false" 
-                                icon="fa fa-search"
-                                action="#{opdBillController.navigateToSearchPatients()}"
-                                class="ui-button-warning">
-                            </p:commandButton>
-
-                        </div>
-                    </f:facet>
-
-                    <div class="row my-3">
-                        <div class="d-flex justify-content-end">
-                            <p:commandButton 
-                                class="ui-button-info" 
-                                icon="fa fa-print"
-                                value="Print Appointment" 
-                                ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                        </div>
-                    </div>
-
-                    <h:panelGroup id="gpBillPreview">
-                        <ez:inward_appointment_print reservation="#{appointmentController.reservation}"/>
-                    </h:panelGroup>
-
-                </p:panel>
 
             </h:form>
         </h:panelGroup>

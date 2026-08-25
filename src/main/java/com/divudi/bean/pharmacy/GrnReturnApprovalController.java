@@ -10,6 +10,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -30,6 +33,8 @@ import javax.inject.Named;
 @SessionScoped
 public class GrnReturnApprovalController implements Serializable {
 
+    private static final Logger LOGGER = Logger.getLogger(GrnReturnApprovalController.class.getName());
+
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -41,6 +46,8 @@ public class GrnReturnApprovalController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
 
     private Bill grnBill;
     private Bill pendingReturn;
@@ -98,11 +105,15 @@ public class GrnReturnApprovalController implements Serializable {
     }
 
     public void approveReturn(Bill b) {
+        if (!isAuthorized("APPROVE_RETURN", "ApproveGrnReturn")) {
+            return;
+        }
         if (b == null) {
             return;
         }
         b.setApproveUser(sessionController.getLoggedUser());
         b.setApproveAt(Calendar.getInstance().getTime());
+        b.setCompleted(true);
         b.setPaid(true);
         b.setPaidAmount(b.getNetTotal());
         b.setBalance(0d);
@@ -136,6 +147,41 @@ public class GrnReturnApprovalController implements Serializable {
 
     public void setPendingReturn(Bill pendingReturn) {
         this.pendingReturn = pendingReturn;
+    }
+
+    /**
+     * Authorization helper method to check GRN Return approval privileges
+     * and audit denied access
+     *
+     * @param action The action being attempted (APPROVE_RETURN)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    action);
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = null;
+            if (pendingReturn != null) {
+                billId = pendingReturn.getId();
+            } else if (grnBill != null) {
+                billId = grnBill.getId();
+            }
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN Return approval access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " GRN return requests.");
+            return false;
+        }
+
+        return true;
     }
 }
 

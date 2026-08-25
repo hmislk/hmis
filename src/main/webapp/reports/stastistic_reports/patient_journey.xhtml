@@ -10,6 +10,19 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
+                <style type="text/css">
+                    @media print {
+                        /* Hide PrimeFaces column filter inputs when printing */
+                        .no-print-filters .ui-column-filter,
+                        .no-print-filters thead tr.ui-filter-row,
+                        .no-print-filters .ui-datatable-header,
+                        .no-print-filters .ui-paginator {
+                            display: none !important;
+                            visibility: hidden !important;
+                        }
+                    }
+                </style>
+
                 <h:form >
 
                     <p:panel>
@@ -24,7 +37,7 @@
 
                             </h:panelGroup>
                             <p:datePicker
-                                value=""
+                                value="#{reportController.fromDate}"
                                 class="w-100"
                                 showTime="true"
                                 showButtonBar="true"
@@ -44,7 +57,8 @@
                                 showButtonBar="true"
                                 timeInput="true"
                                 inputStyleClass="form-control"
-                                value=""
+                                maxdate="#{commonFunctionsProxy.endOfDay}"
+                                value="#{reportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                             </p:datePicker>
 
@@ -52,8 +66,44 @@
                                 <h:outputText value="&#xf406;" styleClass="fa mr-2" />
                                 <p:outputLabel value="MRN / Patient Name" class="mx-3" />
                             </h:panelGroup>
-                            <p:inputText class="form-control" value="">
-                            </p:inputText>
+                            <p:autoComplete
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{reportController.patient}"
+                                completeMethod="#{patientController.completePatientByNameOrCode}"
+                                var="apt"
+                                itemLabel="#{apt.person.nameWithTitle}"
+                                itemValue="#{apt}"
+                                forceSelection="true"
+                                minQueryLength="4"
+                                scrollHeight="400">
+                                <p:column headerText="Name">
+                                    <h:outputLabel value="#{apt.person.nameWithTitle}" />
+                                </p:column>
+                                <p:column headerText="Age">
+                                    <h:outputLabel value="#{apt.age}" />
+                                </p:column>
+                                <p:column headerText="NIC / Passport">
+                                    <h:outputLabel value="#{apt.person.nic}"/>
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputLabel value="#{apt.code}" />
+                                </p:column>
+                                <p:column headerText="PHN">
+                                    <h:outputLabel value="#{apt.phn}"/>
+                                </p:column>
+                                <p:column headerText="Sex">
+                                    <h:outputLabel value="#{apt.person.sex}" />
+                                </p:column>
+                                <p:column headerText="Address">
+                                    <h:outputLabel value="#{apt.person.address}" />
+                                </p:column>
+                                <p:column headerText="Date of Birth">
+                                    <h:outputLabel value="#{apt.person.dob}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
                         </p:panelGrid>
 
                         <h:panelGrid columns="6" class="my-3">
@@ -66,7 +116,7 @@
                             </p:commandButton>
                             <p:commandButton
                                 ajax="false"
-                                action="#"
+                                action="#{reportController.processPatientJourney}"
                                 value="Process"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
@@ -76,63 +126,44 @@
                             <p:commandButton style="width: 150px" ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-2" >
                                 <p:dataExporter fileName="Patient_Journey_Report" type="xlsx" target="dtaPr" />
                             </p:commandButton>
-                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Patient_Journey_Report" type="pdf" target="dtaPr" />
+                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" action="#{reportController.exportPatientJourneyReportToPDF}" >
                             </p:commandButton>
                         </h:panelGrid>
 
                         <p:dataTable id="dtaPr"
-
-                                     rowKey=""
                                      rowIndexVar="count"
-                                     value=""
-                                     var="c" class="my-2">
+                                     value="#{reportController.patientJourneyRows}"
+                                     var="row" class="my-2 no-print-filters">
                             <f:facet name="header">
                                 <h:outputLabel value="Patient Journey Report" />
                             </f:facet>
                             <p:column
                                 headerText="Transaction Date"
                                 filterMatchMode="contains"
-                                sortBy=""
-                                filterBy="">
-                                <h:outputText value="" ></h:outputText>
+                                sortBy="#{row.transactionDate}"
+                                filterBy="#{row.transactionDate}">
+                                <h:outputText value="#{row.transactionDate}" >
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Visit No" filterMatchMode="contains" sortBy="" filterBy="">
-                                <h:outputText value="" ></h:outputText>
+                            <p:column headerText="Visit No" filterMatchMode="contains" sortBy="#{row.visitNo}" filterBy="#{row.visitNo}">
+                                <h:outputText value="#{row.visitNo}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Transaction Name" filterMatchMode="contains" sortBy="" filterBy="">
-                                <h:outputText value="" ></h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="" >
-                                    </h:outputLabel>
-                                </f:facet>
+                            <p:column headerText="Transaction Name" filterMatchMode="contains" sortBy="#{row.transactionName}" filterBy="#{row.transactionName}">
+                                <h:outputText value="#{row.transactionName}" ></h:outputText>
                             </p:column>
-                             <p:column
+                            <p:column
                                 headerText="Transaction Number"
                                 filterMatchMode="contains"
-                                sortBy=""
-                                filterBy="">
-                                <h:outputText value="" ></h:outputText>
+                                sortBy="#{row.transactionNumber}"
+                                filterBy="#{row.transactionNumber}">
+                                <h:outputText value="#{row.transactionNumber}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Description"  filterMatchMode="contains" sortBy="" filterBy="">
-                                <h:outputText value="" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
+                            <p:column headerText="Description"  filterMatchMode="contains" sortBy="#{row.description}" filterBy="#{row.description}">
+                                <h:outputText value="#{row.description}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="User" filterMatchMode="contains" sortBy="" filterBy="" >
-                                <h:outputText value="" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
+                            <p:column headerText="User" filterMatchMode="contains" sortBy="#{row.userName}" filterBy="#{row.userName}" >
+                                <h:outputText value="#{row.userName}" ></h:outputText>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

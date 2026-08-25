@@ -4,6 +4,23 @@
 
 The HMIS Database Migration System provides a comprehensive framework for managing database schema changes across development, testing, and production environments. This guide covers the technical implementation details for developers working with the migration system.
 
+## Schema changes vs. data migrations
+
+**Schema changes** (adding new columns, tables, or indexes) are handled automatically — do NOT write a migration script for them:
+- EclipseLink's DDL auto-update adds missing columns on application startup in development.
+- On production, the admin runs **`/faces/dataAdmin/missing_database_fields.xhtml`** to detect and apply any missing columns before deploying new code.
+
+**Data migrations** (backfilling values in existing rows, transforming data, fixing historical records) require a migration script under `src/main/resources/db/migrations/`. The admin executes these via **`/faces/admin/database_migration.xhtml`**.
+
+> Rule of thumb: if your change is `ALTER TABLE … ADD COLUMN`, skip the migration script. If your change is `UPDATE … SET`, write one.
+
+## Admin UI pages
+
+| Page | Purpose |
+|------|---------|
+| `/faces/dataAdmin/missing_database_fields.xhtml` | Detects and adds schema columns that JPA entities declare but the database does not yet have. Run this **before** deploying code that adds new entity fields. |
+| `/faces/admin/database_migration.xhtml` | Lists, executes, and rolls back data migration scripts. Run this **after** schema is up to date. |
+
 ## Architecture Components
 
 ### Core Classes
@@ -144,9 +161,13 @@ git checkout -b feature/consumption-allowed
 
 ### 2. Version Determination
 
-- Check current latest version: Look in existing migration directories
-- Determine increment type based on change scope
-- Assign next sequential version number
+Find the current highest version:
+```bash
+ls src/main/resources/db/migrations/ | sort -V | tail -1
+```
+
+Determine increment type based on change scope, then assign the next sequential version.
+Coordinate with other open feature branches to avoid two PRs claiming the same version number.
 
 ### 3. Migration Creation
 
@@ -199,15 +220,16 @@ ALTER TABLE item DROP COLUMN consumption_allowed;
 #### Local Testing
 
 ```bash
-# Backup database
-mysqldump -u root -p hmis_dev > backup_before_v2.2.0.sql
+# Backup database (substitute your local DB name — see
+# database/mysql-developer-guide.md § Local Development Databases)
+mysqldump -u root -p <local_db> > backup_before_v2.2.0.sql
 
 # Test migration execution through admin UI
 # Verify data integrity
 # Test rollback functionality
 
 # Restore from backup if needed
-mysql -u root -p hmis_dev < backup_before_v2.2.0.sql
+mysql -u root -p <local_db> < backup_before_v2.2.0.sql
 ```
 
 #### Automated Testing
@@ -298,10 +320,36 @@ try {
 ### SQL Script Guidelines
 
 1. **Atomic Operations**: Each migration should be atomic
-2. **Idempotent Scripts**: Handle re-execution gracefully
+2. **Idempotent Scripts**: Handle re-execution gracefully — for `UPDATE` backfills use `WHERE <new_col> IS NULL` so re-runs are safe and fast
 3. **Data Preservation**: Avoid data loss operations
 4. **Performance Impact**: Consider query execution time
 5. **Index Management**: Add/drop indexes strategically
+6. **Cross-deployment case sensitivity**: See below
+
+### Cross-deployment case sensitivity (MUST)
+
+HMIS is deployed to customer MySQL instances with different `lower_case_table_names` settings. Some store tables as `PATIENTSAMPLE` (Linux, `lower_case_table_names=0`, JPA/EclipseLink default), others as `patientsample` (Windows or Linux with `lower_case_table_names=1`). A migration that hardcodes either case — `ALTER TABLE patientsample ...` or `ALTER TABLE PATIENTSAMPLE ...` — breaks on the other set of databases with "Table doesn't exist".
+
+**Rule:** any migration/rollback script that references user tables by name MUST detect the actual stored case at runtime and execute DDL via prepared statements.
+
+**Pattern (reference: `v2.1.12/migration-universal.sql`, `v2.1.17/migration.sql`):**
+
+```sql
+SET @ps_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PATIENTSAMPLE'
+    LIMIT 1
+);
+
+SET @sql = CONCAT('ALTER TABLE ', @ps_table, ' DROP FOREIGN KEY FK_PATIENTSAMPLE_RETIRER_ID');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+```
+
+Notes:
+- The `INFORMATION_SCHEMA` schema keyword and its metadata table names (`TABLES`, `COLUMNS`, `STATISTICS`) are case-insensitive on all platforms — only the *values* in `TABLE_NAME`/`COLUMN_NAME` reflect the stored case, which is why `UPPER(TABLE_NAME) = '...'` is needed.
+- Detect every user table referenced anywhere in the script (including `REFERENCES <table>(ID)` targets in FK rollbacks — e.g. `WEBUSER`, `DEPARTMENT`, `INSTITUTION`, `ITEM`).
+- Constraint and index names are stored as declared and are **not** affected by `lower_case_table_names`, so they can stay as literals in the `CONCAT`ed SQL.
+- Column names used in predicates (`WHERE`, `SET`, `REFERENCES (...)`) follow the same case-sensitivity rules as table names on some platforms; detect them via `INFORMATION_SCHEMA.COLUMNS` when uncertain (see `v2.1.12/migration-universal.sql`).
 
 ### Version Management
 

@@ -35,11 +35,14 @@
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
                             <p:selectOneMenu class="w-100"  id="lstCc"   value="#{inwardReportController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
-                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc"
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
-
-
+                            <h:outputLabel value="Date Basis : " />
+                            <p:selectOneMenu class="w-100" value="#{inwardReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
                         <h:panelGrid columns="4" class="my-2">

@@ -1077,7 +1077,16 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        Stock loadedStock = stockFacade.findWithItemBatch(stock.getId());
+        if (loadedStock == null) {
+            errorMessage = "Selected stock is no longer available.";
+            JsfUtil.addErrorMessage("Selected stock is no longer available.");
+            return addedQty;
+        }
+        stock = loadedStock;
+        if (stock.getItemBatch() != null
+                && stock.getItemBatch().getDateOfExpire() != null
+                && stock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
@@ -1535,7 +1544,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1609,7 +1618,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 getBillItemFacade().create(newBil);
             }
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1617,7 +1626,9 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 }
 
                 newBil.setPrescription(tbi.getPrescription());
-                tbi.getPrescription().setPatient(patient);
+                if (patient != null && patient.getId() != null) {
+                    tbi.getPrescription().setPatient(patient);
+                }
                 tbi.getPrescription().setCreatedAt(new Date());
                 tbi.getPrescription().setCreater(sessionController.getWebUser());
                 tbi.getPrescription().setInstitution(sessionController.getInstitution());
@@ -1793,17 +1804,23 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         );
 
         if (configOptionApplicationController.getBooleanValueByKey("Patient Phone number is mandotary in sale for cashier", true)) {
-            if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
-                JsfUtil.addErrorMessage("Please enter phone number of the patient");
-                return;
-            } else if (getPatient().getId() == null) {
-                if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+            if (getPatient() != null && getPatient().getPerson() != null) {
+                if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                    JsfUtil.addErrorMessage("Please enter phone number of the patient");
                     return;
-                } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
-                    return;
+                } else if (getPatient().getId() == null) {
+                    if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+                        return;
+                    } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+                        return;
+                    }
                 }
+            } else if (patientRequiredForPharmacySale) {
+                JsfUtil.addErrorMessage("Patient is required.");
+                billSettlingStarted = false;
+                return;
             }
         }
 
@@ -2602,15 +2619,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     private void clearBill() {

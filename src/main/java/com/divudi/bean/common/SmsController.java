@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -30,6 +31,10 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
+import com.divudi.core.data.dto.SmsDTO;
+
+import java.util.ArrayList;
+
 /**
  *
  * @author Dushan
@@ -54,6 +59,8 @@ public class SmsController implements Serializable {
     SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     /*
     Class Variables
@@ -78,6 +85,8 @@ public class SmsController implements Serializable {
     private List<Patient> patientsForSms;
     private List<Patient> selectedPatients;
 
+    private List<SmsDTO> smsDtoList;
+
     // New variable to control SMS sending
     private static boolean doNotSendAnySms = false;
 
@@ -101,6 +110,17 @@ public class SmsController implements Serializable {
      * Creates a new instance of SmsController
      */
     public SmsController() {
+    }
+
+    public void makeNull() {
+        smsDtoList = new ArrayList<>();
+        fromDate = null;
+        toDate = null;
+    }
+
+    public String navigateToSmsList() {
+        makeNull();
+        return "/analytics/sms_list?faces-redirect=true";
     }
 
     public Boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
@@ -130,6 +150,7 @@ public class SmsController implements Serializable {
             return;
         }
         Sms s = new Sms();
+        s.setSmsType(MessageType.CustomSMS);
         s.setReceipientNumber(smsNumber);
         s.setSendingMessage(smsMessage);
         save(s);
@@ -147,16 +168,99 @@ public class SmsController implements Serializable {
         return smsManager.sendSms(s);
     }
 
+//    public void fillAllSms() {
+//        String j = "select s "
+//                + " from Sms s "
+//                + " where s.createdAt between :fd and :td ";
+//        Map m = new HashMap();
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//        smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+//    }
+    @Deprecated
     public void fillAllSms() {
-        String j = "select s "
-                + " from Sms s "
-                + " where s.createdAt between :fd and :td ";
+        String j = "select s from Sms s where s.createdAt between :fd and :td";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
+
+        // Existing entity list (DO NOT REMOVE)
         smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+
+        // NEW DTO list (PARALLEL)
+        //SmsDTO = new java.util.ArrayList<>();
+        for (Sms s : smses) {
+            //allSmsListDtos.add(toDto(s));
+        }
     }
 
+    public void fillAllSmsDtos() {
+        smsDtoList = new ArrayList<>();
+        String jpql = "select new com.divudi.core.data.dto.SmsDTO("
+                + " COALESCE(s.id,0),"
+                + " s.createdAt,"
+                + " s.sentAt,"
+                + " s.smsType,"
+                + " COALESCE(s.sendingMessage,'N/A'),"
+                + " COALESCE(s.receipientNumber,'N/A'),"
+                + " s.sentSuccessfully,"
+                + " s.pending,"
+                + " COALESCE(s.receivedMessage,'N/A'),"
+                + " p.title, "
+                + " COALESCE(p.name,'')"
+                + " )"
+                + " from Sms s "
+                + " LEFT JOIN s.bill b "
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " where s.createdAt between :fd and :td "
+                + " and s.retired =:ret"
+                + " ORDER BY s.id asc";
+
+        Map params = new HashMap();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("ret", false);
+
+        smsDtoList = (List<SmsDTO>) smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+    }
+
+    public void fillAllFailedSmsDtos() {
+        smsDtoList = new ArrayList<>();
+
+        String jpql
+                = "select new com.divudi.core.data.dto.SmsDTO("
+                + " COALESCE(s.id, 0), "
+                + " s.createdAt, "
+                + " s.sentAt, "
+                + " s.smsType, "
+                + " COALESCE(s.sendingMessage, 'N/A'), "
+                + " COALESCE(s.receipientNumber, 'N/A'), "
+                + " s.sentSuccessfully, "
+                + " s.pending, "
+                + " COALESCE(s.receivedMessage, 'Unknown failure'), "
+                + " p.title, "
+                + " COALESCE(p.name, '') "
+                + ") "
+                + " from Sms s "
+                + " LEFT JOIN s.bill b "
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " where s.sentSuccessfully = false "
+                + " and s.createdAt between :fd and :td "
+                + " order by s.createdAt desc";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        smsDtoList = (List<SmsDTO>) (List<?>) smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP
+        );
+
+    }
+
+    @Deprecated
     public void fillAllFaildSms() {
         // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
         String j = "select s "
@@ -291,6 +395,40 @@ public class SmsController implements Serializable {
 
     public void setBool(Boolean bool) {
         this.bool = bool;
+    }
+
+    public void sendFailedSmsById(Long smsId) {
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
+
+        if (smsId == null) {
+            JsfUtil.addErrorMessage("Invalid SMS");
+            return;
+        }
+
+        Sms s = smsFacade.findWithoutCache(smsId);
+
+        if (s == null) {
+            JsfUtil.addErrorMessage("SMS not found");
+            return;
+        }
+
+        boolean sent = smsManager.sendSms(s);
+
+        if (sent) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addResentFailureSMSHistory(s.getPatientInvestigation(), s.getPatientReport(), s);
+            }
+            JsfUtil.addSuccessMessage("SMS sent successfully");
+        } else {
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addSentSMSFailureHistory(s.getPatientInvestigation(), s.getPatientReport(), s, s.getReceivedMessage());
+            }
+            JsfUtil.addErrorMessage("SMS sending failed");
+        }
     }
 
     private void save(Sms s) {
@@ -456,6 +594,14 @@ public class SmsController implements Serializable {
 
     public void setMaxNumberToList(Long maxNumberToList) {
         this.maxNumberToList = maxNumberToList;
+    }
+
+    public List<SmsDTO> getSmsDtoList() {
+        return smsDtoList;
+    }
+
+    public void setSmsDtoList(List<SmsDTO> smsDtoList) {
+        this.smsDtoList = smsDtoList;
     }
 
     public class SmsSummeryRow {

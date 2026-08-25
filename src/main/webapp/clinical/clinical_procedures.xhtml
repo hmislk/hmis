@@ -19,7 +19,7 @@
                 <p:panel class="mx-1">
                     <f:facet name="header">
                         <i class="fa-solid fa-gears"></i>
-                        <p:outputLabel value="Manage Procedures" class="mx-2"/>
+                        <p:outputLabel value="Manage Surgeries" class="mx-2"/>
                     </f:facet>
 
                     <div class="row">
@@ -77,7 +77,7 @@
 
                             <p:panel class="mx-1" id="gpDetail">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Details of Procedures" class="mt-2"/>
+                                    <p:outputLabel value="Details of Surgeries" class="mt-2"/>
 
                                     <p:commandButton 
                                         id="btnSave" 
@@ -86,7 +86,7 @@
                                         class="ui-button-warning"
                                         style="float: right;"
                                         action="#{procedureController.saveSelected()}" 
-                                         
+
                                         update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  
                                         process="gpDetail"  >
                                     </p:commandButton>
@@ -106,6 +106,13 @@
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputTextarea id="txtDes" value="#{procedureController.current.descreption}" class=" w-100"  />
 
+                                    <h:outputText value="Surgery Type" ></h:outputText>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectOneMenu id="cmbSgyType" value="#{procedureController.current.category}" class=" w-100 mt-2" >
+                                        <f:selectItem itemLabel="Please select a Surgery Type"/>
+                                        <f:selectItems value="#{surgeryTypeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                    </p:selectOneMenu>
+
                                     <h:outputText value="Institution" ></h:outputText>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:selectOneMenu id="cmbIns" value="#{procedureController.current.institution}" class="w-100 mt-2 mb-2"  >
@@ -121,20 +128,25 @@
                                         <f:selectItems value="#{departmentController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
 
+                                </h:panelGrid>
+
+                                <hr/>
+
+                                <h:panelGrid columns="3" class="w-100">
+
                                     <h:outputText value="Department" ></h:outputText>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                    <p:outputLabel class=" w-100 mt-2 mb-2 form-control"  value="#{procedureController.current.department.name}" ></p:outputLabel>
+                                    <p:outputLabel class=" w-100 mt-2 mb-2"  value="#{procedureController.current.department.name}" ></p:outputLabel>
 
                                     <h:outputText value="Creator" ></h:outputText>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                    <p:outputLabel class=" w-100 form-control"  value="#{procedureController.current.creater.staff.person.name}" ></p:outputLabel>
+                                    <p:outputLabel class=" w-100 "  value="#{procedureController.current.creater.staff.person.name}" ></p:outputLabel>
 
                                     <h:outputText value="Created At" ></h:outputText>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                    <p:outputLabel class="mt-2 w-100 form-control"  value="#{procedureController.current.createdAt}" >
+                                    <p:outputLabel class="mt-2 w-100 "  value="#{procedureController.current.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </p:outputLabel>
-
 
                                 </h:panelGrid>
                             </p:panel>

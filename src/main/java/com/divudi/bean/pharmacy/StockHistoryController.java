@@ -11,8 +11,12 @@ import com.divudi.core.data.HistoryType;
 import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.pharmacy.StockHistoryArchive;
 import com.divudi.core.data.dto.PharmacyBinCardDTO;
+import com.divudi.core.facade.StockHistoryArchiveFacade;
 import com.divudi.core.facade.StockHistoryFacade;
+import java.util.ArrayList;
+import java.util.Comparator;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Item;
 import com.divudi.core.util.CommonFunctions;
@@ -31,6 +35,9 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.text.SimpleDateFormat;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  *
@@ -44,12 +51,16 @@ public class StockHistoryController implements Serializable {
     @EJB
     private StockHistoryFacade facade;
     @EJB
+    private StockHistoryArchiveFacade archiveFacade;
+    @EJB
     StockHistoryRecorder stockHistoryRecorder;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
 
     @Inject
     SessionController sessionController;
+    @Inject
+    com.divudi.bean.common.ExcelController excelController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private StockHistory current;
@@ -63,6 +74,8 @@ public class StockHistoryController implements Serializable {
 
     private double totalStockSaleValue;
     private double totalStockPurchaseValue;
+    private boolean includeArchived = false;
+    private List<StockHistoryArchive> pharmacyStockHistoriesArchive;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -126,7 +139,17 @@ public class StockHistoryController implements Serializable {
 //        }
         ////// // System.out.println("m = " + m);
         pharmacyStockHistoryDays = facade.findDateListByJpql(jpql, m, TemporalType.TIMESTAMP);
-        for (Date d : pharmacyStockHistoryDays) {
+        if (includeArchived) {
+            String archiveJpql = jpql.replace("from StockHistory s", "from StockHistoryArchive s");
+            List<Date> archiveDays = archiveFacade.findDateListByJpql(archiveJpql, m, TemporalType.TIMESTAMP);
+            List<Date> merged = new ArrayList<>(pharmacyStockHistoryDays);
+            for (Date d : archiveDays) {
+                if (!merged.contains(d)) {
+                    merged.add(d);
+                }
+            }
+            merged.sort(Comparator.reverseOrder());
+            pharmacyStockHistoryDays = merged;
         }
 
     }
@@ -165,41 +188,58 @@ public class StockHistoryController implements Serializable {
      * This method includes the stockQty and batchNo fields needed for hotfix compatibility.
      */
     public List<PharmacyBinCardDTO> findBinCardDTOs(Date fd, Date td, HistoryType ht, Department dep, Item i) {
-        StringBuilder jpql = new StringBuilder();
-        jpql.append("select new com.divudi.core.data.dto.PharmacyBinCardDTO(")
-                .append("s.id, s.pbItem.billItem.bill.id, s.createdAt, ")
-                .append("s.pbItem.billItem.bill.billType, ")
-                .append("s.pbItem.billItem.bill.billTypeAtomic, ")
-                .append("s.pbItem.billItem.item.name, ")
-                .append("s.pbItem.qty, s.pbItem.freeQty, ")
-                .append("s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, ")
-                .append("s.pbItem.billItem.item.dblValue, s.itemStock, ")
-                .append("s.stockQty, s.pbItem.itemBatch.batchNo")
-                .append(") from StockHistory s ")
-                .append("where s.createdAt between :fd and :td ")
-                .append("and s.pbItem is not null ")
-                .append("and s.pbItem.billItem is not null ")
-                .append("and s.pbItem.billItem.bill is not null ")
-                .append("and s.pbItem.billItem.item is not null ")
-                .append("and s.pbItem.itemBatch is not null ");
+        return findBinCardDTOs(fd, td, ht, dep, i, false);
+    }
 
+    public List<PharmacyBinCardDTO> findBinCardDTOs(Date fd, Date td, HistoryType ht, Department dep, Item i, boolean withArchive) {
+        String baseJpql = buildBinCardJpql("StockHistory");
+        Map<String, Object> m = buildBinCardParams(fd, td, ht, dep, i);
+        String liveJpql = applyBinCardFilters(baseJpql, ht, dep, i);
+        List<PharmacyBinCardDTO> results = new ArrayList<>(
+                (List<PharmacyBinCardDTO>) facade.findLightsByJpql(liveJpql, m, TemporalType.TIMESTAMP));
+        if (withArchive) {
+            String archiveJpql = applyBinCardFilters(buildBinCardJpql("StockHistoryArchive"), ht, dep, i);
+            results.addAll((List<PharmacyBinCardDTO>) archiveFacade.findLightsByJpql(archiveJpql, m, TemporalType.TIMESTAMP));
+            results.sort(Comparator.comparing(PharmacyBinCardDTO::getCreatedAt));
+        }
+        return results;
+    }
+
+    private String buildBinCardJpql(String entity) {
+        return "select new com.divudi.core.data.dto.PharmacyBinCardDTO("
+                + "s.id, s.pbItem.billItem.bill.id, s.createdAt, "
+                + "s.pbItem.billItem.bill.billType, "
+                + "s.pbItem.billItem.bill.billTypeAtomic, "
+                + "s.pbItem.billItem.item.name, "
+                + "s.pbItem.qty, s.pbItem.freeQty, "
+                + "s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, "
+                + "s.pbItem.billItem.item.dblValue, s.itemStock, "
+                + "s.stockQty, s.pbItem.itemBatch.batchNo"
+                + ") from " + entity + " s "
+                + "where s.createdAt between :fd and :td "
+                + "and s.pbItem is not null "
+                + "and s.pbItem.billItem is not null "
+                + "and s.pbItem.billItem.bill is not null "
+                + "and s.pbItem.billItem.item is not null "
+                + "and s.pbItem.itemBatch is not null ";
+    }
+
+    private Map<String, Object> buildBinCardParams(Date fd, Date td, HistoryType ht, Department dep, Item i) {
         Map<String, Object> m = new HashMap<>();
         m.put("fd", fd);
         m.put("td", td);
-        if (ht != null) {
-            jpql.append(" and s.historyType=:ht ");
-            m.put("ht", ht);
-        }
-        if (dep != null) {
-            jpql.append(" and s.department=:dep ");
-            m.put("dep", dep);
-        }
-        if (i != null) {
-            jpql.append(" and s.item=:i ");
-            m.put("i", i);
-        }
-        jpql.append(" order by s.createdAt");
-        return (List<PharmacyBinCardDTO>) facade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        if (ht != null) m.put("ht", ht);
+        if (dep != null) m.put("dep", dep);
+        if (i != null) m.put("i", i);
+        return m;
+    }
+
+    private String applyBinCardFilters(String jpql, HistoryType ht, Department dep, Item i) {
+        if (ht != null) jpql += " and s.historyType=:ht ";
+        if (dep != null) jpql += " and s.department=:dep ";
+        if (i != null) jpql += " and s.item=:i ";
+        jpql += " order by s.createdAt";
+        return jpql;
     }
 
     public void fillStockHistories(boolean withoutZeroStock) {
@@ -246,6 +286,15 @@ public class StockHistoryController implements Serializable {
             totalStockPurchaseValue += psh.getStockPurchaseValue();
             totalStockSaleValue += psh.getStockSaleValue();
         }
+        pharmacyStockHistoriesArchive = null;
+        if (includeArchived) {
+            String archiveJpql = jpql.replace("from StockHistory s", "from StockHistoryArchive s");
+            pharmacyStockHistoriesArchive = archiveFacade.findByJpql(archiveJpql, m, TemporalType.TIMESTAMP);
+            for (StockHistoryArchive sha : pharmacyStockHistoriesArchive) {
+                totalStockPurchaseValue += sha.getStockPurchaseValue();
+                totalStockSaleValue += sha.getStockSaleValue();
+            }
+        }
 
     }
 
@@ -255,6 +304,29 @@ public class StockHistoryController implements Serializable {
 
     public void fillStockHistoriesWithOutZero() {
         fillStockHistories(true);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock History" page -
+     * adds the report title, active filters, and a Printed By/At footer
+     * around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockHistory(Object document) {
+        if (!(document instanceof Workbook)) {
+            return;
+        }
+        Sheet sheet = ((Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Department Type", departmentType != null ? departmentType.getLabel() : "All"});
+        filterPairs.add(new String[]{"History Date", historyDate != null ? new SimpleDateFormat("dd MMMM yyyy hh:mm a").format(historyDate) : "All"});
+        filterPairs.add(new String[]{"Include Archived", includeArchived ? "Yes" : "No"});
+        excelController.insertExcelReportHeader(sheet, "Pharmacy Stock History Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void recordHistory() {
@@ -360,6 +432,11 @@ public class StockHistoryController implements Serializable {
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
     }
+
+    public boolean isIncludeArchived() { return includeArchived; }
+    public void setIncludeArchived(boolean includeArchived) { this.includeArchived = includeArchived; }
+
+    public List<StockHistoryArchive> getPharmacyStockHistoriesArchive() { return pharmacyStockHistoriesArchive; }
 
     public StockHistoryFacade getFacade() {
         return facade;

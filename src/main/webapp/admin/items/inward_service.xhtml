@@ -13,7 +13,7 @@
 
         <h:panelGroup >
             <h:form id="form"  >
-                <p:growl/>
+                <p:growl id="msg" showDetail="true"/>
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" for="gpDetail" />
 
@@ -75,9 +75,9 @@
                                         style="float: right"
                                         id="btnSave" 
                                         value="Save"  
-                                        action="#{inwardServiceController.saveSelected()}" 
+                                        action="#{inwardServiceController.saveSelected()}"
                                         class="ui-button-warning"
-                                        update="lstSelect selectFocus"
+                                        update="msg lstSelect selectFocus"
                                         process="btnSave gpDetail">
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
@@ -91,7 +91,19 @@
                                         <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtFullName"   value="#{inwardServiceController.current.fullName}" class="form-control" ></h:inputText>
                                         <p:outputLabel value="Item Code"/>
-                                        <p:inputText autocomplete="off" value="#{inwardServiceController.current.code}" class="form-control"/>
+                                        <h:panelGroup class="d-flex gap-2">
+                                            <p:inputText id="ServiceCode" autocomplete="off" value="#{inwardServiceController.current.code}" class="form-control"/>
+                                            <p:commandButton
+                                                class="ui-button-warning"
+                                                update="ServiceCode"
+                                                process="@this btnGenCode cmbIns cmbDep"
+                                                icon="fa fa-cog"
+                                                title="Auto Generate Code"
+                                                disabled="#{inwardServiceController.current.id ne null}"
+                                                id="btnGenCode"
+                                                action="#{inwardServiceController.generateCode()}">
+                                            </p:commandButton>
+                                        </h:panelGroup>
 
                                         <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                         <p:autoComplete 
@@ -108,8 +120,11 @@
                                         <p:selectBooleanCheckbox   id="chkBilledAs" value="#{inwardServiceController.billedAs}" itemLabel="Billed as a separate investigation"  >
                                             <p:ajax event="change" process="@this" update="billedAsIx" />
                                         </p:selectBooleanCheckbox>
-                                        <p:autoComplete   disabled="#{!inwardServiceController.billedAs}" 
-                                                          widgetVar="aIx1" id="billedAsIx" forceSelection="true" 
+                                        <p:autoComplete   
+                                            disabled="#{!inwardServiceController.billedAs}" 
+                                                          widgetVar="aIx1" 
+                                                          id="billedAsIx" 
+                                                          forceSelection="true" 
                                                           value="#{inwardServiceController.current.billedAs}" completeMethod="#{inwardServiceController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30">
                                         </p:autoComplete>
 

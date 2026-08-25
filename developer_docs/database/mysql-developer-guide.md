@@ -60,6 +60,47 @@ This guide covers MySQL database development, debugging, and maintenance practic
    chmod 600 ~/.config/hmis/credentials.txt
    ```
 
+## Local Development Databases
+
+Each developer machine configures its own Payara JDBC pools and JNDI names. Common databases used in this project:
+
+- **`rh`** — primary development database
+- **`ruhunu`** — useful secondary database with broader data coverage for testing pharmacy reports
+
+### Setting Up a Payara JDBC Pool (per machine)
+
+```bash
+# Create connection pool
+asadmin create-jdbc-connection-pool \
+  --datasourceclassname com.mysql.cj.jdbc.MysqlDataSource \
+  --restype javax.sql.DataSource \
+  --property "serverName=localhost:portNumber=3306:databaseName=<db>:user=<user>:password=<pass>:useSSL=false:allowPublicKeyRetrieval=true" \
+  <poolName>
+
+# Create JNDI resource
+asadmin create-jdbc-resource --connectionpoolid <poolName> jdbc/<jndiName>
+
+# Test
+asadmin ping-connection-pool <poolName>
+```
+
+### Uppercase Table Names
+
+The application requires **UPPERCASE table names**. If a restored database has lowercase tables, convert them:
+
+```bash
+mysql -u<user> -p<pass> <db_name> -e "
+SELECT CONCAT('RENAME TABLE \`', table_name, '\` TO \`temp_', table_name, '\`; ',
+              'RENAME TABLE \`temp_', table_name, '\` TO \`', UPPER(table_name), '\`;')
+FROM information_schema.tables
+WHERE table_schema = '<db_name>' AND table_name != UPPER(table_name);
+" --skip-column-names | mysql -u<user> -p<pass> <db_name>
+```
+
+Verify afterwards: the query `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='<db>' AND table_name != UPPER(table_name)` should return 0.
+
+See also: `src/main/webapp/resources/sql/UpperCase.sql` (reference only — always generate fresh from the actual database).
+
 ## MySQL Command Line Operations
 
 ### Basic Connection

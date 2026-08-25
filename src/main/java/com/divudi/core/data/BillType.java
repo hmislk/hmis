@@ -30,6 +30,7 @@ public enum BillType {
     OpdBill,
     OpdPreBill,
     InwardPaymentBill,
+    PostFinalBillInwardPayment,
     InwardFinalBill,
     InwardOriginalFinalBill,
     InwardProvisionalBill,
@@ -72,6 +73,7 @@ public enum BillType {
     PharmacyBhtIssue,
     PharmacyBhtPre,
     InwardPharmacyRequest,
+    InwardServiceItemRequest,
     @Deprecated
     StoreBhtIssue,
     StoreBhtPre,
@@ -171,10 +173,15 @@ public enum BillType {
     RecordShiftEndCash,
     FundTransferBill, // For transferring the total balance from one shift to another
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
+    FundTransferRequestBill, // For requesting a float transfer from another cashier
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
     WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
     ShiftShortage,
+    ShiftShortageSettlement,
     ShiftExcess,
+    HandoverProofMissing,
+    HandoverProofMissingSettlement,
+    PaymentSettlementBill, // For settling non-cash payments (card/cheque/slip/eWallet) with bank or processor
     PaymentTransfer,
     @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
@@ -196,6 +203,8 @@ public enum BillType {
 
     public String getLabel() {
         switch (this) {
+            case PaymentSettlementBill:
+                return "Payment Settlement Bill";
             case OpdBill:
                 return "OPD Bill";
             case PaymentBill:
@@ -208,6 +217,8 @@ public enum BillType {
                 return "Agent Payment Receive Bill";
             case InwardPaymentBill:
                 return "Inward Payment Receive Bill";
+            case PostFinalBillInwardPayment:
+                return "Post Final Bill Inward Payment Receive Bill";
             case PharmacyOrder:
                 return "Purchase Order Request";
             case PharmacyWholeSale:
@@ -329,6 +340,8 @@ public enum BillType {
                 return "Financial Auditing Bill";
             case FundTransferReceivedBill:
                 return "Fund Transfer Received Bill";
+            case FundTransferRequestBill:
+                return "Fund Transfer Request Bill";
             case RecordShiftEndCash:
                 return "Shift End Cash Record";
             default:

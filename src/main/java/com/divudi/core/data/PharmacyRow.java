@@ -7,6 +7,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -22,6 +23,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.data.dto.PharmacyMovementOutByItemDTO;
 import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
@@ -193,6 +195,13 @@ public class PharmacyRow implements Serializable {
     private BigDecimal valueOfStocksAtPurchaseRate = BigDecimal.ZERO;
     private BigDecimal valueOfStocksAtRetailSaleRate = BigDecimal.ZERO;
 
+    private double consumptionQty;
+    private double consumptionPurchaseValue;
+    private double consumptionCostValue;
+    private double consumptionRetailValue;
+
+    private String suppliers;
+
     private BigDecimal grossSaleRate = BigDecimal.ZERO;
     private BigDecimal discountRate = BigDecimal.ZERO;
     private BigDecimal marginRate = BigDecimal.ZERO;
@@ -208,6 +217,34 @@ public class PharmacyRow implements Serializable {
 
     public PharmacyRow(StockHistory stockHistory) {
         this.stockHistory = stockHistory;
+    }
+
+    /**
+     * Builds a row for the BY_ITEM movement-out report from a database-aggregated
+     * DTO. Mirrors the shape produced by {@code groupSaleDetailsByItems()} so the
+     * existing JSF table bindings (item.name, quantity, grossSaleValue,
+     * discountValue, marginValue, netSaleValue) keep working unchanged.
+     * Current stock and suppliers are filled in afterwards via batched queries.
+     */
+    public PharmacyRow(PharmacyMovementOutByItemDTO dto) {
+        this();
+        if (dto == null) {
+            return;
+        }
+        this.item = new Item();
+        this.item.setId(dto.getItemId());
+        this.item.setName(dto.getItemName());
+        this.item.setCode(dto.getItemCode());
+        Category cat = new Category();
+        cat.setName(dto.getCategoryName());
+        this.item.setCategory(cat);
+
+        this.quantity = dto.getQuantity() != null ? dto.getQuantity() : 0.0;
+        this.grossSaleValue = dto.getGrossValue() != null ? BigDecimal.valueOf(dto.getGrossValue()) : BigDecimal.ZERO;
+        this.discountValue = dto.getDiscountValue() != null ? BigDecimal.valueOf(dto.getDiscountValue()) : BigDecimal.ZERO;
+        this.marginValue = dto.getMarginValue() != null ? BigDecimal.valueOf(dto.getMarginValue()) : BigDecimal.ZERO;
+        this.netSaleValue = dto.getNetValue() != null ? BigDecimal.valueOf(dto.getNetValue()) : BigDecimal.ZERO;
+        this.rowType = "PharmacyMovementOutByItemDTO";
     }
 
     public PharmacyRow(Long id) {
@@ -1662,6 +1699,66 @@ public class PharmacyRow implements Serializable {
         this.staffTotal = totalItemStockValueAtCostRate != null ? totalItemStockValueAtCostRate : 0.0;
     }
 
+    /**
+     * DTO Constructor for Closing Stock Report (Item-wise) with Dosage Form.
+     * Same as the item-wise constructor above but includes dosageFormName.
+     */
+    public PharmacyRow(
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName, String dosageFormName,
+            Double itemStock,
+            Double itemStockValueAtPurchaseRate,
+            Double itemStockValueAtSaleRate,
+            Double itemStockValueAtCostRate,
+            Double institutionItemStock,
+            Double institutionItemStockValueAtPurchaseRate,
+            Double institutionItemStockValueAtSaleRate,
+            Double institutionItemStockValueAtCostRate,
+            Double totalItemStock,
+            Double totalItemStockValueAtPurchaseRate,
+            Double totalItemStockValueAtSaleRate,
+            Double totalItemStockValueAtCostRate) {
+
+        this(itemId, itemName, itemCode, categoryName, measurementUnitName,
+                itemStock, itemStockValueAtPurchaseRate, itemStockValueAtSaleRate, itemStockValueAtCostRate,
+                institutionItemStock, institutionItemStockValueAtPurchaseRate, institutionItemStockValueAtSaleRate, institutionItemStockValueAtCostRate,
+                totalItemStock, totalItemStockValueAtPurchaseRate, totalItemStockValueAtSaleRate, totalItemStockValueAtCostRate);
+
+        DosageForm df = new DosageForm();
+        df.setName(dosageFormName);
+        this.item.setDosageForm(df);
+    }
+
+    /**
+     * DTO Constructor for Closing Stock Report (Batch-wise) with Dosage Form.
+     * Same as the batch-wise constructor above but includes dosageFormName.
+     */
+    public PharmacyRow(
+            Long stockHistoryId,
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName, String dosageFormName,
+            Long batchId, String batchNo, Date dateOfExpire,
+            Double stockQty, Double purchaseRate, Double retailRate, Double costRate,
+            Double stockPurchaseValue, Double stockSaleValue, Double stockCostValue,
+            Double instituionBatchQty,
+            Double institutionBatchStockValueAtPurchaseRate,
+            Double institutionBatchStockValueAtSaleRate,
+            Double institutionBatchStockValueAtCostRate,
+            Double totalBatchQty,
+            Double totalBatchStockValueAtPurchaseRate,
+            Double totalBatchStockValueAtSaleRate,
+            Double totalBatchStockValueAtCostRate) {
+
+        this(stockHistoryId, itemId, itemName, itemCode, categoryName, measurementUnitName,
+                batchId, batchNo, dateOfExpire,
+                stockQty, purchaseRate, retailRate, costRate,
+                stockPurchaseValue, stockSaleValue, stockCostValue,
+                instituionBatchQty, institutionBatchStockValueAtPurchaseRate, institutionBatchStockValueAtSaleRate, institutionBatchStockValueAtCostRate,
+                totalBatchQty, totalBatchStockValueAtPurchaseRate, totalBatchStockValueAtSaleRate, totalBatchStockValueAtCostRate);
+
+        DosageForm df = new DosageForm();
+        df.setName(dosageFormName);
+        this.item.setDosageForm(df);
+    }
+
     public BillLight getBillLight() {
         return billLight;
     }
@@ -1692,5 +1789,45 @@ public class PharmacyRow implements Serializable {
 
     public void setValueOfStocksAtRetailSaleRate(BigDecimal valueOfStocksAtRetailSaleRate) {
         this.valueOfStocksAtRetailSaleRate = valueOfStocksAtRetailSaleRate;
+    }
+
+    public double getConsumptionQty() {
+        return consumptionQty;
+    }
+
+    public void setConsumptionQty(double consumptionQty) {
+        this.consumptionQty = consumptionQty;
+    }
+
+    public double getConsumptionPurchaseValue() {
+        return consumptionPurchaseValue;
+    }
+
+    public void setConsumptionPurchaseValue(double consumptionPurchaseValue) {
+        this.consumptionPurchaseValue = consumptionPurchaseValue;
+    }
+
+    public double getConsumptionCostValue() {
+        return consumptionCostValue;
+    }
+
+    public void setConsumptionCostValue(double consumptionCostValue) {
+        this.consumptionCostValue = consumptionCostValue;
+    }
+
+    public double getConsumptionRetailValue() {
+        return consumptionRetailValue;
+    }
+
+    public void setConsumptionRetailValue(double consumptionRetailValue) {
+        this.consumptionRetailValue = consumptionRetailValue;
+    }
+
+    public String getSuppliers() {
+        return suppliers;
+    }
+
+    public void setSuppliers(String suppliers) {
+        this.suppliers = suppliers;
     }
 }

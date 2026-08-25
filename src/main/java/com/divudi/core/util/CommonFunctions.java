@@ -467,6 +467,15 @@ public class CommonFunctions {
     public static Date getEndOfDay() {
         return getEndOfDay(new Date());
     }
+    
+    public static Date getPreviousDate(int yearsBack) {
+        if (yearsBack < 0) {
+            throw new IllegalArgumentException("yearsBack must be non-negative");
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -yearsBack);
+        return getStartOfDay(calendar.getTime());
+    }
 
     public static Date getEndOfDay(Date d) {
         if (d == null) {
@@ -696,6 +705,16 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
+    public static Date addDaysToDate(Date date, Long days) {
+        if (date == null) {
+            return null;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_MONTH, days.intValue());
+        return calendar.getTime();
+    }
+
     public static Date retiermentDate(Date dob) {
         if (dob == null) {
             dob = new Date();
@@ -727,6 +746,12 @@ public class CommonFunctions {
         cal.set(Calendar.DATE, 1);
         //////// // System.out.println("First : " + cal.getTime());
         return cal.getTime();
+    }
+
+    public static Date getDateMonthsAgo(int months) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -months);
+        return calendar.getTime();
     }
 
     public static Date getLastDayOfYear(Date date) {
@@ -1141,5 +1166,36 @@ public class CommonFunctions {
 
         // Convert Double to String
         return String.valueOf(value);
+    }
+
+    // Date range as string for file name
+    public static String dateRangeForFileName(Date from, Date to, String dateFormat) {
+        return dateRangeForFileName(from, to, dateFormat, false);
+    }
+
+    public static String dateRangeForFileName(Date from, Date to, String dateFormat, boolean singleDate) {
+        if (dateFormat == null || dateFormat.trim().isEmpty()) {
+            dateFormat = "dd-MM-yyyy";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        if (from != null && to != null) {
+            return sanitizeStringForDatabase(sdf.format(from) + "_to_" + sdf.format(to));
+        } else if (from != null && singleDate) {
+            return sanitizeStringForDatabase(sdf.format(from));
+        } else {
+            return "";
+        }
+    }
+
+    public boolean filterBySingleDate(Object value, Object filter, Locale locale) {
+        if (filter == null) return true;
+        if (value == null) return false;
+
+        java.time.LocalDate filterDate = (java.time.LocalDate) filter;
+        java.time.LocalDate rowDate = ((Date) value).toInstant()
+            .atZone(ZoneId.of("Asia/Colombo"))
+            .toLocalDate();
+
+        return rowDate.equals(filterDate);
     }
 }

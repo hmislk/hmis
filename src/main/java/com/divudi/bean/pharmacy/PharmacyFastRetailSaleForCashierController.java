@@ -151,6 +151,12 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return;
         }
+        
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return;
+        }
+        
         for (BillItem bi : getPreBill().getBillItems()) {
             if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), sessionController.getLoggedUser())) {
                 setZeroToQty(bi);

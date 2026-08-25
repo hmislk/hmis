@@ -118,67 +118,93 @@
                         </tr>
                     </table>
                 </div>
+
                 <div class="billline">
                     <hr/>
                 </div>
+
+                <div class="d-flex justify-content-center gap-2" style="font-size: 18px; font-weight: 700;">
+                    <h:outputText value="Payment Date Range"/>
+                    <h:outputText value="#{cc.attrs.bill.fromDate}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </h:outputText>
+                    <h:outputText value=" to " />
+                    <h:outputText value="#{cc.attrs.bill.toDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </h:outputText>
+                </div>
+
+                <div class="billline">
+                    <hr/>
+                </div>
+
                 <div class="billDetailsFiveFive" >
-                    <h:dataTable 
-                        value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
-                        var="bip" 
-                        style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
-
-                        <p:column style="text-align: center; margin-left: 10%" >
-                            <f:facet name="header" >
-                                <h:outputLabel value="" ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel 
-                                value="&emsp;"
-                                style="font-size:10px!important;" />
-                        </p:column>
-                        <p:column style="text-align: center;" >
-                            <f:facet name="header" >
-                                <h:outputLabel value="Bill No"  ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel 
-                                value="#{bip.referenceBill.deptId}"
-                                style="font-size:10pt!important;" />
-                        </p:column>
-                        <p:column style="text-align: center;" >
-                            <f:facet name="header" >
-                                <h:outputLabel value="Ref. Number"  ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel 
-                                value="#{bip.referenceBill.referenceNumber}"
-                                style="font-size:10pt!important;" />
-                        </p:column>
-
-                        <p:column style="text-align: center;" >
-                            <f:facet name="header" >
-                                <h:outputLabel value="Patient"  ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel 
-                                value="#{bip.referenceBill.patient.person.nameWithTitle}"
-                                style="font-size:10pt!important;" />
-                        </p:column>
-
-                        <h:column >
-                            <f:facet name="header" >
-                                <h:outputLabel value="Value"></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel 
-                                value="#{bip.netValue}" 
-                                class="d-flex"
-                                style="font-size: 10pt!important; text-align: right!important;" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </h:column>
-                    </h:dataTable>
+                    <table style="width: 95%!important; font-size: 11pt!important;" align="center" >
+                        <tr>
+                            <td><h:outputText value="Before Transaction Balance in Collecting Centre" /></td>
+                            <td style="text-align: right!important; padding-right: 15px;">
+                                <h:outputText value="#{cc.attrs.bill.ccBalanceBeforeTransaction}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><h:outputText value="After Transaction Balance in Collecting Centre" /></td>
+                            <td style="text-align: right!important; padding-right: 15px;">
+                                <h:outputText value="#{cc.attrs.bill.ccBalanceAfterTransaction}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><h:outputText value="Total Paying Amount ( According to CC Balance )" /></td>
+                            <td style="text-align: right!important; padding-right: 15px;">
+                                <h:outputText value="#{cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr><td colspan="2">&nbsp;</td></tr>
+                        <tr>
+                            <td><h:outputText value="Total Received from Collecting Centre" /></td>
+                            <td style="text-align: right!important; padding-right: 15px;">
+                                <h:outputText value="#{cc.attrs.bill.ccTotalReceived}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><h:outputText value="Transaction Amount" /></td>
+                            <td style="text-align: right!important; padding-right: 15px;">
+                                <h:outputText value="#{cc.attrs.bill.ccTransactionAmount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><h:outputText value="Excess Amount" /></td>
+                            <td style="text-align: right!important; padding-right: 15px;">
+                                <h:outputText value="#{cc.attrs.bill.ccExcessAmount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr><td colspan="2">&nbsp;</td></tr>
+                        <tr style="font-weight: bold;">
+                            <td><h:outputText value="Total Collection Centre Value" /></td>
+                            <td style="text-align: right!important; padding-right: 15px;">
+                                <h:outputText value="#{cc.attrs.bill.ccTotalCenterValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
                 <div class="billline">
                     <hr/>
                 </div>
                 <div  >
-                    <table style="width: 100%;">
+                    <table style="width: 98%;">
                         <tr>
                             <td  style="text-align: left; width: 60%; font-size: 20px!important;
                                  font-family:Verdana, Helvetica, sans-serif!important;
@@ -186,7 +212,7 @@
                                 &nbsp;&nbsp;
                                 <h:outputLabel value="Total Payment" />
                             </td>
-                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                            <td  style="text-align: right!important; width: 40%; padding-right: 15px; font-size: 20px!important;
                                  font-family:Verdana, Helvetica, sans-serif!important;
                                  font-weight: bold;">
                                 <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
@@ -202,12 +228,12 @@
                     <hr/>
                 </div>
 
-                <div class="footer" >
+                <div class="footer mt-3" >
                     <div class="row" >
-                        <div class="col-8" >
+                        <div class="col-7" >
 
                         </div>
-                        <div class="col-4" >
+                        <div class="col-5" style="font-size: 16px;">
                             <h:outputLabel value="--------------------------"/>
                             <h:outputLabel value="Cashier :  #{cc.attrs.bill.creater.webUserPerson.name}"/>
                         </div>

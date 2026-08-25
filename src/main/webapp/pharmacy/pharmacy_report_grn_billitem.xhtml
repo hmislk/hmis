@@ -80,13 +80,23 @@
                             <f:facet name="header">
                                 <p:outputLabel value="PO Number"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.poNo}"/>
+                            <p:commandLink
+                                value="#{i.poNo}"
+                                action="#{commonReport.navigateToViewPOBillFromGRNBillItemReport(i.poBillId)}"
+                                process="@this"
+                                rendered="#{i.poBillId ne null}"/>
+                            <h:outputText value="#{i.poNo}" rendered="#{i.poBillId eq null}"/>
                         </p:column>
                         <p:column headerText="GRN Number">
                             <f:facet name="header">
                                 <p:outputLabel value="GRN Number"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.grnNo}" />
+                            <p:commandLink
+                                value="#{i.grnNo}"
+                                action="#{commonReport.navigateToViewGrnBillFromGRNBillItemReport(i.grnBillId)}"
+                                process="@this"
+                                rendered="#{i.grnBillId ne null}"/>
+                            <h:outputText value="#{i.grnNo}" rendered="#{i.grnBillId eq null}"/>
                         </p:column>
                         <p:column headerText="PO Value" style="text-align: right;"
                                   rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}">

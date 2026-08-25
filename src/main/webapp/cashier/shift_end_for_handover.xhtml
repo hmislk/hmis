@@ -23,6 +23,17 @@
                                 <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
                                 <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
                             </h:panelGroup>
+
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}" style="float: right;">
+                                <p:commandButton
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('cashier/shift_end_for_handover')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ui-button-sm mx-2">
+                                </p:commandButton>
+                            </h:panelGroup>
                         </f:facet>
 
                         <h:panelGroup id="gpPrint" >
@@ -65,15 +76,26 @@
                                         <f:facet name="header">
                                             <div class="row" >
                                                 <div class="col" >
-                                                    <p:outputLabel value="Collected Payment Summary" class="font-weight-bold text-center" />
+                                                    <p:outputLabel value="Collected Payments to Handover Summary" class="font-weight-bold text-center" />
                                                 </div>
                                                 <div class="col" >
-                                                    <p:commandButton 
-                                                        class="ui-button-danger mx-2" 
-                                                        ajax="false" 
-                                                        value="End the Current Shift" 
+                                                    <h:panelGroup rendered="#{financialTransactionController.handoverRequiredButNotComplete}"
+                                                                  style="color:#856404; background-color:#fff3cd; border:1px solid #ffc107; border-radius:4px; padding:4px 8px; display:inline-block;" class="mx-2">
+                                                        <i class="pi pi-exclamation-triangle" style="margin-right:4px;"></i>
+                                                        <h:outputText value="Handover not complete. Please complete the handover before ending your shift." />
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{financialTransactionController.pendingFloatTransferBypassedForShiftEnd}"
+                                                                  style="color:#0c5460; background-color:#d1ecf1; border:1px solid #bee5eb; border-radius:4px; padding:4px 8px; display:inline-block;" class="mx-2">
+                                                        <i class="pi pi-info-circle" style="margin-right:4px;"></i>
+                                                        <h:outputText value="A float transfer is still pending. You are allowed to end the shift anyway ('Allow Shift End Without Handover Acceptance' is enabled)." />
+                                                    </h:panelGroup>
+                                                    <p:commandButton
+                                                        class="ui-button-danger mx-2"
+                                                        ajax="false"
+                                                        value="End the Current Shift"
                                                         action="#{financialTransactionController.settleShiftEnd()}"
-                                                        icon="pi pi-power-off" 
+                                                        icon="pi pi-power-off"
+                                                        disabled="#{financialTransactionController.handoverRequiredButNotComplete}"
                                                         onclick="return confirm('Are you sure you want to end the current shift?');">
                                                     </p:commandButton>
                                                 </div>
@@ -230,19 +252,65 @@
                                             </p:outputLabel>
                                         </h:panelGroup>
 
-                                        <!-- Grand Total -->
-                                        <p:outputLabel value="Grand Total"
+                                        <!-- Grand Total (Collections) -->
+                                        <p:outputLabel value="Collections Total"
                                                        style="text-align: left; font-weight: bold;" />
                                         <h:panelGroup layout="block" class="text-end">
-                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue + 
-                                                                    financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue + 
-                                                                    financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue + 
-                                                                    financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue + 
-                                                                    financialTransactionController.bundle.chequeValue + 
-                                                                    financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue + 
-                                                                    financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + 
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue +
+                                                                    financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue +
+                                                                    financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue +
+                                                                    financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue +
+                                                                    financialTransactionController.bundle.chequeValue +
+                                                                    financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue +
+                                                                    financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue +
                                                                     financialTransactionController.bundle.onlineSettlementValue+financialTransactionController.bundle.startBill.total}"
                                                            style="text-align: right; font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Float Sent (accepted) — only shown if non-zero -->
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0}">
+                                            <i class="pi pi-arrow-up-right" style="margin-right:5px; color:#dc3545;" />
+                                            <p:outputLabel value="Float Sent (Accepted)" style="color:#dc3545;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.floatOutTotal gt 0}">
+                                            <p:outputLabel value="#{0 - financialTransactionController.bundle.floatOutTotal}"
+                                                           style="color:#dc3545; font-weight:bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Float Received — only shown if non-zero -->
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.floatInTotal gt 0}">
+                                            <i class="pi pi-arrow-down-left" style="margin-right:5px; color:#28a745;" />
+                                            <p:outputLabel value="Float Received" style="color:#28a745;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.floatInTotal gt 0}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.floatInTotal}"
+                                                           style="color:#28a745; font-weight:bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Net To Handover — shown whenever there are any floats -->
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0 or financialTransactionController.bundle.floatInTotal gt 0}"
+                                                      style="border-top:2px solid #343a40; padding-top:4px;">
+                                            <i class="pi pi-wallet" style="margin-right:5px;" />
+                                            <p:outputLabel value="Net To Handover" style="font-weight:bold;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" class="text-end"
+                                                      rendered="#{financialTransactionController.bundle.floatOutTotal gt 0 or financialTransactionController.bundle.floatInTotal gt 0}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue +
+                                                                    financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue +
+                                                                    financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue +
+                                                                    financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue +
+                                                                    financialTransactionController.bundle.chequeValue +
+                                                                    financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue +
+                                                                    financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue +
+                                                                    financialTransactionController.bundle.onlineSettlementValue + financialTransactionController.bundle.startBill.total +
+                                                                    financialTransactionController.bundle.floatNetTotal}"
+                                                           style="font-weight:bold; font-size:1.1em;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </h:panelGroup>
@@ -503,19 +571,21 @@
                                         <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
                                     </p:column>
                                     <p:column  title="Denomination"  style="padding: 4px; width: 6em;">
-                                        <p:inputText 
-                                            class="text-end w-50" 
+                                        <p:inputText
+                                            class="text-end w-50"
                                             id="txtDenoQty"
-                                            value="#{deno.denominationQty}" 
+                                            value="#{deno.denominationQty}"
                                             style="width: 100%; padding: 3px;"
-                                            onfocus="this.select()">
+                                            onfocus="this.select()"
+                                            oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                             <f:convertNumber integerOnly="true" />
-                                            <p:ajax 
+                                            <f:validateLongRange minimum="0" />
+                                            <p:ajax
                                                 event="blur"
-                                                process="txtDenoQty" 
+                                                process="txtDenoQty"
                                                 listener="#{financialTransactionController.calculateTotalCashDenomination()}"
-                                                update="txtDenoVal" ></p:ajax>
-                                        </p:inputText>  
+                                                update="txtDenoVal :growl" ></p:ajax>
+                                        </p:inputText>
                                     </p:column>
                                     <p:column  style="padding: 4px; width: 8em;">
                                         <p:outputLabel

@@ -21,6 +21,7 @@ import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.SessionNumberGenerator;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.FeeChangeFacade;
@@ -382,7 +383,7 @@ public class ChannelScheduleController implements Serializable {
             if (bs.getBill() == null) {
                 continue;
             }
-            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+            if (bs.getBill().getPatient() == null || bs.getBill().getPatient().getPerson() == null || bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
                 continue;
             }
             Sms e = new Sms();
@@ -960,7 +961,7 @@ public class ChannelScheduleController implements Serializable {
             }
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
 
         getItems();
@@ -996,6 +997,20 @@ public class ChannelScheduleController implements Serializable {
 
         if (currentStaff == null) {
             JsfUtil.addErrorMessage("Plaese Select Doctor");
+            return true;
+        }
+
+        // Only Consultants are channelled. The channelling API publishes its
+        // doctor list from Consultant records only, while the session feeds
+        // resolve staff as Doctor (Consultant extends Doctor). A schedule
+        // created for any other staff type is therefore published with a
+        // doctor number that never appears in the doctor list, so booking
+        // agents receive bookable sessions they cannot map. Block it at
+        // creation. Existing schedules stay editable on purpose, so the
+        // sessions already in this state can still be corrected or retired.
+        if (current.getId() == null && !(currentStaff instanceof Consultant)) {
+            JsfUtil.addErrorMessage("Channel sessions can be created only for Consultants. "
+                    + "Please correct the staff record to a Consultant before adding a schedule.");
             return true;
         }
 
@@ -1205,6 +1220,12 @@ public class ChannelScheduleController implements Serializable {
         sessionInstances = fetchCreatedSessionsInstances(current);
     }
 
+    // session_instance_managment load sessionInstances and fees for service session
+    public void handleSessionSelectionSessionManagement() {
+        fillSessionInstance();
+        fillFees();
+    }
+
     public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {
         List<SessionInstance> items;
         String sql;
@@ -1298,6 +1319,7 @@ public class ChannelScheduleController implements Serializable {
             fc.getFee().setStaff(null);
             fc.getFee().setSpeciality(null);
             fc.getFee().setServiceSession(null);
+            fc.getFee().setItem(null);
             fc.setFeeChangeType(FeeChangeType.Channel);
             fc.setDone(false);
             feeChanges.add(fc);
@@ -1345,9 +1367,9 @@ public class ChannelScheduleController implements Serializable {
             if (changes.size() > 0) {
                 for (FeeChange c : changes) {
                     if ((fc.getFee().getFeeType() == c.getFee().getFeeType())
-                            && (fc.getFee().getName().equals(c.getFee().getName()))
-                            && (fc.getFee().getStaff().equals(c.getFee().getStaff()))
-                            && (fc.getFee().getSpeciality().equals(c.getFee().getSpeciality()))
+                            && java.util.Objects.equals(fc.getFee().getName(), c.getFee().getName())
+                            && java.util.Objects.equals(fc.getFee().getStaff(), c.getFee().getStaff())
+                            && java.util.Objects.equals(fc.getFee().getSpeciality(), c.getFee().getSpeciality())
                             && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {

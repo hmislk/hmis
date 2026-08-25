@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h:outputText value="IOU to Cash Conversion - Details" />
+                                <p:commandButton
+                                    value="Back to My Conversions"
+                                    icon="pi pi-arrow-left"
+                                    ajax="false"
+                                    class="ui-button-info ui-button-outlined"
+                                    action="#{iouBillController.navigateBackToMyIouConversions()}" />
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel header="Conversion Bill Details">
+                                    <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                        <h:outputText value="Bill No" />
+                                        <h:outputText value="#{iouBillController.selectedIouConversionBill.deptId}" />
+
+                                        <h:outputText value="Date / Time" />
+                                        <h:outputText value="#{iouBillController.selectedIouConversionBill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+
+                                        <h:outputText value="Created By" />
+                                        <h:outputText value="#{iouBillController.selectedIouConversionBill.creater.webUserPerson.nameWithTitle}" />
+
+                                        <h:outputText value="Total Value" />
+                                        <h:outputText value="#{iouBillController.selectedIouConversionBill.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+
+                                        <h:outputText value="Comment" />
+                                        <h:outputText value="#{iouBillController.selectedIouConversionBill.comments}" />
+
+                                        <h:outputText value="Status" />
+                                        <h:panelGroup>
+                                            <h:panelGroup rendered="#{iouBillController.selectedIouConversionBill.cancelled}">
+                                                <span class="badge bg-danger">Cancelled</span>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not iouBillController.selectedIouConversionBill.cancelled}">
+                                                <span class="badge bg-success">Active</span>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p:panel header="Payments">
+                                    <p:dataTable
+                                        value="#{iouBillController.selectedIouConversionBill.payments}"
+                                        var="pmt"
+                                        emptyMessage="No payments found">
+
+                                        <p:column headerText="Payment Method">
+                                            <h:outputText value="#{pmt.paymentMethod}" />
+                                        </p:column>
+
+                                        <p:column headerText="Value" style="text-align: right;">
+                                            <h:outputText value="#{pmt.paidValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3" rendered="#{not iouBillController.selectedIouConversionBill.cancelled}">
+                            <div class="col-12">
+                                <p:panel header="Cancel Conversion">
+                                    <p:outputLabel value="Cancellation Comment *" for="cancelComment" class="fw-bold" />
+                                    <p:inputTextarea
+                                        id="cancelComment"
+                                        value="#{iouBillController.cancellationComment}"
+                                        rows="3"
+                                        class="w-100 mt-1"
+                                        placeholder="Please provide a reason for cancelling this conversion (required)" />
+
+                                    <div class="mt-2 text-center">
+                                        <p:commandButton
+                                            value="Cancel Conversion"
+                                            icon="pi pi-times-circle"
+                                            ajax="false"
+                                            class="ui-button-danger"
+                                            action="#{iouBillController.cancelIouConversion()}"
+                                            onclick="if (!confirm('Are you sure you want to cancel this IOU to Cash conversion? The IOUs will be restored to your balance.')) return false;" />
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

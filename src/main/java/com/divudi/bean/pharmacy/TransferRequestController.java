@@ -8,11 +8,14 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.*;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
 import com.divudi.core.data.admin.PrivilegeInfo;
+import com.divudi.core.data.dto.ItemRatesDTO;
+import com.divudi.core.data.dto.search.ItemDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.util.BigDecimalUtil;
 import com.divudi.core.util.CommonFunctions;
@@ -37,6 +40,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.service.BillService;
+import com.divudi.service.StockService;
 
 import java.text.DecimalFormat;
 import java.util.logging.Level;
@@ -52,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -91,11 +96,15 @@ public class TransferRequestController implements Serializable {
     private DepartmentFacade departmentFacade;
     @EJB
     BillService billService;
+    @EJB
+    private StockService stockService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private PharmacyCalculation pharmacyBillBean;
     @Inject
@@ -113,6 +122,9 @@ public class TransferRequestController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill bill;
     private Bill transferRequestBillPre;
+    // Bill id used for navigation from DTO-driven tables (issue #22567) that
+    // only have the bill id available, not the full Bill entity.
+    private Long billId;
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
@@ -120,6 +132,11 @@ public class TransferRequestController implements Serializable {
     private boolean showAllBillFormats = false;
     private Department toDepartment;
     private List<Department> recentToDepartments;
+    private ItemDTO currentItemDto;
+    private ItemRatesDTO currentItemRates;
+    private List<String> cachedAvailableDeptTypesForDisplay;
+    private List<String> cachedLoggedDeptTypesForDisplay;
+    private List<String> cachedToDeptTypesForDisplay;
     // </editor-fold>
 
     public String navigateToCreateANewTransferRequest() {
@@ -132,6 +149,11 @@ public class TransferRequestController implements Serializable {
         toDepartment = null;
         bill = null;
         currentBillItem = null;
+        currentItemDto = null;
+        currentItemRates = null;
+        cachedAvailableDeptTypesForDisplay = null;
+        cachedLoggedDeptTypesForDisplay = null;
+        cachedToDeptTypesForDisplay = null;
         dealor = null;
         billItems = null;
         printPreview = false;
@@ -155,8 +177,9 @@ public class TransferRequestController implements Serializable {
     @Inject
     ItemController itemController;
     
-    public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
-        return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+    public List<ItemDTO> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
+        DepartmentType typeFilter = getBill().getDepartmentType();
+        return itemController.completeAmpAmppVmpVmppItemDtosForRequestingDepartment(query, toDepartment, typeFilter);
     }
 
     public String fillHeaderDataOfTransferRequest(String s, Bill b) {
@@ -249,6 +272,23 @@ public class TransferRequestController implements Serializable {
             return;
         }
 
+        // Auto-set department type on first item addition
+        if (getBill().getDepartmentType() == null) {
+            DepartmentType itemDeptType = getCurrentBillItem().getItem().getDepartmentType();
+            if (itemDeptType != null) {
+                getBill().setDepartmentType(itemDeptType);
+            } else {
+                // Default to Pharmacy type for items without department type
+                getBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item department type matches bill department type
+        if (!validateItemDepartmentType(getCurrentBillItem().getItem())) {
+            currentBillItem = null;
+            return;
+        }
+
         // User Input is getCurrentBillItem().getQty() > We should NOT change this programmitically
         // This user input needed to be recorded in pharmaceutical bill item and bill item Finance Details
         // pharmaceutical bill item qty will always be in units
@@ -260,14 +300,22 @@ public class TransferRequestController implements Serializable {
         Item item = bi.getItem();
 
         bi.setSearialNo(getBillItems().size());
-        ph.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(item, getSessionController().getDepartment()));
-        ph.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(item, getSessionController().getDepartment()));
+
+        if (currentItemRates != null) {
+            ph.setPurchaseRate(currentItemRates.getPurchaseRate());
+            ph.setRetailRateInUnit(currentItemRates.getRetailRate());
+        } else {
+            ph.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(item, getSessionController().getDepartment()));
+            ph.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(item, getSessionController().getDepartment()));
+        }
 
         updateFinancials(fd);
         getBillItems().add(bi);
         recalculateTransferRequestBillTotals();
 
         currentBillItem = null;
+        currentItemDto = null;
+        currentItemRates = null;
     }
 
     public void onEdit(BillItem tmp) {
@@ -277,6 +325,62 @@ public class TransferRequestController implements Serializable {
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    private final Map<BillItem, Double> availableQtyAtOrderingStoreCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getItem() == null || getToDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtOrderingStoreCache.computeIfAbsent(bi, this::calculateAvailableQtyAtOrderingStore);
+    }
+
+    private double calculateAvailableQtyAtOrderingStore(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(getToDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
+    public boolean isAvailableQtyShortAtOrderingStore(BillItem bi) {
+        return getAvailableQtyAtOrderingStore(bi) < bi.getQty();
+    }
+
+    private final Map<BillItem, Double> availableQtyAtRequestingDepartmentCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtRequestingDepartment(BillItem bi) {
+        if (bi == null || bi.getItem() == null
+                || transferRequestBillPre == null
+                || transferRequestBillPre.getFromDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtRequestingDepartmentCache.computeIfAbsent(bi, this::calculateAvailableQtyAtRequestingDepartment);
+    }
+
+    private double calculateAvailableQtyAtRequestingDepartment(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(transferRequestBillPre.getFromDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
+    // Value of the stock already available at the Ordering Store, priced at the
+    // same config-selected transfer rate (see determineTransferRate) already
+    // shown in the row's Transfer Rate/Transfer Value columns.
+    public double getTotalDrugAmountAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+        BigDecimal rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        if (rate == null) {
+            return 0.0;
+        }
+        return getAvailableQtyAtOrderingStore(bi) * rate.doubleValue();
     }
 
     public void saveBill() {
@@ -292,7 +396,20 @@ public class TransferRequestController implements Serializable {
 
     }
 
-    public void approveTransferRequestBill() {
+    // synchronized: defense in depth alongside navigateToApproveRequest() — serializes
+    // the final persist step on this session-scoped bean so a racing double-submit
+    // can't write the (already duplicated) billItems list twice.
+    public synchronized void approveTransferRequestBill() {
+        if (!isAuthorized("APPROVE_REQUEST", "PharmacyDisbursementRequestApproval")) {
+            return;
+        }
+        // Check if the pre-bill is already approved to prevent a queued double-submit
+        // (blocked on the synchronized lock above) from creating a second approved bill
+        // once the first call has finished.
+        if (transferRequestBillPre != null && transferRequestBillPre.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This transfer request is already approved");
+            return;
+        }
         if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
@@ -306,7 +423,9 @@ public class TransferRequestController implements Serializable {
         printPreview = true;
     }
 
-    public Bill createNewApprovedTransferRequestBill(Bill preBillToCreateApprovedBill, List<BillItem> transferRequestPreBillItems, Bill newApprovedBill) {
+    // synchronized: same re-entrancy guard as approveTransferRequestBill()/
+    // navigateToApproveRequest() above, applied at the actual persist step.
+    public synchronized Bill createNewApprovedTransferRequestBill(Bill preBillToCreateApprovedBill, List<BillItem> transferRequestPreBillItems, Bill newApprovedBill) {
         if (transferRequestPreBillItems == null || transferRequestPreBillItems.isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return null;
@@ -326,6 +445,16 @@ public class TransferRequestController implements Serializable {
         newApprovedBill.setFromInstitution(preBillToCreateApprovedBill.getFromInstitution());
         newApprovedBill.setToDepartment(preBillToCreateApprovedBill.getToDepartment());
         newApprovedBill.setToInstitution(preBillToCreateApprovedBill.getToInstitution());
+        // Bill.copy() above does not carry departmentType — stamp it explicitly so the
+        // approved request bill doesn't lose the type the PRE bill already had (#22146).
+        if (preBillToCreateApprovedBill.getDepartmentType() != null) {
+            newApprovedBill.setDepartmentType(preBillToCreateApprovedBill.getDepartmentType());
+        } else if (!transferRequestPreBillItems.isEmpty() && transferRequestPreBillItems.get(0).getItem() != null) {
+            DepartmentType firstItemType = transferRequestPreBillItems.get(0).getItem().getDepartmentType();
+            newApprovedBill.setDepartmentType(firstItemType != null ? firstItemType : DepartmentType.Pharmacy);
+        } else {
+            newApprovedBill.setDepartmentType(DepartmentType.Pharmacy);
+        }
 
         newApprovedBill.setCreatedAt(new Date());
         newApprovedBill.setCreater(sessionController.getLoggedUser());
@@ -519,10 +648,17 @@ public class TransferRequestController implements Serializable {
     public void saveTransferRequestPreBillAndBillItems() {
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
+        // fromDepartment (below) = the department creating this request; it is also the
+        // department that will later Save -> Finalize -> Approve it (maker-checker
+        // within itself). toDepartment only gets to see this bill AFTER approval, via
+        // its own separate Issue-for-Requests cycle. See the department-filter comment
+        // on SearchController.fillPharmacyTransferRequestsToApprove() (#23039) before
+        // changing which department is treated as the approver here.
         getTransferRequestBillPre().setToDepartment(getToDepartment());
         getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
         getTransferRequestBillPre().setFromInstitution(getSessionController().getInstitution());
+        getTransferRequestBillPre().setDepartmentType(getBill().getDepartmentType());
         if (getToDepartment().equals(getTransferRequestBillPre().getFromDepartment())) {
             JsfUtil.addErrorMessage("You cant request from you own department.");
             return;
@@ -609,6 +745,9 @@ public class TransferRequestController implements Serializable {
     }
 
     public void saveTranserRequestPreBill() {
+        if (!isAuthorized("REQUEST", "PharmacyDisbursementRequest")) {
+            return;
+        }
         if (errorsPresent()) {
             return;
         }
@@ -628,12 +767,20 @@ public class TransferRequestController implements Serializable {
         calculateBillTotalsFromItemsForTransferRequests(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
+        // Set the bill to the loaded bill so getBill() returns the existing bill with its department type
+        bill = transferRequestBillPre;
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
     
     
 
-    public String navigateToApproveRequest() {
+    // synchronized: the Approve Request button on the transfer-request-list-to-approve
+    // page has no double-click guard. This method clears and repopulates the
+    // session-scoped billItems field from the pre-bill's items; a double-click raced
+    // two concurrent calls through this clear-then-repopulate step, leaving billItems
+    // holding every line twice (issue: duplicate items on TREQ/RH/GRO/26/00074, same
+    // bug class as #21417/#21815/PR #22101, tracked generically under #22102).
+    public synchronized String navigateToApproveRequest() {
         Bill transferRequestBillTemp = transferRequestBillPre;
         recreate();
         transferRequestBillPre = transferRequestBillTemp;
@@ -675,7 +822,47 @@ public class TransferRequestController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
 
+    /**
+     * Navigation helper for DTO-driven tables that only have the bill id
+     * (not the full entity) available.
+     */
+    public String navigateToEditRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToEditRequest();
+    }
+
+    // synchronized for the same double-click defense-in-depth reason as navigateToApproveRequest()
+    public synchronized String navigateToApproveRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToApproveRequest();
+    }
+
+    public String navigateToViewApprovedRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Selected bill is no longer available");
+            return "";
+        }
+        printPreview = true;
+        return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
+    }
+
     public void finalizeTranserRequestPreBill() {
+        if (!isAuthorized("FINALIZE_REQUEST", "PharmacyDisbursementFinalizeRequest")) {
+            return;
+        }
         if (errorsPresent()) {
             return;
         }
@@ -737,6 +924,7 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setFromDepartment(sessionController.getDepartment());
         getTransferRequestBillPre().setToDepartment(toDepartment);
         getTransferRequestBillPre().setToInstitution(toDepartment.getInstitution());
+
         return "/pharmacy/pharmacy_transfer_request";
     }
 
@@ -755,7 +943,10 @@ public class TransferRequestController implements Serializable {
         if (bill == null) {
             return items;
         }
-        String jpql = "select bi from BillItem bi where bi.bill=:bill and bi.retired=false";
+        String jpql = "select bi from BillItem bi "
+                + "join fetch bi.item "
+                + "left join fetch bi.billItemFinanceDetails "
+                + "where bi.bill=:bill and bi.retired=false";
         Map m = new HashMap();
         m.put("bill", bill);
         items = billItemFacade.findByJpql(jpql, m);
@@ -816,6 +1007,14 @@ public class TransferRequestController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     public BillItemFacade getBillItemFacade() {
@@ -933,6 +1132,29 @@ public class TransferRequestController implements Serializable {
         this.toDepartment = toDepartment;
     }
 
+    /**
+     * Handles changes to the toDepartment selection.
+     * Validates that the current department type selection is still valid
+     * for the intersection of logged department and toDepartment.
+     * Resets department type to null if it's no longer valid.
+     */
+    public void handleToDepartmentChange() {
+        if (toDepartment == null) {
+            return;
+        }
+        cachedAvailableDeptTypesForDisplay = null;
+        cachedToDeptTypesForDisplay = null;
+
+        if (bill != null && bill.getDepartmentType() != null) {
+            List<DepartmentType> validTypes = getAvailableDepartmentTypesForTransfer();
+            if (!validTypes.contains(bill.getDepartmentType())) {
+                bill.setDepartmentType(null);
+                JsfUtil.addErrorMessage("Department type reset. The previously selected department type is not supported by " +
+                    toDepartment.getName() + ". Please select a valid department type.");
+            }
+        }
+    }
+
     private void updateFinancials(BillItemFinanceDetails fd) {
         if (fd == null || fd.getBillItem() == null) {
             return;
@@ -1001,105 +1223,65 @@ public class TransferRequestController implements Serializable {
         ph.setQtyPacks(qty.doubleValue());
     }
 
-    // ChatGPT contributed - Populate default rates when an item is selected
     public void populateRatesOnItemSelect() {
-        BillItem bi = getCurrentBillItem();
-        if (bi == null || bi.getItem() == null) {
+        if (currentItemDto == null || currentItemDto.getId() == null) {
             return;
         }
 
+        // Load the full correctly-typed entity (Amp/Ampp/Vmp/Vmpp) once
+        Item item = itemFacade.find(currentItemDto.getId());
+        if (item == null) {
+            return;
+        }
+        getCurrentBillItem().setItem(item);
+
+        // Fetch all three rates in a single DB query using the rate-lookup item
+        Item rateItem = itemFacade.getReference(currentItemDto.getRateItemId());
+        currentItemRates = pharmacyBean.getLastRatesForItem(rateItem, sessionController.getDepartment());
+
+        BillItem bi = getCurrentBillItem();
         PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
 
-        if (bi.getItem() instanceof Ampp) {
-            Ampp ampp = (Ampp) bi.getItem();
-            Amp amp = ampp.getAmp();
+        // Pack size: use DTO value (>0) or default to 1 for unit items
+        double rawDblValue = currentItemDto.getDblValue() != null ? currentItemDto.getDblValue() : 0.0;
+        boolean isPack = "Ampp".equals(currentItemDto.getItemTypeName()) || "Vmpp".equals(currentItemDto.getItemTypeName());
+        BigDecimal unitsPerPack = (isPack && rawDblValue > 0) ? BigDecimal.valueOf(rawDblValue) : BigDecimal.ONE;
+        fd.setUnitsPerPack(unitsPerPack);
 
-            fd.setUnitsPerPack(BigDecimal.valueOf(bi.getItem().getDblValue()));
+        BigDecimal transferRate = determineTransferRateFromRates(currentItemRates);
 
-            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(amp, sessionController.getDepartment());
-            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(amp, sessionController.getDepartment());
-            Double costRatePerUnit = pharmacyBean.getLastCostRate(amp, sessionController.getDepartment());
-            BigDecimal transferRate = determineTransferRate(amp);
-
-            ph.setPurchaseRate(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
-            ph.setPurchaseRatePack(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
-
-            ph.setRetailRate(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
-            ph.setRetailRatePack(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
-
-            ph.setRetailPackValue(0);
-
-            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit).multiply(fd.getUnitsPerPack()));
-            fd.setLineGrossRate(transferRate.multiply(fd.getUnitsPerPack()));
-
-        } else if (bi.getItem() instanceof Vmpp) {
-            Vmpp vmpp = (Vmpp) bi.getItem();
-            Vmp vmp = vmpp.getVmp();
-
-            fd.setUnitsPerPack(BigDecimal.valueOf(bi.getItem().getDblValue()));
-
-            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(vmp, sessionController.getDepartment());
-            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(vmp, sessionController.getDepartment());
-            Double costRatePerUnit = pharmacyBean.getLastCostRate(vmp, sessionController.getDepartment());
-            BigDecimal transferRate = determineTransferRate(vmp);
-
-            ph.setPurchaseRate(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
-            ph.setPurchaseRatePack(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
-
-            ph.setRetailRate(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
-            ph.setRetailRatePack(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
-
-            ph.setRetailPackValue(0);
-
-            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit).multiply(fd.getUnitsPerPack()));
-            fd.setLineGrossRate(transferRate.multiply(fd.getUnitsPerPack()));
-
-        } else if (bi.getItem() instanceof Amp) {
-            Amp amp = (Amp) bi.getItem();
-
-            fd.setUnitsPerPack(BigDecimal.ONE);
-
-            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(amp, sessionController.getDepartment());
-            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(amp, sessionController.getDepartment());
-            Double costRatePerUnit = pharmacyBean.getLastCostRate(amp, sessionController.getDepartment());
-            BigDecimal transferRate = determineTransferRate(amp);
-
-            ph.setPurchaseRate(purchaseRatePerUnit);
-            ph.setPurchaseRatePack(purchaseRatePerUnit);
-
-            ph.setRetailRate(retailRatePerUnit);
-            ph.setRetailRatePack(retailRatePerUnit);
-
-            ph.setRetailPackValue(0);
-
-            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit));
-            fd.setLineGrossRate(transferRate);
-
-        } else if (bi.getItem() instanceof Vmp) {
-            Vmp vmp = (Vmp) bi.getItem();
-
-            fd.setUnitsPerPack(BigDecimal.ONE);
-
-            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(vmp, sessionController.getDepartment());
-            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(vmp, sessionController.getDepartment());
-            Double costRatePerUnit = pharmacyBean.getLastCostRate(vmp, sessionController.getDepartment());
-            BigDecimal transferRate = determineTransferRate(vmp);
-
-            ph.setPurchaseRate(purchaseRatePerUnit);
-            ph.setPurchaseRatePack(purchaseRatePerUnit);
-
-            ph.setRetailRate(retailRatePerUnit);
-            ph.setRetailRatePack(retailRatePerUnit);
-
-            ph.setRetailPackValue(0);
-
-            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit));
+        if (isPack) {
+            ph.setPurchaseRate(currentItemRates.getPurchaseRate() * unitsPerPack.doubleValue());
+            ph.setPurchaseRatePack(currentItemRates.getPurchaseRate() * unitsPerPack.doubleValue());
+            ph.setRetailRate(currentItemRates.getRetailRate() * unitsPerPack.doubleValue());
+            ph.setRetailRatePack(currentItemRates.getRetailRate() * unitsPerPack.doubleValue());
+            fd.setLineCostRate(BigDecimal.valueOf(currentItemRates.getCostRate()).multiply(unitsPerPack));
+            fd.setLineGrossRate(transferRate.multiply(unitsPerPack));
+        } else {
+            ph.setPurchaseRate(currentItemRates.getPurchaseRate());
+            ph.setPurchaseRatePack(currentItemRates.getPurchaseRate());
+            ph.setRetailRate(currentItemRates.getRetailRate());
+            ph.setRetailRatePack(currentItemRates.getRetailRate());
+            fd.setLineCostRate(BigDecimal.valueOf(currentItemRates.getCostRate()));
             fd.setLineGrossRate(transferRate);
         }
+        ph.setRetailPackValue(0);
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
         recalculateTransferRequestBillTotals();
+    }
+
+    private BigDecimal determineTransferRateFromRates(ItemRatesDTO rates) {
+        boolean byPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean byCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        if (byPurchase) {
+            return BigDecimal.valueOf(rates.getPurchaseRate());
+        } else if (byCost) {
+            return BigDecimal.valueOf(rates.getCostRate());
+        } else {
+            return BigDecimal.valueOf(rates.getRetailRate());
+        }
     }
 
     // ChatGPT contributed - Recalculate item totals when gross rate changes
@@ -1332,6 +1514,44 @@ public class TransferRequestController implements Serializable {
         bfd.setLineNetTotal(lineNetTotalSum);
     }
 
+
+    private boolean validateItemDepartmentType(Item item) {
+        if (getBill().getDepartmentType() == null) return true;
+
+        DepartmentType itemDeptType = item.getDepartmentType();
+        DepartmentType billDeptType = getBill().getDepartmentType();
+
+        // For items without department type, treat as Pharmacy
+        if (itemDeptType == null) {
+            itemDeptType = DepartmentType.Pharmacy;
+        }
+
+        // Check if item type matches bill type
+        if (!itemDeptType.equals(billDeptType)) {
+            JsfUtil.addErrorMessage("Cannot add items from different department types. " +
+                "Transfer is set for " + billDeptType.getLabel() +
+                " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isDepartmentTypeLocked() {
+        return billItems != null && !billItems.isEmpty();
+    }
+
+    public void changeDepartmentType() {
+        // Reset items if department type is changed manually
+        if (billItems != null && !billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot change department type when items are already added");
+            return;
+        }
+
+        // Clear existing items and reset
+        billItems = new ArrayList<>();
+    }
+
     private BigDecimal determineTransferRate(Item item) {
         boolean byPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
         boolean byCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
@@ -1348,11 +1568,15 @@ public class TransferRequestController implements Serializable {
 
     public List<Department> getRecentToDepartments() {
         if (recentToDepartments == null) {
-            String jpql = "select distinct b.toDepartment from Bill b "
-                    + " where b.retired=false "
-                    + " and b.billTypeAtomic=:bt "
-                    + " and b.fromDepartment=:fd "
-                    + " order by b.id desc";
+            String jpql = "select distinct d from Bill b "
+                    + "join b.toDepartment d "
+                    + "left join fetch d.institution "
+                    + "where b.retired=false "
+                    + "and b.billTypeAtomic=:bt "
+                    + "and b.fromDepartment=:fd "
+                    + "and d.retired=false "
+                    + "and d.inactive=false "
+                    + "order by b.id desc";
             Map<String, Object> m = new HashMap<>();
             m.put("bt", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
             m.put("fd", sessionController.getDepartment());
@@ -1373,40 +1597,147 @@ public class TransferRequestController implements Serializable {
      * Get available department types for the current target department for display purposes
      * @return List of department type names that are enabled for pharmacy transactions
      */
-    public List<String> getAvailableDepartmentTypesForDisplay() {
-        List<String> displayTypes = new ArrayList<>();
+    /**
+     * Gets the intersection of department types supported by BOTH:
+     * 1. The logged user's department (from session)
+     * 2. The toDepartment (requesting department)
+     *
+     * This ensures users can only select department types that are valid
+     * for BOTH departments involved in the transfer.
+     *
+     * @return List of DepartmentType objects representing the intersection
+     */
+    public List<DepartmentType> getAvailableDepartmentTypesForTransfer() {
+        List<DepartmentType> intersection = new ArrayList<>();
+
+        if (toDepartment == null || sessionController.getDepartment() == null) {
+            return intersection;
+        }
+
+        // Get logged department's supported types
+        List<DepartmentType> loggedDeptTypes =
+            sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+
+        // Get toDepartment's supported types
+        List<DepartmentType> toDeptTypes =
+            getAvailableDepartmentTypesForToDepartment();
+
+        // Calculate intersection
+        for (DepartmentType dt : loggedDeptTypes) {
+            if (toDeptTypes.contains(dt)) {
+                intersection.add(dt);
+            }
+        }
+
+        return intersection;
+    }
+
+    /**
+     * Gets the department types supported by the toDepartment.
+     * Similar to SessionController logic but for the target department.
+     *
+     * @return List of DepartmentType objects supported by toDepartment
+     */
+    private List<DepartmentType> getAvailableDepartmentTypesForToDepartment() {
+        List<DepartmentType> types = new ArrayList<>();
 
         if (toDepartment == null) {
-            return displayTypes;
+            return types;
         }
 
-        // Check each department type configuration option
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Pharmacy Items In Pharmacy Transactions for " + toDepartment.getName(), true)) {
-            displayTypes.add("Pharmacy");
+        // Check each department type
+        for (DepartmentType depType : DepartmentType.values()) {
+            if (isDepartmentTypeAllowedForToDepartment(depType)) {
+                types.add(depType);
+            }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Lab Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Lab");
+        return types;
+    }
+
+    /**
+     * Checks if a specific department type is allowed for toDepartment.
+     * Mirrors the logic in SessionController for consistency.
+     *
+     * @param departmentType The department type to check
+     * @return true if allowed, false otherwise
+     */
+    private boolean isDepartmentTypeAllowedForToDepartment(DepartmentType departmentType) {
+        if (toDepartment == null || departmentType == null) {
+            return false;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Store Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Store");
-        }
+        String configKey = "Allow " + departmentType.getLabel() +
+                           " Items In Pharmacy Transactions for " +
+                           toDepartment.getName();
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Etu Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Emergency Treatment Unit (ETU)");
-        }
+        // Default values (matching SessionController logic)
+        // Pharmacy and Store default to true, others default to false
+        boolean defaultValue = (departmentType == DepartmentType.Pharmacy ||
+                               departmentType == DepartmentType.Store);
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Theatre Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Theatre");
-        }
+        return configOptionApplicationController.getBooleanValueByKey(configKey, defaultValue);
+    }
 
-        return displayTypes;
+    /**
+     * Get available department types for the current target department for display purposes.
+     * Now returns the intersection of logged department and toDepartment supported types.
+     *
+     * @return List of department type names that are enabled for pharmacy transactions
+     */
+    public List<String> getAvailableDepartmentTypesForDisplay() {
+        if (toDepartment == null) {
+            return new ArrayList<>();
+        }
+        if (cachedAvailableDeptTypesForDisplay == null) {
+            cachedAvailableDeptTypesForDisplay = new ArrayList<>();
+            for (DepartmentType dt : getAvailableDepartmentTypesForTransfer()) {
+                cachedAvailableDeptTypesForDisplay.add(dt.getLabel());
+            }
+        }
+        return cachedAvailableDeptTypesForDisplay;
+    }
+
+    public List<String> getLoggedDepartmentSupportedTypesForDisplay() {
+        if (sessionController.getDepartment() == null) {
+            return new ArrayList<>();
+        }
+        if (cachedLoggedDeptTypesForDisplay == null) {
+            cachedLoggedDeptTypesForDisplay = new ArrayList<>();
+            for (DepartmentType dt : sessionController.getAvailableDepartmentTypesForPharmacyTransactions()) {
+                cachedLoggedDeptTypesForDisplay.add(dt.getLabel());
+            }
+        }
+        return cachedLoggedDeptTypesForDisplay;
+    }
+
+    public List<String> getToDepartmentSupportedTypesForDisplay() {
+        if (toDepartment == null) {
+            return new ArrayList<>();
+        }
+        if (cachedToDeptTypesForDisplay == null) {
+            cachedToDeptTypesForDisplay = new ArrayList<>();
+            for (DepartmentType dt : getAvailableDepartmentTypesForToDepartment()) {
+                cachedToDeptTypesForDisplay.add(dt.getLabel());
+            }
+        }
+        return cachedToDeptTypesForDisplay;
+    }
+
+    public ItemDTO getCurrentItemDto() {
+        return currentItemDto;
+    }
+
+    public void setCurrentItemDto(ItemDTO currentItemDto) {
+        this.currentItemDto = currentItemDto;
+    }
+
+    public ItemRatesDTO getCurrentItemRates() {
+        return currentItemRates;
+    }
+
+    public void setCurrentItemRates(ItemRatesDTO currentItemRates) {
+        this.currentItemRates = currentItemRates;
     }
 
     public boolean isShowAllBillFormats() {
@@ -1714,6 +2045,36 @@ public class TransferRequestController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(requestListMetadata);
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Transfer Request
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. REQUEST, FINALIZE_REQUEST, APPROVE_REQUEST)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, bill != null ? bill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = bill != null ? bill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Transfer Request access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer requests.");
+            return false;
+        }
+
+        return true;
     }
 
 }

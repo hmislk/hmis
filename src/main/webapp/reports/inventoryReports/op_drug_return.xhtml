@@ -5,6 +5,14 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <style type="text/css">
+            .op-drug-return-cancellation-row td {
+                background-color: #fdecea;
+                color: #b71c1c;
+            }
+        </style>
+    </h:head>
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
@@ -45,18 +53,39 @@
                                 />
 
 
-                            <p:spacer width="20"></p:spacer>  
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    updateLabel="true"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
                                 <p:outputLabel value="Institution" for="phmIns" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu 
+                            <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
                                 value="#{pharmacyReportController.institution}"
@@ -64,7 +93,7 @@
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>        
+                            </p:selectOneMenu>
 
 
                             <p:spacer width="20"></p:spacer>
@@ -180,50 +209,49 @@
                                 class="ui-button- mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
+                                value="To Print"
+                                action="op_drug_return_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="OP Drug Return Report" 
-                                    target="tbl"  />
+                                value="Download"
+                                action="#{pharmacyReportController.exportOpDrugReturnToExcel()}">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="OP Drug Return Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportOpDrugReturnToPDF()}">
                             </p:commandButton>
 
                         </div>
 
 
-                        <p:dataTable id="tbl" 
-                                     value="#{pharmacyReportController.billItems}" 
-                                     var="row" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
+                        <p:dataTable id="tbl"
+                                     value="#{pharmacyReportController.billItems}"
+                                     var="row"
+                                     rowIndexVar="n"
+                                     paginator="true"
                                      paginatorPosition="bottom"
-                                     rows="10" 
+                                     rows="10"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                     rowStyleClass="#{row.bill.billTypeAtomic eq 'PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION' ? 'op-drug-return-cancellation-row' : null}">
 
                             <p:column headerText="Date">
                                 <h:outputText value="#{row.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Bill Type">
+                                <h:outputText value="#{row.bill.billTypeAtomic.label}" />
                             </p:column>
 
                             <p:column headerText="Item Name">

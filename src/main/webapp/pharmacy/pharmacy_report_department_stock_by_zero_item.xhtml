@@ -26,14 +26,10 @@
                             <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Generate Report"
                                              actionListener="#{reportsStock.fillDepartmentZeroItemStocks()}" />
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Download Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="zero_stock_items" />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="zero_stock_items" postProcessor="#{reportsStock.postProcessXLSZeroStockItem}"/>
                             </p:commandButton>
-                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" actionListener="#{reportsStock.prepareForPrint()}"
-                                             oncomplete="$('#frm\\:print').click()" update=":frm:tbl"/>
-                            <p:commandButton id="print" value="Actual print" style="display: none">
-                                <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl"/>
-                                <p:printer target=":frm:tbl" />
-                            </p:commandButton>
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false"
+                                             action="pharmacy_report_department_stock_by_zero_item_print?faces-redirect=true"/>
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
@@ -48,7 +44,17 @@
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
-                                <h:outputLabel value="Zero Stock Item Report - #{reportsStock.department.name}"/>
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="Zero Stock Item Report"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Institution: #{not empty reportsStock.institution ? reportsStock.institution.name : 'All'}   |   "/>
+                                            <h:outputText value="Site: #{not empty reportsStock.site ? reportsStock.site.name : 'All'}   |   "/>
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
                                 </f:facet>
 
                                 <p:column width="20px;" headerText="No" sortBy="#{ii}"

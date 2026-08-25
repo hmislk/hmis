@@ -1,0 +1,464 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="GRN Detailed Report Print" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="GRN Detailed Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print"
+                                        title="Print the GRN Detailed Report">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="grn?faces-redirect=true"
+                                        title="Return to GRN Report page">
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+                                
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                
+                                .header{
+                                    font-size: 16px!important;
+                                }
+                                
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A4 landscape;
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="GRN Detailed Report Print"/>
+                                        <h:panelGroup  rendered="#{pharmacyController.department ne null}">
+                                            <div class="d-flex gap-2">
+                                                <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
+                                                <h:outputText value="#{pharmacyController.department.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="d-flex justify-content-center mt-2" style="font-size:12px; flex-wrap:wrap; gap:16px;">
+    
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="From Date" style="font-weight:600;"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="To Date" style="font-weight:600;"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Site" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty pharmacyController.site ? 'All Sites' : pharmacyController.site.name}"/>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Store" style="font-weight:600;"/>
+                                            <h:outputText 
+                                                value="#{empty pharmacyController.toDepartment ? 'All Departments':pharmacyController.toDepartment.name}"/>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Item" style="font-weight:600;"/>
+                                            <h:outputText 
+                                                value="#{empty pharmacyController.selectedAmpDto ? 'All Items' :pharmacyController.selectedAmpDto.name}"/>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Category" style="font-weight:600;"/>
+                                            <h:outputText 
+                                                value="#{empty pharmacyController.category  ? 'All Categories' :pharmacyController.category.name}"/>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Dosage Form" style="font-weight:600;"/>
+                                            <h:outputText 
+                                                value="#{empty pharmacyController.dosageForm ? 'All Dosage forms' :pharmacyController.dosageForm.name}"/>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Department Type" style="font-weight:600;"/>
+                                            <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Report Type" style="font-weight:600;"/>
+                                            <h:outputText value="#{pharmacyController.reportType}"/>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div style="font-size: 6px;">
+    <table style="font-size: 6px; width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="width: 5mm; font-weight: 700; font-size: 6px;">
+                    <h:outputText value="S.No" style="margin-left: 1mm;"/>
+                </th>
+                <th style="width: 17mm; font-weight: 700; text-align: left; font-size: 6px;">
+                    <h:outputText value="GRN No" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 17mm; font-weight: 700; text-align: left; font-size: 6px;">
+                    <h:outputText value="PO No" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 17mm; font-weight: 700; text-align: left; font-size: 6px;">
+                    <h:outputText value="Invoice No" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 17mm; font-weight: 700; text-align: left; font-size: 6px;">
+                    <h:outputText value="Store Name" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 17mm; font-weight: 700; text-align: left; font-size: 6px;">
+                    <h:outputText value="Item Category" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Dosage Form" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Code" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: right; font-size: 6px;">
+                    <h:outputText value="Item" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: right; font-size: 6px;">
+                    <h:outputText value="Receiving Time" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Qty" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="UOM" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Rate" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Batch" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Expiry Date" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Supplier" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="MRP" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Discount" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Amount" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="Total Amount" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="PO Sub Total" style="margin-right: 1mm;"/>
+                </th>
+                <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
+                    <h:outputText value="GRN Sub Total" style="margin-right: 1mm;"/>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <ui:repeat value="#{pharmacyController.bills}" var="row" varStatus="i">
+                <!-- Bill-level group header row -->
+                <tr style="background-color: #d3dbea; font-weight: bold; font-size: 6px;">
+                    <td style="width: 5mm; text-align: left; font-size: 6px;">
+                        <h:outputText value="-" style="margin-left: 1mm;"/>
+                    </td>
+                    <td style="width: 17mm; text-align: left; font-size: 6px;">
+                        <h:outputText value="#{row.deptId}" style="margin-left: 1mm;"/>
+                    </td>
+                    <td style="width: 17mm; text-align: left; font-size: 6px;">
+                        <h:outputText value="#{row.referenceBill.deptId}" style="margin-left: 1mm;"/>
+                    </td>
+                    <td style="width: 17mm; text-align: left; font-size: 6px;">
+                        <h:outputText value="#{row.invoiceNumber eq null ? row.referenceBill.invoiceNumber : row.invoiceNumber}" style="margin-left: 1mm;"/>
+                    </td>
+                    <td style="width: 17mm; text-align: left; font-size: 6px;">
+                        <h:outputText value="-" style="margin-left: 1mm;"/>
+                    </td>
+                    <td style="width: 17mm; text-align: left; font-size: 6px;">
+                        <h:outputText value="-" style="margin-left: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: right; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: right; font-size: 6px;">
+                        <h:outputText value="#{row.createdAt}" style="margin-left: 1mm;">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: left; font-size: 6px;">
+                        <h:outputText value="#{row.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? row.toInstitution.name : row.fromInstitution.name}" style="margin-left: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: center; font-size: 6px;">
+                        <h:outputText value="-" style="margin-right: 1mm;"/>
+                    </td>
+                    <td style="width: 10mm; text-align: right; font-size: 6px;">
+                        <h:outputText value="#{row.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
+                               row.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ?
+                               -1 * row.referenceBill.netTotal : row.referenceBill.netTotal}" style="margin-right: 1mm;">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </td>
+                    <td style="width: 10mm; text-align: right; font-size: 6px;">
+                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+                <!-- Bill item detail rows -->
+                <ui:repeat value="#{row.billItems}" var="billItem" varStatus="j">
+                    <tr style="font-size: 6px;">
+                        <td style="width: 5mm; text-align: left; font-size: 6px;">
+                            <h:outputText value="#{i.index + 1}.#{j.index + 1}" style="margin-left: 1mm;"/>
+                        </td>
+                        <td style="width: 17mm; text-align: left; font-size: 6px;">
+                            <h:outputText value="-" style="margin-left: 1mm;"/>
+                        </td>
+                        <td style="width: 17mm; text-align: left; font-size: 6px;">
+                            <h:outputText value="-" style="margin-left: 1mm;"/>
+                        </td>
+                        <td style="width: 17mm; text-align: left; font-size: 6px;">
+                            <h:outputText value="-" style="margin-left: 1mm;"/>
+                        </td>
+                        <td style="width: 17mm; text-align: left; font-size: 6px;">
+                            <h:outputText value="#{billItem.bill.toDepartment.name ne null ?
+                                billItem.bill.toDepartment.name : billItem.bill.referenceBill.toDepartment.name}" style="margin-left: 1mm;"/>
+                        </td>
+                        <td style="width: 17mm; text-align: left; font-size: 6px;">
+                            <h:outputText value="#{billItem.item.category.name}" style="margin-left: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.item.dosageForm.name}" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.item.code}" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: right; font-size: 6px;">
+                            <h:outputText value="#{billItem.item.name}" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: right; font-size: 6px;">
+                            <h:outputText value="-" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.qty}" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.item.measurementUnit.name eq null ? '-' : billItem.item.measurementUnit.name}" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.pharmaceuticalBillItem.purchaseRate}" style="margin-right: 1mm;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.pharmaceuticalBillItem.itemBatch.batchNo}" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="margin-right: 1mm;">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
+                        </td>
+                        <td style="width: 10mm; text-align: left; font-size: 6px;">
+                            <h:outputText value="-" style="margin-left: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.pharmaceuticalBillItem.retailRate}" style="margin-right: 1mm;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </td>
+                        <td style="width: 10mm; text-align: center; font-size: 6px;">
+                            <h:outputText value="#{billItem.discount}" style="margin-right: 1mm;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </td>
+                        <td style="width: 10mm; text-align: right; font-size: 6px;">
+                            <h:outputText value="#{billItem.netValue}" style="margin-right: 1mm;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </td>
+                        <td style="width: 10mm; text-align: right; font-size: 6px;">
+                            <h:outputText value="#{billItem.bill.netTotal}" style="margin-right: 1mm;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </td>
+                        <td style="width: 10mm; text-align: right; font-size: 6px;">
+                            <h:outputText value="-" style="margin-right: 1mm;"/>
+                        </td>
+                        <td style="width: 10mm; text-align: right; font-size: 6px;">
+                            <h:outputText value="-" style="margin-right: 1mm;"/>
+                        </td>
+                    </tr>
+                </ui:repeat>
+            </ui:repeat>
+        </tbody>
+        <tfoot>
+            <tr style="font-size: 6px;">
+                <td colspan="20" style="width: 90mm; text-align: center; font-size: 6px;">
+                    <h:outputText value="Total" style="padding: 0px!important; margin: 0px!important; font-weight: bold; font-size: 6px;"/>
+                </td>
+                <td style="width: 10mm; text-align: right; font-size: 6px;">
+                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}" style="padding: 0px!important; margin: 0px!important; font-weight: bold; font-size: 6px;">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </td>
+                <td style="width: 10mm; text-align: right; font-size: 6px;">
+                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}" style="padding: 0px!important; margin: 0px!important; font-weight: bold; font-size: 6px;">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

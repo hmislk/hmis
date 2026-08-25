@@ -514,7 +514,7 @@ public class SupplierPaymentController implements Serializable {
             BillItem availableBillItem = new BillItem();
             availableBillItem.setSearialNo(generatedSerialNumber++);
             availableBillItem.setReferenceBill(b);
-            double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill(), billTypesListReturn));
+            double returned = Math.abs(getCreditBean().getGrnReturnValue(b, billTypesListReturn));
             availableBillItem.getReferenceBill().setTmpReturnTotal(returned);
             fillNetValueForBillItems(availableBillItem);
             billItems.add(availableBillItem);
@@ -2392,6 +2392,10 @@ public class SupplierPaymentController implements Serializable {
         hm.put("bta", BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION);
         hm.put("bill", b);
         BillItem supBillItem = getBillItemFacade().findFirstByJpql(jpql, hm);
+        if (supBillItem == null) {
+            JsfUtil.addErrorMessage("No supplier payment voucher found for this bill.");
+            return null;
+        }
         Bill supplierPaymentBill = supBillItem.getBill();
 
         if (supplierPaymentBill == null) {
@@ -2638,7 +2642,7 @@ public class SupplierPaymentController implements Serializable {
             return;
         }
         current = billService.reloadBill(current);
-        Bill newlyCreatedSupplierPaymentBill = new Bill();
+        Bill newlyCreatedSupplierPaymentBill = new BilledBill();
         newlyCreatedSupplierPaymentBill.copy(current);
         newlyCreatedSupplierPaymentBill.copyValue(current);
         newlyCreatedSupplierPaymentBill.setReferenceBill(current);
@@ -2978,15 +2982,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     private void setValues(Institution inst, String1Value5 dataTable5Value, List<BillType> billTypesBilled, List<BillType> billTypesReturned) {
@@ -3255,6 +3251,34 @@ public class SupplierPaymentController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
+    }
+
+    /**
+     * Id-based navigation to the GRN dealer payment print/preview page (issue
+     * #20523). Fetches the bill fresh (with items and fees) by id so callers
+     * driven by lightweight DTO search rows (which do not carry the full
+     * entity) can still navigate to {@code /dealerPayment/bill_dealor_all}
+     * exactly as the old entity-bound {@code f:setPropertyActionListener}
+     * wiring did.
+     *
+     * @param billId the id of the GRN payment bill to preview
+     * @return the navigation outcome, or {@code null} if the bill could not
+     * be found
+     */
+    public String navigateToDealerPaymentBillById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        setCurrent(tb);
+        setBillItems(tb.getBillItems());
+        setPrintPreview(true);
+        return "/dealerPayment/bill_dealor_all?faces-redirect=true";
     }
 
     public BillItemFacade getBillItemFacade() {

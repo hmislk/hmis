@@ -11,8 +11,16 @@
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
-                <h:form>
+                <h:form id="stockTakeForm">
                     <p:growl id="growl" life="3000" />
+
+                    <p:blockUI block="stockTakeForm" trigger="btnGenerateStockCount">
+                        <div style="text-align:center; padding: 20px; color: white;">
+                            <i class="fa fa-spinner fa-spin fa-3x" style="margin-bottom: 12px;"></i>
+                            <div style="font-size: 1.1em; font-weight: bold;">Generating initial stock counts, please wait...</div>
+                            <div style="font-size: 0.9em; margin-top: 6px;">This may take several minutes for departments with many items. Please do not close or refresh this page.</div>
+                        </div>
+                    </p:blockUI>
 
                     <p:panel header="Pharmacy Stock Take" styleClass="mb-3">
                         <!-- Location Selection Section -->
@@ -119,6 +127,28 @@
 
                         <p:divider />
 
+                        <!-- Department Type Filter Section -->
+                        <div class="mb-4">
+                            <h:outputText value="Department Type" styleClass="fw-bold d-block mb-3" />
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <p:outputLabel for="deptType" value="Department Type" styleClass="d-block mb-2"/>
+                                    <p:selectOneMenu id="deptType"
+                                                     styleClass="w-100"
+                                                     value="#{pharmacyStockTakeController.selectedDepartmentType}"
+                                                     title="Select the department type to include in this stock count (required)">
+                                        <f:selectItem itemLabel="-- Select Department Type --" itemValue="#{null}"/>
+                                        <f:selectItems value="#{pharmacyStockTakeController.availableDepartmentTypes}"
+                                                      var="dt"
+                                                      itemLabel="#{dt.name()}"
+                                                      itemValue="#{dt}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p:divider />
+
                         <!-- Stock Configuration Section -->
                         <div class="mb-4">
                             <h:outputText value="Stock Configuration" styleClass="fw-bold d-block mb-3" />
@@ -157,14 +187,15 @@
                         <!-- Action Section -->
                         <div class="d-flex flex-wrap gap-2 mt-3">
                             <p:commandButton
+                                id="btnGenerateStockCount"
                                 value="Generate Stock Taking Initial Stock Counts"
-                                action="#{pharmacyStockTakeController.generateStockCountBillAsync}"
+                                action="#{pharmacyStockTakeController.generateStockCountBill}"
                                 ajax="false"
                                 icon="fas fa-rocket"
                                 iconPos="left"
                                 styleClass="ui-button-success"
                                 style="min-width: 250px;"
-                                title="Generate stock count bill asynchronously - recommended for large departments"/>
+                                title="Generate stock count bill"/>
                         </div>
                     </p:panel>
                 </h:form>

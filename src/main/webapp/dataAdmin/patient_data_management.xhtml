@@ -1,0 +1,396 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="formPdm">
+                    <p:growl id="pdmGrowl" showDetail="true" />
+
+                    <p:tabView id="pdmTabs">
+
+                        <!-- ===== TAB 1: MANUAL MERGE ===== -->
+                        <p:tab title="Manual Merge"
+                               rendered="#{webUserController.hasPrivilege('MergePatients')}">
+                            <p:panel header="Merge Two Patients" class="m-1">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <p:outputLabel for="acPrimary" value="Primary Patient (survives)" />
+                                        <p:autoComplete id="acPrimary"
+                                                        value="#{patientMergeController.primaryPatient}"
+                                                        completeMethod="#{patientMergeController.completePrimaryPatient}"
+                                                        var="pt"
+                                                        itemLabel="#{pt.person.name} | #{pt.phn} | #{pt.person.nic}"
+                                                        itemValue="#{pt}"
+                                                        forceSelection="true"
+                                                        minQueryLength="2"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        dropdown="true">
+                                            <p:ajax event="itemSelect"
+                                                    process="acPrimary"
+                                                    update="panelPreview" />
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p:outputLabel for="acSecondary" value="Secondary Patient (will be deactivated)" />
+                                        <p:autoComplete id="acSecondary"
+                                                        value="#{patientMergeController.secondaryPatient}"
+                                                        completeMethod="#{patientMergeController.completeSecondaryPatient}"
+                                                        var="pt"
+                                                        itemLabel="#{pt.person.name} | #{pt.phn} | #{pt.person.nic}"
+                                                        itemValue="#{pt}"
+                                                        forceSelection="true"
+                                                        minQueryLength="2"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        dropdown="true">
+                                            <p:ajax event="itemSelect"
+                                                    process="acSecondary"
+                                                    update="panelPreview" />
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <!-- Side-by-side preview -->
+                                <h:panelGroup id="panelPreview" layout="block" styleClass="mt-3">
+                                    <p:panel header="Demographics Preview" class="m-1"
+                                             rendered="#{patientMergeController.primaryPatient ne null or patientMergeController.secondaryPatient ne null}">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h4>Primary</h4>
+                                                <p:panelGrid columns="2" styleClass="table table-sm" rendered="#{patientMergeController.primaryPatient ne null}">
+                                                    <h:outputText value="Name" /><h:outputText value="#{patientMergeController.primaryPatient.person.name}" />
+                                                    <h:outputText value="PHN" /><h:outputText value="#{patientMergeController.primaryPatient.phn}" />
+                                                    <h:outputText value="MRN" /><h:outputText value="#{patientMergeController.primaryPatient.code}" />
+                                                    <h:outputText value="NIC" /><h:outputText value="#{patientMergeController.primaryPatient.person.nic}" />
+                                                    <h:outputText value="DOB" /><h:outputText value="#{patientMergeController.primaryPatient.person.dob}"><f:convertDateTime pattern="yyyy-MM-dd" /></h:outputText>
+                                                    <h:outputText value="Phone" /><h:outputText value="#{patientMergeController.primaryPatient.person.phone}" />
+                                                </p:panelGrid>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h4>Secondary</h4>
+                                                <p:panelGrid columns="2" styleClass="table table-sm" rendered="#{patientMergeController.secondaryPatient ne null}">
+                                                    <h:outputText value="Name" /><h:outputText value="#{patientMergeController.secondaryPatient.person.name}" />
+                                                    <h:outputText value="PHN" /><h:outputText value="#{patientMergeController.secondaryPatient.phn}" />
+                                                    <h:outputText value="MRN" /><h:outputText value="#{patientMergeController.secondaryPatient.code}" />
+                                                    <h:outputText value="NIC" /><h:outputText value="#{patientMergeController.secondaryPatient.person.nic}" />
+                                                    <h:outputText value="DOB" /><h:outputText value="#{patientMergeController.secondaryPatient.person.dob}"><f:convertDateTime pattern="yyyy-MM-dd" /></h:outputText>
+                                                    <h:outputText value="Phone" /><h:outputText value="#{patientMergeController.secondaryPatient.person.phone}" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <div class="row g-2 mt-2">
+                                    <div class="col-md-8">
+                                        <p:outputLabel for="txtMergeReason" value="Merge Reason (optional)" />
+                                        <p:inputTextarea id="txtMergeReason"
+                                                         value="#{patientMergeController.mergeReason}"
+                                                         rows="2"
+                                                         class="w-100"
+                                                         autoResize="true" />
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <p:commandButton
+                                            id="btnMerge"
+                                            value="Merge"
+                                            icon="fa fa-compress-arrows-alt"
+                                            class="w-100 ui-button-warning"
+                                            ajax="false"
+                                            onclick="return confirm('This will permanently merge the secondary patient into the primary and deactivate the secondary. Continue?')"
+                                            action="#{patientMergeController.executeMerge()}" />
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </p:tab>
+
+                        <!-- ===== TAB 2: DETERMINISTIC SCAN ===== -->
+                        <p:tab title="Deterministic Scan"
+                               rendered="#{webUserController.hasPrivilege('MergePatients')}">
+                            <p:panel header="Scan by Exact NIC / PHN / MRN Match" class="m-1">
+                                <div class="row g-2 align-items-end mb-3">
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="txtDetMax" value="Max results (1–500)" />
+                                        <p:inputText id="txtDetMax"
+                                                     value="#{patientMergeController.detMaxResults}"
+                                                     class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:commandButton value="Scan by NIC" icon="fa fa-id-card"
+                                                         class="w-100"
+                                                         ajax="false"
+                                                         action="#{patientMergeController.scanByNic()}" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:commandButton value="Scan by PHN" icon="fa fa-id-badge"
+                                                         class="w-100"
+                                                         ajax="false"
+                                                         action="#{patientMergeController.scanByPhn()}" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:commandButton value="Scan by MRN" icon="fa fa-barcode"
+                                                         class="w-100"
+                                                         ajax="false"
+                                                         action="#{patientMergeController.scanByMrn()}" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:commandButton value="Scan All" icon="fa fa-search"
+                                                         class="w-100 ui-button-info"
+                                                         ajax="false"
+                                                         action="#{patientMergeController.scanAll()}" />
+                                    </div>
+                                </div>
+
+                                <p:dataTable id="tblDetResults"
+                                             value="#{patientMergeController.deterministicResults}"
+                                             var="pair"
+                                             emptyMessage="No duplicates found."
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorAlwaysVisible="false"
+                                             class="w-100">
+                                    <p:column headerText="Match On" width="80">
+                                        <h:outputText value="#{pair.matchReason}" />
+                                    </p:column>
+                                    <p:column headerText="Patient A">
+                                        <h:outputText value="#{pair.patientA.person.name}" /><br />
+                                        <small><h:outputText value="PHN: #{pair.patientA.phn}  NIC: #{pair.patientA.person.nic}  MRN: #{pair.patientA.code}" /></small>
+                                    </p:column>
+                                    <p:column headerText="Patient B">
+                                        <h:outputText value="#{pair.patientB.person.name}" /><br />
+                                        <small><h:outputText value="PHN: #{pair.patientB.phn}  NIC: #{pair.patientB.person.nic}  MRN: #{pair.patientB.code}" /></small>
+                                    </p:column>
+                                    <p:column headerText="Primary" width="200">
+                                        <p:selectOneMenu value="#{pair.selectedPrimary}" class="w-100">
+                                            <f:selectItem itemLabel="#{pair.patientA.person.name} (A)" itemValue="#{pair.patientA}" />
+                                            <f:selectItem itemLabel="#{pair.patientB.person.name} (B)" itemValue="#{pair.patientB}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column headerText="Actions" width="140">
+                                        <p:commandButton
+                                            value="Merge"
+                                            icon="fa fa-compress-arrows-alt"
+                                            class="ui-button-warning me-1"
+                                            ajax="false"
+                                            onclick="return confirm('Merge these two patients?')"
+                                            action="#{patientMergeController.mergeDeterministicPair(pair)}" />
+                                        <p:commandButton
+                                            value="Dismiss"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            ajax="false"
+                                            action="#{patientMergeController.dismissDeterministicPair(pair)}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:tab>
+
+                        <!-- ===== TAB 3: PROBABILISTIC SCAN ===== -->
+                        <p:tab title="Probabilistic Scan"
+                               rendered="#{webUserController.hasPrivilege('MergePatients')}">
+                            <p:panel header="Fuzzy Duplicate Scan (Name, DOB, Phone)" class="m-1">
+                                <div class="row g-2 align-items-end mb-3">
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="txtProbMax" value="Max pairs (1–1000)" />
+                                        <p:inputText id="txtProbMax"
+                                                     value="#{patientMergeController.probMaxPairs}"
+                                                     class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="txtProbThresh" value="Name threshold (0–1)" />
+                                        <p:inputText id="txtProbThresh"
+                                                     value="#{patientMergeController.probNameThreshold}"
+                                                     class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:commandButton value="Run Scan" icon="fa fa-search"
+                                                         class="w-100 ui-button-info"
+                                                         ajax="false"
+                                                         action="#{patientMergeController.runProbabilisticScan()}" />
+                                    </div>
+                                </div>
+
+                                <p:dataTable id="tblProbResults"
+                                             value="#{patientMergeController.probabilisticResults}"
+                                             var="pair"
+                                             emptyMessage="No suggestions found."
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorAlwaysVisible="false"
+                                             class="w-100">
+                                    <p:column headerText="Score" width="70">
+                                        <h:outputText value="#{pair.compositeScore}">
+                                            <f:convertNumber pattern="##0%" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient A">
+                                        <h:outputText value="#{pair.patientA.person.name}" /><br />
+                                        <small><h:outputText value="PHN: #{pair.patientA.phn}  DOB: " />
+                                            <h:outputText value="#{pair.patientA.person.dob}"><f:convertDateTime pattern="yyyy-MM-dd" /></h:outputText>
+                                        </small>
+                                    </p:column>
+                                    <p:column headerText="Patient B">
+                                        <h:outputText value="#{pair.patientB.person.name}" /><br />
+                                        <small><h:outputText value="PHN: #{pair.patientB.phn}  DOB: " />
+                                            <h:outputText value="#{pair.patientB.person.dob}"><f:convertDateTime pattern="yyyy-MM-dd" /></h:outputText>
+                                        </small>
+                                    </p:column>
+                                    <p:column headerText="Breakdown" width="160">
+                                        <small>
+                                            Name: <h:outputText value="#{pair.nameScore}"><f:convertNumber pattern="##0%" /></h:outputText><br />
+                                            DOB: <h:outputText value="#{pair.dobScore}"><f:convertNumber pattern="##0%" /></h:outputText><br />
+                                            Phone: <h:outputText value="#{pair.phoneScore}"><f:convertNumber pattern="##0%" /></h:outputText>
+                                        </small>
+                                    </p:column>
+                                    <p:column headerText="Primary" width="200">
+                                        <p:selectOneMenu value="#{pair.selectedPrimary}" class="w-100">
+                                            <f:selectItem itemLabel="#{pair.patientA.person.name} (A)" itemValue="#{pair.patientA}" />
+                                            <f:selectItem itemLabel="#{pair.patientB.person.name} (B)" itemValue="#{pair.patientB}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column headerText="Actions" width="140">
+                                        <p:commandButton
+                                            value="Merge"
+                                            icon="fa fa-compress-arrows-alt"
+                                            class="ui-button-warning me-1"
+                                            ajax="false"
+                                            onclick="return confirm('Merge these two patients?')"
+                                            action="#{patientMergeController.mergeProbabilisticPair(pair)}" />
+                                        <p:commandButton
+                                            value="Dismiss"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            ajax="false"
+                                            action="#{patientMergeController.dismissProbabilisticPair(pair)}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:tab>
+
+                        <!-- ===== TAB 4: MERGE HISTORY ===== -->
+                        <p:tab title="Merge History"
+                               rendered="#{webUserController.hasPrivilege('MergePatients')}">
+                            <p:panel header="Merge History" class="m-1">
+                                <div class="row g-2 align-items-end mb-3">
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="dtHistFrom" value="From" />
+                                        <p:datePicker id="dtHistFrom"
+                                                      value="#{patientMergeController.historyFromDate}"
+                                                      pattern="dd/MM/yyyy"
+                                                      class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="dtHistTo" value="To" />
+                                        <p:datePicker id="dtHistTo"
+                                                      value="#{patientMergeController.historyToDate}"
+                                                      pattern="dd/MM/yyyy"
+                                                      class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="cmbHistStatus" value="Status" />
+                                        <p:selectOneMenu id="cmbHistStatus"
+                                                         value="#{patientMergeController.historyStatus}"
+                                                         class="w-100">
+                                            <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                            <f:selectItems value="#{patientMergeController.mergeStatusValues}"
+                                                           var="s" itemLabel="#{s}" itemValue="#{s}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:outputLabel for="txtMergedBy" value="Merged By" />
+                                        <p:inputText id="txtMergedBy"
+                                                     value="#{patientMergeController.historyMergedByUsername}"
+                                                     placeholder="username"
+                                                     class="w-100" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <p:commandButton value="Search" icon="fa fa-search"
+                                                         class="w-100"
+                                                         ajax="false"
+                                                         action="#{patientMergeController.searchHistory()}" />
+                                    </div>
+                                </div>
+
+                                <p:dataTable id="tblHistory"
+                                             value="#{patientMergeController.historyResults}"
+                                             var="mr"
+                                             emptyMessage="No merge records found."
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorAlwaysVisible="false"
+                                             class="w-100">
+                                    <p:column headerText="Merge Date" width="140">
+                                        <h:outputText value="#{mr.mergeDate}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Colombo" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Merged By" width="120">
+                                        <h:outputText value="#{mr.mergedBy.name}" />
+                                    </p:column>
+                                    <p:column headerText="Primary Patient">
+                                        <h:outputText value="#{mr.primaryPatient.person.name}" /><br />
+                                        <small><h:outputText value="#{mr.primaryPatient.phn}" /></small>
+                                    </p:column>
+                                    <p:column headerText="Secondary Patient">
+                                        <h:outputText value="#{mr.secondaryPatient.person.name}" /><br />
+                                        <small><h:outputText value="#{mr.secondaryPatient.phn}" /></small>
+                                    </p:column>
+                                    <p:column headerText="Type" width="110">
+                                        <h:outputText value="#{mr.mergeType}" />
+                                    </p:column>
+                                    <p:column headerText="Reason">
+                                        <h:outputText value="#{mr.mergeReason}" />
+                                    </p:column>
+                                    <p:column headerText="Records" width="70">
+                                        <h:outputText value="#{patientMergeController.getAffectedRecordCount(mr)}" />
+                                    </p:column>
+                                    <p:column headerText="Status" width="90">
+                                        <p:tag value="ACTIVE" severity="success"
+                                               rendered="#{mr.status.name() eq 'ACTIVE'}" />
+                                        <p:tag value="REVERSED" severity="secondary"
+                                               rendered="#{mr.status.name() eq 'REVERSED'}" />
+                                    </p:column>
+                                    <p:column headerText="Actions" width="100">
+                                        <p:commandButton
+                                            value="Unmerge"
+                                            icon="fa fa-undo"
+                                            class="ui-button-danger"
+                                            rendered="#{mr.status.name() eq 'ACTIVE'}"
+                                            ajax="false"
+                                            onclick="return confirm('Reverse this merge? Affected records will be re-pointed back to the secondary patient.')"
+                                            action="#{patientMergeController.executeUnmerge()}">
+                                            <f:setPropertyActionListener
+                                                value="#{mr}"
+                                                target="#{patientMergeController.selectedMergeRecord}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:tab>
+
+                        <!-- ===== TAB 5: INACTIVE PATIENTS ===== -->
+                        <p:tab title="Inactive Patients">
+                            <p:panel header="Inactive Patients" class="m-1">
+                                <p:commandButton
+                                    value="View Inactive Patients"
+                                    ajax="false"
+                                    icon="fa fa-user-slash"
+                                    class="ui-button-secondary"
+                                    rendered="#{webUserController.hasPrivilege('AdminInactivePatients')}"
+                                    action="#{patientController.navigateToInactivePatients()}" />
+                            </p:panel>
+                        </p:tab>
+
+                    </p:tabView>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
