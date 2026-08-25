@@ -482,14 +482,21 @@ public class ChannelApi {
             }
         }
 
-        // Convert dateStr to Date
+        // Convert dateStr to Date. The date is optional: when it is absent the
+        // session lookup falls back to the configured "days to share with online
+        // booking agent" window. SimpleDateFormat.parse(null) throws
+        // NullPointerException rather than ParseException, so a missing date has
+        // to be screened out before parsing - otherwise it escapes this method
+        // and the caller gets an HTML error page instead of JSON.
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
         Date date = null;
 
-        try {
-            date = formatter.parse(dateStr);
-        } catch (ParseException e) {
-            date = null;
+        if (dateStr != null && !dateStr.trim().isEmpty()) {
+            try {
+                date = formatter.parse(dateStr);
+            } catch (ParseException e) {
+                date = null;
+            }
         }
 
         // Prepare the resultMap to hold doctor details
