@@ -59,10 +59,12 @@ import com.lowagie.text.pdf.PdfPTable;
 
 /**
  * Controller for the Admission Category Wise Admission Report (Issue #22103).
- * Rooted at Bill (the confirmed InwardFinalBill itself), so every financial
- * column is read straight off the row's own bill rather than being derived
- * per-admission. Built for 1M+ row bill tables: exactly 1 primary
- * DTO-projection query + 2 batched lookups, regardless of result size - no
+ * Rooted at PatientEncounter so admissions without a confirmed final bill
+ * still appear (with zero/blank financials) - the report must support
+ * filtering by admission status, including admissions not yet discharged
+ * or not yet finalized. The confirmed final bill (if any) is LEFT JOINed in
+ * for its own scalar fields, and financial columns are otherwise derived
+ * per-admission via 2 batched lookups regardless of result size - no
  * per-row queries, no entity/lazy-loading traversal.
  *
  * TODO(perf): for very large date ranges this still materializes the entire
@@ -99,15 +101,15 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
     private List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList;
 
     /**
-     * NOTE: identifies "this bill is the encounter's confirmed final bill" via
-     * {@code b.id = pe.finalBill.id} rather than the {@code Bill.confirmedFinalBill}
-     * flag - that denormalized flag is not reliably populated (observed 0 rows
-     * with it set true across all InwardFinalBill records in local test data,
-     * while patientEncounter.finalBill correctly points back at every one of
-     * them), so it silently drops every row when relied on as a hard filter.
+     * Rooted at PatientEncounter with a LEFT JOIN to its finalBill, so
+     * admissions that have not yet been discharged or settled still appear
+     * (with a null bill and zero financials) rather than being silently
+     * excluded - required for the "Admitted But Not Discharged" and
+     * "Discharged But Final Bill Not Completed" admission-status filters to
+     * return any rows at all.
      *
-     * Suggested composite index if EXPLAIN shows a full/range scan on bill:
-     * (bill_type, retired, cancelled, created_at).
+     * Suggested composite index if EXPLAIN shows a full/range scan on
+     * patient_encounter: (date_of_admission, discharged, payment_finalized).
      */
     public void processAdmissionCategoryWiseAdmissionReportNew() {
         if (fromDate == null || toDate == null) {
@@ -127,16 +129,13 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
                 .append("pe.admissionType, ")
                 .append("pe.paymentMethod, ")
                 .append("pe.paymentFinalized")
-                .append(") FROM Bill b ")
-                .append("LEFT JOIN b.patientEncounter pe ")
+                .append(") FROM PatientEncounter pe ")
+                .append("LEFT JOIN pe.finalBill b ")
                 .append("LEFT JOIN pe.patient pt ")
                 .append("LEFT JOIN pt.person per ")
-                .append("WHERE b.billType = :billType ")
-                .append("AND b.id = pe.finalBill.id ")
-                .append("AND b.retired = :ret ")
-                .append("AND b.cancelled = :can ")
-                .append("AND pe.id IS NOT NULL ")
-                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+                .append("WHERE pe.id IS NOT NULL ")
+                .append("AND (b IS NULL OR (b.billType = :billType AND b.retired = :ret AND b.cancelled = :can)) ")
+                .append("AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ");
 
         params.put("billType", BillType.InwardFinalBill);
         params.put("ret", false);
@@ -146,7 +145,7 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
         buildAdmissionCategoryFilterJpqlNew(jpql, params);
 
-        jpql.append("ORDER BY pe.bhtNo ");
+        jpql.append("ORDER BY pe.admissionType.name, pe.bhtNo ");
 
         try {
             admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) billFacade.findLightsByJpql(
@@ -173,9 +172,11 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
         }
 
         if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
-            // b IS the confirmed final bill (confirmedFinalBill = true above),
-            // so its own createdAt is the invoice-approved timestamp - no
-            // separate ad.finalBill hop needed here.
+            // b is the encounter's confirmed final bill (LEFT JOINed above);
+            // its own createdAt is the invoice-approved timestamp. Encounters
+            // with no final bill yet (b IS NULL) are naturally excluded by
+            // this comparison, which is correct - there is no invoice to
+            // have been approved.
             jpql.append("AND b.createdAt BETWEEN :iafd AND :iatd ");
             params.put("iafd", invoiceApprovedFromDate);
             params.put("iatd", invoiceApprovedToDate);
@@ -324,6 +325,7 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
                 + "AND b.cancelled = false "
                 + "AND b.billType = :bt "
                 + "AND b.id = b.patientEncounter.finalBill.id "
+                + "AND (bi.id IS NULL OR bi.retired = false) "
                 + "AND b.patientEncounter.id IN :ids "
                 + "GROUP BY b.patientEncounter.id, b.netTotal, b.discount, b.settledAmountBySponsor, "
                 + "b.settledAmountByPatient, bi.inwardChargeType";

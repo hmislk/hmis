@@ -134,7 +134,7 @@
                                             </h:outputText>
 
                                             <h:outputText value="Total Records:" styleClass="label"/>
-                                            <h:outputText value="#{admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionList.size()}"/>
+                                            <h:outputText value="#{empty admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionList ? 0 : admissionCategoryWiseAdmissionReportController.admissionCategoryWiseAdmissionList.size()}"/>
 
                                         </h:panelGrid>
                                     </div>
