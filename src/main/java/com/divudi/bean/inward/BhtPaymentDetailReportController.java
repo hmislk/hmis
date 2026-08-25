@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.BhtPaymentDetailDTO;
@@ -29,7 +30,9 @@ import javax.persistence.TemporalType;
 
 /**
  * Controller for BHT Deposit and Credit Settlement Detail Report.
- * One row per individual payment (deposit payment or CC settlement item).
+ * One row per individual payment (deposit payment, post-final-bill "Make
+ * Payment" settlement, or CC settlement item) - see
+ * {@link com.divudi.core.data.dto.BhtPaymentDetailDTO#getPaymentCategory()}.
  */
 @Named
 @SessionScoped
@@ -55,17 +58,29 @@ public class BhtPaymentDetailReportController implements Serializable {
     private List<BhtPaymentDetailDTO> reportRows;
     private double grandTotal;
     private double grandTotalCcSettlement;
+    private double grandTotalFinalPayments;
     /** Ordered map of payment method → deposit total; only methods with non-zero totals. */
     private Map<PaymentMethod, Double> totalByMethod = new LinkedHashMap<>();
     /** Payment methods in the order they appeared, for UI iteration. */
     private List<PaymentMethod> usedPaymentMethods = new ArrayList<>();
+    /**
+     * Ordered map of payment method → final-payment (post-final-bill "Make
+     * Payment") total. Kept separate from {@link #totalByMethod} (deposits)
+     * per issue #23262 - deposit and final-payment amounts must not be
+     * conflated in a single per-method total.
+     */
+    private Map<PaymentMethod, Double> finalPaymentTotalByMethod = new LinkedHashMap<>();
+    private List<PaymentMethod> usedFinalPaymentMethods = new ArrayList<>();
 
     public void generateReport() {
         reportRows = new ArrayList<>();
         grandTotal = 0;
         grandTotalCcSettlement = 0;
+        grandTotalFinalPayments = 0;
         totalByMethod = new LinkedHashMap<>();
         usedPaymentMethods = new ArrayList<>();
+        finalPaymentTotalByMethod = new LinkedHashMap<>();
+        usedFinalPaymentMethods = new ArrayList<>();
 
         List<PatientEncounter> encounters = fetchEncounters();
         if (encounters == null || encounters.isEmpty()) {
@@ -91,11 +106,43 @@ public class BhtPaymentDetailReportController implements Serializable {
                 row.setAmount(Math.abs(p.getPaidValue()));
                 row.setReferenceNo(p.getReferenceNo());
                 row.setCreditCompanyName("");
+                row.setPaymentCategory("Deposit");
                 reportRows.add(row);
                 double depositAmt = Math.abs(p.getPaidValue());
                 grandTotal += depositAmt;
                 if (p.getPaymentMethod() != null) {
                     totalByMethod.merge(p.getPaymentMethod(), depositAmt, Double::sum);
+                }
+            }
+
+            // Post-final-bill ("Make Payment") payments — one row per Payment record.
+            // Issue #23263: these were never queried here, so a BHT whose only
+            // recorded payment was a post-final settlement (no deposit, no CC
+            // settlement) was silently absent from this report.
+            List<Payment> finalPayments = fetchPostFinalPayments(enc);
+            for (Payment p : finalPayments) {
+                BhtPaymentDetailDTO row = new BhtPaymentDetailDTO();
+                row.setBhtNo(enc.getBhtNo());
+                row.setPatientName(patientName);
+                row.setAdmissionType(enc.getAdmissionType());
+                row.setDateOfAdmission(enc.getDateOfAdmission());
+                row.setDateOfDischarge(enc.getDateOfDischarge());
+                row.setBillNo(p.getBill() != null ? p.getBill().getDeptId() : "");
+                row.setCreatedAt(p.getCreatedAt());
+                row.setPaymentMethod(p.getPaymentMethod());
+                // Signed, not abs() - see fetchPostFinalPayments() javadoc: a
+                // cancelled final payment arrives as a separate negative-amount
+                // row rather than a cancelled flag, so each row must keep its
+                // real sign to show the full transaction trail.
+                row.setAmount(p.getPaidValue());
+                row.setReferenceNo(p.getReferenceNo());
+                row.setCreditCompanyName("");
+                row.setPaymentCategory("Final Payment");
+                reportRows.add(row);
+                grandTotal += p.getPaidValue();
+                grandTotalFinalPayments += p.getPaidValue();
+                if (p.getPaymentMethod() != null) {
+                    finalPaymentTotalByMethod.merge(p.getPaymentMethod(), p.getPaidValue(), Double::sum);
                 }
             }
 
@@ -118,18 +165,24 @@ public class BhtPaymentDetailReportController implements Serializable {
                 row.setAmount(bi.getNetValue());
                 row.setReferenceNo("");
                 row.setCreditCompanyName(companyName);
+                row.setPaymentCategory("CC Settlement");
                 reportRows.add(row);
                 grandTotal += bi.getNetValue();
                 grandTotalCcSettlement += bi.getNetValue();
             }
         }
 
-        // Build ordered list of used payment methods for UI iteration
+        // Build ordered lists of used payment methods for UI iteration
         usedPaymentMethods = new ArrayList<>(totalByMethod.keySet());
+        usedFinalPaymentMethods = new ArrayList<>(finalPaymentTotalByMethod.keySet());
     }
 
     public double getTotalForMethod(PaymentMethod pm) {
         return totalByMethod.getOrDefault(pm, 0.0);
+    }
+
+    public double getTotalForFinalPaymentMethod(PaymentMethod pm) {
+        return finalPaymentTotalByMethod.getOrDefault(pm, 0.0);
     }
 
     private List<PatientEncounter> fetchEncounters() {
@@ -210,6 +263,33 @@ public class BhtPaymentDetailReportController implements Serializable {
     }
 
     /**
+     * Fetch post-final-bill ("Make Payment") payments for this encounter.
+     *
+     * Deliberately does NOT filter on {@code p.cancelled} / {@code p.bill.cancelled}:
+     * mirrors {@link BhtPaymentSummaryReportController#fetchPostFinalPayments}
+     * - cancellation of a post-final-bill payment arrives as a separate
+     * negative-amount row of the same bill type rather than a cancelled flag
+     * on the original, so each row is kept as its own line (with its natural
+     * sign) instead of being filtered or netted here. Issue #23263.
+     */
+    private List<Payment> fetchPostFinalPayments(PatientEncounter enc) {
+        StringBuilder jpql = new StringBuilder("select p from Payment p"
+                + " where p.retired = false"
+                + " and p.bill.retired = false"
+                + " and p.bill.billType = :bt"
+                + " and p.bill.patientEncounter = :enc");
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PostFinalBillInwardPayment);
+        params.put("enc", enc);
+        if (paymentMethod != null) {
+            jpql.append(" and p.paymentMethod = :pm");
+            params.put("pm", paymentMethod);
+        }
+        jpql.append(" order by p.createdAt");
+        return paymentFacade.findByJpql(jpql.toString(), params);
+    }
+
+    /**
      * Fetch BillItems from INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED and
      * INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION bills that reference this encounter.
      * Deliberately does NOT filter on bi.bill.cancelled: cancelling a CC payment sets
@@ -246,8 +326,11 @@ public class BhtPaymentDetailReportController implements Serializable {
         reportRows = null;
         grandTotal = 0;
         grandTotalCcSettlement = 0;
+        grandTotalFinalPayments = 0;
         totalByMethod = new LinkedHashMap<>();
         usedPaymentMethods = new ArrayList<>();
+        finalPaymentTotalByMethod = new LinkedHashMap<>();
+        usedFinalPaymentMethods = new ArrayList<>();
     }
 
     private static Date startOfCurrentMonth() {
@@ -295,7 +378,13 @@ public class BhtPaymentDetailReportController implements Serializable {
 
     public double getGrandTotalCcSettlement() { return grandTotalCcSettlement; }
 
+    public double getGrandTotalFinalPayments() { return grandTotalFinalPayments; }
+
     public List<PaymentMethod> getUsedPaymentMethods() { return usedPaymentMethods; }
 
     public Map<PaymentMethod, Double> getTotalByMethod() { return totalByMethod; }
+
+    public List<PaymentMethod> getUsedFinalPaymentMethods() { return usedFinalPaymentMethods; }
+
+    public Map<PaymentMethod, Double> getFinalPaymentTotalByMethod() { return finalPaymentTotalByMethod; }
 }
