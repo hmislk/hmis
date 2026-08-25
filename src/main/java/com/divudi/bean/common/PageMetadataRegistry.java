@@ -96,6 +96,29 @@ public class PageMetadataRegistry implements Serializable {
                 "Controls visibility of the Settings button in print preview"
         ));
         registerPage(opdDoctorPaymentBillReprint);
+
+        PageMetadata bhtIssueReprintMetadata = new PageMetadata(
+                "ward/ward_pharmacy_reprint_bht_issue_bill_reprint",
+                "Inward Pharmacy BHT Issue Bill Reprint",
+                "Reprint an inward pharmacy BHT issue bill in various paper formats, with rate/value and discount amounts gated by privilege",
+                "PharmacyBillSearch"
+        );
+        bhtIssueReprintMetadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        bhtIssueReprintMetadata.addPrivilege(new PrivilegeInfo(
+                "NursingIPBillingViewRates",
+                "View drug rates, net values, and totals on the reprinted bill and its print formats",
+                "Rate radio selector; showRate attribute passed to all 5 print composites (issueBill, saleBill_prabodha, saleBill_five_five, A4_paper_with_headings, saleBill_Header_Inward); Gross Value/Net Value columns and Total/NetTotal footer in the on-page summary table"
+        ));
+        bhtIssueReprintMetadata.addPrivilege(new PrivilegeInfo(
+                "IPBillingViewDiscount",
+                "View discount amounts and margin/matrix-value (service charge equivalent) on the reprinted bill and its print formats",
+                "showDiscount attribute passed to all 5 print composites; Matrix Value column in the on-page summary table"
+        ));
+        registerPage(bhtIssueReprintMetadata);
     }
 
     /**

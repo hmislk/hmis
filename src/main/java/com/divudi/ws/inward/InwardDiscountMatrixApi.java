@@ -135,7 +135,9 @@ public class InwardDiscountMatrixApi {
             }
 
             StringBuilder jpql = new StringBuilder(
-                    "select a from InwardDiscountMatrix a where a.retired = false");
+                    "select a from InwardDiscountMatrix a"
+                    + " left join a.paymentScheme ps left join a.department dept left join a.category cat"
+                    + " where a.retired = false");
             Map<String, Object> params = new HashMap<>();
 
             if ("service".equals(scope)) {
@@ -178,7 +180,7 @@ public class InwardDiscountMatrixApi {
                 params.put("ccid", creditCompanyId);
             }
 
-            jpql.append(" order by a.paymentScheme.name, a.department.name, a.category.name");
+            jpql.append(" order by ps.name, dept.name, cat.name");
 
             List<PriceMatrix> rows = priceMatrixFacade.findByJpql(jpql.toString(), params, limit);
             List<Map<String, Object>> payload = new ArrayList<>();

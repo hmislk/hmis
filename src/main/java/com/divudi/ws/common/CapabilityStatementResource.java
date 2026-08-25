@@ -222,7 +222,8 @@ public class CapabilityStatementResource {
                         + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
                         + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
                         + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
-                        + "timedItemFeeDurationDaysForMoCharge.",
+                        + "timedItemFeeDurationDaysForMoCharge, timedItemFeeDurationUnit "
+                        + "(ONE_TIME | MINUTE | HOUR | DAY, default HOUR — what the hour fields are counted in).",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Facility Timed Items", "/api/inward/room-facility-charges/{id}/timed-items",
@@ -476,9 +477,18 @@ public class CapabilityStatementResource {
                         "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
                         + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
                         + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
-                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "durationUnit (ONE_TIME | MINUTE | HOUR | DAY, default HOUR) sets what durationHours/overShootHours are counted in. "
+                        + "sortOrder must be 1 or greater and unique per item — it is the billing slot position — and is auto-assigned "
+                        + "to the next free slot when omitted; the same rules apply on the fee page and on this API. "
+                        + "GET /search filters on query (name/code, case-insensitive), departmentType, inwardChargeType, categoryId, "
+                        + "departmentId, institutionId, inactive and includeRetired, and pages with limit + offset, returning "
+                        + "{items, total, limit, offset}. "
+                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management; PUT on that path replaces the whole slot "
+                        + "list atomically (slots absent from the body are retired). "
                         + "Sub-resource: /timed-items/categories for TimedItemCategory CRUD (GET list, GET /{id}, POST, PUT /{id}, DELETE /{id}). "
-                        + "PATCH /activate and /deactivate control availability without retiring.",
+                        + "PATCH /activate and /deactivate control availability without retiring. "
+                        + "DELETE only soft-retires; PATCH /{id}/restore and PATCH /{id}/fees/{feeId}/restore undo it, and "
+                        + "includeRetired=true on the read paths lists what was retired.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",

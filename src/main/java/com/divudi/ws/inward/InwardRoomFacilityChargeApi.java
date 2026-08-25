@@ -6,6 +6,7 @@
 package com.divudi.ws.inward;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.data.inward.TimedItemDurationUnit;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.WebUser;
@@ -177,7 +178,8 @@ public class InwardRoomFacilityChargeApi {
      * Body: { "name" (required), "departmentId" (required), "roomId", "roomCategoryId",
      *         "roomCharge", "maintananceCharge", "linenCharge", "nursingCharge",
      *         "moCharge", "moChargeForAfterDuration", "adminstrationCharge", "medicalCareCharge",
-     *         "timedItemFeeDurationHours", "timedItemFeeOverShootHours", "timedItemFeeDurationDaysForMoCharge" }
+     *         "timedItemFeeDurationHours", "timedItemFeeOverShootHours", "timedItemFeeDurationDaysForMoCharge",
+     *         "timedItemFeeDurationUnit" (ONE_TIME | MINUTE | HOUR | DAY, defaults to HOUR) }
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -242,14 +244,24 @@ public class InwardRoomFacilityChargeApi {
             charge.setCreatedAt(new Date());
             charge.setCreater(user);
 
-            // Build TimedItemFee (all parsing done above; now safe to persist)
+            // Build TimedItemFee (all parsing done above; now safe to persist).
+            // Start at the same explicit default RoomFacilityChargeController writes
+            // for a UI-created charge, so an omitted unit stores HOUR rather than
+            // leaving the column null and relying on the read-time default.
             TimedItemFee timedItemFee = new TimedItemFee();
+            timedItemFee.setDurationUnit(TimedItemDurationUnit.HOUR);
             Double durationHours = asDouble(body.get("timedItemFeeDurationHours"));
             if (durationHours != null) timedItemFee.setDurationHours(durationHours);
             Double overShootHours = asDouble(body.get("timedItemFeeOverShootHours"));
             if (overShootHours != null) timedItemFee.setOverShootHours(overShootHours);
             Long durationDaysForMoCharge = asLong(body.get("timedItemFeeDurationDaysForMoCharge"));
             if (durationDaysForMoCharge != null) timedItemFee.setDurationDaysForMoCharge(durationDaysForMoCharge);
+            TimedItemDurationUnit durationUnit = asDurationUnit(body.get("timedItemFeeDurationUnit"));
+            if (durationUnit != null) timedItemFee.setDurationUnit(durationUnit);
+            String durationError = validateBlockDuration(timedItemFee);
+            if (durationError != null) {
+                return errorResponse(durationError, 400);
+            }
             timedItemFeeFacade.create(timedItemFee);
 
             charge.setTimedItemFee(timedItemFee);
@@ -343,19 +355,27 @@ public class InwardRoomFacilityChargeApi {
             // Parse all timed values before any DB writes to avoid orphaned rows.
             if (body.containsKey("timedItemFeeDurationHours")
                     || body.containsKey("timedItemFeeOverShootHours")
-                    || body.containsKey("timedItemFeeDurationDaysForMoCharge")) {
+                    || body.containsKey("timedItemFeeDurationDaysForMoCharge")
+                    || body.containsKey("timedItemFeeDurationUnit")) {
                 Double newDurationHours = body.containsKey("timedItemFeeDurationHours") ? asDouble(body.get("timedItemFeeDurationHours")) : null;
                 Double newOverShootHours = body.containsKey("timedItemFeeOverShootHours") ? asDouble(body.get("timedItemFeeOverShootHours")) : null;
                 Long newDurationDays = body.containsKey("timedItemFeeDurationDaysForMoCharge") ? asLong(body.get("timedItemFeeDurationDaysForMoCharge")) : null;
+                TimedItemDurationUnit newDurationUnit = body.containsKey("timedItemFeeDurationUnit") ? asDurationUnit(body.get("timedItemFeeDurationUnit")) : null;
                 // All parsing done; now safe to write
                 TimedItemFee timedItemFee = charge.getTimedItemFee();
                 boolean needCreate = timedItemFee == null;
                 if (needCreate) {
                     timedItemFee = new TimedItemFee();
+                    timedItemFee.setDurationUnit(TimedItemDurationUnit.HOUR);
                 }
                 if (newDurationHours != null) timedItemFee.setDurationHours(newDurationHours);
                 if (newOverShootHours != null) timedItemFee.setOverShootHours(newOverShootHours);
                 if (newDurationDays != null) timedItemFee.setDurationDaysForMoCharge(newDurationDays);
+                if (newDurationUnit != null) timedItemFee.setDurationUnit(newDurationUnit);
+                String durationError = validateBlockDuration(timedItemFee);
+                if (durationError != null) {
+                    return errorResponse(durationError, 400);
+                }
                 if (needCreate) {
                     timedItemFeeFacade.create(timedItemFee);
                     charge.setTimedItemFee(timedItemFee);
@@ -649,6 +669,7 @@ public class InwardRoomFacilityChargeApi {
             tif.put("durationHours", r.getTimedItemFee().getDurationHours());
             tif.put("overShootHours", r.getTimedItemFee().getOverShootHours());
             tif.put("durationDaysForMoCharge", r.getTimedItemFee().getDurationDaysForMoCharge());
+            tif.put("durationUnit", r.getTimedItemFee().getDurationUnit().name());
             row.put("timedItemFee", tif);
         } else {
             row.put("timedItemFee", null);
@@ -712,6 +733,39 @@ public class InwardRoomFacilityChargeApi {
             return Long.parseLong(s);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid numeric id: '" + o + "'");
+        }
+    }
+
+    /**
+     * A time-based block with no duration bills nothing, for every stay, forever —
+     * {@code InwardBeanController.calCount()} returns 0 when the block length is 0.
+     * The sibling timed-item fee endpoint already rejects that combination
+     * (TimedItemFeeCreateRequestDTO.isValid); this keeps the two consistent rather
+     * than letting a room be created that silently never charges.
+     *
+     * @return an error message, or null when the fee is billable
+     */
+    private String validateBlockDuration(TimedItemFee fee) {
+        if (fee.isOneTime()) {
+            return null;
+        }
+        if (fee.getDurationHours() <= 0) {
+            return "timedItemFeeDurationHours must be greater than 0 for a "
+                    + fee.getDurationUnit().name() + " block"
+                    + " (use timedItemFeeDurationUnit=ONE_TIME for a flat charge).";
+        }
+        return null;
+    }
+
+    private TimedItemDurationUnit asDurationUnit(Object o) {
+        if (o == null) return null;
+        String s = o.toString().trim();
+        if (s.isEmpty()) return null;
+        try {
+            return TimedItemDurationUnit.valueOf(s.toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid timedItemFeeDurationUnit: '" + o
+                    + "'. Expected one of ONE_TIME, MINUTE, HOUR, DAY.");
         }
     }
 
