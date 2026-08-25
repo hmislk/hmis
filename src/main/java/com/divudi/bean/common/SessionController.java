@@ -947,13 +947,16 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public Department getDepartment() {
-        if (department == null) {
-            if (loggedUser == null) {
-                if (loggedUser.getDepartment() != null) {
-                    department = loggedUser.getDepartment();
-                }
-            }
-        }
+        // Intentionally no fallback to loggedUser.getDepartment() here: this
+        // getter backs the interactive login "Select Department" screen
+        // (template.xhtml renders it while sessionController.department is
+        // null), and loginActionWithoutDepartment() deliberately resets
+        // department to null so that screen shows. Auto-populating from the
+        // WebUser's persisted department would silently skip that screen for
+        // any returning user. Callers on API/loginForRequests() sessions that
+        // need a fallback (which never call setDepartment()) should use
+        // getLoggedUser().getDepartment() directly, as PatientInvestigationController
+        // already does.
         return department;
     }
 
@@ -2702,7 +2705,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public UserPreference getDepartmentPreference() {
-        //System.out.println("getting departmentPreference = " + departmentPreference);
+        if (departmentPreference == null) {
+            departmentPreference = getApplicationPreference();
+        }
         return departmentPreference;
     }
 

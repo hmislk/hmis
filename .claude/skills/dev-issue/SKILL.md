@@ -160,7 +160,7 @@ quirk, a new accessibility gap, a new verification pattern), append it to
 `developer_docs/testing/playwright-e2e-workflow.md` — same pattern as the
 §0a/§5a additions from issue #21499. Don't force this if nothing new came up.
 
-## 10. Publish evidence (wiki, issue, PR)
+## 10. Publish evidence and update the wiki
 
 Follow playwright-e2e
 [§8 Publishing screenshot evidence](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence)
@@ -172,22 +172,76 @@ Follow playwright-e2e
    evidence, redact patient identifiers, credentials, tokens, cookies, and
    other sensitive fields from the request/response bodies before they leave
    `tmp/`.
-2. Copy the durable, non-sensitive screenshots into `../hmis.wiki/images/`,
-   then commit and push the wiki from `../hmis.wiki`. Redacted API
-   request/response snippets aren't images — post them as fenced code blocks
-   directly in the issue comment/PR instead of adding them to the wiki.
-3. Add a comment (or update the description) on issue `$0`, embedding the
-   wiki images via their raw URLs
-   (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`)
-   or the redacted API snippets as code blocks. For bug issues where step 2a
-   ran, label and pair the step 2a "before" evidence with the step 7 "after"
-   evidence so the fix is visible as a comparison. For bug issues where step
-   2a was skipped (root cause already confirmed by reading code), there is
-   no "before" evidence — publish only the step 7 confirmation, with no
-   comparison implied.
-4. Remove the temporary screenshots/evidence from the project `tmp/` folder.
+2. Copy the durable, non-sensitive screenshots into `../hmis.wiki/images/`.
+   Redacted API request/response snippets aren't images — post them as fenced
+   code blocks in the issue/PR instead of adding them to the wiki.
 
-These wiki image URLs are reused in the PR description in step 13.
+3. **Update the wiki page(s) for the feature you changed.** This is a
+   required part of the work, not an optional extra — publishing an image
+   without wiring it into a page leaves it orphaned, which is why the wiki
+   currently has ~600 images but only ~55 pages that reference any.
+
+   a. **Find the page.** Search the sibling wiki repo for the feature by
+      name, page title, and menu path:
+      ```bash
+      cd ../hmis.wiki && ls *.md | grep -iE "<feature|module keyword>"
+      grep -ril "<feature name>" *.md | head
+      ```
+      Wiki pages are named after the user-facing screen
+      (e.g. `Inpatient-Nursing-Discharge.md`), so the page usually exists
+      even for a narrow bug fix.
+
+   b. **Embed the screenshots** with a relative path, plus a visible caption
+      beneath. Markdown alt text is not a rendered caption — it serves screen
+      readers, while an italic line under the image is what a sighted reader
+      skimming the page actually sees:
+      ```markdown
+      ![Nursing discharge blocked by pending pharmacy items](images/23222-fixed-discharge-blocked.png)
+
+      *Nursing discharge blocked: the pending pharmacy items are listed and Confirm stays disabled.*
+      ```
+
+   c. **Replace outdated images.** If the page already has a screenshot of a
+      screen your change altered — or one that simply looks nothing like the
+      current UI — replace it rather than appending a second, contradictory
+      one. Keeping the wiki current as the UI improves is part of the job.
+
+   d. **Correct any text the change makes wrong.** A page can document
+      intended behaviour that never actually worked. `Inpatient-Nursing-Discharge.md`
+      described the pending-pharmacy block as working while the check had
+      been silently dead since it shipped (issue #23222). If the fix changes
+      what a user sees or can do, reconcile the prose with reality — and if
+      the page described the behaviour correctly all along, say so in the PR
+      so the reviewer knows the page was checked, not skipped.
+
+   e. **If no page exists**, judge which case applies rather than defaulting:
+      - The change is user-visible (a screen, a workflow, a report, a
+        setting) → **create the page**, following the structure and tone of a
+        neighbouring page in the same module.
+      - The change is invisible to end users (an internal query fix with no
+        behavioural difference, a refactor, a build change) → **no page**;
+        the screenshot is evidence for the issue/PR only. Say which you chose
+        and why in the PR.
+
+4. Commit and push the wiki from `../hmis.wiki` — both the images and the
+   page edits, in one commit.
+
+5. Add a comment (or update the description) on issue `$0` that includes:
+   - the evidence — wiki images by raw URL
+     (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`)
+     or redacted API snippets as code blocks. For bug issues where step 2a
+     ran, label and pair the "before" and "after" evidence. Where step 2a was
+     skipped (root cause confirmed by reading code), publish only the step 7
+     confirmation, with no comparison implied.
+   - **a link to the wiki page(s) you updated**
+     (`https://github.com/hmislk/hmis/wiki/<Page-Name>`). The person who
+     raised the issue needs to see how the finished feature works, not just
+     that a fix landed.
+
+6. Remove the temporary screenshots/evidence from the project `tmp/` folder.
+
+The wiki image URLs **and the wiki page links** are both reused in the PR
+description in step 13.
 
 ## 11. Pre-push check
 
@@ -215,6 +269,14 @@ and summarize the Playwright + DB verification performed in steps 7-8
 (concrete enough that a reviewer trusts it was actually tested), and embed
 the same wiki-hosted screenshots from step 10 so reviewers can see the
 verified behavior without redeploying locally.
+
+It must also **link the wiki page(s) updated in step 10**
+(`https://github.com/hmislk/hmis/wiki/<Page-Name>`), under a short
+**Documentation** heading. Reviewers check the change against the documented
+behaviour, so a PR that alters what users see without showing the
+corresponding page edit can't be reviewed properly. If step 10 concluded no
+page was needed (internal-only change), say that explicitly instead — an
+absent Documentation section reads as forgotten, not as deliberate.
 
 ## 14. Review loop (until mergeable)
 

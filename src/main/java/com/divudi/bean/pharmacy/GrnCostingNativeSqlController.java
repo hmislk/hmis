@@ -257,7 +257,12 @@ public class GrnCostingNativeSqlController implements Serializable {
         insTotal = 0;
     }
 
-    public String navigateToResiveCostingWithSaveApprove() {
+    // synchronized: same double-click double-submit guard as finalize/approve below
+    // (issue #22194) - the "Receive" button (ajax="false", no confirm()) had no guard,
+    // letting two racing calls interleave generateBillComponent()'s appends and
+    // duplicate some PO lines in the in-memory draft (issue GRN item duplication,
+    // Ruhunu prod, 2026-08-21).
+    public synchronized String navigateToResiveCostingWithSaveApprove() {
         // Check for billId parameter (from DTO-based receive list)
         String billIdParam = JsfUtil.getRequestParameter("billId");
         if (billIdParam != null && !billIdParam.isEmpty()) {
@@ -406,7 +411,9 @@ public class GrnCostingNativeSqlController implements Serializable {
     // ==================================================================
     // Save / Finalize / Approve
     // ==================================================================
-    public void requestWithSaveApprove() {
+    // synchronized: the Save button has no double-click guard - see
+    // navigateToResiveCostingWithSaveApprove() above for the same bug class this closes.
+    public synchronized void requestWithSaveApprove() {
         if (!isAuthorized("REQUEST_WITH_SAVE_APPROVE", "PharmacyGrnSave")) {
             return;
         }

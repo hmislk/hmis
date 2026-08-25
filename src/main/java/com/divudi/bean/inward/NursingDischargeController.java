@@ -72,6 +72,18 @@ public class NursingDischargeController implements Serializable {
     // Pending pharmacy validation
     // -------------------------------------------------------------------------
 
+    /**
+     * Rebuilds the list of pharmacy transactions that block nursing discharge.
+     * <p>
+     * Every query below uses explicit {@code LEFT JOIN}s for {@code creater} and
+     * {@code toDepartment} rather than implicit path navigation
+     * ({@code b.toDepartment.name}). Implicit navigation through a nullable
+     * relationship generates an INNER JOIN, which silently drops every row whose
+     * FK is NULL - and {@code PharmacySaleBhtController.savePreBillFinally()}
+     * explicitly sets {@code toDepartment = null} on inward issue bills. That made
+     * the whole pending check return an empty list, so nursing discharge went
+     * through with medicines still awaiting ward receipt (issue #23222).
+     */
     public void loadPendingPharmacyItems() {
         pendingPharmacyItems = new ArrayList<>();
         if (currentEncounter == null) {
@@ -85,8 +97,12 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchPendingRequests() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic,"
+                + " COALESCE(createrPerson.name, ''), COALESCE(toDept.name, ''))"
                 + " FROM Bill b"
+                + " LEFT JOIN b.creater creater"
+                + " LEFT JOIN creater.webUserPerson createrPerson"
+                + " LEFT JOIN b.toDepartment toDept"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
                 + " AND b.cancelled = false"
@@ -100,8 +116,12 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnacceptedIssues() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic,"
+                + " COALESCE(createrPerson.name, ''), COALESCE(toDept.name, ''))"
                 + " FROM Bill b"
+                + " LEFT JOIN b.creater creater"
+                + " LEFT JOIN creater.webUserPerson createrPerson"
+                + " LEFT JOIN b.toDepartment toDept"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic IN :btas"
                 + " AND b.cancelled = false"
@@ -121,8 +141,12 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnacceptedWardReturns() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic,"
+                + " COALESCE(createrPerson.name, ''), COALESCE(toDept.name, ''))"
                 + " FROM Bill b"
+                + " LEFT JOIN b.creater creater"
+                + " LEFT JOIN creater.webUserPerson createrPerson"
+                + " LEFT JOIN b.toDepartment toDept"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
                 + " AND b.cancelled = false"
@@ -136,8 +160,12 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnprocessedDirectIssueReturns() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic, b.creater.webUserPerson.name, b.toDepartment.name)"
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic,"
+                + " COALESCE(createrPerson.name, ''), COALESCE(toDept.name, ''))"
                 + " FROM Bill b"
+                + " LEFT JOIN b.creater creater"
+                + " LEFT JOIN creater.webUserPerson createrPerson"
+                + " LEFT JOIN b.toDepartment toDept"
                 + " WHERE b.patientEncounter = :pe"
                 + " AND b.billTypeAtomic = :bta"
                 + " AND b.cancelled = false"

@@ -1545,7 +1545,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         HashMap hm = new HashMap();
         sql = "select c from Admission c"
                 + " where ((c.bhtNo) like :q or"
-                + " (c.patient.person.name) like :q ) "
+                + " (c.patient.person.name) like :q or"
+                + " (c.patient.code) like :q ) "
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findByJpql(sql, hm);
@@ -1559,7 +1560,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         HashMap hm = new HashMap();
         sql = "select c from Admission c"
                 + " where ((c.bhtNo) like :q or"
-                + " (c.patient.person.name) like :q ) "
+                + " (c.patient.person.name) like :q or"
+                + " (c.patient.code) like :q ) "
                 + " and c.paymentFinalized=true"
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
@@ -1593,7 +1595,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
                     + " and ( ((c.bhtNo) like :q )"
                     + " or ((c.patient.person.name) like :q ) "
-                    + " or ((c.patient.phn =:phn ))) order by c.bhtNo";
+                    + " or ((c.patient.phn =:phn )) "
+                    + " or ((c.patient.code) like :q )) order by c.bhtNo";
 
             h.put("q", "%" + query.toUpperCase() + "%");
             h.put("phn", query.toUpperCase());
@@ -1614,6 +1617,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and ( ((c.bhtNo) like :q ) "
                 + " or ((c.patient.person.name) like :q ) "
                 + " or ((c.patient.phn =:phn )) "
+                + " or ((c.patient.code) like :q ) "
                 + " or ((c.patient.person.phone) like :q ) "
                 + " or ((c.patient.person.mobile) like :q ) ) ";
         HashMap h = new HashMap();
@@ -1727,7 +1731,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " where c.retired=false "
                     + " and c.paymentFinalized=true "
                     + " and ((c.bhtNo) like :q "
-                    + " or (c.patient.person.name) like :q)"
+                    + " or (c.patient.person.name) like :q "
+                    + " or (c.patient.code) like :q)"
                     + "  order by c.bhtNo";
             ////// // System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
