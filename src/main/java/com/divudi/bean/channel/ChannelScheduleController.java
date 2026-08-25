@@ -21,6 +21,7 @@ import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.SessionNumberGenerator;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.FeeChangeFacade;
@@ -996,6 +997,20 @@ public class ChannelScheduleController implements Serializable {
 
         if (currentStaff == null) {
             JsfUtil.addErrorMessage("Plaese Select Doctor");
+            return true;
+        }
+
+        // Only Consultants are channelled. The channelling API publishes its
+        // doctor list from Consultant records only, while the session feeds
+        // resolve staff as Doctor (Consultant extends Doctor). A schedule
+        // created for any other staff type is therefore published with a
+        // doctor number that never appears in the doctor list, so booking
+        // agents receive bookable sessions they cannot map. Block it at
+        // creation. Existing schedules stay editable on purpose, so the
+        // sessions already in this state can still be corrected or retired.
+        if (current.getId() == null && !(currentStaff instanceof Consultant)) {
+            JsfUtil.addErrorMessage("Channel sessions can be created only for Consultants. "
+                    + "Please correct the staff record to a Consultant before adding a schedule.");
             return true;
         }
 

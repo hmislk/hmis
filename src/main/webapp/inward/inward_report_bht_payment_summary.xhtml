@@ -6,6 +6,16 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
+    <!--
+        Issue #23258: this page's title/URL/menu entry is "...Summary", but its
+        results table is intentionally bound to bhtPaymentDetailReportController
+        (one row per individual payment transaction) - not a typo. Related
+        issues #23260/#23262/#23263 (filed against "the Detail report") describe
+        exactly this controller's column set, confirming the reporter's mental
+        model: "Summary" = a plain payment log, "Detail" = the full per-BHT
+        financial breakdown now shown on inward_report_bht_payment_detail.xhtml.
+        See BhtPaymentDetailReportController's javadoc for the underlying data.
+    -->
     <h:body>
         <ui:composition template="/inward/inward_reports.xhtml">
             <ui:define name="subcontent">
@@ -23,7 +33,7 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
-                                value="#{bhtPaymentSummaryReportController.fromDate}"
+                                value="#{bhtPaymentDetailReportController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                             <p:spacer width="50" />
@@ -36,7 +46,7 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
-                                value="#{bhtPaymentSummaryReportController.toDate}"
+                                value="#{bhtPaymentDetailReportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                             <p:spacer width="50" />
@@ -48,7 +58,7 @@
                             <p:selectOneMenu
                                 id="dateBasisMenu"
                                 styleClass="w-100 form-control"
-                                value="#{bhtPaymentSummaryReportController.dateBasis}">
+                                value="#{bhtPaymentDetailReportController.dateBasis}">
                                 <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
                                 <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
                             </p:selectOneMenu>
@@ -60,7 +70,7 @@
                             <p:selectOneMenu
                                 id="admStatusMenu"
                                 styleClass="w-100 form-control"
-                                value="#{bhtPaymentSummaryReportController.admissionStatus}">
+                                value="#{bhtPaymentDetailReportController.admissionStatus}">
                                 <f:selectItems
                                     value="#{enumController.admissionStatuses}"
                                     var="s"
@@ -77,7 +87,7 @@
                             <p:selectOneMenu
                                 id="admTypeMenu"
                                 styleClass="w-100 form-control"
-                                value="#{bhtPaymentSummaryReportController.admissionType}">
+                                value="#{bhtPaymentDetailReportController.admissionType}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItems
                                     value="#{admissionTypeController.items}"
@@ -93,7 +103,7 @@
                                 <h:outputLabel value="Payment Method" for="pmMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="pmMenu" styleClass="w-100 form-control"
-                                             value="#{bhtPaymentSummaryReportController.paymentMethod}">
+                                             value="#{bhtPaymentDetailReportController.paymentMethod}">
                                 <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                             </p:selectOneMenu>
@@ -105,7 +115,7 @@
                             <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
-                                value="#{bhtPaymentSummaryReportController.institution}"
+                                value="#{bhtPaymentDetailReportController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -121,7 +131,7 @@
                             <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"
-                                value="#{bhtPaymentSummaryReportController.site}"
+                                value="#{bhtPaymentDetailReportController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -137,9 +147,9 @@
                             <h:panelGroup id="cmbDept">
 
                                 <p:selectOneMenu
-                                    rendered="#{bhtPaymentSummaryReportController.institution eq null and bhtPaymentSummaryReportController.site eq null}"
+                                    rendered="#{bhtPaymentDetailReportController.institution eq null and bhtPaymentDetailReportController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{bhtPaymentSummaryReportController.department}"
+                                    value="#{bhtPaymentDetailReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
@@ -149,38 +159,38 @@
                                 </p:selectOneMenu>
 
                                 <p:selectOneMenu
-                                    rendered="#{bhtPaymentSummaryReportController.institution eq null and bhtPaymentSummaryReportController.site ne null}"
+                                    rendered="#{bhtPaymentDetailReportController.institution eq null and bhtPaymentDetailReportController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{bhtPaymentSummaryReportController.department}"
+                                    value="#{bhtPaymentDetailReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtPaymentSummaryReportController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtPaymentDetailReportController.site)}"
                                         var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
 
                                 <p:selectOneMenu
-                                    rendered="#{bhtPaymentSummaryReportController.institution ne null and bhtPaymentSummaryReportController.site eq null}"
+                                    rendered="#{bhtPaymentDetailReportController.institution ne null and bhtPaymentDetailReportController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{bhtPaymentSummaryReportController.department}"
+                                    value="#{bhtPaymentDetailReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(bhtPaymentSummaryReportController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(bhtPaymentDetailReportController.institution)}"
                                         var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
 
                                 <p:selectOneMenu
-                                    rendered="#{bhtPaymentSummaryReportController.institution ne null and bhtPaymentSummaryReportController.site ne null}"
+                                    rendered="#{bhtPaymentDetailReportController.institution ne null and bhtPaymentDetailReportController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{bhtPaymentSummaryReportController.department}"
+                                    value="#{bhtPaymentDetailReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtPaymentSummaryReportController.institution, bhtPaymentSummaryReportController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtPaymentDetailReportController.institution, bhtPaymentDetailReportController.site)}"
                                         var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
 
@@ -191,14 +201,14 @@
                         <p:commandButton
                             value="Generate"
                             icon="fas fa-cogs"
-                            action="#{bhtPaymentSummaryReportController.generateReport()}"
+                            action="#{bhtPaymentDetailReportController.generateReport()}"
                             ajax="false"
                             class="ui-button-success m-1" />
 
                     </p:panel>
 
                     <p:panel id="pnlResults"
-                             rendered="#{bhtPaymentSummaryReportController.reportRows != null}">
+                             rendered="#{bhtPaymentDetailReportController.reportRows != null}">
 
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -232,7 +242,7 @@
 
                         <p:dataTable
                             id="tblReport"
-                            value="#{bhtPaymentSummaryReportController.reportRows}"
+                            value="#{bhtPaymentDetailReportController.reportRows}"
                             var="row"
                             emptyMessage="No records found"
                             paginator="true"
@@ -268,166 +278,73 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Deposit Cash" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.depositCash}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDepositCash}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
+                            <p:column headerText="Type" style="white-space:nowrap;">
+                                <h:outputText value="#{row.paymentCategory}" />
                             </p:column>
 
-                            <p:column headerText="Deposit Card" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.depositCard}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDepositCard}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
+                            <p:column headerText="Bill No" style="white-space:nowrap;">
+                                <h:outputText value="#{row.billNo}" />
                             </p:column>
 
-                            <p:column headerText="Deposit Other" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.depositOther}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                            <p:column headerText="Date / Time" style="white-space:nowrap;">
+                                <h:outputText value="#{row.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDepositOther}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Deposits" style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{row.totalDeposits}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDeposits}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
+                            <p:column headerText="Payment Method" style="white-space:nowrap;">
+                                <h:outputText value="#{row.paymentMethod != null ? row.paymentMethod.label : 'CC Settlement'}" />
                             </p:column>
 
-                            <p:column headerText="Post-Final Cash" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.postFinalCash}">
+                            <p:column headerText="Amount" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.amount}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalCash}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post-Final Card" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.postFinalCard}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalCard}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Post-Final Other" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.postFinalOther}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalOther}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Total Post-Final Payments" style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{row.totalPostFinalPayments}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalPayments}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Total Credit Billed" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.creditBilledTotal}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditBilled}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Credit Settled" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.creditSettlementTotal}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditSettlement}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Credit Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{row.creditBalance}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditBalance}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
+                            <p:column headerText="Reference No" style="white-space:nowrap;">
+                                <h:outputText value="#{row.referenceNo}" />
                             </p:column>
 
                             <p:column headerText="Credit Company">
-                                <h:outputText value="#{row.creditCompanyNames}" />
-                            </p:column>
-
-                            <p:column headerText="Final Bill No" style="white-space:nowrap;">
-                                <h:outputText value="#{row.finalBillNumber}" />
-                            </p:column>
-
-                            <p:column headerText="Total Bill Value" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.finalBillTotal}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalFinalBills}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Total Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{row.totalBalance}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalBalance}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
+                                <h:outputText value="#{row.creditCompanyName}" />
                             </p:column>
 
                             <f:facet name="footer">
                                 <div class="text-end">
-                                    <strong>Grand Total Deposits: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDeposits}">
+                                    <strong>Deposits — </strong>
+                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedPaymentMethods}" var="pm">
+                                        <strong>
+                                            <h:outputText value="#{pm.label}" />:
+                                        </strong>
+                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForMethod(pm)}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;
+                                    </ui:repeat>
+                                    &#160;&#160;&#160;
+                                    <strong>Final Payments — </strong>
+                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedFinalPaymentMethods}" var="pm">
+                                        <strong>
+                                            <h:outputText value="#{pm.label}" />:
+                                        </strong>
+                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForFinalPaymentMethod(pm)}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;
+                                    </ui:repeat>
+                                    <strong>Total Final: </strong>
+                                    <h:outputText value="#{bhtPaymentDetailReportController.grandTotalFinalPayments}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Credit Settlements: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditSettlement}">
+                                    <strong>CC Settlement: </strong>
+                                    <h:outputText value="#{bhtPaymentDetailReportController.grandTotalCcSettlement}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <strong>Grand Total: </strong>
+                                    <h:outputText value="#{bhtPaymentDetailReportController.grandTotal}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </div>
