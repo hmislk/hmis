@@ -115,6 +115,7 @@ public enum Privileges {
     InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
     InwardFinalBillRetire("Inward Final Bill Retire"),
     InwardFinalBillEmail("Inward Final Bill Email"),
+    InwardFinalBillApprove("Inward Final Bill Approve"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     // Inpatient Dashboard - Reports Panel individual button privileges (issue: admission_profile.xhtml Reports panel)
@@ -693,6 +694,7 @@ public enum Privileges {
     PharmacyTransfer("Pharmacy Transfer"),
     PharmacyTransferViewRates("Pharmacy Transfer View Rates"),
     NursingIPBillingViewRates("Nursing IP Billing View Rates"),
+    IPBillingViewDiscount("IP Billing View Discount"),
     IPRequestViewRates("IP Request View Rates"),
     StockRequestViewRates("Stock Request View Rates"),
     ConsumptionViewRates("Consumption View Rates"),
@@ -1379,6 +1381,7 @@ public enum Privileges {
             case PharmacyTransfer:
             case PharmacyTransferViewRates:
             case NursingIPBillingViewRates:
+            case IPBillingViewDiscount:
             case IPRequestViewRates:
             case StockRequestViewRates:
             case ConsumptionViewRates:
@@ -1677,6 +1680,7 @@ public enum Privileges {
             case InwardFinalBillSetConfirmed:
             case InwardFinalBillRetire:
             case InwardFinalBillEmail:
+            case InwardFinalBillApprove:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:

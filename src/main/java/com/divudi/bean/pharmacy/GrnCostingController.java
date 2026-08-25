@@ -2772,7 +2772,14 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-    public String navigateToResiveCostingWithSaveApprove() {
+    // synchronized: a double-click/double-submit on the "Receive" button (ajax="false",
+    // no confirm() dialog) can race two calls through this session-scoped bean before
+    // either finishes rebuilding currentGrnBillPre, interleaving generateBillComponent()'s
+    // appends to getBillItems() across both calls and leaving some PO lines duplicated
+    // in the in-memory draft while others are untouched (same bug class as
+    // PurchaseOrderController.approve() / finalizeGrnWithSaveApprove() / issue #22194,
+    // but this entry point was never covered).
+    public synchronized String navigateToResiveCostingWithSaveApprove() {
         // Check for billId parameter (from DTO-based page)
         String billIdParam = JsfUtil.getRequestParameter("billId");
         if (billIdParam != null && !billIdParam.isEmpty()) {
@@ -2954,7 +2961,10 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-    public void requestWithSaveApprove() {
+    // synchronized: the Save button (ajax="false", no confirm() dialog) has no
+    // double-click guard - see navigateToResiveCostingWithSaveApprove() above for the
+    // same bug class this closes.
+    public synchronized void requestWithSaveApprove() {
         if (!isAuthorized("REQUEST_WITH_SAVE_APPROVE", "PharmacyGrnSave")) {
             return;
         }

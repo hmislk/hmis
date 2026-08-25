@@ -1203,15 +1203,17 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     private void calTotal() {
         double grossTotal = 0.0;
         double discount = 0;
+        double netTotal = 0;
 
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getNetRate() * p.getQty();
+            grossTotal += p.getRate() * p.getQty();
             discount += p.getDiscountRate() * p.getQty();
+            netTotal += p.getNetRate() * p.getQty();
 
         }
         getReturnBill().setDiscount(discount);
         getReturnBill().setTotal(grossTotal);
-        getReturnBill().setNetTotal(grossTotal - discount);
+        getReturnBill().setNetTotal(netTotal);
 
         //  return grossTotal;
     }

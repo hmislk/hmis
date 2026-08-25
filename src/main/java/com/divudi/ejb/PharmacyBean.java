@@ -1844,11 +1844,12 @@ public class PharmacyBean {
 
         // Record itemBatch rates
         if (fetchedStock.getItemBatch() != null) {
-            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
-            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setCostRate(costRate);
             sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
@@ -1970,11 +1971,12 @@ public class PharmacyBean {
 
         // Record itemBatch rates
         if (fetchedStock.getItemBatch() != null) {
-            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
-            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setCostRate(costRate);
             sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());

@@ -867,11 +867,25 @@
                                     <p:commandButton
                                         id="btnTheatreDashboard"
                                         rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
-                                        value="Theatre Dashboard"
+                                        value="Theatre Status"
                                         ajax="false"
-                                        action="#{theatreDashboardController.navigateToTheatreDashboard()}"
+                                        action="#{patientTransferController.navigateToTheatreStatus(admissionController.current)}"
                                         icon="fa fa-columns"
                                         class="w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnAcceptTheatreReturn"
+                                        rendered="#{webUserController.hasPrivilege('WardAcceptTheatreReturn')}"
+                                        value="Accept Return from Theatre"
+                                        ajax="false"
+                                        disabled="#{not patientTransferController.hasPendingTheatreReturnForAdmission(admissionController.current)}"
+                                        action="#{patientTransferController.acceptReturnToWardForAdmission(admissionController.current)}"
+                                        icon="fa fa-undo"
+                                        title="Accept theatre return for #{admissionController.current.bhtNo}"
+                                        onclick="if (!confirm('Accept this patient back from theatre?')) return false;"
+                                        class="w-100 ui-button-success">
                                     </p:commandButton>
                                 </div>
                                 <div class="col-6">

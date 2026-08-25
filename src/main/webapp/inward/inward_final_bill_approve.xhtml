@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form id="formApproveFinalBill">
+
+                    <p:panel rendered="#{webUserController.hasPrivilege('InwardFinalBillApprove') and inwardSearch.bill ne null}">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex">
+                                    <h:outputText styleClass="fas fa-gavel"></h:outputText>
+                                    <h:outputLabel value="Approve Final Bill" class="mx-4"></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.deptId}" styleClass="text-muted"></h:outputLabel>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fas fa-list"
+                                        class="ui-button-secondary"
+                                        value="Back to Final Bills"
+                                        action="/inward/inward_final_bill_list?faces-redirect=true"
+                                        title="Back to Final Bills">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <p:panel rendered="#{inwardSearch.bill.approveAt ne null}" class="mb-3">
+                            <h:outputText value="This bill has already been approved." styleClass="text-success" />
+                        </p:panel>
+
+                        <p:panel class="mt-3">
+                            <f:facet name="header">
+                                <h:outputLabel value="Final Bill (Read Only)"></h:outputLabel>
+                            </f:facet>
+
+                            <bi:finalBill bill="#{inwardSearch.bill}" />
+
+                        </p:panel>
+
+                        <div class="d-flex gap-2 mt-3">
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-gavel"
+                                class="ui-button-primary"
+                                value="Approve"
+                                title="Approve #{inwardSearch.bill.deptId}"
+                                actionListener="#{inwardSearch.approveFinalBillVersion(inwardSearch.bill)}"
+                                action="/inward/inward_final_bill_list?faces-redirect=true"
+                                rendered="#{inwardSearch.bill.approveAt eq null}">
+                                <p:confirm header="Confirm Approval" message="Approve final bill #{inwardSearch.bill.deptId}? Once approved it can be viewed, printed, emailed, and confirmed." icon="pi pi-exclamation-triangle" />
+                            </p:commandButton>
+
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-arrow-left"
+                                class="ui-button-secondary"
+                                value="Back to Final Bills"
+                                action="/inward/inward_final_bill_list?faces-redirect=true"
+                                title="Back to Final Bills">
+                            </p:commandButton>
+                        </div>
+
+                    </p:panel>
+
+                    <p:panel rendered="#{inwardSearch.bill eq null}">
+                        <h:outputText value="No final bill selected." styleClass="text-danger" />
+                    </p:panel>
+
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-success" icon="pi pi-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                    </p:confirmDialog>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
