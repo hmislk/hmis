@@ -75,6 +75,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private double grandTotalPostFinalPayments;
     private double grandTotalPostFinalCash;
     private double grandTotalPostFinalCard;
+    private double grandTotalPostFinalCredit;
     private double grandTotalPostFinalOther;
     private double grandTotalCreditBilled;
     private double grandTotalCreditSettlement;
@@ -95,6 +96,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalPostFinalPayments = 0;
         grandTotalPostFinalCash = 0;
         grandTotalPostFinalCard = 0;
+        grandTotalPostFinalCredit = 0;
         grandTotalPostFinalOther = 0;
         grandTotalCreditBilled = 0;
         grandTotalCreditSettlement = 0;
@@ -118,6 +120,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
             grandTotalPostFinalPayments += row.getTotalPostFinalPayments();
             grandTotalPostFinalCash += row.getPostFinalCash();
             grandTotalPostFinalCard += row.getPostFinalCard();
+            grandTotalPostFinalCredit += row.getPostFinalCredit();
             grandTotalPostFinalOther += row.getPostFinalOther();
             grandTotalCreditBilled += row.getCreditBilledTotal();
             grandTotalCreditSettlement += row.getCreditSettlementTotal();
@@ -355,6 +358,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalPostFinalPayments = 0;
         grandTotalPostFinalCash = 0;
         grandTotalPostFinalCard = 0;
+        grandTotalPostFinalCredit = 0;
         grandTotalPostFinalOther = 0;
         grandTotalCreditBilled = 0;
         grandTotalCreditSettlement = 0;
@@ -409,6 +413,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     public double getGrandTotalPostFinalCash() { return grandTotalPostFinalCash; }
 
     public double getGrandTotalPostFinalCard() { return grandTotalPostFinalCard; }
+
+    public double getGrandTotalPostFinalCredit() { return grandTotalPostFinalCredit; }
 
     public double getGrandTotalPostFinalOther() { return grandTotalPostFinalOther; }
 
