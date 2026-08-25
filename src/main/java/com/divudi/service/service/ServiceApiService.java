@@ -15,6 +15,7 @@ import com.divudi.core.data.dto.service.ServiceResponseDTO;
 import com.divudi.core.data.dto.service.ServiceSearchResultDTO;
 import com.divudi.core.data.dto.service.ServiceUpdateRequestDTO;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -25,6 +26,7 @@ import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.InwardServiceFacade;
@@ -66,6 +68,9 @@ public class ServiceApiService implements Serializable {
 
     @EJB
     private ServiceCategoryFacade serviceCategoryFacade;
+
+    @EJB
+    private CategoryFacade categoryFacade;
 
     @EJB
     private ItemFacade itemFacade;
@@ -233,9 +238,12 @@ public class ServiceApiService implements Serializable {
 
         // Resolve optional associations
         if (request.getCategoryId() != null) {
-            ServiceCategory category = serviceCategoryFacade.find(request.getCategoryId());
-            if (category == null) {
-                throw new Exception("ServiceCategory not found with ID: " + request.getCategoryId());
+            // Category (not ServiceCategoryFacade) is used here since a service's category
+            // can be any Category subtype already in use in the system (Category,
+            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+            Category category = categoryFacade.find(request.getCategoryId());
+            if (category == null || category.isRetired()) {
+                throw new Exception("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
         }
@@ -348,9 +356,12 @@ public class ServiceApiService implements Serializable {
         }
 
         if (request.getCategoryId() != null) {
-            ServiceCategory category = serviceCategoryFacade.find(request.getCategoryId());
-            if (category == null) {
-                throw new Exception("ServiceCategory not found with ID: " + request.getCategoryId());
+            // Category (not ServiceCategoryFacade) is used here since a service's category
+            // can be any Category subtype already in use in the system (Category,
+            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+            Category category = categoryFacade.find(request.getCategoryId());
+            if (category == null || category.isRetired()) {
+                throw new Exception("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
         }

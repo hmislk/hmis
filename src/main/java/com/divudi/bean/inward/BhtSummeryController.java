@@ -2215,12 +2215,14 @@ public class BhtSummeryController implements Serializable {
         }
         TimedItemFee timedFee = pr.getRoomFacilityCharge().getTimedItemFee();
         double liveEquivalent = facilityRoomCharge * getInwardBean().calCount(timedFee, pr.getAdmittedAt(), pr.getDischargedAt());
-        // RoomFacilityCharge.roomCharge is a rate per TimedItemFee.durationHours block (see
+        // RoomFacilityCharge.roomCharge is a rate per TimedItemFee block (see
         // InwardBeanController.calCount: charge = roomCharge * count, where count is the number
-        // of durationHours-sized blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
+        // of blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
         // configs are conventionally 24-hour ("per day") blocks, so we use the actual configured
-        // durationHours here (falling back to 24.0 if unset) rather than hardcoding 24.
-        double blockHours = (timedFee != null && timedFee.getDurationHours() > 0) ? timedFee.getDurationHours() : 24.0;
+        // block length here (falling back to 24.0 if unset) rather than hardcoding 24.
+        // getDurationInHours() honours the configured duration unit, so a block defined in
+        // minutes or days converts to hours instead of being read as a raw hour count.
+        double blockHours = (timedFee != null && timedFee.getDurationInHours() > 0) ? timedFee.getDurationInHours() : 24.0;
         double includedEquivalent = facilityRoomCharge * (pr.getIncludedRoomDurationHours() / blockHours);
         return Math.max(0.0, liveEquivalent - includedEquivalent);
     }
@@ -3218,13 +3220,41 @@ public class BhtSummeryController implements Serializable {
         getIntrimPrintController().getCurrentBill().setAdjustedTotal(grantTotal);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
+            // Outside Charge items folded into this category's total are
+            // listed as their own rows below (issue #22989) — the charge
+            // type is derivable from each item, so they don't need to be
+            // hidden inside the category row. Subtract their combined value
+            // back out here so the category row shows only its non-Outside
+            // Charge (service) portion, avoiding double counting; the
+            // overall bill total is unaffected since it is set separately
+            // above from grantTotal.
+            double additionalTotal = 0.0;
+            for (ChargeItemTotal.AdditionalChargeItem item : cit.getAdditionalChargeItems()) {
+                additionalTotal += item.getAmount();
+            }
+            // additionalTotal and cit.getTotal() come from two separate bulk
+            // queries (setChargeValueFromAdditional()), so a charge committed
+            // between them could in theory make additionalTotal exceed the
+            // total. Clamp rather than let the category row go negative.
+            double categoryOnlyValue = Math.max(0.0, cit.getTotal() - additionalTotal);
+
             BillItem billItem = new BillItem();
             billItem.setInwardChargeType(cit.getInwardChargeType());
             billItem.setBill(getIntrimPrintController().getCurrentBill());
-            billItem.setGrossValue(cit.getTotal());
-            billItem.setAdjustedValue(cit.getTotal());
+            billItem.setGrossValue(categoryOnlyValue);
+            billItem.setAdjustedValue(categoryOnlyValue);
             billItem.setReferanceBillItem(getBillBean().fetchBillItem(patientEncounter, BillType.InwardIntrimBill, cit.getInwardChargeType()));
             getIntrimPrintController().getCurrentBill().getBillItems().add(billItem);
+
+            for (ChargeItemTotal.AdditionalChargeItem item : cit.getAdditionalChargeItems()) {
+                BillItem outsideChargeItemBillItem = new BillItem();
+                outsideChargeItemBillItem.setInwardChargeType(cit.getInwardChargeType());
+                outsideChargeItemBillItem.setBill(getIntrimPrintController().getCurrentBill());
+                outsideChargeItemBillItem.setDescreption(item.getName());
+                outsideChargeItemBillItem.setGrossValue(item.getAmount());
+                outsideChargeItemBillItem.setAdjustedValue(item.getAmount());
+                getIntrimPrintController().getCurrentBill().getBillItems().add(outsideChargeItemBillItem);
+            }
         }
 
         return "inward_bill_intrim_print";
@@ -4842,11 +4872,19 @@ public class BhtSummeryController implements Serializable {
     private void setChargeValueFromAdditional() {
         // OPTIMIZED: Fetch all totals in ONE bulk query
         Map<InwardChargeType, Double> bulkTotals = getInwardBean().caltValueFromAdditionalChargeBulk(getPatientEncounter(), childPatientEncouters);
+        // The individual Outside Charge items (name + amount) behind those
+        // totals, so callers can list the items themselves in place of the
+        // category total instead of just the charge-type label (issue #22989).
+        Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> bulkItems = getInwardBean().caltAdditionalChargeItemDetailsBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             double adj = bulkTotals.getOrDefault(cit.getInwardChargeType(), 0.0);
             double tot = cit.getTotal();
             cit.setTotal(tot + adj);
+            List<ChargeItemTotal.AdditionalChargeItem> items = bulkItems.get(cit.getInwardChargeType());
+            if (items != null) {
+                cit.setAdditionalChargeItems(items);
+            }
         }
     }
 
@@ -5626,8 +5664,15 @@ public class BhtSummeryController implements Serializable {
         Date dischargedAt = pr.getDischargedAt() != null ? pr.getDischargedAt() : new Date();
 
         long totalMinutes = CommonFunctions.calculateDurationMin(pr.getAdmittedAt(), dischargedAt);
-        double slotMinutes = tif.getDurationHours() * 60.0;
-        double overshootMinutes = tif.getOverShootHours() * 60.0;
+
+        // A one-time charge is billed as a single slot regardless of the stay,
+        // matching what calCount() returns for it.
+        if (tif.isOneTime()) {
+            return new RoomDurationBreakdown(totalMinutes, 0, 0, totalMinutes, 0, false, 1);
+        }
+
+        double slotMinutes = tif.getDurationMinutes();
+        double overshootMinutes = tif.getOverShootMinutes();
 
         if (slotMinutes == 0) {
             return new RoomDurationBreakdown(totalMinutes, slotMinutes, 0, totalMinutes, overshootMinutes, false, 0);

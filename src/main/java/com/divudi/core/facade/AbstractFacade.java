@@ -592,6 +592,36 @@ public abstract class AbstractFacade<T> {
                 .getResultList();
     }
 
+    /**
+     * Paginated query with named parameters.
+     *
+     * <p>Prefer this over {@code findByJpql(jpql, params, fromRecord, toRecord)} for paging:
+     * that method takes an inclusive end index and skips {@code setMaxResults} entirely when
+     * it works out to 0, so asking for the single first row (offset 0, one result) silently
+     * returns the whole result set. Here {@code maxResults} is a plain count and is always
+     * applied.
+     */
+    public List<T> findByJpqlWithRange(String jpql, Map<String, Object> parameters,
+            int startPosition, int maxResults) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                if (entry.getValue() instanceof Date) {
+                    qry.setParameter(entry.getKey(), (Date) entry.getValue(), TemporalType.TIMESTAMP);
+                } else {
+                    qry.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        qry.setFirstResult(Math.max(startPosition, 0));
+        qry.setMaxResults(Math.max(maxResults, 1));
+        try {
+            return qry.getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();

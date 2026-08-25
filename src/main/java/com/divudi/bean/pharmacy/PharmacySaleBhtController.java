@@ -72,6 +72,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.service.pharmacy.DirectIssueBatchService;
+import com.divudi.service.pharmacy.PriceMatrixNativeSqlService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -168,6 +169,13 @@ public class PharmacySaleBhtController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Nursing IP Billing - Show Rate and Value",
+            "Controls whether rate/value columns are shown on the inward pharmacy BHT issue page (combined with the NursingIPBillingViewRates privilege)",
+            "Item table, row-expansion panel, autocomplete columns: rate/value visibility",
+            OptionScope.APPLICATION
+        ));
+
         // Register privileges used on this page
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -182,9 +190,15 @@ public class PharmacySaleBhtController implements Serializable {
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "ShowDrugCharges",
-            "View drug prices and financial charges in the billing interface",
-            "Item autocomplete and bill table: Rate and value columns visibility"
+            "NursingIPBillingViewRates",
+            "View drug rates, values, and net totals in the inward pharmacy BHT issue billing interface",
+            "Item table rate/value columns, row-expansion Sale Rate/Cost Rate, header summary Net Total"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "IPBillingViewDiscount",
+            "View discount amounts and margin/matrix-value (service charge equivalent) on inward pharmacy BHT issue bills",
+            "Header summary Discount field, row-expansion Matrix Value field"
         ));
 
         // Register the page metadata
@@ -235,6 +249,8 @@ public class PharmacySaleBhtController implements Serializable {
     BillService billService;
     @EJB
     private PharmacyService pharmacyService;
+    @EJB
+    private PriceMatrixNativeSqlService priceMatrixNativeSqlService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -2294,6 +2310,7 @@ public class PharmacySaleBhtController implements Serializable {
         double total = 0;
         double netTotal = 0;
         double marginTotal = 0;
+        double discountTotal = 0;
         PatientEncounter encounter = bill != null ? bill.getPatientEncounter() : null;
         for (BillItem bi : billItems) {
 
@@ -2313,18 +2330,52 @@ public class PharmacySaleBhtController implements Serializable {
 
             bi.setMarginValue(margin);
 
-            bi.setNetValue(bi.getGrossValue() + bi.getMarginValue());
+            // Inward discount-matrix application (issue #23220 — previously
+            // this flow applied margin only and never looked up a discount).
+            // BillItem (the entity) has no discountPercent/discountValue
+            // fields — those exist only on BillItemData, the DTO used by
+            // InpatientDirectIssueNativeSqlController. This flow stores the
+            // discount as a currency amount in the existing `discount`
+            // field, matching the sign convention already used by
+            // PharmacyPreSettleController.calTotal()/settle() and
+            // BhtIssueReturnController/IssueReturnController elsewhere in
+            // this codebase: netValue = grossValue [+ marginValue] - discount.
+            double discountValue = 0.0;
+            try {
+                Item item = bi.getItem();
+                if (item != null && matrixDepartment != null && priceMatrixNativeSqlService.isDiscountAllowed(item.getId())) {
+                    Long schemeId = encounter != null && encounter.getPaymentScheme() != null ? encounter.getPaymentScheme().getId() : null;
+                    Long admTypeId = encounter != null && encounter.getAdmissionType() != null ? encounter.getAdmissionType().getId() : null;
+                    String pmName = paymentMethod != null ? paymentMethod.name() : null;
+                    double discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(item.getId(), pmName, schemeId, admTypeId, matrixDepartment.getId());
+                    // Gross value in this flow is stored positive (see the
+                    // margin calculation above, which ADDS to netValue), so
+                    // the discount amount is likewise computed and applied
+                    // as a positive currency value subtracted from netValue.
+                    discountValue = (discountPct / 100.0) * Math.abs(bi.getGrossValue());
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "[updateMargin] inward discount lookup failed for billItem id={0}", bi.getId());
+            }
+            bi.setDiscount(discountValue);
+
+            bi.setNetValue(bi.getGrossValue() + bi.getMarginValue() - bi.getDiscount());
             bi.setAdjustedValue(bi.getNetValue());
             getBillItemFacade().edit(bi);
 
             total += bi.getGrossValue();
             netTotal += bi.getNetValue();
             marginTotal += bi.getMarginValue();
+            discountTotal += bi.getDiscount();
         }
 
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
         bill.setMargin(marginTotal);
+        // Roll up the discount total onto the bill, matching the existing
+        // pattern used elsewhere in this file (see calTotal(), ~line 2491,
+        // and PharmacyPreSettleController.calTotal()).
+        bill.setDiscount(discountTotal);
         getBillFacade().edit(bill);
 
     }
