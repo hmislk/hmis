@@ -19,6 +19,10 @@
                         <div>
                             <h:outputText styleClass="fa fa-id-card"/>
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
+                            <h:panelGroup rendered="#{admissionController.current.parentEncounter != null}">
+                                <p:tag value="Baby Admission — Mother: #{admissionController.current.parentEncounter.patient.person.nameWithTitle} (BHT #{admissionController.current.parentEncounter.bhtNo})"
+                                       icon="fa fa-baby" severity="warning" class="mx-2"/>
+                            </h:panelGroup>
                         </div>
                         <div><div class="d-flex gap-2">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
@@ -121,6 +125,30 @@
                                 process="@this"
                                 update="form"
                                 action="#{admissionController.markRapidTempAdmissionComplete}"/>
+                        </div>
+                    </div>
+                </ui:fragment>
+
+                <!-- Pending Appointment Deposit Conversion warning: the appointment
+                     that was admitted still has an un-cancelled appointment deposit
+                     bill that hasn't been converted into this admission's Inward
+                     Deposit. Admitting from an appointment no longer auto-converts
+                     the payment (it used to silently double-count it in Daily
+                     Return); conversion is now this explicit, user-triggered step.
+                     (Issue #22719) -->
+                <ui:fragment rendered="#{webUserController.hasPrivilege('InwardEditPaymentDetails') and admissionController.hasPendingAppointmentDepositConversion}">
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 my-2" role="alert">
+                        <div>
+                            <h:outputText styleClass="fas fa-triangle-exclamation me-2"/>
+                            <h:outputText value="This admission's appointment deposit has not yet been converted into an Inward Deposit."/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Convert to Inward Deposit"
+                                ajax="false"
+                                icon="fa-solid fa-money-bill-transfer"
+                                class="ui-button-warning"
+                                action="#{admissionController.navigateToAppointmentDepositConversion()}"/>
                         </div>
                     </div>
                 </ui:fragment>
@@ -244,19 +272,6 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Manage Allergies"
-                                        ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('InwardManageAllergies')}"
-                                        action="#{bhtEditController.navigateToManageAllergies()}"
-                                        icon="fa-solid fa-allergies"
-                                        class="w-100">
-                                        <f:setPropertyActionListener
-                                            value="#{admissionController.current}"
-                                            target="#{bhtEditController.current}"/>
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
                                         value="Cancel Admission"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardAdmissionCancel')}"
@@ -278,10 +293,11 @@
                                         class="w-100 ui-button-secondary">
                                     </p:commandButton>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{admissionController.current.parentEncounter == null and webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" styleClass="col-6">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" styleClass="col-6">
                                     <p:commandButton
                                         value="Add Baby Admission"
-                                        disabled="#{admissionController.current.discharged eq true}"
+                                        disabled="#{admissionController.current.id eq null or admissionController.current.patient eq null or admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
+                                        title="#{admissionController.current.parentEncounter != null ? 'A baby admission cannot have its own baby admission' : (admissionController.current.discharged eq true ? 'Patient is discharged' : '')}"
                                         action="#{admissionController.navigateToAddBabyAdmission}"
                                         icon="fa fa-baby"
                                         ajax="false"
@@ -445,9 +461,35 @@
                                             target="#{inwardSearch.admission}"/>
                                     </p:commandButton>
                                 </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        rendered="#{admissionController.current.discharged and inwardSearch.hasAnyFinalBillVersion(admissionController.current) and webUserController.hasPrivilege('InwardSettleFinalBill')}"
+                                        value="Manage Final Bills"
+                                        ajax="false"
+                                        action="#{inwardSearch.navigateToManageFinalBills}"
+                                        icon="fa fa-tasks"
+                                        class="w-100">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{inwardSearch.admission}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        rendered="#{admissionController.current.discharged and admissionController.current.paymentFinalized and webUserController.hasPrivilege('InwardPostDischargeReports')}"
+                                        value="Post-Discharge Reports"
+                                        ajax="false"
+                                        action="#{inwardReportControllerBht.navigateToPostDischargeReports}"
+                                        icon="fa fa-chart-bar"
+                                        class="w-100">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{inwardReportControllerBht.patientEncounter}"/>
+                                    </p:commandButton>
+                                </div>
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Payments"
+                                        value="Make a Payment"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardDoctorPaymentAccess')}"
                                         action="#{inwardSearch.navigateDoctorPayment}"
@@ -456,6 +498,32 @@
                                         <f:setPropertyActionListener
                                             value="#{admissionController.current}"
                                             target="#{inwardPaymentController.current.patientEncounter}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Make a Deposit"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardMakeDepositAccess')}"
+                                        action="#{inwardSearch.navigateMakeDeposit}"
+                                        icon="fa fa-file"
+                                        class="w-100">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{inwardDepositController.current.patientEncounter}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Post Final Payment"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardPostFinalPaymentAccess') and admissionController.current.finalBill ne null and admissionController.current.finalBill.confirmedFinalBill and not admissionController.current.finalBill.cancelled}"
+                                        action="#{postFinalBillInwardPaymentController.navigateToPostFinalPayment}"
+                                        icon="fa fa-money-bill-wave"
+                                        class="w-100">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{postFinalBillInwardPaymentController.current.patientEncounter}"/>
                                     </p:commandButton>
                                 </div>
                                 <div class="col-6">
@@ -469,6 +537,30 @@
                                         <f:setPropertyActionListener
                                             value="#{admissionController.current}"
                                             target="#{bhtSummeryController.patientEncounter}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnHoldProfessionalPayments"
+                                        value="Hold Professional Payments"
+                                        ajax="false"
+                                        action="#{professionalPaymentHoldController.navigateToProfessionalPaymentHold(admissionController.current)}"
+                                        icon="fa fa-hand-paper"
+                                        title="Navigate to Hold Professional Payments"
+                                        rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                        styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnProfessionalFeeHold"
+                                        value="Professional Payments Report"
+                                        ajax="false"
+                                        action="#{professionalFeeHoldController.navigateToProfessionalFeeHold(admissionController.current)}"
+                                        icon="fa fa-list-check"
+                                        title="Report and per-item hold/unhold of professional payments for this admission"
+                                        rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                        styleClass="w-100 ui-button-secondary">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -680,10 +772,10 @@
                                     <div class="col-6">
                                         <p:commandButton
                                             rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}"
-                                            value="Accept Patients"
+                                            value="Accept Patient"
                                             ajax="false"
                                             disabled="#{not patientTransferController.hasPendingRequestsForDepartment}"
-                                            action="#{patientTransferController.navigateToPatientAccept()}"
+                                            action="#{patientTransferController.navigateToPatientAcceptForAdmission(admissionController.current)}"
                                             icon="fa fa-check-circle"
                                             class="w-100 ui-button-success">
                                         </p:commandButton>
@@ -765,6 +857,7 @@
                                         rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
                                         value="Accept Theatre Patient"
                                         ajax="false"
+                                        disabled="#{not patientTransferController.hasPendingTheatreRequestsForDepartment}"
                                         action="#{patientTransferController.navigateToTheatreAccept()}"
                                         icon="fa fa-hospital"
                                         class="w-100 ui-button-info">
@@ -774,11 +867,25 @@
                                     <p:commandButton
                                         id="btnTheatreDashboard"
                                         rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
-                                        value="Theatre Dashboard"
+                                        value="Theatre Status"
                                         ajax="false"
-                                        action="#{theatreDashboardController.navigateToTheatreDashboard()}"
+                                        action="#{patientTransferController.navigateToTheatreStatus(admissionController.current)}"
                                         icon="fa fa-columns"
                                         class="w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnAcceptTheatreReturn"
+                                        rendered="#{webUserController.hasPrivilege('WardAcceptTheatreReturn')}"
+                                        value="Accept Return from Theatre"
+                                        ajax="false"
+                                        disabled="#{not patientTransferController.hasPendingTheatreReturnForAdmission(admissionController.current)}"
+                                        action="#{patientTransferController.acceptReturnToWardForAdmission(admissionController.current)}"
+                                        icon="fa fa-undo"
+                                        title="Accept theatre return for #{admissionController.current.bhtNo}"
+                                        onclick="if (!confirm('Accept this patient back from theatre?')) return false;"
+                                        class="w-100 ui-button-success">
                                     </p:commandButton>
                                 </div>
                                 <div class="col-6">
@@ -832,6 +939,19 @@
                                             title="Navigate to Physical Discharge"
                                             rendered="#{webUserController.hasPrivilege('InwardPhysicalDischarge')}"
                                             styleClass="w-100 #{admissionController.current.physicalDischarged ? 'ui-button-success' : 'ui-button-warning'}">
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            value="Manage Allergies"
+                                            ajax="false"
+                                            rendered="#{webUserController.hasPrivilege('InwardManageAllergies')}"
+                                            action="#{bhtEditController.navigateToManageAllergies()}"
+                                            icon="fa-solid fa-allergies"
+                                            class="w-100">
+                                            <f:setPropertyActionListener
+                                                value="#{admissionController.current}"
+                                                target="#{bhtEditController.current}"/>
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -925,6 +1045,17 @@
                                             class="w-100">
                                         </p:commandButton>
                                     </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            value="Event History"
+                                            ajax="false"
+                                            rendered="#{webUserController.hasPrivilege('InwardEventHistoryView')}"
+                                            action="#{inpatientEventHistoryController.navigateToEventHistory(admissionController.current)}"
+                                            icon="fa fa-stream"
+                                            title="Full chronological story of this admission — bills and audited actions"
+                                            class="w-100">
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </div>
                         </p:panel>
@@ -1007,7 +1138,7 @@
                                             id="btnReturnMedicinesToPharmacyInpatient"
                                             value="Return Medicines to Pharmacy"
                                             ajax="false"
-                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
+                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
                                             icon="fa fa-truck-ramp-box"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                             class="w-100"/>
@@ -1036,6 +1167,20 @@
                                     </div>
                                     <div class="col-6">
                                         <p:commandButton
+                                            id="btnPharmacyRequestDrafts"
+                                            value="Draft Pharmacy Requests"
+                                            action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestDraftsList()}"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                            icon="fa fa-file-pen"
+                                            class="w-100"
+                                            ajax="false">
+                                            <f:setPropertyActionListener
+                                                value="#{admissionController.current}"
+                                                target="#{inwardPharmacyEncounterReportController.patientEncounter}" />
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
                                             id="btnDirectIssuesHistory"
                                             value="Direct Issues"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyDirectIssuesList()}"
@@ -1055,6 +1200,20 @@
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyReturnsList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                                             icon="fa fa-rotate-left"
+                                            class="w-100"
+                                            ajax="false">
+                                            <f:setPropertyActionListener
+                                                value="#{admissionController.current}"
+                                                target="#{inwardPharmacyEncounterReportController.patientEncounter}" />
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            id="btnUnacceptedIssuesHistory"
+                                            value="Unaccepted Issues"
+                                            action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyUnacceptedIssuesList()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                            icon="fa fa-triangle-exclamation"
                                             class="w-100"
                                             ajax="false">
                                             <f:setPropertyActionListener
@@ -1098,6 +1257,26 @@
                                         class="w-100">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Send Email"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardSendEmail')}"
+                                        action="#{inpatientEmailComposeController.startComposeForAdmission(admissionController.current)}"
+                                        icon="fa fa-envelope"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Sent Emails"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardSendEmail')}"
+                                        action="#{emailController.navigateToAdmissionSentEmails(admissionController.current)}"
+                                        icon="fa fa-envelope-open-text"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
 
@@ -1107,7 +1286,7 @@
                                     <p:commandButton
                                         id="btnPharmacyIssues"
                                         value="Pharmacy Issue Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPharmacyIssueSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto()}"
                                         icon="fa fa-rocket"
                                         ajax="false"
@@ -1125,7 +1304,7 @@
                                     <p:commandButton
                                         id="btnServiceSummary"
                                         value="Service Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportServiceSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientServiceItemListDto()}"
                                         icon="fa fa-stethoscope"
                                         ajax="false"
@@ -1143,7 +1322,7 @@
                                     <p:commandButton
                                         id="btnServiceBills"
                                         value="All Inward Service Bills"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportServiceBills')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientServiceBillListDto()}"
                                         icon="fa fa-file-invoice"
                                         ajax="false"
@@ -1157,11 +1336,29 @@
                                             target="#{inwardReportControllerBht.department}" />
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnPaymentsAndCancellations"
+                                        value="Payments &amp; Cancellations"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPaymentsAndCancellations')}"
+                                        action="#{inwardReportControllerBht.navigateToInpatientPaymentBillListDto()}"
+                                        icon="fa fa-money-bill-wave"
+                                        ajax="false"
+                                        class="w-100 ui-button-success"
+                                        title="Payment bills and their cancellations for this admission - view/reprint">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{inwardReportControllerBht.patientEncounter}" />
+                                        <f:setPropertyActionListener
+                                            value="#{null}"
+                                            target="#{inwardReportControllerBht.department}" />
+                                    </p:commandButton>
+                                </div>
                                 <div class="col-12">
                                     <p:commandButton
                                         id="btnPharmacyAndServiceSummary"
                                         value="Pharmacy &amp; Services Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPharmacyAndServiceSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientPharmacyAndServiceItemListDto()}"
                                         icon="fa fa-list-alt"
                                         ajax="false"
@@ -1178,7 +1375,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Lab Bill Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportLabBillSummary')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientLabItemList}"
                                         icon="fa fa-flask"
                                         ajax="false"
@@ -1194,7 +1391,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Lab Result Summary"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportLabResultSummary')}"
                                         action="#{encounterLaboratoryChartViewController.navigateToProcessInvestigations(admissionController.current)}"
                                         ajax="false"
                                         icon="pi pi-chart-line"
@@ -1206,7 +1403,7 @@
                                         id="btnLegacy"
                                         ajax="false"
                                         value="Pharmacy Issue Summary (Legacy)"
-                                        rendered="#{webUserController.hasPrivilege('InwardReport')}"
+                                        rendered="#{webUserController.hasPrivilege('InwardReportPharmacyIssueSummaryLegacy')}"
                                         action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}"
                                         icon="fa fa-prescription-bottle-alt"
                                         class="w-100 ui-button-secondary"

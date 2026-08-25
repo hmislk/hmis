@@ -247,6 +247,64 @@ public class PriceMatrixController implements Serializable {
         return result;
     }
 
+    /**
+     * Inward-margin lookup for room charges themselves (room/maintenance/
+     * linen/nursing/MO/administration/medical-care), as opposed to a service
+     * or pharmacy item. These matrix rows are configured with no category
+     * (category is null) and a room category, via the room-category price
+     * matrix admin page.
+     */
+    public PriceMatrix fetchRoomChargeMargin(Department department, double chargeValue, PaymentMethod paymentMethod,
+            Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
+        if (department == null) {
+            return null;
+        }
+        boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
+        PaymentMethod pm = isPaymentMethodAllowedInInwardMatrix ? paymentMethod : null;
+        return getRoomChargePriceAdjustment(department, chargeValue, pm, creditCompany, admissionType, roomCategory);
+    }
+
+    private InwardPriceAdjustment getRoomChargePriceAdjustment(Department department, double dbl, PaymentMethod paymentMethod,
+            Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
+        StringBuilder sql = new StringBuilder("select a from InwardPriceAdjustment a "
+                + " where a.retired=false"
+                + " and a.category is null "
+                + " and a.department=:dep"
+                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)");
+        HashMap hm = new HashMap();
+        hm.put("dep", department);
+        hm.put("frPrice", dbl);
+        hm.put("tPrice", dbl);
+
+        if (paymentMethod != null) {
+            sql.append(" and a.paymentMethod=:pm");
+            hm.put("pm", paymentMethod);
+        }
+
+        if (creditCompany == null) {
+            sql.append(" and a.creditCompany is null");
+        } else {
+            sql.append(" and a.creditCompany=:cc");
+            hm.put("cc", creditCompany);
+        }
+
+        if (admissionType == null) {
+            sql.append(" and a.admissionType is null");
+        } else {
+            sql.append(" and (a.admissionType=:at or a.admissionType is null)");
+            hm.put("at", admissionType);
+        }
+
+        sql.append(roomCategoryPredicate(roomCategory));
+        if (roomCategory != null) {
+            hm.put("rc", roomCategory);
+        }
+
+        sql.append(inwardMatrixOrderBy(admissionType != null, roomCategory != null));
+
+        return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql.toString(), hm));
+    }
+
     public double getItemWithInwardMargin(Item item) {
         if (item == null) {
             return 0.0;
@@ -1676,6 +1734,18 @@ public class PriceMatrixController implements Serializable {
      * query adds AND a.inwardChargeType = :chargeType; otherwise it adds AND
      * a.inwardChargeType IS NULL to keep service/pharmacy rows isolated from
      * room-charge-type rows.
+     */
+    /**
+     * NOTE (2026-08, issue #23220): this JPQL calculation path filters
+     * `department` as an exact match only — unlike paymentMethod/admissionType
+     * in this same query, it does NOT wildcard-match rows where the matrix
+     * entry's department is null. This is a known gap, tracked separately in
+     * issue #23237 (https://github.com/hmislk/hmis/issues/23237). It is
+     * intentionally NOT fixed here: the equivalent native-SQL calculation path
+     * (PriceMatrixNativeSqlService.fetchDiscountPct), which is what inpatient
+     * pharmacy issuing actually uses in production, received the fix instead.
+     * This JPQL path is considered legacy/soon-to-be-superseded and should not
+     * be extended further — see #23237 before making changes here.
      */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,

@@ -65,6 +65,17 @@
                                 action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
                                 ajax="false" >
                             </p:commandButton>
+
+                            <p:commandButton
+                                id="btnConfig"
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('inward/pharmacy_bill_issue_bht')}"
+                                ajax="false"
+                                class="ui-button-secondary">
+                            </p:commandButton>
                         </div>
                     </div>
 
@@ -88,7 +99,7 @@
                                 <h:outputText value="#{w.speciality.name}" />
                             </p:column>
                             <p:column headerText="Staff Code">
-                                <h:outputText value="#{w.code}" />
+                                <h:outputText value="#{w.staffCode}" />
                             </p:column>
                         </p:autoComplete>
                     </div>
@@ -245,12 +256,12 @@
                                                rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
                                                            and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"
                                                style="background-color:#{pharmacySaleBhtController.bhtRequestBill.priority.priorityColor}; color:#212529;"></p:tag>
-                                        <p:outputLabel value="Discount" ></p:outputLabel>
-                                        <p:outputLabel value=":" ></p:outputLabel>
-                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
-                                        <p:outputLabel value="Net Total" ></p:outputLabel>
-                                        <p:outputLabel value=":" ></p:outputLabel>
-                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Discount" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Net Total" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                         <p:outputLabel value="Comment" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ></p:outputLabel>
@@ -263,7 +274,62 @@
                     </h:panelGroup>
                 </h:panelGroup>
 
-                <p:panel header="Available Items" class="mt-2">
+                <h:panelGroup layout="block" styleClass="row mb-3"
+                              rendered="#{not empty pharmacySaleBhtController.bhtIssueStockReport}">
+                    <div class="col-12">
+                        <p:panel id="panelBhtIssueStockReport" class="w-100"
+                                 toggleable="true"
+                                 collapsed="#{not pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}">
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center w-100">
+                                    <h:outputText styleClass="fas fa-boxes me-2" />
+                                    <p:outputLabel value="Stock Availability Report" styleClass="fw-bold" />
+                                    <p:tag styleClass="ms-3"
+                                           value="Review — insufficient stock"
+                                           severity="warning"
+                                           rendered="#{pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}" />
+                                    <p:tag styleClass="ms-3"
+                                           value="All issued in full"
+                                           severity="success"
+                                           rendered="#{not pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}" />
+                                </div>
+                            </f:facet>
+                            <p:dataTable id="tblBhtIssueStockReport"
+                                         value="#{pharmacySaleBhtController.bhtIssueStockReport}"
+                                         var="sr"
+                                         styleClass="w-100"
+                                         stripedRows="true"
+                                         size="small">
+                                <p:column headerText="Requested Item">
+                                    <h:outputText value="#{sr.requestedItemName}" />
+                                </p:column>
+                                <p:column headerText="Requested" style="width:7em;" styleClass="text-end">
+                                    <h:outputText value="#{sr.requestedQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Issued" style="width:7em;" styleClass="text-end">
+                                    <h:outputText value="#{sr.issuedQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" style="width:12em;">
+                                    <p:tag value="#{sr.statusLabel}" severity="#{sr.severity}" />
+                                </p:column>
+                                <p:column headerText="Note">
+                                    <h:outputText value="#{sr.message}" styleClass="text-muted" />
+                                </p:column>
+                            </p:dataTable>
+                            <h:panelGroup layout="block" styleClass="alert alert-warning m-2"
+                                          rendered="#{pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}">
+                                <i class="fa fa-exclamation-triangle me-2"></i>
+                                <h:outputText value="One or more requested medicines have insufficient or no stock. Use &quot;Select a Substitute&quot; on the flagged row(s) or arrange stock before settling — settling will be blocked until resolved." />
+                            </h:panelGroup>
+                        </p:panel>
+                    </div>
+                </h:panelGroup>
+
+                <p:panel header="Issuing Items" class="mt-2">
                     <style>
                         .auto-substituted-row { background-color: #FFF3CD !important; }
                         .auto-substituted-row td { background-color: #FFF3CD !important; }
@@ -272,13 +338,21 @@
                         var="bItm"
                         value="#{pharmacySaleBhtController.billItems}"
                         id="itemList"
+                        rowKey="#{bItm.searialNo}"
                         sortBy="#{bItm.searialNo}"
                         rowStyleClass="#{bItm.autoSubstituted ? 'auto-substituted-row' : ''}"
                         editable="true">
                         <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
                         <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
 
-                        <p:column headerText="Requested Item" style="width: 50px!important; padding: 6px;">
+                        <!-- Description/Comment/Batch No/Expiry are detail fields, not needed to scan the
+                             list at a glance — moved into the row-expansion panel below instead of forcing
+                             every row onto 2-3 lines with fixed 50px columns. Issue #23055. -->
+                        <p:column style="width:2rem; padding: 6px;">
+                            <p:rowToggler/>
+                        </p:column>
+
+                        <p:column headerText="Requested Item" style="padding: 6px;">
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <h:outputText id="item" value="#{bItm.referanceBillItem.item.name}" />
                                 <h:outputText
@@ -299,50 +373,26 @@
                             </div>
                         </p:column>
 
-                        <p:column headerText="Issuing Bill Item" style="width: 50px!important; padding: 6px;"  rendered="#{webUserController.hasPrivilege('Developers')}" >
-                            <h:outputText id="Isitem" value="#{bItm.item.name}" >
-                            </h:outputText>
+                        <p:column headerText="Issuing Bill Item" style="padding: 6px;">
+                            <p:autoComplete id="Isitem"
+                                            value="#{pharmacySaleBhtController.issuingSelections[bItm]}"
+                                            converter="stockConverter"
+                                            completeMethod="#{pharmacySaleBhtController.completeAllDepartmentStock}"
+                                            var="stk"
+                                            itemLabel="#{stk.itemBatch.item.name} (Batch: #{stk.itemBatch.batchNo}, Qty: #{stk.stock})"
+                                            itemValue="#{stk}"
+                                            forceSelection="true"
+                                            minQueryLength="2"
+                                            inputStyleClass="w-100"
+                                            placeholder="#{bItm.item.name}">
+                                <p:ajax event="itemSelect" process="@this"
+                                        listener="#{pharmacySaleBhtController.replaceIssuingBillItem(bItm)}"
+                                        update="itemList" />
+                            </p:autoComplete>
                         </p:column>
 
-
-                        <p:column headerText="Description" style="width: 50px!important; padding: 6px;">
-                            <h:outputText id="dis" value="#{bItm.item.descreption}" />
-                            <h:panelGroup rendered="#{bItm.autoSubstituted}" layout="block"
-                                          style="margin-top:2px;font-size:0.85em;color:#e67e22;font-style:italic;">
-                                <h:outputText value="Auto-sub: #{bItm.requestedItemName} → #{bItm.item.name}" />
-                            </h:panelGroup>
-                        </p:column>
-
-                        <p:column headerText="Batch No"  style="width:50px!important; text-align: right; padding: 6px;">
-                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>
-                        </p:column>
-
-                        <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right; padding: 6px;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
-                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right; padding: 6px;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
-                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Matrix Value"  style="width:50px!important; text-align: right; padding: 6px;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
-                            <h:outputLabel value="#{bItm.marginValue}" style="text-align: right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Available Stock"  style="width:50px!important; padding: 6px; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
-                            <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.stock}" style="text-align: right;">
-                                <f:convertNumber integerOnly="true" />
-                            </h:outputText>
-                        </p:column>
-
-                        <p:column headerText="Qty" 
-                                  style="width:25px!important; text-align: right; padding: 6px;">
+                        <p:column headerText="Qty"
+                                  style="width:6rem; text-align: right; padding: 6px;">
                             <p:cellEditor>
                                 <f:facet name="output">
                                     <h:outputText value="#{bItm.pharmaceuticalBillItem.qty}" >
@@ -355,25 +405,88 @@
                             </p:cellEditor>
                         </p:column>
 
-                        <p:column headerText="Net Total"  style="width:50px!important; text-align: right; padding: 6px;" 
+                        <p:column headerText="Net Total"  style="width:8rem; text-align: right; padding: 6px;"
                                   rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                             <h:outputLabel value="#{bItm.netValue}" style="text-align: right;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column style="width:10px!important; text-align: right; padding: 6px;">
+                        <p:column style="width:6rem; text-align: right; padding: 6px;">
                             <div class="d-flex justify-content-end gap-2">
                                 <p:rowEditor/>
-                                <p:commandButton 
-                                    icon="fas fa-trash" 
-                                    action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}" 
+                                <p:commandButton
+                                    icon="fas fa-trash"
+                                    action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}"
                                     class="ui-button-danger"
-                                    ajax="false" >
+                                    process="@this"
+                                    update="itemList">
                                 </p:commandButton>
                             </div>
 
                         </p:column>
+
+                        <p:rowExpansion>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Description: </strong>
+                                    <h:outputText id="dis" value="#{bItm.item.descreption}" />
+                                    <h:panelGroup rendered="#{bItm.autoSubstituted}" layout="block"
+                                                  style="margin-top:2px;font-size:0.85em;color:#e67e22;font-style:italic;">
+                                        <h:outputText value="Auto-sub: #{bItm.requestedItemName} → #{bItm.item.name}" />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Comment: </strong>
+                                    <h:outputText value="#{bItm.referanceBillItem.instructions}" />
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{bItm.referanceBillItem.hasPrescription() and bItm.referanceBillItem.prescription.comment ne null and bItm.referanceBillItem.prescription.comment ne ''}"
+                                                  style="font-size:0.85em;color:#555;margin-top:2px;">
+                                        <h:outputText value="Rx: #{bItm.referanceBillItem.prescription.comment}" />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>Batch No: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>Expiry: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </div>
+                            <!-- Plain <div rendered="..."> is silently ignored by JSF (rendered
+                                 only works on actual JSF components) — these privilege checks
+                                 were rendering unconditionally regardless of privilege until
+                                 fixed to h:panelGroup per CodeRabbit review on #23068. -->
+                            <h:panelGroup layout="block" styleClass="row mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                <div class="col-md-3">
+                                    <strong>Sale Rate: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Cost Rate: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                                <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <strong>Available Stock: </strong>
+                                    <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.stock}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                <strong>Matrix Value: </strong>
+                                <h:outputLabel value="#{bItm.marginValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </h:panelGroup>
+                        </p:rowExpansion>
 
                     </p:dataTable>
 

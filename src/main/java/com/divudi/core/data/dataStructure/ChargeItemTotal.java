@@ -19,11 +19,59 @@ public class ChargeItemTotal {
     private InwardChargeType inwardChargeType;
     private double total = 0;
     private double discount = 0;
+    private double chargeTypeDiscount = 0;
     private double netTotal = 0;
     private double adjustedTotal = 0.0;
+    private double gross = 0;
+    private double margin = 0;
+    private double vat = 0;
     private String comments;
     private List<PatientRoom> patientRooms;
     List<BillFee> billFees;
+    /**
+     * The specific Outside Charge items (name + amount) whose value was
+     * folded into this charge type's total (issue #22989). Populated only
+     * for charge types that received an Outside Charge contribution; empty
+     * otherwise. Display-only — the amounts here are already included in
+     * {@link #total}; they are broken out separately so a caller can list
+     * the items in place of the shared category total instead of double
+     * counting. Does not itself affect total/discount/validation.
+     */
+    private List<AdditionalChargeItem> additionalChargeItems;
+
+    public List<AdditionalChargeItem> getAdditionalChargeItems() {
+        if (additionalChargeItems == null) {
+            additionalChargeItems = new ArrayList<>();
+        }
+        return additionalChargeItems;
+    }
+
+    public void setAdditionalChargeItems(List<AdditionalChargeItem> additionalChargeItems) {
+        this.additionalChargeItems = additionalChargeItems;
+    }
+
+    /**
+     * One Outside Charge item's name and the amount it contributed to its
+     * charge type's total. See {@link #additionalChargeItems}.
+     */
+    public static class AdditionalChargeItem {
+
+        private final String name;
+        private final double amount;
+
+        public AdditionalChargeItem(String name, double amount) {
+            this.name = name;
+            this.amount = amount;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+    }
 
     public List<BillFee> getBillFees() {
         return billFees;
@@ -49,6 +97,14 @@ public class ChargeItemTotal {
         this.discount = discount;
     }
 
+    public double getChargeTypeDiscount() {
+        return chargeTypeDiscount;
+    }
+
+    public void setChargeTypeDiscount(double chargeTypeDiscount) {
+        this.chargeTypeDiscount = chargeTypeDiscount;
+    }
+
     public double getTotal() {
         return total;
     }
@@ -58,7 +114,7 @@ public class ChargeItemTotal {
     }
 
     public double getNetTotal() {
-        netTotal = total - discount;
+        netTotal = total - discount - chargeTypeDiscount;
         return netTotal;
     }
 
@@ -70,6 +126,30 @@ public class ChargeItemTotal {
 
     public void setAdjustedTotal(double adjustedTotal) {
         this.adjustedTotal = adjustedTotal;
+    }
+
+    public double getGross() {
+        return gross;
+    }
+
+    public void setGross(double gross) {
+        this.gross = gross;
+    }
+
+    public double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(double margin) {
+        this.margin = margin;
+    }
+
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
     }
 
     public String getComments() {

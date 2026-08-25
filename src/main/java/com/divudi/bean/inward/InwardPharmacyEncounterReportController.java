@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -14,16 +15,19 @@ import com.divudi.core.data.dto.InpatientPharmacyBillItemDTO;
 import com.divudi.core.data.dto.InpatientPharmacyDepartmentSummaryDTO;
 import com.divudi.core.data.dto.InpatientPharmacyItemSummaryDTO;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -68,6 +72,8 @@ public class InwardPharmacyEncounterReportController implements Serializable {
 
     @Inject
     AdmissionController admissionController;
+    @Inject
+    SessionController sessionController;
 
     private PatientEncounter patientEncounter;
 
@@ -76,6 +82,24 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     // entity-only concerns (not expressible as pure DTO projections).
     private List<Bill> pharmacyRequestBillsToPatientEncounter;
     private double pharmacyRequestBillsToPatientEncounterNetTotal;
+
+    // 1a) Ward-wide Pharmacy Requests list (issue #22428) - reached from the
+    // Nursing Dashboard, scoped to the logged-in nurse's own department
+    // (Bill.department, set from sessionController.getDepartment() at
+    // request-creation time - see PharmacyRequestForBhtController), across
+    // all patients/encounters in that ward, with filters.
+    private List<Bill> pharmacyRequestBillsToWard;
+    private double pharmacyRequestBillsToWardNetTotal;
+    private String wardPharmacyRequestStatusFilter;
+    private Department wardPharmacyRequestDepartmentFilter;
+    private String wardPharmacyRequestPatientFilter;
+    private Date wardPharmacyRequestFromDate;
+    private Date wardPharmacyRequestToDate;
+
+    // 1b) Pharmacy Request Drafts list (InwardPharmacyRequest bills with
+    // billTypeAtomic = REQUEST_MEDICINE_INWARD_PRE, i.e. not yet settled)
+    private List<Bill> pharmacyRequestDraftBillsToPatientEncounter;
+    private double pharmacyRequestDraftBillsToPatientEncounterNetTotal;
 
     // 2) Direct Issues list (PharmacyBhtPre PreBill sale bills, merged with their
     // RefundBill returns so the whole picture is visible on one page)
@@ -92,6 +116,14 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private List<BillListReportDTO> returnBillsToPatientEncounter;
     private double returnBillsToPatientEncounterNetTotal;
     private List<InpatientPharmacyBillItemDTO> returnBillItemsToPatientEncounter;
+
+    // 4) Unaccepted Issues list (issue #22515) - ISSUE_MEDICINE_ON_REQUEST_INWARD
+    // bills for this patientEncounter with no matching
+    // ACCEPT_ISSUED_MEDICINE_INWARD backward reference yet, i.e. pharmacy
+    // has issued but the ward hasn't accepted receipt. Same NOT EXISTS shape
+    // proven in NursingDischargeController.fetchUnacceptedIssues().
+    private List<Bill> unacceptedIssueBillsToPatientEncounter;
+    private double unacceptedIssueBillsToPatientEncounterNetTotal;
 
     /**
      * Replaces "BHT Issue Requests" + "View Pharmacy Requests". Lists all
@@ -123,12 +155,148 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private List<Bill> fetchPharmacyRequestBills() {
         String jpql = "SELECT b FROM Bill b "
                 + "WHERE b.billType = :billType "
+                + "AND b.billTypeAtomic = :bta "
                 + "AND b.retired = false "
                 + "AND b.patientEncounter = :pe "
                 + "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardPharmacyRequest);
+        params.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
+        params.put("pe", patientEncounter);
+
+        List<Bill> result = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    /**
+     * Ward-wide Pharmacy Requests list (issue #22428), reached from the
+     * Nursing Dashboard. Unlike {@link #navigateToInpatientPharmacyRequestsList()}
+     * this is not scoped to one patientEncounter - it lists InwardPharmacyRequest
+     * bills for the logged-in nurse's own department (ward), across all patients
+     * currently admitted there, with filters (status, requested/target
+     * department, patient/BHT no, date range). Modeled on
+     * {@link PatientTransferController#loadPendingForDepartment()}.
+     */
+    public String navigateToWardPharmacyRequestsList() {
+        wardPharmacyRequestStatusFilter = null;
+        wardPharmacyRequestDepartmentFilter = null;
+        wardPharmacyRequestPatientFilter = null;
+        wardPharmacyRequestFromDate = null;
+        wardPharmacyRequestToDate = null;
+        filterWardPharmacyRequests();
+        return "/inward/reports/ward_pharmacy_requests_list?faces-redirect=true";
+    }
+
+    /**
+     * Re-runs the ward-wide Pharmacy Requests query using the current filter
+     * field values. Bound to the filter panel's "Apply Filters" button on
+     * ward_pharmacy_requests_list.xhtml (ajax).
+     */
+    public void filterWardPharmacyRequests() {
+        pharmacyRequestBillsToWard = new ArrayList<>();
+        pharmacyRequestBillsToWardNetTotal = 0.0;
+        try {
+            pharmacyRequestBillsToWard = fetchWardPharmacyRequestBills();
+            for (Bill b : pharmacyRequestBillsToWard) {
+                pharmacyRequestBillsToWardNetTotal += b.getNetTotal();
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
+                    .log(Level.SEVERE, "Error loading ward pharmacy request bills", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy request data");
+        }
+    }
+
+    private List<Bill> fetchWardPharmacyRequestBills() {
+        Department dept = sessionController.getDepartment();
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b "
+                + "WHERE b.billType = :billType "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.retired = false "
+                + "AND b.department = :dept ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.InwardPharmacyRequest);
+        params.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
+        params.put("dept", dept);
+
+        if (wardPharmacyRequestStatusFilter != null) {
+            switch (wardPharmacyRequestStatusFilter) {
+                case "Issued":
+                    jpql.append("AND b.cancelled = false AND b.fullyIssued = true ");
+                    break;
+                case "Not Issued":
+                    jpql.append("AND b.cancelled = false AND b.fullyIssued = false ");
+                    break;
+                case "Cancelled":
+                    jpql.append("AND b.cancelled = true ");
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (wardPharmacyRequestDepartmentFilter != null) {
+            jpql.append("AND b.toDepartment = :toDept ");
+            params.put("toDept", wardPharmacyRequestDepartmentFilter);
+        }
+        if (wardPharmacyRequestPatientFilter != null && !wardPharmacyRequestPatientFilter.trim().isEmpty()) {
+            jpql.append("AND (UPPER(b.patientEncounter.bhtNo) LIKE :patientTxt "
+                    + "OR UPPER(b.patientEncounter.patient.person.name) LIKE :patientTxt) ");
+            params.put("patientTxt", "%" + wardPharmacyRequestPatientFilter.trim().toUpperCase() + "%");
+        }
+        if (wardPharmacyRequestFromDate != null) {
+            jpql.append("AND b.createdAt >= :fromDate ");
+            params.put("fromDate", wardPharmacyRequestFromDate);
+        }
+        if (wardPharmacyRequestToDate != null) {
+            jpql.append("AND b.createdAt <= :toDate ");
+            params.put("toDate", CommonFunctions.getEndOfDay(wardPharmacyRequestToDate));
+        }
+        jpql.append("ORDER BY b.createdAt DESC");
+
+        List<Bill> result = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    /**
+     * Lists all draft (not yet settled) InwardPharmacyRequest bills for this
+     * patientEncounter, i.e. bills with billTypeAtomic =
+     * REQUEST_MEDICINE_INWARD_PRE. Companion to
+     * {@link #navigateToInpatientPharmacyRequestsList()} for the "Save
+     * Draft" feature (issue #22004).
+     */
+    public String navigateToInpatientPharmacyRequestDraftsList() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        pharmacyRequestDraftBillsToPatientEncounter = new ArrayList<>();
+        pharmacyRequestDraftBillsToPatientEncounterNetTotal = 0.0;
+        try {
+            pharmacyRequestDraftBillsToPatientEncounter = fetchPharmacyRequestDraftBills();
+            for (Bill b : pharmacyRequestDraftBillsToPatientEncounter) {
+                pharmacyRequestDraftBillsToPatientEncounterNetTotal += b.getNetTotal();
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
+                    .log(Level.SEVERE, "Error loading pharmacy request draft bills", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy request draft data");
+            return null;
+        }
+        return "/inward/reports/inpatient_pharmacy_request_drafts_list?faces-redirect=true";
+    }
+
+    private List<Bill> fetchPharmacyRequestDraftBills() {
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.billTypeAtomic = :bta "
+                + "AND b.retired = false "
+                + "AND b.patientEncounter = :pe "
+                + "ORDER BY b.createdAt DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE);
         params.put("pe", patientEncounter);
 
         List<Bill> result = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -521,6 +689,68 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         return result;
     }
 
+    /**
+     * Worklist for pharmacy issues awaiting ward acceptance (issue #22515).
+     * Lists ISSUE_MEDICINE_ON_REQUEST_INWARD bills for this patientEncounter
+     * that have no matching ACCEPT_ISSUED_MEDICINE_INWARD backward reference
+     * yet - previously this state only surfaced as a discharge blocker on
+     * the Nursing Discharge page (NursingDischargeController.fetchUnacceptedIssues()),
+     * too late for pharmacy/ward staff to act on proactively.
+     */
+    public String navigateToInpatientPharmacyUnacceptedIssuesList() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        unacceptedIssueBillsToPatientEncounter = new ArrayList<>();
+        unacceptedIssueBillsToPatientEncounterNetTotal = 0.0;
+        try {
+            unacceptedIssueBillsToPatientEncounter = fetchUnacceptedIssueBills();
+            for (Bill b : unacceptedIssueBillsToPatientEncounter) {
+                unacceptedIssueBillsToPatientEncounterNetTotal += b.getNetTotal();
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
+                    .log(Level.SEVERE, "Error loading unaccepted pharmacy issue bills", e);
+            JsfUtil.addErrorMessage("Error loading unaccepted issue data");
+            return null;
+        }
+        return "/inward/reports/inpatient_pharmacy_unaccepted_issues_list?faces-redirect=true";
+    }
+
+    private List<Bill> fetchUnacceptedIssueBills() {
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.patientEncounter = :pe "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND NOT EXISTS ("
+                + "  SELECT r FROM Bill r "
+                + "  WHERE r.backwardReferenceBill = b "
+                + "  AND r.billTypeAtomic = :acceptBta "
+                + "  AND r.retired = false "
+                + "  AND r.cancelled = false"
+                + ") "
+                + "ORDER BY b.createdAt DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", patientEncounter);
+        params.put("bta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+
+        List<Bill> result = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    /**
+     * Back-nav for the ward-wide Pharmacy Requests page (issue #22428) - there
+     * is no single admission to return to, so this goes back to the Nursing
+     * Dashboard instead of {@link #navigateToAdmissionProfile()}.
+     */
+    public String navigateToNursingDashboard() {
+        return "/nurse/index?faces-redirect=true";
+    }
+
     public String navigateToAdmissionProfile() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter selected");
@@ -554,6 +784,78 @@ public class InwardPharmacyEncounterReportController implements Serializable {
 
     public void setPharmacyRequestBillsToPatientEncounterNetTotal(double pharmacyRequestBillsToPatientEncounterNetTotal) {
         this.pharmacyRequestBillsToPatientEncounterNetTotal = pharmacyRequestBillsToPatientEncounterNetTotal;
+    }
+
+    public List<Bill> getPharmacyRequestBillsToWard() {
+        return pharmacyRequestBillsToWard;
+    }
+
+    public void setPharmacyRequestBillsToWard(List<Bill> pharmacyRequestBillsToWard) {
+        this.pharmacyRequestBillsToWard = pharmacyRequestBillsToWard;
+    }
+
+    public double getPharmacyRequestBillsToWardNetTotal() {
+        return pharmacyRequestBillsToWardNetTotal;
+    }
+
+    public void setPharmacyRequestBillsToWardNetTotal(double pharmacyRequestBillsToWardNetTotal) {
+        this.pharmacyRequestBillsToWardNetTotal = pharmacyRequestBillsToWardNetTotal;
+    }
+
+    public String getWardPharmacyRequestStatusFilter() {
+        return wardPharmacyRequestStatusFilter;
+    }
+
+    public void setWardPharmacyRequestStatusFilter(String wardPharmacyRequestStatusFilter) {
+        this.wardPharmacyRequestStatusFilter = wardPharmacyRequestStatusFilter;
+    }
+
+    public Department getWardPharmacyRequestDepartmentFilter() {
+        return wardPharmacyRequestDepartmentFilter;
+    }
+
+    public void setWardPharmacyRequestDepartmentFilter(Department wardPharmacyRequestDepartmentFilter) {
+        this.wardPharmacyRequestDepartmentFilter = wardPharmacyRequestDepartmentFilter;
+    }
+
+    public String getWardPharmacyRequestPatientFilter() {
+        return wardPharmacyRequestPatientFilter;
+    }
+
+    public void setWardPharmacyRequestPatientFilter(String wardPharmacyRequestPatientFilter) {
+        this.wardPharmacyRequestPatientFilter = wardPharmacyRequestPatientFilter;
+    }
+
+    public Date getWardPharmacyRequestFromDate() {
+        return wardPharmacyRequestFromDate;
+    }
+
+    public void setWardPharmacyRequestFromDate(Date wardPharmacyRequestFromDate) {
+        this.wardPharmacyRequestFromDate = wardPharmacyRequestFromDate;
+    }
+
+    public Date getWardPharmacyRequestToDate() {
+        return wardPharmacyRequestToDate;
+    }
+
+    public void setWardPharmacyRequestToDate(Date wardPharmacyRequestToDate) {
+        this.wardPharmacyRequestToDate = wardPharmacyRequestToDate;
+    }
+
+    public List<Bill> getPharmacyRequestDraftBillsToPatientEncounter() {
+        return pharmacyRequestDraftBillsToPatientEncounter;
+    }
+
+    public void setPharmacyRequestDraftBillsToPatientEncounter(List<Bill> pharmacyRequestDraftBillsToPatientEncounter) {
+        this.pharmacyRequestDraftBillsToPatientEncounter = pharmacyRequestDraftBillsToPatientEncounter;
+    }
+
+    public double getPharmacyRequestDraftBillsToPatientEncounterNetTotal() {
+        return pharmacyRequestDraftBillsToPatientEncounterNetTotal;
+    }
+
+    public void setPharmacyRequestDraftBillsToPatientEncounterNetTotal(double pharmacyRequestDraftBillsToPatientEncounterNetTotal) {
+        this.pharmacyRequestDraftBillsToPatientEncounterNetTotal = pharmacyRequestDraftBillsToPatientEncounterNetTotal;
     }
 
     public List<BillListReportDTO> getDirectIssueBillsToPatientEncounter() {
@@ -722,5 +1024,21 @@ public class InwardPharmacyEncounterReportController implements Serializable {
 
     public void setReturnBillItemsToPatientEncounter(List<InpatientPharmacyBillItemDTO> returnBillItemsToPatientEncounter) {
         this.returnBillItemsToPatientEncounter = returnBillItemsToPatientEncounter;
+    }
+
+    public List<Bill> getUnacceptedIssueBillsToPatientEncounter() {
+        return unacceptedIssueBillsToPatientEncounter;
+    }
+
+    public void setUnacceptedIssueBillsToPatientEncounter(List<Bill> unacceptedIssueBillsToPatientEncounter) {
+        this.unacceptedIssueBillsToPatientEncounter = unacceptedIssueBillsToPatientEncounter;
+    }
+
+    public double getUnacceptedIssueBillsToPatientEncounterNetTotal() {
+        return unacceptedIssueBillsToPatientEncounterNetTotal;
+    }
+
+    public void setUnacceptedIssueBillsToPatientEncounterNetTotal(double unacceptedIssueBillsToPatientEncounterNetTotal) {
+        this.unacceptedIssueBillsToPatientEncounterNetTotal = unacceptedIssueBillsToPatientEncounterNetTotal;
     }
 }

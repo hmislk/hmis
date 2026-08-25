@@ -622,7 +622,37 @@ public class AmpController implements Serializable {
         if (current.getId() != null) {
             selectedAmpDto = createAmpDto(current);
         }
+        fillNullFieldsFromVmp(current);
         editable = true;
+    }
+
+    /**
+     * Back-fills null Category / Strength / Strength Unit / Dosage Form /
+     * Issue Unit on the AMP from its linked VMP, so the user only needs to
+     * override defaults rather than re-enter values the VMP already
+     * specifies. Fields that already have a value are left untouched.
+     * Issue #23051.
+     */
+    private void fillNullFieldsFromVmp(Amp amp) {
+        if (amp == null || amp.getVmp() == null) {
+            return;
+        }
+        Vmp vmp = amp.getVmp();
+        if (amp.getCategory() == null) {
+            amp.setCategory(vmp.getCategory());
+        }
+        if (amp.getStrengthOfAnIssueUnit() == null) {
+            amp.setStrengthOfAnIssueUnit(vmp.getStrengthOfAnIssueUnit());
+        }
+        if (amp.getStrengthUnit() == null) {
+            amp.setStrengthUnit(vmp.getStrengthUnit());
+        }
+        if (amp.getDosageForm() == null) {
+            amp.setDosageForm(vmp.getDosageForm());
+        }
+        if (amp.getIssueUnit() == null) {
+            amp.setIssueUnit(vmp.getIssueUnit());
+        }
     }
 
     /**
@@ -802,7 +832,7 @@ public class AmpController implements Serializable {
 
         int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item", "4"));
 
-        if (current.getCode().trim().length() < maxCodeLeanth) {
+        if (current.getCode() == null || current.getCode().trim().length() < maxCodeLeanth) {
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
             return;
         }

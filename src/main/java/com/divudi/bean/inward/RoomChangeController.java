@@ -17,6 +17,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.GuardianRoom;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
@@ -27,12 +28,15 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -66,9 +70,8 @@ public class RoomChangeController implements Serializable {
     NotificationController notificationController;
     @Inject
     private InwardBeanController inwardBean;
-    @Inject
-    private com.divudi.bean.common.AuditEventApplicationController auditEventApplicationController;
-
+    @EJB
+    private AuditService auditService;
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -89,6 +92,19 @@ public class RoomChangeController implements Serializable {
     private PatientRoom roomForReceipt;
     List<Admission> selectedItems;
     private Admission current;
+    /**
+     * Staging field for the Admit Room "Patient Selection" step
+     * (admit_room.xhtml). The autocomplete there binds to this field, not
+     * {@link #current} directly, so that selecting a patient does not flip
+     * {@code current} — and therefore does not flip the {@code rendered}
+     * condition on the surrounding panel — mid-lifecycle. If it bound to
+     * {@code current} directly, an earlier ajax event (itemSelect) would
+     * already leave {@code current} non-null by the time the "Continue"
+     * button's own full postback runs, so JSF would evaluate the panel
+     * (and the Continue button inside it) as not rendered for that
+     * request and silently skip invoking its action. See #22911.
+     */
+    private Admission selectedAdmission;
     private List<Admission> items = null;
     private Institution institution;
     private List<Patient> patientList;
@@ -207,18 +223,19 @@ public class RoomChangeController implements Serializable {
 
     public String navigateToAdmitRoomFromMenu() {
         setCurrent(null);
+        setSelectedAdmission(null);
         setCurrentPatientRoom(null);
         institution = sessionController.getInstitution();
         return "/inward/admit_room?faces-redirect=true";
     }
 
     public void selectRoomForAdmit() {
-        if (current == null) {
+        if (selectedAdmission == null) {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
+        current = selectedAdmission;
         if (current.getCurrentPatientRoom() == null) {
-            JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
         setCurrentPatientRoom(current.getCurrentPatientRoom());
@@ -287,25 +304,36 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
-        String beforeState = "roomFacilityCharge=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null")
-                + ", admittedAt=" + pR.getAdmittedAt()
-                + ", discharged=" + pR.isDischarged();
+        Map<String, Object> beforeState = roomStateMap(pR);
 
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
         getPatientRoomFacade().edit(pR);
 
-        if (admissionTypeEnum == AdmissionTypeEnum.Admission) {
-            pR.getPreviousRoom().setDischarged(false);
-            pR.getPreviousRoom().setDischargedAt(null);
-            pR.getPreviousRoom().setDischargedBy(null);
-            getPatientRoomFacade().edit(pR.getPreviousRoom());
-            getCurrent().setCurrentPatientRoom(pR.getPreviousRoom());
-            getEjbFacade().edit(getCurrent());
+        // Repoint the encounter off a retired room so it never keeps referencing one that's
+        // neither visible nor discharged. Previously this only ran for Admission-type encounters,
+        // which left DayCase encounters with the same dangling-currentPatientRoom bug fixed in
+        // removeRoom() (Issue #22955) - reading pR.getPatientEncounter() directly (not getCurrent())
+        // also avoids the session-staleness trap noted in BhtSummeryController's discharge guard.
+        PatientEncounter encounter = pR.getPatientEncounter();
+        if (encounter != null && pR.equals(encounter.getCurrentPatientRoom())) {
+            PatientRoom previousRoom = pR.getPreviousRoom();
+            if (previousRoom != null && !previousRoom.isRetired()) {
+                previousRoom.setDischarged(false);
+                previousRoom.setDischargedAt(null);
+                previousRoom.setDischargedBy(null);
+                getPatientRoomFacade().edit(previousRoom);
+                encounter.setCurrentPatientRoom(previousRoom);
+            } else {
+                encounter.setCurrentPatientRoom(null);
+                encounter.setRoomAdmitted(false);
+            }
+            patientEncounterFacade.edit(encounter);
         }
 
         recordRoomAuditEvent(pR, "Room Removed", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void discharge(PatientRoom pR) {
@@ -313,6 +341,8 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Discharge Date");
             return;
         }
+
+        Map<String, Object> beforeState = roomStateMap(pR);
 
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
@@ -327,7 +357,8 @@ public class RoomChangeController implements Serializable {
             patientEncounterFacade.edit(encounter);
         }
 
-        recordRoomAuditEvent(pR, "Room Discharged", null);
+        recordRoomAuditEvent(pR, "Room Discharged", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
@@ -351,6 +382,8 @@ public class RoomChangeController implements Serializable {
             }
         }
 
+        Map<String, Object> beforeState = roomStateMap(pR);
+
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
@@ -365,7 +398,8 @@ public class RoomChangeController implements Serializable {
         }
 
         // Record audit event
-        recordRoomAuditEvent(pR, "Room Discharged", null);
+        recordRoomAuditEvent(pR, "Room Discharged", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
 
         JsfUtil.addSuccessMessage("Successfully Discharged from Room");
     }
@@ -375,8 +409,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
         // Capture state before cancel for audit
-        String beforeState = "discharged=true, dischargedAt=" + pR.getDischargedAt()
-                + ", dischargedBy=" + (pR.getDischargedBy() != null ? pR.getDischargedBy().getName() : "null");
+        Map<String, Object> beforeState = roomStateMap(pR);
 
         pR.setDischarged(false);
         pR.setDischargedBy(null);
@@ -386,42 +419,37 @@ public class RoomChangeController implements Serializable {
         // Record audit event
         recordRoomAuditEvent(pR, "Room Discharge Cancelled", beforeState);
         notificationController.createNotification(pR, "CancelDischarge");
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
 
         JsfUtil.addSuccessMessage("Room Discharge Cancelled");
     }
 
-    private void recordRoomAuditEvent(PatientRoom pr, String trigger, String beforeState) {
+    private Map<String, Object> roomStateMap(PatientRoom pr) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (pr == null) {
+            return m;
+        }
+        m.put("room", pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : null);
+        m.put("admittedAt", pr.getAdmittedAt());
+        m.put("discharged", pr.isDischarged());
+        m.put("dischargedAt", pr.getDischargedAt());
+        m.put("dischargedBy", pr.getDischargedBy() != null ? pr.getDischargedBy().getName() : null);
+        m.put("retired", pr.isRetired());
+        return m;
+    }
+
+    private void recordRoomAuditEvent(PatientRoom pr, String trigger, Map<String, Object> beforeState) {
         try {
-            com.divudi.core.entity.AuditEvent auditEvent = new com.divudi.core.entity.AuditEvent();
-            auditEvent.setEventDataTime(new Date());
-            auditEvent.setEventTrigger(trigger);
-            auditEvent.setEntityType(pr.getClass().getSimpleName());
-            auditEvent.setObjectId(pr.getId());
-            if (pr.getPatientEncounter() != null) {
-                auditEvent.setUrl("BHT: " + pr.getPatientEncounter().getBhtNo()
-                        + " | Room: " + (pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "N/A"));
-            }
-            if (sessionController.getLoggedUser() != null) {
-                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-            }
-            if (sessionController.getInstitution() != null) {
-                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-            }
-            if (sessionController.getDepartment() != null) {
-                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-            }
-            if (beforeState != null) {
-                auditEvent.setBeforeJson(beforeState);
-            }
-            String afterState = "discharged=" + pr.isDischarged()
-                    + ", dischargedAt=" + pr.getDischargedAt()
-                    + ", dischargedBy=" + (pr.getDischargedBy() != null ? pr.getDischargedBy().getName() : "null");
-            auditEvent.setAfterJson(afterState);
-            auditEvent.setEventStatus("Completed");
-            auditEvent.setEventDuration(new Date().getTime() - auditEvent.getEventDataTime().getTime());
-            auditEventApplicationController.logAuditEvent(auditEvent);
+            auditService.logEncounterAudit(
+                    pr.getPatientEncounter(), trigger,
+                    beforeState, roomStateMap(pr),
+                    sessionController.getLoggedUser(),
+                    pr.getClass().getSimpleName(), pr.getId(),
+                    sessionController.getInstitution() != null ? sessionController.getInstitution().getId() : null,
+                    sessionController.getDepartment() != null ? sessionController.getDepartment().getId() : null);
         } catch (Exception e) {
-            // Silently fail â€" audit failure should not block the user action
+            // Audit failure should not block the user action, but leave a trace
+            e.printStackTrace();
         }
     }
 
@@ -447,12 +475,48 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
-        String beforeState = "room=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null");
+
+        PatientEncounter encounter = pR.getPatientEncounter();
+        AdmissionTypeEnum admissionTypeEnum = encounter != null && encounter.getAdmissionType() != null
+                ? encounter.getAdmissionType().getAdmissionTypeEnum() : null;
+
+        // Can't remove a room from the middle of the chain - the most recent one has to go first,
+        // otherwise previousRoom/nextRoom linkage breaks. Mirrors the guard in remove() (Issue #22955).
+        if (admissionTypeEnum == AdmissionTypeEnum.Admission
+                && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
+            JsfUtil.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
+            return;
+        }
+
+        Map<String, Object> beforeState = roomStateMap(pR);
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
         pR.setRetirer(sessionController.getWebUser());
         getPatientRoomFacade().edit(pR);
+
+        // If the room being removed is the encounter's current room, repoint the encounter so it
+        // never keeps referencing a retired, non-discharged room - that left discharge blocked
+        // ("the current room has not been discharged") on a room nobody can see anymore (#22955).
+        if (encounter != null && pR.equals(encounter.getCurrentPatientRoom())) {
+            PatientRoom previousRoom = pR.getPreviousRoom();
+            if (previousRoom != null && !previousRoom.isRetired()) {
+                previousRoom.setDischarged(false);
+                previousRoom.setDischargedAt(null);
+                previousRoom.setDischargedBy(null);
+                getPatientRoomFacade().edit(previousRoom);
+                encounter.setCurrentPatientRoom(previousRoom);
+            } else {
+                // No usable previous room (this was the only/first room) - fall back to "not room
+                // admitted" rather than leave a dangling reference. The room details page and the
+                // discharge guard both already handle this state correctly.
+                encounter.setCurrentPatientRoom(null);
+                encounter.setRoomAdmitted(false);
+            }
+            patientEncounterFacade.edit(encounter);
+        }
+
         bhtSummeryController.setPatientRooms(null);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
         recordRoomAuditEvent(pR, "Room Removed", beforeState);
     }
 
@@ -463,7 +527,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
-        String beforeState = "room=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null");
+        Map<String, Object> beforeState = roomStateMap(pR);
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
@@ -477,12 +541,14 @@ public class RoomChangeController implements Serializable {
         }
 
         recordRoomAuditEvent(pR, "Guardian Room Removed", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void recreate() {
         patientRoom = null;
         selectedItems = null;
         current = null;
+        selectedAdmission = null;
         items = null;
         patientList = null;
         changeAt = null;
@@ -545,7 +611,8 @@ public class RoomChangeController implements Serializable {
         // Save consultant information
         saveConsultantInfo(newPatientRoom);
 
-        recordRoomAuditEvent(newPatientRoom, "Room Changed", "previousRoom=" + (oldPatientRoom.getRoomFacilityCharge() != null ? oldPatientRoom.getRoomFacilityCharge().getName() : "null"));
+        Map<String, Object> beforeState = roomStateMap(oldPatientRoom);
+        recordRoomAuditEvent(newPatientRoom, "Room Changed", beforeState);
         notificationController.createNotification(newPatientRoom, "Change");
 
         if (newConsultant != null || newPrimeConsultant != null) {
@@ -631,7 +698,7 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(oldGaurdianRoom);
         }
 
-        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Changed", oldGaurdianRoom != null ? "previousRoom=" + (oldGaurdianRoom.getRoomFacilityCharge() != null ? oldGaurdianRoom.getRoomFacilityCharge().getName() : "null") : "first guardian room");
+        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Changed", oldGaurdianRoom != null ? roomStateMap(oldGaurdianRoom) : null);
         notificationController.createNotification(newGuardianRoom, "Change");
 
         JsfUtil.addSuccessMessage("Successfully Guardian Room Changed");
@@ -733,6 +800,14 @@ public class RoomChangeController implements Serializable {
 
     public void setCurrent(Admission current) {
         this.current = current;
+    }
+
+    public Admission getSelectedAdmission() {
+        return selectedAdmission;
+    }
+
+    public void setSelectedAdmission(Admission selectedAdmission) {
+        this.selectedAdmission = selectedAdmission;
     }
 
     public void createPatientRoom() {

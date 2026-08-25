@@ -54,26 +54,22 @@
                 </div>
 
                 <div class="billDetailsFiveFive" >
-                    <table style="width: 95%!important;" align="center" >
+                    <table style="width: 100%!important;" align="center" >
 
                         <tr>
-                            <td><h:outputLabel value="Bill ID" class="billDetailsFiveFive" ></h:outputLabel></td>
-                            <td style="text-align: center;" >:</td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td width="2%" />
-                            <td width="" ><h:outputLabel value="Voucher No" class="billDetailsFiveFive" ></h:outputLabel></td>
-                            <td style="text-align: center;" >:</td>
-                            <td>
-
+                            <td width="15%" ><h:outputLabel value="Voucher No" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td width="2%" style="text-align: center;" >:</td>
+                            <td width="83%" >
+                                <h:outputText value="#{cc.attrs.bill.voucherNo}" class="billDetailsFiveFive" >
+                                    <f:convertNumber pattern="000000"/>
+                                </h:outputText>
                             </td>
                         </tr>
 
                         <tr>
-                            <td><h:outputLabel value="Date" class="billDetailsFiveFive" ></h:outputLabel></td>
-                            <td  style="text-align: center;" >:</td>
-                            <td>
+                            <td width="15%" ><h:outputLabel value="Date" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td width="2%" style="text-align: center;" >:</td>
+                            <td width="83%" >
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" class="billDetailsFiveFive" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
@@ -83,31 +79,20 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </td>
-                            <td width="2%" />
-                            <td width="" ><h:outputLabel value="Time" class="billDetailsFiveFive" ></h:outputLabel></td>
-                            <td style="text-align: center;" >:</td>
-                            <td width="">
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"
-                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" class="billDetailsFiveFive">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.billTime}"
-                                               rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }" class="billDetailsFiveFive">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                </h:outputLabel>
+                        </tr>
+
+                        <tr>
+                            <td width="15%" ><h:outputLabel value="Payee" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td width="2%" style="text-align: center;" >:</td>
+                            <td width="83%" >
+                                <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize; " class="billDetailsFiveFive"  />
                             </td>
                         </tr>
 
                         <tr>
-                            <td><h:outputLabel value="Payee" class="billDetailsFiveFive" ></h:outputLabel></td>
-                            <td style="text-align: center;" >:</td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize; " class="billDetailsFiveFive"  />
-                            </td>
-                            <td width="2%" />
-                            <td width="" ><h:outputLabel value="Speciality" class="billDetailsFiveFive" ></h:outputLabel></td>
-                            <td style="text-align: center;" >:</td>
-                            <td width="">
+                            <td width="15%" ><h:outputLabel value="Speciality" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td width="2%" style="text-align: center;" >:</td>
+                            <td width="83%" >
                                 <h:outputLabel value="#{cc.attrs.bill.staff.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
                             </td>
                         </tr>

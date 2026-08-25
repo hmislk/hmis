@@ -788,4 +788,169 @@ public class PharmacyService {
         );
     }
 
+    /**
+     * Bill types that take stock OUT of a department as genuine demand, used by
+     * the Ordering Requirement Report (issue #22466) to compute consumption.
+     *
+     * Only the stock-moving side of each transaction appears here. A retail sale
+     * writes two PharmaceuticalBillItem rows for one physical movement - the
+     * "pre" row (which is where deductFromStock actually runs, see
+     * PharmacySaleController) and the settled/financial row (whose deductFromStock
+     * calls are commented out in PharmacyPreSettleController). Listing both would
+     * roughly double every retail figure, so the financial mirrors
+     * (PHARMACY_RETAIL_SALE, PHARMACY_RETAIL_SALE_CANCELLED,
+     * PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+     * PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+     * PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) are deliberately absent.
+     * This is the same split already documented on
+     * getPharmacyF15StockMovementBillTypes() vs getPharmacyIncomeBillTypes().
+     *
+     * Reversals (cancellations and returns) are included: they carry
+     * positive-signed quantities, so summing signed quantities over this list
+     * yields consumption already net of returns.
+     *
+     * Internal transfers out are treated as demand on the issuing department,
+     * which is correct for the report's intended per-department use. At a scope
+     * spanning several departments an internal transfer inflates consumption;
+     * the report page carries a note to that effect.
+     */
+    public List<BillTypeAtomic> getOrderingOutwardBillTypes() {
+        return Arrays.asList(
+                // Retail sale - stock-moving ("pre") side only
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK_BATCH_BILL,
+                // Wholesale - "pre" side by analogy with retail (the coop data set
+                // contains no wholesale rows, so this pairing is unverified against
+                // live data; PHARMACY_WHOLESALE is treated as the financial mirror)
+                BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                // Inward / theatre direct issues
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+                BillTypeAtomic.WARD_MEDICINE_ADMINISTRATION_CONSUMPTION,
+                // Issues against a request
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+                BillTypeAtomic.RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
+                BillTypeAtomic.RETURN_MEDICINE_THEATRE,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE,
+                // Internal transfers out and disposals
+                BillTypeAtomic.PHARMACY_ISSUE,
+                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+        );
+    }
+
+    /**
+     * Bill types that change department stock without being demand: receipts,
+     * supplier returns and stock-taking adjustments.
+     *
+     * These NEVER contribute to consumption, the average, the target, the order
+     * quantity or the decision. The Ordering Requirement Report uses them for
+     * two things only: sourcing the most recent purchase rate behind Estimated
+     * Cost, and completing the set of known stock-moving types so the
+     * unclassified-movement guard does not flag them.
+     *
+     * Rate adjustments (PHARMACY_PURCHASE_RATE_ADJUSTMENT and friends) are
+     * excluded on purpose: they carry a non-zero qty that is the stock quantity
+     * being re-rated, not a delta. PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT is
+     * excluded for the same reason.
+     */
+    public List<BillTypeAtomic> getOrderingInboundBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_GRN_CANCELLED,
+                BillTypeAtomic.PHARMACY_GRN_RETURN,
+                BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION,
+                BillTypeAtomic.PHARMACY_GRN_REFUND,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+                BillTypeAtomic.PHARMACY_RECEIVE,
+                BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED,
+                // Return to supplier - reduces stock but is not consumption
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING,
+                BillTypeAtomic.PHARMACY_DONATION_BILL,
+                BillTypeAtomic.PHARMACY_DONATION_BILL_CANCELLED,
+                BillTypeAtomic.PHARMACY_DONATION_BILL_REFUND,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
+        );
+    }
+
+    /**
+     * Every bill type that moves department stock - the union of the outward and
+     * inbound lists. Used by the unclassified-movement guard to decide whether a
+     * stock-touching row is one this report already knows about.
+     */
+    public List<BillTypeAtomic> getOrderingStockMovingBillTypes() {
+        List<BillTypeAtomic> all = new ArrayList<>(getOrderingOutwardBillTypes());
+        all.addAll(getOrderingInboundBillTypes());
+        return all;
+    }
+
+    /**
+     * Bill types that write a PharmaceuticalBillItem carrying a stock reference
+     * but which have been deliberately judged NOT to move stock.
+     *
+     * Two groups:
+     *
+     * 1. Financial mirrors of a movement already counted on its stock-moving
+     *    "pre" side. The stock reference is copied onto the settlement bill, so
+     *    the presence of p.stock cannot be used to tell the two apart - only the
+     *    bill type atomic can.
+     * 2. Rate and expiry-date adjustments. These carry a non-zero qty that is
+     *    the stock quantity being re-rated, not a delta.
+     *
+     * Kept separate from the stock-moving lists so that
+     * PharmacyOrderingRequirementService.countUnclassifiedMovements() can tell
+     * "deliberately ignored" apart from "never seen before", and only warn about
+     * the latter.
+     */
+    public List<BillTypeAtomic> getOrderingNonStockMovingBillTypes() {
+        return Arrays.asList(
+                // Financial mirrors - the movement is counted on the "pre" side
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION,
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                // Rate and expiry adjustments - qty is a re-rated quantity, not a delta
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+        );
+    }
+
 }

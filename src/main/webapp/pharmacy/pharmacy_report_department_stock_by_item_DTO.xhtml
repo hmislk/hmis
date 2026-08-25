@@ -105,7 +105,7 @@
                                     <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
                                                      actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" />
                                     <p:commandButton styleClass="ui-button-success mx-1" icon="fas fa-file-excel" value="Excel" ajax="false">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_By_Item"/>
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_By_Item" postProcessor="#{reportsStock.postProcessXLSStockReportByItem}"/>
                                     </p:commandButton>
                                     <p:commandButton styleClass="ui-button-info mx-1" icon="fas fa-print" value="Print"
                                                      actionListener="#{reportsStock.prepareForPrint()}"
@@ -121,7 +121,22 @@
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
 
-                            <p:dataTable 
+                            <!-- Cells keep their natural (unwrapped) width so the table overflows its
+                                 container and scrolls horizontally (scrollable="true" below) instead of
+                                 wrapping long item names onto multiple lines. table-layout must be
+                                 overridden from PrimeFaces' default "fixed" (which silently clips
+                                 nowrap content to the container width) to "auto" so the table can
+                                 actually grow past the scrollable viewport. Issue #23052. -->
+                            <style>
+                                [id="frm:tbl"] td, [id="frm:tbl"] th { white-space: nowrap; }
+                                [id="frm:tbl"] .ui-datatable-scrollable-header table,
+                                [id="frm:tbl"] .ui-datatable-scrollable-body table {
+                                    table-layout: auto !important;
+                                    width: auto !important;
+                                }
+                            </style>
+
+                            <p:dataTable
                                 id="tbl" 
                                 rowIndexVar="ii" 
                                 value="#{reportsStock.stockReportByItemDTOS}" var="i"
@@ -129,10 +144,26 @@
                                 rows="#{reportsStock.paginator?'20':reportsStock.stockReportByItemDTOS.size()}"
                                 paginator="#{reportsStock.paginator}"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="20, 50, 100">
+                                rowsPerPageTemplate="20, 50, 100"
+                                scrollable="true"
+                                scrollWidth="100%">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock Report by Item - #{reportsStock.department.name}"/>                                     
-                                </f:facet> 
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="Stock Report by Item"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Institution: #{not empty reportsStock.institution ? reportsStock.institution.name : 'All'}   |   "/>
+                                            <h:outputText value="Site: #{not empty reportsStock.site ? reportsStock.site.name : 'All'}   |   "/>
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}   |   "/>
+                                            <h:outputText value="Category: #{not empty reportsStock.category ? reportsStock.category.name : 'All'}   |   "/>
+                                            <h:outputText value="Dosage Form: #{not empty reportsStock.dosageForm ? reportsStock.dosageForm.name : 'All'}   |   "/>
+                                            <h:outputText value="Department Types: #{reportsStock.selectedDepartmentTypesPrintDisplay}   |   "/>
+                                            <h:outputText value="Include Zero Stock: #{reportsStock.includeZeroStock ? 'Yes' : 'No'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
+                                </f:facet>
 
                                 <p:column width="20px;" headerText="No" sortBy="#{ii}"
                                           style="width: 20px;">

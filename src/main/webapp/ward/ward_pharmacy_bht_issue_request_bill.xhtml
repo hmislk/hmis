@@ -8,7 +8,8 @@
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
-      xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print">
+      xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print"
+      xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
     <h:body>
 
@@ -122,40 +123,12 @@
                                                      placeholder="Select a pharmacy department first" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{pharmacyRequestForBhtController.department ne null}">
-                                    <p:autoComplete
+                                    <admcc:admission_search
                                         widgetVar="aPt2"
-                                        id="acPt2"
-                                        forceSelection="true"
+                                        inputId="acPt2"
                                         value="#{pharmacyRequestForBhtController.patientEncounter}"
                                         completeMethod="#{admissionController.completePatient}"
-                                        var="apt2"
-                                        itemLabel="#{apt2.bhtNo}"
-                                        itemValue="#{apt2}"
-                                        size="30"
-                                        class="col-md-12 my-1"
-                                        inputStyleClass="form-control"
-                                        >
-                                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                                            <h:outputLabel value="#{apt2.patient.phn}"/>
-                                        </p:column>
-                                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                            <h:outputLabel value="#{apt2.bhtNo}"/>
-                                        </p:column>
-                                        <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
-                                            <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
-                                        </p:column>
-                                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                        </p:column>
-                                        <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                            <div class="d-flex justify-content-center">
-                                                <span class="#{apt2.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                                    #{apt2.discharged ? 'Discharged' : 'Not Discharged'}
-                                                </span>
-                                            </div>
-                                        </p:column>
-                                        <p:ajax event="itemSelect" process="acPt2" update="@form" />
-                                    </p:autoComplete>
+                                        itemSelectUpdate="@form" />
                                     </h:panelGroup>
                                 </div>
 
@@ -321,19 +294,11 @@
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"  />
                                                 <h:outputText value="Prescription" styleClass="mx-4"/>
-<!--
-    Save Draft is hidden for now (rendered="false"). It persists a PharmacyBhtPre
-    PreBill, but there is currently no mechanism on this page to reload a saved
-    draft and continue editing it, so a saved draft cannot be picked up from where
-    it was left off. Until that "resume draft" capability is built, the button is
-    kept in place but not rendered to avoid confusing users. Re-enable once draft
-    retrieval is implemented.
--->
                                                 <p:commandButton
                                                     id="btnSave"
-                                                    rendered="false"
                                                     ajax="false"
                                                     value="Save Draft"
+                                                    title="Save this request as a draft to resume later"
                                                     action="#{pharmacyRequestForBhtController.saveBhtIssueRequestFrompharmacy()}"
                                                     icon="pi pi-save"
                                                     class="ui-button-success"
@@ -724,7 +689,6 @@
                                             widgetVar="editBillItemDialog"
                                             header="Edit / Substitute Item"
                                             modal="true"
-                                            appendTo="@(body)"
                                             width="40%"
                                             fitViewport="true">
                                             <h:panelGrid columns="2" cellpadding="6" styleClass="w-100"
@@ -758,7 +722,7 @@
                                                     class="ui-button-success"
                                                     action="#{pharmacyRequestForBhtController.saveEditedBillItem}"
                                                     process="@this cmbSubstitute txtEditQty"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} @(.ui-messages)"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('growl',view).clientId}"
                                                     oncomplete="if (args &amp;&amp; args.editSaved) { PF('editBillItemDialog').hide(); }" />
                                             </f:facet>
                                         </p:dialog>

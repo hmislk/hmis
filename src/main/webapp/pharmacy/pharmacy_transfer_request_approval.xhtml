@@ -57,7 +57,7 @@
                                     id="itemList"
                                     editable="true" >
 
-                                    <p:column headerText="Item Name">
+                                    <p:column headerText="Item Name" width="20em">
                                         <h:outputText
                                             id="item"
                                             value="#{bi.item.name}" />
@@ -93,6 +93,28 @@
                                                 update="itemList requestTotals" 
                                                 listener="#{transferRequestController.onEdit(bi)}"/>
                                         </p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Available Qty (Requesting Department)" class="text-end" width="10em">
+                                        <h:outputText
+                                            value="#{transferRequestController.getAvailableQtyAtRequestingDepartment(bi)}">
+                                            <f:convertNumber pattern="#,##0.#"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Available Qty (Ordering Store)" class="text-end" width="10em">
+                                        <h:outputText
+                                            value="#{transferRequestController.getAvailableQtyAtOrderingStore(bi)}"
+                                            styleClass="#{transferRequestController.isAvailableQtyShortAtOrderingStore(bi) ? 'text-danger fw-bold' : ''}">
+                                            <f:convertNumber pattern="#,##0.#"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Total Drug Amount (Ordering Store)" class="text-end" width="10em">
+                                        <h:outputText
+                                            value="#{transferRequestController.getTotalDrugAmountAtOrderingStore(bi)}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Transfer Rate" class="text-end" width="8em">

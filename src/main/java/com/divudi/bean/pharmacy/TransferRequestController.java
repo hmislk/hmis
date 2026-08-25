@@ -40,6 +40,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.service.BillService;
+import com.divudi.service.StockService;
 
 import java.text.DecimalFormat;
 import java.util.logging.Level;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -94,6 +96,8 @@ public class TransferRequestController implements Serializable {
     private DepartmentFacade departmentFacade;
     @EJB
     BillService billService;
+    @EJB
+    private StockService stockService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -118,6 +122,9 @@ public class TransferRequestController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill bill;
     private Bill transferRequestBillPre;
+    // Bill id used for navigation from DTO-driven tables (issue #22567) that
+    // only have the bill id available, not the full Bill entity.
+    private Long billId;
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
@@ -318,6 +325,62 @@ public class TransferRequestController implements Serializable {
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    private final Map<BillItem, Double> availableQtyAtOrderingStoreCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getItem() == null || getToDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtOrderingStoreCache.computeIfAbsent(bi, this::calculateAvailableQtyAtOrderingStore);
+    }
+
+    private double calculateAvailableQtyAtOrderingStore(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(getToDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
+    public boolean isAvailableQtyShortAtOrderingStore(BillItem bi) {
+        return getAvailableQtyAtOrderingStore(bi) < bi.getQty();
+    }
+
+    private final Map<BillItem, Double> availableQtyAtRequestingDepartmentCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtRequestingDepartment(BillItem bi) {
+        if (bi == null || bi.getItem() == null
+                || transferRequestBillPre == null
+                || transferRequestBillPre.getFromDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtRequestingDepartmentCache.computeIfAbsent(bi, this::calculateAvailableQtyAtRequestingDepartment);
+    }
+
+    private double calculateAvailableQtyAtRequestingDepartment(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(transferRequestBillPre.getFromDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
+    // Value of the stock already available at the Ordering Store, priced at the
+    // same config-selected transfer rate (see determineTransferRate) already
+    // shown in the row's Transfer Rate/Transfer Value columns.
+    public double getTotalDrugAmountAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+        BigDecimal rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        if (rate == null) {
+            return 0.0;
+        }
+        return getAvailableQtyAtOrderingStore(bi) * rate.doubleValue();
     }
 
     public void saveBill() {
@@ -585,6 +648,12 @@ public class TransferRequestController implements Serializable {
     public void saveTransferRequestPreBillAndBillItems() {
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
+        // fromDepartment (below) = the department creating this request; it is also the
+        // department that will later Save -> Finalize -> Approve it (maker-checker
+        // within itself). toDepartment only gets to see this bill AFTER approval, via
+        // its own separate Issue-for-Requests cycle. See the department-filter comment
+        // on SearchController.fillPharmacyTransferRequestsToApprove() (#23039) before
+        // changing which department is treated as the approver here.
         getTransferRequestBillPre().setToDepartment(getToDepartment());
         getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
@@ -753,6 +822,43 @@ public class TransferRequestController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
 
+    /**
+     * Navigation helper for DTO-driven tables that only have the bill id
+     * (not the full entity) available.
+     */
+    public String navigateToEditRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToEditRequest();
+    }
+
+    // synchronized for the same double-click defense-in-depth reason as navigateToApproveRequest()
+    public synchronized String navigateToApproveRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        transferRequestBillPre = billFacade.find(billId);
+        return navigateToApproveRequest();
+    }
+
+    public String navigateToViewApprovedRequestById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Selected bill is no longer available");
+            return "";
+        }
+        printPreview = true;
+        return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
+    }
+
     public void finalizeTranserRequestPreBill() {
         if (!isAuthorized("FINALIZE_REQUEST", "PharmacyDisbursementFinalizeRequest")) {
             return;
@@ -901,6 +1007,14 @@ public class TransferRequestController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     public BillItemFacade getBillItemFacade() {

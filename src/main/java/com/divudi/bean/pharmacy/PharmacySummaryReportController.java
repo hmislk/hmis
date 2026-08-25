@@ -950,6 +950,7 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
@@ -977,7 +978,9 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
                 BillTypeAtomic.PHARMACY_ISSUE,
                 BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
-                BillTypeAtomic.PHARMACY_ISSUE_RETURN
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND
         );
     }
 
@@ -987,6 +990,7 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,

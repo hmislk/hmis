@@ -218,6 +218,13 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setBilledBill(getBill());
         getReturnBill().setComments(returnComment);
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
+        // copy() is deliberately not used here (it also overwrites department/institution,
+        // set explicitly below to the returning department), but patientEncounter/patient
+        // still need to be carried over - without them this return bill is invisible to every
+        // patientEncounter-scoped query (Interim Bill Medicine total, Medicine Issue tab), so
+        // the returned value silently never gets deducted (issue #22990).
+        getReturnBill().setPatientEncounter(getBill().getPatientEncounter());
+        getReturnBill().setPatient(getBill().getPatient());
 
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
@@ -246,6 +253,10 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setBillType(getBill().getBillType());
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         getReturnBill().setBilledBill(getBill());
+        // See saveReturnBill() above - patientEncounter/patient must be carried over
+        // explicitly since copy() is not used here (issue #22990).
+        getReturnBill().setPatientEncounter(getBill().getPatientEncounter());
+        getReturnBill().setPatient(getBill().getPatient());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
         getReturnBill().setComments(returnComment);
@@ -432,6 +443,10 @@ public class BhtIssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("Cannot return medicines: nursing discharge has already been confirmed for this patient.");
             return;
         }
+        if (getBill().getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return;
+        }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;
@@ -530,7 +545,11 @@ public class BhtIssueReturnController implements Serializable {
             }
 
             tmp.setQtyInUnit(tmpQty);
-            bi.setQty(tmpQty);
+            // Returning qty stays at the 0.0 default set above so the user must
+            // opt in to returning each item; tmpQty (the true max returnable
+            // balance) is kept on remainingQty for display/reference only, not
+            // written back into the editable qty (issue #23023).
+            bi.setRemainingQty(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 

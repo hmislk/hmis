@@ -16,6 +16,7 @@ import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.inward.SurgeryBillController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -38,6 +39,7 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
@@ -54,6 +56,7 @@ import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.BillItemFinanceDetails;
@@ -69,12 +72,15 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.service.pharmacy.DirectIssueBatchService;
+import com.divudi.service.pharmacy.PriceMatrixNativeSqlService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
@@ -163,6 +169,13 @@ public class PharmacySaleBhtController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Nursing IP Billing - Show Rate and Value",
+            "Controls whether rate/value columns are shown on the inward pharmacy BHT issue page (combined with the NursingIPBillingViewRates privilege)",
+            "Item table, row-expansion panel, autocomplete columns: rate/value visibility",
+            OptionScope.APPLICATION
+        ));
+
         // Register privileges used on this page
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -177,9 +190,15 @@ public class PharmacySaleBhtController implements Serializable {
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "ShowDrugCharges",
-            "View drug prices and financial charges in the billing interface",
-            "Item autocomplete and bill table: Rate and value columns visibility"
+            "NursingIPBillingViewRates",
+            "View drug rates, values, and net totals in the inward pharmacy BHT issue billing interface",
+            "Item table rate/value columns, row-expansion Sale Rate/Cost Rate, header summary Net Total"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "IPBillingViewDiscount",
+            "View discount amounts and margin/matrix-value (service charge equivalent) on inward pharmacy BHT issue bills",
+            "Header summary Discount field, row-expansion Matrix Value field"
         ));
 
         // Register the page metadata
@@ -199,6 +218,8 @@ public class PharmacySaleBhtController implements Serializable {
     UserNotificationController userNotificationController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    SurgeryBillController surgeryBillController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -228,6 +249,8 @@ public class PharmacySaleBhtController implements Serializable {
     BillService billService;
     @EJB
     private PharmacyService pharmacyService;
+    @EJB
+    private PriceMatrixNativeSqlService priceMatrixNativeSqlService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -295,6 +318,12 @@ public class PharmacySaleBhtController implements Serializable {
     // pharmacist sees the original prescription against what was actually resolved
     // (and any low/no-stock shortfall) — prevents silent omissions. Issue #21334.
     private List<DischargeConversionRow> dischargeConversionReport = new ArrayList<>();
+    // Per-requested-line stock availability report shown on the BHT issue-request
+    // page so the pharmacist sees Available/Requested/Remaining BEFORE clicking
+    // "Issue to BHT", instead of only a late error on settle. Kept separate from
+    // dischargeConversionReport (different flow) so this change cannot regress
+    // the stable discharge-issue path. Issue #22312.
+    private List<BhtIssueStockReportRow> bhtIssueStockReport = new ArrayList<>();
     Department department;
     String errorMessage = "";
     /////////////////
@@ -318,6 +347,11 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void settleSurgeryBhtIssue() {
         if (getBatchBill() == null) {
+            return;
+        }
+        if (getBatchBill().getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(getBatchBill())) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
         if (getPreBill().getBillItems().isEmpty()) {
@@ -772,6 +806,7 @@ public class PharmacySaleBhtController implements Serializable {
         cachedMatrixByAdmissionDepartment = null;
         dischargeIssueMode = false;
         dischargeConversionReport = new ArrayList<>();
+        bhtIssueStockReport = new ArrayList<>();
     }
 
     /**
@@ -1126,6 +1161,23 @@ public class PharmacySaleBhtController implements Serializable {
     /** True when any converted line was not issued in full (needs pharmacist attention). */
     public boolean isDischargeConversionHasAttentionItems() {
         for (DischargeConversionRow r : getDischargeConversionReport()) {
+            if (r.isNeedsAttention()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<BhtIssueStockReportRow> getBhtIssueStockReport() {
+        if (bhtIssueStockReport == null) {
+            bhtIssueStockReport = new ArrayList<>();
+        }
+        return bhtIssueStockReport;
+    }
+
+    /** True when any BHT issue-request line was not issued in full (needs pharmacist attention). */
+    public boolean isBhtIssueStockReportHasAttentionItems() {
+        for (BhtIssueStockReportRow r : getBhtIssueStockReport()) {
             if (r.isNeedsAttention()) {
                 return true;
             }
@@ -1777,7 +1829,11 @@ public class PharmacySaleBhtController implements Serializable {
                 return true;
             }
             if (bi.getPharmaceuticalBillItem().getStock() == null) {
-                JsfUtil.addErrorMessage("Requested item not found" + bi.getItem().getName());
+                double requestedQtyForCheck = Math.abs(bi.getPharmaceuticalBillItem().getQty());
+                JsfUtil.addErrorMessage("No stock available for " + bi.getItem().getName()
+                        + ". Available: 0, Requested: " + requestedQtyForCheck
+                        + ", Remaining not issued: " + requestedQtyForCheck
+                        + ". Please select a substitute or check pharmacy stock.");
                 return true;
             }
             if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
@@ -1899,6 +1955,23 @@ public class PharmacySaleBhtController implements Serializable {
     private BillItem itemForSubstitution;
     private Stock selectedSubstituteStock;
     private List<Stock> substituteStocks;
+    // Per-row selection state for the "Issuing Bill Item" autocomplete on each BHT Issue
+    // row, keyed by BillItem instance identity. A single shared field doesn't work here —
+    // every row's p:autoComplete is bound to the same @SessionScoped controller instance,
+    // so a plain field would (a) show row A's selection on every other row and (b) revert
+    // to showing nothing the instant a selection is made, since replaceIssuingBillItem used
+    // to null it out right after reading it.
+    //
+    // Keyed by BillItem.searialNo initially, but CodeRabbit review on #23068 caught that
+    // calTotal() renumbers searialNo after a row is removed, which could reassign a
+    // surviving row's selection to the wrong stock. Switched to IdentityHashMap keyed by
+    // the BillItem instance itself instead — plain HashMap/equals() doesn't help here
+    // either, since BillItem.equals() falls back to comparing searialNo when both ids are
+    // null (the normal case for these freshly-generated, unsaved rows), so a regular map
+    // would have the exact same collision risk after a renumber. IdentityHashMap ignores
+    // equals()/hashCode() entirely and compares by reference, which is what's actually
+    // wanted for "this specific in-memory row instance". Issue #23055.
+    private Map<BillItem, Stock> issuingSelections = new IdentityHashMap<>();
 
     @Inject
     VmpController vmpController;
@@ -1980,7 +2053,62 @@ public class PharmacySaleBhtController implements Serializable {
 
         JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
-    
+
+    /**
+     * Search-as-you-type over all stock in the current department, for the
+     * "Issuing Bill Item" autocomplete on each row of the BHT Issue table.
+     * Unlike {@link #completeAvailableStocksSelectedPharmacy(String)} (built
+     * for a different, single-item search flow with several side effects
+     * tied to its own UI), this is a plain, side-effect-free search so it's
+     * safe to bind directly per row. Issue #23055.
+     */
+    public List<Stock> completeAllDepartmentStock(String query) {
+        if (sessionController.getDepartment() == null || query == null || query.trim().length() < 2) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("d", sessionController.getDepartment());
+        m.put("s", 0.0);
+        m.put("n", "%" + query.trim().toUpperCase() + "%");
+        // UPPER() on both sides — :n is uppercased above, but the columns themselves aren't,
+        // so a case-sensitive DB collation would silently stop matching mixed-case item
+        // names. CodeRabbit review on #23068.
+        String sql = "select i from Stock i where i.stock >:s and i.department=:d "
+                + "and (UPPER(i.itemBatch.item.name) like :n or UPPER(i.itemBatch.item.code) like :n "
+                + "or UPPER(i.itemBatch.item.vmp.name) like :n) "
+                + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        return getStockFacade().findByJpql(sql, m, 20);
+    }
+
+    /**
+     * Replaces a specific BHT-issue row's item/stock from the "Issuing Bill
+     * Item" autocomplete, reusing {@link #replaceSelectedSubstitute()}'s
+     * proven rate/finance-detail update logic exactly (rather than
+     * duplicating it) by routing the autocomplete's selection through the
+     * same {@code selectedSubstituteStock} field the "Select a Substitute"
+     * dialog already populates. Issue #23055.
+     */
+    public void replaceIssuingBillItem(BillItem bi) {
+        if (bi == null) {
+            return;
+        }
+        itemForSubstitution = bi;
+        selectedSubstituteStock = issuingSelections.get(bi);
+        replaceSelectedSubstitute();
+        // Leave the map entry as-is (don't null it out) so the row keeps showing what
+        // was just picked instead of reverting to blank on the next render.
+    }
+
+    /**
+     * Backing map for the per-row "Issuing Bill Item" autocomplete
+     * (value="#{pharmacySaleBhtController.issuingSelections[bItm]}").
+     * JSF EL reads/writes this via Map get/put, giving each row independent state
+     * without needing a getter/setter pair per row. Issue #23055.
+     */
+    public Map<BillItem, Stock> getIssuingSelections() {
+        return issuingSelections;
+    }
+
     private void calculateBillTotalsForTransferIssue(Bill bill) {
         if (bill == null || bill.getBillItems() == null) {
             return;
@@ -2110,12 +2238,12 @@ public class PharmacySaleBhtController implements Serializable {
                 return false;
             }
             Stock tbiStock = tbi.getPharmaceuticalBillItem().getStock();
-            if (tbiStock == null) {
-                JsfUtil.addErrorMessage("No stock available for " + tbi.getItem().getName() + ". Please check pharmacy stock.");
-                return false;
-            }
-            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbiStock.getStock()) {
-                JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
+            double requestedQtyForSettle = Math.abs(tbi.getPharmaceuticalBillItem().getQty());
+            if (requestedQtyForSettle > tbiStock.getStock()) {
+                double availableQty = tbiStock.getStock();
+                JsfUtil.addErrorMessage("Not Enough Stock for " + tbi.getItem().getName()
+                        + ". Available: " + availableQty + ", Requested: " + requestedQtyForSettle
+                        + ", Remaining not issued: " + (requestedQtyForSettle - availableQty) + ".");
                 return false;
             }
         }
@@ -2182,6 +2310,7 @@ public class PharmacySaleBhtController implements Serializable {
         double total = 0;
         double netTotal = 0;
         double marginTotal = 0;
+        double discountTotal = 0;
         PatientEncounter encounter = bill != null ? bill.getPatientEncounter() : null;
         for (BillItem bi : billItems) {
 
@@ -2201,18 +2330,52 @@ public class PharmacySaleBhtController implements Serializable {
 
             bi.setMarginValue(margin);
 
-            bi.setNetValue(bi.getGrossValue() + bi.getMarginValue());
+            // Inward discount-matrix application (issue #23220 — previously
+            // this flow applied margin only and never looked up a discount).
+            // BillItem (the entity) has no discountPercent/discountValue
+            // fields — those exist only on BillItemData, the DTO used by
+            // InpatientDirectIssueNativeSqlController. This flow stores the
+            // discount as a currency amount in the existing `discount`
+            // field, matching the sign convention already used by
+            // PharmacyPreSettleController.calTotal()/settle() and
+            // BhtIssueReturnController/IssueReturnController elsewhere in
+            // this codebase: netValue = grossValue [+ marginValue] - discount.
+            double discountValue = 0.0;
+            try {
+                Item item = bi.getItem();
+                if (item != null && matrixDepartment != null && priceMatrixNativeSqlService.isDiscountAllowed(item.getId())) {
+                    Long schemeId = encounter != null && encounter.getPaymentScheme() != null ? encounter.getPaymentScheme().getId() : null;
+                    Long admTypeId = encounter != null && encounter.getAdmissionType() != null ? encounter.getAdmissionType().getId() : null;
+                    String pmName = paymentMethod != null ? paymentMethod.name() : null;
+                    double discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(item.getId(), pmName, schemeId, admTypeId, matrixDepartment.getId());
+                    // Gross value in this flow is stored positive (see the
+                    // margin calculation above, which ADDS to netValue), so
+                    // the discount amount is likewise computed and applied
+                    // as a positive currency value subtracted from netValue.
+                    discountValue = (discountPct / 100.0) * Math.abs(bi.getGrossValue());
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "[updateMargin] inward discount lookup failed for billItem id={0}", bi.getId());
+            }
+            bi.setDiscount(discountValue);
+
+            bi.setNetValue(bi.getGrossValue() + bi.getMarginValue() - bi.getDiscount());
             bi.setAdjustedValue(bi.getNetValue());
             getBillItemFacade().edit(bi);
 
             total += bi.getGrossValue();
             netTotal += bi.getNetValue();
             marginTotal += bi.getMarginValue();
+            discountTotal += bi.getDiscount();
         }
 
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
         bill.setMargin(marginTotal);
+        // Roll up the discount total onto the bill, matching the existing
+        // pattern used elsewhere in this file (see calTotal(), ~line 2491,
+        // and PharmacyPreSettleController.calTotal()).
+        bill.setDiscount(discountTotal);
         getBillFacade().edit(bill);
 
     }
@@ -2478,6 +2641,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         getBillItems().remove(b);
+        issuingSelections.remove(b);
 
         calTotal();
     }
@@ -2860,6 +3024,9 @@ public class PharmacySaleBhtController implements Serializable {
         // same @SessionScoped controller so items are priced with the inward
         // price matrix, not at bare retail. (PR #21330 review)
         dischargeIssueMode = false;
+        // Reset the stock-availability report on every (re)generation so a stale
+        // report from a previous request/navigation is never shown. Issue #22312.
+        bhtIssueStockReport = new ArrayList<>();
         if (b == null) {
             JsfUtil.addErrorMessage("No bill");
             return;
@@ -2877,6 +3044,10 @@ public class PharmacySaleBhtController implements Serializable {
 
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
+        // Reset per-row autocomplete state on every (re)generation, same reasoning as
+        // bhtIssueStockReport above — the old rows are being discarded entirely here, so
+        // stale identity-keyed entries would just leak memory otherwise. Issue #23055.
+        issuingSelections = new IdentityHashMap<>();
 
         // --- Batch pre-computation to avoid the N+1 pattern this loop used to
         // have (3 aggregate queries + AMP-resolution + stock query per candidate,
@@ -2911,6 +3082,11 @@ public class PharmacySaleBhtController implements Serializable {
         Map<Long, Double> cancelledMap = getPharmacyCalculation().getCancelledInwardPharmacyRequestBatch(allRequestItems, BillType.PharmacyBhtPre);
         Map<Long, Double> refundedMap = getPharmacyCalculation().getRefundedInwardPharmacyRequestBatch(allRequestItems, BillType.PharmacyBhtPre);
         Map<Long, List<Stock>> rawStockByAmpId = new HashMap<>();
+        // Cache for cross-VMP (same VTM / generic ingredient) substitution candidates,
+        // e.g. Amoxicillin 500mg -> Amoxicillin 250mg when the exact strength is out of
+        // stock. Populated lazily per request so a VTM shared by multiple requested lines
+        // is only queried once. Issue #23055.
+        Map<Long, List<Amp>> ampsByVtmId = new HashMap<>();
 
         for (BillItem i : b.getBillItems()) {
             if (i.getItem() == null) {
@@ -2934,16 +3110,61 @@ public class PharmacySaleBhtController implements Serializable {
             // For AMP requests also include VMP siblings so substitution can fire when
             // the exact brand is out of stock.
             List<Amp> candidateAmps = new ArrayList<>(pharmacyBean.resolveAmps(requestedItem, ampsByVmpId));
+            Vmp requestedVmp = null;
             if (requestedItem instanceof Amp) {
-                Vmp vmp = ((Amp) requestedItem).getVmp();
-                if (vmp != null) {
-                    List<Amp> siblings = ampsByVmpId.getOrDefault(vmp.getId(), java.util.Collections.emptyList());
-                    if (siblings != null) {
-                        for (Amp sibling : siblings) {
-                            if (!sibling.getId().equals(requestedItem.getId())) {
-                                candidateAmps.add(sibling);
-                            }
+                requestedVmp = ((Amp) requestedItem).getVmp();
+            } else if (requestedItem instanceof Vmp) {
+                requestedVmp = (Vmp) requestedItem;
+            } else if (requestedItem instanceof Vmpp) {
+                requestedVmp = ((Vmpp) requestedItem).getVmp();
+            }
+            java.util.Set<Long> candidateAmpIds = new HashSet<>();
+            for (Amp c : candidateAmps) {
+                if (c.getId() != null) {
+                    candidateAmpIds.add(c.getId());
+                }
+            }
+            if (requestedVmp != null) {
+                List<Amp> siblings = ampsByVmpId.getOrDefault(requestedVmp.getId(), java.util.Collections.emptyList());
+                if (siblings != null) {
+                    for (Amp sibling : siblings) {
+                        if (sibling.getId() != null && candidateAmpIds.add(sibling.getId())) {
+                            candidateAmps.add(sibling);
                         }
+                    }
+                }
+            }
+            // Cross-strength substitution: when the exact VMP has no candidates with
+            // stock, also consider AMPs under sibling VMPs sharing the same VTM (generic
+            // ingredient) — e.g. propose Amoxicillin 250mg when 500mg is unavailable. The
+            // existing isSameStrength/quantity-conversion logic below already handles the
+            // dose-equivalent quantity math once these are in the candidate pool; it just
+            // never had cross-VMP candidates to work with before. Issue #23055.
+            // Item.getVtm()/setVtm() are legacy-typed as Item, not Vtm (see Item.java) — cast.
+            Vtm requestedVtm = requestedVmp != null && requestedVmp.getVtm() instanceof Vtm
+                    ? (Vtm) requestedVmp.getVtm() : null;
+            // Same dosage form only — a capsule request must not be silently proposed a
+            // syrup/injection substitute just because they share a VTM. Compare against
+            // the sibling's own VMP's dosage form (not the AMP's, which can be null on
+            // older records) since VMP-level dosage form is what the demonstrated bug
+            // scenario (500mg capsule -> 250mg capsule) is scoped to. Issue #23055.
+            Category requestedDosageForm = requestedVmp != null ? requestedVmp.getDosageForm() : null;
+            if (requestedVtm != null && requestedVtm.getId() != null && requestedDosageForm != null
+                    && requestedDosageForm.getId() != null) {
+                List<Amp> vtmSiblings = ampsByVtmId.computeIfAbsent(requestedVtm.getId(), id -> pharmacyBean.findAmpsForVtm(requestedVtm));
+                if (vtmSiblings != null) {
+                    for (Amp sibling : vtmSiblings) {
+                        if (sibling.getId() == null || candidateAmpIds.contains(sibling.getId())) {
+                            continue;
+                        }
+                        Vmp siblingVmp = sibling.getVmp();
+                        Category siblingDosageForm = siblingVmp != null ? siblingVmp.getDosageForm() : null;
+                        if (siblingDosageForm == null || siblingDosageForm.getId() == null
+                                || !siblingDosageForm.getId().equals(requestedDosageForm.getId())) {
+                            continue;
+                        }
+                        candidateAmpIds.add(sibling.getId());
+                        candidateAmps.add(sibling);
                     }
                 }
             }
@@ -2951,14 +3172,17 @@ public class PharmacySaleBhtController implements Serializable {
 
             Amp exactAmp = null;
             List<StockQty> exactStockQtys = null;
+            double exactCandidateQty = 0;
 
             Amp sameStrengthAmp = null;
             List<StockQty> sameStrengthStockQtys = null;
             Date sameStrengthEarliestExpiry = null;
+            double sameStrengthCandidateQty = 0;
 
             Amp fallbackAmp = null;
             List<StockQty> fallbackStockQtys = null;
             Date fallbackEarliestExpiry = null;
+            double fallbackCandidateQty = 0;
 
             for (Amp candidate : candidateAmps) {
                 Double ampStrength = candidate.getStrengthOfAnIssueUnit();
@@ -2992,6 +3216,7 @@ public class PharmacySaleBhtController implements Serializable {
                 if (isExact) {
                     exactAmp = candidate;
                     exactStockQtys = stockQtys;
+                    exactCandidateQty = candidateQty;
                     break; // exact match is optimal
                 } else if (isSameStrength
                         && (sameStrengthAmp == null
@@ -3000,6 +3225,7 @@ public class PharmacySaleBhtController implements Serializable {
                     sameStrengthAmp = candidate;
                     sameStrengthStockQtys = stockQtys;
                     sameStrengthEarliestExpiry = candidateEarliestExpiry;
+                    sameStrengthCandidateQty = candidateQty;
                 } else if (!isSameStrength
                         && (fallbackAmp == null
                         || (candidateEarliestExpiry != null && (fallbackEarliestExpiry == null
@@ -3007,28 +3233,35 @@ public class PharmacySaleBhtController implements Serializable {
                     fallbackAmp = candidate;
                     fallbackStockQtys = stockQtys;
                     fallbackEarliestExpiry = candidateEarliestExpiry;
+                    fallbackCandidateQty = candidateQty;
                 }
             }
 
             // Pick best available candidate
             final List<StockQty> selectedStockQtys;
             final boolean isSubstitute;
+            final double selectedCandidateQty;
 
             if (exactAmp != null) {
                 selectedStockQtys = exactStockQtys;
                 isSubstitute = false;
+                selectedCandidateQty = exactCandidateQty;
             } else if (sameStrengthAmp != null) {
                 selectedStockQtys = sameStrengthStockQtys;
                 isSubstitute = true;
+                selectedCandidateQty = sameStrengthCandidateQty;
             } else if (fallbackAmp != null) {
                 selectedStockQtys = fallbackStockQtys;
                 isSubstitute = true;
+                selectedCandidateQty = fallbackCandidateQty;
             } else {
                 selectedStockQtys = null;
                 isSubstitute = false;
+                selectedCandidateQty = issuableQty;
             }
 
             if (selectedStockQtys != null && !selectedStockQtys.isEmpty()) {
+                double issuedQtyForLine = 0.0;
                 for (StockQty sq : selectedStockQtys) {
                     if (sq.getQty() == 0) {
                         continue;
@@ -3066,7 +3299,30 @@ public class PharmacySaleBhtController implements Serializable {
                     }
                     calculateRates(billItem);
                     billItems.add(billItem);
+                    // Seed this row's autocomplete state with the stock it was actually
+                    // resolved to, so the initial render shows real data instead of an
+                    // empty/blank-templated input. Issue #23055.
+                    issuingSelections.put(billItem, sq.getStock());
+                    issuedQtyForLine += sq.getQty();
                 }
+
+                // Stock-availability report row for this requested line. Issue #22312.
+                BhtIssueStockReportRow reportRow = new BhtIssueStockReportRow();
+                reportRow.setRequestedItemName(requestedItem.getName());
+                reportRow.setRequestedQty(selectedCandidateQty);
+                reportRow.setIssuedQty(issuedQtyForLine);
+                if (issuedQtyForLine >= selectedCandidateQty) {
+                    reportRow.setStatus(BhtIssueStockReportRow.Status.ISSUED_FULL);
+                    reportRow.setMessage("");
+                } else {
+                    double remaining = selectedCandidateQty - issuedQtyForLine;
+                    reportRow.setStatus(BhtIssueStockReportRow.Status.PARTIAL_LOW_STOCK);
+                    reportRow.setMessage("Available: " + issuedQtyForLine + ", Requested: " + selectedCandidateQty
+                            + ", Remaining not issued: " + remaining + " of " + requestedItem.getName()
+                            + " at " + dept.getName()
+                            + ". Issued the available quantity — use \"Select a Substitute\" or split the rest manually.");
+                }
+                bhtIssueStockReport.add(reportRow);
             } else {
                 // No stock found for any AMP — add placeholder for manual resolution
                 billItem = new BillItem();
@@ -3089,6 +3345,18 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                 calculateRates(billItem);
                 billItems.add(billItem);
+
+                // Stock-availability report row for this requested line. Issue #22312.
+                BhtIssueStockReportRow reportRow = new BhtIssueStockReportRow();
+                reportRow.setRequestedItemName(requestedItem.getName());
+                reportRow.setRequestedQty(issuableQty);
+                reportRow.setIssuedQty(0.0);
+                reportRow.setStatus(BhtIssueStockReportRow.Status.NOT_AVAILABLE);
+                reportRow.setMessage("Available: 0, Requested: " + issuableQty
+                        + ", Remaining not issued: " + issuableQty + " of " + requestedItem.getName()
+                        + " at " + dept.getName()
+                        + ". No stock found — use \"Select a Substitute\" to resolve before settling.");
+                bhtIssueStockReport.add(reportRow);
             }
         }
 
@@ -3886,6 +4154,110 @@ public class PharmacySaleBhtController implements Serializable {
                     return "Issued in full";
                 case QTY_DEFAULTED:
                     return "Qty defaulted — verify";
+                case PARTIAL_LOW_STOCK:
+                    return "Partial — low stock";
+                case NOT_AVAILABLE:
+                    return "Not available";
+                default:
+                    return "";
+            }
+        }
+    }
+
+    /**
+     * One row of the per-requested-line stock availability report shown on the
+     * BHT issue-request page. Captures the requested quantity against what was
+     * actually issuable from stock so the pharmacist sees Available/Requested/
+     * Remaining BEFORE clicking "Issue to BHT". Issue #22312.
+     */
+    public static class BhtIssueStockReportRow implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        public enum Status {
+            ISSUED_FULL,
+            PARTIAL_LOW_STOCK,
+            NOT_AVAILABLE
+        }
+
+        private String requestedItemName;
+        private Double requestedQty;
+        private Double issuedQty;
+        private Status status;
+        private String message;
+
+        public BhtIssueStockReportRow() {
+        }
+
+        public String getRequestedItemName() {
+            return requestedItemName;
+        }
+
+        public void setRequestedItemName(String requestedItemName) {
+            this.requestedItemName = requestedItemName;
+        }
+
+        public Double getRequestedQty() {
+            return requestedQty;
+        }
+
+        public void setRequestedQty(Double requestedQty) {
+            this.requestedQty = requestedQty;
+        }
+
+        public Double getIssuedQty() {
+            return issuedQty;
+        }
+
+        public void setIssuedQty(Double issuedQty) {
+            this.issuedQty = issuedQty;
+        }
+
+        public Status getStatus() {
+            return status;
+        }
+
+        public void setStatus(Status status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        /** True when this row needs the pharmacist's attention (not fully issued). */
+        public boolean isNeedsAttention() {
+            return status != Status.ISSUED_FULL;
+        }
+
+        /** Bootstrap/PrimeFaces severity keyword for styling the row. */
+        public String getSeverity() {
+            if (status == null) {
+                return "info";
+            }
+            switch (status) {
+                case ISSUED_FULL:
+                    return "success";
+                case PARTIAL_LOW_STOCK:
+                    return "warning";
+                case NOT_AVAILABLE:
+                    return "danger";
+                default:
+                    return "info";
+            }
+        }
+
+        public String getStatusLabel() {
+            if (status == null) {
+                return "";
+            }
+            switch (status) {
+                case ISSUED_FULL:
+                    return "Issued in full";
                 case PARTIAL_LOW_STOCK:
                     return "Partial — low stock";
                 case NOT_AVAILABLE:

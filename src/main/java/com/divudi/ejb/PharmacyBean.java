@@ -1056,6 +1056,25 @@ public class PharmacyBean {
         return true;
     }
 
+    /**
+     * Deducts department stock for a batch, resolving the persisted Stock row
+     * by (batch, department) instead of requiring a caller-supplied Stock
+     * reference. Unlike {@link #deductFromStock(ItemBatch, double, Department)},
+     * this overload records StockHistory via {@link #deductFromStock(Stock, double, PharmaceuticalBillItem, Department)}
+     * so the movement appears on the Bin Card (issue #19837).
+     */
+    public boolean deductFromStock(ItemBatch batch, double qty, PharmaceuticalBillItem pbi, Department department) {
+        String sql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
+        HashMap hm = new HashMap();
+        hm.put("bch", batch);
+        hm.put("dep", department);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm, true);
+        if (s == null || s.getId() == null) {
+            return false;
+        }
+        return deductFromStock(s, qty, pbi, department);
+    }
+
     public boolean deductFromStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Staff staff) {
         String sql;
         HashMap hm = new HashMap();
@@ -1825,11 +1844,12 @@ public class PharmacyBean {
 
         // Record itemBatch rates
         if (fetchedStock.getItemBatch() != null) {
-            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
-            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setCostRate(costRate);
             sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
@@ -1951,11 +1971,12 @@ public class PharmacyBean {
 
         // Record itemBatch rates
         if (fetchedStock.getItemBatch() != null) {
-            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
             double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
             double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
 
-            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setCostRate(costRate);
             sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
             sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
             sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
@@ -2833,7 +2854,7 @@ public class PharmacyBean {
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         if (f == null || f.getRetailSaleRate() == null) {
-            return 0.0;
+            return getLastRetailRateByPharmaceuticalBillItem(item, dept);
         }
 
         return f.getRetailSaleRate().doubleValue();

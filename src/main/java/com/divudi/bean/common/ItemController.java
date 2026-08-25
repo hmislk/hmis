@@ -4266,6 +4266,13 @@ public class ItemController implements Serializable {
                     + " WHERE im.retired = false ";
             HashMap<String, Object> parameters = new HashMap<>();
             if (institution != null) {
+                // NOTE: deliberately not filtering out outsideChargeMapping=true
+                // mappings here (issue #23250) — this is a live runtime item-listing
+                // path (ITEMS_MAPPED_TO_LOGGED_INSTITUTION strategy) and a
+                // projection query that otherwise never needs to touch the new
+                // column; adding the filter would make it require
+                // OUTSIDECHARGEMAPPING to exist in the DB from the moment this
+                // deploys, ahead of the admin's "Add Missing Fields" DDL step.
                 jpql += " and im.institution=:ins ";
                 parameters.put("ins", institution);
             }

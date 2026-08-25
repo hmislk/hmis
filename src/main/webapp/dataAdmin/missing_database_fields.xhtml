@@ -10,7 +10,15 @@
     <h:body>
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
             <ui:define name="subcontent">
-                <ez:midding_data_fields/>
+
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('Admin')}">
+                    <h:outputText value="YOU ARE NOT AUTHORIZED." />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                    <ez:midding_data_fields fullAccess="true"/>
+                </h:panelGroup>
+
             </ui:define>
         </ui:composition>
     </h:body>

@@ -131,6 +131,7 @@ public class InwardFormController implements Serializable {
             JsfUtil.addErrorMessage("Please select a form to fill");
             return;
         }
+        viewMode = false;
         currentEntry = new PatientFormEntry();
         currentEntry.setPatientEncounter(patientEncounter);
         currentEntry.setDesignComponent(selectedTemplate);
@@ -202,6 +203,7 @@ public class InwardFormController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
+        viewMode = true;
         currentEntry = entry;
         selectedTemplate = entry.getDesignComponent();
         String jpql = "select cc "
@@ -324,6 +326,44 @@ public class InwardFormController implements Serializable {
         } catch (Exception ex) {
             JsfUtil.addErrorMessage("Sending Email Failed");
         }
+    }
+
+    /**
+     * Builds an EmailAttachment from a filled form entry's captured field
+     * values, for use by any compose flow that needs to attach this
+     * admission's saved documents (loads the entry's components directly
+     * rather than relying on currentEntry/currentCaptureComponents, so it's
+     * safe to call without disturbing this controller's edit-mode state).
+     */
+    public com.divudi.core.data.EmailAttachment toEmailAttachment(PatientFormEntry entry) {
+        if (entry == null || entry.getId() == null) {
+            return null;
+        }
+        String jpql = "select cc "
+                + " from CaptureComponent cc "
+                + " where cc.patientFormEntry=:pfe "
+                + " and cc.retired=:ret "
+                + " order by cc.designComponent.orderNo";
+        Map<String, Object> m = new HashMap<>();
+        m.put("pfe", entry);
+        m.put("ret", false);
+        List<CaptureComponent> components = captureComponentFacade.findByJpql(jpql, m);
+        if (components == null || components.isEmpty()) {
+            return null;
+        }
+        String formName = entry.getDesignComponent() != null ? entry.getDesignComponent().getName() : "Inpatient Form";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body>");
+        sb.append("<h3>").append(escapeHtml(formName)).append("</h3>");
+        sb.append("<div class=\"row\">");
+        for (CaptureComponent cc : components) {
+            sb.append(resolveViewWrapper(cc));
+        }
+        sb.append("</div></body></html>");
+        return new com.divudi.core.data.EmailAttachment(
+                formName + ".html",
+                "text/html",
+                java.util.Base64.getEncoder().encodeToString(sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }
 
     private String buildFormEmailHtml(String formName) {
@@ -489,6 +529,19 @@ public class InwardFormController implements Serializable {
         return designComponentChoiceFacade.findByJpql(jpql, m);
     }
 
+    /**
+     * Column count for a SelectOneRadio field's PrimeFaces grid layout,
+     * derived from how many choices the field actually has (clamped so a
+     * 2-choice field doesn't get 1 column and a 10-choice field doesn't
+     * get 10 columns).
+     */
+    static int clampRadioColumns(int choiceCount) {
+        return Math.max(1, Math.min(4, choiceCount));
+    }
+
+    public int getRadioColumns(CaptureComponent cc) {
+        return clampRadioColumns(getChoicesFor(cc).size());
+    }
 
     public String navigateBackToAdmissionProfile() {
         return "/inward/admission_profile?faces-redirect=true";

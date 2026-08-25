@@ -2,9 +2,19 @@ package com.divudi.service.investigation;
 
 import com.divudi.core.data.InvestigationReportType;
 import com.divudi.core.data.dto.investigation.*;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.InvestigationCategoryFacade;
 import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationTubeFacade;
+import com.divudi.core.facade.MachineFacade;
+import com.divudi.core.facade.SampleFacade;
 import com.divudi.core.util.CommonFunctions;
 
 import javax.ejb.EJB;
@@ -16,6 +26,11 @@ import java.util.*;
 @Stateless
 public class InvestigationApiService implements Serializable {
     @EJB private InvestigationFacade investigationFacade;
+    @EJB private InvestigationCategoryFacade investigationCategoryFacade;
+    @EJB private CategoryFacade categoryFacade;
+    @EJB private SampleFacade sampleFacade;
+    @EJB private InvestigationTubeFacade investigationTubeFacade;
+    @EJB private MachineFacade machineFacade;
 
     public List<InvestigationSearchResultDTO> search(String query, Boolean inactive, int limit) {
         Map<String, Object> m = new HashMap<>();
@@ -49,6 +64,14 @@ public class InvestigationApiService implements Serializable {
         validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
+        Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
+        if (category != null) i.setCategory(category);
+        Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
+        if (sample != null) i.setSample(sample);
+        InvestigationTube container = resolveContainer(req.getContainerId(), req.getContainerName(), user);
+        if (container != null) i.setInvestigationTube(container);
+        Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
+        if (analyzer != null) i.setMachine(analyzer);
         i.setCreater(user); i.setCreatedAt(new Date()); i.setRetired(false);
         investigationFacade.create(i); i.setBilledAs(i); i.setReportedAs(i); investigationFacade.edit(i);
         return toResponse(i, "Investigation created successfully");
@@ -66,6 +89,22 @@ public class InvestigationApiService implements Serializable {
         validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
+        if (req.getCategoryId() != null || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
+            Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
+            if (category != null) i.setCategory(category);
+        }
+        if (req.getSampleId() != null || (req.getSampleName() != null && !req.getSampleName().trim().isEmpty())) {
+            Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
+            if (sample != null) i.setSample(sample);
+        }
+        if (req.getContainerId() != null || (req.getContainerName() != null && !req.getContainerName().trim().isEmpty())) {
+            InvestigationTube container = resolveContainer(req.getContainerId(), req.getContainerName(), user);
+            if (container != null) i.setInvestigationTube(container);
+        }
+        if (req.getAnalyzerId() != null || (req.getAnalyzerName() != null && !req.getAnalyzerName().trim().isEmpty())) {
+            Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
+            if (analyzer != null) i.setMachine(analyzer);
+        }
         i.setEditer(user); i.setEditedAt(new Date()); investigationFacade.edit(i);
         return toResponse(i, "Investigation updated successfully");
     }
@@ -77,6 +116,110 @@ public class InvestigationApiService implements Serializable {
 
     private Investigation load(Long id) throws Exception { Investigation i = investigationFacade.find(id); if (i == null || i.isRetired()) throw new Exception("Investigation not found with ID: " + id); return i; }
 
+    /**
+     * Looks up a category by ID or name across all category subtypes (Category,
+     * ServiceCategory, InvestigationCategory, ...), since lab investigations in this
+     * database are grouped under categories imported from multiple sources and not
+     * exclusively under the InvestigationCategory subtype. Only falls back to creating
+     * a new InvestigationCategory when no category with that name exists at all.
+     */
+    private Category resolveCategory(Long id, String name, WebUser user) throws Exception {
+        if (id != null) {
+            Category c = categoryFacade.find(id);
+            if (c == null || c.isRetired()) throw new Exception("Category not found with ID: " + id);
+            return c;
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("name", name.trim().toLowerCase());
+            Category c = categoryFacade.findFirstByJpql(
+                    "select c from Category c where c.retired=:ret and lower(c.name)=:name order by c.name", m);
+            if (c == null) {
+                InvestigationCategory nc = new InvestigationCategory();
+                nc.setName(name.trim());
+                nc.setCreatedAt(new Date());
+                nc.setCreater(user);
+                investigationCategoryFacade.createAndFlush(nc);
+                c = nc;
+            }
+            return c;
+        }
+        return null;
+    }
+
+    private Sample resolveSample(Long id, String name, WebUser user) throws Exception {
+        if (id != null) {
+            Sample s = sampleFacade.find(id);
+            if (s == null || s.isRetired()) throw new Exception("Sample not found with ID: " + id);
+            return s;
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("name", name.trim().toLowerCase());
+            Sample s = sampleFacade.findFirstByJpql(
+                    "select s from Sample s where s.retired=:ret and lower(s.name)=:name order by s.name", m);
+            if (s == null) {
+                s = new Sample();
+                s.setName(name.trim());
+                s.setCreatedAt(new Date());
+                s.setCreater(user);
+                sampleFacade.createAndFlush(s);
+            }
+            return s;
+        }
+        return null;
+    }
+
+    private InvestigationTube resolveContainer(Long id, String name, WebUser user) throws Exception {
+        if (id != null) {
+            InvestigationTube t = investigationTubeFacade.find(id);
+            if (t == null || t.isRetired()) throw new Exception("Container not found with ID: " + id);
+            return t;
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("name", name.trim().toLowerCase());
+            InvestigationTube t = investigationTubeFacade.findFirstByJpql(
+                    "select t from InvestigationTube t where t.retired=:ret and lower(t.name)=:name order by t.name", m);
+            if (t == null) {
+                t = new InvestigationTube();
+                t.setName(name.trim());
+                t.setCreatedAt(new Date());
+                t.setCreater(user);
+                investigationTubeFacade.createAndFlush(t);
+            }
+            return t;
+        }
+        return null;
+    }
+
+    private Machine resolveAnalyzer(Long id, String name, WebUser user) throws Exception {
+        if (id != null) {
+            Machine ma = machineFacade.find(id);
+            if (ma == null || ma.isRetired()) throw new Exception("Analyzer not found with ID: " + id);
+            return ma;
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("name", name.trim().toLowerCase());
+            Machine ma = machineFacade.findFirstByJpql(
+                    "select ma from Machine ma where ma.retired=:ret and lower(ma.name)=:name order by ma.name", m);
+            if (ma == null) {
+                ma = new Machine();
+                ma.setName(name.trim());
+                ma.setCreatedAt(new Date());
+                ma.setCreater(user);
+                machineFacade.createAndFlush(ma);
+            }
+            return ma;
+        }
+        return null;
+    }
+
     private void validateVatPercentage(Double vatPercentage) throws Exception {
         if (vatPercentage != null && (vatPercentage < 0 || vatPercentage > 100)) {
             throw new Exception("vatPercentage must be between 0 and 100");
@@ -86,12 +229,32 @@ public class InvestigationApiService implements Serializable {
         InvestigationSearchResultDTO dto = new InvestigationSearchResultDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow());
         dto.setVatable(i.isVatable());
         dto.setVatPercentage(i.getVatPercentage());
+        populateLinks(dto, i);
         return dto;
     }
     private InvestigationResponseDTO toResponse(Investigation i, String m) {
         InvestigationResponseDTO dto = new InvestigationResponseDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow(), m);
         dto.setVatable(i.isVatable());
         dto.setVatPercentage(i.getVatPercentage());
+        populateLinks(dto, i);
         return dto;
+    }
+    private void populateLinks(InvestigationSearchResultDTO dto, Investigation i) {
+        if (i.getCategory() != null) {
+            dto.setCategoryId(i.getCategory().getId());
+            dto.setCategoryName(i.getCategory().getName());
+        }
+        if (i.getSample() != null) {
+            dto.setSampleId(i.getSample().getId());
+            dto.setSampleName(i.getSample().getName());
+        }
+        if (i.getInvestigationTube() != null) {
+            dto.setContainerId(i.getInvestigationTube().getId());
+            dto.setContainerName(i.getInvestigationTube().getName());
+        }
+        if (i.getMachine() != null) {
+            dto.setAnalyzerId(i.getMachine().getId());
+            dto.setAnalyzerName(i.getMachine().getName());
+        }
     }
 }
