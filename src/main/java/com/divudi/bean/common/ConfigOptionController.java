@@ -45,6 +45,17 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class ConfigOptionController implements Serializable {
 
+    /**
+     * Prefix shared by every Inward Charge Type Label ConfigOption key
+     * (e.g. "Inward Charge Type Label - ROOM_CHARGE"). These options are
+     * dedicated a single-purpose editor at inward/inward_charge_type_labels.xhtml
+     * (InwardChargeTypeLabelController); editing them from the generic
+     * Application Options screen created two out-of-sync places to change the
+     * same value (issue #23257), so this generic screen refuses to
+     * create/edit/delete them.
+     */
+    private static final String INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX = "Inward Charge Type Label - ";
+
     @EJB
     private ConfigOptionFacade optionFacade;
 
@@ -238,6 +249,10 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
+        if (isInwardChargeTypeLabelKey(delo.getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            return;
+        }
         Map<String, Object> before = new HashMap<>();
         before.put("optionKey", delo.getOptionKey());
         before.put("optionValue", delo.getOptionValue());
@@ -266,8 +281,14 @@ public class ConfigOptionController implements Serializable {
         }
 
         int deletedCount = 0;
+        int skippedInwardLabelCount = 0;
         for (ConfigOption option : selectedOptions) {
             if (option != null) {
+                if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
+                    skippedInwardLabelCount++;
+                    continue;
+                }
+
                 Map<String, Object> before = new HashMap<>();
                 before.put("optionKey", option.getOptionKey());
                 before.put("optionValue", option.getOptionValue());
@@ -291,7 +312,12 @@ public class ConfigOptionController implements Serializable {
         selectedOptions.clear();
         configOptionApplicationController.loadApplicationOptions();
         listApplicationOptions();
-        JsfUtil.addSuccessMessage("Deleted " + deletedCount + " options");
+        String message = "Deleted " + deletedCount + " options";
+        if (skippedInwardLabelCount > 0) {
+            message += ". Skipped " + skippedInwardLabelCount
+                    + " Inward Charge Type Label option(s) - change those from the Inward Charge Type Labels page.";
+        }
+        JsfUtil.addSuccessMessage(message);
     }
 
     public StreamedContent exportSelectedOptions() {
@@ -375,6 +401,7 @@ public class ConfigOptionController implements Serializable {
             int importedCount = 0;
             int updatedCount = 0;
             int skippedCount = 0;
+            int skippedInwardLabelCount = 0;
 
             for (int i = 1; i < lines.length; i++) {
                 String line = lines[i].trim();
@@ -388,6 +415,13 @@ public class ConfigOptionController implements Serializable {
                     String optionValue = parts[1];
                     String valueTypeStr = parts[2];
                     String enumType = parts.length > 3 ? parts[3] : null;
+
+                    if (optionKey != null && !optionKey.trim().isEmpty() && isInwardChargeTypeLabelKey(optionKey.trim())) {
+                        // Inward Charge Type Labels are managed exclusively via
+                        // inward/inward_charge_type_labels.xhtml - see saveOption().
+                        skippedInwardLabelCount++;
+                        continue;
+                    }
 
                     if (optionKey != null && !optionKey.trim().isEmpty()) {
                         OptionValueType valueType;
@@ -459,7 +493,11 @@ public class ConfigOptionController implements Serializable {
                 message += updatedCount + " options updated. ";
             }
             if (skippedCount > 0) {
-                message += skippedCount + " existing options skipped.";
+                message += skippedCount + " existing options skipped. ";
+            }
+            if (skippedInwardLabelCount > 0) {
+                message += skippedInwardLabelCount
+                        + " Inward Charge Type Label option(s) skipped; manage them from the Inward Charge Type Labels page.";
             }
             JsfUtil.addSuccessMessage(message);
 
@@ -531,9 +569,22 @@ public class ConfigOptionController implements Serializable {
         JsfUtil.addSuccessMessage("Saved");
     }
 
+    /**
+     * Inward Charge Type Labels are edited exclusively via
+     * inward/inward_charge_type_labels.xhtml (InwardChargeTypeLabelController).
+     * See {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX}.
+     */
+    public boolean isInwardChargeTypeLabelKey(String optionKey) {
+        return optionKey != null && optionKey.startsWith(INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX);
+    }
+
     public void saveOption(ConfigOption option) {
         if (option == null) {
             JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = null;
@@ -1046,6 +1097,10 @@ public class ConfigOptionController implements Serializable {
 
     public void retireDuplicateGroup(ConfigOptionDuplicateGroup g) {
         if (g == null || g.getOptions() == null || g.getOptions().size() < 2) {
+            return;
+        }
+        if (isInwardChargeTypeLabelKey(g.getOptions().get(0).getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         g.getOptions().sort((a, b) -> a.getId().compareTo(b.getId()));
