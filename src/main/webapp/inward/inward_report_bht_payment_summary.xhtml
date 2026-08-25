@@ -278,6 +278,10 @@
                                 </h:outputText>
                             </p:column>
 
+                            <p:column headerText="Type" style="white-space:nowrap;">
+                                <h:outputText value="#{row.paymentCategory}" />
+                            </p:column>
+
                             <p:column headerText="Bill No" style="white-space:nowrap;">
                                 <h:outputText value="#{row.billNo}" />
                             </p:column>
@@ -308,6 +312,7 @@
 
                             <f:facet name="footer">
                                 <div class="text-end">
+                                    <strong>Deposits — </strong>
                                     <ui:repeat value="#{bhtPaymentDetailReportController.usedPaymentMethods}" var="pm">
                                         <strong>
                                             <h:outputText value="#{pm.label}" />:
@@ -315,8 +320,24 @@
                                         <h:outputText value="#{bhtPaymentDetailReportController.getTotalForMethod(pm)}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
-                                        &#160;&#160;&#160;
+                                        &#160;&#160;
                                     </ui:repeat>
+                                    &#160;&#160;&#160;
+                                    <strong>Final Payments — </strong>
+                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedFinalPaymentMethods}" var="pm">
+                                        <strong>
+                                            <h:outputText value="#{pm.label}" />:
+                                        </strong>
+                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForFinalPaymentMethod(pm)}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;
+                                    </ui:repeat>
+                                    <strong>Total Final: </strong>
+                                    <h:outputText value="#{bhtPaymentDetailReportController.grandTotalFinalPayments}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
                                     <strong>CC Settlement: </strong>
                                     <h:outputText value="#{bhtPaymentDetailReportController.grandTotalCcSettlement}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
