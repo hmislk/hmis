@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -670,9 +671,27 @@ public class ChannelApi {
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
+        int excludedForZeroTotal = 0;
+
         for (SessionInstance s : sessions) {
 
+            // A zero-total originating session is not offered for online booking.
+            // This is intentional for sessions priced per investigation rather
+            // than per appointment (scanning sessions, for example), and
+            // findActiveChannelSession enforces the same rule so they cannot be
+            // booked by id either.
+            //
+            // It is indistinguishable, however, from a session whose fees were
+            // simply never entered. Log each exclusion so the difference can be
+            // investigated from the server log instead of requiring a database
+            // query to work out why a doctor is absent from the feed.
             if (s.getOriginatingSession().getTotal() == 0) {
+                excludedForZeroTotal++;
+                LOGGER.log(Level.FINE,
+                        "Online booking feed: skipping session instance {0} (originating session {1}) "
+                        + "because the originating session total is zero. Intentional for sessions priced "
+                        + "per investigation; check the session fees if this session was expected to appear.",
+                        new Object[]{s.getId(), s.getOriginatingSession().getId()});
                 continue;
             }
 
@@ -716,6 +735,14 @@ public class ChannelApi {
             session.put("status", sessionStatus);
 
             sessionData.add(session);
+        }
+
+        if (excludedForZeroTotal > 0) {
+            LOGGER.log(Level.INFO,
+                    "Online booking feed: returned {0} of {1} session instance(s); {2} were withheld because "
+                    + "their originating session total is zero. Enable FINE logging on {3} to list them.",
+                    new Object[]{sessionData.size(), sessions.size(), excludedForZeroTotal,
+                        ChannelApi.class.getName()});
         }
 
         Map<String, Object> sessionResults = new HashMap<>();
