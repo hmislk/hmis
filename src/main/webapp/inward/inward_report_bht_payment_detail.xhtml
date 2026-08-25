@@ -324,7 +324,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post-Final Cash" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Final Cash" style="text-align:right; white-space:nowrap;">
                                 <h:outputText value="#{row.postFinalCash}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -335,7 +335,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post-Final Card" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Final Card" style="text-align:right; white-space:nowrap;">
                                 <h:outputText value="#{row.postFinalCard}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -346,7 +346,18 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post-Final Other" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Final Credit" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.postFinalCredit}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalCredit}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Final Other" style="text-align:right; white-space:nowrap;">
                                 <h:outputText value="#{row.postFinalOther}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -357,7 +368,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Post-Final Payments" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                            <p:column headerText="Total Final" style="text-align:right; white-space:nowrap; font-weight:bold;">
                                 <h:outputText value="#{row.totalPostFinalPayments}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
