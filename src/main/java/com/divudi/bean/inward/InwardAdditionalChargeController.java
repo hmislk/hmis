@@ -80,6 +80,8 @@ public class InwardAdditionalChargeController implements Serializable {
     private ConfigOptionController configOptionController;
     @Inject
     private BillBeanController billBeanController;
+    @Inject
+    private com.divudi.bean.common.ItemFeeManager itemFeeManager;
     //////////////
     private BilledBill current;
     private Institution institution;
@@ -296,8 +298,34 @@ public class InwardAdditionalChargeController implements Serializable {
         return temBi;
     }
 
+    /**
+     * Resolves the fee(s) to bill for the selected outside-charge item,
+     * scoped to the logged department's site (issue #23311).
+     * {@link BillBeanController#fillFees(Item)} returns every non-retired
+     * {@code ItemFee} for the item with no institution/department
+     * filtering, so a site-level fee and a department-level fee for the
+     * same item were both being summed onto the bill. Outside Charge items
+     * are only offered by {@link #completeItem(String)} when their
+     * eligible fee is scoped to the logged department's site
+     * ({@code forInstitution = site}), so resolution here uses the same
+     * site scope. Departments without a configured site keep the previous
+     * unscoped lookup, matching {@link #completeItem(String)}'s existing
+     * fallback.
+     */
+    private List<ItemFee> resolveOutsideChargeFees(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+        Department department = getSessionController().getDepartment();
+        Institution site = department != null ? department.getSite() : null;
+        if (site != null) {
+            return itemFeeManager.fillFees(item, site, null);
+        }
+        return billBeanController.fillFees(item);
+    }
+
     private void saveBillFee(BillItem bt) {
-        List<ItemFee> itemFees = (selectedItem != null) ? billBeanController.fillFees(selectedItem) : new ArrayList<>();
+        List<ItemFee> itemFees = (selectedItem != null) ? resolveOutsideChargeFees(selectedItem) : new ArrayList<>();
 
         if (!itemFees.isEmpty()) {
             List<BillFee> created = new ArrayList<>();
