@@ -646,6 +646,11 @@ public class TransferRequestController implements Serializable {
     }
 
     public void saveTransferRequestPreBillAndBillItems() {
+        // Captured before the bill is persisted below: this method is re-entered by both
+        // Save and Finalize, and a ward can press Save repeatedly while still adding
+        // items. Only the call that actually creates the request notifies subscribers,
+        // so a request raises exactly one notification no matter how often it is re-saved.
+        boolean newRequest = getTransferRequestBillPre().getId() == null;
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
         // fromDepartment (below) = the department creating this request; it is also the
@@ -742,6 +747,9 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         LOGGER.log(Level.FINE, "Finalizing transfer request with {0} items", getBillItems().size());
         getBillFacade().edit(getTransferRequestBillPre());
+        if (newRequest) {
+            notificationController.createNotification(getTransferRequestBillPre());
+        }
     }
 
     public void saveTranserRequestPreBill() {
