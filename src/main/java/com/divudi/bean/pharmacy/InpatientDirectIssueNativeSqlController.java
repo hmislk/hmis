@@ -194,10 +194,19 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             pbd.setBillNo(bill.getDeptId());
             pbd.setCreatedAt(bill.getCreatedAt());
             double tot = 0.0;
+            double grossTot = 0.0;
+            double marginTot = 0.0;
+            double discountTot = 0.0;
             for (BillItemData bid : billItemDataList) {
                 tot += Math.abs(bid.getNetValue());
+                grossTot += Math.abs(bid.getGrossValue());
+                marginTot += Math.abs(bid.getMarginValue());
+                discountTot += Math.abs(bid.getDiscountValue());
             }
             pbd.setNetTotal(tot);
+            pbd.setTotal(grossTot);
+            pbd.setMargin(marginTot);
+            pbd.setDiscount(discountTot);
 
             printBill = pbd;
             List<BillItemData> printCopy = new ArrayList<>();
@@ -210,6 +219,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                 p.setNetRate(src.getNetRate());
                 p.setNetValue(Math.abs(src.getNetValue()));
                 p.setGrossValue(Math.abs(src.getGrossValue()));
+                p.setMarginValue(Math.abs(src.getMarginValue()));
+                p.setDiscountValue(Math.abs(src.getDiscountValue()));
                 p.setDoe(src.getDoe());
                 printCopy.add(p);
             }
