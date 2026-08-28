@@ -2096,36 +2096,47 @@ leave "Search All" unchecked and widen the **From Date** via the calendar grid
 today's default date range silently returns "No records found." for anything
 not created today. Verified while testing issue #23249.
 
-## 82. `p:dataTable`'s `rowEdit`/`rowEditCancel` (and a `p:ajax` nested inside a `p:cellEditor`) hardcode their own AJAX `update` target — extra ids you add are silently dropped
+## 82. Any AJAX call from inside an editable `p:dataTable`'s row scope has its `update` target silently constrained to the table itself — extra ids you add are dropped, even on a plain `p:commandButton`
 
-`ward_pharmacy_bht_issue.xhtml`'s "Issuing Items" grid needed both the
-row-edit checkmark AND the inline item-swap autocomplete to also refresh a
-separate `billDetailsPanel` outside the table. The obvious fix —
-`update="itemList billDetailsPanel"` on the `p:ajax event="rowEdit"` (and on
-a `p:ajax event="itemSelect"` nested inside an autocomplete that itself
-lives inside a `p:cellEditor`) — compiles and deploys with no error, but the
-extra id is silently dropped at runtime: the browser's actual AJAX request
-always sends `javax.faces.partial.render=<table-id>` only, never the second
-id, no matter what `update=""` says server-side. This survives a normal
-`asadmin deploy --force`, a full `undeploy`+`deploy`, and even a full
-`stop-domain`/`start-domain` — it isn't a caching artifact, it's how
-PrimeFaces DataTable's `bindEditEvents()` widget code generates these two
-specific events: it constructs its own `PrimeFaces.ab({...u:this.id...})`
-call client-side, hardcoded to the table's own id, ignoring the
-server-rendered `update` value entirely for `rowEdit`/`rowEditCancel` (and,
-transitively, for any `p:ajax` nested inside that table's own cell editors).
+`ward_pharmacy_bht_issue.xhtml`'s "Issuing Items" grid needed the row-edit
+checkmark, the inline item-swap autocomplete, AND the row's delete
+(trash) button to also refresh a separate `billDetailsPanel` outside the
+table. The obvious fix — add `billDetailsPanel` to each component's own
+`update=""` (`p:ajax event="rowEdit"`, a `p:ajax event="itemSelect"` nested
+inside an autocomplete that itself lives inside a `p:cellEditor`, and even
+a completely ordinary `p:commandButton` in a row with no cellEditor/rowEdit
+involvement at all) — compiles and deploys with no error, but the extra id
+is silently dropped at runtime in **all three cases**: the browser's actual
+AJAX request always sends `javax.faces.partial.render=<table-id>` only,
+never the second id, no matter what `update=""` says server-side. Confirmed
+by reading the button's own rendered `onclick` directly off the live DOM
+(`document.querySelector('button.ui-button-danger').getAttribute('onclick')`)
+— the compiled `PrimeFaces.ab({...})` call has `u:"<table-id>"` baked in
+verbatim, already missing the second id before the click ever happens. This
+survives a normal `asadmin deploy --force`, a full `undeploy`+`deploy`, and
+even a full `stop-domain`/`start-domain` — it isn't a caching artifact. A
+component genuinely *outside* the table (e.g. a `p:remoteCommand` declared
+as the table's sibling) is unaffected and can update `billDetailsPanel`
+freely — so this isn't about the DataTable's own `rowEdit`/`rowEditCancel`
+widget behaviors specifically (as originally assumed here); it's the row
+*scope* itself, for anything nested inside it.
 
 Confirm this is what's happening by reading the actual request body
 Playwright captured (`browser_network_request` with `part: "request-body"`)
-and checking `javax.faces.partial.render=` — not by re-reading the source
-XHTML, which will keep looking correct.
+— or the rendered `onclick` off the live DOM for a plain button — and
+checking for the missing id, not by re-reading the source XHTML, which will
+keep looking correct.
 
 Fix: add a `p:remoteCommand name="refreshX" update="theOtherPanel"` once,
-elsewhere in the same form, then set `oncomplete="refreshX();"` on the
-`rowEdit`/`rowEditCancel`/nested-`itemSelect` `p:ajax` tags instead of
-trying to widen their own `update`. The remote command fires as a second,
-independent AJAX call that isn't subject to the same hardcoding. Verified
-while fixing issue #23328.
+elsewhere in the same form (outside the table), then set
+`oncomplete="refreshX();"` on every row-scoped component that needs the
+extra update — `rowEdit`/`rowEditCancel`, a nested `itemSelect`, or a plain
+`p:commandButton` alike — instead of trying to widen their own `update`.
+The remote command fires as a second, independent AJAX call that isn't
+subject to the same row-scope constraint. Verified while fixing issue
+#23328 (including a CodeRabbit-caught follow-up: the row's delete button
+needed the identical treatment, not just the two components fixed in the
+original pass).
 
 ## Some PrimeFaces buttons need a jQuery-triggered click
 

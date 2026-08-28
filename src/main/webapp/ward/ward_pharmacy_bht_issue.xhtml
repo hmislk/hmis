@@ -340,15 +340,19 @@
                         .auto-substituted-row { background-color: #FFF3CD !important; }
                         .auto-substituted-row td { background-color: #FFF3CD !important; }
                     </style>
-                    <!-- p:dataTable's own rowEdit/rowEditCancel behaviors (and a p:ajax nested inside
-                         a cellEditor, like the autocomplete's itemSelect below) hardcode their AJAX
-                         "update" target to the table itself client-side — extra ids added to the
-                         update="" attribute on those specific events are silently ignored, no matter
-                         what the server-rendered markup says. Verified live: the browser's actual
-                         request always sends javax.faces.partial.render=itemList only, even with
-                         update="itemList billDetailsPanel" in the source and after a full app/domain
-                         redeploy. p:remoteCommand + oncomplete is the standard workaround: it issues a
-                         second, independent AJAX call that can update billDetailsPanel freely. Issue #23328. -->
+                    <!-- ANY AJAX call originating from a component inside this editable p:dataTable's
+                         row scope — the table's own rowEdit/rowEditCancel behaviors, a p:ajax nested
+                         inside a cellEditor (the autocomplete's itemSelect below), and even a plain
+                         p:commandButton in a row (the delete button below) — has its "update" target
+                         silently constrained to the table itself client-side. Extra ids added to
+                         update="" are ignored no matter what the server-rendered markup says; a
+                         component OUTSIDE the table (like this p:remoteCommand) is unaffected and can
+                         update billDetailsPanel freely. Verified live for all three cases: the
+                         browser's actual request always sends javax.faces.partial.render=itemList
+                         only, even with update="itemList billDetailsPanel" in the source and after a
+                         full app/domain redeploy. p:remoteCommand + oncomplete is the standard
+                         workaround: it issues a second, independent AJAX call from outside the table's
+                         row scope. Issue #23328. -->
                     <p:remoteCommand name="refreshBillDetails" update="billDetailsPanel" />
                     <p:dataTable
                         var="bItm"
@@ -471,7 +475,8 @@
                                 action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}"
                                 class="ui-button-danger"
                                 process="@this"
-                                update="itemList">
+                                update="itemList"
+                                oncomplete="refreshBillDetails();">
                             </p:commandButton>
 
                         </p:column>

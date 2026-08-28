@@ -455,7 +455,7 @@ public class PharmacySaleBhtController implements Serializable {
     public void onEditing(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
 
-        if (tmp.getQty() == null || tmp.getQty() <= 0) {
+        if (tmp.getQty() == null || !Double.isFinite(tmp.getQty()) || tmp.getQty() <= 0) {
             setZeroToQty(tmp);
             recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("Can not enter a minus value");
@@ -2648,7 +2648,12 @@ public class PharmacySaleBhtController implements Serializable {
         getBillItems().remove(b);
         issuingSelections.remove(b);
 
-        calTotal();
+        // calTotal() operates on the unrelated preBill.getBillItems() list, not the
+        // grid actually rendered here — it left billItemTotal/Gross/Margin/Discount
+        // stale after a deletion. calCurrentBillItemTotal() is the helper this
+        // controller already uses elsewhere for the real billItems list. CodeRabbit
+        // review on #23330.
+        calCurrentBillItemTotal(getBillItems());
     }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
