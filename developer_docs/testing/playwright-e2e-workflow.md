@@ -2096,6 +2096,37 @@ leave "Search All" unchecked and widen the **From Date** via the calendar grid
 today's default date range silently returns "No records found." for anything
 not created today. Verified while testing issue #23249.
 
+## 82. `p:dataTable`'s `rowEdit`/`rowEditCancel` (and a `p:ajax` nested inside a `p:cellEditor`) hardcode their own AJAX `update` target — extra ids you add are silently dropped
+
+`ward_pharmacy_bht_issue.xhtml`'s "Issuing Items" grid needed both the
+row-edit checkmark AND the inline item-swap autocomplete to also refresh a
+separate `billDetailsPanel` outside the table. The obvious fix —
+`update="itemList billDetailsPanel"` on the `p:ajax event="rowEdit"` (and on
+a `p:ajax event="itemSelect"` nested inside an autocomplete that itself
+lives inside a `p:cellEditor`) — compiles and deploys with no error, but the
+extra id is silently dropped at runtime: the browser's actual AJAX request
+always sends `javax.faces.partial.render=<table-id>` only, never the second
+id, no matter what `update=""` says server-side. This survives a normal
+`asadmin deploy --force`, a full `undeploy`+`deploy`, and even a full
+`stop-domain`/`start-domain` — it isn't a caching artifact, it's how
+PrimeFaces DataTable's `bindEditEvents()` widget code generates these two
+specific events: it constructs its own `PrimeFaces.ab({...u:this.id...})`
+call client-side, hardcoded to the table's own id, ignoring the
+server-rendered `update` value entirely for `rowEdit`/`rowEditCancel` (and,
+transitively, for any `p:ajax` nested inside that table's own cell editors).
+
+Confirm this is what's happening by reading the actual request body
+Playwright captured (`browser_network_request` with `part: "request-body"`)
+and checking `javax.faces.partial.render=` — not by re-reading the source
+XHTML, which will keep looking correct.
+
+Fix: add a `p:remoteCommand name="refreshX" update="theOtherPanel"` once,
+elsewhere in the same form, then set `oncomplete="refreshX();"` on the
+`rowEdit`/`rowEditCancel`/nested-`itemSelect` `p:ajax` tags instead of
+trying to widen their own `update`. The remote command fires as a second,
+independent AJAX call that isn't subject to the same hardcoding. Verified
+while fixing issue #23328.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
