@@ -352,9 +352,12 @@
                                                         itemLabel="#{ins.name}"
                                                         forceSelection="true"
                                                         minQueryLength="2"
+                                                        required="true"
+                                                        requiredMessage="Please select the Outside Institution"
                                                         placeholder="Type institution name...">
                                             <p:column>#{ins.name}</p:column>
                                         </p:autoComplete>
+                                        <p:message for="acFromIns" display="text" styleClass="text-danger d-block mt-1"/>
                                     </div>
                                 </div>
                             </p:panel>
@@ -368,8 +371,12 @@
                                     <h:outputText value=" #{inwardAdditionalChargeController.current.fromInstitution.name}" class="mx-2 fw-bold"/>
                                     <p:commandButton value="Change" icon="fa fa-pencil"
                                                      class="ui-button-secondary ui-button-sm ms-3"
+                                                     rendered="#{empty inwardAdditionalChargeController.billItemList}"
                                                      ajax="false"
                                                      action="#{inwardAdditionalChargeController.clearFromInstitution}"/>
+                                    <h:panelGroup rendered="#{not empty inwardAdditionalChargeController.billItemList}" styleClass="text-muted ms-3" style="font-size:0.875em;">
+                                        (Click New Bill to use a different institution)
+                                    </h:panelGroup>
                                 </f:facet>
                                 <div class="row m-1">
                                     <div class="col-3 d-flex align-items-center">
@@ -486,13 +493,17 @@
                                             <p:column style="width:2.5rem">
                                                 <p:rowToggler/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="width:3rem;">
                                                 <f:facet name="header">No</f:facet>
                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                             </p:column>
                                             <p:column>
                                                 <f:facet name="header">Item</f:facet>
                                                 <h:outputLabel value="#{bif.item.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Inward Charge Type</f:facet>
+                                                <h:outputText value="#{bif.inwardChargeType.label}"/>
                                             </p:column>
                                             <p:column>
                                                 <f:facet name="header">Amount</f:facet>
