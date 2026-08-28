@@ -172,7 +172,7 @@
                         </ui:fragment>
                     </tr>
                     <tr>
-                        <td colspan="6" style="width: 100%">
+                        <td colspan="#{2 + (cc.attrs.showRate ? 3 : 0) + (cc.attrs.showDiscount ? 1 : 0)}" style="width: 100%">
                             <div class="billline1">
                                     <hr/>
                             </div>
@@ -182,7 +182,7 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
 
                         <tr>
-                            <td colspan="6" style="overflow: visible;">
+                            <td colspan="#{2 + (cc.attrs.showRate ? 3 : 0) + (cc.attrs.showDiscount ? 1 : 0)}" style="overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock1" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
@@ -262,7 +262,7 @@
                     </tr>
                     </ui:fragment>
                     <ui:fragment rendered="#{cc.attrs.showDiscount}">
-                    <tr>
+                    <tr style="#{cc.attrs.bill.margin ne 0.0 ? '' : 'display:none;'}">
                         <td  class="totalsBlock1" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.margin ne 0.0}" value="Service Charge " style="font-weight: bolder!important;"/>
                         </td>

@@ -139,7 +139,7 @@
                     </tr>
 
                     <tr>
-                        <td colspan="6" style="width: 100%">
+                        <td colspan="#{2 + (cc.attrs.showRate ? 3 : 0) + (cc.attrs.showDiscount ? 1 : 0)}" style="width: 100%">
                             <div class="billline">
                                 <h:outputLabel value="-------------------------------------------------"   />
                             </div>
@@ -149,7 +149,7 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
 
                         <tr>
-                            <td colspan="6" style="overflow: visible;">
+                            <td colspan="#{2 + (cc.attrs.showRate ? 3 : 0) + (cc.attrs.showDiscount ? 1 : 0)}" style="overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock"  >
                                 </h:outputLabel>
                             </td>
@@ -215,7 +215,7 @@
                         </tr>
                     </ui:fragment>
                     <ui:fragment rendered="#{cc.attrs.showDiscount}">
-                        <tr>
+                        <tr style="#{cc.attrs.bill.margin ne 0.0 ? '' : 'display:none;'}">
                             <td  class="totalsBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.margin ne 0.0}" value="Service Charge"/>
                             </td>
