@@ -448,14 +448,16 @@ public class InwardAdditionalChargeController implements Serializable {
      */
     public void onItemSelect() {
         if (selectedItem != null) {
-            double scopedFeeTotal = 0.0;
-            for (ItemFee f : resolveOutsideChargeFees(selectedItem)) {
-                scopedFeeTotal += f.getFee();
-            }
-            if (scopedFeeTotal > 0) {
+            List<ItemFee> itemFees = resolveOutsideChargeFees(selectedItem);
+            if (!itemFees.isEmpty()) {
+                double scopedFeeTotal = 0.0;
+                for (ItemFee f : itemFees) {
+                    scopedFeeTotal += f.getFee();
+                }
                 getCurrent().setTotal(scopedFeeTotal);
-            } else if (selectedItem.getTotal() != null && selectedItem.getTotal() > 0) {
-                getCurrent().setTotal(selectedItem.getTotal());
+            } else {
+                Double itemTotal = selectedItem.getTotal();
+                getCurrent().setTotal(itemTotal == null ? 0.0 : itemTotal);
             }
             inwardChargeType = selectedItem.getInwardChargeType();
         }
