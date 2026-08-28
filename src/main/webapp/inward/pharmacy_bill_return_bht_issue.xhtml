@@ -293,24 +293,30 @@
 
                                 <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                     <div >
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
-                                            <ph:issueBill  bill="#{bhtIssueReturnController.bill}"/>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
+                                            <ph:issueBill  bill="#{bhtIssueReturnController.bill}"
+                                                           showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                           showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}"/>
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewDouble2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
+                                <h:panelGroup id="gpBillPreviewDouble2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                     <div >
-                                        <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
-                                            <phi:saleBill_prabodha bill="#{bhtIssueReturnController.bill}"></phi:saleBill_prabodha>
+                                        <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}">
+                                            <phi:saleBill_prabodha bill="#{bhtIssueReturnController.bill}"
+                                                                   showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                                   showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_prabodha>
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewFiveFive2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
+                                <h:panelGroup id="gpBillPreviewFiveFive2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                     <div >
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
-                                            <phi:saleBill_five_five bill="#{bhtIssueReturnController.bill}"></phi:saleBill_five_five>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
+                                            <phi:saleBill_five_five bill="#{bhtIssueReturnController.bill}"
+                                                                    showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                                    showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_five_five>
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
@@ -353,29 +359,37 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:returnBill bill="#{bhtIssueReturnController.returnBill}"/>
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
+                                        <phi:returnBill bill="#{bhtIssueReturnController.returnBill}"
+                                                        showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                        showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
+                                <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                     <div >
-                                        <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
-                                            <phi:saleBill_prabodha bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_prabodha>
+                                        <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}">
+                                            <phi:saleBill_prabodha bill="#{bhtIssueReturnController.returnBill}"
+                                                                   showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                                   showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_prabodha>
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}"> 
+                                <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                     <div >
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
-                                            <phi:saleBill_five_five bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_five_five>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
+                                            <phi:saleBill_five_five bill="#{bhtIssueReturnController.returnBill}"
+                                                                    showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                                    showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_five_five>
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
 
                                 <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
-                                    <phi:saleBill_Header_Return bill="#{bhtIssueReturnController.returnBill}" ></phi:saleBill_Header_Return>
+                                    <phi:saleBill_Header_Return bill="#{bhtIssueReturnController.returnBill}"
+                                                                showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                                showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_Header_Return>
                                 </h:panelGroup>
 
                             </h:panelGroup>

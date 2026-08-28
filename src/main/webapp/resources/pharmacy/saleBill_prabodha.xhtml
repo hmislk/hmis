@@ -319,6 +319,16 @@
                     <ui:fragment rendered="#{cc.attrs.showDiscount}">
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.margin ne 0.0}" value="Service Charge " style="font-weight: bolder!important;"/>
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
+                            <h:outputLabel rendered="#{cc.attrs.bill.margin ne 0.0}"   value="#{cc.attrs.bill.margin}" style="font-weight: bolder!important;" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
@@ -650,6 +660,16 @@
                     </tr>
                     </ui:fragment>
                     <ui:fragment rendered="#{cc.attrs.showDiscount}">
+                    <tr>
+                        <td  class="totalsBlock" style="text-align: left;">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.margin ne 0.0}" value="Service Charge " style="font-weight: bolder!important;"/>
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
+                            <h:outputLabel rendered="#{cc.attrs.bill.margin ne 0.0}"   value="#{cc.attrs.bill.margin}" style="font-weight: bolder!important;" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
