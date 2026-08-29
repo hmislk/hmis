@@ -2426,6 +2426,20 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
+    private boolean isBatchAlreadyInBill(Long stockId) {
+        if (stockId == null) {
+            return false;
+        }
+        for (BillItem bItem : getBillItems()) {
+            if (bItem.getPharmaceuticalBillItem() != null
+                    && bItem.getPharmaceuticalBillItem().getStock() != null
+                    && Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), stockId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void addBillItem() {
 
         if (getPreBill() == null) {
@@ -2592,11 +2606,11 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-//        if (checkItemBatch()) {
-//            errorMessage = "This batch is already there in the bill.";
-//            UtilityController.addErrorMessage("Already added this item batch");
-//            return;
-//        }
+        if (isBatchAlreadyInBill(getTmpStock().getId())) {
+            errorMessage = "This batch is already in the bill.";
+            JsfUtil.addErrorMessage("This batch is already in the bill. Edit the existing row's quantity instead.");
+            return;
+        }
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
