@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/institutions/admin_institutions_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="admin">
+
+        <h:panelGroup rendered="#{!dataUploadController.uploadComplete}">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Upload Suppliers Extended</h2>
+                    </div>
+                    <div class="card-body">
+                        <h:form enctype="multipart/form-data">
+                            <p:fileUpload value="#{dataUploadController.file}"
+                                          mode="simple"
+                                          label="Choose File"/>
+                            <p:commandButton value="Upload"
+                                             icon="fas fa-upload"
+                                             class="ui-button-success"
+                                             action="#{dataUploadController.uploadSuppliersExtended()}"
+                                             ajax="false"/>
+                            <p:commandButton value="Download Template"
+                                             ajax="false"
+                                             icon="fas fa-download"
+                                             class="ui-button-warning mx-2"
+                                             onclick="PrimeFaces.monitorDownload(start, stop);">
+                                <p:fileDownload value="#{dataUploadController.templateForSupplierExtendedUpload}"/>
+                            </p:commandButton>
+
+                            <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false"
+                                      closable="false" resizable="false">
+                            </p:dialog>
+                            <script type="text/javascript">
+                                function start() {
+                                    PF('statusDialog').show();
+                                }
+
+                                function stop() {
+                                    PF('statusDialog').hide();
+                                }
+                            </script>
+                        </h:form>
+
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>A</td>
+                                <td>Code</td>
+                                <td>Code. Required</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Supplier Name</td>
+                                <td>Supplier Name. Required</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>QB Supplier Name</td>
+                                <td>QB Supplier Name. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>Active</td>
+                                <td>Active or InActive, Required</td>
+                            </tr>
+                            <tr>
+                                <td>E</td>
+                                <td>Contact Person Name</td>
+                                <td>Contact Person Name. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Address</td>
+                                <td>Address. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>G</td>
+                                <td>Telephone</td>
+                                <td>Telephone. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>H</td>
+                                <td>Fax</td>
+                                <td>Fax. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>I</td>
+                                <td>Email</td>
+                                <td>Email. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>J</td>
+                                <td>Web</td>
+                                <td>Web. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>K</td>
+                                <td>Mobile No</td>
+                                <td>Mobile No. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>L</td>
+                                <td>Payment Company Name</td>
+                                <td>Payment Company Name. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>M</td>
+                                <td>Bank Name</td>
+                                <td>Bank Name. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>N</td>
+                                <td>Branch Name</td>
+                                <td>Branch Name. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>O</td>
+                                <td>Acc No</td>
+                                <td>Acc No. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>P</td>
+                                <td>Legal Company</td>
+                                <td>Legal Company. Optional</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <p:poll update="tbl" />
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{dataUploadController.uploadComplete}">
+            <p:dataTable id="tbl"
+                         value="#{dataUploadController.suppliers}"
+                         var="supplier"
+                         paginator="true"
+                         paginatorPosition="bottom"
+                         rows="10"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15">
+                <f:facet name="header">
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.5rem;">
+                        <p:outputLabel value="Uploaded Suppliers" />
+                        <p:commandButton
+                                ajax="false"
+                                value="To Upload More Suppliers"
+                                icon="fas fa-upload"
+                                action="#{dataUploadController.navigateToSupplierUploadExtended()}"
+                                styleClass="ui-button-secondary" />
+                    </div>
+                </f:facet>
+
+                <p:column headerText="Code">
+                    <h:outputText value="#{supplier.code}"/>
+                </p:column>
+                <p:column headerText="Supplier Name">
+                    <h:outputText value="#{supplier.name}"/>
+                </p:column>
+                <p:column headerText="QB Supplier Name">
+                    <h:outputText value="#{supplier.qbSupplierName}"/>
+                </p:column>
+                <p:column headerText="Active">
+                    <h:outputText value="#{supplier.inactive ? 'No' : 'Yes'}"/>
+                </p:column>
+                <p:column headerText="Contact Person Name">
+                    <h:outputText value="#{supplier.contactPersonName}"/>
+                </p:column>
+                <p:column headerText="Address">
+                    <h:outputText value="#{supplier.address}"/>
+                </p:column>
+                <p:column headerText="Telephone">
+                    <h:outputText value="#{supplier.phone}"/>
+                </p:column>
+                <p:column headerText="Fax">
+                    <h:outputText value="#{supplier.fax}"/>
+                </p:column>
+                <p:column headerText="E Mail">
+                    <h:outputText value="#{supplier.email}"/>
+                </p:column>
+                <p:column headerText="Web">
+                    <h:outputText value="#{supplier.web}"/>
+                </p:column>
+                <p:column headerText="Mobile No.">
+                    <h:outputText value="#{supplier.mobile}"/>
+                </p:column>
+                <p:column headerText="Payment Company Name">
+                    <h:outputText value="#{supplier.paymentCompanyName}"/>
+                </p:column>
+                <p:column headerText="Bank Name">
+                    <h:outputText value="#{supplier.bankName}"/>
+                </p:column>
+                <p:column headerText="Branch Name">
+                    <h:outputText value="#{supplier.branchName}"/>
+                </p:column>
+                <p:column headerText="Acc No">
+                    <h:outputText value="#{supplier.accountNo}"/>
+                </p:column>
+                <p:column headerText="Legal Company">
+                    <h:outputText value="#{supplier.legalCompany}"/>
+                </p:column>
+            </p:dataTable>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

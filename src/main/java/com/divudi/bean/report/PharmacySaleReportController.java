@@ -9,6 +9,8 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.dto.CategoryMovementReportDTO;
+import com.divudi.core.data.dto.PharmacyGrnBillItemDTO;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -26,7 +28,7 @@ import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.core.data.table.String1Value6;
 import com.divudi.core.data.table.String2Value4;
-import com.divudi.ejb.BillReportBean;
+import com.divudi.service.BillService;
 
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
@@ -253,7 +255,7 @@ public class PharmacySaleReportController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    BillReportBean billReportBean;
+    BillService billService;
     @EJB
     InstitutionFacade institutionFacade;
     @EJB
@@ -297,6 +299,7 @@ public class PharmacySaleReportController implements Serializable {
     List<Amp> amps;
     List<Item> items;
     Department departmentMoving;
+    private List<PharmacyGrnBillItemDTO> pharmacyGrnBillItemDTOS;
 
     public List<Item> getNonMovingItems() {
         return nonMovingItems;
@@ -318,6 +321,18 @@ public class PharmacySaleReportController implements Serializable {
                 + " order by s.itemBatch.item.name";
 
         nonMovingItems = itemFacade.findByJpql(j, m);
+    }
+
+    public List<PharmacyGrnBillItemDTO> getPharmacyGrnBillItemDTOS() {
+        if (pharmacyGrnBillItemDTOS == null) {
+            pharmacyGrnBillItemDTOS = new ArrayList<>();
+        }
+
+        return pharmacyGrnBillItemDTOS;
+    }
+
+    public void setPharmacyGrnBillItemDTOS(List<PharmacyGrnBillItemDTO> pharmacyGrnBillItemDTOS) {
+        this.pharmacyGrnBillItemDTOS = pharmacyGrnBillItemDTOS;
     }
 
     public void setCategory(Category category) {
@@ -420,18 +435,30 @@ public class PharmacySaleReportController implements Serializable {
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
         Map m = new HashMap();
-        sql = "select bi from BillItem bi "
-                + " where bi.bill.billType=:bt "
-                + " and bi.bill.retired=false "
+
+        sql = "select new com.divudi.core.data.dto.PharmacyGrnBillItemDTO( "
+                + " bi.bill.deptId, "
+                + " bi.bill.department.name, "
+                + " bi.bill.referenceBill.deptId, "
+                + " bi.bill.fromInstitution.name, "
+                + " bi.item.name, "
+                + " bi.pharmaceuticalBillItem.qty, "
+                + " bi.pharmaceuticalBillItem.freeQty, "
+                + " bi.pharmaceuticalBillItem.purchaseRate, "
+                + " bi.bill.referenceBill.saleValue, "
+                + " bi.bill.referenceBill.netTotal, "
+                + " bi.bill.id, "
+                + " bi.bill.referenceBill.id ) "
+                + " from BillItem bi "
+                + " where bi.bill.billType = :bt "
+                + " and bi.bill.retired = false "
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
             sql += " and ((bi.bill.deptId) like :di) ";
             m.put("di", "%" + searchKeyword.getBillNo().toUpperCase().trim() + "%");
         }
-//        BillItem bi = new BillItem();
-//        bi.getBill().getReferenceBill().getDeptId();
-//        bi.getBill().getFromInstitution();
+
         if (searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")) {
             sql += " and ((bi.bill.referenceBill.deptId) like :po) ";
             m.put("po", "%" + searchKeyword.getRefBillNo().toUpperCase().trim() + "%");
@@ -450,41 +477,38 @@ public class PharmacySaleReportController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
 
-        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        pharmacyGrnBillItemDTOS = (List<PharmacyGrnBillItemDTO>) billItemFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        totalPurchaseValue = getFreeQtyByPurchaseRateTotal(billItems);
-        totalFreeQuantity = getTotalFreeQty(billItems);
+        totalPurchaseValue = getFreeQtyByPurchaseRateTotal(pharmacyGrnBillItemDTOS);
+        totalFreeQuantity = getTotalFreeQty(pharmacyGrnBillItemDTOS);
 
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
     }
 
-    public double getFreeQtyByPurchaseRateTotal(List<BillItem> items) {
+    public double getFreeQtyByPurchaseRateTotal(List<PharmacyGrnBillItemDTO> items) {
         double tot = 0;
         if (items.isEmpty()) {
             return 0;
         }
-        for (BillItem bi : items) {
-            tot += (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
+        for (PharmacyGrnBillItemDTO bi : items) {
+            tot += (bi.getFreeQuantity() * bi.getPurchaseRate());
         }
         return tot;
     }
-    
-    public double getTotalFreeQty(List<BillItem> items) {
+
+    public double getTotalFreeQty(List<PharmacyGrnBillItemDTO> items) {
         double tot = 0;
         if (items == null || items.isEmpty()) {
             return 0;
         }
-        for (BillItem bi : items) {
-            if (bi != null && bi.getPharmaceuticalBillItem() != null) {
-                Double freeQty = bi.getPharmaceuticalBillItem().getFreeQty();
-                if (freeQty != null) {
-                    tot += freeQty;
-                }
+        for (PharmacyGrnBillItemDTO bi : items) {
+            if (bi != null && bi.getFreeQuantity() != null) {
+                double freeQty = bi.getFreeQuantity();
+                tot += freeQty;
             }
         }
         return tot;
@@ -1177,42 +1201,6 @@ public class PharmacySaleReportController implements Serializable {
         return "/pharmacy/pharmacy_report_grn_and_purchase_detail.xhtml?faces-redirect=true";
     }
 
-    public String navigatePharmacyReportPurchaseBillItem() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigatePharmacyReportPurchaseBillItem()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/pharmacy/pharmacy_report_purchase_bill_item.xhtml?faces-redirect=true";
-    }
 
     public String navigatePharmacyReportGrnPaymentDetail() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -1791,7 +1779,7 @@ public class PharmacySaleReportController implements Serializable {
         return "/pharmacy/pharmacy_report_summery_all?faces-redirect=true";
     }
 
-    public String navigatePharmacyReportGrnDetail1() {
+    public String navigateToViewListOfPharmacyReturnWithoutTracingReceipt() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1817,14 +1805,14 @@ public class PharmacySaleReportController implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigatePharmacyReportGrnDetail1()");
+        auditEvent.setEventTrigger("navigateToViewListOfPharmacyReturnWithoutTracingReceipt()");
         auditEventApplicationController.logAuditEvent(auditEvent);
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/pharmacy/pharmacy_report_grn_detail_1?faces-redirect=true";
+        return "/pharmacy/pharmacy_report_return_without_tracing_receipt_list?faces-redirect=true";
     }
 
     public String navigatePharmacyBillReport() {
@@ -3135,7 +3123,6 @@ public class PharmacySaleReportController implements Serializable {
 //                + " from BillItem i "
 //                + " where i.bill.referenceBill.department=:d "
 //                + " and i.bill.billType=:btp ";
-
     /// /                + " and type(i.bill)=:class ";
 //
 //        if (category != null) {
@@ -4018,6 +4005,7 @@ public class PharmacySaleReportController implements Serializable {
     }
 
     List<CategoryMovementReportRow> categoryMovementReportRows;
+    List<CategoryMovementReportDTO> categoryMovementReportDtos;
 
     double totalOpdSale;
     double totalInwardIssue;
@@ -4025,6 +4013,7 @@ public class PharmacySaleReportController implements Serializable {
     double totalTatalValue;
     double totalPurchaseValue;
     double totalMargineValue;
+    double totalQty;
 
     public void createCategoryMovementReport() {
         Date startTime = new Date();
@@ -4092,7 +4081,6 @@ public class PharmacySaleReportController implements Serializable {
                 ////System.out.println("pi = " + pi);
                 ////System.out.println("ti = " + ti);
                 if (pi == null || !ti.equals(pi)) {
-                    ////System.out.println("new item - " + ti.getName());
                     r = new CategoryMovementReportRow();
                     r.setItem(ti);
                     r.setDepartmentIssue(0.0);
@@ -4106,7 +4094,6 @@ public class PharmacySaleReportController implements Serializable {
                     r.setTransferOut(0.0);
                     pi = ti;
                     categoryMovementReportRows.add(r);
-                    ////System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
                 ////System.out.println("tbt = " + tbt);
@@ -4146,7 +4133,7 @@ public class PharmacySaleReportController implements Serializable {
                         break;
 
                     default:
-                        ////System.out.println("other bill type");
+                    ////System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
@@ -4199,7 +4186,13 @@ public class PharmacySaleReportController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = "select pbi.billItem.bill.billType, pbi.billItem.item, sum(pbi.billItem.netValue), sum(pbi.itemBatch.purcahseRate*pbi.qty) "
+        sql = "select pbi.billItem.bill.billType, "
+                + " pbi.billItem.item.id, "
+                + " pbi.billItem.item.name, "
+                + " pbi.billItem.item.code, "
+                + " sum(pbi.billItem.netValue), "
+                + " sum(pbi.itemBatch.purcahseRate*pbi.qty), "
+                + " sum(pbi.qty) "
                 + " from PharmaceuticalBillItem pbi "
                 + " where type(pbi.billItem.bill)=:bc "
                 + " and pbi.billItem.bill.createdAt between :fd and :td ";
@@ -4216,89 +4209,103 @@ public class PharmacySaleReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        sql += " group by pbi.billItem.bill.billType, pbi.billItem.item "
+        sql += " group by pbi.billItem.bill.billType, pbi.billItem.item.id, pbi.billItem.item.name, pbi.billItem.item.code "
                 + " order by pbi.billItem.item.name ";
         List<Object[]> objs = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        categoryMovementReportRows = new ArrayList<>();
-        Item pi = null;
-        CategoryMovementReportRow r = new CategoryMovementReportRow();
+        categoryMovementReportDtos = new ArrayList<>();
+        Long previousItemId = null;
+        CategoryMovementReportDTO r = new CategoryMovementReportDTO();
         totalOpdSale = 0.0;
         totalInwardIssue = 0.0;
         totalDepartmentIssue = 0.0;
         totalPurchaseValue = 0.0;
         totalTatalValue = 0.0;
         totalMargineValue = 0.0;
+        totalQty = 0.0;
         for (Object o[] : objs) {
             try {
-                Item ti = (Item) o[1];
                 BillType tbt = (BillType) o[0];
-                double sv = (double) o[2];
-                double cv = (double) o[3];
+                Long tiId = (Long) o[1];
+                String tiName = (String) o[2];
+                String tiCode = (String) o[3];
+                double sv = (double) o[4];
+                double cv = (double) o[5];
+                double qty = (double) o[6];
 
-                //System.out.println("cv = " + cv);
-                //System.out.println("sv = " + sv);
-                //System.out.println("pi = " + pi);
-                //System.out.println("ti = " + ti);
-                if (sv == 0) {
+                if (sv == 0 && qty == 0) {
                     continue;
                 }
-                if (pi == null || !ti.equals(pi)) {
-                    ////System.out.println("new item - " + ti.getName());
-                    r = new CategoryMovementReportRow();
-                    r.setItem(ti);
+                if (previousItemId == null || !tiId.equals(previousItemId)) {
+                    r = new CategoryMovementReportDTO();
+                    r.setItemId(tiId);
+                    r.setItemName(tiName);
+                    r.setItemCode(tiCode);
                     r.setDepartmentIssue(0.0);
                     r.setInwardIssue(0.0);
                     r.setMarginValue(0.0);
                     r.setOpdSale(0.0);
                     r.setPurchaseValue(0.0);
                     r.setTotal(0.0);
-                    r.setTransfer(0.0);
+                    r.setTotalQty(0.0);
                     r.setTransferIn(0.0);
                     r.setTransferOut(0.0);
-                    pi = ti;
-                    categoryMovementReportRows.add(r);
-                    //System.out.println("size = " + categoryMovementReportRows.size());
+                    previousItemId = tiId;
+                    categoryMovementReportDtos.add(r);
                 }
 
                 switch (tbt) {
                     case PharmacySale:
                     case PharmacyPre:
                         r.setOpdSale(r.getOpdSale() + sv);
+                        r.setOpdSaleQty(r.getOpdSaleQty() + qty);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
                         break;
                     case PharmacyBhtPre:
                         r.setInwardIssue(r.getInwardIssue() + sv);
+                        r.setInwardIssueQty(r.getInwardIssueQty() + qty);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
                         break;
                     case PharmacyIssue:
                         r.setDepartmentIssue(r.getDepartmentIssue() + sv);
+                        r.setDepartmentIssueQty(r.getDepartmentIssueQty() + qty);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
                         break;
                     case PharmacyTransferIssue:
                         r.setTransferIn(r.getTransferIn() + sv);
+                        r.setTransferInQty(r.getTransferInQty() + qty);
                         break;
                     case PharmacyTransferReceive:
                         r.setTransferOut(r.getTransferOut() + sv);
+                        r.setTransferOutQty(r.getTransferOutQty() + qty);
                         break;
 
                     default:
                 }
 
             } catch (Exception e) {
-                //System.out.println("e = " + e);
             }
 
+            r.setTotalQty(r.getOpdSaleQty() + r.getInwardIssueQty() + r.getDepartmentIssueQty());
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
             r.setMarginValue(r.getTotal() + r.getPurchaseValue());
-            //System.out.println("r.getOpdSale() = " + r.getOpdSale());
-            //System.out.println("totalOpdSale = " + totalOpdSale);
-            totalOpdSale += r.getOpdSale();
-            totalInwardIssue += r.getInwardIssue();
-            totalDepartmentIssue += r.getDepartmentIssue();
-            totalPurchaseValue += r.getPurchaseValue();
-            totalTatalValue += r.getTotal();
-            totalMargineValue += r.getMarginValue();
+        }
+
+        totalOpdSale = 0.0;
+        totalInwardIssue = 0.0;
+        totalDepartmentIssue = 0.0;
+        totalPurchaseValue = 0.0;
+        totalTatalValue = 0.0;
+        totalMargineValue = 0.0;
+        totalQty = 0.0;
+        for (CategoryMovementReportDTO row : categoryMovementReportDtos) {
+            totalOpdSale += row.getOpdSale();
+            totalInwardIssue += row.getInwardIssue();
+            totalDepartmentIssue += row.getDepartmentIssue();
+            totalPurchaseValue += row.getPurchaseValue();
+            totalTatalValue += row.getTotal();
+            totalMargineValue += row.getMarginValue();
+            totalQty += row.getTotalQty();
         }
 
         Date endTime = new Date();
@@ -4383,7 +4390,6 @@ public class PharmacySaleReportController implements Serializable {
                     r.setTransferOut(0.0);
                     pi = itemBatch;
                     categoryMovementReportRows.add(r);
-//                    ////System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
 //                ////System.out.println("tbt = " + tbt);
@@ -4426,7 +4432,7 @@ public class PharmacySaleReportController implements Serializable {
                         break;
 
                     default:
-                        ////System.out.println("other bill type");
+                    ////System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
@@ -4536,7 +4542,6 @@ public class PharmacySaleReportController implements Serializable {
                     pi = itemBatch;
                     bi = billItem;
                     categoryMovementReportRows.add(r);
-                    //System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
 //                ////System.out.println("tbt = " + tbt);
@@ -4586,7 +4591,7 @@ public class PharmacySaleReportController implements Serializable {
                         break;
 
                     default:
-                        ////System.out.println("other bill type");
+                    ////System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
@@ -4648,6 +4653,22 @@ public class PharmacySaleReportController implements Serializable {
 
     public void setCategoryMovementReportRows(List<CategoryMovementReportRow> categoryMovementReportRows) {
         this.categoryMovementReportRows = categoryMovementReportRows;
+    }
+
+    public List<CategoryMovementReportDTO> getCategoryMovementReportDtos() {
+        return categoryMovementReportDtos;
+    }
+
+    public void setCategoryMovementReportDtos(List<CategoryMovementReportDTO> categoryMovementReportDtos) {
+        this.categoryMovementReportDtos = categoryMovementReportDtos;
+    }
+
+    public double getTotalQty() {
+        return totalQty;
+    }
+
+    public void setTotalQty(double totalQty) {
+        this.totalQty = totalQty;
     }
 
     public void createSaleReportByDate3() {
@@ -4870,7 +4891,7 @@ public class PharmacySaleReportController implements Serializable {
             proTot = calBillFee(nowDate, FeeType.Staff, btps);
             regentFee = calBillFee(nowDate, FeeType.Chemical, btps);
 
-            count = billReportBean.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
+            count = billService.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
                     CommonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
             countTotal += count;
 
@@ -5955,194 +5976,194 @@ public class PharmacySaleReportController implements Serializable {
 
     public void createSalePaymentMethodBillDate() {
         reportTimerController.trackReportExecution(() -> {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("createSalePaymentMethodBillDate()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        billedPaymentSummery = new PharmacyPaymetMethodSummery();
-
-        List<Object[]> list = fetchSaleValueByPaymentmethodBillDate();
-        TreeMap<Date, String2Value4> hm = new TreeMap<>();
-
-        for (Object[] obj : list) {
-            Date date = (Date) obj[0];
-            PaymentMethod pm = (PaymentMethod) obj[1];
-            Double value = (Double) obj[2];
-
-            String2Value4 newRow = (String2Value4) hm.get(date);
-
-            if (newRow == null) {
-                newRow = new String2Value4();
-                newRow.setDate(date);
-            } else {
-                hm.remove(date);
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
             }
 
-            switch (pm) {
-                case Cash:
-                    newRow.setValue1(value);
-                    break;
-                case Credit:
-                    newRow.setValue2(value);
-                    break;
-                case Card:
-                    newRow.setValue3(value);
-                    break;
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("createSalePaymentMethodBillDate()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+
+            billedPaymentSummery = new PharmacyPaymetMethodSummery();
+
+            List<Object[]> list = fetchSaleValueByPaymentmethodBillDate();
+            TreeMap<Date, String2Value4> hm = new TreeMap<>();
+
+            for (Object[] obj : list) {
+                Date date = (Date) obj[0];
+                PaymentMethod pm = (PaymentMethod) obj[1];
+                Double value = (Double) obj[2];
+
+                String2Value4 newRow = (String2Value4) hm.get(date);
+
+                if (newRow == null) {
+                    newRow = new String2Value4();
+                    newRow.setDate(date);
+                } else {
+                    hm.remove(date);
+                }
+
+                switch (pm) {
+                    case Cash:
+                        newRow.setValue1(value);
+                        break;
+                    case Credit:
+                        newRow.setValue2(value);
+                        break;
+                    case Card:
+                        newRow.setValue3(value);
+                        break;
+                }
+
+                hm.put(date, newRow);
+
             }
 
-            hm.put(date, newRow);
-
-        }
-
-        List<String2Value4> listRow = new ArrayList<>();
-        Iterator it = hm.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
-            ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
-            listRow.add((String2Value4) pairs.getValue());
+            List<String2Value4> listRow = new ArrayList<>();
+            Iterator it = hm.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pairs = (Map.Entry) it.next();
+                ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
+                listRow.add((String2Value4) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
-        }
+            }
 
-        billedPaymentSummery.setBills(listRow);
+            billedPaymentSummery.setBills(listRow);
 
-        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Cash));
+            billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Cash));
 
-        ////////////
-        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Credit));
+            ////////////
+            billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Credit));
 
-        ////////////////
-        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Card));
+            ////////////////
+            billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Card));
 
-        grantCardTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Card);
-        grantCashTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Cash);
-        grantCreditTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Credit);
+            grantCardTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Card);
+            grantCashTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Cash);
+            grantCreditTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Credit);
 
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
         }, PharmacyReports.SALE_SUMMARY_BY_PAYMENT_METHOD, sessionController.getLoggedUser());
     }
 
     public void createSalePaymentMethodByBill() {
         reportTimerController.trackReportExecution(() -> {
 
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("createSalePaymentMethodByBill()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        billedPaymentSummery = new PharmacyPaymetMethodSummery();
-
-        List<Object[]> list = fetchSaleValueByPaymentmethodByBill();
-        TreeMap<Date, String2Value4> hm = new TreeMap<>();
-
-        for (Object[] obj : list) {
-            Date date = (Date) obj[0];
-            PaymentMethod pm = (PaymentMethod) obj[1];
-            Double value = (Double) obj[2];
-
-            String2Value4 newRow = (String2Value4) hm.get(date);
-
-            if (newRow == null) {
-                newRow = new String2Value4();
-                newRow.setDate(date);
-            } else {
-                hm.remove(date);
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
             }
 
-            switch (pm) {
-                case Cash:
-                    newRow.setValue1(value);
-                    break;
-                case Credit:
-                    newRow.setValue2(value);
-                    break;
-                case Card:
-                    newRow.setValue3(value);
-                    break;
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("createSalePaymentMethodByBill()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+
+            billedPaymentSummery = new PharmacyPaymetMethodSummery();
+
+            List<Object[]> list = fetchSaleValueByPaymentmethodByBill();
+            TreeMap<Date, String2Value4> hm = new TreeMap<>();
+
+            for (Object[] obj : list) {
+                Date date = (Date) obj[0];
+                PaymentMethod pm = (PaymentMethod) obj[1];
+                Double value = (Double) obj[2];
+
+                String2Value4 newRow = (String2Value4) hm.get(date);
+
+                if (newRow == null) {
+                    newRow = new String2Value4();
+                    newRow.setDate(date);
+                } else {
+                    hm.remove(date);
+                }
+
+                switch (pm) {
+                    case Cash:
+                        newRow.setValue1(value);
+                        break;
+                    case Credit:
+                        newRow.setValue2(value);
+                        break;
+                    case Card:
+                        newRow.setValue3(value);
+                        break;
+                }
+
+                hm.put(date, newRow);
+
             }
 
-            hm.put(date, newRow);
-
-        }
-
-        List<String2Value4> listRow = new ArrayList<>();
-        Iterator it = hm.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
-            ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
-            listRow.add((String2Value4) pairs.getValue());
+            List<String2Value4> listRow = new ArrayList<>();
+            Iterator it = hm.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pairs = (Map.Entry) it.next();
+                ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
+                listRow.add((String2Value4) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
-        }
+            }
 
-        billedPaymentSummery.setBills(listRow);
+            billedPaymentSummery.setBills(listRow);
 
-        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash));
+            billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash));
 
-        ////////////
-        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit));
+            ////////////
+            billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit));
 
-        ////////////////
-        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card));
+            ////////////////
+            billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBill(PaymentMethod.Card));
 
-        grantCardTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Card);
-        grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
-        grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
+            grantCardTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Card);
+            grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
+            grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
         }, PharmacyReports.SALE_SUMMARY_BY_PAYMENT_METHOD_BY_BILL, sessionController.getLoggedUser());
     }
 

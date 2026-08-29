@@ -63,35 +63,39 @@
                                             class="w-100 my-2 ui-button-warning" 
                                             icon="fas fa-search"
                                             value="Search" 
-                                            action="#{searchController.createPharmacyBillItemTableBht()}"  />
+                                            action="#{searchController.createPharmacyBillItemTableBht()}"  >
+                                        </p:commandButton>
                                     </h:panelGrid>
 
                                     <h:panelGrid columns="1" class="w-100">
-                                        <h:panelGroup layout="block" styleClass="form-group">
-                                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                            <h:outputLabel value="Admission Type" for="cmbDept" class="mx-3"/>
-                                        </h:panelGroup>
+                                        <h:outputLabel value="Admission Type" for="cmbDept"/>
                                         <p:selectOneMenu 
                                             class="w-100"
                                             autoWidth="false" 
                                             value="#{searchController.searchKeyword.admissionType}">
                                             <f:selectItem itemLabel="All Admission Type"/>
-                                            <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
-                                                            itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                            <f:selectItems  
+                                                value="#{inwardReportController.admissionty}"
+                                                var="myItem" 
+                                                itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.name}">
+                                            </f:selectItems>
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="Bill No"/>
-                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                         <h:outputLabel value="BHT No"/>
-                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
+                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100" />
                                         <h:outputLabel value="Item Name"/>    
-                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" />
+                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100" />
                                         <h:outputLabel value="Item Value"/>
-                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" class="w-100" />
                                         <h:outputLabel value="Patient"/>     
-                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientName}" />
+                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientName}"  class="w-100"/>
+                                        <h:outputLabel value="MRN / PHN No"/>
+                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
                                         <h:outputLabel  value="Item Code"/>
-                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
+                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
                                     </h:panelGrid>
                                 </h:panelGrid>
                             </div>
@@ -105,27 +109,24 @@
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15,50"
+                                    rowsPerPageTemplate="10,20,50"
                                     rows="10"
                                     >
-
 
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.deptId}"/>
                                     </p:column>
+                                    
                                     <p:column headerText="BHT No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.patientEncounter.bhtNo}"/>
                                     </p:column>
+                                    
                                     <p:column headerText="Item Name"  styleClass="alignTop" >
                                         <h:outputLabel value="#{pi.item.name}" />    
                                     </p:column>
 
-                                    <p:column headerText="Item Code">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Code"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{pi.item.code}"
-                                                       style="width: 100px!important;" ></h:outputLabel>
+                                    <p:column headerText="Code">
+                                        <h:outputLabel value="#{pi.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed At"  >
@@ -136,21 +137,24 @@
                                         <br/>
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.cancelled}" 
-                                                           value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
+                                            <h:outputLabel 
+                                                style="color: red;" 
+                                                rendered="#{pi.bill.referenceBill.cancelled}" 
+                                                value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.refunded}" >
                                             <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.refunded}" 
-                                                           value="#{pi.referanceBillItem.bill.createdAt}" >
+                                            <h:outputLabel 
+                                                style="color: red;" 
+                                                rendered="#{pi.bill.referenceBill.refunded}" 
+                                                value="#{pi.referanceBillItem.bill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>     
+                                    </p:column>  
+                                    
                                     <p:column headerText="Qty" >
                                         <h:outputLabel value="#{pi.qty}" >
                                             <f:convertNumber pattern="#0.00"/>
@@ -167,13 +171,16 @@
                                         <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}" >
                                         </h:outputLabel>                             
                                     </p:column>
+                                    
                                     <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="/inward/pharmacy_reprint_bill_sale_bht">
-                                            <f:setPropertyActionListener value="#{pi.bill}"
-                                                                         target="#{pharmacyBillSearch.bill}"/>                                     
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Bill"
+                                            action="/inward/pharmacy_reprint_bill_sale_bht?faces-redirect=true">
+                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>                                     
                                         </p:commandButton>
                                     </p:column>
+                                    
                                 </p:dataTable>
                             </div>
                         </div>

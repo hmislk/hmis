@@ -52,12 +52,12 @@ public class FamilyController implements Serializable {
 
     public String navigateToListFamilies() {
         families=fetchAllFamilies();
-        return "/membership/analytics/lists/families?faces-redirect=true;";
+        return "/membership/analytics/lists/families?faces-redirect=true";
     }
 
     public String navigateToListFamilyMembers() {
         members = fetchAllMembers();
-        return "/membership/analytics/lists/members?faces-redirect=true;";
+        return "/membership/analytics/lists/members?faces-redirect=true";
     }
 
     public List<Family>  fetchAllFamilies(){

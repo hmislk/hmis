@@ -10,6 +10,10 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
                 <h:form>
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
@@ -21,8 +25,8 @@
                                     <div class="d-flex align-items-center" style="width: 50%">
                                         <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{pharmacyBillSearch.bill.comments}"/>
                                         <p:spacer width="20%"></p:spacer>
-                                        <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" action="#{pharmacyBillSearch.pharmacyPoRequestCancel()}" disabled="#{pharmacyBillSearch.bill.cancelled}" >
-                                        </p:commandButton> 
+                                        <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" action="#{pharmacyBillSearch.pharmacyPoRequestCancel()}" disabled="#{pharmacyBillSearch.bill.cancelled or not webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>            
@@ -98,7 +102,7 @@
                                         <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Reprint" ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
-                                        <p:commandButton icon="fas fa-arrow-left" class="ui-button-secondary" value="Back To Search" ajax="false" action="pharmacy_purhcase_order_list_to_approve" >
+                                        <p:commandButton icon="fas fa-arrow-left" class="ui-button-secondary" value="Back To Search" ajax="false" action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true" >
                                 </p:commandButton>
                                     </div>
                                 </div>
@@ -111,7 +115,8 @@
                     </h:panelGroup>
 
 
-                </h:form>                
+                </h:form>
+                </h:panelGroup>
             </ui:define>
         </ui:composition>
     </h:body>

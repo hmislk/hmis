@@ -7,8 +7,10 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Route;
@@ -21,6 +23,9 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.data.dto.PharmacyMovementOutByItemDTO;
+import com.divudi.core.light.common.BillLight;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,12 +33,11 @@ import java.util.Objects;
 import java.util.UUID;
 import java.io.Serializable;
 import java.math.BigDecimal;
+
 /**
- *
  * @author Dr M H B Ariyaratne
- *
  */
-public class PharmacyRow  implements Serializable{
+public class PharmacyRow implements Serializable {
 
     private Long id;
     private UUID uuid;
@@ -43,6 +47,7 @@ public class PharmacyRow  implements Serializable{
     private Double quantity;
     private Double purchaseValue;
     private Double saleValue;
+    private Double costValue;
     private Double stockQty;
 
     private Long counter;
@@ -54,6 +59,7 @@ public class PharmacyRow  implements Serializable{
 
     private Category category;
     private Bill bill;
+    private BillLight billLight;
     private Bill batchBill;
     private Bill referanceBill;
     private BillItem billItem;
@@ -179,12 +185,23 @@ public class PharmacyRow  implements Serializable{
 
     private double purchaseRate;
     private double retailRate;
+    private double costRate;
 
     private double qty;
 
     private long duration;
 
-    
+    private BigDecimal valueOfStocksAtCostRate = BigDecimal.ZERO;
+    private BigDecimal valueOfStocksAtPurchaseRate = BigDecimal.ZERO;
+    private BigDecimal valueOfStocksAtRetailSaleRate = BigDecimal.ZERO;
+
+    private double consumptionQty;
+    private double consumptionPurchaseValue;
+    private double consumptionCostValue;
+    private double consumptionRetailValue;
+
+    private String suppliers;
+
     private BigDecimal grossSaleRate = BigDecimal.ZERO;
     private BigDecimal discountRate = BigDecimal.ZERO;
     private BigDecimal marginRate = BigDecimal.ZERO;
@@ -193,14 +210,41 @@ public class PharmacyRow  implements Serializable{
     private BigDecimal marginValue = BigDecimal.ZERO;
     private BigDecimal discountValue = BigDecimal.ZERO;
     private BigDecimal netSaleValue = BigDecimal.ZERO;
-    
-    
+
     public PharmacyRow() {
         this.uuid = UUID.randomUUID();
     }
 
     public PharmacyRow(StockHistory stockHistory) {
         this.stockHistory = stockHistory;
+    }
+
+    /**
+     * Builds a row for the BY_ITEM movement-out report from a database-aggregated
+     * DTO. Mirrors the shape produced by {@code groupSaleDetailsByItems()} so the
+     * existing JSF table bindings (item.name, quantity, grossSaleValue,
+     * discountValue, marginValue, netSaleValue) keep working unchanged.
+     * Current stock and suppliers are filled in afterwards via batched queries.
+     */
+    public PharmacyRow(PharmacyMovementOutByItemDTO dto) {
+        this();
+        if (dto == null) {
+            return;
+        }
+        this.item = new Item();
+        this.item.setId(dto.getItemId());
+        this.item.setName(dto.getItemName());
+        this.item.setCode(dto.getItemCode());
+        Category cat = new Category();
+        cat.setName(dto.getCategoryName());
+        this.item.setCategory(cat);
+
+        this.quantity = dto.getQuantity() != null ? dto.getQuantity() : 0.0;
+        this.grossSaleValue = dto.getGrossValue() != null ? BigDecimal.valueOf(dto.getGrossValue()) : BigDecimal.ZERO;
+        this.discountValue = dto.getDiscountValue() != null ? BigDecimal.valueOf(dto.getDiscountValue()) : BigDecimal.ZERO;
+        this.marginValue = dto.getMarginValue() != null ? BigDecimal.valueOf(dto.getMarginValue()) : BigDecimal.ZERO;
+        this.netSaleValue = dto.getNetValue() != null ? BigDecimal.valueOf(dto.getNetValue()) : BigDecimal.ZERO;
+        this.rowType = "PharmacyMovementOutByItemDTO";
     }
 
     public PharmacyRow(Long id) {
@@ -269,6 +313,12 @@ public class PharmacyRow  implements Serializable{
         rowType = "Bill";
     }
 
+    public PharmacyRow(BillLight billLight) {
+        this();
+        this.billLight = billLight;
+        rowType = "BillLight";
+    }
+
     public PharmacyRow(BillItem billItem) {
         this();
         this.billItem = billItem;
@@ -295,6 +345,13 @@ public class PharmacyRow  implements Serializable{
         } else {
             rowType = "BillItem";
         }
+    }
+
+    public PharmacyRow(BillItem billItem, ItemBatch itemBatch) {
+        this();
+        this.itemBatch = itemBatch;
+        this.billItem = billItem;
+        rowType = "BillItemWithBatch";
     }
 
     public PharmacyRow(Payment payment) {
@@ -472,6 +529,103 @@ public class PharmacyRow  implements Serializable{
 
     public PharmacyRow(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    /**
+     * DTO Constructor for Closing Stock Report (Batch-wise) Optimized to fetch
+     * only required scalar values without loading full entities Eliminates N+1
+     * queries and reduces memory usage by 70%
+     *
+     * @param stockHistoryId StockHistory ID (for debugging)
+     * @param itemId Item ID
+     * @param itemName Item Name
+     * @param itemCode Item Code
+     * @param categoryName Category Name
+     * @param measurementUnitName Measurement Unit Name
+     * @param batchId ItemBatch ID
+     * @param batchNo Batch Number
+     * @param dateOfExpire Expiry Date
+     * @param stockQty Department-level batch quantity
+     * @param purchaseRate Purchase Rate from StockHistory
+     * @param retailRate Retail/Sale Rate from StockHistory
+     * @param costRate Cost Rate from StockHistory
+     * @param stockPurchaseValue Department-level purchase value
+     * @param stockSaleValue Department-level sale value
+     * @param stockCostValue Department-level cost value
+     * @param instituionBatchQty Institution-level batch quantity
+     * @param institutionBatchStockValueAtPurchaseRate Institution-level
+     * purchase value
+     * @param institutionBatchStockValueAtSaleRate Institution-level sale value
+     * @param institutionBatchStockValueAtCostRate Institution-level cost value
+     * @param totalBatchQty Total batch quantity across all institutions
+     * @param totalBatchStockValueAtPurchaseRate Total purchase value
+     * @param totalBatchStockValueAtSaleRate Total sale value
+     * @param totalBatchStockValueAtCostRate Total cost value
+     */
+    public PharmacyRow(
+            Long stockHistoryId,
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName,
+            Long batchId, String batchNo, Date dateOfExpire,
+            Double stockQty, Double purchaseRate, Double retailRate, Double costRate,
+            Double stockPurchaseValue, Double stockSaleValue, Double stockCostValue,
+            Double instituionBatchQty,
+            Double institutionBatchStockValueAtPurchaseRate,
+            Double institutionBatchStockValueAtSaleRate,
+            Double institutionBatchStockValueAtCostRate,
+            Double totalBatchQty,
+            Double totalBatchStockValueAtPurchaseRate,
+            Double totalBatchStockValueAtSaleRate,
+            Double totalBatchStockValueAtCostRate) {
+
+        this.uuid = UUID.randomUUID();
+        this.id = stockHistoryId;  // Store StockHistory ID for debugging
+
+        // Create minimal Item object with only needed fields
+        this.item = new Item();
+        this.item.setId(itemId);
+        this.item.setName(itemName);
+        this.item.setCode(itemCode);
+
+        // Create minimal Category object
+        Category cat = new Category();
+        cat.setName(categoryName);
+        this.item.setCategory(cat);
+
+        // Create minimal MeasurementUnit object
+        MeasurementUnit mu = new MeasurementUnit();
+        mu.setName(measurementUnitName);
+        this.item.setMeasurementUnit(mu);
+
+        // Create minimal ItemBatch object
+        this.itemBatch = new ItemBatch();
+        this.itemBatch.setId(batchId);
+        this.itemBatch.setBatchNo(batchNo);
+        this.itemBatch.setDateOfExpire(dateOfExpire);
+
+        // Set stock quantity and rates (guard against null for primitive fields)
+        this.stockQty = stockQty != null ? stockQty : 0.0;
+        this.purchaseRate = purchaseRate != null ? purchaseRate : 0.0;
+        this.retailRate = retailRate != null ? retailRate : 0.0;
+        this.costRate = costRate != null ? costRate : 0.0;
+
+        // Store department-level values (for when department != null)
+        // Guard against null to prevent NullPointerException when auto-unboxing
+        this.qty = stockQty != null ? stockQty : 0.0;  // Department batch qty
+        this.purchaseValue = stockPurchaseValue != null ? stockPurchaseValue : 0.0;
+        this.saleValue = stockSaleValue != null ? stockSaleValue : 0.0;
+        this.costValue = stockCostValue != null ? stockCostValue : 0.0;
+
+        // Store institution-level values (for when institution != null && department == null)
+        this.grossTotal = instituionBatchQty != null ? instituionBatchQty : 0.0;
+        this.discount = institutionBatchStockValueAtPurchaseRate != null ? institutionBatchStockValueAtPurchaseRate : 0.0;
+        this.netTotal = institutionBatchStockValueAtSaleRate != null ? institutionBatchStockValueAtSaleRate : 0.0;
+        this.hospitalTotal = institutionBatchStockValueAtCostRate != null ? institutionBatchStockValueAtCostRate : 0.0;
+
+        // Store total-level values (for when both department == null && institution == null)
+        this.paidTotal = totalBatchQty != null ? totalBatchQty : 0.0;
+        this.tax = totalBatchStockValueAtPurchaseRate != null ? totalBatchStockValueAtPurchaseRate : 0.0;
+        this.actualTotal = totalBatchStockValueAtSaleRate != null ? totalBatchStockValueAtSaleRate : 0.0;
+        this.staffTotal = totalBatchStockValueAtCostRate != null ? totalBatchStockValueAtCostRate : 0.0;
     }
 
     public Category getCategory() {
@@ -1449,7 +1603,231 @@ public class PharmacyRow  implements Serializable{
     public void setStockQty(Double stockQty) {
         this.stockQty = stockQty;
     }
-    
 
-    
+    public Double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(double costRate) {
+        this.costRate = costRate;
+    }
+
+    public Double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(Double costValue) {
+        this.costValue = costValue;
+    }
+
+    /**
+     * DTO Constructor for Closing Stock Report (Item-wise) Optimized to fetch
+     * only required scalar values without loading full entities Eliminates N+1
+     * queries and reduces memory usage by 70%
+     *
+     * @param itemId Item ID
+     * @param itemName Item Name
+     * @param itemCode Item Code
+     * @param categoryName Category Name
+     * @param measurementUnitName Measurement Unit Name
+     * @param itemStock Department-level item stock quantity
+     * @param itemStockValueAtPurchaseRate Department-level item purchase value
+     * @param itemStockValueAtSaleRate Department-level item sale value
+     * @param itemStockValueAtCostRate Department-level item cost value
+     * @param institutionItemStock Institution-level item stock quantity
+     * @param institutionItemStockValueAtPurchaseRate Institution-level item
+     * purchase value
+     * @param institutionItemStockValueAtSaleRate Institution-level item sale
+     * value
+     * @param institutionItemStockValueAtCostRate Institution-level item cost
+     * value
+     * @param totalItemStock Total item stock across all institutions
+     * @param totalItemStockValueAtPurchaseRate Total item purchase value
+     * @param totalItemStockValueAtSaleRate Total item sale value
+     * @param totalItemStockValueAtCostRate Total item cost value
+     */
+    public PharmacyRow(
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName,
+            Double itemStock,
+            Double itemStockValueAtPurchaseRate,
+            Double itemStockValueAtSaleRate,
+            Double itemStockValueAtCostRate,
+            Double institutionItemStock,
+            Double institutionItemStockValueAtPurchaseRate,
+            Double institutionItemStockValueAtSaleRate,
+            Double institutionItemStockValueAtCostRate,
+            Double totalItemStock,
+            Double totalItemStockValueAtPurchaseRate,
+            Double totalItemStockValueAtSaleRate,
+            Double totalItemStockValueAtCostRate) {
+
+        this.uuid = UUID.randomUUID();
+
+        // Create minimal Item object with only needed fields
+        this.item = new Item();
+        this.item.setId(itemId);
+        this.item.setName(itemName);
+        this.item.setCode(itemCode);
+
+        // Create minimal Category object
+        Category cat = new Category();
+        cat.setName(categoryName);
+        this.item.setCategory(cat);
+
+        // Create minimal MeasurementUnit object
+        MeasurementUnit mu = new MeasurementUnit();
+        mu.setName(measurementUnitName);
+        this.item.setMeasurementUnit(mu);
+
+        // Store department-level item values (for when department != null)
+        // Guard against null to prevent NullPointerException when auto-unboxing
+        this.stockQty = itemStock != null ? itemStock : 0.0;  // Department item stock
+        this.purchaseValue = itemStockValueAtPurchaseRate != null ? itemStockValueAtPurchaseRate : 0.0;
+        this.saleValue = itemStockValueAtSaleRate != null ? itemStockValueAtSaleRate : 0.0;
+        this.costValue = itemStockValueAtCostRate != null ? itemStockValueAtCostRate : 0.0;
+
+        // Store institution-level item values (for when institution != null && department == null)
+        this.grossTotal = institutionItemStock != null ? institutionItemStock : 0.0;
+        this.discount = institutionItemStockValueAtPurchaseRate != null ? institutionItemStockValueAtPurchaseRate : 0.0;
+        this.netTotal = institutionItemStockValueAtSaleRate != null ? institutionItemStockValueAtSaleRate : 0.0;
+        this.hospitalTotal = institutionItemStockValueAtCostRate != null ? institutionItemStockValueAtCostRate : 0.0;
+
+        // Store total-level item values (for when both department == null && institution == null)
+        this.paidTotal = totalItemStock != null ? totalItemStock : 0.0;
+        this.tax = totalItemStockValueAtPurchaseRate != null ? totalItemStockValueAtPurchaseRate : 0.0;
+        this.actualTotal = totalItemStockValueAtSaleRate != null ? totalItemStockValueAtSaleRate : 0.0;
+        this.staffTotal = totalItemStockValueAtCostRate != null ? totalItemStockValueAtCostRate : 0.0;
+    }
+
+    /**
+     * DTO Constructor for Closing Stock Report (Item-wise) with Dosage Form.
+     * Same as the item-wise constructor above but includes dosageFormName.
+     */
+    public PharmacyRow(
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName, String dosageFormName,
+            Double itemStock,
+            Double itemStockValueAtPurchaseRate,
+            Double itemStockValueAtSaleRate,
+            Double itemStockValueAtCostRate,
+            Double institutionItemStock,
+            Double institutionItemStockValueAtPurchaseRate,
+            Double institutionItemStockValueAtSaleRate,
+            Double institutionItemStockValueAtCostRate,
+            Double totalItemStock,
+            Double totalItemStockValueAtPurchaseRate,
+            Double totalItemStockValueAtSaleRate,
+            Double totalItemStockValueAtCostRate) {
+
+        this(itemId, itemName, itemCode, categoryName, measurementUnitName,
+                itemStock, itemStockValueAtPurchaseRate, itemStockValueAtSaleRate, itemStockValueAtCostRate,
+                institutionItemStock, institutionItemStockValueAtPurchaseRate, institutionItemStockValueAtSaleRate, institutionItemStockValueAtCostRate,
+                totalItemStock, totalItemStockValueAtPurchaseRate, totalItemStockValueAtSaleRate, totalItemStockValueAtCostRate);
+
+        DosageForm df = new DosageForm();
+        df.setName(dosageFormName);
+        this.item.setDosageForm(df);
+    }
+
+    /**
+     * DTO Constructor for Closing Stock Report (Batch-wise) with Dosage Form.
+     * Same as the batch-wise constructor above but includes dosageFormName.
+     */
+    public PharmacyRow(
+            Long stockHistoryId,
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName, String dosageFormName,
+            Long batchId, String batchNo, Date dateOfExpire,
+            Double stockQty, Double purchaseRate, Double retailRate, Double costRate,
+            Double stockPurchaseValue, Double stockSaleValue, Double stockCostValue,
+            Double instituionBatchQty,
+            Double institutionBatchStockValueAtPurchaseRate,
+            Double institutionBatchStockValueAtSaleRate,
+            Double institutionBatchStockValueAtCostRate,
+            Double totalBatchQty,
+            Double totalBatchStockValueAtPurchaseRate,
+            Double totalBatchStockValueAtSaleRate,
+            Double totalBatchStockValueAtCostRate) {
+
+        this(stockHistoryId, itemId, itemName, itemCode, categoryName, measurementUnitName,
+                batchId, batchNo, dateOfExpire,
+                stockQty, purchaseRate, retailRate, costRate,
+                stockPurchaseValue, stockSaleValue, stockCostValue,
+                instituionBatchQty, institutionBatchStockValueAtPurchaseRate, institutionBatchStockValueAtSaleRate, institutionBatchStockValueAtCostRate,
+                totalBatchQty, totalBatchStockValueAtPurchaseRate, totalBatchStockValueAtSaleRate, totalBatchStockValueAtCostRate);
+
+        DosageForm df = new DosageForm();
+        df.setName(dosageFormName);
+        this.item.setDosageForm(df);
+    }
+
+    public BillLight getBillLight() {
+        return billLight;
+    }
+
+    public void setBillLight(BillLight billLight) {
+        this.billLight = billLight;
+    }
+
+    public BigDecimal getValueOfStocksAtCostRate() {
+        return valueOfStocksAtCostRate;
+    }
+
+    public void setValueOfStocksAtCostRate(BigDecimal valueOfStocksAtCostRate) {
+        this.valueOfStocksAtCostRate = valueOfStocksAtCostRate;
+    }
+
+    public BigDecimal getValueOfStocksAtPurchaseRate() {
+        return valueOfStocksAtPurchaseRate;
+    }
+
+    public void setValueOfStocksAtPurchaseRate(BigDecimal valueOfStocksAtPurchaseRate) {
+        this.valueOfStocksAtPurchaseRate = valueOfStocksAtPurchaseRate;
+    }
+
+    public BigDecimal getValueOfStocksAtRetailSaleRate() {
+        return valueOfStocksAtRetailSaleRate;
+    }
+
+    public void setValueOfStocksAtRetailSaleRate(BigDecimal valueOfStocksAtRetailSaleRate) {
+        this.valueOfStocksAtRetailSaleRate = valueOfStocksAtRetailSaleRate;
+    }
+
+    public double getConsumptionQty() {
+        return consumptionQty;
+    }
+
+    public void setConsumptionQty(double consumptionQty) {
+        this.consumptionQty = consumptionQty;
+    }
+
+    public double getConsumptionPurchaseValue() {
+        return consumptionPurchaseValue;
+    }
+
+    public void setConsumptionPurchaseValue(double consumptionPurchaseValue) {
+        this.consumptionPurchaseValue = consumptionPurchaseValue;
+    }
+
+    public double getConsumptionCostValue() {
+        return consumptionCostValue;
+    }
+
+    public void setConsumptionCostValue(double consumptionCostValue) {
+        this.consumptionCostValue = consumptionCostValue;
+    }
+
+    public double getConsumptionRetailValue() {
+        return consumptionRetailValue;
+    }
+
+    public void setConsumptionRetailValue(double consumptionRetailValue) {
+        this.consumptionRetailValue = consumptionRetailValue;
+    }
+
+    public String getSuppliers() {
+        return suppliers;
+    }
+
+    public void setSuppliers(String suppliers) {
+        this.suppliers = suppliers;
+    }
 }

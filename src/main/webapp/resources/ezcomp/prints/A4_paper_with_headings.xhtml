@@ -207,6 +207,33 @@
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
+                            <h:outputLabel value="Batch Bill" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td ></td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
                             <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
@@ -247,9 +274,11 @@
                         <td style="width:55%!important;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
-                        <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                        </td>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                            <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
+                                <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
+                            </td>
+                        </h:panelGroup>
                     </tr>
                     <tr>
                         <td colspan="2" style="text-align: center;" class="billline">
@@ -264,11 +293,20 @@
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                    <td style="text-align: right;" >
+                                        <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <ui:fragment rendered="#{bip.vat ne 0.0}">
+                                            <br/>
+                                            <h:outputText class="itemsBlockRightFiveFive" value="VAT "/>
+                                            <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.vat}"    >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </ui:fragment>
+                                    </td>
+                                </h:panelGroup>
                             </tr>
 
                         </ui:repeat>
@@ -286,17 +324,26 @@
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
-                                <td    style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                    <td    style="text-align: right;" >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
 
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                    <td style="text-align: right;" >
+                                        <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <ui:fragment rendered="#{bip.vat ne 0.0}">
+                                            <br/>
+                                            <h:outputText class="itemsBlockRightFiveFive" value="VAT "/>
+                                            <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.vat}"    >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </ui:fragment>
+                                    </td>
+                                </h:panelGroup>
 
                             </tr>
                         </ui:repeat>
@@ -313,6 +360,7 @@
 
             </div>
 
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
             <div  >
 
                 <table style="width: 100%;">
@@ -367,20 +415,34 @@
                         </td>
                     </tr>
 
-                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.vat}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                    <ui:fragment rendered="#{cc.attrs.bill.vat ne 0.0}">
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputText value="VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputText value="#{cc.attrs.bill.vat}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputText value="Net Total + VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputText value="#{cc.attrs.bill.vatPlusNetTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </ui:fragment>
 
                 </table>
 
             </div>
+            </h:panelGroup>
 
             <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
                 <div class="d-flex gap-2 justify-content-center" style="font-size: 12px;">

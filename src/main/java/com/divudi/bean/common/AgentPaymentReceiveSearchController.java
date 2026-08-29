@@ -415,7 +415,6 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             Drawer userDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
             if (userDrawer.getCashInHandValue() < bill.getNetTotal()) {
                 if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
-                    System.out.println(origianlBil.getNetTotal());
                     JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
                     printPreview = false;
                     agencyDepositCanellationStarted = false;
@@ -423,7 +422,6 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 }
             }
         }
-        System.out.println(origianlBil.getNetTotal() + "this");
 
 //        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         CancelledBill newlyCreatedCancelBill = generateCancelBillForCcDepositBill(origianlBil);
@@ -435,7 +433,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         getBillFacade().editAndCommit(origianlBil);
 
         Payment payments = createPayment(newlyCreatedCancelBill, paymentMethod);
-        drawerController.updateDrawerForOuts(payments);
+        //drawerController.updateDrawerForOuts(payments);
         agentAndCcApplicationController.updateCcBalance(
                 newlyCreatedCancelBill.getFromInstitution(),
                 0,
@@ -500,7 +498,6 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 HistoryType.CollectingCentreDepositCancel,
                 cancelledBill, comment);
         printPreview = true;
-        System.out.println("cancelledBill = " + cancelledBill);
         agencyDepositCanellationStarted = false;
         JsfUtil.addSuccessMessage("Cancelled");
     }

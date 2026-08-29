@@ -1,0 +1,327 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+
+                <style>
+                    .value-column {
+                        width: 120px;
+                        min-width: 120px;
+                        max-width: 120px;
+                    }
+                    .type-column {
+                        width: auto;
+                    }
+                </style>
+
+                <h:form id="drillDownLevel1Form">
+
+                    <!-- Header / Back button -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">F15 Drill-Down — Level 1 (Date-Range Summary)</h4>
+                        <p:commandButton
+                            value="Back to F15"
+                            icon="fa fa-arrow-left"
+                            ajax="false"
+                            styleClass="ui-button-secondary"
+                            action="#{pharmacyDailyStockDrillDownLevel1Controller.navigateBackToF15()}"/>
+                    </div>
+
+                    <!-- Filter Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h:outputText value="&#xf0b0;" styleClass="fa me-2"/>
+                            <h:outputText value="Report Filters" styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <!-- From Date -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="fromDate" value="From Date" styleClass="form-label fw-bold"/>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <h:outputText value="&#xf073;" styleClass="fa text-primary"/>
+                                        </span>
+                                        <p:calendar
+                                            id="fromDate"
+                                            value="#{pharmacyDailyStockDrillDownLevel1Controller.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            styleClass="form-control"
+                                            showOn="button"/>
+                                    </div>
+                                </div>
+
+                                <!-- To Date -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="toDate" value="To Date" styleClass="form-label fw-bold"/>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <h:outputText value="&#xf073;" styleClass="fa text-primary"/>
+                                        </span>
+                                        <p:calendar
+                                            id="toDate"
+                                            value="#{pharmacyDailyStockDrillDownLevel1Controller.toDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            styleClass="form-control"
+                                            showOn="button"/>
+                                    </div>
+                                </div>
+
+                                <!-- Institution -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="cmbIns" value="Institution" styleClass="form-label fw-bold"/>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <h:outputText value="&#xf19c;" styleClass="fa text-primary"/>
+                                        </span>
+                                        <p:selectOneMenu
+                                            id="cmbIns"
+                                            styleClass="form-select"
+                                            value="#{pharmacyDailyStockDrillDownLevel1Controller.institution}"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                            <p:ajax process="cmbIns" update="cmbSite cmbDept"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <!-- Site -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="cmbSite" value="Site" styleClass="form-label fw-bold"/>
+                                    <h:panelGroup id="cmbSite">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <h:outputText value="&#xf3c5;" styleClass="fa text-primary"/>
+                                            </span>
+                                            <p:selectOneMenu
+                                                id="siteMenu"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockDrillDownLevel1Controller.site}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                                <p:ajax process="siteMenu" update="cmbDept"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Department -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="cmbDept" value="Department" styleClass="form-label fw-bold"/>
+                                    <h:panelGroup id="cmbDept">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <h:outputText value="&#xf0e8;" styleClass="fa text-primary"/>
+                                            </span>
+                                            <p:selectOneMenu
+                                                id="departmentMenu"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockDrillDownLevel1Controller.department}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Transaction Type Radio -->
+                                <div class="col-md-8 col-lg-6">
+                                    <h:outputLabel value="Transaction Type" styleClass="form-label fw-bold"/>
+                                    <p:selectOneRadio
+                                        id="transactionType"
+                                        value="#{pharmacyDailyStockDrillDownLevel1Controller.transactionType}"
+                                        styleClass="form-control border-0">
+                                        <f:selectItems
+                                            value="#{pharmacyDailyStockDrillDownLevel1Controller.transactionTypes}"
+                                            var="t"
+                                            itemLabel="#{t}"
+                                            itemValue="#{t}"/>
+                                        <p:ajax
+                                            listener="#{pharmacyDailyStockDrillDownLevel1Controller.onTransactionTypeChange()}"
+                                            update="atomicsPanel"/>
+                                    </p:selectOneRadio>
+                                </div>
+
+                                <!-- Bill Type Atomics Multi-Select -->
+                                <div class="col-12">
+                                    <h:outputLabel for="atomicsPanel" value="Bill Type Atomics" styleClass="form-label fw-bold"/>
+                                    <h:panelGroup id="atomicsPanel">
+                                        <p:selectManyCheckbox
+                                            id="atomics"
+                                            value="#{pharmacyDailyStockDrillDownLevel1Controller.selectedAtomics}"
+                                            layout="grid"
+                                            columns="3">
+                                            <f:selectItems
+                                                value="#{pharmacyDailyStockDrillDownLevel1Controller.availableAtomics}"
+                                                var="a"
+                                                itemLabel="#{a.label}"
+                                                itemValue="#{a}"/>
+                                        </p:selectManyCheckbox>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="col-12 d-flex gap-2">
+                                    <p:commandButton
+                                        value="Generate Report"
+                                        icon="fa fa-cogs"
+                                        ajax="false"
+                                        styleClass="ui-button-success"
+                                        action="#{pharmacyDailyStockDrillDownLevel1Controller.processReport()}"
+                                        update="@form"/>
+                                    <p:commandButton
+                                        value="Download Excel"
+                                        icon="fa fa-file-excel-o"
+                                        ajax="false"
+                                        styleClass="ui-button-help"
+                                        action="#{pharmacyDailyStockDrillDownLevel1Controller.downloadExcel()}"
+                                        rendered="#{pharmacyDailyStockDrillDownLevel1Controller.bundle != null}"/>
+                                    <p:commandButton
+                                        value="Print"
+                                        icon="fa fa-print"
+                                        ajax="false"
+                                        styleClass="ui-button-info"
+                                        action="#{pharmacyDailyStockDrillDownLevel1Controller.navigateToPrintPage()}"
+                                        rendered="#{pharmacyDailyStockDrillDownLevel1Controller.bundle != null}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result Section -->
+                    <h:panelGroup id="resultPanel" rendered="#{pharmacyDailyStockDrillDownLevel1Controller.bundle != null}">
+                        <div class="card">
+                            <div class="card-header bg-success text-white fw-bold">
+                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.transactionType} — #{pharmacyDailyStockDrillDownLevel1Controller.fromDate} to #{pharmacyDailyStockDrillDownLevel1Controller.toDate}"/>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-bordered table-hover mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="type-column">Row Type</th>
+                                            <th class="text-end value-column">Gross Value</th>
+                                            <th class="text-end value-column">Discount</th>
+                                            <th class="text-end value-column">Service Charge</th>
+                                            <th class="text-end value-column">Net Value</th>
+                                            <th class="text-end value-column">Stock Value (Cost)</th>
+                                            <th class="text-end value-column">Stock Value (Purchase)</th>
+                                            <th class="text-end value-column">Stock Value (Retail)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.rows}" var="row">
+                                            <tr>
+                                                <td class="type-column">
+                                                    <p:commandLink
+                                                        value="#{row.rowType}"
+                                                        action="#{pharmacyDailyStockDrillDownLevel1Controller.drillToLevel2(row)}"
+                                                        title="Drill down to bill list"
+                                                        ajax="false"/>
+                                                </td>
+                                                <td class="text-end value-column">
+                                                    <h:outputText value="#{row.grossTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end value-column">
+                                                    <h:outputText value="#{row.discount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end value-column">
+                                                    <h:outputText value="#{row.serviceCharge}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end value-column">
+                                                    <h:outputText value="#{row.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end value-column">
+                                                    <h:outputText value="#{row.valueOfStocksAtCostRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end value-column">
+                                                    <h:outputText value="#{row.valueOfStocksAtPurchaseRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end value-column">
+                                                    <h:outputText value="#{row.valueOfStocksAtRetailSaleRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                    <tfoot class="bg-success text-white fw-bold">
+                                        <tr>
+                                            <td class="type-column">Total</td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.grossTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.serviceCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.valueOfStocksAtCostRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.valueOfStocksAtPurchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end value-column">
+                                                <h:outputText value="#{pharmacyDailyStockDrillDownLevel1Controller.bundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

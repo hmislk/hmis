@@ -47,7 +47,7 @@
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2" >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing" exportFooter="true" />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -84,7 +84,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Issue Qty" style="text-align: right;">
+                                <p:column headerText="Issue Qty" style="text-align: right;" footerText="#{empty reportsTransfer.totalIssueQty ? null : commonFunctionsProxy.abs(reportsTransfer.totalIssueQty)}">
                                     <h:outputLabel value="#{i.countIssue}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -95,7 +95,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Issue Value" style="text-align: right;">
+                                <p:column headerText="Issue Value" style="text-align: right;" footerText="#{empty reportsTransfer.totalIssueValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalIssueValue)}">
                                     <h:outputLabel value="#{i.totalIssue}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>   
@@ -106,7 +106,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="BHT Issue Qty" style="text-align: right;">
+                                <p:column headerText="BHT Issue Qty" style="text-align: right;" footerText="#{empty reportsTransfer.totalBHTIssueQty ? null : commonFunctionsProxy.abs(reportsTransfer.totalBHTIssueQty)}">
                                     <h:outputLabel value="#{i.countBht}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -117,7 +117,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="BHT Issue Value" style="text-align: right;">
+                                <p:column headerText="BHT Issue Value" style="text-align: right;" footerText="#{empty reportsTransfer.totalBHTIssueValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalBHTIssueValue)}">
                                     <h:outputLabel value="#{i.totalBht}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>

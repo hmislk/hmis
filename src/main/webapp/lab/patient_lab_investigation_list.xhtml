@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex gap-2">
+                                    <div class="mt-2">
+                                        <h:outputText styleClass="fas fas fa-search" />
+                                        <h:outputText class="mx-2" value="#{laboratoryChartViewController.patient.person.nameWithTitle} All Lab Result Summary"/>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Patient List"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning" 
+                                        action="#{laboratoryChartViewController.navigateToPatientList()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="d-flex justify-content-center">
+                            <div class="d-flex gap-4">
+                                <h:outputLabel value="From Date " class="mt-2"/>
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    class="mx-2" 
+                                    value="#{laboratoryChartViewController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                                </p:calendar>
+
+                                <h:outputLabel value="To Date " class="mt-2"/>
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{laboratoryChartViewController.toDate}" 
+                                    class="mx-2" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                                </p:calendar>
+
+                                <p:commandButton 
+                                    id="btnSearch2" 
+                                    ajax="false" 
+                                    value="Search All" 
+                                    icon="fas fas fa-search" 
+                                    class="ui-button-success" 
+                                    action="#{laboratoryChartViewController.processInvestigationsInPatient()}">
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-3 card">
+                                <h:panelGroup>
+                                    <div class="alert alert-warning align-items-center mt-3" role="alert">
+                                        <div class="d-flex">
+                                            <div style="width: 100px;">
+                                                <i class="bi bi-exclamation-triangle mx-2" style="font-size: 55px; color: red; align-content: center; align-items: center;"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="alert-heading">Notice !</h4>
+                                                <div>
+                                                    This includes all reports <b>( OPD / IP / CC )</b> approved during the above period.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <p:dataTable 
+                                    class="mt-2" 
+                                    id="tblBills" 
+                                    value="#{laboratoryChartViewController.investigationList}" 
+                                    var="pi" 
+                                    rowIndexVar="i" >
+                                    <p:column  headerText="#" width="2em;" style="padding: 6px;" >
+                                        <p:outputLabel value="#{i+1}" />
+                                    </p:column>
+
+                                    <p:column  headerText="Investigation" style="padding: 6px;" >
+                                        <h:outputLabel value="#{pi.name} - (#{pi.count})" ></h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Action" width="10em;" style="padding: 6px;">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Process Chart" 
+                                            disabled="#{pi.count eq 1}"
+                                            icon="pi pi-chart-line" 
+                                            class="ui-button-success" 
+                                            action="#{laboratoryChartViewController.processChart(pi.id,laboratoryChartViewController.patient)}">
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                            <div class="col-md-9">
+                                <p:panel header="Result Chart" >
+                                    <h:panelGroup rendered="#{laboratoryChartViewController.lineModel eq null}">
+                                        <style>
+                                            .container {
+                                                background: white;
+                                                border-radius: 20px;
+                                                padding: 60px 40px;
+                                                text-align: center;
+                                                max-width: 95%;
+
+                                            }
+
+                                            .icon {
+                                                width: 120px;
+                                                height: 120px;
+                                                margin: 0 auto 30px;
+                                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                border-radius: 50%;
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                font-size: 60px;
+                                                color: white;
+                                            }
+
+                                            h1 {
+                                                font-size: 32px;
+                                                color: #2d3748;
+                                                margin-bottom: 15px;
+                                            }
+
+                                        </style>
+                                        <div class="container">
+                                            <div class="icon">
+                                                ✨
+                                            </div>
+                                            <h1>Not Generated Chart !</h1>
+
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{laboratoryChartViewController.lineModel ne null}">
+                                        <p:chart 
+                                            value="#{laboratoryChartViewController.lineModel}" 
+                                            style="width: 100%; height: 700px; font-size: 24px;">
+                                        </p:chart>
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

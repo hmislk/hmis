@@ -170,17 +170,13 @@ public class LabReportExportImportController implements Serializable {
         System.out.println("Type = " + getFile().getContentType());
 
         if (file != null) {
-            System.out.println("file not Null");
             try (InputStream inputStream = file.getInputStream()) {
-                System.out.println("try");
                 readAndUploadReportItemFromExcel(inputStream);
             } catch (IOException e) {
-                System.out.println("catch");
                 e.printStackTrace();
             }
         }
 
-        System.out.println("Done");
         JsfUtil.addSuccessMessage("Successfuly Uploaed !");
     }
 
@@ -198,10 +194,15 @@ public class LabReportExportImportController implements Serializable {
         return (value == null || value.trim().isEmpty()) ? defaultValue : value;
     }
 
-    public StreamedContent exportInvestigationItemsToExcel(List<InvestigationItem> investigationItems) throws IOException {
-        // Define a predefined directory (e.g., user's desktop)
-        System.out.println("Investigation Items = " + investigationItems.size());
+    public StreamedContent exportInvestigationItemsToExcel(List<InvestigationItem> investigationItems) throws IOException { // Define a predefined directory (e.g., user's desktop)
 //        String userHome = System.getProperty("user.home");
+//        String defaultDirectory = userHome + File.separator + "Desktop"; // Change to any other directory if needed
+//        String fullFilePath = defaultDirectory + File.separator + fileName;
+//
+//        // Ensure the directory exists
+//        File file = new File(fullFilePath);
+//        file.getParentFile().mkdirs(); // Create parent directories if they don't exist
+        //        String userHome = System.getProperty("user.home");
 //        String defaultDirectory = userHome + File.separator + "Desktop"; // Change to any other directory if needed
 //        String fullFilePath = defaultDirectory + File.separator + fileName;
 //
@@ -260,7 +261,6 @@ public class LabReportExportImportController implements Serializable {
             row.createCell(20).setCellValue(item.isAutomated());
 
             successItems.add(item);
-            System.out.println("success " + item.getName() + "Added");
         }
 
         // Resize columns to fit content
@@ -711,7 +711,6 @@ public class LabReportExportImportController implements Serializable {
             newItem.setCreater(sessionController.getLoggedUser());
 
             reportItemFacade.edit(newItem);
-            System.out.println("Added ---> " + newItem.getName());
             uploadedSuccessItems.add(newItem);
 
         }

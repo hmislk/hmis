@@ -18,6 +18,8 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -48,18 +50,14 @@ public class BhtIssueReturnController implements Serializable {
     private Bill bill;
     private Bill returnBill;
     private boolean printPreview;
-    ////////
-
     private List<BillItem> billItems;
+    private String returnComment = "";
+    private double discountTotal = 0.0;
+    
+    
     ///////
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    private PharmaceuticalItemController pharmaceuticalItemController;
-    @Inject
-    private PharmacyController pharmacyController;
-    @Inject
-    private SessionController sessionController;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -70,10 +68,31 @@ public class BhtIssueReturnController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     BillService billService;
+    @EJB
+    private BillFeeFacade billFeeFacade;
+    
+    ////////
+    @Inject
+    PriceMatrixController priceMatrixController;
+    @Inject
+    InwardBeanController inwardBean;
+    @Inject
+    private PharmaceuticalItemController pharmaceuticalItemController;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PharmacyCalculation pharmacyRecieveBean;
+    
     
     public String navigateToReturnPharmacyDirectIssueToInpatients(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No Bill provided");
+            return null;
+        }
         bill = b;
         return navigateToReturnPharmacyDirectIssueToInpatients();
     }
@@ -83,10 +102,10 @@ public class BhtIssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        returnBill = null;
         printPreview = false;
         billItems = null;
-
+        returnComment = "";
+        
         if (bill.getDepartment() == null) {
             JsfUtil.addErrorMessage("No Department for the Bill");
             return null;
@@ -98,12 +117,12 @@ public class BhtIssueReturnController implements Serializable {
 //        }
         if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
             if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
-                JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+                JsfUtil.addErrorMessage("You can't return another department's Issue.please log to specific department");
                 return null;
             }
         } else {
             if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId()) && !getSessionController().getDepartment().getId().equals(bill.getFromDepartment().getId())) {
-                JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+                JsfUtil.addErrorMessage("You can't return another department's Issue.please log to specific department");
                 return null;
             }
         }
@@ -165,9 +184,6 @@ public class BhtIssueReturnController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    @Inject
-    private PharmacyCalculation pharmacyRecieveBean;
-
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
@@ -187,17 +203,28 @@ public class BhtIssueReturnController implements Serializable {
         returnBill = null;
         printPreview = false;
         billItems = null;
-
+        returnComment = "";
     }
 
     private void saveReturnBill() {
 
 //        getReturnBill().copy(getBill());
         getReturnBill().setBillType(getBill().getBillType());
-        getReturnBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        // Discharge medicine issues return to the discharge return atomic; all other inward direct issues to the regular one.
+        BillTypeAtomic returnAtomic = getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
+                ? BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
+                : BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN;
+        getReturnBill().setBillTypeAtomic(returnAtomic);
         getReturnBill().setBilledBill(getBill());
-
+        getReturnBill().setComments(returnComment);
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
+        // copy() is deliberately not used here (it also overwrites department/institution,
+        // set explicitly below to the returning department), but patientEncounter/patient
+        // still need to be carried over - without them this return bill is invisible to every
+        // patientEncounter-scoped query (Interim Bill Medicine total, Medicine Issue tab), so
+        // the returned value silently never gets deducted (issue #22990).
+        getReturnBill().setPatientEncounter(getBill().getPatientEncounter());
+        getReturnBill().setPatient(getBill().getPatient());
 
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
@@ -209,7 +236,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setDepartment(getSessionController().getDepartment());
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
-        String departmentId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        String departmentId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), returnAtomic);
         getReturnBill().setInsId(departmentId);
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
 
@@ -226,9 +253,13 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setBillType(getBill().getBillType());
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         getReturnBill().setBilledBill(getBill());
+        // See saveReturnBill() above - patientEncounter/patient must be carried over
+        // explicitly since copy() is not used here (issue #22990).
+        getReturnBill().setPatientEncounter(getBill().getPatientEncounter());
+        getReturnBill().setPatient(getBill().getPatient());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
-
+        getReturnBill().setComments(returnComment);
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
         getReturnBill().setMargin(0 - Math.abs(getReturnBill().getMargin()));
@@ -295,11 +326,28 @@ public class BhtIssueReturnController implements Serializable {
 
     }
 
+    /**
+     * The room category of the patient's current room, or null when the patient
+     * is not in a room (or the room has no facility charge / category). Drives the
+     * room-category dimension of the inward pharmacy-margin matrix (issue #21981);
+     * null means "wildcard row only", preserving legacy behaviour.
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
         double rate = Math.abs(bi.getRate());
         double margin = 0;
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
+        PatientEncounter encounter = bi.getBill() != null ? bi.getBill().getPatientEncounter() : null;
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod, null,
+                encounter != null ? encounter.getAdmissionType() : null, resolveCurrentRoomCategory(encounter));
 
         if (priceMatrix != null) {
             margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -332,6 +380,25 @@ public class BhtIssueReturnController implements Serializable {
 
     public void settle() {
 
+        // Re-entrancy guard: a double-click or resubmission on the session-scoped
+        // controller must not create a second return bill / duplicate stock
+        // adjustments for the same returnBill instance.
+        if (getReturnBill().getId() != null) {
+            JsfUtil.addErrorMessage("This return has already been settled.");
+            return;
+        }
+
+        if (returnComment == null || returnComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return comment is Mandatory..");
+            return;
+        }
+
+        // Recompute from the just-submitted quantities. calTotal() was previously only
+        // triggered by the per-row blur AJAX (onEdit()); relying on that cached total here
+        // raced the full-page Return postback and could see a stale/zero total even when
+        // the submitted qty values were valid (issue #21883).
+        calTotal();
+
         if (getBill().getBillItems() != null) {
 //            System.out.println("this = " + getBill().getBillItems().size() );
 
@@ -341,7 +408,14 @@ public class BhtIssueReturnController implements Serializable {
 //                System.out.println("bi.getPharmaceuticalBillItem().getQtyInUnit() = " + bi.getPharmaceuticalBillItem().getQtyInUnit());
 //                System.out.println("bi.getQty() = " + bi.getQty());
 //                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
-                if (bi.getPharmaceuticalBillItem().getQtyInUnit() < bi.getQty()) {
+                double returnedQty = getPharmacyRecieveBean().getTotalQty(
+                        bi.getReferanceBillItem(),
+                        getBill().getBillType()
+                );
+                double liveAvailableQty = Math.abs(
+                        bi.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit()
+                ) - Math.abs(returnedQty);
+                if (bi.getQty() > liveAvailableQty) {
 //                    System.out.println("bi.getQty = " + bi.getQty());
                     JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
                     return;
@@ -349,10 +423,14 @@ public class BhtIssueReturnController implements Serializable {
             }
         }
 
-//
-//        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
-//        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
-        if (returnBill.getTotal() == 0) {
+// Validate against returned quantity, not gross value - a fully-margin item
+        // (Gross Rate 0.00, e.g. a service-charge-only line) has a legitimately zero
+        // returnBill.getTotal() even when a valid quantity was entered (issue #21883).
+        double totalReturnQty = 0.0;
+        for (BillItem bi : billItems) {
+            totalReturnQty += Math.abs(bi.getQty());
+        }
+        if (totalReturnQty == 0) {
             JsfUtil.addErrorMessage("Add Valied Return Quntity");
             return;
         }
@@ -361,6 +439,14 @@ public class BhtIssueReturnController implements Serializable {
 //            JsfUtil.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
+        if (getBill().getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot return medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
+        if (getBill().getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return;
+        }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;
@@ -372,7 +458,7 @@ public class BhtIssueReturnController implements Serializable {
             saveReturnBill();
         }
         saveComponent();
-        billService.createBillFinancialDetailsForPharmacyBill(getReturnBill());
+        billService.createBillFinancialDetailsForInpatientDirectIssueReturnBill(getReturnBill());
 
         getReturnBill().setReferenceBill(getBill());
 //        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
@@ -383,14 +469,11 @@ public class BhtIssueReturnController implements Serializable {
 
         /// setOnlyReturnValue();
         printPreview = true;
+        returnComment = "";
         JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 
-    @EJB
-    private BillFeeFacade billFeeFacade;
-    @Inject
-    InwardBeanController inwardBean;
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
@@ -399,9 +482,6 @@ public class BhtIssueReturnController implements Serializable {
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
     }
-
-    @Inject
-    PriceMatrixController priceMatrixController;
 
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
@@ -415,23 +495,31 @@ public class BhtIssueReturnController implements Serializable {
         double grossTotal = 0.0;
         double netTotal = 0.0;
         double marginTotal = 0.0;
+        double discTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
             grossTotal += p.getRate() * p.getQty();
             marginTotal += p.getMarginRate() * p.getQty();
+            discTotal += p.getDiscountRate() * p.getQty();
             netTotal += p.getNetRate() * p.getQty();
 
             p.setNetValue(p.getNetRate() * p.getQty());
             p.setGrossValue(p.getRate() * p.getQty());
             p.setMarginValue(p.getMarginRate() * p.getQty());
+            p.setDiscount(p.getDiscountRate() * p.getQty());
 
         }
 
         getReturnBill().setTotal(grossTotal);
         getReturnBill().setMargin(marginTotal);
         getReturnBill().setNetTotal(netTotal);
+        discountTotal = discTotal;
 
         //  return grossTotal;
+    }
+
+    public double getDiscountTotal() {
+        return discountTotal;
     }
 
     public void generateBillComponent() {
@@ -442,7 +530,13 @@ public class BhtIssueReturnController implements Serializable {
             bi.setReferenceBill(getBill());
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
-            bi.setMarginRate(bi.getNetRate() - bi.getRate());
+            // marginRate is never persisted at issue time (only marginValue is - see
+            // InpatientDirectIssueNativeSqlService.settle()'s BILLITEM insert column list),
+            // so it must be reconstructed here. netRate = rate + marginRate - discountRate,
+            // so marginRate = netRate - rate + discountRate. Omitting "+ discountRate"
+            // (the previous formula) understates margin by the discount amount whenever
+            // the original item had a nonzero discount (issue #23334).
+            bi.setMarginRate(bi.getNetRate() - bi.getRate() + bi.getDiscountRate());
             bi.setQty(0.0);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
@@ -457,12 +551,17 @@ public class BhtIssueReturnController implements Serializable {
             }
 
             tmp.setQtyInUnit(tmpQty);
+            // Returning qty stays at the 0.0 default set above so the user must
+            // opt in to returning each item; tmpQty (the true max returnable
+            // balance) is kept on remainingQty for display/reference only, not
+            // written back into the editable qty (issue #23023).
+            bi.setRemainingQty(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 
             getBillItems().add(bi);
         }
-
+        calTotal();
     }
 
 //    private double calRemainingQty(PharmaceuticalBillItem i) {
@@ -568,6 +667,14 @@ public class BhtIssueReturnController implements Serializable {
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
+    }
+
+    public String getReturnComment() {
+        return returnComment;
+    }
+
+    public void setReturnComment(String returnComment) {
+        this.returnComment = returnComment;
     }
 
 }

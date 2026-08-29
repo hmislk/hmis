@@ -1,0 +1,40 @@
+14567-3-cashier-details-report-pharmacy-accepeted-bills-not-show
+
+When a Pharmacy Pre Bills is raised, stock transactions happen. But payments are NOT yet accepted.
+
+These bills with the status of payment are listed in these pages
+
+http://localhost:8080/rh/faces/pharmacy/pharmacy_search_sale_pre_bill.xhtml - To Search Such Bills. It lists the related Payment Bills when present. This is listing as expected
+
+This is the page such bills are listed to make a payment
+http://localhost:8080/rh/faces/pharmacy/pharmacy_search_pre_bill.xhtml
+
+the Search Token Bills , Search Not Paid Tokens buttons are not listing as expected since last few updates.
+
+
+
+in http://localhost:8080/rh/faces/reports/cashier_reports/cashier_summary.xhtml, the "Pharmacy Collection" (id="panelPharmacyCollection") correctly considers the bills with BillTypeAtomic having PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER when the payment Method is Cash
+
+but when the payment method is Credit or Staff Credit, such bills should be listed under the id="panelPharmacyCreditBills". This is not happening. Must be an issue of missing bill type atomic there in #{searchController.generateCashierSummary} method
+
+Please fix it
+
+
+cashier_summary - Still Cash / Slip Missing in the list . Total is wrong . it should have been 720.00
+Net Collection
+Credit	240.00
+Total	1,200.00
+
+cashier_detailed - Slip value and Total is wrong. 
+Net Collection
+Cash	240.00
+Credit	240.00
+Slip	720.00
+Total	1,200.00
+
+
+real values should be
+cash 120.00
+credit	240.00
+slip	360.00
+total	720.00

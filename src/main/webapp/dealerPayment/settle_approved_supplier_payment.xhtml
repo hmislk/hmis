@@ -43,16 +43,17 @@
                                 </p:selectOneMenu>
 
                                 <h:outputLabel value="Payment Details" />
+                                
                                 <h:panelGroup id="gpPaymentMethodDetails" >
-                                    <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <h:panelGroup id="creditCard" rendered="#{supplierPaymentController.current.paymentMethod eq 'Card'}" >
                                         <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="cheque" style="display: #{supplierPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <h:panelGroup id="cheque" rendered="#{supplierPaymentController.current.paymentMethod eq 'Cheque'}" >
                                         <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <h:panelGroup id="slip" rendered="#{supplierPaymentController.current.paymentMethod eq 'Slip'}" >
                                         <pa:slipDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>

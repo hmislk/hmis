@@ -1,5 +1,5 @@
 /*
-* Dr M H B Ariyaratne
+ * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.core.entity;
@@ -21,7 +21,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
 /**
- *
  * @author buddhika
  */
 @Entity
@@ -30,13 +29,17 @@ public class Department implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Main Properties
     Long id;
     String departmentCode;
     String name;
     @Lob
     String description;
+    @Lob
+    private String svgParentView;
+    @Lob
+    private String svgChildView;
     String code;
     String printingName;
     String address;
@@ -87,7 +90,11 @@ public class Department implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    @Deprecated // Use inactive instead
     private Boolean active;
+
+    //Inactive Status
+    private boolean inactive;
 
     double margin;
     double pharmacyMarginFromPurchaseRate;
@@ -299,7 +306,7 @@ public class Department implements Serializable {
         this.departmentCode = departmentCode;
     }
 
-//    public double getMaxDiscount() {
+    //    public double getMaxDiscount() {
 //        return maxDiscount;
 //    }
 //
@@ -354,12 +361,22 @@ public class Department implements Serializable {
         this.email = email;
     }
 
+    @Deprecated // Use inactive instead
     public Boolean getActive() {
         return active;
     }
 
+    @Deprecated // Use inactive instead
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public boolean isInactive() {
+        return inactive;
+    }
+
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
     }
 
     public Institution getSite() {
@@ -370,4 +387,26 @@ public class Department implements Serializable {
         this.site = site;
     }
 
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
+    }
+
+    public String trim() {
+        if (name != null) {
+            return name.trim();
+        }
+        return null;
+    }
 }

@@ -9,12 +9,15 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -32,10 +35,10 @@ public class PatientRoom implements Serializable, RetirableEntity {
 
     @OneToOne(mappedBy = "referencePatientRoom")
     private PatientRoom duplicatePatientRoom;
-    boolean discharged;
+    
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 //Main Properties
     private String name;
@@ -62,22 +65,26 @@ public class PatientRoom implements Serializable, RetirableEntity {
     RoomFacilityCharge printRoomFacilityCharge;
     @ManyToOne
     private PatientEncounter patientEncounter;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date admittedAt;
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date printAdmittedAt;
+    
+    private boolean admitted;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date admittedAt;
     @ManyToOne
     private WebUser addmittedBy;
+    
+    boolean discharged;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date dischargedAt;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date printDischargeAt;
     @ManyToOne
     private WebUser dischargedBy;
 
     @OneToOne
     private PatientRoom previousRoom;
-
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date printDischargeAt;
     private double currentMaintananceCharge = 0.0;
     private double currentNursingCharge = 0.0;
     private double currentMoCharge = 0.0;
@@ -94,6 +101,10 @@ public class PatientRoom implements Serializable, RetirableEntity {
     double calculatedLinenCharge = 0;
     double calculatedAdministrationCharge = 0;
     double calculatedMedicalCareCharge = 0;
+
+    private boolean fromPackage;
+    private Double includedRoomDurationHours;
+
 //Discount
     private double discountRoomCharge;
     private double discountMaintainCharge;
@@ -125,6 +136,21 @@ public class PatientRoom implements Serializable, RetirableEntity {
     private long tmpStayedTime;
     @Transient
     private double tmpTotalRoomCharge;
+    //Room-category price-matrix margin (display-only, recomputed on every calculation)
+    @Transient
+    private double marginRoomCharge;
+    @Transient
+    private double marginMaintainCharge;
+    @Transient
+    private double marginMoCharge;
+    @Transient
+    private double marginNursingCharge;
+    @Transient
+    private double marginLinenCharge;
+    @Transient
+    private double marginAdministrationCharge;
+    @Transient
+    private double marginMedicalCareCharge;
 
     public double getAddedRoomCharge() {
         return addedRoomCharge;
@@ -682,11 +708,102 @@ public class PatientRoom implements Serializable, RetirableEntity {
         this.ajdustedNursingCharge = ajdustedNursingCharge;
     }
 
+    public double getMarginRoomCharge() {
+        return marginRoomCharge;
+    }
+
+    public void setMarginRoomCharge(double marginRoomCharge) {
+        this.marginRoomCharge = marginRoomCharge;
+    }
+
+    public double getMarginMaintainCharge() {
+        return marginMaintainCharge;
+    }
+
+    public void setMarginMaintainCharge(double marginMaintainCharge) {
+        this.marginMaintainCharge = marginMaintainCharge;
+    }
+
+    public double getMarginMoCharge() {
+        return marginMoCharge;
+    }
+
+    public void setMarginMoCharge(double marginMoCharge) {
+        this.marginMoCharge = marginMoCharge;
+    }
+
+    public double getMarginNursingCharge() {
+        return marginNursingCharge;
+    }
+
+    public void setMarginNursingCharge(double marginNursingCharge) {
+        this.marginNursingCharge = marginNursingCharge;
+    }
+
+    public double getMarginLinenCharge() {
+        return marginLinenCharge;
+    }
+
+    public void setMarginLinenCharge(double marginLinenCharge) {
+        this.marginLinenCharge = marginLinenCharge;
+    }
+
+    public double getMarginAdministrationCharge() {
+        return marginAdministrationCharge;
+    }
+
+    public void setMarginAdministrationCharge(double marginAdministrationCharge) {
+        this.marginAdministrationCharge = marginAdministrationCharge;
+    }
+
+    public double getMarginMedicalCareCharge() {
+        return marginMedicalCareCharge;
+    }
+
+    public void setMarginMedicalCareCharge(double marginMedicalCareCharge) {
+        this.marginMedicalCareCharge = marginMedicalCareCharge;
+    }
+
     public double getCurrentMoChargeForAfterDuration() {
         return currentMoChargeForAfterDuration;
     }
 
     public void setCurrentMoChargeForAfterDuration(double currentMoChargeForAfterDuration) {
         this.currentMoChargeForAfterDuration = currentMoChargeForAfterDuration;
+    }
+
+    public boolean isAdmitted() {
+        return admitted;
+    }
+
+    public void setAdmitted(boolean admitted) {
+        this.admitted = admitted;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public Double getIncludedRoomDurationHours() {
+        return includedRoomDurationHours;
+    }
+
+    public void setIncludedRoomDurationHours(Double includedRoomDurationHours) {
+        this.includedRoomDurationHours = includedRoomDurationHours;
+    }
+
+    @OneToMany(mappedBy = "patientRoom", cascade = CascadeType.ALL)
+    private List<PatientRoomTimedItemCharge> timedItemCharges;
+
+    public List<PatientRoomTimedItemCharge> getTimedItemCharges() {
+        return timedItemCharges;
+    }
+
+    public void setTimedItemCharges(List<PatientRoomTimedItemCharge> timedItemCharges) {
+        this.timedItemCharges = timedItemCharges;
     }
 }

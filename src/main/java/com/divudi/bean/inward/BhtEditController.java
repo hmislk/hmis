@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -47,9 +48,14 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.core.entity.EncounterCreditCompany;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.EmailFacade;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
+import com.divudi.ejb.EmailManagerEjb;
+import com.divudi.service.AuditService;
 import java.util.Map;
 
 /**
@@ -62,11 +68,28 @@ import java.util.Map;
 public class BhtEditController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
+
+    public BhtEditController() {
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Controller">
     @Inject
     SessionController sessionController;
     @Inject
     BillBeanController billBean;
-    /////////////
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private AdmissionController admissionController;
+    @Inject
+    private InpatientEmailComposeController inpatientEmailComposeController;
+    @Inject
+    InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    @Inject
+    com.divudi.bean.common.PatientController patientController;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -81,8 +104,15 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     EncounterCreditCompanyFacade encounterCreditCompanyFacade;
     @EJB
     ClinicalFindingValueFacade clinicalFindingValueFacade;
+    @EJB
+    private BillFacade billFacade;
+    @EJB
+    EmailFacade emailFacade;
+    @EJB
+    AuditService auditService;
+    // </editor-fold>
 
-    ////////////////
+    // <editor-fold defaultstate="collapsed" desc="Variables">
     private List<PatientRoom> patientRoom;
     List<Admission> selectedItems;
     private List<Admission> items = null;
@@ -92,38 +122,81 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private Admission current;
     private Patient patient;
     private boolean patientDetailsEditable;
+    /**
+     * Distinguishes "a patient was tentatively picked in the search
+     * autocomplete" from "Continue was clicked and
+     * navigateToEditAdmissionDetails() finished loading the admission for
+     * editing". Both states leave `current.bhtNo` non-null, so the
+     * search-vs-edit panel toggle and the Continue button's enabled state
+     * cannot be driven off `current.bhtNo` alone (issue #22977). This flag
+     * only flips true once the edit form is actually ready to show.
+     */
+    private boolean admissionEditFormReady;
     String selectText = "";
-    @EJB
-    private BillFacade billFacade;
     String comment;
 
-    @Inject
-    InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    private Institution institution;
 
     YearMonthDay yearMonthDay;
     private PaymentMethod paymentMethod;
+    private PaymentScheme paymentScheme;
 
     private Speciality referringSpeciality;
     private Speciality opdSpeciality;
     private List<EncounterCreditCompany> encounterCreditCompanys;
     EncounterCreditCompany encounterCreditCompany;
+    private EncounterCreditCompany newEncounterCreditCompany;
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
-
+    private Long patientAllergiesLoadedForPatientId;
+    Map<String, Object> originalAdmission;
+    Map<String, Object> updatedAdmission;
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Functons">
     public void addPatientAllergy() {
-        if (currentPatientAllergy == null) {
+        if (currentPatientAllergy == null || currentPatientAllergy.getItemValue() == null) {
+            JsfUtil.addErrorMessage("Please select the allergy drug.");
             return;
         }
+        if (currentPatientAllergy.getPatient() == null) {
+            currentPatientAllergy.setPatient(getCurrent().getPatient());
+        }
+        if (currentPatientAllergy.getClinicalFindingValueType() == null) {
+            currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+        }
+        clinicalFindingValueFacade.createAndFlush(currentPatientAllergy);
+        auditService.logEncounterAudit(current, "Patient Allergy Added",
+                null, allergyAuditMap(currentPatientAllergy), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", currentPatientAllergy.getId());
         patientAllergies.add(currentPatientAllergy);
         currentPatientAllergy = null;
     }
 
+    /**
+     * Snapshot of a patient allergy for audit events (#22239).
+     */
+    private Map<String, Object> allergyAuditMap(ClinicalFindingValue pa) {
+        Map<String, Object> m = new HashMap<>();
+        if (pa == null) {
+            return m;
+        }
+        m.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+        m.put("value", pa.getStringValue());
+        m.put("retired", pa.isRetired());
+        return m;
+    }
+
     public void removePatientAllergy(ClinicalFindingValue pa) {
-        if (currentPatientAllergy == null) {
+        if (pa == null) {
             return;
         }
+        Map<String, Object> before = allergyAuditMap(pa);
         pa.setRetired(true);
         clinicalFindingValueFacade.edit(pa);
+        auditService.logEncounterAudit(current, "Patient Allergy Removed",
+                before, allergyAuditMap(pa), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", pa.getId());
         patientAllergies.remove(pa);
     }
 
@@ -149,25 +222,53 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
         params.put("pt", pt);
+        params.put("type", ClinicalFindingValueType.PatientAllergy);
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
+        patientAllergiesLoadedForPatientId = pt.getId();
     }
 
     public void setSelectedCompany(EncounterCreditCompany ecc) {
         current.setCreditCompany(ecc.getInstitution());
     }
 
+    /**
+     * Snapshot of an EncounterCreditCompany for credit-detail audit events (#22237).
+     */
+    private Map<String, Object> creditCompanyAuditMap(EncounterCreditCompany ecc) {
+        Map<String, Object> m = new HashMap<>();
+        if (ecc == null) {
+            return m;
+        }
+        m.put("creditCompany", ecc.getInstitution() != null ? ecc.getInstitution().getName() : null);
+        m.put("creditLimit", ecc.getCreditLimit());
+        m.put("policyNo", ecc.getPolicyNo());
+        m.put("referenceNo", ecc.getReferanceNo());
+        m.put("retired", ecc.isRetired());
+        return m;
+    }
+
     public void removeCreditCompany(EncounterCreditCompany ecc) {
+        boolean removingPrimary = current.getCreditCompany() != null
+                && ecc.getInstitution() != null
+                && current.getCreditCompany().equals(ecc.getInstitution());
         for (EncounterCreditCompany e : encounterCreditCompanys) {
             if (e == ecc) {
+                Map<String, Object> before = creditCompanyAuditMap(e);
                 e.setRetired(true);
                 encounterCreditCompanyFacade.edit(e);
+                auditService.logEncounterAudit(current, "Credit Company Removed",
+                        before, creditCompanyAuditMap(e), sessionController.getLoggedUser(),
+                        "EncounterCreditCompany", e.getId());
             }
         }
-        current.setCreditCompany(null);
         fillCreditCompaniesByPatient();
-//        current.setCreditCompany(encounterCreditCompanys.get(0).getInstitution());
+        if (removingPrimary) {
+            current.setCreditCompany(encounterCreditCompanys.isEmpty()
+                    ? null : encounterCreditCompanys.get(0).getInstitution());
+            getEjbFacade().edit(current);
+        }
     }
 
     public void fillCreditCompaniesByPatient() {
@@ -179,6 +280,64 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         hm.put("pEnc", current);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
 
+    }
+
+    public void addNewCreditCompany() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No admission selected");
+            return;
+        }
+        if (newEncounterCreditCompany == null || newEncounterCreditCompany.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return;
+        }
+        newEncounterCreditCompany.setPatientEncounter(current);
+        newEncounterCreditCompany.setCreatedAt(new Date());
+        newEncounterCreditCompany.setCreater(sessionController.getLoggedUser());
+        newEncounterCreditCompany.setRetired(false);
+        encounterCreditCompanyFacade.create(newEncounterCreditCompany);
+        auditService.logEncounterAudit(current, "Credit Company Added",
+                null, creditCompanyAuditMap(newEncounterCreditCompany),
+                sessionController.getLoggedUser(),
+                "EncounterCreditCompany", newEncounterCreditCompany.getId());
+        encounterCreditCompanys.add(newEncounterCreditCompany);
+        if (current.getCreditCompany() == null) {
+            current.setCreditCompany(newEncounterCreditCompany.getInstitution());
+            getEjbFacade().edit(current);
+        }
+        newEncounterCreditCompany = new EncounterCreditCompany();
+        JsfUtil.addSuccessMessage("Credit company added");
+    }
+
+    public void saveEncounterCreditCompany(EncounterCreditCompany ecc) {
+        if (ecc == null) {
+            return;
+        }
+        // Session entity already carries the edited values; read the persisted
+        // row for the audit before-snapshot
+        Map<String, Object> before = null;
+        if (ecc.getId() != null) {
+            EncounterCreditCompany persisted = encounterCreditCompanyFacade.findWithoutCache(ecc.getId());
+            if (persisted != null) {
+                before = creditCompanyAuditMap(persisted);
+            }
+        }
+        encounterCreditCompanyFacade.edit(ecc);
+        auditService.logEncounterAudit(current, "Credit Company Updated",
+                before, creditCompanyAuditMap(ecc), sessionController.getLoggedUser(),
+                "EncounterCreditCompany", ecc.getId());
+        JsfUtil.addSuccessMessage("Saved");
+    }
+
+    public EncounterCreditCompany getNewEncounterCreditCompany() {
+        if (newEncounterCreditCompany == null) {
+            newEncounterCreditCompany = new EncounterCreditCompany();
+        }
+        return newEncounterCreditCompany;
+    }
+
+    public void setNewEncounterCreditCompany(EncounterCreditCompany newEncounterCreditCompany) {
+        this.newEncounterCreditCompany = newEncounterCreditCompany;
     }
 
     public void resetSpecialities() {
@@ -237,29 +396,35 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 //
 //        return false;
 //    }
-    public void cancelBht() {
+    public String cancelBht() {
         if (current == null) {
-            return;
+            return "";
         }
 
         if (checkPaymentIsMade()) {
-            JsfUtil.addErrorMessage("Some Is made for this Bht please cancel all bills added for this bht ");
-            return;
+            JsfUtil.addErrorMessage("This BHT has one or more active (non-cancelled) bills. "
+                    + "Please cancel all bills associated with BHT " + current.getBhtNo()
+                    + " before cancelling the admission.");
+            return "";
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            ////// // System.out.println("comment = " + comment);
-            JsfUtil.addErrorMessage("Type a Comment");
-            return;
+            JsfUtil.addErrorMessage("A cancellation reason is required. Please enter the reason before proceeding.");
+            return "";
         }
 
         //Net to check if Any Payment Paid for this BHT
+        Map<String, Object> beforeCancel = new HashMap<>();
+        admissionToAuditMap(beforeCancel, current);
+        beforeCancel.put("retired", current.isRetired());
+        int retiredRoomCount = 0;
         for (PatientRoom pr : getPatientRoom()) {
             pr.setRetired(true);
             pr.setDischarged(true);
             pr.setRetiredAt(new Date());
             pr.setRetirer(getSessionController().getLoggedUser());
             getPatientRoomFacade().edit(pr);
+            retiredRoomCount++;
         }
         current.setRetired(true);
         current.setRetireComments("BHT Cancel");
@@ -268,8 +433,17 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current.setComments(comment);
         getEjbFacade().edit(current);
 
+        Map<String, Object> afterCancel = new HashMap<>();
+        admissionToAuditMap(afterCancel, current);
+        afterCancel.put("retired", current.isRetired());
+        afterCancel.put("cancellationReason", comment);
+        afterCancel.put("retiredRoomCount", retiredRoomCount);
+        auditService.logEncounterAudit(current, "Admission Cancelled",
+                beforeCancel, afterCancel, sessionController.getLoggedUser());
+
         JsfUtil.addSuccessMessage("Bht Successfully Cancelled");
         prepereForNew();
+        return "/inward/inward_edit_bht?faces-redirect=true";
     }
 
     public Title[] getTitle() {
@@ -280,14 +454,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         return Sex.values();
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public List<Admission> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
         return selectedItems;
@@ -296,14 +462,39 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public List<Admission> completePatient(String query) {
         List<Admission> suggestions;
         String sql;
+        HashMap h = new HashMap();
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Admission c where c.retired=false and c.discharged=false and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            sql = "select c from Admission c "
+                    + " where c.retired=false "
+                    + " and c.discharged=false "
+                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' "
+                    + " or (c.patient.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " or (c.patient.phn) =:q )"
+                    + " order by c.bhtNo";
+
+            h.put("q", query.toUpperCase());
+            suggestions = getFacade().findByJpql(sql, h, 20);
         }
         return suggestions;
+    }
+
+    public List<Admission> completePatientByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
+    }
+
+    public void onInstitutionChange() {
+        current = null;
+        admissionEditFormReady = false;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public List<Admission> completePatientAll(String query) {
@@ -315,9 +506,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             sql = "select c from Admission c where "
                     + " c.retired=false "
                     //                    + " and c.discharged=false "
-                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') "
+                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%' or (c.patient.code) like '%" + query.toUpperCase() + "%') "
                     + " order by c.bhtNo ";
-            //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
@@ -343,26 +533,26 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void delete() {
 
         if (getCurrent() != null) {
+            Map<String, Object> before = new HashMap<>();
+            admissionToAuditMap(before, getCurrent());
+            before.put("retired", getCurrent().isRetired());
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
+            Map<String, Object> after = new HashMap<>();
+            admissionToAuditMap(after, getCurrent());
+            after.put("retired", getCurrent().isRetired());
+            auditService.logEncounterAudit(getCurrent(), "Admission Deleted",
+                    before, after, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         prepereForNew();
         getItems();
         current = null;
         getCurrent();
-    }
-
-    public void setSelectedItems(List<Admission> selectedItems) {
-        this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
     }
 
     public void prepereForNew() {
@@ -371,8 +561,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         items = null;
         patientList = null;
         current = null;
+        admissionEditFormReady = false;
         selectText = "";
         yearMonthDay = new YearMonthDay();
+        institution = sessionController.getInstitution();
     }
 
     @Deprecated
@@ -391,11 +583,97 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void saveCurrent() {
-        getPatientFacade().edit(getCurrent().getPatient());
-        getPersonFacade().edit(getCurrent().getPatient().getPerson());
-        getPersonFacade().edit(getCurrent().getGuardian());
-        getEjbFacade().edit(current);
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("No admission record to save");
+            return;
+        }
+
+        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit && getCurrent().getCreditCompany() == null) {
+            JsfUtil.addErrorMessage("Please add a credit company before saving a Credit admission");
+            return;
+        }
+
+        boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Show Claimable Field", true);
+        if (showClaimable) {
+            PaymentMethod pm = getCurrent().getPaymentMethod();
+            boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+            if (autoMarkCredit && pm == PaymentMethod.Credit) {
+                getCurrent().setClaimable(true);
+            }
+            boolean enforceForCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Enforce Claimable for Credit", false);
+            if (enforceForCredit && pm == PaymentMethod.Credit && !getCurrent().isClaimable()) {
+                JsfUtil.addErrorMessage("Credit admissions must be marked as Claimable");
+                return;
+            }
+            if (!enforceForCredit && !autoMarkCredit) {
+                String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
+                        "Inward Admission - Claimable Required For", "Credit");
+                boolean required = "All".equalsIgnoreCase(claimableRequiredFor)
+                        || ("Credit".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Credit)
+                        || ("Cash".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Cash);
+                if (required && !getCurrent().isClaimable()) {
+                    JsfUtil.addErrorMessage("Please mark the admission as Claimable");
+                    return;
+                }
+            }
+        }
+        // Apply patient name capitalization based on configuration settings
+        //patientController.applyPatientNameCapitalization(getCurrent().getPatient());
+
+        // Save Person FIRST (correct order - was backwards before!)
+        Person person = getCurrent().getPatient().getPerson();
+        if (person != null) {
+            if (person.getId() == null) {
+                getPersonFacade().create(person);
+            } else {
+                getPersonFacade().edit(person);
+            }
+        }
+
+        // Save Patient SECOND
+        Patient patient = getCurrent().getPatient();
+        if (patient != null) {
+            if (patient.getId() == null) {
+                getPatientFacade().create(patient);
+            } else {
+                getPatientFacade().edit(patient);
+            }
+        }
+
+        // Save Guardian
+        Person guardian = getCurrent().getGuardian();
+        if (guardian != null) {
+            if (guardian.getId() == null) {
+                getPersonFacade().create(guardian);
+            } else {
+                getPersonFacade().edit(guardian);
+            }
+        }
+
+        current.setPaymentScheme(paymentScheme);
+
+        // Save Admission with immediate flush (flushes ALL entities without clear)
+        if (current.getId() == null) {
+            getEjbFacade().createAndFlush(current);  // SINGLE flush for ALL entities
+        } else {
+            updatedAdmission = new HashMap<>();
+            admissionToAuditMap(updatedAdmission, current);
+            
+            getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
+            
+            auditService.logEncounterAudit(current, "UpdateAdmission", originalAdmission, updatedAdmission, sessionController.getLoggedUser());
+            if (originalAdmission == null) {
+                originalAdmission = new HashMap<>();
+            }
+            originalAdmission.putAll(updatedAdmission);
+            updatedAdmission = null;
+        }
+
         savePatientAllergies();
+
         JsfUtil.addSuccessMessage("Detail Updated");
     }
 
@@ -421,6 +699,100 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     }
 
+    public Admission getCurrent() {
+//        if (current == null) {
+//            current = new Admission();
+//            Person p = new Person();
+//            Patient pp = new Patient();
+//            pp.setPerson(p);
+//            current.setPatient(pp);
+//        }
+        return current;
+    }
+    
+    public String navigateToEditAdmissionDetails() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission to edit");
+            return "";
+        }
+        // Re-fetch fresh from the DB. 'current' may be a stale in-memory Admission
+        // carried over from a @SessionScoped bean (e.g. admissionController) that
+        // was loaded earlier in the session, before other flows (room edits, etc.)
+        // updated related entities such as currentPatientRoom. (Issue #20463)
+        if (current.getId() != null) {
+            current = getFacade().find(current.getId());
+        }
+
+        // audit: store original details
+        if (current.getId() != null) {
+            originalAdmission = new HashMap<>();
+            admissionToAuditMap(originalAdmission, current);
+        }
+
+        admissionController.setCurrent(current);
+        createPatientRoom();
+        fillCreditCompaniesByPatient();
+        fillCurrentPatientAllergies(current.getPatient());
+        admissionEditFormReady = true;
+        return "/inward/inward_edit_bht?faces-redirect=true";
+    }
+
+    public String navigateToEditPaymentDetails() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission selected");
+            return "";
+        }
+        if (current.getId() != null) {
+            originalAdmission = new HashMap<>();
+            admissionToAuditMap(originalAdmission, current);
+        }
+        admissionController.setCurrent(current);
+        fillCreditCompaniesByPatient();
+        return "/inward/inward_edit_admission_payment?faces-redirect=true";
+    }
+
+    public String navigateToCancelAdmission() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission selected");
+            return "";
+        }
+        comment = null;
+        createPatientRoom();
+        return "/inward/inward_cancel_admission?faces-redirect=true";
+    }
+
+    public String navigateToManageAllergies() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        fillCurrentPatientAllergies(current.getPatient());
+        return "/inward/inward_manage_allergies?faces-redirect=true";
+    }
+
+    public String navigateToSendMailToCompany(EncounterCreditCompany ecc) {
+        return inpatientEmailComposeController.startComposeForCreditCompany(ecc);
+    }
+
+    private void createPatientRoom() {
+        HashMap hm = new HashMap();
+        String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
+                + " and pr.patientEncounter=:pe order by pr.createdAt";
+        hm.put("pe", getCurrent());
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
+
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
+    public void setSelectedItems(List<Admission> selectedItems) {
+        this.selectedItems = selectedItems;
+    }
+
+    public String getSelectText() {
+        return selectText;
+    }
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -441,34 +813,29 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         this.sessionController = sessionController;
     }
 
-    public BhtEditController() {
+    public String getComment() {
+        return comment;
     }
 
-    public Admission getCurrent() {
-//        if (current == null) {
-//            current = new Admission();
-//            Person p = new Person();
-//            Patient pp = new Patient();
-//            pp.setPerson(p);
-//            current.setPatient(pp);
-//        }
-        return current;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
-    public String navigateToEditAdmissionDetails() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("No Admission to edit");
-            return "";
-        }
-        createPatientRoom();
-        fillCreditCompaniesByPatient();
-        fillCurrentPatientAllergies(current.getPatient());
-        return "/inward/inward_edit_bht?faces-redirect=true";
+    public boolean isAdmissionEditFormReady() {
+        return admissionEditFormReady;
     }
 
     public void setCurrent(Admission current) {
         this.current = current;
-
+        if (current != null && current.getPaymentScheme() != null) {
+            paymentScheme = current.getPaymentScheme();
+        } else if (current != null && current.getPatient() != null
+                && current.getPatient().getPerson() != null
+                && current.getPatient().getPerson().getMembershipScheme() != null) {
+            paymentScheme = current.getPatient().getPerson().getMembershipScheme().getPaymentScheme();
+        } else {
+            paymentScheme = null;
+        }
     }
 
     private AdmissionFacade getFacade() {
@@ -557,16 +924,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         this.roomFacade = roomFacade;
     }
 
-    private void createPatientRoom() {
-
-        HashMap hm = new HashMap();
-        String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
-                + " and pr.patientEncounter=:pe order by pr.createdAt";
-        hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
-
-    }
-
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -619,6 +976,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public List<EncounterCreditCompany> getEncounterCreditCompanys() {
+        if (encounterCreditCompanys == null && current != null) {
+            fillCreditCompaniesByPatient();
+        }
         return encounterCreditCompanys;
     }
 
@@ -626,6 +986,41 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         this.encounterCreditCompanys = encounterCreditCompanys;
     }
 
+    public List<ClinicalFindingValue> getPatientAllergies() {
+        Patient pt = null;
+        if (current != null && current.getPatient() != null) {
+            pt = current.getPatient();
+        } else if (admissionController.getCurrent() != null && admissionController.getCurrent().getPatient() != null) {
+            pt = admissionController.getCurrent().getPatient();
+        }
+        if (pt == null) {
+            return patientAllergies;
+        }
+        if (patientAllergies == null || !pt.getId().equals(patientAllergiesLoadedForPatientId)) {
+            fillCurrentPatientAllergies(pt);
+        }
+        return patientAllergies;
+    }
+
+    public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
+        this.patientAllergies = patientAllergies;
+    }
+
+    public ClinicalFindingValue getCurrentPatientAllergy() {
+        if (currentPatientAllergy == null) {
+            currentPatientAllergy = new ClinicalFindingValue();
+            currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+            currentPatientAllergy.setPatient(getPatient());
+        }
+        return currentPatientAllergy;
+    }
+
+    public void setCurrentPatientAllergy(ClinicalFindingValue currentPatientAllergy) {
+        this.currentPatientAllergy = currentPatientAllergy;
+    }
+
+    // </editor-fold>
+    
     @Override
     public Patient getPatient() {
         if (current != null) {
@@ -660,27 +1055,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         // ToDo: Add Logic
     }
 
-    public List<ClinicalFindingValue> getPatientAllergies() {
-        return patientAllergies;
-    }
-
-    public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
-        this.patientAllergies = patientAllergies;
-    }
-
-    public ClinicalFindingValue getCurrentPatientAllergy() {
-        if (currentPatientAllergy == null) {
-            currentPatientAllergy = new ClinicalFindingValue();
-            currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
-            currentPatientAllergy.setPatient(getPatient());
-        }
-        return currentPatientAllergy;
-    }
-
-    public void setCurrentPatientAllergy(ClinicalFindingValue currentPatientAllergy) {
-        this.currentPatientAllergy = currentPatientAllergy;
-    }
-
     @Override
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -693,7 +1067,69 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        if (current == null) {
+            return;
+        }
+        boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+        if (autoMarkCredit && current.getPaymentMethod() == PaymentMethod.Credit) {
+            current.setClaimable(true);
+        }
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    // Admission edit: prepare data to log audit event
+    public void admissionToAuditMap(Map<String, Object> m, Admission o) {
+        if (o == null || m == null) {
+            return;
+        }
+        
+        m.put("encounterID", o.getId());
+        m.put("bhtNo", o.getBhtNo());
+        m.put("bhtLong", o.getBhtLong());
+        m.put("encounterType", o.getEncounterType());
+        m.put("dateOfAdmission", o.getDateOfAdmission());
+        m.put("paymentMethod", o.getPaymentMethod());
+        m.put("paymentScheme", o.getPaymentScheme() != null ? o.getPaymentScheme().getName() : null);
+        m.put("creditCompany", o.getCreditCompany() != null ? o.getCreditCompany().getName() : null);
+        m.put("creditLimit", o.getCreditLimit());
+        m.put("policyNo", o.getPolicyNo());
+        m.put("claimable", o.isClaimable());
+        if (o.getGuardian() != null) {
+            m.put("guardian_nic", o.getGuardian().getNic());
+            m.put("guardian_phone", o.getGuardian().getPhone());
+            m.put("guardian_mobile", o.getGuardian().getMobile());
+            m.put("guardian_address", o.getGuardian().getAddress());
+        }
+        if (o.getGuardianRelationshipToPatient() != null) {
+            m.put("guardian_relationship", o.getGuardianRelationshipToPatient().getName());
+        }
+
+        if (o.getReferringConsultant() != null) {
+            m.put("consultant", o.getReferringConsultant().toString());
+        }
+        if (o.getOpdDoctor() != null) {
+            m.put("medicalOfficer", o.getOpdDoctor().toString());
+        }
+        if (o.getDepartment() != null) {
+            m.put("department", o.getDepartment().getName());
+        }
+        if (o.getPatient() != null) {
+            m.put("patient_ID", o.getPatient().getId());
+            if (o.getPatient().getPerson() != null) {
+              m.put("patient_name", o.getPatient().getPerson().getName());           
+            }
+        }
+        if (o.getGuardian() != null) {
+            m.put("guardian_name", o.getGuardian().getName());
+        }
     }
 
     /**

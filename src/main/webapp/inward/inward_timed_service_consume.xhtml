@@ -6,39 +6,72 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
     <ui:define name="content">
-        <h:form>    
+        <h:form id="formTimedServiceConsume" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
             <h:panelGroup class="row" rendered="#{inwardTimedItemController.current.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
                         <p:panel >
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
-                                <p:outputLabel value="Patient Details" class="m-2"/>
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                                        <p:outputLabel value="Patient Details" class="m-2"/>
+                                    </div>
+                                    <div>
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <p:commandButton 
+                                                value="Nursing WorkBench" 
+                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                                ajax="false"
+                                                class="ui-button-operating-theatre"
+                                                icon="fa fa-arrow-left">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
                             </f:facet>
-                            <h:outputLabel value="Type Patient Name or BHT : "/>
-                            <p:autoComplete  
-                                widgetVar="aPt" id="acPt" forceSelection="true" 
-                                value="#{inwardTimedItemController.current.patientEncounter}"
-                                completeMethod="#{admissionController.completePatient}" 
-                                var="myItem" itemValue="#{myItem}" 
-                                itemLabel="#{myItem.bhtNo}" 
-                                size="40" required="true" class="m-2" requiredMessage="Please enter patient details">
 
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.currentPatientRoom.roomFacilityCharge.name}
-                                </p:column>
-                            </p:autoComplete> 
-                            <p:commandButton value="Select" ajax="false" ></p:commandButton>
+
+                            <h:outputLabel value="Type Patient Name or BHT : "/>
+                            <admcc:admission_search
+                                widgetVar="aPt"
+                                inputId="acPt"
+                                value="#{inwardTimedItemController.current.patientEncounter}"
+                                completeMethod="#{admissionController.completePatient}"
+                                continueClientId="formTimedServiceConsume:btnSelect"
+                                required="true"
+                                requiredMessage="Please enter patient details" />
+                            <p:commandButton
+                                id="btnSelect"
+                                value="Select"
+                                ajax="false" >
+                            </p:commandButton>
+
+                            <style>
+                                .discharged-badge {
+                                    background-color: #f44336;
+                                    color: white;
+                                    padding: 2px 8px;
+                                    border-radius: 12px;
+                                    font-size: 1em;
+                                    font-weight: bold;
+                                }
+
+                                .not-discharged-badge {
+                                    background-color: #2196F3;
+                                    color: white;
+                                    padding: 2px 8px;
+                                    border-radius: 12px;
+                                    font-size: 1em;
+                                    font-weight: bold;
+                                }
+                            </style>
+
                         </p:panel>
                     </h:panelGroup>
                 </div>
@@ -47,60 +80,77 @@
             <p:panel rendered="#{inwardTimedItemController.current.patientEncounter ne null}" >
 
                 <f:facet name="header" >
-                    <div class="row">
-                        <div class="col-9">
+                    <div class="d-flex justify-content-between">
+                        <div>
                             <h:outputText styleClass="fa-solid fa-bars-progress fa-lg" />
-                            <h:outputLabel value="Manage Inward Timed Services" class="m-2"/>                            
-
+                            <h:outputLabel value="Manage Inward Timed Services" class="m-2"/>
                         </div>
-                        <div class="col-3">
+                        <div class="d-flex gap-2">
+
                             <p:commandButton
+                                value="Inpatient Dashboard"
                                 ajax="false"
                                 icon="fa fa-id-card"
-                                style="float: right"
-                                class="ui-button-secondary" 
-                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                ><f:setPropertyActionListener 
-                                    target="#{admissionController.current.patient}" 
-                                    value="#{inwardTimedItemController.current.patientEncounter.patient}" ></f:setPropertyActionListener>
+                                class="ui-button-secondary"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{inwardTimedItemController.current.patientEncounter}"
+                                    target="#{admissionController.current}" />
                             </p:commandButton>
-                            <p:commandButton 
-                                style="float: right;"
+
+                            <p:commandButton
+                                class="ui-button-success "
+                                icon="fa fa-plus"
                                 ajax="false"
-                                icon="fa fa-search"
-                                class="ui-button-warning mx-1" 
-                                action="#{patientController.navigateToSearchPatients()}" 
-                                >
+                                value="New Bill"
+                                actionListener="#{inwardTimedItemController.makeNull()}" >
                             </p:commandButton>
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning mx-1" 
-                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                >
-                                <f:setPropertyActionListener 
-                                    value="#{inwardTimedItemController.current.patientEncounter.patient}" 
-                                    target="#{patientController.current}" >
-                                </f:setPropertyActionListener>
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success "
-                                             style="float: right"
-                                             icon="fa fa-plus"
-                                             ajax="false" 
-                                             value="New Bill"
-                                             actionListener="#{inwardTimedItemController.makeNull()}" >
-                            </p:commandButton>
+
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                <div class="d-flex gap-2">
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning mx-1" 
+                                        action="#{patientController.navigateToSearchPatients()}">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-user"
+                                        class="ui-button-warning mx-1" 
+                                        action="#{patientController.navigateToOpdPatientProfile()}">
+                                        <f:setPropertyActionListener 
+                                            value="#{inwardTimedItemController.current.patientEncounter.patient}" 
+                                            target="#{patientController.current}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton> 
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary" 
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                        <f:setPropertyActionListener 
+                                            target="#{admissionController.current.patient}" 
+                                            value="#{inwardTimedItemController.current.patientEncounter.patient}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                <p:commandButton 
+                                    value="Nursing WorkBench" 
+                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                    ajax="false"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </h:panelGroup>
                         </div>
                     </div>
 
                 </f:facet>
-
-                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
-                    <h:panelGrid columns="3">
-
-                    </h:panelGrid>
-                </div>
 
                 <div class="row">
                     <div class="col-6">
@@ -109,12 +159,10 @@
                                 <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                 <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                             </f:facet>
-
                             <in:bhtDetail admission="#{inwardTimedItemController.current.patientEncounter}"/>
-
-
                         </p:panel>
                     </div>
+
                     <div class="col-6">
                         <p:panel header="">
                             <f:facet name="header">
@@ -128,10 +176,16 @@
                                         <h:outputLabel value="Service"/>
                                     </div>
                                     <div class="col-4">
-                                        <p:autoComplete class="mx-2" id="it" forceSelection="false" 
-                                                        value="#{inwardTimedItemController.current.item}"
-                                                        completeMethod="#{timedItemController.completeTimedService}" var="ix" 
-                                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="40" >
+                                        <p:autoComplete 
+                                            class="mx-2" 
+                                            id="it" 
+                                            forceSelection="true" 
+                                            value="#{inwardTimedItemController.current.item}"
+                                            completeMethod="#{timedItemController.completeTimedService}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" 
+                                            size="40" >
                                             <p:column headerText="Service">
                                                 <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                                             </p:column>
@@ -139,9 +193,35 @@
                                                 <h:outputLabel  value="#{ix.total}" ></h:outputLabel>
                                             </p:column>
 
+                                            <p:ajax event="itemSelect"
+                                                    listener="#{inwardTimedItemController.serviceSelectListener}"
+                                                    update="serviceDepartment"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
+
+                                <div class="row m-1">
+                                    <div class="col-4">
+                                        <p:outputLabel value="Service Department"
+                                                       for="serviceDepartment"
+                                                       title="Where the service is given. Defaults to the service's own department."/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="mx-2"
+                                            id="serviceDepartment"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            value="#{inwardTimedItemController.fromDepartment}">
+                                            <f:selectItem itemLabel="Select Department" noSelectionOption="true"/>
+                                            <f:selectItems value="#{departmentController.items}"
+                                                           var="dep"
+                                                           itemLabel="#{dep.name}"
+                                                           itemValue="#{dep}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
                                 <div class="row m-1">
                                     <div class="col-4">
                                         <p:outputLabel value="Start Time"/>
@@ -159,15 +239,30 @@
                                     </div>
                                 </div>
 
+                                <div class="row m-1">
+                                    <div class="col-4">
+                                        <p:outputLabel value="Comment"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:inputTextarea
+                                            class="mx-2 w-100"
+                                            id="itemComment"
+                                            rows="2"
+                                            value="#{inwardTimedItemController.current.comment}">
+                                        </p:inputTextarea>
+                                    </div>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-4">
-
-                                        <p:commandButton 
-                                            class="mx-2 ui-button-success" 
-                                            value="Add Service" 
+                                        <p:commandButton
+                                            id="btnAddTimedService"
+                                            class="mx-2 ui-button-success"
+                                            value="Add Service"
                                             ajax="false"
-                                            action="#{inwardTimedItemController.save}" 
-                                            />
+                                            onclick="if(this.alreadyClicked) return false; this.alreadyClicked=true; var btn=this; setTimeout(function(){ btn.alreadyClicked=false; }, 5000);"
+                                            action="#{inwardTimedItemController.save}">
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </div>
@@ -181,45 +276,70 @@
                         <h:outputLabel value="Consumed Timed Service" class="mx-4"></h:outputLabel>
                     </f:facet>
 
-                    <p:dataTable id="list" class="w-100" value="#{inwardTimedItemController.items}" var="ti">
-                        <p:column headerText="Service Name">
+                    <p:dataTable 
+                        id="list" 
+                        class="w-100" 
+                        value="#{inwardTimedItemController.items}" 
+                        var="ti">
+                        
+                        <p:column headerText="Service Name" style="padding: 8px;">
                             #{ti.item.name}
                         </p:column>
-                        <p:column headerText="Start Time">
-                            <p:datePicker showTime="true"
-                                          timeInput="true" 
-                                          value="#{ti.fromTime}" 
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />       
 
-                        </p:column>                               
-                        <p:column headerText="Stopped Time">
-                            <p:datePicker showTime="true"
-                                          timeInput="true"  
-                                          value="#{ti.toTime}" 
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />  
+                        <p:column headerText="Service Department" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.bill.fromDepartment.name}"/>
                         </p:column>
-                        <p:column headerText="Total" styleClass="averageNumericColumn">
+
+                        <p:column headerText="Billed Department" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.bill.toDepartment.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Start Time" style="padding: 8px;">
+                            <p:datePicker
+                                showTime="true"
+                                timeInput="true"
+                                value="#{ti.fromTime}"
+                                disabled="#{ti.billItem.fromPackage}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            </p:datePicker>
+                        </p:column>
+                        
+                        <p:column headerText="Stopped Time" style="padding: 8px;">
+                            <p:datePicker
+                                showTime="true"
+                                timeInput="true"
+                                value="#{ti.toTime}"
+                                disabled="#{ti.billItem.fromPackage}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            </p:datePicker>
+                        </p:column>
+
+                        <p:column headerText="Comments" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.comment}" />
+                        </p:column>
+                        
+                        <p:column headerText="Added By" style="padding: 8px;">
+                            <h:outputLabel value="#{ti.creater.webUserPerson.nameWithTitle}"/><br/>
+                            <h:outputLabel value="#{ti.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Total Charges" styleClass="averageNumericColumn" rendered="#{webUserController.hasPrivilege('ShowTimeServiceCharges')}"  style="padding: 8px;">
                             <h:outputLabel  value="#{ti.serviceValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Comments">
-                            <h:outputLabel value="Added by #{ti.creater.webUserPerson.name}"/>     
-                            <br/>
-                            <h:panelGroup rendered="#{ti.retired}" >
-                                <h:outputLabel style="color: red;" value="Deleted By " />
-                                <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}"  class="mx-1">                                       
-                                </h:outputLabel>
-                            </h:panelGroup>
-                        </p:column>     
-                        <p:column headerText="Action" >
+
+                        <p:column headerText="Action" width="14em;" style="padding: 8px;">
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    value="Update" 
+                                <p:commandButton
+                                    value="Update"
                                     class="ui-button-warning"
                                     icon="fa fa-pencil"
-                                    ajax="false" 
-                                    action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
+                                    ajax="false"
+                                    action="#{inwardTimedItemController.finalizeService(ti)}"
+                                    rendered="#{not ti.billItem.fromPackage}" >
                                 </p:commandButton>
                                 <p:commandButton
                                     icon="fa-solid fa-trash"
@@ -227,7 +347,8 @@
                                     ajax="false"
                                     value="Remove"
                                     action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
+                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}"
+                                    rendered="#{not ti.billItem.fromPackage}" >
                                 </p:commandButton>
                             </div>
 

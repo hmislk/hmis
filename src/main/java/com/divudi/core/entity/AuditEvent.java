@@ -25,9 +25,10 @@ import javax.persistence.Temporal;
 @Entity
 public class AuditEvent implements Serializable {
 
+
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date eventDataTime;
@@ -43,7 +44,10 @@ public class AuditEvent implements Serializable {
     private Long institutionId;
     private Long departmentId;
     private Long objectId;
-    
+    // Links the event to a PatientEncounter (BHT) regardless of which entity
+    // objectId points at, so all events for an admission can be queried together
+    private Long patientEncounterId;
+
     @Lob
     private String beforeJson;
     @Lob
@@ -96,11 +100,22 @@ public class AuditEvent implements Serializable {
     
     
     public void calculateDifference() {
-        System.out.println("calculateDifference");
-        System.out.println("Before JSON: " + beforeJson);
-        System.out.println("After JSON: " + afterJson);
-        if (beforeJson == null || afterJson == null) {
-            this.difference = "One or both JSON values are null.";
+        if (beforeJson == null && afterJson == null) {
+            this.difference = "No data recorded for this event.";
+            return;
+        }
+        if (beforeJson == null) {
+            this.difference = formatSingleSide("Created with", afterJson);
+            return;
+        }
+        if (afterJson == null) {
+            this.difference = formatSingleSide("Removed", beforeJson);
+            return;
+        }
+        // If either value is not a JSON object (e.g. a plain toString() string
+        // stored by older code), skip diff calculation and show the raw values.
+        if (!beforeJson.trim().startsWith("{") || !afterJson.trim().startsWith("{")) {
+            this.difference = "Before: " + beforeJson + "\nAfter: " + afterJson;
             return;
         }
         try {
@@ -111,22 +126,18 @@ public class AuditEvent implements Serializable {
             Map<String, Object> beforeMap = gson.fromJson(beforeJson, type);
             Map<String, Object> afterMap = gson.fromJson(afterJson, type);
 
-            // Ensure JSON was parsed successfully
             if (beforeMap == null || afterMap == null) {
                 this.difference = "Failed to parse JSON.";
-                System.out.println("Failed to parse JSON.");
                 return;
             }
 
             this.difference = formatDifference(getDifference(beforeMap, afterMap));
         } catch (Exception e) {
-            e.printStackTrace();
-            this.difference = "Error calculating difference: " + e.getMessage();
+            this.difference = "Before: " + beforeJson + "\nAfter: " + afterJson;
         }
     }
 
     private Map<String, String> getDifference(Map<String, Object> before, Map<String, Object> after) {
-        System.out.println("getDifference");
         Map<String, String> diff = new HashMap<>();
 
         // Create a new HashSet with the keys from 'before' to ensure it's modifiable
@@ -134,29 +145,55 @@ public class AuditEvent implements Serializable {
         allKeys.addAll(after.keySet()); // Now this operation is safe
 
         for (String key : allKeys) {
-            System.out.println("key = " + key);
             Object beforeValue = before.get(key);
             Object afterValue = after.get(key);
             if ((beforeValue == null && afterValue != null)
                     || (beforeValue != null && !beforeValue.equals(afterValue))) {
                 diff.put(key, "Before: " + beforeValue + ", After: " + afterValue);
-                System.out.println("diff = " + diff);
             }
         }
         return diff;
     }
 
     private String formatDifference(Map<String, String> diff) {
-        System.out.println("formatDifference");
-        System.out.println("diff = " + diff);
-
         if (diff.isEmpty()) {
             return "No differences found.";
         }
         StringBuilder sb = new StringBuilder();
         diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
-        System.out.println("sb = " + sb);
         return sb.toString();
+    }
+
+    /**
+     * Formats a create ("Created with") or delete ("Removed") event where
+     * only one side of the JSON snapshot exists, listing the recorded
+     * field values instead of the generic null-JSON message.
+     */
+    private String formatSingleSide(String label, String json) {
+        if (!json.trim().startsWith("{")) {
+            return label + ": " + json;
+        }
+        try {
+            Gson gson = new Gson();
+            Type type = new TypeToken<Map<String, Object>>() {
+            }.getType();
+            Map<String, Object> map = gson.fromJson(json, type);
+            if (map == null || map.isEmpty()) {
+                return label + ": (no fields recorded)";
+            }
+            StringBuilder sb = new StringBuilder();
+            map.forEach((key, value) -> {
+                if (value != null) {
+                    sb.append(key).append(": ").append(value).append("\n");
+                }
+            });
+            if (sb.length() == 0) {
+                return label + ": (no fields recorded)";
+            }
+            return label + ":\n" + sb.toString();
+        } catch (Exception e) {
+            return label + ": " + json;
+        }
     }
 
     public String getDifference() {
@@ -292,6 +329,14 @@ public class AuditEvent implements Serializable {
 
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
+    }
+
+    public Long getPatientEncounterId() {
+        return patientEncounterId;
+    }
+
+    public void setPatientEncounterId(Long patientEncounterId) {
+        this.patientEncounterId = patientEncounterId;
     }
 
 }

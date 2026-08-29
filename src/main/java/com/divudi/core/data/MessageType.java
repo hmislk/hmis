@@ -31,5 +31,19 @@ public enum MessageType {
     ChannelStatusUpdate,
     DoctorPayment,
     BulkPatientSms,
-    BulkNumberSms
+    BulkNumberSms,
+    ConfirmationEmail,
+    CustomSMS,
+    @Deprecated
+    OTP,
+    PatientPortalOTP,
+    PatientPortal_Link,
+    InpatientDocumentUpload,
+    InpatientFilledForm,
+    InpatientClinicalDocument,
+    ClientPortalRegistrationOTP,
+    ClientPortalPasswordResetOTP,
+    ClientPortalEmailRegistrationOTP,
+    InwardFinalBillEmail,
+    InpatientComposedEmail
 }

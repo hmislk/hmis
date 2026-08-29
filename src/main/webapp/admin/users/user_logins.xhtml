@@ -25,31 +25,38 @@
                             </p:commandButton>
                         </f:facet>
 
-                        <div class="mb-2 d-flex justify-content-between">
-                            <h:panelGrid columns="6">
+                        <div class="mb-2">
+                            <h:panelGrid columns="10" styleClass="w-100">
                                 <p:outputLabel value="From Date" />
-                                <p:outputLabel value=":" style="width: 40px; text-align: center "/>
-                                <p:calendar styleClass="noPrintButton" value="#{loginController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                </p:calendar>
-                                <p:outputLabel value="To Date" style="width: 100px; text-align: right "/>
-                                <p:outputLabel value=":" style="width: 40px; text-align: center "/>
-                                <p:calendar styleClass="noPrintButton" value="#{loginController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                </p:calendar>
-                            </h:panelGrid>
+                                <p:calendar styleClass="noPrintButton" value="#{loginController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                            <h:panelGrid columns="3">
-                                <p:commandButton 
-                                    id="btnRefresh" 
-                                    action="#{loginController.fillLogins()}"
-                                    styleClass="noPrintButton" 
-                                    value="Process" icon="fa fa-refresh"
+                                <p:outputLabel value="To Date"/>
+                                <p:calendar styleClass="noPrintButton" value="#{loginController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                                <p:outputLabel value="Username"/>
+                                <p:inputText styleClass="noPrintButton" value="#{loginController.usernameFilter}" placeholder="Filter by username"/>
+
+                                <p:commandButton
+                                    id="btnRefresh"
+                                    action="#{loginController.fillLoginDtos()}"
+                                    styleClass="noPrintButton"
+                                    value="Process"
+                                    icon="fa fa-refresh"
                                     class="ui-button-warning"
-                                    style="float: right"
-                                    ajax="false">                               
-                                </p:commandButton>
+                                    ajax="false"/>
                                 <p:defaultCommand target="btnRefresh"/>
-                                <p:commandButton 
-                                    value="Excel" 
+
+                                <p:commandButton
+                                    value="Reset"
+                                    action="#{loginController.resetFilters()}"
+                                    styleClass="noPrintButton"
+                                    icon="fa fa-undo"
+                                    class="ui-button-secondary"
+                                    ajax="false"/>
+
+                                <p:commandButton
+                                    value="Excel"
+                                    styleClass="noPrintButton"
                                     icon="fa fa-file-excel"
                                     class="ui-button-success">
                                     <p:dataExporter target="tbl" type="xlsx" fileName="User_logins" />
@@ -77,39 +84,83 @@
                                 <h:outputLabel value="#{loginController.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
+
+                                <h:outputLabel value="Username Filter" rendered="#{loginController.usernameFilter != null and loginController.usernameFilter != ''}"/>
+                                <h:outputLabel value=" : " style="width: 20px; text-align: center" rendered="#{loginController.usernameFilter != null and loginController.usernameFilter != ''}"/>
+                                <h:outputLabel value="#{loginController.usernameFilter}" rendered="#{loginController.usernameFilter != null and loginController.usernameFilter != ''}"/>
                             </h:panelGrid>
 
-                            <p:dataTable id="tbl" value="#{loginController.logins}" var="b" rowIndexVar="index" sortMode="multiple">
-                                <p:column headerText="No" width="30px" >
-                                    <h:outputLabel value="#{index +1}" ></h:outputLabel>
+                            <p:dataTable id="tbl"
+                                value="#{loginController.loginDtos}"
+                                var="b"
+                                rowIndexVar="index"
+                                sortMode="multiple"
+                                paginator="true"
+                                rows="15"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="15,25,50"
+                                emptyMessage="No login records found">
+
+                                <p:column headerText="No" width="50px">
+                                    <h:outputLabel value="#{index + 1}"/>
                                 </p:column>
-                                <p:column headerText="Institution" >
-                                    <h:outputLabel value="#{b.institution.name}" ></h:outputLabel>
+
+                                <p:column headerText="Username"
+                                    sortBy="#{b.username}"
+                                    filterBy="#{b.username}"
+                                    filterMatchMode="contains">
+                                    <h:outputLabel value="#{b.username}"/>
                                 </p:column>
-                                <p:column headerText="Department">
-                                    <h:outputLabel value="#{b.department.name}" ></h:outputLabel>
+
+                                <p:column headerText="Name"
+                                    sortBy="#{b.userPersonName}"
+                                    filterBy="#{b.userPersonName}"
+                                    filterMatchMode="contains">
+                                    <h:outputLabel value="#{b.userPersonName}"/>
                                 </p:column>
-                                <p:column headerText="Code">
-                                    <h:outputLabel value="#{b.webUser.code}" >
+
+                                <p:column headerText="Code" sortBy="#{b.userCode}">
+                                    <h:outputLabel value="#{b.userCode}"/>
+                                </p:column>
+
+                                <p:column headerText="Institution"
+                                    sortBy="#{b.institutionName}"
+                                    filterBy="#{b.institutionName}"
+                                    filterMatchMode="contains">
+                                    <h:outputLabel value="#{b.institutionName}"/>
+                                </p:column>
+
+                                <p:column headerText="Department"
+                                    sortBy="#{b.departmentName}"
+                                    filterBy="#{b.departmentName}"
+                                    filterMatchMode="contains">
+                                    <h:outputLabel value="#{b.departmentName}"/>
+                                </p:column>
+
+                                <p:column headerText="Login At" sortBy="#{b.logedAt}">
+                                    <h:outputLabel value="#{b.logedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Name">
-                                    <h:outputLabel value="#{b.webUser.webUserPerson.name}" >
+
+                                <p:column headerText="Logout At" sortBy="#{b.logoutAt}">
+                                    <h:outputLabel value="#{b.logoutAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Login At"  sortBy="#{b.logedAt}">
-                                    <h:outputLabel value="#{b.logedAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                    </h:outputLabel>
+
+                                <p:column headerText="IP Address">
+                                    <h:outputLabel value="#{b.ipAddress}"/>
                                 </p:column>
-                                <p:column headerText="Log out at" sortBy="#{b.logoutAt}" >
-                                    <h:outputLabel value="#{b.logoutAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="IP">
-                                    <h:outputLabel value="#{b.ipaddress}" >
-                                    </h:outputLabel>
+
+                                <p:column headerText="Actions" width="80px" styleClass="noPrintButton">
+                                    <p:commandButton
+                                        icon="fa fa-eye"
+                                        title="View User Dashboard"
+                                        action="#{loginController.navigateToUserDashboard(b)}"
+                                        class="ui-button-info"
+                                        ajax="false"/>
                                 </p:column>
                             </p:dataTable>
 

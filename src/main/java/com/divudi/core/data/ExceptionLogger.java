@@ -3,8 +3,8 @@ package com.divudi.core.data;
 import java.io.Serializable;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+//import org.apache.logging.log4j.Logger;
 
 /**
  * Global Exception Logger
@@ -15,21 +15,21 @@ import org.apache.logging.log4j.Logger;
 @ApplicationScoped
 public class ExceptionLogger implements Serializable {
 
-    private static final Logger logger = LogManager.getLogger(ExceptionLogger.class);
+//    private static final Logger logger = LogManager.getLogger(ExceptionLogger.class);
 
     public void log(Throwable t) {
         if (t != null) {
-            logger.error("Unhandled Exception Caught:", t);
+//            logger.error("Unhandled Exception Caught:", t);
         } else {
-            logger.error("Throwable is null. Nothing to log.");
+//            logger.error("Throwable is null. Nothing to log.");
         }
     }
 
     public void log(String message, Throwable t) {
         if (t != null) {
-            logger.error(message, t);
+//            logger.error(message, t);
         } else {
-            logger.error(message + " (Exception was null)");
+//            logger.error(message + " (Exception was null)");
         }
     }
 }

@@ -1,0 +1,116 @@
+{
+    "version": "v2.1.6",
+    "description": "Create REPORTLOG table in audit database to track report generation activities and performance metrics",
+    "author": "Dr M H B Ariyaratne",
+    "date": "2025-12-16",
+    "githubIssue": "TBD",
+    "branch": "17299-original-opd-payment-details-are-required-for-batch-bill-cancellation",
+    "estimatedDurationMinutes": 1,
+    "requiresDowntime": false,
+    "affectedTables": ["reportlog"],
+    "affectedModules": ["Reports", "Audit", "All Modules with Report Generation"],
+    "dependencies": [],
+    "preRequisites": [
+        "Database backup of audit database (rhaudit) completed and verified",
+        "Ensure connection to audit database (rhaudit) is active",
+        "Verify audit database has sufficient storage space",
+        "No active report generation recommended during migration"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Verify current database connection",
+            "sql": "SELECT DATABASE() AS current_database"
+        },
+        {
+            "step": 2,
+            "description": "Check if REPORTLOG table already exists",
+            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportlog'"
+        },
+        {
+            "step": 3,
+            "description": "Create REPORTLOG table with all required columns and indexes",
+            "sql": "CREATE TABLE IF NOT EXISTS reportlog (id BIGINT AUTO_INCREMENT PRIMARY KEY, ...)"
+        },
+        {
+            "step": 4,
+            "description": "Verify table creation",
+            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportlog'"
+        },
+        {
+            "step": 5,
+            "description": "Verify column structure",
+            "sql": "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'reportlog'"
+        },
+        {
+            "step": 6,
+            "description": "Verify indexes creation",
+            "sql": "SELECT INDEX_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME = 'reportlog'"
+        },
+        {
+            "step": 7,
+            "description": "Verify table is empty",
+            "sql": "SELECT COUNT(*) FROM reportlog"
+        },
+        {
+            "step": 8,
+            "description": "Test index usage for user-specific queries",
+            "sql": "EXPLAIN SELECT * FROM reportlog WHERE generatedById = 1 ORDER BY createdAt DESC"
+        }
+    ],
+    "verificationQueries": [
+        "SELECT COUNT(*) AS table_exists FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportlog'",
+        "SELECT COUNT(*) AS column_count FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportlog'",
+        "SELECT COUNT(*) AS index_count FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportlog' AND INDEX_NAME != 'PRIMARY'",
+        "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportlog' ORDER BY ORDINAL_POSITION",
+        "SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportlog' ORDER BY INDEX_NAME, SEQ_IN_INDEX",
+        "SELECT COUNT(*) AS initial_count FROM reportlog"
+    ],
+    "rollbackNotes": [
+        "This migration creates a new table - safe to rollback if needed",
+        "Rollback will DROP the reportlog table completely",
+        "WARNING: Rollback will delete all report generation audit logs",
+        "Recommend backing up reportlog data before rollback if logs are valuable",
+        "Application will fail with PersistenceException after rollback if it tries to log reports"
+    ],
+    "postMigrationVerification": [
+        "Test report generation in any module (Pharmacy, Finance, etc.)",
+        "Verify no PersistenceException errors in server logs",
+        "Check that reportlog table is being populated with new entries",
+        "Query reportlog table to verify data is being inserted correctly",
+        "Monitor report generation performance (should not be affected)",
+        "Verify executionTimeInMillis is being calculated correctly",
+        "Check index usage: EXPLAIN SELECT * FROM reportlog WHERE generatedById = 1 ORDER BY createdAt DESC"
+    ],
+    "technicalNotes": [
+        "Table engine: InnoDB for transaction support and referential integrity",
+        "Character set: utf8mb4 for full Unicode support (including emojis)",
+        "Collation: utf8mb4_unicode_ci for case-insensitive comparisons",
+        "Auto-increment primary key for unique identification",
+        "Five optimized indexes for common query patterns:",
+        "  1. idx_reportlog_created: Chronological queries (most recent reports first)",
+        "  2. idx_reportlog_user: User-specific report tracking",
+        "  3. idx_reportlog_type: Report type filtering (e.g., all Pharmacy reports)",
+        "  4. idx_reportlog_name: Specific report queries (e.g., 'Daily Sales Report')",
+        "  5. idx_reportlog_composite: User activity timeline (combined user + date)",
+        "executionTimeInMillis: Nullable to allow logging start without completion",
+        "endTime: Nullable to allow logging start without completion",
+        "generatedById: Stores WebUser.id (not a foreign key for audit independence)",
+        "Compatible with ReportLog entity in com.divudi.core.entity.report package",
+        "Designed to work seamlessly with JPA @Entity annotations",
+        "Performance impact: Minimal (indexes maintained automatically)"
+    ],
+    "performanceMetrics": {
+        "expectedQueryTimeReduction": "N/A (new table)",
+        "expectedUserExperienceImprovement": "No more PersistenceException errors during report generation",
+        "indexSizeImpact": "Minimal initially, grows with report generation volume",
+        "maintenanceOverhead": "Low (indexes automatically maintained)"
+    },
+    "errorFixed": {
+        "exception": "javax.persistence.PersistenceException: Exception [EclipseLink-4002] (Eclipse Persistence Services - 2.7.11.payara-p1): org.eclipse.persistence.exceptions.DatabaseException",
+        "internalException": "java.sql.SQLSyntaxErrorException: Table 'rhaudit.reportlog' doesn't exist",
+        "errorCode": "1146",
+        "failedOperation": "INSERT INTO REPORTLOG (ID, CREATEDAT, ENDTIME, EXECUTIONTIMEINMILLIS, GENERATEDBYID, REPORTNAME, REPORTTYPE, STARTTIME) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "resolution": "Created missing REPORTLOG table in rhaudit database with all required columns and indexes"
+    }
+}

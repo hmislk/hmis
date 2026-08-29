@@ -20,10 +20,12 @@
                                 <p:ajax process="@this"></p:ajax>
 
                                     <p:tab title="Book Keeping Summary (With Professional)" >
-                                        <div class="d-grid gap-2">  
+                                        <div class="d-grid gap-2">
 
-                                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/> 
-                                            <p:commandButton class="w-100" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>                             
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/>
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false" value="By Category Day End (DTO Optimized)" action="report_cash_category_with_pro_day_dto"
+                                                           title="Optimized version using DTO queries for better performance"/>
+                                            <p:commandButton class="w-100" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>
                                         </div>
                                     </p:tab>
 
@@ -87,8 +89,11 @@
                                     <p:tab title="Staff Credit" >
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton class="w-100" ajax="false" value="Staff Welfare" action="report_opd_pharmacy_staff_welfare" /> 
-                                            <p:commandButton class="w-100" ajax="false" value="OPD Cash Credit Bill Report" action="report_opd_cash_credit_by _institution" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Staff Welfare" action="report_opd_pharmacy_staff_welfare" />
+                                            <p:commandButton class="w-100" ajax="false" value="Staff Welfare — Summary by Staff" action="report_opd_pharmacy_staff_welfare_summary" />
+                                            <p:commandButton class="w-100" ajax="false" value="Staff Welfare Bill Payments — Detail" action="report_opd_pharmacy_staff_welfare_payments" />
+                                            <p:commandButton class="w-100" ajax="false" value="Staff Welfare Bill Payments — Summary by Staff" action="report_opd_pharmacy_staff_welfare_payments_summary" />
+                                            <p:commandButton class="w-100" ajax="false" value="OPD Cash Credit Bill Report" action="report_opd_cash_credit_by _institution" />
                                             <p:commandButton class="w-100" ajax="false" value="Staff Welfare Balance" action="report_staff_welfare" />
                                         </div>
                                     </p:tab>

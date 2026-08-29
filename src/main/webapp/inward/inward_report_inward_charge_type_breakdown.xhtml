@@ -1,0 +1,317 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/inward/inward_reports.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="frm">
+
+                    <!-- ===== Filters ===== -->
+                    <p:panel header="Inward Charge Type Breakdown by BHT" class="m-1">
+
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid"
+                                     columnClasses="label-icon-column, input-column">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{inwardChargeTypeBreakdownController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{inwardChargeTypeBreakdownController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf017;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="dateBasisMenu"
+                                styleClass="w-100 form-control"
+                                value="#{inwardChargeTypeBreakdownController.dateBasis}">
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf05a;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Status" for="admStatusMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="admStatusMenu"
+                                styleClass="w-100 form-control"
+                                value="#{inwardChargeTypeBreakdownController.admissionStatus}">
+                                <f:selectItems
+                                    value="#{enumController.admissionStatuses}"
+                                    var="s"
+                                    itemValue="#{s}"
+                                    itemLabel="#{s.label}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Type" for="admTypeMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="admTypeMenu"
+                                styleClass="w-100 form-control"
+                                value="#{inwardChargeTypeBreakdownController.admissionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems
+                                    value="#{admissionTypeController.items}"
+                                    var="at"
+                                    itemValue="#{at}"
+                                    itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{inwardChargeTypeBreakdownController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins"
+                                               itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{inwardChargeTypeBreakdownController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site"
+                                               itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+                                <p:selectOneMenu
+                                    rendered="#{inwardChargeTypeBreakdownController.institution eq null and inwardChargeTypeBreakdownController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardChargeTypeBreakdownController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardChargeTypeBreakdownController.institution eq null and inwardChargeTypeBreakdownController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardChargeTypeBreakdownController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardChargeTypeBreakdownController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardChargeTypeBreakdownController.institution ne null and inwardChargeTypeBreakdownController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardChargeTypeBreakdownController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardChargeTypeBreakdownController.institution)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardChargeTypeBreakdownController.institution ne null and inwardChargeTypeBreakdownController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardChargeTypeBreakdownController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardChargeTypeBreakdownController.institution, inwardChargeTypeBreakdownController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <!-- ===== Mandatory charge type selector ===== -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0d0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Charge Type *" for="cmbChargeType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbChargeType"
+                                styleClass="w-100 form-control"
+                                value="#{inwardChargeTypeBreakdownController.selectedChargeType}"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="-- Select Charge Type --" itemValue="#{null}" />
+                                <f:selectItems
+                                    value="#{inwardChargeTypeBreakdownController.allChargeTypes}"
+                                    var="ct"
+                                    itemLabel="#{inwardChargeTypeBreakdownController.getChargeTypeLabel(ct)}"
+                                    itemValue="#{ct}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <p:message for="cmbChargeType" styleClass="text-danger" />
+                        <p:messages globalOnly="false" showDetail="true" showSummary="false"
+                                    rendered="#{not empty inwardChargeTypeBreakdownController.errorMessage}"
+                                    styleClass="text-danger m-1" />
+
+                        <p:commandButton
+                            value="Generate"
+                            icon="fas fa-cogs"
+                            action="#{inwardChargeTypeBreakdownController.generateReport()}"
+                            ajax="false"
+                            class="ui-button-success m-1" />
+
+                    </p:panel>
+
+                    <!-- ===== Error message ===== -->
+                    <p:panel rendered="#{not empty inwardChargeTypeBreakdownController.errorMessage}"
+                             styleClass="m-1">
+                        <h:outputText value="#{inwardChargeTypeBreakdownController.errorMessage}"
+                                      styleClass="text-danger" />
+                    </p:panel>
+
+                    <!-- ===== Results ===== -->
+                    <p:panel id="pnlResults"
+                             rendered="#{inwardChargeTypeBreakdownController.rows != null}">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputText value="#{inwardChargeTypeBreakdownController.getChargeTypeLabel(inwardChargeTypeBreakdownController.selectedChargeType)} — Breakdown by BHT" />
+                                <p:commandButton value="Print"
+                                                 icon="fas fa-print"
+                                                 class="ui-button-info"
+                                                 ajax="false">
+                                    <p:printer target="pnlBreakdownTable" />
+                                </p:commandButton>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="pnlBreakdownTable" layout="block" styleClass="table-responsive">
+                            <table class="table table-bordered table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="white-space:nowrap;">BHT No</th>
+                                        <th>Patient Name</th>
+                                        <th style="white-space:nowrap;">Admitted</th>
+                                        <th style="white-space:nowrap;">Discharged</th>
+                                        <ui:repeat value="#{inwardChargeTypeBreakdownController.columnLabels}"
+                                                   var="colLabel">
+                                            <th style="text-align:right; white-space:nowrap;">
+                                                <h:outputText value="#{colLabel}" />
+                                            </th>
+                                        </ui:repeat>
+                                        <th style="text-align:right; font-weight:bold; white-space:nowrap;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{inwardChargeTypeBreakdownController.rows}"
+                                               var="row">
+                                        <tr>
+                                            <td style="white-space:nowrap;">
+                                                <h:outputText value="#{row.bhtNo}" />
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{row.patientName}" />
+                                            </td>
+                                            <td style="white-space:nowrap;">
+                                                <h:outputText value="#{row.dateOfAdmission}"
+                                                              rendered="#{row.dateOfAdmission != null}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="white-space:nowrap;">
+                                                <h:outputText value="#{row.dateOfDischarge}"
+                                                              rendered="#{row.dateOfDischarge != null}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <ui:repeat value="#{inwardChargeTypeBreakdownController.columnKeys}"
+                                                       var="key">
+                                                <td style="text-align:right; white-space:nowrap;">
+                                                    <h:outputText value="#{row.cellValues[key]}"
+                                                                  rendered="#{row.cellValues[key] != null}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                            </ui:repeat>
+                                            <td style="text-align:right; font-weight:bold; white-space:nowrap;">
+                                                <h:outputText value="#{row.rowTotal}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                    <tr style="font-weight:bold; background-color:#f5f5f5;">
+                                        <td colspan="4">Totals</td>
+                                        <ui:repeat value="#{inwardChargeTypeBreakdownController.columnTotals}"
+                                                   var="colTotal">
+                                            <td style="text-align:right; white-space:nowrap;">
+                                                <h:outputText value="#{colTotal}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                        </ui:repeat>
+                                        <td style="text-align:right; font-weight:bold; white-space:nowrap;">
+                                            <h:outputText value="#{inwardChargeTypeBreakdownController.grandTotal}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </h:panelGroup>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

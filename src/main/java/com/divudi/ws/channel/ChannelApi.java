@@ -10,6 +10,7 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConsultantController;
+import com.divudi.core.facade.ConsultantFacade;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -20,6 +21,7 @@ import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PersonInstitutionType;
 import com.divudi.core.data.SessionStatusForOnlineBooking;
+import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
@@ -61,6 +63,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
+import com.divudi.service.WebSocketService;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,6 +76,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
@@ -108,6 +113,8 @@ public class ChannelApi {
 
     @EJB
     StaffFacade staffFacade;
+    @EJB
+    private ConsultantFacade consultantFacade;
     @EJB
     private ItemFeeFacade ItemFeeFacade;
     @EJB
@@ -156,6 +163,8 @@ public class ChannelApi {
     @EJB
     ChannelService channelService;
 
+    private static final Logger LOGGER = Logger.getLogger(ChannelApi.class.getName());
+
     /**
      * Creates a new instance of Api
      */
@@ -177,6 +186,14 @@ public class ChannelApi {
             String json = response.toString();
             return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
         }
+
+        try {
+            validateAndFetchAgency(null, bookingChannel);
+        } catch (ValidationException e) {
+            response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
         List<Object[]> specializations = specilityList();
         Map<String, String> specialityMap = new HashMap<>();
 
@@ -234,6 +251,14 @@ public class ChannelApi {
         return jSONObject;
     }
 
+    private JSONObject errorResponse(int httpStatusCode, String msg) {
+        JSONObject jSONObject = new JSONObject();
+        jSONObject.put("code", httpStatusCode);
+        jSONObject.put("type", "Error");
+        jSONObject.put("message", msg);
+        return jSONObject;
+    }
+
     private JSONObject errorMessageNotValidKey() {
         JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("code", 401);
@@ -286,6 +311,14 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
+
+        try {
+            validateAndFetchAgency(null, bookingChannel);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
         // Get the list of institutions from the controller
         List<Institution> institutions = channelService.findHospitals();
         if (institutions == null || institutions.isEmpty()) {
@@ -414,6 +447,13 @@ public class ChannelApi {
         String dateStr = (String) requestBody.get("date");
         String name = (String) requestBody.get("name");
 
+        try {
+            validateAndFetchAgency(null, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
         Long hosId = channelService.checkSafeParseLong(hosIdStr);
         Long specId = channelService.checkSafeParseLong(specIDStr);
 
@@ -443,14 +483,21 @@ public class ChannelApi {
             }
         }
 
-        // Convert dateStr to Date
+        // Convert dateStr to Date. The date is optional: when it is absent the
+        // session lookup falls back to the configured "days to share with online
+        // booking agent" window. SimpleDateFormat.parse(null) throws
+        // NullPointerException rather than ParseException, so a missing date has
+        // to be screened out before parsing - otherwise it escapes this method
+        // and the caller gets an HTML error page instead of JSON.
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
         Date date = null;
 
-        try {
-            date = formatter.parse(dateStr);
-        } catch (ParseException e) {
-            date = null;
+        if (dateStr != null && !dateStr.trim().isEmpty()) {
+            try {
+                date = formatter.parse(dateStr);
+            } catch (ParseException e) {
+                date = null;
+            }
         }
 
         // Prepare the resultMap to hold doctor details
@@ -567,7 +614,6 @@ public class ChannelApi {
         }
         String hospitalId = (String) requestBody.get("hosID");
         String doctorId = (String) requestBody.get("docNo");
-        System.out.println(hospitalId + " " + doctorId);
 
         Long hospitalIdLong = null;
         if (hospitalId != null && !hospitalId.isEmpty()) {
@@ -580,6 +626,13 @@ public class ChannelApi {
         }
 
         String agencyCode = (String) requestBody.get("bookingChannel");
+
+        try {
+            validateAndFetchAgency(null, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         List<Institution> hospitals = channelService.findInstitutionFromId(hospitalIdLong);
 
@@ -607,7 +660,7 @@ public class ChannelApi {
             }
         }
 
-        List<SessionInstance> sessions = channelService.findSessionInstance(hospitals, null, doctorList, null);
+        List<SessionInstance> sessions = channelService.findSessionInstanceForDoctorSessions(hospitals, null, doctorList, null);
         if (sessions == null || sessions.isEmpty()) {
             JSONObject json = commonFunctionToErrorResponse("No data for this criteria.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
@@ -618,9 +671,27 @@ public class ChannelApi {
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
+        int excludedForZeroTotal = 0;
+
         for (SessionInstance s : sessions) {
 
+            // A zero-total originating session is not offered for online booking.
+            // This is intentional for sessions priced per investigation rather
+            // than per appointment (scanning sessions, for example), and
+            // findActiveChannelSession enforces the same rule so they cannot be
+            // booked by id either.
+            //
+            // It is indistinguishable, however, from a session whose fees were
+            // simply never entered. Log each exclusion so the difference can be
+            // investigated from the server log instead of requiring a database
+            // query to work out why a doctor is absent from the feed.
             if (s.getOriginatingSession().getTotal() == 0) {
+                excludedForZeroTotal++;
+                LOGGER.log(Level.FINE,
+                        "Online booking feed: skipping session instance {0} (originating session {1}) "
+                        + "because the originating session total is zero. Intentional for sessions priced "
+                        + "per investigation; check the session fees if this session was expected to appear.",
+                        new Object[]{s.getId(), s.getOriginatingSession().getId()});
                 continue;
             }
 
@@ -664,6 +735,14 @@ public class ChannelApi {
             session.put("status", sessionStatus);
 
             sessionData.add(session);
+        }
+
+        if (excludedForZeroTotal > 0) {
+            LOGGER.log(Level.INFO,
+                    "Online booking feed: returned {0} of {1} session instance(s); {2} were withheld because "
+                    + "their originating session total is zero. Enable FINE logging on {3} to list them.",
+                    new Object[]{sessionData.size(), sessions.size(), excludedForZeroTotal,
+                        ChannelApi.class.getName()});
         }
 
         Map<String, Object> sessionResults = new HashMap<>();
@@ -848,13 +927,14 @@ public class ChannelApi {
             if (session.getBookedPatientCount() != null) {
                 int maxNo = session.getMaxNo();
                 long bookedPatientCount = session.getBookedPatientCount();
+                long reservedBookingCount = session.getReservedBookingCount() != null ? session.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getReserveNumbers());
                 if (false) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
                 if (session.getCancelPatientCount() != null) {
@@ -893,10 +973,12 @@ public class ChannelApi {
             throw new ValidationException("Agency attributes : ", "Missing agency code and name. Check fields");
         }
 
-        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
+        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.OnlineBookingAgent);
 
         if (creditCompany == null) {
-            throw new ValidationException("Agency : ", "Your agency not register in the hospital system. Contact Carecode.");
+            throw new ValidationException("Agency : ", "Your agency is not registered in the hospital system.");
+        } else if (creditCompany != null && creditCompany.isInactive()) {
+            throw new ValidationException("Agency : ", "Your agency is deactivated from the hospital system.");
         }
 
         return creditCompany;
@@ -924,6 +1006,14 @@ public class ChannelApi {
         Map<String, String> patientDetails = (Map<String, String>) requestBody.get("patient");
         String sessionId = requestBody.get("sessionID").toString();
         Map<String, String> payment = (Map<String, String>) requestBody.get("payment");
+
+        String agencyCode = payment.get("paymentChannel");
+        try {
+            validateAndFetchAgency(null, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         if (patientDetails == null || patientDetails.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Patien details not in the request");
@@ -988,7 +1078,6 @@ public class ChannelApi {
         }
 
         String agencyName = payment.get("paymentMode");
-        String agencyCode = payment.get("paymentChannel");
         String bookingForm = payment.get("channelFrom");
 
         Institution bookingAgency;
@@ -1019,6 +1108,12 @@ public class ChannelApi {
         newBooking.setAddress(address);
 
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
+
+        try {
+            WebSocketService.broadcastToSessions("Online Temporary Booking Added - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at temporary booking" + e.getMessage());
+        }
 
         if (bill == null) {
             JSONObject response = commonFunctionToErrorResponse("Can't create booking. Session is not confirmed yet.");
@@ -1175,6 +1270,14 @@ public class ChannelApi {
 
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingDetails);
 
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings editing after session is started.", true)) {
+            if (temporarySavedBill != null && temporarySavedBill.getSingleBillSession().getSessionInstance().isStarted()) {
+                JSONObject response = commonFunctionToErrorResponse("Can't edit the appointment due to hospital restriction. Please contact hospital.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
+        }
+
         try {
             validateBillForCompleteBooking(temporarySavedBill);
             validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
@@ -1187,6 +1290,12 @@ public class ChannelApi {
 
         Bill temporaryBill = channelService.findBillFromOnlineBooking(editedBooking);
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Edited - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at edit booking" + e.getMessage());
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1386,8 +1495,14 @@ public class ChannelApi {
 
         Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
 
-        OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
+        OnlineBooking bookingDetails = bookingData;
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Completed - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at complete booking " + e.getMessage());
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1410,7 +1525,7 @@ public class ChannelApi {
 
         sessionDetails.put("hosId", completedBill.getToInstitution().getId());
         sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
-        sessionDetails.put("amount", bookingDetails.getNetTotalForOnlineBooking());
+        sessionDetails.put("amount", completedBill.getNetTotal() + agencyCharge);
         sessionDetails.put("hosAmount", completedBill.getHospitalFee());
         sessionDetails.put("docAmount", completedBill.getStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
@@ -1433,7 +1548,7 @@ public class ChannelApi {
         patientDetails.put("nid", bookingDetails.getNic());
 
         Map<String, Object> priceDetails = new HashMap<>();
-        priceDetails.put("totalAmount", bookingDetails.getNetTotalForOnlineBooking());
+        priceDetails.put("totalAmount", completedBill.getNetTotal() + agencyCharge);
         priceDetails.put("docCharge", completedBill.getStaffFee());
         priceDetails.put("hosCharge", completedBill.getHospitalFee());
 
@@ -1508,7 +1623,7 @@ public class ChannelApi {
             Bill bill = ob.getBill();
 
             Map<String, Object> mapDetail = new HashMap<>();
-            mapDetail.put("DoctorName", bill.getStaff().getPerson().getNameWithTitle());
+            mapDetail.put("DoctorName", bill.getStaff() != null ? bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : bill.getStaff().getName() : "");
             mapDetail.put("PatientName", ob.getPatientName());
             mapDetail.put("HosTelephone", bill.getToInstitution().getPhone());
             mapDetail.put("NicNumber", ob.getNic());
@@ -1578,6 +1693,8 @@ public class ChannelApi {
             bookingStatus = "Doctor Canceled";
         } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
             bookingStatus = "Completed";
+        } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.ABSENT) {
+            bookingStatus = "Absent";
         }
 
         Map<String, Object> appoinment = new HashMap<>();
@@ -1713,6 +1830,9 @@ public class ChannelApi {
             } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.PATIENT_CANCELED || bookingData.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED) {
                 JSONObject response = commonFunctionToErrorResponse("Appoinment available for : " + refNo + " is already cancelled");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
+                JSONObject response = commonFunctionToErrorResponse("Appoinment available for : " + refNo + " patient alredy visited and completed the appoinment");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
         }
 
@@ -1726,13 +1846,22 @@ public class ChannelApi {
         }
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings cancellation after session is started.", true)) {
-            JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            if (completedSaveBill != null && completedSaveBill.getSingleBillSession().getSessionInstance().isStarted()) {
+                JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
         }
 
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);
 
         SessionInstance session = bs.getSessionInstance();
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Cancelled - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at cancel booking " + e.getMessage());
+        }
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
         if (session.isDoctorHoliday()) {
@@ -1828,7 +1957,6 @@ public class ChannelApi {
     @Path("/test")
     @Produces(MediaType.TEXT_PLAIN)
     public Response testAPI() {
-        System.out.println("API test method called");
 
         // Create a simple JSON object to return as response
         JSONObject responseObject = new JSONObject();
@@ -2008,8 +2136,10 @@ public class ChannelApi {
     public Response getApiKeyWithRenewal(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String bookingChannel = (String) requestBody.get("bookingChannel");
 
-        if (!bookingChannel.equalsIgnoreCase("WEB_DOC990")) {
-            JSONObject response = commonFunctionToErrorResponse("Authentication failed");
+        try {
+            validateAndFetchAgency(null, bookingChannel);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -3750,6 +3880,457 @@ public class ChannelApi {
 
     public void setAgentReferenceBookController(AgentReferenceBookController AgentReferenceBookController) {
         this.AgentReferenceBookController = AgentReferenceBookController;
+    }
+
+    /**
+     * POST /api/channel/consultant
+     *
+     * Creates a new Consultant (and the associated Person).
+     *
+     * Request headers:
+     *   Token: &lt;api-key&gt;
+     *
+     * Request body (JSON):
+     * {
+     *   "name"          : "NURADH JOSEPH",   // required
+     *   "title"         : "Dr",              // optional, defaults to Dr
+     *   "mobile"        : "0771234567",      // optional
+     *   "phone"         : "",                // optional
+     *   "fax"           : "",                // optional
+     *   "address"       : "",                // optional
+     *   "code"          : "NURADH JOSEPH",   // optional
+     *   "serialNo"      : 1,                 // optional (codeInterger)
+     *   "specialityId"  : 12,               // optional
+     *   "institutionId" : 5,                // optional
+     *   "registration"  : "",               // optional
+     *   "qualification" : "MBBS",           // optional
+     *   "description"   : "ONCOLOGIST"      // optional
+     * }
+     */
+    @POST
+    @Path("/consultant")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createConsultant(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
+        String key = requestContext.getHeader("Token");
+        if (!isValidKey(key)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(errorMessageNotValidKey().toString()).build();
+        }
+
+        String name = requestBody.get("name") != null ? requestBody.get("name").toString().trim() : "";
+        if (name.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse(400, "name is required").toString()).build();
+        }
+
+        Person person = new Person();
+        person.setName(name);
+
+        Object titleRaw = requestBody.get("title");
+        String titleStr = (titleRaw != null) ? titleRaw.toString().trim() : "";
+        if (titleStr.isEmpty()) {
+            titleStr = "Dr";
+        }
+        try {
+            person.setTitle(Title.valueOf(titleStr));
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse(400, "Invalid title value: " + titleStr).toString()).build();
+        }
+
+        if (requestBody.get("mobile") != null) {
+            person.setMobile(requestBody.get("mobile").toString());
+        }
+        if (requestBody.get("phone") != null) {
+            person.setPhone(requestBody.get("phone").toString());
+        }
+        if (requestBody.get("fax") != null) {
+            person.setFax(requestBody.get("fax").toString());
+        }
+        if (requestBody.get("address") != null) {
+            person.setAddress(requestBody.get("address").toString());
+        }
+        if (requestBody.get("sex") != null) {
+            Object sexRaw = requestBody.get("sex");
+            if (sexRaw != null && !sexRaw.toString().trim().isEmpty()) {
+                Sex sex = parseSex(sexRaw);
+                if (sex == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Invalid sex value: " + sexRaw).toString()).build();
+                }
+                person.setSex(sex);
+            }
+        }
+
+        Consultant existingConsultant = findActiveConsultantByNameAndTitle(name, person.getTitle());
+        if (existingConsultant != null) {
+            Map<String, Object> duplicateResponse = new HashMap<>();
+            duplicateResponse.put("status", "already_exists");
+            duplicateResponse.put("id", existingConsultant.getId());
+            duplicateResponse.put("name", existingConsultant.getPerson() != null ? existingConsultant.getPerson().getName() : name);
+            return Response.status(Response.Status.CONFLICT).entity(duplicateResponse).build();
+        }
+
+        Consultant consultant = new Consultant();
+        consultant.setPerson(person);
+        consultant.setCreatedAt(new Date());
+
+        if (requestBody.get("code") != null) {
+            consultant.setCode(requestBody.get("code").toString());
+        }
+        if (requestBody.get("serialNo") != null) {
+            String serialNoStr = requestBody.get("serialNo").toString();
+            try {
+                consultant.setCodeInterger(Integer.parseInt(serialNoStr));
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid serialNo value: " + serialNoStr).toString()).build();
+            }
+        }
+        if (requestBody.get("description") != null) {
+            consultant.setDescription(requestBody.get("description").toString());
+        }
+        if (requestBody.get("registration") != null) {
+            consultant.setRegistration(requestBody.get("registration").toString());
+        }
+        if (requestBody.get("qualification") != null) {
+            consultant.setQualification(requestBody.get("qualification").toString());
+        }
+        if (requestBody.get("specialityId") != null) {
+            String specIdStr = requestBody.get("specialityId").toString();
+            try {
+                Long specId = Long.parseLong(specIdStr);
+                Speciality speciality = specialityFacade.find(specId);
+                if (speciality == null || speciality.isRetired()) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Speciality not found or retired for id: " + specId).toString()).build();
+                }
+                consultant.setSpeciality(speciality);
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid specialityId value: " + specIdStr).toString()).build();
+            }
+        }
+        if (requestBody.get("institutionId") != null) {
+            String insIdStr = requestBody.get("institutionId").toString();
+            try {
+                Long insId = Long.parseLong(insIdStr);
+                Institution institution = institutionFacade.find(insId);
+                if (institution == null || institution.isRetired()) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Institution not found or retired for id: " + insId).toString()).build();
+                }
+                consultant.setInstitution(institution);
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid institutionId value: " + insIdStr).toString()).build();
+            }
+        }
+
+        consultantFacade.createConsultantWithPerson(person, consultant);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", consultant.getId());
+        data.put("name", person.getName());
+        data.put("title", person.getTitle() != null ? person.getTitle().toString() : "Dr");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "201");
+        response.put("message", "Created");
+        response.put("data", data);
+        response.put("detailMessage", "Consultant created successfully");
+
+        return Response.status(Response.Status.CREATED).entity(response).build();
+    }
+
+    /**
+     * PUT /api/channel/consultant/{id}
+     *
+     * Updates an existing Consultant by ID.
+     *
+     * Request headers:
+     *   Token: &lt;api-key&gt;
+     *
+     * Updatable fields (all optional — only supplied fields are changed):
+     *   name, title, mobile, phone, fax, address, code, serialNo,
+     *   specialityId, institutionId, registration, qualification, description, sex
+     */
+    @PUT
+    @Path("/consultant/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateConsultant(@Context HttpServletRequest requestContext,
+            @PathParam("id") Long id,
+            Map<String, Object> requestBody) {
+
+        String key = requestContext.getHeader("Token");
+        if (!isValidKey(key)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(errorMessageNotValidKey().toString()).build();
+        }
+
+        Consultant consultant = consultantFacade.find(id);
+        if (consultant == null || consultant.isRetired()) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(errorResponse(404, "Consultant not found for id: " + id).toString()).build();
+        }
+
+        Person person = consultant.getPerson();
+        if (person == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(errorResponse(500, "Consultant has no associated person record").toString()).build();
+        }
+
+        if (requestBody.containsKey("name")) {
+            Object nameVal = requestBody.get("name");
+            if (nameVal != null) {
+                String name = nameVal.toString().trim();
+                if (!name.isEmpty()) {
+                    person.setName(name);
+                }
+            }
+        }
+        if (requestBody.containsKey("title")) {
+            Object titleVal = requestBody.get("title");
+            String titleStr = (titleVal != null) ? titleVal.toString().trim() : "";
+            if (titleStr.isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "title cannot be null or blank").toString()).build();
+            }
+            try {
+                person.setTitle(Title.valueOf(titleStr));
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid title value: " + titleStr).toString()).build();
+            }
+        }
+        if (requestBody.containsKey("mobile")) {
+            Object v = requestBody.get("mobile");
+            person.setMobile(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("phone")) {
+            Object v = requestBody.get("phone");
+            person.setPhone(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("fax")) {
+            Object v = requestBody.get("fax");
+            person.setFax(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("address")) {
+            Object v = requestBody.get("address");
+            person.setAddress(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("sex")) {
+            Object v = requestBody.get("sex");
+            if (v == null || v.toString().trim().isEmpty()) {
+                person.setSex(null);
+            } else {
+                Sex sex = parseSex(v);
+                if (sex == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Invalid sex value: " + v).toString()).build();
+                }
+                person.setSex(sex);
+            }
+        }
+
+        if (requestBody.containsKey("code")) {
+            Object v = requestBody.get("code");
+            consultant.setCode(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("serialNo")) {
+            Object v = requestBody.get("serialNo");
+            if (v == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "serialNo cannot be null").toString()).build();
+            }
+            try {
+                consultant.setCodeInterger(Integer.parseInt(v.toString()));
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid serialNo value: " + v).toString()).build();
+            }
+        }
+        if (requestBody.containsKey("description")) {
+            Object v = requestBody.get("description");
+            consultant.setDescription(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("registration")) {
+            Object v = requestBody.get("registration");
+            consultant.setRegistration(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("qualification")) {
+            Object v = requestBody.get("qualification");
+            consultant.setQualification(v != null ? v.toString() : null);
+        }
+        if (requestBody.containsKey("specialityId")) {
+            Object v = requestBody.get("specialityId");
+            if (v == null) {
+                consultant.setSpeciality(null);
+            } else {
+                try {
+                    Long specId = Long.parseLong(v.toString());
+                    Speciality speciality = specialityFacade.find(specId);
+                    if (speciality == null || speciality.isRetired()) {
+                        return Response.status(Response.Status.BAD_REQUEST)
+                                .entity(errorResponse(400, "Speciality not found or retired for id: " + specId).toString()).build();
+                    }
+                    consultant.setSpeciality(speciality);
+                } catch (NumberFormatException e) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Invalid specialityId value: " + v).toString()).build();
+                }
+            }
+        }
+        if (requestBody.containsKey("institutionId")) {
+            Object v = requestBody.get("institutionId");
+            if (v == null) {
+                consultant.setInstitution(null);
+            } else {
+                try {
+                    Long insId = Long.parseLong(v.toString());
+                    Institution institution = institutionFacade.find(insId);
+                    if (institution == null || institution.isRetired()) {
+                        return Response.status(Response.Status.BAD_REQUEST)
+                                .entity(errorResponse(400, "Institution not found or retired for id: " + insId).toString()).build();
+                    }
+                    consultant.setInstitution(institution);
+                } catch (NumberFormatException e) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(errorResponse(400, "Invalid institutionId value: " + v).toString()).build();
+                }
+            }
+        }
+
+        consultantFacade.updateConsultantWithPerson(person, consultant);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", consultant.getId());
+        data.put("name", person.getName());
+        data.put("title", person.getTitle() != null ? person.getTitle().toString() : "");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", data);
+        response.put("detailMessage", "Consultant updated successfully");
+
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+    }
+
+    @GET
+    @Path("/consultant")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listConsultants(@Context HttpServletRequest requestContext) {
+        String key = requestContext.getHeader("Token");
+        if (!isValidKey(key)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(errorMessageNotValidKey().toString()).build();
+        }
+
+        String query = context.getQueryParameters().getFirst("query");
+        int page = Math.max(parseIntParam(context.getQueryParameters().getFirst("page"), 0), 0);
+        int size = parseIntParam(context.getQueryParameters().getFirst("size"), 20);
+        if (size < 1) {
+            size = 20;
+        }
+        if (size > 200) {
+            size = 200;
+        }
+
+        Long specialityId = null;
+        String specialityIdRaw = context.getQueryParameters().getFirst("specialityId");
+        if (specialityIdRaw != null && !specialityIdRaw.trim().isEmpty()) {
+            try {
+                specialityId = Long.valueOf(specialityIdRaw.trim());
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(errorResponse(400, "Invalid specialityId value: " + specialityIdRaw).toString()).build();
+            }
+        }
+
+        long offsetLong = (long) page * size;
+        long toRecordLong = offsetLong + size;
+        if (offsetLong > Integer.MAX_VALUE || toRecordLong > Integer.MAX_VALUE) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse(400, "page is too large").toString()).build();
+        }
+
+        String jpql = "select c from Consultant c where c.retired=false "
+                + " and c.person is not null ";
+        Map<String, Object> params = new HashMap<>();
+        if (query != null && !query.trim().isEmpty()) {
+            jpql += " and upper(c.person.name) like :q ";
+            params.put("q", "%" + query.trim().toUpperCase() + "%");
+        }
+        if (specialityId != null) {
+            jpql += " and c.speciality.id = :sid ";
+            params.put("sid", specialityId);
+        }
+        jpql += " order by c.person.name";
+
+        List<Consultant> consultants = consultantFacade.findByJpql(jpql, params, (int) offsetLong, (int) toRecordLong);
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (Consultant consultant : consultants) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", consultant.getId());
+            item.put("name", consultant.getPerson() != null ? consultant.getPerson().getName() : null);
+            item.put("title", consultant.getPerson() != null && consultant.getPerson().getTitle() != null ? consultant.getPerson().getTitle().toString() : null);
+            item.put("sex", consultant.getPerson() != null && consultant.getPerson().getSex() != null ? consultant.getPerson().getSex().toString() : null);
+            item.put("specialityId", consultant.getSpeciality() != null ? consultant.getSpeciality().getId() : null);
+            item.put("speciality", consultant.getSpeciality() != null ? consultant.getSpeciality().getName() : null);
+            item.put("institutionId", consultant.getInstitution() != null ? consultant.getInstitution().getId() : null);
+            item.put("institution", consultant.getInstitution() != null ? consultant.getInstitution().getName() : null);
+            item.put("mobile", consultant.getPerson() != null ? consultant.getPerson().getMobile() : null);
+            data.add(item);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "200");
+        response.put("message", "OK");
+        response.put("data", data);
+        return Response.ok(response).build();
+    }
+
+
+    private int parseIntParam(String raw, int defaultValue) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+    private Sex parseSex(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        String sexString = raw.toString().trim();
+        if (sexString.isEmpty()) {
+            return null;
+        }
+        for (Sex sex : Sex.values()) {
+            if (sex.name().equalsIgnoreCase(sexString) || sex.getLabel().equalsIgnoreCase(sexString) || sex.getShortLabel().equalsIgnoreCase(sexString)) {
+                return sex;
+            }
+        }
+        return null;
+    }
+
+    private Consultant findActiveConsultantByNameAndTitle(String name, Title title) {
+        if (name == null || name.trim().isEmpty() || title == null) {
+            return null;
+        }
+        String jpql = "select c from Consultant c where c.retired=false and c.person is not null "
+                + " and upper(c.person.name)=:n and c.person.title=:t order by c.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("n", name.trim().toUpperCase());
+        params.put("t", title);
+        List<Consultant> existing = consultantFacade.findByJpql(jpql, params, 1);
+        return existing == null || existing.isEmpty() ? null : existing.get(0);
     }
 
 }

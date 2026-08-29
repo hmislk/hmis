@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -98,7 +98,7 @@
                                                         class="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stock}"
-                                                        completeMethod="#{pharmacySaleController.completeAvailableStocksFromNameOrGeneric}"
+                                                        queryDelay="300" completeMethod="#{pharmacySaleController.completeAvailableStocksFromNameOrGeneric}"
                                                         var="i"
                                                         itemLabel="#{i.itemBatch.item.name}"
                                                         itemValue="#{i}">
@@ -145,7 +145,7 @@
                                                         class="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stock}"
-                                                        completeMethod="#{stockController.completeAvailableStocksWithItemStock}"
+                                                        queryDelay="300" completeMethod="#{stockController.completeAvailableStocksWithItemStock}"
                                                         scrollHeight="400"
                                                         var="i"
                                                         itemLabel="#{i.itemBatch.item.name}"
@@ -1264,13 +1264,16 @@
                                     action="pharmacy_bill_retail_sale"
                                     class="ui-button-warning mx-2"
                                     actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
-                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
-                                    <f:selectItem itemLabel="Please Select Paper Type" />
-                                    <f:selectItems value="#{enumController.paperTypes}" />
-                                </p:selectOneMenu>
-                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
-                                <p:spacer width="20em" ></p:spacer>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                                    <p:outputLabel value="Paper Type" class="m-2"/>
+                                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                </h:panelGroup>
+                                <h:inputHidden value="#{sessionController.departmentPreference.pharmacyBillPaperType}" rendered="#{!webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"/>
+                                <p:spacer width="20em"></p:spacer>
                                 <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />

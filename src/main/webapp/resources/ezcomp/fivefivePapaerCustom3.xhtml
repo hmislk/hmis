@@ -26,7 +26,8 @@
 
             <!-- Header Section -->
             <div class="hospital-name">
-                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                <h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Set Logging department name in channel FivefiveCustom3 Bill',true)}" value="#{cc.attrs.bill.department.name}"/>
+                 <h:outputLabel rendered="#{!configOptionApplicationController.getBooleanValueByKey('Set Logging department name in channel FivefiveCustom3 Bill', true)}" value="Channeling"/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
@@ -46,7 +47,7 @@
                         <p:spacer width="10" ></p:spacer>
                     </td>
                     <td>
-                        <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
+                        <h:outputLabel value=":" style="width: 5mm; text-align: center"></h:outputLabel>
                     </td>
                     <td>
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
@@ -73,9 +74,13 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }"
+                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"
                                        value="Online Booking from #{cc.attrs.bill.referenceBill.onlineBooking.agency.name}"
                                        ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"
+                                       value="Online Booking from #{cc.attrs.bill.billedBill.referenceBill.onlineBooking.agency.name}"
+                                       ></h:outputLabel>
+                        
                         <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null and cc.attrs.bill.billType ne 'ChannelAgent'}" value="System Booking"></h:outputLabel>
                         <h:outputLabel rendered="#{cc.attrs.bill.billType eq 'ChannelAgent' and cc.attrs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_WITH_PAYMENT'}"
                                        value="Agent Booking from #{cc.attrs.bill.creditCompany.name}"
@@ -94,7 +99,8 @@
                         <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize!important;" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and cc.attrs.bill.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize!important;" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{cc.attrs.bill.billedBill.referenceBill.onlineBooking.title}. #{cc.attrs.bill.billedBill.referenceBill.onlineBooking.patientName}" style="text-transform: capitalize!important;" ></h:outputLabel>
                         <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{cc.attrs.bill.referenceBill.onlineBooking.title}. #{cc.attrs.bill.referenceBill.onlineBooking.patientName}" style="text-transform: capitalize!important;" ></h:outputLabel>
                     </td>
 
@@ -110,7 +116,8 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and cc.attrs.bill.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{cc.attrs.bill.billedBill.referenceBill.onlineBooking.phoneNo}" ></h:outputLabel>
                         <h:outputLabel rendered="#{cc.attrs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{cc.attrs.bill.referenceBill.onlineBooking.phoneNo}" ></h:outputLabel>
                     </td>
                 </tr>
@@ -118,7 +125,7 @@
                     <td>
 
                         <b>
-                            <h:outputLabel value="Consultant" ></h:outputLabel>
+                            <h:outputLabel value="Consultant #{cc.attrs.bill.billItems.size()}" ></h:outputLabel>
                         </b>
                     </td>
                     <td>
@@ -130,6 +137,7 @@
                     <td>
                         <b>
                             <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                                <h:outputLabel value="#{cbi.billSession.id}" ></h:outputLabel>
                                 <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
                             </ui:repeat>
                         </b>

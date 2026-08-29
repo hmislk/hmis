@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
+                <h:form>
+                    <p:panel header="Agent Channel Bookings Print View" styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Agent Channel Bookings Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="agent_channel_bookings?faces-redirect=true">
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>                            
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="Agent Channel Bookings"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="From Date - "/>
+                                        <h:outputText value="#{searchController.fromDate}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="To Date - "/>
+                                        <h:outputText value="#{searchController.toDate}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: center;">Serial</th>
+                                                <th style="text-align: center;">Date/Time</th>
+                                                <th style="text-align: center;">Bill No</th>
+                                                <th style="text-align: center;">Patient</th>
+                                                <th style="text-align: center;">Agent</th>
+                                                <th style="text-align: center;">Ref No</th>
+                                                <th style="text-align: center;">Cashier</th>
+                                                <th style="text-align: center;">Hospital Fee</th>
+                                                <th style="text-align: center;">Staff Fee</th>
+                                                <th style="text-align: center;">Gross Total</th>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                    <th style="text-align: center;">Discount</th>
+                                                    <th style="text-align: center;">Net Total</th>
+                                                </h:panelGroup>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat varStatus="status" value="#{searchController.agentBookings}" var="b">
+                                                <tr>
+                                                    <td><h:outputText value="#{status.index +1}"/></td>
+                                                    <td>
+                                                        <h:outputText value="#{b.billedDate}">
+                                                            <f:convertDateTime
+                                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{b.billDeptId}"/>
+                                                        <p:badge value="Cancelled" severity="danger" rendered="#{b.cancelled}"/>
+                                                        <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
+                                                    </td>
+                                                    <td><h:outputText value="#{b.patientNameWithTitle}"/></td>
+                                                    <td><h:outputText value="#{b.creditCompanyName}"/></td>
+                                                    <td><h:outputText value="#{b.paymentReference}"/></td>
+                                                    <td><h:outputText value="#{b.billedBy}"/></td>
+                                                    <td style="text-align: right" >
+                                                        <h:outputText value="#{b.hosFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText value="#{b.doctorFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText value="#{b.grossTotal}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                        <td style="text-align: right">
+                                                            <h:outputText value="#{b.discount}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align: right">
+                                                            <h:outputText value="#{b.paymentFee}" style="text-decoration: #{b.cancelled ? 'line-through':'none'}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="7" style="text-align: left; font-weight: 700;">
+                                                    <h:outputText value="Total"/>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputText value="#{searchController.hosTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputText value="#{searchController.staffTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputText value="#{searchController.grossTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{searchController.discountTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{searchController.amountTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

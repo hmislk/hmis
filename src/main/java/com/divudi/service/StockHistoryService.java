@@ -2,6 +2,7 @@ package com.divudi.service;
 
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.HistoricalRecord;
+import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import com.divudi.core.facade.StockHistoryFacade;
@@ -69,7 +70,7 @@ public class StockHistoryService {
     }
 
     public double fetchOpeningStockQuantity(Department department, Date date) {
-        HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, date);
+        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, date);
         if (openingBalance != null) {
             return openingBalance.getRecordValue();
         } else {

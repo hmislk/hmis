@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -7,7 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
-      xmlns:st="http://xmlns.jcp.org/jsf/composite/store/inward">
+      xmlns:st="http://xmlns.jcp.org/jsf/composite/store/inward"
+      xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
     <h:body>
 
@@ -29,23 +30,13 @@
 
                             <p:panel header="Patient Detail" rendered="#{storeSaleBhtController.patientEncounter eq null}" class="w-100">                                        
                                 <h:outputLabel value="Type Patient Name or BHT"/>
-                                <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                                value="#{storeSaleBhtController.patientEncounter}" 
-                                                completeMethod="#{admissionController.completePatient}"
-                                                var="apt2" itemLabel="#{apt2.bhtNo}"
-                                                itemValue="#{apt2}" size="30"  style="width: 400px; margin-left: 10px">
-
-                                    <p:column >
-                                        <h:outputLabel value="#{apt2.bhtNo}"/> 
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{apt2.patient.person.name}"/> 
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
-                                </p:autoComplete>  
+                                <admcc:admission_search
+                                    widgetVar="aPt2"
+                                    inputId="acPt2"
+                                    value="#{storeSaleBhtController.patientEncounter}"
+                                    completeMethod="#{admissionController.completePatient}"
+                                    continueClientId="bill:btnSelect"
+                                    itemSelectUpdate="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
                                 <p:commandButton 
                                     value="Select" 
                                     ajax="false" 
@@ -53,6 +44,26 @@
                                     icon="fa fa-search" 
                                     class="ui-button-warning">                             
                                 </p:commandButton>
+
+                                <style>
+                                    .discharged-badge {
+                                        background-color: #f44336;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+
+                                    .not-discharged-badge {
+                                        background-color: #2196F3;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+                                </style>
 
                             </p:panel>
 
@@ -115,7 +126,7 @@
                                                             forceSelection="true"  
                                                             id="acStock" 
                                                             value="#{storeSaleBhtController.stock}" 
-                                                            completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
+                                                            minQueryLength="3" queryDelay="300" completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
                                                             var="i" 
                                                             style="width: 400px;"
                                                             inputStyleClass="form-control"

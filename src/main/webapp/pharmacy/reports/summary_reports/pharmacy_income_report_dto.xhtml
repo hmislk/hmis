@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:body>
+    <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+        <ui:define name="subcontent">
+            <p:panel header="Pharmacy Income Report - DTO">
+                <h:form>
+                    
+                    <h:panelGrid columns="8" styleClass="w-100 form-grid"
+                                 columnClasses="label-icon-column, input-column">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                            <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{pharmacySummaryReportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                        <p:spacer width="50"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{pharmacySummaryReportController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        />
+
+                        <p:spacer width="50"/>
+                        <p:spacer width="50"/>
+                        <p:spacer width="50"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu 
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacySummaryReportController.institution}"
+                                converter="#{institutionConverter}">
+                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                            <f:selectItems value="#{institutionController.institutions}" 
+                                         var="ins" 
+                                         itemLabel="#{ins.name}" 
+                                         itemValue="#{ins}"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="50"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0f7;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu 
+                                id="cmbDept"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacySummaryReportController.department}"
+                                converter="#{departmentConverter}">
+                            <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                            <f:selectItems value="#{departmentController.departments}" 
+                                         var="dept" 
+                                         itemLabel="#{dept.name}" 
+                                         itemValue="#{dept}"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="50"/>
+                        <p:spacer width="50"/>
+                        <p:spacer width="50"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <p:commandButton 
+                                    value="Generate Report (DTO)" 
+                                    action="#{pharmacySummaryReportController.generatePharmacyIncomeReportDto()}"
+                                    styleClass="btn btn-primary"
+                                    update="@form"
+                                    icon="pi pi-search"/>
+                        </h:panelGroup>
+                    </h:panelGrid>
+                </h:form>
+
+                <!-- Performance Badge -->
+                <h:panelGroup rendered="#{not empty pharmacySummaryReportController.pharmacyIncomeReportDtos}">
+                    <div class="alert alert-success mt-3" role="alert">
+                        <h:outputText value="&#xf058;" styleClass="fa mr-2"/>
+                        <strong>Performance Optimized:</strong> Using DTO-based queries for improved memory usage and load times.
+                    </div>
+                </h:panelGroup>
+
+                <!-- Results Table -->
+                <h:panelGroup rendered="#{not empty pharmacySummaryReportController.pharmacyIncomeReportDtos}">
+                    <p:dataTable value="#{pharmacySummaryReportController.pharmacyIncomeReportDtos}" 
+                                var="dto" 
+                                styleClass="table table-striped"
+                                id="dtoResultsTable">
+                        <f:facet name="header">
+                            <h:outputText value="Pharmacy Income Report Results (DTO Method)"/>
+                        </f:facet>
+                        
+                        <p:column headerText="Bill Date">
+                            <h:outputText value="#{dto.billDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
+                        </p:column>
+                        
+                        <p:column headerText="Bill Number">
+                            <h:outputText value="#{dto.billNumber}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Bill Type">
+                            <h:outputText value="#{dto.billTypeName}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Department">
+                            <h:outputText value="#{dto.departmentName}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Institution">
+                            <h:outputText value="#{dto.institutionName}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Net Total" styleClass="text-right">
+                            <h:outputText value="#{dto.netTotal}">
+                                <f:convertNumber type="currency" currencySymbol=""/>
+                            </h:outputText>
+                        </p:column>
+                        
+                        <p:column headerText="Total" styleClass="text-right">
+                            <h:outputText value="#{dto.total}">
+                                <f:convertNumber type="currency" currencySymbol=""/>
+                            </h:outputText>
+                        </p:column>
+                        
+                        <f:facet name="footer">
+                            <h:outputText value="Total Records: #{pharmacySummaryReportController.pharmacyIncomeReportDtos.size()}"/>
+                        </f:facet>
+                    </p:dataTable>
+                </h:panelGroup>
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

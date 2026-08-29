@@ -444,6 +444,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacyPreSettleController.setPreBill(currentToken.getBill());
         pharmacyPreSettleController.setBillPreview(false);
         pharmacyPreSettleController.setToken(currentToken);
+        pharmacyPreSettleController.setBillSettlingStarted(false);
         return "/pharmacy/pharmacy_bill_pre_settle";
     }
 

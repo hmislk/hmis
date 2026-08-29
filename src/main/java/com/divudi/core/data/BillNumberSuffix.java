@@ -49,6 +49,7 @@ public enum BillNumberSuffix {
     PHISSUEREQ,//Pharmacy Issue Request
     PHISSCAN,//Pharmacy Issue Cancel
     PHISSRET,//Pharmacy Issue Return
+    PHACCPAYCAN,//Pharmacy Credit Company Payment Cancel
     STISSUE,//Store Issue
     STTISSUECAN,//Store Issue can
     PHRET,
@@ -61,6 +62,7 @@ public enum BillNumberSuffix {
     ADJ,//Adjustment
     //Inward
     INWPAY,//Payment Bill
+    INWPFP,//Post Final Bill Inward Payment
     INWFINAL,//Inward Final
     INWFINALORG,//Inward Original Final
     INWINTRIM,//Inward Interim

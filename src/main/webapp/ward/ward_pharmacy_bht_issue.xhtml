@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -6,7 +6,9 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
-                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print">
 
     <ui:define name="content">
         <h:form>
@@ -14,275 +16,609 @@
             <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
 
                 <f:facet name="header" >
-                    <h:outputText value="BHT Issue" ></h:outputText>
-                    <p:commandButton
-                        style="float: right;"
-                        class="ui-button-success"
-                        icon="fa fa-check"
-                        value="Issue to BHT"
-                        onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                    return false;"
-                        action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
-                        ajax="false" >
-                    </p:commandButton>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <p:outputLabel value="BHT Issue" class="m-2"/>
+                        <div class="d-flex gap-2 flex-wrap">
+
+                            <p:commandButton
+                                id="btnInpatientDashboard"
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnWardMedications"
+                                value="Ward Medications"
+                                icon="fa fa-pills"
+                                ajax="false"
+                                class="ui-button-info"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(pharmacySaleBhtController.bhtRequestBill.patientEncounter)}">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnViewRequest"
+                                value="View Request"
+                                icon="fa fa-file-alt"
+                                type="button"
+                                class="ui-button-help"
+                                title="View the original request with comments"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                onclick="PF('viewRequestDialog').show();">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnIssue"
+                                style="float: right;"
+                                class="ui-button-success"
+                                icon="fa fa-check"
+                                value="Issue to BHT"
+                                onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                            return false;"
+                                action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
+                                ajax="false" >
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnConfig"
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('inward/pharmacy_bill_issue_bht')}"
+                                ajax="false"
+                                class="ui-button-secondary">
+                            </p:commandButton>
+                        </div>
+                    </div>
 
                 </f:facet>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <h:outputLabel value="Porter / Staff Carrying Medicines to Ward:" for="acPorter" />
+                        <p:autoComplete id="acPorter"
+                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
+                                        value="#{pharmacySaleBhtController.preBill.toStaff}"
+                                        maxResults="10"
+                                        placeholder="Search staff by name">
+
+                            <p:column headerText="Name">
+                                <h:outputText value="#{w.person.nameWithTitle}" />
+                            </p:column>
+                            <p:column headerText="Speciality">
+                                <h:outputText value="#{w.speciality.name}" />
+                            </p:column>
+                            <p:column headerText="Staff Code">
+                                <h:outputText value="#{w.staffCode}" />
+                            </p:column>
+                        </p:autoComplete>
+                    </div>
+                </div>
+
                 <h:panelGroup class="row">
+                    <h:panelGroup class="row" rendered="#{configOptionApplicationController.getBooleanValueByKey('Adding new items for inpatient requests are allowed.',true)}">
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel header="Add Items">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-cube" />
+                                        <h:outputLabel value="Add Items" styleClass="mx-4"></h:outputLabel>
+                                    </f:facet>
 
-                    <h:panelGroup class="row">
+                                    <div class="row">
+                                        <div class="col-lg-8 col-md-12">
+                                            <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                            <p:autoComplete accesskey="i" id="acStock"
+                                                            value="#{pharmacySaleBhtController.tmpStock}"
+                                                            converter="stockConverter"
+                                                            minQueryLength="3" queryDelay="300" completeMethod="#{stockController.completeAvailableStocks}"
+                                                            var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="10" size="100"
+                                                            forceSelection="true"
+                                                            styleClass="w-100"
+                                                            inputStyleClass="w-100 form-control">
+                                                <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputText value="#{i.itemBatch.item.name}" style="width: 300px!important;" />
+                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire or commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire}"
+                                                                 value="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire ? 'Expired' : 'Expiring Soon'}"
+                                                                 severity="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire ? 'danger' : 'warning'}" />
+                                                </p:column>
+                                                <p:column headerText="Code" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                                               commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Generic" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                                                  commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Rate" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                                               commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}"
+                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Stocks" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                                                 commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.stock}" >
+                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Expiry" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                                                 commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
+                                                                   style="width: 100px!important;" >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:ajax event="itemSelect" update="txtQty btnAdd focusQty" ></p:ajax>
+                                            </p:autoComplete>
+                                        </div>
 
-                        <p:panel header="Add Items" class="col-md-6">
+                                        <div class="col-lg-2 col-md-6">
+                                            <p:outputLabel value="Quantity" ></p:outputLabel>
+                                            <p:inputText
+                                                accesskey="q"
+                                                autocomplete="off"
+                                                id="txtQty"
+                                                value="#{pharmacySaleBhtController.qty}"
+                                                styleClass="w-100">
+                                            </p:inputText>
+                                        </div>
 
-                            <f:facet name="header" >
-                                <h:outputText styleClass="fas fa-cube" />
-                                <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
-                            </f:facet>
-                            <h:panelGrid columns="6" >
-                                <h:panelGrid columns="1" class="w-100">
-                                    <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                    <p:autoComplete accesskey="i"    id="acStock"
-                                                    value="#{pharmacySaleBhtController.tmpStock}"
-                                                    completeMethod="#{stockController.completeAvailableStocks}"
-                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="10" size="100"
-                                                    >
-                                        <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
-                                                                         commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                             severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                            </h:outputLabel>
-                                        </p:column>
+                                        <div class="col-lg-2 col-md-6 d-flex align-items-end">
+                                            <p:commandButton  
+                                                accesskey="a"
+                                                id="btnAdd"
+                                                icon="fa fa-plus"
+                                                value="Add"
+                                                styleClass="ui-button-success w-100"
+                                                action="#{pharmacySaleBhtController.addBillItemNew}"
+                                                ajax="false"
+                                                update="focusItem">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
 
-                                        <p:column headerText="Code" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                       commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Generic" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                          commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Rate" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                       commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Stocks" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                         commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.stock}" >
-                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Expiry" style="padding: 4px" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                                       commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
-                                                           style="width: 100px!important;" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
-                                    </p:autoComplete>
-                                </h:panelGrid>
+                                    <p:focus id="focusQty" for="txtQty"></p:focus>
+                                    <p:focus id="focusItem" for="acStock"></p:focus>
 
-                                <h:panelGrid columns="1" class="w-100">
-                                    <p:outputLabel value="Quantity" ></p:outputLabel>
-                                    <p:inputText
-                                        accesskey="q"
-                                        autocomplete="off"
-                                        id="txtQty"
-                                        value="#{pharmacySaleBhtController.qty}"
-                                        class="w-100">
+                                </p:panel>
+                            </div>
 
-                                    </p:inputText>
-                                </h:panelGrid>
+                            <div class="col-md-6" >
+                                <p:panel header="Bill Details" style="height: 100%" id="billDetailsPanel">
 
-                                <h:panelGrid columns="1" class="w-100" >
-                                    <p:outputLabel value="&nbsp;" ></p:outputLabel>
-                                    <p:commandButton  accesskey="a"
-                                                      id="btnAdd"
-                                                      icon="fa fa-plus"
-                                                      value="Add"
-                                                      class="ui-button-success mx-1"
-                                                      action="#{pharmacySaleBhtController.addBillItemNew}"
-                                                      ajax="false"
-                                                      style="float: right;"
-                                                      update="focusItem"
-                                                      ></p:commandButton>
-                                </h:panelGrid>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <p:outputLabel value="Bill No" ></p:outputLabel>
+                                        <p:outputLabel value=":" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.deptId}" ></p:outputLabel>
+                                        <p:outputLabel value="BHT No" ></p:outputLabel>
+                                        <p:outputLabel value=":" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.bhtNo}" ></p:outputLabel>
+                                        <p:outputLabel value="From Department"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment.name}"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
+                                        <p:outputLabel value="Credit Company" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
+                                        <!-- Credit company name, only render if paymentMethod is Credit and creditCompany is non-null -->
+                                        <p:outputLabel 
+                                            value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.creditCompany.name}" 
+                                            rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit' 
+                                                        and pharmacySaleBhtController.bhtRequestBill.patientEncounter.creditCompany ne null}" >
+                                        </p:outputLabel>
 
-                                <p:focus id="focusQty" for="txtQty"></p:focus>
-                                <p:focus id="focusItem" for="acStock"></p:focus>
+                                        <!-- Consultant info block, only render if referringConsultant and its person are non-null -->
+                                        <p:outputLabel value="Consultant Name" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant ne null and pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person ne null}"></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant ne null and pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person ne null}" ></p:outputLabel>
+                                        <p:outputLabel  value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person.nameWithTitle}" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant ne null and pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person ne null}" >
+                                        </p:outputLabel>
 
-                            </h:panelGrid>
-                        </p:panel>
-                        <p:panel header="Bill Details" style="height: 100%" class="col-md-6">
+                                        <p:outputLabel value="Patient Name" ></p:outputLabel>
+                                        <p:outputLabel value=":" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.patient.person.nameWithTitle}" ></p:outputLabel>
+                                        <p:outputLabel value="Room" ></p:outputLabel>
+                                        <p:outputLabel value=":" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" ></p:outputLabel>
+                                        <p:outputLabel value="Date" ></p:outputLabel>
+                                        <p:outputLabel value=":" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.createdAt}" ></p:outputLabel>
+                                        <p:outputLabel value="Time" ></p:outputLabel>
+                                        <p:outputLabel value=":" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.createdAt}" > <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></p:outputLabel>
+                                        <p:outputLabel value="Requested By"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson.name}"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value="Priority"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"></p:outputLabel>
+                                        <p:tag value="#{pharmacySaleBhtController.bhtRequestBill.priority.displayName}"
+                                               rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                           and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"
+                                               style="background-color:#{pharmacySaleBhtController.bhtRequestBill.priority.priorityColor}; color:#212529;"></p:tag>
+                                        <p:outputLabel value="Gross Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemGrossTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Discount" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemDiscountTotal}" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Margin" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemMarginTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Net Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Comment" ></p:outputLabel>
+                                        <p:outputLabel value=":" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ></p:outputLabel>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </div>
 
-                            <h:panelGrid columns="3" class="w-100">
-                                <p:outputLabel value="Bill No" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.deptId}" ></p:outputLabel>
-                                <p:outputLabel value="BHT No" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.bhtNo}" ></p:outputLabel>
-                                <p:outputLabel value="Credit Company" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
-                                <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.creditCompany.name}" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
-                                <p:outputLabel value="Consultant Name" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person.nameWithTitle}" ></p:outputLabel>
-                                <p:outputLabel value="Patient Name" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.patient.person.nameWithTitle}" ></p:outputLabel>
-                                <p:outputLabel value="Room" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" ></p:outputLabel>
-                                <p:outputLabel value="Date" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.createdAt}" ></p:outputLabel>
-                                <p:outputLabel value="Time" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.createdAt}" > <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></p:outputLabel>
-                                <p:outputLabel value="Discount" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
-                                <p:outputLabel value="Net Total" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
-                                <p:outputLabel value="Comment" ></p:outputLabel>
-                                <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
-                            </h:panelGrid>
-                        </p:panel>
+                        </div>
 
                     </h:panelGroup>
                 </h:panelGroup>
-                <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250"
-                             value="#{pharmacySaleBhtController.billItems}"
-                             id="itemList" sortBy="#{bItm.searialNo}"  editable="true">
-                    <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
-                    <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
 
-                    <f:facet name="header">
-                        Available Items
-                    </f:facet>
+                <h:panelGroup layout="block" styleClass="row mb-3"
+                              rendered="#{not empty pharmacySaleBhtController.bhtIssueStockReport}">
+                    <div class="col-12">
+                        <p:panel id="panelBhtIssueStockReport" class="w-100"
+                                 toggleable="true"
+                                 collapsed="#{not pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}">
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center w-100">
+                                    <h:outputText styleClass="fas fa-boxes me-2" />
+                                    <p:outputLabel value="Stock Availability Report" styleClass="fw-bold" />
+                                    <p:tag styleClass="ms-3"
+                                           value="Review — insufficient stock"
+                                           severity="warning"
+                                           rendered="#{pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}" />
+                                    <p:tag styleClass="ms-3"
+                                           value="All issued in full"
+                                           severity="success"
+                                           rendered="#{not pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}" />
+                                </div>
+                            </f:facet>
+                            <p:dataTable id="tblBhtIssueStockReport"
+                                         value="#{pharmacySaleBhtController.bhtIssueStockReport}"
+                                         var="sr"
+                                         styleClass="w-100"
+                                         stripedRows="true"
+                                         size="small">
+                                <p:column headerText="Requested Item">
+                                    <h:outputText value="#{sr.requestedItemName}" />
+                                </p:column>
+                                <p:column headerText="Requested" style="width:7em;" styleClass="text-end">
+                                    <h:outputText value="#{sr.requestedQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Issued" style="width:7em;" styleClass="text-end">
+                                    <h:outputText value="#{sr.issuedQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" style="width:12em;">
+                                    <p:tag value="#{sr.statusLabel}" severity="#{sr.severity}" />
+                                </p:column>
+                                <p:column headerText="Note">
+                                    <h:outputText value="#{sr.message}" styleClass="text-muted" />
+                                </p:column>
+                            </p:dataTable>
+                            <h:panelGroup layout="block" styleClass="alert alert-warning m-2"
+                                          rendered="#{pharmacySaleBhtController.bhtIssueStockReportHasAttentionItems}">
+                                <i class="fa fa-exclamation-triangle me-2"></i>
+                                <h:outputText value="One or more requested medicines have insufficient or no stock. Use &quot;Select a Substitute&quot; on the flagged row(s) or arrange stock before settling — settling will be blocked until resolved." />
+                            </h:panelGroup>
+                        </p:panel>
+                    </div>
+                </h:panelGroup>
 
-                    <p:column headerText="Requested Item" style="width: 50px!important;"  >
-                        <h:outputText id="item" value="#{bItm.referanceBillItem.item.name}" >
-                        </h:outputText>
-                    </p:column>
+                <p:panel header="Issuing Items" class="mt-2">
+                    <style>
+                        .auto-substituted-row { background-color: #FFF3CD !important; }
+                        .auto-substituted-row td { background-color: #FFF3CD !important; }
+                    </style>
+                    <!-- ANY AJAX call originating from a component inside this editable p:dataTable's
+                         row scope — the table's own rowEdit/rowEditCancel behaviors, a p:ajax nested
+                         inside a cellEditor (the autocomplete's itemSelect below), and even a plain
+                         p:commandButton in a row (the delete button below) — has its "update" target
+                         silently constrained to the table itself client-side. Extra ids added to
+                         update="" are ignored no matter what the server-rendered markup says; a
+                         component OUTSIDE the table (like this p:remoteCommand) is unaffected and can
+                         update billDetailsPanel freely. Verified live for all three cases: the
+                         browser's actual request always sends javax.faces.partial.render=itemList
+                         only, even with update="itemList billDetailsPanel" in the source and after a
+                         full app/domain redeploy. p:remoteCommand + oncomplete is the standard
+                         workaround: it issues a second, independent AJAX call from outside the table's
+                         row scope. Issue #23328. -->
+                    <p:remoteCommand name="refreshBillDetails" update="billDetailsPanel" />
+                    <p:dataTable
+                        var="bItm"
+                        value="#{pharmacySaleBhtController.billItems}"
+                        id="itemList"
+                        rowKey="#{bItm.searialNo}"
+                        sortBy="#{bItm.searialNo}"
+                        rowStyleClass="#{bItm.autoSubstituted ? 'auto-substituted-row' : ''}"
+                        editable="true">
+                        <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" oncomplete="refreshBillDetails();" />
+                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" oncomplete="refreshBillDetails();" />
 
-                    <p:column headerText="Issuing Bill Item" style="width: 50px!important;"  rendered="#{webUserController.hasPrivilege('Developers')}" >
-                        <h:outputText id="Isitem" value="#{bItm.item.name}" >
-                        </h:outputText>
-                    </p:column>
+                        <!-- Description/Comment/Batch No/Expiry are detail fields, not needed to scan the
+                             list at a glance — moved into the row-expansion panel below instead of forcing
+                             every row onto 2-3 lines with fixed 50px columns. Issue #23055. -->
+                        <p:column style="width:2rem; padding: 6px;">
+                            <p:rowToggler/>
+                        </p:column>
 
-                    <p:column headerText="Issuing Item" style="width: 50px!important;"  >
-                        <p:autoComplete accesskey="i"    id="acStock"
-                                        value="#{bItm.pharmaceuticalBillItem.stock}"
-                                        completeMethod="#{stockController.completeAvailableStocks}"
-                                        var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
-                                        >
-                            <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
-                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                 severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                </h:outputLabel>
+                        <p:column headerText="Requested Item" style="padding: 6px;">
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <h:outputText id="item" value="#{bItm.referanceBillItem.item.name}" />
+                                <h:outputText
+                                    rendered="#{bItm.autoSubstituted}"
+                                    value="&#xf0ec;"
+                                    escape="false"
+                                    style="font-family:'Font Awesome 5 Free';font-weight:900;color:#e67e22;"
+                                    title="Auto-substituted for: #{bItm.requestedItemName}" />
+                                <p:commandButton
+                                    icon="pi pi-refresh"
+                                    id="btnSelectSubstitute"
+                                    title="Select a Substitute"
+                                    action="#{pharmacySaleBhtController.prepareSubstitute(bItm)}"
+                                    update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
+                                    oncomplete="PF('substituteDialog').show();"
+                                    process="@this"
+                                    class="ui-button-warning ui-button-icon-only mx-1" />
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="Issuing Bill Item" style="padding: 6px;">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{bItm.item.name}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:autoComplete id="Isitem"
+                                                    value="#{pharmacySaleBhtController.issuingSelections[bItm]}"
+                                                    converter="stockConverter"
+                                                    completeMethod="#{pharmacySaleBhtController.completeAllDepartmentStock}"
+                                                    var="stk"
+                                                    itemLabel="#{stk.itemBatch.item.name} (Batch: #{stk.itemBatch.batchNo}, Qty: #{stk.stock})"
+                                                    itemValue="#{stk}"
+                                                    forceSelection="true"
+                                                    minQueryLength="2"
+                                                    styleClass="w-100"
+                                                    inputStyleClass="w-100"
+                                                    placeholder="#{bItm.item.name}">
+                                        <p:ajax event="itemSelect" process="@this"
+                                                listener="#{pharmacySaleBhtController.replaceIssuingBillItem(bItm)}"
+                                                update="itemList" oncomplete="refreshBillDetails();" />
+                                    </p:autoComplete>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Qty"
+                                  style="width:6rem; text-align: right; padding: 6px;">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{bItm.qty}" >
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{bItm.qty}" style="width:96%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Gross Value" style="width:8rem; text-align: right; padding: 6px;"
+                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                            <h:outputLabel value="#{bItm.grossValue}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Margin" style="width:8rem; text-align: right; padding: 6px;"
+                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                            <h:outputLabel value="#{bItm.marginValue}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Net Total"  style="width:8rem; text-align: right; padding: 6px;"
+                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                            <h:outputLabel value="#{bItm.netValue}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Discount" style="width:8rem; text-align: right; padding: 6px;"
+                                  rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                            <h:outputLabel value="#{bItm.discount}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column style="width:6rem; text-align: right; padding: 6px; display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+                            <!-- p:rowEditor must render as a DIRECT child of this td — PrimeFaces'
+                                 row-edit click handler is delegated with the selector
+                                 "> tr > td > div.ui-row-editor > a"; a wrapping <div> here (as this
+                                 column used to have) breaks that match and the pencil silently does
+                                 nothing on click. Verified live: with the wrapper, clicking the pencil
+                                 produces no DOM change at all; without it, the row correctly enters
+                                 edit mode. Issue #23328. -->
+                            <p:rowEditor/>
+                            <p:commandButton
+                                icon="fas fa-trash"
+                                action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}"
+                                class="ui-button-danger"
+                                process="@this"
+                                update="itemList"
+                                oncomplete="refreshBillDetails();">
+                            </p:commandButton>
+
+                        </p:column>
+
+                        <p:rowExpansion>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Description: </strong>
+                                    <h:outputText id="dis" value="#{bItm.item.descreption}" />
+                                    <h:panelGroup rendered="#{bItm.autoSubstituted}" layout="block"
+                                                  style="margin-top:2px;font-size:0.85em;color:#e67e22;font-style:italic;">
+                                        <h:outputText value="Auto-sub: #{bItm.requestedItemName} → #{bItm.item.name}" />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Comment: </strong>
+                                    <h:outputText value="#{bItm.referanceBillItem.instructions}" />
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{bItm.referanceBillItem.hasPrescription() and bItm.referanceBillItem.prescription.comment ne null and bItm.referanceBillItem.prescription.comment ne ''}"
+                                                  style="font-size:0.85em;color:#555;margin-top:2px;">
+                                        <h:outputText value="Rx: #{bItm.referanceBillItem.prescription.comment}" />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>Batch No: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>Expiry: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </div>
+                            <!-- Plain <div rendered="..."> is silently ignored by JSF (rendered
+                                 only works on actual JSF components) — these privilege checks
+                                 were rendering unconditionally regardless of privilege until
+                                 fixed to h:panelGroup per CodeRabbit review on #23068. -->
+                            <h:panelGroup layout="block" styleClass="row mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                <div class="col-md-3">
+                                    <strong>Sale Rate: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Cost Rate: </strong>
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                                <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <strong>Available Stock: </strong>
+                                    <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.stock}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </p:rowExpansion>
+
+                    </p:dataTable>
+
+                    <p:dialog
+                        id="substituteDlg"
+                        widgetVar="substituteDialog"
+                        position="top"
+                        fitViewport="true"
+                        modal="true"
+                        appendTo="@(body)"
+                        header="Select a Substitute Stock"
+                        width="60%"
+                        height="500px">
+
+                        <div class="mb-3 p-3 bg-light border rounded">
+                            <h:outputLabel value="Requested Item : " styleClass="fw-bold text-primary"/>
+                            <h:outputText 
+                                value="#{pharmacySaleBhtController.itemForSubstitution.referanceBillItem.item.name}"
+                                styleClass="fw-bold text-dark">
+                            </h:outputText>
+                        </div>
+
+                        <p:dataTable
+                            id="substituteTable"
+                            value="#{pharmacySaleBhtController.substituteStocks}"
+                            var="sStock"
+                            rowKey="#{sStock.id}"
+                            paginator="true"
+                            rows="10"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                            emptyMessage="No substitute stocks found"
+                            styleClass="table-striped">
+
+                            <p:column headerText="Item Name">
+                                <h:outputText value="#{sStock.itemBatch.item.name}"/>
                             </p:column>
 
-                            <p:column headerText="Code" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
+                            <p:column headerText="Batch No">
+                                <h:outputText value="#{sStock.itemBatch.batchNo}"/>
                             </p:column>
-                            <p:column headerText="Generic" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                         commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Rate" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                        commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.stock}" >
-                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Expiry" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
-                                               style="width: 100px!important;" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:ajax process="@this" update="@all" event="change" listener="#{pharmacySaleBhtController.changeBillItem(bItm , bItm.pharmaceuticalBillItem.stock)}"/>
-                        </p:autoComplete>
-                    </p:column>
 
-                    <p:column headerText="Description" style="width: 50px!important;"  >
-                        <h:outputText id="dis" value="#{bItm.item.descreption}" >
-                        </h:outputText>
-                    </p:column>
-
-                    <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">
-                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>
-                    </p:column>
-
-                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
-                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
-                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column headerText="Matrix Value"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
-                        <h:outputLabel value="#{bItm.marginValue}" style="text-align: right;">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column headerText="Available Stock"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
-                        <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.stock}" style="text-align: right;">
-                            <f:convertNumber integerOnly="true" />
-                        </h:outputText>
-                    </p:column>
-
-                    <p:column headerText="Qty" style="width:25px!important; text-align: right;">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{bItm.pharmaceuticalBillItem.qty}" >
-                                    <f:convertNumber integerOnly="true" />
+                            <p:column headerText="Expiry Date">
+                                <h:outputText value="#{sStock.itemBatch.dateOfExpire}">
+                                    <f:convertDateTime pattern="MM/yyyy"/>
                                 </h:outputText>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:inputText autocomplete="off" value="#{bItm.pharmaceuticalBillItem.qty}" style="width:96%"/>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
+                            </p:column>
 
-                    <p:column headerText="Net Total"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
-                        <h:outputLabel value="#{bItm.netValue}" style="text-align: right;">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
+                            <p:column headerText="Available Qty">
+                                <h:outputText value="#{sStock.stock}">
+                                    <f:convertNumber pattern="#,###.#"/>
+                                </h:outputText>
+                            </p:column>
 
-                    <p:column style="width:25px!important; text-align: right;">
-                        <p:rowEditor/>
-                        <p:commandButton icon="fas fa-trash" action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}" class="ui-button-danger" ajax="false" >
+                            <p:column headerText="Purchase Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                <h:outputText value="#{sStock.itemBatch.purcahseRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
 
-                        </p:commandButton>
-                    </p:column>
+                            <p:column headerText="Retail Rate" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
 
-                </p:dataTable>
+                            <p:column headerText="Action">
+                                <p:commandButton
+                                    id="btnReplace"
+                                    value="Replace"
+                                    action="#{pharmacySaleBhtController.replaceSelectedSubstitute}"
+                                    update="@form"
+                                    oncomplete="PF('substituteDialog').hide();"
+                                    process="@this">
+                                    <f:setPropertyActionListener value="#{sStock}" target="#{pharmacySaleBhtController.selectedSubstituteStock}" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:dialog>
+                </p:panel>
+
             </p:panel>
 
 
@@ -324,8 +660,19 @@
 
             </p:panel>
 
-
-
+            <p:dialog
+                id="viewRequestDlg"
+                widgetVar="viewRequestDialog"
+                header="Original Request"
+                modal="true"
+                appendTo="@(body)"
+                width="60%"
+                fitViewport="true"
+                position="top"
+                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}">
+                <phprint:bht_issue_request_receipt
+                    dto="#{pharmacySaleBhtController.bhtIssueRequestPrintDto}" />
+            </p:dialog>
 
         </h:form>
     </ui:define>

@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="surgeryCountForm">
+                    <p:panel header="Surgery Count(According to Surgery Type)" styleClass="my-2" >
+                        <h:panelGrid columns="5" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{surgeryCountReportController.fromYearStartDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
+
+                            <p:spacer width="40"/>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To Date" for="toDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{surgeryCountReportController.toYearEndDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
+                                <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="chartType" value="#{surgeryCountReportController.surgeryCountChartType}" styleClass="w-100">
+                                <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
+                                <f:selectItem itemLabel="Line Chart" itemValue="line"/>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <div class="d-flex align-items-center my-4">
+
+                            <h:inputHidden id="barChartImageData" value="#{surgeryCountReportController.barChartImageBase64}" />
+                            <h:inputHidden id="lineChartImageData" value="#{surgeryCountReportController.lineChartImageBase64}" />
+
+                            <p:commandButton 
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                action="#{surgeryCountReportController.processSurgeryCountTypeReport()}"
+                                value="Process" />
+
+                            <p:commandButton
+                                id="btnPrintAll"
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All" >
+                                <p:printer target="tb" />
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnDownloadExcelChart"
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                onclick="captureChartImages();"
+                                value="Download "
+                                action="#{surgeryCountReportController.downloadExcelWithChart}">
+                                <p:fileDownload value="#{surgeryCountReportController.downloadedFile}" />
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnDownloadPdfChart"
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                onclick="captureChartImages();"
+                                value=" PDF "
+                                action="#{surgeryCountReportController.downloadPdfWithChart}">
+                                <p:fileDownload value="#{surgeryCountReportController.downloadedFile}" />
+                            </p:commandButton>
+
+                        </div>
+
+
+                        <p:dataTable id="tb"
+                                     value="#{surgeryCountReportController.surgeryCountTypeList}"
+                                     var="var"
+                                     rowIndexVar="n"
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     rows="12"
+                                     rendered="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                     rowsPerPageTemplate="12,24,36"
+                                     styleClass="table-sm">
+
+                            <p:column headerText="Month">
+                                <h:outputText value="#{var.monthString}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="Total:" style="float: right;" />
+                                </f:facet>
+                            </p:column>
+
+                            <p:columns value="#{surgeryCountReportController.surgeryCategoryNames}" var="cat" headerText="#{cat}" style="text-align: right;">
+                                <h:outputText value="#{var.getCount(cat)}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{surgeryCountReportController.totalCategoryCounts[cat]}" />
+                                </f:facet>
+                            </p:columns>
+
+                            <p:column headerText="TOTAL" style="text-align: right; font-weight: bold;">
+                                <h:outputText value="#{var.totalCount}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{surgeryCountReportController.totalAllSurgeryCount}" />
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <!-- Charts Section -->
+                        <h:panelGroup id="chartPanel" layout="block">
+                            <h:panelGroup layout="block" 
+                                          rendered="#{not empty surgeryCountReportController.surgeryCountTypeList 
+                                                      and not empty surgeryCountReportController.surgeryCountChartType}">
+
+                                <!-- Bar Chart -->
+                                <h:panelGroup layout="block" 
+                                              rendered="#{surgeryCountReportController.surgeryCountChartType eq 'bar' 
+                                                          and surgeryCountReportController.surgeryCountBarChartModel ne null}"
+                                              styleClass="my-3">
+                                    <p:panel header="Surgery Count - Bar Chart (#{surgeryCountReportController.selectedYear})">
+                                        <h:panelGroup layout="block" style="width:100%; height:500px;">
+                                            <p:chart value="#{surgeryCountReportController.surgeryCountBarChartModel}" 
+                                                     widgetVar="surgeryCountBarWV"
+                                                     style="width:100%; height:100%;" />
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <!-- Line Chart -->
+                                <h:panelGroup layout="block" 
+                                              rendered="#{surgeryCountReportController.surgeryCountChartType eq 'line' 
+                                                          and surgeryCountReportController.surgeryCountLineChartModel ne null}"
+                                              styleClass="my-3">
+                                    <p:panel header="Surgery Count - Line Chart (#{surgeryCountReportController.selectedYear})">
+                                        <h:panelGroup layout="block" style="width:100%; height:500px;">
+                                            <p:chart value="#{surgeryCountReportController.surgeryCountLineChartModel}" 
+                                                     widgetVar="surgeryCountLineWV"
+                                                     style="width:100%; height:100%;" />
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+
+                            <!-- Message when no chart type selected but data exists -->
+                            <h:panelGroup layout="block" 
+                                          rendered="#{not empty surgeryCountReportController.surgeryCountTypeList 
+                                                      and empty surgeryCountReportController.surgeryCountChartType}"
+                                          styleClass="my-3 text-center">
+                                <h:outputText value="Please select a Chart Type above to view the chart." 
+                                              styleClass="text-muted"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                    </p:panel>
+                    <h:outputScript>
+                        function captureChartImages() {
+                        try {
+                        var barWidget = PF('surgeryCountBarWV');
+                        var barInput = document.querySelector('input[id$=":barChartImageData"]');
+                        if (barWidget &amp;&amp; barWidget.chart &amp;&amp; barInput) {
+                        barInput.value = barWidget.chart.toBase64Image('image/png', 1);
+                        } else if (!barInput) {
+                        console.warn('barChartImageData hidden field not found in DOM');
+                        }
+                        } catch (e) {
+                        console.warn('Bar chart capture failed', e);
+                        }
+                        try {
+                        var lineWidget = PF('surgeryCountLineWV');
+                        var lineInput = document.querySelector('input[id$=":lineChartImageData"]');
+                        if (lineWidget &amp;&amp; lineWidget.chart &amp;&amp; lineInput) {
+                        lineInput.value = lineWidget.chart.toBase64Image('image/png', 1);
+                        } else if (!lineInput) {
+                        console.warn('lineChartImageData hidden field not found in DOM');
+                        }
+                        } catch (e) {
+                        console.warn('Line chart capture failed', e);
+                        }
+                        }
+                    </h:outputScript>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -102,7 +102,16 @@ public class PaysheetComponentController implements Serializable {
 
     public void saveSelected() {
 
-        if (getCurrent().getComponentType() == null) {
+        // FIX 1: Added name validation. componentType was already validated but
+        // name was not, even though it is the display label in the listbox.
+        // A blank name produces an invisible/empty row in the list.
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a component name.");
+            return;
+        }
+
+        if (getCurrent().getComponentType() == null 
+                || getCurrent().getComponentType().toString().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Pls Select Compnent Type");
             return;
         }
@@ -165,16 +174,25 @@ public class PaysheetComponentController implements Serializable {
         this.current = current;
     }
 
+    // FIX 2: Added helper used by the UI to disable the Delete button when
+    // nothing is selected. The controller already handles null current with an
+    // error message, but the button had no disabled guard so the user could
+    // click Delete on an empty selection and get a confusing error.
+    public boolean isNothingSelected() {
+        return current == null || current.getId() == null;
+    }
+
     public void delete() {
 
-        if (current != null) {
+        if (current != null && current.getId() != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
         }
         recreateModel();
         getItems();

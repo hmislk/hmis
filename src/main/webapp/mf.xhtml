@@ -2,17 +2,56 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
     <h:head>
         <title>Add Missing Fields</title>
-        <link 
-            rel="stylesheet" 
+        <link
+            rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
-
     </h:head>
-    <h:body >
-        <ez:midding_data_fields/>
+    <h:body>
+
+        <!-- Available whenever canAccessMigrationPage() allows it: unauthenticated while a
+             migration is pending (as before), or to logged-in Admin-privilege users afterward,
+             so schema drift can always be fixed without requiring an admin to hand-run SQL.
+             Reduced toolset only (fullAccess="false") — this page is reachable pre-login, so it
+             must never expose the full admin toolset (Check Missing Fields, Run Custom SQL).
+             Those remain available only through the authenticated Admin Functions path
+             (dataAdmin/missing_database_fields.xhtml). -->
+        <h:panelGroup rendered="#{dataAdministrationController.canAccessMigrationPage()}" layout="block">
+
+            <div class="container mt-3">
+                <h:panelGroup layout="block" styleClass="alert alert-warning" rendered="#{applicationController.databaseMigrationPending}">
+                    <strong>Database Migration Pending</strong> —
+                    Please check for missing fields and run the migration below, then mark it as complete.
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="alert alert-info" rendered="#{not applicationController.databaseMigrationPending}">
+                    No database migration is pending. Tools remain available below for administrators.
+                </h:panelGroup>
+
+                <p:button value="Back to Home" outcome="/index" icon="fa fa-home"
+                          styleClass="ui-button-info ui-button-outlined mb-3"/>
+            </div>
+
+            <ez:midding_data_fields fullAccess="false"/>
+
+        </h:panelGroup>
+
+        <!-- Access denied: migration not pending and the current user is not an Admin. -->
+        <h:panelGroup rendered="#{dataAdministrationController.isMigrationPageAccessDenied()}" layout="block">
+            <div class="container mt-3 mb-5">
+                <div class="alert alert-danger" role="alert">
+                    No database migration is pending. This page is restricted to administrators.
+                </div>
+                <p:button value="Back to Home" outcome="/index" icon="fa fa-home"
+                          styleClass="ui-button-info ui-button-outlined"/>
+            </div>
+        </h:panelGroup>
+
+        <p:growl id="growl" showDetail="true" life="3000"/>
+
     </h:body>
 </html>
-

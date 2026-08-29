@@ -34,6 +34,23 @@
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
                             <h:outputText class="mx-4" value=" Past Channel Booking"/>
                         </div>
+                        
+                        <div class="d-flex justify-content-center align-items-center">
+                            <h:outputLabel style="width: 100%" value="Select the Past Date : "></h:outputLabel>
+                            <p:datePicker id="acDate"
+                                          value="#{pastBookingController.date}"
+                                          readonlyInput="true"
+                                          placeholder="Select Date"
+                                          style="width: 100%"
+                                          class="mx-2"
+                                          onchange="#{pastBookingController.fillSessionInstance()}">
+                                <p:ajax
+                                    process="@this"
+                                    update="moreInfo viewSession acBookings :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
+                                    listener="#{pastBookingController.fillSessionInstance()}"/>
+                            </p:datePicker>
+                        </div>
+
 
                         <div class="d-flex justify-content-center align-items-center">
                             <p:commandButton 
@@ -131,7 +148,7 @@
                                 <p:ajax  
                                     process="@this" 
 
-                                    update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions viewSession"/>
+                                    update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions viewSession moreInfo"/>
 
                                 <f:selectItems value="#{pastBookingController.consultants}"
                                                var="con" 
@@ -142,28 +159,15 @@
                         </div>
                     </div>
 
-                    <div class="col-1 p-0 my-2">
-                        <div>
-                            <p:datePicker id="acDate"
-                                          value="#{pastBookingController.date}"
-                                          readonlyInput="true"
-                                          placeholder="Select Date"
+                    
 
-                                          class="w-50"
-                                          onchange="#{pastBookingController.fillSessionInstance()}">
-                                <p:ajax
-                                    process="@this"
-                                    update="viewSession acBookings :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
-                                    listener="#{pastBookingController.fillSessionInstance()}"/>
-                            </p:datePicker>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3 p-0" >
-
+                    <div class="col-md-4 p-0" >
+                        
+                        
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
+                            filterMatchMode="contains"
                             value="#{pastBookingController.selectedSessionInstance}"
                             class="w-100 fullHeightListbox"
                             var="s">
@@ -228,17 +232,56 @@
                             <p:ajax 
                                 event="change"
                                 process="@this"
-                                update="acBookings acSessions viewSession"
+                                update="acBookings acSessions viewSession moreInfo"
                                 listener="#{pastBookingController.fillBillSessions}" />
                             <p:ajax 
                                 event="click"
                                 process="@this"
-                                update="acBookings acSessions viewSession"
+                                update="acBookings acSessions viewSession moreInfo"
                                 listener="#{pastBookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
 
                     <div class="col-4" >
+                         <p:accordionPanel multiple="true" 
+                                          id="moreInfo"
+                                          rendered="#{not empty pastBookingController.selectedSessionInstance}"
+                                          style="width:100%;">
+
+                            <p:tab title="More Info">
+                                <h:panelGrid columns="3" cellpadding="5">
+                                    <h:outputText value="Institution" />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.institution.name} " />
+
+                                    <h:outputText value="Max No " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.maxNo} " />
+
+                                    <h:outputText value="Room No " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.roomNo} " rendered="#{pastBookingController.selectedSessionInstance.roomNo ne 0}"/>
+                                    <h:outputText value="Not Specified Yet " rendered="#{pastBookingController.selectedSessionInstance.roomNo eq 0}"/>
+
+                                    <h:outputText value="End Time" />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.endingTime}">
+                                        <f:convertDateTime pattern="hh:mm a"/>
+                                    </h:outputText>
+                                    
+                                    <h:outputText value="Booked Patient Count " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.bookedPatientCount != null ? pastBookingController.selectedSessionInstance.bookedPatientCount : ' '}" />
+                                    
+
+                                    <h:outputText value="Note " rendered="#{not empty pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}" />
+                                    <h:outputText value=":" rendered="#{not empty pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}"/>
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}" 
+                                                  rendered="#{not empty pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}" style="color: red"/>
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:accordionPanel>
+
 
                         <p:selectOneListbox 
                             id="acBookings" 
@@ -250,37 +293,38 @@
                             <f:selectItems value="#{pastBookingController.billSessions}" var="item" itemValue="#{item}" />
                             <p:ajax process="acBookings" update="manageBookingId"></p:ajax>
                             <p:column style="width: 5px!important;">
-                                <h:outputText value="#{bs.serialNo}" />
+                                <h:outputText value="#{bs.serialNo}" style="font-weight: bold"/>
 
                             </p:column>
 
                             <p:column style="width: 60px!important;">
-                                <h:outputText rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" />
-                                <h:outputText rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-weight: bold"/>
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" style="font-weight: bold"/>
                             </p:column>
 
                             <p:column style="width: 20px!important;">
 <!--                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>-->
-                                <p:outputLabel value="On Call - " rendered="#{bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
-                                <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                                <p:outputLabel value="On Call - " rendered="#{bs.bill.paymentMethod eq 'OnCall'}" style="color: green; font-weight: bold"/>
+                                <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green; font-weight: bold"/>
 <!--                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>-->
-                                <p:outputLabel value="Cash" rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
-                                <p:outputLabel value="MultiplePayments" rendered="#{bs.bill.paymentMethod eq 'MultiplePaymentMethods' or bs.bill.paidBill.paymentMethod eq 'MultiplePaymentMethods'}" style="color: green;"/>
-                                <p:outputLabel value="Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent' and bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"/>
+                                <p:outputLabel value="Cash" rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green; font-weight: bold"/>
+                                <p:outputLabel value="MultiplePayments" rendered="#{bs.bill.paymentMethod eq 'MultiplePaymentMethods' or bs.bill.paidBill.paymentMethod eq 'MultiplePaymentMethods'}" style="color: green; font-weight: bold"/>
+                                <p:outputLabel value="Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent' and bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" style="color: green; font-weight: bold"/>
 <!--                                <p:outputLabel value="On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>-->
-                                <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                                <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
                                 <p:outputLabel value="OB - #{bs.bill.referenceBill.onlineBooking.referenceNo}" rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" style="color: #000; background: #fbc531; font-weight: bold; padding: 2px"/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">
                                 <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
                                 <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
                             </p:column>
 
                             <p:column style="width: 5px!important;">
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType eq 'ChannelAgent'}" value="#{bs.bill.creditCompany.institutionCode}"/>
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType ne 'ChannelAgent'}" value="System Booking"/>
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType eq 'ChannelAgent'}" value="#{bs.bill.creditCompany.institutionCode}" style="font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType ne 'ChannelAgent'}" value="System Booking" style="font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}" style="font-weight: bold"/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">

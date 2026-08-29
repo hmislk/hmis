@@ -34,7 +34,7 @@
                         >
                         </p:autoComplete>
                         <h:outputLabel value="Movement Type"></h:outputLabel>
-                        <p:selectCheckboxMenu class="w-100 mx-4" value="#{reportsStock.billTypes}" label="Bill Types">
+                        <p:selectCheckboxMenu class="w-100 mx-4" value="#{reportsStock.billTypes}" label="Bill Types" updateLabel="true">
                             <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt"
                                            itemLabel="#{pbt.label}" itemValue="#{pbt}"></f:selectItems>
                         </p:selectCheckboxMenu>
@@ -118,6 +118,30 @@
                                 </f:facet>
                                 <h:outputLabel value="#{i.stock}">
                                     <f:convertNumber pattern="#,###"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Expiry"
+                                      sortBy="#{i.itemBatch.dateOfExpire}"
+                                      filterBy="#{i.itemBatch.dateOfExpire}"
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Expiry"/>
+                                </f:facet>
+                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}">
+                                    <f:convertDateTime pattern="dd MM yy"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Sale Value"
+                                      sortBy="#{i.itemBatch.retailsaleRate * i.stock}"
+                                      style="text-align: right;"
+                                      styleClass="averageNumericColumn">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Sale Value"/>
+                                </f:facet>
+                                <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 

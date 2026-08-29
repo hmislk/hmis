@@ -5,10 +5,13 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.data.AppointmentType;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.RequestType;
+import com.divudi.core.entity.inward.AdmissionType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -29,7 +32,7 @@ public class BillNumber implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long lastBillNumber;
     @ManyToOne
@@ -54,8 +57,17 @@ public class BillNumber implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     private String retireComments;
-
-
+    // Boolean fields for OPD and Inpatient service bill tracking
+    private boolean opdAndInpatientServiceBills;
+    private boolean opdAndInpatientServiceBatchBills;
+    // Marks a never-resetting, per-department voucher number counter (billYear is left null for these rows)
+    private boolean voucherNumber;
+    @Enumerated(EnumType.STRING)
+    private RequestType requestType;
+    @Enumerated(EnumType.STRING)
+    private AppointmentType appointmentType;
+    @ManyToOne
+    private AdmissionType admissionType;
 
 
     public boolean isRetired() {
@@ -195,6 +207,70 @@ public class BillNumber implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    /**
+     * Gets the flag indicating if this bill number is for OPD and Inpatient service bills
+     * @return true if for OPD and Inpatient service bills, false otherwise
+     */
+    public boolean isOpdAndInpatientServiceBills() {
+        return opdAndInpatientServiceBills;
+    }
+
+    /**
+     * Sets the flag indicating if this bill number is for OPD and Inpatient service bills
+     * @param opdAndInpatientServiceBills true if for OPD and Inpatient service bills, false otherwise
+     */
+    public void setOpdAndInpatientServiceBills(boolean opdAndInpatientServiceBills) {
+        this.opdAndInpatientServiceBills = opdAndInpatientServiceBills;
+    }
+
+    /**
+     * Gets the flag indicating if this bill number is for OPD and Inpatient service batch bills
+     * @return true if for OPD and Inpatient service batch bills, false otherwise
+     */
+    public boolean isOpdAndInpatientServiceBatchBills() {
+        return opdAndInpatientServiceBatchBills;
+    }
+
+    /**
+     * Sets the flag indicating if this bill number is for OPD and Inpatient service batch bills
+     * @param opdAndInpatientServiceBatchBills true if for OPD and Inpatient service batch bills, false otherwise
+     */
+    public void setOpdAndInpatientServiceBatchBills(boolean opdAndInpatientServiceBatchBills) {
+        this.opdAndInpatientServiceBatchBills = opdAndInpatientServiceBatchBills;
+    }
+
+    public boolean isVoucherNumber() {
+        return voucherNumber;
+    }
+
+    public void setVoucherNumber(boolean voucherNumber) {
+        this.voucherNumber = voucherNumber;
+    }
+
+    public RequestType getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(RequestType requestType) {
+        this.requestType = requestType;
+    }
+
+    public AppointmentType getAppointmentType() {
+        return appointmentType;
+    }
+
+    public void setAppointmentType(AppointmentType appointmentType) {
+        this.appointmentType = appointmentType;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
     }
 
 }

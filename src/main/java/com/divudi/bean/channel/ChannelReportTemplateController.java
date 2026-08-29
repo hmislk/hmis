@@ -14,20 +14,27 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DoctorDayChannelCount;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PersonInstitutionType;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.Title;
 import com.divudi.core.data.WeekdayDisplay;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
 import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.dto.channel.ChannelConsultantCountDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.reports.Report;
+import com.divudi.core.data.reports.Report.OnlineBookingCountReport;
+import com.divudi.core.data.reports.ReportColumn;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
+import com.itextpdf.layout.properties.TextAlignment;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Area;
 import com.divudi.core.entity.Bill;
@@ -66,6 +73,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,6 +83,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import org.primefaces.model.StreamedContent;
 
 @Named
 @SessionScoped
@@ -245,22 +255,22 @@ public class ChannelReportTemplateController implements Serializable {
 
     public String navigateToChannlingSessionCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/daily_session_counts?faces-redirect=true;";
+        return "/channel/reports/daily_session_counts?faces-redirect=true";
     }
 
     public String navigateToChannlingDoctorCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/daily_doctor_counts?faces-redirect=true;";
+        return "/channel/reports/daily_doctor_counts?faces-redirect=true";
     }
 
     public String navigateToCategorySessionCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/category_session_counts?faces-redirect=true;";
+        return "/channel/reports/category_session_counts?faces-redirect=true";
     }
 
     public String navigateToOnlineBookings() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/online_session_booking_count?faces-redirect=true;";
+        return "/channel/reports/online_session_booking_count?faces-redirect=true";
     }
 
     public void clearWithDefultValue() {
@@ -753,7 +763,6 @@ public class ChannelReportTemplateController implements Serializable {
 //        hm.put("class", BilledBill.class);
 //        hm.put("class", BilledBill.class);
 //        hm.put("class", BilledBill.class);
-        System.out.println("sql = " + sql);
         Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
         return count;
     }
@@ -802,7 +811,6 @@ public class ChannelReportTemplateController implements Serializable {
         Long long7 = 0L;
         Long long8 = 0L;
 
-        System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
             if (r == null) {
                 continue;
@@ -908,29 +916,13 @@ public class ChannelReportTemplateController implements Serializable {
         String j;
         Map m = new HashMap();
         rows = new ArrayList<>();
-        //BillSession
-        boolean test = false;
-        if (test) {
-            BillSession bs = new BillSession();
-            bs.getSessionInstance().getSessionDate();
-            if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE) {
-                bs.getBill().getPatient().getPerson();
-                bs.getBill().getCreditCompany().getName();
-                bs.getBill().getCreatedAt();
-                bs.getSessionInstance().getOriginatingSession().getStaff().getSpeciality();
-                bs.getSessionInstance().getOriginatingSession().getSpeciality().getName();
-                bs.getBill().isCancelled();
-
-            }
-        }
 
         j = "select new com.divudi.core.data.ReportTemplateRow(bs) "
-                + " from BillSession bs "
-                + " where bs.retired = false "
-                + " and bs.bill.creditCompany is not null "
-                + " and bs.bill.creditCompany.name = 'DOC_990'"
-                + " and bs.bill.billTypeAtomic = :bta"
-                + " and bs.bill.createdAt between :fd and :td ";
+                    + " from BillSession bs "
+                    + " where bs.retired = false "
+                    + " and bs.bill.creditCompany is not null "
+                    + " and bs.bill.billTypeAtomic = :bta"
+                    + " and bs.bill.createdAt between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
@@ -945,9 +937,7 @@ public class ChannelReportTemplateController implements Serializable {
         if (speciality != null) {
             j += " and bs.sessionInstance.originatingSession.staff.speciality =:sp";
             m.put("sp", speciality);
-
         }
-        System.out.println("here2");
         if (staff != null) {
             j += " and bs.sessionInstance.originatingSession.staff =:staff";
             m.put("staff", staff);
@@ -1013,7 +1003,144 @@ public class ChannelReportTemplateController implements Serializable {
                 }
             }
         }
+    }
 
+    List<OnlineBookingDetialRow> onlineBookingDetialRows;
+    private Double totalNetTotalInOBReport = 0.0;
+
+    public OnlineBookingCountReport getOnlineBookingCountReport() {
+        String fileName = "Online_Session_Bookings_Report";
+        String dates;
+        if (onlineBookingSessionsSC != null && onlineBookingSessionsSC.get("From Date") instanceof Date && onlineBookingSessionsSC.get("To Date") instanceof Date) {
+            dates = CommonFunctions.dateRangeForFileName((Date) onlineBookingSessionsSC.get("From Date"), (Date) onlineBookingSessionsSC.get("To Date"), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        String institutionName = "";
+        String userName = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                userName = sessionController.getLoggedUser().getName();
+            }
+        }
+
+        OnlineBookingCountReport oBReport = new OnlineBookingCountReport(fileName, institutionName, onlineBookingSessionsSC != null ? onlineBookingSessionsSC : getFiltersForOnlineBookingCountReports(), onlineBookingDetialRows, userName);
+        oBReport.setColumnFooter(totalNetTotalInOBReport, "Amount");
+
+        return oBReport;
+    }
+
+    public StreamedContent getOnlineBookingReportAsPdf() {
+        if (onlineBookingDetialRows == null || onlineBookingDetialRows.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Online Session Bookings report before exporting.");
+            return null;
+        }
+        return getOnlineBookingCountReport().createPdfAsStream();
+    }
+
+    public StreamedContent getOnlineBookingReportAsExcel() {
+        if (onlineBookingDetialRows == null || onlineBookingDetialRows.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Online Session Bookings report before exporting.");
+            return null;
+        }
+
+        return getOnlineBookingCountReport().createExcelAsStream();
+    }
+
+    private Map<String, Object> onlineBookingSessionsSC;
+
+    public void generateOnlineSessionBookingsReport() {
+        onlineBookingDetialRows = new ArrayList<>();
+        totalNetTotalInOBReport = 0.0;
+        String j;
+        Map m = new HashMap();
+        rows = new ArrayList<>();
+
+        j = "select new com.divudi.bean.channel.ChannelReportTemplateController.OnlineBookingDetialRow( "
+                + " b.id, b.deptId, bs.sessionDate, bs.sessionInstance.name, "
+                + " COALESCE(s.person.name, ''), s.person.title, "
+                + " COALESCE(s.speciality.name, ''), "
+                + " CONCAT(COALESCE(ob.title, ''), CONCAT('. ', COALESCE(ob.patientName, ''))), "
+                + " COALESCE(ob.phoneNo, ''), COALESCE(b.creditCompany.name, ''), "
+                + " b.cancelled, b.refunded, bs.absent, "
+                + " ob.onlineBookingStatus, "
+                + " b.paidAmount) "
+                + " from BillSession bs "
+                + " left join bs.bill b "
+                + " left join b.referenceBill rb "
+                + " left join rb.onlineBooking ob "
+                + " left join b.staff s "
+                + " where bs.retired = false "
+                + " and b.creditCompany is not null "
+                + " and b.billTypeAtomic = :bta"
+                + " and b.createdAt between :fd and :td ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and bs.institution=:ins ";
+        }
+
+        if (category != null) {
+            m.put("cat", category);
+            j += " and bs.originatingSession.category=:cat ";
+        }
+
+        if (speciality != null) {
+            j += " and bs.sessionInstance.originatingSession.staff.speciality =:sp";
+            m.put("sp", speciality);
+        }
+
+        if (staff != null) {
+            j += " and bs.sessionInstance.originatingSession.staff =:staff";
+            m.put("staff", staff);
+        }
+
+        if(selectedBillTypeInOBReport != null){
+            switch (selectedBillTypeInOBReport) {
+                case "Cancelled":
+                    j += " and b.cancelled = true ";
+                    break;
+                case "Refunded":
+                    j += " and b.refunded = true ";
+                    break;
+                case "Completed":
+                    j += " and b.refunded = false and b.cancelled = false  ";
+                    break;
+                case "Absent":
+                    j += " and b.refunded = false and b.cancelled = false and bs.absent = true ";
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        j += " order by b.createdAt desc";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+
+        onlineBookingDetialRows = (List<OnlineBookingDetialRow>) billFacade.findLightsByJpql(j, m, TemporalType.TIMESTAMP);
+
+        if (onlineBookingDetialRows == null || onlineBookingDetialRows.isEmpty()) {
+            return;
+        }
+
+        for (OnlineBookingDetialRow row : onlineBookingDetialRows) {
+            if (row.isBillCancelled()) {
+                continue;
+            }
+            totalNetTotalInOBReport += row.getPaidAmount();
+        }
+        
+        onlineBookingSessionsSC = getFiltersForOnlineBookingCountReports();
     }
 
     public void fillDailyDoctorCounts() {
@@ -1082,6 +1209,146 @@ public class ChannelReportTemplateController implements Serializable {
 
     }
 
+    private List<ChannelConsultantCountDTO> channelConsultantCountDTOs;
+
+    public List<ChannelConsultantCountDTO> getChannelConsultantCountDTOs() {
+        return channelConsultantCountDTOs;
+    }
+
+    private Map<String, Object> filtersForDoctorBookingsReport;
+
+    public void processChannelDoctorAppointmentsReport() {
+        channelConsultantCountDTOs = new ArrayList<>();
+
+        Map m2 = new HashMap();
+        String j2 = "select new com.divudi.core.data.dto.channel.ChannelConsultantCountDTO(si.id, si.startingTime, si.doctorHoliday, s.person.name, s.person.title, sp.name) "
+                + " from SessionInstance si "
+                + " left join si.originatingSession os "
+                + " left join os.staff s "
+                + " left join s.speciality sp "
+                + " where si.retired=false "
+                + " and si.sessionDate = :fd ";
+
+        if (institution != null) {
+            m2.put("ins", institution);
+            j2 += " and si.institution=:ins ";
+        }
+        if (department != null) {
+            m2.put("dept", department);
+            j2 += " and si.department=:dept ";
+        }
+        if (speciality != null) {
+            m2.put("sp", speciality);
+            j2 += " and sp=:sp ";
+        }
+        if (staff != null) {
+            m2.put("stf", staff);
+            j2 += " and s=:stf ";
+        }
+        
+        j2 += " order by s.person.name ";
+        m2.put("fd", fromDate);
+
+        channelConsultantCountDTOs = (List<ChannelConsultantCountDTO>) billFacade.findLightsByJpql(j2, m2, TemporalType.DATE);
+
+        if (channelConsultantCountDTOs == null || channelConsultantCountDTOs.isEmpty()) {
+            return;
+        }
+
+        Map<Long, ChannelConsultantCountDTO> map = new LinkedHashMap<>(channelConsultantCountDTOs.size(), 1.0f);
+        for (int i = 0, len = channelConsultantCountDTOs.size(); i < len; i++) {
+            ChannelConsultantCountDTO obj = channelConsultantCountDTOs.get(i);
+            map.put(obj.getSessionInstanceId(), obj);
+        }
+
+        String j;
+        Map m = new HashMap();
+
+        j = "select new com.divudi.core.data.dto.channel.ChannelConsultantCountDTO(si.id,  "
+            + "sum(case when ((b.billTypeAtomic =:payBta and b.billType <> :agentBt) or (b.billTypeAtomic =:onCallBta and b.billType =:staffBt)) then 1 else 0 end), "
+            + "sum(case when b.billTypeAtomic =:onlineBta then 1 else 0 end), "
+            + "sum(case when b.billTypeAtomic =:payBta and b.billType=:agentBt then 1 else 0 end), "
+            + "sum(case when b.billType =:onCallBt and b.billTypeAtomic =:onCallBta then 1 else 0 end), "
+            + "sum(case when (b.billTypeAtomic =:reschWP or b.billTypeAtomic =:reschWOP) then 1 else 0 end), "
+            + "sum(case when (b.billTypeAtomic =:payBta or b.billTypeAtomic =:onlineBta or (b.billTypeAtomic =:onCallBta and b.billType =:staffBt)) then b.staffFee else 0 end), "
+            + "sum(case when b.billTypeAtomic = :refundBta then b.staffFee else 0 end), "
+            + "sum(case when b.billTypeAtomic =:reschWP then coalesce(pb.staffFee, 0) "
+                + " when b.billTypeAtomic =:reschWOP and pb is not null then coalesce(pb.staffFee, 0) " 
+                + " when b.billTypeAtomic =:reschWOP and pb is null then b.staffFee else 0 end), "
+            + "sum(case when b.billType =:onCallBt and b.billTypeAtomic =:onCallBta and pb is null then b.staffFee "
+                + " when b.billType =:onCallBt and b.billTypeAtomic =:onCallBta and pb is not null then coalesce(pb.staffFee, 0) else 0 end) "
+            + ") "
+            + "from BillSession bs "
+            + "join bs.bill b "
+            + "join bs.sessionInstance si "
+            + " left join si.originatingSession os "
+            + " left join os.staff s "
+            + " left join s.speciality sp "
+            + " left join b.paidBill pb "
+            + "where bs.retired=false and b.retired=false and bs.recheduledSession=false and b.cancelled=false and si.retired=false and si.sessionDate = :fd "
+            + "and b.billType in :bta and type(b) <> :canClass and b.billTypeAtomic <> :onlinePenBta ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and si.institution=:ins ";
+        }
+        if (department != null) {
+            m.put("dept", department);
+            j += " and si.department=:dept ";
+        }
+        if (speciality != null) {
+            m.put("sp", speciality);
+            j += " and sp=:sp ";
+        }
+        if (staff != null) {
+            m.put("stf", staff);
+            j += " and s=:stf ";
+        }
+
+        j += "group by si.id";
+
+    
+        List<BillType> btaList = new ArrayList<>();
+
+        btaList.add(BillType.ChannelAgent);
+        btaList.add(BillType.ChannelCash);
+        btaList.add(BillType.ChannelOnCall);
+        btaList.add(BillType.ChannelStaff);
+        btaList.add(BillType.ChannelCredit);
+
+        m.put("payBta", BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        m.put("agentBt", BillType.ChannelAgent);
+        m.put("onlineBta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        m.put("onlinePenBta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        m.put("reschWP", BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
+        m.put("reschWOP", BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+        m.put("onCallBt", BillType.ChannelOnCall);
+        m.put("staffBt", BillType.ChannelStaff);
+        m.put("onCallBta", BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+        m.put("refundBta", BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        m.put("bta", btaList);
+        m.put("canClass", CancelledBill.class);
+        m.put("bta", btaList);
+        m.put("fd", fromDate);
+
+        List<ChannelConsultantCountDTO> billSessions = (List<ChannelConsultantCountDTO>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+
+        for (ChannelConsultantCountDTO dto : billSessions) {
+            ChannelConsultantCountDTO sessionInfo = map.get(dto.getSessionInstanceId());
+            if (sessionInfo != null) {
+                sessionInfo.setSystemBookingCount(dto.getSystemBookingCount());
+                sessionInfo.setOnlineBookingCount(dto.getOnlineBookingCount());
+                sessionInfo.setAgentBookingCount(dto.getAgentBookingCount()); 
+                sessionInfo.setOnCallBookingCount(dto.getOnCallBookingCount());
+                sessionInfo.setTotalBookingCount(dto.getTotalBookingCount());
+                sessionInfo.setRescheduledBookingCount(dto.getRescheduledBookingCount());
+                sessionInfo.setDoctorFee(dto.getDoctorFee()); 
+            }
+        }   
+
+        filtersForDoctorBookingsReport = getFiltersForAllDoctorBookingsReport();
+    }
+    
     public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -7817,4 +8084,270 @@ public class ChannelReportTemplateController implements Serializable {
         this.doctorDayChannelCounts = doctorDayChannelCounts;
     }
 
+    public void setTotalNetTotalInOBReport(double totalNetTotalInOBReport) {
+        this.totalNetTotalInOBReport = totalNetTotalInOBReport;
+    }
+
+    public double getTotalNetTotalInOBReport() {
+        return totalNetTotalInOBReport;
+    }
+
+    public List<OnlineBookingDetialRow> getOnlineBookingDetialRows() {
+        return onlineBookingDetialRows;
+    }
+
+    public void setOnlineBookingDetialRows(List<OnlineBookingDetialRow> onlineBookingDetialRows) {
+        this.onlineBookingDetialRows = onlineBookingDetialRows;
+    }
+
+     // Filters for Channel Scanning Income report && Income With Agent Booking Report
+    public Map<String, Object> getFiltersForOnlineBookingCountReports() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+        params.put("Doctor", (staff != null && staff.getPerson() != null) ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("From Date", fromDate);
+        params.put("To Date", toDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Bill Type", selectedBillTypeInOBReport != null ? selectedBillTypeInOBReport : "All");
+
+        return params;
+    }
+
+     // Filters for Channel Scanning Income report && Income With Agent Booking Report
+    public Map<String, Object> getFiltersForAllDoctorBookingsReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        params.put("Appointment Date", new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(fromDate)) ;
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+        params.put("Doctor", (staff != null && staff.getPerson() != null) ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+
+        return params;
+    }
+
+    public Report getChannelAllDoctorAppointmentsReport() {
+
+        Report<ChannelConsultantCountDTO> doctorApptRp = new Report();
+        LinkedHashMap columns = new LinkedHashMap<>();
+
+        columns.put("Consultant", new ReportColumn<>("Consultant", ChannelConsultantCountDTO::getConsultantNameWithTitle, TextAlignment.LEFT, "%s", 6f));
+
+        columns.put("Specialty", new ReportColumn<>("Specialty", ChannelConsultantCountDTO::getConsultantSpeciality, TextAlignment.LEFT, "%s", 5f));
+        columns.put("Time", new ReportColumn<>("Time",
+                row -> {
+                        ChannelConsultantCountDTO r = (ChannelConsultantCountDTO) row;
+                        return (r.getSessionStartingTime() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(r.getSessionStartingTime()) : "");
+                },
+                TextAlignment.LEFT,
+                "%s",
+                2f));
+
+        columns.put("Direct Count", new ReportColumn<>("Direct Booking Count", ChannelConsultantCountDTO::getSystemBookingCount, TextAlignment.CENTER, "%,d", 3f));
+        columns.put("Agent Count", new ReportColumn<>("Agent Count", ChannelConsultantCountDTO::getAgentBookingCount, TextAlignment.CENTER, "%,d", 3f));
+        columns.put("On-Call Count", new ReportColumn<>("On-Call Count", ChannelConsultantCountDTO::getOnCallBookingCount, TextAlignment.CENTER, "%,d", 3f));
+        columns.put("Online Count", new ReportColumn<>("Online Count", ChannelConsultantCountDTO::getOnlineBookingCount, TextAlignment.CENTER, "%,d", 3f));
+        columns.put("Rescheduled Count", new ReportColumn<>("Rescheduled Count", ChannelConsultantCountDTO::getRescheduledBookingCount, TextAlignment.CENTER, "%,d", 3f));
+        columns.put("Doctor Fee", new ReportColumn<>("Doctor Fee", ChannelConsultantCountDTO::getDoctorFee, TextAlignment.RIGHT, "%,.2f", 4f));
+        columns.put("Holiday", new ReportColumn<>("Holiday", ChannelConsultantCountDTO::isHoliday, TextAlignment.CENTER, "%s", 2f));
+
+        doctorApptRp.setColumns(columns);
+
+        String fileName = "Doctor_Appointments_Report";
+        String dates;
+        if (filtersForDoctorBookingsReport != null && filtersForDoctorBookingsReport.get("Appointment Date") instanceof String) {
+            dates = (String) filtersForDoctorBookingsReport.get("Appointment Date");
+        } else {
+            dates = CommonFunctions.dateRangeForFileName(fromDate, null, sessionController.getApplicationPreference().getLongDateFormat(), true);
+        }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        doctorApptRp.setFileName(fileName);
+        doctorApptRp.setReportName("Doctor Appointments");
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            if (sessionController.getLoggedUser().getInstitution() != null && sessionController.getLoggedUser().getInstitution().getName() != null) {
+                doctorApptRp.setInstitutionName(sessionController.getLoggedUser().getInstitution().getName());
+            }
+            if (sessionController.getLoggedUser().getName() != null) {
+                doctorApptRp.setReportGeneratedBy(sessionController.getLoggedUser().getName());
+            }        
+        }
+        doctorApptRp.setSearchCriteria(filtersForDoctorBookingsReport != null ? filtersForDoctorBookingsReport : getFiltersForAllDoctorBookingsReport());   
+        doctorApptRp.setData(channelConsultantCountDTOs);
+
+        return doctorApptRp;
+    }
+
+    public StreamedContent getChannelDoctorAppointmentsReportAsPdf() {
+        if (channelConsultantCountDTOs == null || channelConsultantCountDTOs.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Doctor Appointments report before exporting.");
+            return null;
+        }
+        return getChannelAllDoctorAppointmentsReport().createPdfAsStream();
+    }
+
+    public StreamedContent getChannelDoctorAppointmentsReportAsExcel() {
+        if (channelConsultantCountDTOs == null || channelConsultantCountDTOs.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Doctor Appointments report before exporting.");
+            return null;
+        }
+        return getChannelAllDoctorAppointmentsReport().createExcelAsStream();
+    }
+
+    public static class OnlineBookingDetialRow {
+
+        private Long billId;
+        private String billDeptId;
+        private Date sessionDate;
+        private String sessionName;
+        private String consultantName;
+        private Title cnosultantTitle;
+        private String consultantSpeciality;
+        private String patientName;
+        private String patientPhone;
+        private String AgentName;
+        private boolean billCancelled;
+        private boolean billRefunded;
+        private boolean absent;
+        private OnlineBookingStatus onlineBookingStatus;
+        private double paidAmount;
+
+        public OnlineBookingDetialRow(Long billId, String billDeptId, Date sessionDate, String sessionName, String consultantName, Title cosultantTitle, String consultantSpeciality, String patientName, String patientPhone, String agentName, boolean billCancelled, boolean billRefunded, boolean absent, OnlineBookingStatus onlineBookingStatus, double paidAmount) {
+            this.billId = billId;
+            this.billDeptId = billDeptId;
+            this.sessionDate = sessionDate;
+            this.sessionName = sessionName;
+            this.consultantName = consultantName;
+            this.cnosultantTitle = cosultantTitle;
+            this.consultantSpeciality = consultantSpeciality;
+            this.patientName = patientName;
+            this.patientPhone = patientPhone;
+            this.AgentName = agentName;
+            this.billCancelled = billCancelled;
+            this.billRefunded = billRefunded;
+            this.absent = absent;
+            this.onlineBookingStatus = onlineBookingStatus;
+            this.paidAmount = paidAmount;
+        }
+
+        public Long getBillId() {
+            return billId;
+        }
+
+        public void setBillId(Long billId) {
+            this.billId = billId;
+        }
+
+        public String getBillDeptId() {
+            return billDeptId;
+        }
+
+        public void setBillDeptId(String billDeptId) {
+            this.billDeptId = billDeptId;
+        }
+
+        public Date getSessionDate() {
+            return sessionDate;
+        }
+
+        public void setSessionDate(Date sessionDate) {
+            this.sessionDate = sessionDate;
+        }
+
+        public String getSessionName() {
+            return sessionName;
+        }
+
+        public void setSessionName(String sessionName) {
+            this.sessionName = sessionName;
+        }
+
+        public String getConsultantName() {
+            String name = "";
+            if (cnosultantTitle != null) {
+                name = cnosultantTitle.getLabel() + " ";
+            }
+            name += consultantName;
+            return name;
+        }
+
+        public void setConsultantName(String consultantName) {
+            this.consultantName = consultantName;
+        }
+
+        public String getConsultantSpeciality() {
+            return consultantSpeciality;
+        }
+
+        public void setConsultantSpeciality(String consultantSpeciality) {
+            this.consultantSpeciality = consultantSpeciality;
+        }
+
+        public String getPatientName() {
+            return patientName;
+        }
+
+        public void setPatientName(String patientName) {
+            this.patientName = patientName;
+        }
+
+        public String getPatientPhone() {
+            return patientPhone;
+        }
+
+        public void setPatientPhone(String patientPhone) {
+            this.patientPhone = patientPhone;
+        }
+
+        public String getAgentName() {
+            return AgentName;
+        }
+
+        public void setAgentName(String AgentName) {
+            this.AgentName = AgentName;
+        }
+
+        public boolean isBillCancelled() {
+            return billCancelled;
+        }
+
+        public void setBillCancelled(boolean billCancelled) {
+            this.billCancelled = billCancelled;
+        }
+
+        public boolean isBillRefunded() {
+            return billRefunded;
+        }
+
+        public void setBillRefunded(boolean billRefunded) {
+            this.billRefunded = billRefunded;
+        }
+
+        public boolean isAbsent() {
+            return absent;
+        }
+
+        public void setAbsent(boolean absent) {
+            this.absent = absent;
+        }
+
+        public OnlineBookingStatus getOnlineBookingStatus() {
+            return onlineBookingStatus;
+        }
+
+        public void setOnlineBookingStatus(OnlineBookingStatus onlineBookingStatus) {
+            this.onlineBookingStatus = onlineBookingStatus;
+        }
+
+        public double getPaidAmount() {
+            return paidAmount;
+        }
+
+        public void setPaidAmount(double paidAmount) {
+            this.paidAmount = paidAmount;
+        }
+    }
 }

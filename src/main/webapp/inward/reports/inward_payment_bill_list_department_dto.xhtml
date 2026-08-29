@@ -1,0 +1,215 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form">
+                    <p:growl id="departmentPaymentBillReportGrowl"></p:growl>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa fa-money-bill-wave"></h:outputText>
+                            <p:outputLabel value="&nbsp;&nbsp;&nbsp;Department Payments &amp; Cancellations" class="m-2"></p:outputLabel>
+
+                            <p:commandButton
+                                value="Download"
+                                ajax="false"
+                                class="ui-button-primary m-1"
+                                icon="fa fa-download">
+                                <p:dataExporter fileName="Department Payments" target="tbl1" type="xlsx"></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                class="ui-button-primary m-1"
+                                icon="fa fa-print">
+                                <p:printer target="tbl1"></p:printer>
+                            </p:commandButton>
+                        </f:facet>
+
+                        <style>
+                            @media print {
+                                body {
+                                    margin: 0px 5px;
+                                }
+                            }
+                        </style>
+
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date" for="fromDate" />
+                                <p:calendar
+                                    styleClass="dateTimePicker"
+                                    id="fromDate"
+                                    value="#{inwardReportControllerBht.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"
+                                    inputStyleClass="w-100">
+                                </p:calendar>
+
+                                <h:outputLabel value="To Date" for="toDate" />
+                                <p:calendar
+                                    id="toDate"
+                                    value="#{inwardReportControllerBht.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"
+                                    inputStyleClass="w-100">
+                                </p:calendar>
+
+                                <h:outputLabel value="BHT No" for="bhtNo" />
+                                <p:inputText id="bhtNo" autocomplete="off" value="#{inwardReportControllerBht.bhtNoFilter}" class="w-100"/>
+
+                                <h:outputLabel value="Patient Name" for="patientName" />
+                                <p:inputText id="patientName" autocomplete="off" value="#{inwardReportControllerBht.patientNameFilter}" class="w-100"/>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    action="#{inwardReportControllerBht.navigateToInwardPaymentBillListForDepartment()}"
+                                    value="Search"
+                                    class="ui-button-warning w-100 my-1"
+                                    icon="fas fa-search">
+                                </p:commandButton>
+                            </div>
+
+                            <div class="col-10">
+                                <p:dataTable
+                                    id="tbl1"
+                                    rowIndexVar="rowIndex"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="20"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="20,50,100"
+                                    value="#{inwardReportControllerBht.paymentBillDtosForDepartment}"
+                                    var="dto">
+
+                                    <p:column width="2em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="No" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{rowIndex+1}" />
+                                    </p:column>
+
+                                    <p:column width="8em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bill No" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.deptId}" />
+                                    </p:column>
+
+                                    <p:column width="8em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="BHT" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.bhtNo}" />
+                                    </p:column>
+
+                                    <p:column style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Patient" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.patientName}" />
+                                    </p:column>
+
+                                    <p:column width="12em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Date" />
+                                        </f:facet>
+                                        <h:outputText value="#{dto.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Payment Method" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.paymentMethod}" />
+                                    </p:column>
+
+                                    <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Billed By" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.createdUserName}" />
+                                    </p:column>
+
+                                    <p:column width="8em" style="text-align: right; padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Total" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" style="text-align: right; padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Discount" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.discount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" style="text-align: right; padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Net Total" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{dto.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{inwardReportControllerBht.paymentBillDtosForDepartmentNetTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Type" />
+                                        </f:facet>
+                                        <h:outputLabel value="Cancellation" style="color: red;" rendered="#{not empty dto.billTypeAtomic and dto.billTypeAtomic.contains('CANCEL')}" />
+                                        <h:outputLabel value="Refund / Return" style="color: red;" rendered="#{not empty dto.billTypeAtomic and dto.billTypeAtomic.contains('REFUND') and not dto.billTypeAtomic.contains('CANCEL')}" />
+                                        <h:outputLabel value="Payment" rendered="#{empty dto.billTypeAtomic or (not dto.billTypeAtomic.contains('CANCEL') and not dto.billTypeAtomic.contains('REFUND'))}" />
+                                    </p:column>
+
+                                    <p:column width="8em" style="padding: 2px">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Status" />
+                                        </f:facet>
+                                        <h:outputLabel value="Cancelled" style="color: red;" rendered="#{dto.cancelled}" />
+                                        <h:outputLabel value="Returned" style="color: red;" rendered="#{dto.refunded and not dto.cancelled}" />
+                                    </p:column>
+
+                                    <p:column width="6em" style="padding: 2px" exportable="false">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Action" />
+                                        </f:facet>
+                                        <p:commandButton
+                                            value="View"
+                                            icon="fa fa-eye"
+                                            ajax="false"
+                                            class="ui-button-info"
+                                            title="View / Reprint Bill ##{dto.deptId}"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.billId)}" />
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

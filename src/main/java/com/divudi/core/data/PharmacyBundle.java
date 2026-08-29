@@ -24,8 +24,10 @@ import static com.divudi.core.data.PaymentMethod.Voucher;
 import static com.divudi.core.data.PaymentMethod.YouOweMe;
 import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.light.common.BillLight;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -175,6 +177,10 @@ public class PharmacyBundle implements Serializable {
         double sumOfActualTotal = 0.0;
         double sumOfNetTotal = 0.0;
 
+        BigDecimal sumOfStocksAtCostRate = BigDecimal.ZERO;
+        BigDecimal sumOfStocksAtPurchaseRate = BigDecimal.ZERO;
+        BigDecimal sumOfStocksAtRetailSaleRate = BigDecimal.ZERO;
+
         // Aggregate all rows
         for (PharmacyRow r : rows) {
             sumOfCashValues += r.getCashValue();
@@ -202,6 +208,16 @@ public class PharmacyBundle implements Serializable {
             sumOfTax += r.getTax();
             sumOfActualTotal += r.getActualTotal();
             sumOfNetTotal += r.getNetTotal();
+
+            if (r.getValueOfStocksAtCostRate() != null) {
+                sumOfStocksAtCostRate = sumOfStocksAtCostRate.add(r.getValueOfStocksAtCostRate());
+            }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                sumOfStocksAtPurchaseRate = sumOfStocksAtPurchaseRate.add(r.getValueOfStocksAtPurchaseRate());
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                sumOfStocksAtRetailSaleRate = sumOfStocksAtRetailSaleRate.add(r.getValueOfStocksAtRetailSaleRate());
+            }
         }
 
         // Set summary row values
@@ -230,6 +246,10 @@ public class PharmacyBundle implements Serializable {
         getSummaryRow().setTax(sumOfTax);
         getSummaryRow().setActualTotal(sumOfActualTotal);
         getSummaryRow().setNetTotal(sumOfNetTotal);
+
+        getSummaryRow().setValueOfStocksAtCostRate(sumOfStocksAtCostRate);
+        getSummaryRow().setValueOfStocksAtPurchaseRate(sumOfStocksAtPurchaseRate);
+        getSummaryRow().setValueOfStocksAtRetailSaleRate(sumOfStocksAtRetailSaleRate);
     }
 
     public PharmacyBundle(List<?> entries) {
@@ -246,8 +266,17 @@ public class PharmacyBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
+            } else if (firstElement instanceof BillLight) {
+                // Process list as BillLights
+                for (Object obj : entries) {
+                    if (obj instanceof BillLight) {
+                        BillLight billLight = (BillLight) obj;
+                        PharmacyRow ir = new PharmacyRow(billLight);
+                        rows.add(ir);
+                    }
+                }
             } else if (firstElement instanceof BillItem) {
-                // Process list as Bills
+                // Process list as BillItems
                 for (Object obj : entries) {
                     if (obj instanceof BillItem) {
                         BillItem billItem = (BillItem) obj;
@@ -256,12 +285,21 @@ public class PharmacyBundle implements Serializable {
                     }
                 }
             } else if (firstElement instanceof PharmaceuticalBillItem) {
-                // Process list as Bills
+                // Process list as PharmaceuticalBillItems
                 for (Object obj : entries) {
                     if (obj instanceof PharmaceuticalBillItem) {
                         PharmaceuticalBillItem pbi = (PharmaceuticalBillItem) obj;
                         PharmacyRow ir = new PharmacyRow(pbi);
                         rows.add(ir);
+                    }
+                }
+            } else if (firstElement instanceof com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) {
+                // Process list as movement-out-by-item DTOs (already aggregated per item in DB)
+                for (Object obj : entries) {
+                    if (obj instanceof com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) {
+                        com.divudi.core.data.dto.PharmacyMovementOutByItemDTO dto
+                                = (com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) obj;
+                        rows.add(new PharmacyRow(dto));
                     }
                 }
             } else if (firstElement instanceof PharmacyRow) {
@@ -279,6 +317,18 @@ public class PharmacyBundle implements Serializable {
     public void generateProcurementForBills() {
         for (PharmacyRow r : getRows()) {
             Bill b = r.getBill();
+            populateRowFromBill(r, b);
+        }
+        populateSummaryRow();
+    }
+
+    /**
+     * Generates procurement details for BillLight objects.
+     * Processes each row by populating it from the BillLight data.
+     */
+    public void generateProcurementForBillLights() {
+        for (PharmacyRow r : getRows()) {
+            BillLight b = r.getBillLight();
             populateRowFromBill(r, b);
         }
         populateSummaryRow();
@@ -344,7 +394,6 @@ public class PharmacyBundle implements Serializable {
                 default:
                     break;
             }
-
 
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
@@ -428,10 +477,8 @@ public class PharmacyBundle implements Serializable {
         }
 
         // Replace old rows with grouped values
-
         getRows().clear();
         getRows().addAll(grouped.values());
-
 
     }
 
@@ -530,6 +577,45 @@ public class PharmacyBundle implements Serializable {
         List<PharmacyRow> grouped = new ArrayList<>(itemRowMap.values());
         grouped.sort(Comparator.comparing(r -> r.getItem().getName(), Comparator.nullsLast(String::compareToIgnoreCase)));
         setRows(grouped);
+        summaryRow = new PharmacyRow();
+        summaryRow.setGrossSaleValue(grossSaleValue);
+        summaryRow.setMarginValue(marginValue);
+        summaryRow.setDiscountValue(discountValue);
+        summaryRow.setNetSaleValue(netSaleValue);
+        summaryRow.setQuantity(quantity);
+    }
+
+    /**
+     * Builds the summary (footer) row for the BY_ITEM movement-out view when
+     * the rows are already aggregated per item by the database (DTO path).
+     * Rows are NOT regrouped here; we only total them and build the summary row,
+     * matching the footer values produced by {@code groupSaleDetailsByItems()}.
+     */
+    public void summarizeMovementOutByItem() {
+        grossSaleValue = BigDecimal.ZERO;
+        marginValue = BigDecimal.ZERO;
+        discountValue = BigDecimal.ZERO;
+        netSaleValue = BigDecimal.ZERO;
+        quantity = 0.0;
+
+        for (PharmacyRow r : getRows()) {
+            if (r.getQuantity() != null) {
+                quantity += r.getQuantity();
+            }
+            if (r.getGrossSaleValue() != null) {
+                grossSaleValue = grossSaleValue.add(r.getGrossSaleValue());
+            }
+            if (r.getMarginValue() != null) {
+                marginValue = marginValue.add(r.getMarginValue());
+            }
+            if (r.getDiscountValue() != null) {
+                discountValue = discountValue.add(r.getDiscountValue());
+            }
+            if (r.getNetSaleValue() != null) {
+                netSaleValue = netSaleValue.add(r.getNetSaleValue());
+            }
+        }
+
         summaryRow = new PharmacyRow();
         summaryRow.setGrossSaleValue(grossSaleValue);
         summaryRow.setMarginValue(marginValue);
@@ -830,6 +916,102 @@ public class PharmacyBundle implements Serializable {
         populateSummaryRow();
     }
 
+    public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto() {
+
+        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
+        for (PharmacyRow r : getRows()) {
+            BillLight b = r.getBillLight();
+            if (b == null) {
+                continue;
+            }
+            if (b.getBillTypeAtomic() == null) {
+                continue;
+            }
+
+            populateRowFromBill(r, b);
+
+            BillTypeAtomic bta = b.getBillTypeAtomic();
+            String detail;
+            // Support both entity-based (legacy) and scalar-based (new) BillLight construction
+            AdmissionType admissionType = (b.getPatientEncounter() != null)
+                    ? b.getPatientEncounter().getAdmissionType()
+                    : b.getAdmissionType();
+            String schemeName = (b.getPaymentScheme() != null)
+                    ? b.getPaymentScheme().getName()
+                    : b.getPaymentSchemeName();
+            if (admissionType != null) {
+                r.setAdmissionType(admissionType);
+                detail = admissionType.getName();
+            } else if (b.getPatientEncounter() != null || b.getAdmissionType() != null) {
+                // encounter present but admissionType is null
+                detail = "No Admission Type";
+            } else {
+                detail = (schemeName != null) ? schemeName : "No Discount Scheme";
+            }
+
+            String groupKey = bta.name() + " - " + detail;
+            r.setRowType(groupKey);  // Optional: if needed in JSF display
+
+            PharmacyRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
+                PharmacyRow ir = new PharmacyRow();
+                ir.setBillTypeAtomic(bta);
+                ir.setRowType(k);
+                return ir;
+            });
+
+            groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
+            groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
+            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
+            groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
+            groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
+
+            groupRow.setCashValue(groupRow.getCashValue() + r.getCashValue());
+            groupRow.setCardValue(groupRow.getCardValue() + r.getCardValue());
+            groupRow.setChequeValue(groupRow.getChequeValue() + r.getChequeValue());
+            groupRow.setCreditValue(groupRow.getCreditValue() + r.getCreditValue());
+            groupRow.setOpdCreditValue(groupRow.getOpdCreditValue() + r.getOpdCreditValue());
+            groupRow.setInpatientCreditValue(groupRow.getInpatientCreditValue() + r.getInpatientCreditValue());
+            groupRow.setNoneValue(groupRow.getNoneValue() + r.getNoneValue());
+
+            groupRow.setAgentValue(groupRow.getAgentValue() + r.getAgentValue());
+            groupRow.setIouValue(groupRow.getIouValue() + r.getIouValue());
+            groupRow.setOnlineSettlementValue(groupRow.getOnlineSettlementValue() + r.getOnlineSettlementValue());
+            groupRow.setPatientDepositValue(groupRow.getPatientDepositValue() + r.getPatientDepositValue());
+            groupRow.setPatientPointsValue(groupRow.getPatientPointsValue() + r.getPatientPointsValue());
+            groupRow.setSlipValue(groupRow.getSlipValue() + r.getSlipValue());
+            groupRow.setStaffValue(groupRow.getStaffValue() + r.getStaffValue());
+            groupRow.setStaffWelfareValue(groupRow.getStaffWelfareValue() + r.getStaffWelfareValue());
+            groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
+            groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
+            groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+
+            // Aggregate stock values
+            if (r.getValueOfStocksAtCostRate() != null) {
+                groupRow.setValueOfStocksAtCostRate(
+                    groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
+                );
+            }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                groupRow.setValueOfStocksAtPurchaseRate(
+                    groupRow.getValueOfStocksAtPurchaseRate().add(r.getValueOfStocksAtPurchaseRate())
+                );
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                groupRow.setValueOfStocksAtRetailSaleRate(
+                    groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
+                );
+            }
+        }
+
+        // Replace with grouped rows, sorted by combined key
+        getRows().clear();
+        grouped.values().stream()
+                .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .forEachOrdered(getRows()::add);
+
+        populateSummaryRow();
+    }
+
     // Contribution by ChatGPT - combines grouping by BillTypeAtomic
     public void generatePharmacyPurchaseGroupedByBillType() {
         Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
@@ -859,6 +1041,79 @@ public class PharmacyBundle implements Serializable {
             groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
             groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
             groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
+
+            // Aggregate stock values
+            if (r.getValueOfStocksAtCostRate() != null) {
+                groupRow.setValueOfStocksAtCostRate(
+                    groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
+                );
+            }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                groupRow.setValueOfStocksAtPurchaseRate(
+                    groupRow.getValueOfStocksAtPurchaseRate().add(r.getValueOfStocksAtPurchaseRate())
+                );
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                groupRow.setValueOfStocksAtRetailSaleRate(
+                    groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
+                );
+            }
+
+        }
+
+        // Replace with grouped rows, sorted by combined key
+        getRows().clear();
+        grouped.values().stream()
+                .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .forEachOrdered(getRows()::add);
+        populateSummaryRow();
+    }
+
+    public void generatePharmacyPurchaseGroupedByBillTypeDtos() {
+        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
+
+        for (PharmacyRow r : getRows()) {
+            BillLight b = r.getBillLight();
+            if (b == null || b.getBillTypeAtomic() == null) {
+                continue;
+            }
+
+            populateRowFromBill(r, b);
+
+            BillTypeAtomic bta = b.getBillTypeAtomic();
+
+            String groupKey = bta.name();
+            r.setRowType(groupKey);  // Optional: if needed in JSF display
+
+            PharmacyRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
+                PharmacyRow ir = new PharmacyRow();
+                ir.setBillTypeAtomic(bta);
+                ir.setRowType(k);
+                return ir;
+            });
+
+            groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
+            groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
+            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
+            groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
+            groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
+
+            // Aggregate stock values
+            if (r.getValueOfStocksAtCostRate() != null) {
+                groupRow.setValueOfStocksAtCostRate(
+                    groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
+                );
+            }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                groupRow.setValueOfStocksAtPurchaseRate(
+                    groupRow.getValueOfStocksAtPurchaseRate().add(r.getValueOfStocksAtPurchaseRate())
+                );
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                groupRow.setValueOfStocksAtRetailSaleRate(
+                    groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
+                );
+            }
 
         }
 
@@ -1100,11 +1355,20 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(b.getTotal());
+        double grossTotal = b.getTotal();
+        r.setGrossTotal(grossTotal);
         r.setNetTotal(b.getNetTotal());
-        r.setDiscount(b.getDiscount());
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(b.getDiscount());
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
         r.setServiceCharge(b.getMargin());
-        r.setActualTotal(b.getTotal() - b.getServiceCharge());
+        r.setActualTotal(b.getTotal() - b.getMargin());
 
         PaymentMethod pm = b.getPaymentMethod();
 
@@ -1176,6 +1440,110 @@ public class PharmacyBundle implements Serializable {
                 break;
             case ewallet:
                 r.setEwalletValue(b.getNetTotal());
+                break;
+            case YouOweMe:
+                break;
+            case None:
+                break;
+        }
+    }
+
+    private void populateRowFromBill(PharmacyRow r, BillLight b) {
+        if (b == null) {
+            return;
+        }
+
+        double grossTotal = nullSafeDouble(b.getTotal());
+        r.setGrossTotal(grossTotal);
+        r.setNetTotal(nullSafeDouble(b.getNetTotal()));
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(nullSafeDouble(b.getDiscount()));
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
+        r.setServiceCharge(nullSafeDouble(b.getMargin()));
+        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getMargin()));
+
+        r.setValueOfStocksAtCostRate(b.getTotalCostValue() == null ? BigDecimal.ZERO : b.getTotalCostValue());
+        r.setValueOfStocksAtPurchaseRate(b.getTotalPurchaseValue() == null ? BigDecimal.ZERO : b.getTotalPurchaseValue());
+        r.setValueOfStocksAtRetailSaleRate(b.getTotalRetailSaleValue() == null ? BigDecimal.ZERO : b.getTotalRetailSaleValue());
+
+        PaymentMethod pm = b.getPaymentMethod();
+
+        if (pm == null) {
+            r.setCreditValue(nullSafeDouble(b.getNetTotal()));
+            if (b.getPatientEncounter() != null) {
+                r.setOpdCreditValue(0);
+                r.setInpatientCreditValue(nullSafeDouble(b.getNetTotal()));
+            } else {
+                r.setOpdCreditValue(0);
+                r.setInpatientCreditValue(0);
+                r.setNoneValue(nullSafeDouble(b.getNetTotal()));
+            }
+            return;
+        }
+
+        switch (pm) {
+            case Agent:
+                r.setAgentValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Card:
+                r.setCardValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Cash:
+                r.setCashValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Cheque:
+                r.setChequeValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case IOU:
+                r.setIouValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case OnCall:
+                r.setOnCallValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Credit:
+                r.setCreditValue(nullSafeDouble(b.getNetTotal()));
+                if (b.getPatientEncounter() != null) {
+                    r.setOpdCreditValue(0);
+                    r.setInpatientCreditValue(nullSafeDouble(b.getNetTotal()));
+                } else {
+                    r.setOpdCreditValue(nullSafeDouble(b.getNetTotal()));
+                    r.setInpatientCreditValue(0);
+                }
+                break;
+            case MultiplePaymentMethods:
+                // Note: BillLight does not have payment details, so this will be skipped
+                // The calculateBillPaymentValuesFromPayments method checks for r.getBill() != null
+                calculateBillPaymentValuesFromPayments(r);
+                break;
+            case OnlineSettlement:
+                r.setOnlineSettlementValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case PatientDeposit:
+                r.setPatientDepositValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case PatientPoints:
+                r.setPatientPointsValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Slip:
+                r.setSlipValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Staff:
+                r.setStaffValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Staff_Welfare:
+                r.setStaffWelfareValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case Voucher:
+                r.setVoucherValue(nullSafeDouble(b.getNetTotal()));
+                break;
+            case ewallet:
+                r.setEwalletValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case YouOweMe:
                 break;

@@ -55,6 +55,22 @@ public class ItemApplicationController {
         List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         return lst;
     }
+    
+    public List<ItemLight> fillAllItemsBypassingCache() {
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
+                + "i.id, "
+                + "CASE WHEN d.name IS NULL THEN 'No Department' ELSE d.name END, "
+                + "i.name, i.code, i.total, "
+                + "d.id) "
+                + "FROM Item i "
+                + "LEFT JOIN i.department d "
+                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service OR TYPE(i) = MedicalPackage) "
+                + "ORDER BY i.name";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP, true);
+        return lst;
+    }
 
     public void reloadItems() {
         List<ItemLight> reloaded = fillAllItems();

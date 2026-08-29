@@ -3,6 +3,13 @@
     font-size: xx-large ;
 }
 
+/* Remove the browser's default <form> bottom margin on the top menu bar.
+   Without this, every page shows a ~16px gap between the menu and the
+   page's content panel (issue #21837). */
+form[id$=":menuForm"] {
+    margin-bottom: 0;
+}
+
 /* Custom styles for PrimeFaces panels */
 
 /* Cancelled Panel - header */
@@ -306,12 +313,6 @@ th.align-right-header .ui-column-title {
     padding: 2px !important;
     border: none !important; /* optional, if you want minimal borders */
 }
-
-/* Example: set a background to verify it’s applied */
-.compact-panelgrid.ui-panelgrid {
-    background-color: #eef !important;
-}
-
 
 
 .compact-column-borders {
@@ -782,4 +783,166 @@ th.align-right-header .ui-column-title {
     font-size: 0.8em !important;
     font-weight: normal !important;
     padding: 2px 5px !important;
+}
+
+/* Expiry date styling for pharmacy items */
+.ui-messages-success {
+    background-color: #dff0d8 !important; /* Light green background */
+    color: #3c763d !important; /* Dark green text */
+    border-color: #d6e9c6 !important; /* Green border */
+}
+
+/* Utility: opt-in top alignment for tables */
+.va-top td,
+.va-top th {
+    vertical-align: top;
+}
+
+
+/* Handover mismatch highlight — value differs from collected amount */
+.handover-mismatch {
+    background-color: #fff3cd;
+    color: #856404;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Value and select button side by side, right-aligned */
+.handover-cell {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.handover-cell .ui-button {
+    padding: 2px 6px !important;
+    font-size: 0.75rem !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    height: 22px !important;
+    vertical-align: middle !important;
+    flex-shrink: 0;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+.handover-cell .ui-button .ui-button-icon {
+    font-size: 0.75rem !important;
+    position: static !important;
+    margin: 0 !important;
+}
+
+/* ============================================================
+   Three-Stage Transaction Workflow buttons (Save → Finalize → Approve)
+   Single source of truth for the COLOUR of each workflow stage. Use
+   these classes instead of repeating ui-button-info/warning/success
+   on every Save/Finalize/Approve button — change the palette here once
+   and every workflow button across the system follows.
+
+   The matching ICON stays on the markup (icon="fas fa-...") because
+   PrimeFaces renders button icons natively; see the standard in
+   developer_docs/ui/comprehensive-ui-guidelines.md:
+     Save (Draft) = ui-button-stage-save     + icon="fas fa-floppy-disk"
+     Finalize     = ui-button-stage-finalize + icon="fas fa-lock"
+     Approve      = ui-button-stage-approve  + icon="fas fa-check-double"
+   ============================================================ */
+
+/* Save (Draft) — blue */
+.ui-button.ui-button-stage-save,
+.ui-widget.ui-button-stage-save,
+.ui-state-default.ui-button-stage-save {
+    background-color: #007bff !important;
+    border-color: #0056b3 !important;
+    color: #ffffff !important;
+}
+.ui-button.ui-button-stage-save:hover,
+.ui-widget.ui-button-stage-save:hover,
+.ui-state-default.ui-button-stage-save:hover {
+    background-color: #0056b3 !important;
+    border-color: #003f7f !important;
+}
+
+/* Finalize — amber */
+.ui-button.ui-button-stage-finalize,
+.ui-widget.ui-button-stage-finalize,
+.ui-state-default.ui-button-stage-finalize {
+    background-color: #ffc107 !important;
+    border-color: #e0a800 !important;
+    color: #212529 !important;
+}
+.ui-button.ui-button-stage-finalize:hover,
+.ui-widget.ui-button-stage-finalize:hover,
+.ui-state-default.ui-button-stage-finalize:hover {
+    background-color: #e0a800 !important;
+    border-color: #c69500 !important;
+}
+
+/* Approve — green */
+.ui-button.ui-button-stage-approve,
+.ui-widget.ui-button-stage-approve,
+.ui-state-default.ui-button-stage-approve {
+    background-color: #28a745 !important;
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+.ui-button.ui-button-stage-approve:hover,
+.ui-widget.ui-button-stage-approve:hover,
+.ui-state-default.ui-button-stage-approve:hover {
+    background-color: #1e7e34 !important;
+    border-color: #155724 !important;
+}
+
+
+/* ============================================================
+   Data-dense page patterns — sticky action areas
+   Standard classes for keeping page actions reachable while the
+   user scrolls long data-entry pages. Usage documented in
+   developer_docs/ui/data-dense-page-patterns.md:
+     .sticky-panel-header  → on the main transaction p:panel; keeps
+                             the three-zone header (Save/Finalize/
+                             Approve) pinned to the viewport top.
+     .sticky-action-bar    → on a block h:panelGroup wrapping the
+                             action buttons below a form; pins them
+                             to the viewport bottom.
+   Both degrade gracefully to normal flow if an ancestor container
+   prevents position:sticky from engaging.
+   ============================================================ */
+
+.sticky-panel-header > .ui-panel-titlebar {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.sticky-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 900;
+    background-color: #ffffff;
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
+    padding: 0.5rem 0.75rem;
+}
+
+
+/* Optimised menu item — subtle green tinge */
+a.ui-menuitem-link.menu-item-optimised,
+a.ui-menuitem-link.menu-item-optimised .ui-menuitem-text,
+a.ui-menuitem-link.menu-item-optimised .ui-menuitem-icon {
+    background-color: #eaf7ec !important;
+    background-image: none !important;
+    color: #1a5c2a !important;
+}
+
+a.ui-menuitem-link.menu-item-optimised:hover,
+a.ui-menuitem-link.menu-item-optimised:hover .ui-menuitem-text,
+a.ui-menuitem-link.menu-item-optimised:hover .ui-menuitem-icon {
+    background-color: #d4edda !important;
+    background-image: none !important;
+    color: #1a5c2a !important;
 }

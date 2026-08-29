@@ -198,6 +198,9 @@
                                                                  styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
+                                                <p:commandButton value="OPD Visit" action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-1 mb-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                </p:commandButton>
                                                 <p:commandButton value="Lab Reports" action="#{searchController.navigateToPatientLabReports}" ajax="false" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}"
                                                                                  target="#{searchController.patient}" ></f:setPropertyActionListener>

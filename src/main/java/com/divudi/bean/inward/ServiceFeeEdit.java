@@ -13,7 +13,9 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -38,6 +40,8 @@ public class ServiceFeeEdit implements Serializable {
 
     private BillItem billItem;
     private List<BillFee> billFees;
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @EJB
     private BillFeeFacade billFeeFacade;
     @Inject
@@ -142,6 +146,16 @@ public class ServiceFeeEdit implements Serializable {
             return;
         }
 
+        // Persisted values for the audit before-snapshot; the row-edit event has
+        // already applied the new values to the session entity
+        java.util.Map<String, Object> before = null;
+        if (billFee.getId() != null) {
+            BillFee persisted = getBillFeeFacade().findWithoutCache(billFee.getId());
+            if (persisted != null) {
+                before = serviceFeeAuditMap(persisted);
+            }
+        }
+
         billFee.setEditor(getSessionController().getLoggedUser());
         billFee.setEditedAt(new Date());
 
@@ -153,9 +167,17 @@ public class ServiceFeeEdit implements Serializable {
 
         getBillFeeFacade().edit(billFee);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(),billItem.getBill().getPatientEncounter().getPaymentMethod());
+        PatientEncounter encounter = billItem.getBill().getPatientEncounter();
+        // Room category of the patient's current room drives the room-category
+        // dimension of the inward margin matrix (issue #21977); null = wildcard.
+        RoomCategory roomCategory = (encounter != null
+                && encounter.getCurrentPatientRoom() != null
+                && encounter.getCurrentPatientRoom().getRoomFacilityCharge() != null)
+                ? encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory()
+                : null;
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(), encounter.getPaymentMethod(), null, encounter.getAdmissionType(), roomCategory);
 
-        getInwardBean().updateBillItemMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getPatientEncounter(), billItem.getBill().getFromDepartment(), priceMatrix);
+        getInwardBean().updateBillItemMargin(billItem, billFee.getFeeGrossValue(), encounter, billItem.getBill().getFromDepartment(), priceMatrix);
 
         getBillBean().updateBillItemByBillFee(billItem);
         getBillBean().updateBillByBillFee(billItem.getBill());
@@ -169,6 +191,28 @@ public class ServiceFeeEdit implements Serializable {
 
         billItemNetTotal = billItem.getNetValue();
         billNetTotal = billItem.getBill().getNetTotal();
+
+        auditService.logEncounterAudit(encounter, "Service Fee Edited",
+                before, serviceFeeAuditMap(billFee), getSessionController().getLoggedUser(),
+                "BillFee", billFee.getId());
+    }
+
+    /**
+     * Snapshot of a service bill fee for audit events (#22238).
+     */
+    private java.util.Map<String, Object> serviceFeeAuditMap(BillFee bf) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (bf == null) {
+            return m;
+        }
+        m.put("item", bf.getBillItem() != null && bf.getBillItem().getItem() != null
+                ? bf.getBillItem().getItem().getName() : null);
+        m.put("fee", bf.getFee() != null ? bf.getFee().getName() : null);
+        m.put("feeValue", bf.getFeeValue());
+        m.put("feeGrossValue", bf.getFeeGrossValue());
+        m.put("staff", bf.getStaff() != null && bf.getStaff().getPerson() != null
+                ? bf.getStaff().getPerson().getName() : null);
+        return m;
     }
 
     public List<BillFee> getBillFees() {

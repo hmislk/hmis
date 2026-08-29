@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy/inward">
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
@@ -16,7 +16,7 @@
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint Return Bill" ></h:outputLabel>
-                            
+
                             <p:commandButton 
                                 value="Back"
                                 style="float: right"
@@ -31,14 +31,108 @@
                                 ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                style="float: right"
+                                icon="fas fa-cog"
+                                styleClass="ui-button-secondary"
+                                type="button"
+                                onclick="PF('billReturnIssueConfigDialog').show();" />
+
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:returnBill bill="#{pharmacyIssueController.bill}" duplicate="true" />
-                    </h:panelGroup>
-                        
+                            <ph:disposal_issue_return
+                                duplicate="true"
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is A4 Paper',true)}"
+                                bill="#{pharmacyIssueController.bill}"/>
+                            <ph:disposal_issue_return_custom_1
+                                duplicate="true"
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is Custom 1',false)}"
+                                bill="#{pharmacyIssueController.bill}"/>
+                            <ph:disposal_issue_return_custom_2
+                                duplicate="true"
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Bill Return Issue Receipt is Custom 2',false)}"
+                                bill="#{pharmacyIssueController.bill}"/>
+                        </h:panelGroup>
+
                     </p:panel>
+
+                    <!-- Bill Return Issue Configuration Dialog -->
+                    <p:dialog id="billReturnIssueConfigDialog"
+                              header="Bill Return Issue Printer Configuration"
+                              widgetVar="billReturnIssueConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="400"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="billReturnIssueConfigForm" />
+
+                        <h:form id="billReturnIssueConfigForm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> Bill Return Issue Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="billReturnIssueA4"
+                                                    value="#{pharmacyConfigController.billReturnIssueA4Paper}" />
+                                                <p:outputLabel for="billReturnIssueA4" value="A4 Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Standard A4 paper format for bill return issue receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="billReturnIssueCustom1"
+                                                    value="#{pharmacyConfigController.billReturnIssueCustom1}" />
+                                                <p:outputLabel for="billReturnIssueCustom1" value="Custom Format 1" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 1 for bill return issue receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="billReturnIssueCustom2"
+                                                    value="#{pharmacyConfigController.billReturnIssueCustom2}" />
+                                                <p:outputLabel for="billReturnIssueCustom2" value="Custom Format 2" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 2 for bill return issue receipts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="billReturnIssueConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyConfigController.saveBillReturnIssueConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        styleClass="ui-button-secondary"
+                                                        onclick="PF('billReturnIssueConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
 
                 </h:form>
             </ui:define>

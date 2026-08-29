@@ -1,0 +1,10 @@
+in page - D:\Development\rh\src\main\webapp\pharmacy\pharmacy_purhcase_order_request.xhtml
+
+We need to have a printer configuration button to configure all the following
+
+#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1',true)}
+#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2',true)}
+
+Please add the same controller if possible. If not, you can create a new controller
+
+

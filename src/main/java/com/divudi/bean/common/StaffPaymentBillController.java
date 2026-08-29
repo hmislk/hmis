@@ -1,7 +1,13 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import javax.annotation.PostConstruct;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
@@ -47,6 +53,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.text.DecimalFormat;
@@ -96,6 +103,8 @@ public class StaffPaymentBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 
     private List<BillComponent> billComponents;
     private List<BillItem> billItems;
@@ -104,6 +113,8 @@ public class StaffPaymentBillController implements Serializable {
     private Date toDate;
     List<Bill> selectedItems;
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
     String selectText = "";
     private String withholdingTaxCalculationStatus;
@@ -130,6 +141,72 @@ public class StaffPaymentBillController implements Serializable {
     private List<BillFee> tblBillFees;
     private LazyDataModel<BillFee> dueBillFee;
     private boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
+    
+    private String patientPhn;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("opd/professional_payments/payment_staff_bill");
+        metadata.setPageName("OPD Doctor Payment Voucher");
+        metadata.setDescription("OPD professional payment settlement and voucher printing with detailed, summarised, and summary formats");
+        metadata.setControllerClass("StaffPaymentBillController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Doctor payment bill is A4 paper",
+            "Uses A4 paper format for OPD Doctor Payment voucher (default enabled)",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Doctor payment bill is five five paper.",
+            "Uses 5x5 inch paper format with headings for OPD Doctor Payment voucher",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Doctor payment bill is POS paper",
+            "Uses POS receipt format for OPD Doctor Payment voucher",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Hide the details on the OPD Doctor Payment Bill",
+            "Hides detailed line items on the OPD Doctor Payment Bill",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Hide the Header Details on the OPD Doctor Payment 5x5 Bill",
+            "Hides the header details on the OPD Doctor Payment 5x5 paper format",
+            "opd/professional_payments/payment_staff_bill",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management - displays the Config button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to access printer configuration settings dialog for changing OPD Doctor Payment receipt paper formats"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public Title[] getTitle() {
         return Title.values();
@@ -193,6 +270,7 @@ public class StaffPaymentBillController implements Serializable {
         printPreview = false;
         paymentMethod = PaymentMethod.Cash;
         speciality = null;
+        patientPhn = null;
     }
 
     public StaffFacade getStaffFacade() {
@@ -280,6 +358,7 @@ public class StaffPaymentBillController implements Serializable {
         btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         btcs.add(BillTypeAtomic.CC_BILL);
+        btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
         String jpql;
         HashMap params = new HashMap();
         jpql = "select bf "
@@ -305,6 +384,11 @@ public class StaffPaymentBillController implements Serializable {
             jpql += " and bf.staff is not null ";
         }
 
+        if(patientPhn != null && !patientPhn.trim().equals("")){
+            jpql += " and bf.bill.patient.phn like :phn ";
+            params.put("phn", "%" + patientPhn.trim() + "%");
+        }
+        
         params.put("btcs", btcs);
         params.put("bc", false);
         params.put("brfnd", false);
@@ -337,6 +421,7 @@ public class StaffPaymentBillController implements Serializable {
             }
             dueBillFees.removeAll(removeingBillFees);
         }
+        initializePayingAmounts(dueBillFees);
         calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution();
         performCalculations();
     }
@@ -350,6 +435,7 @@ public class StaffPaymentBillController implements Serializable {
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
+            btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
             String sql;
             HashMap h = new HashMap();
             sql = "select b from BillFee b where "
@@ -383,6 +469,7 @@ public class StaffPaymentBillController implements Serializable {
                 dueBillFees.removeAll(removeingBillFees);
             }
 
+            initializePayingAmounts(dueBillFees);
         }
     }
 
@@ -395,6 +482,7 @@ public class StaffPaymentBillController implements Serializable {
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
+            btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
             String jpql;
             HashMap params = new HashMap();
             jpql = "select bf from BillFee bf where "
@@ -431,6 +519,7 @@ public class StaffPaymentBillController implements Serializable {
                 dueBillFees.removeAll(removeingBillFees);
             }
 
+            initializePayingAmounts(dueBillFees);
         }
     }
 
@@ -441,11 +530,26 @@ public class StaffPaymentBillController implements Serializable {
         }
     }
 
+    /**
+     * Defaults the UI-only, transient payingAmount for each due BillFee to
+     * the full outstanding balance (feeValue - paidValue). The cashier can
+     * then reduce this amount on the UI to make a partial payment.
+     */
+    private void initializePayingAmounts(List<BillFee> fees) {
+        if (fees == null) {
+            return;
+        }
+        for (BillFee bf : fees) {
+            bf.setPayingAmount(bf.getFeeValue() - bf.getPaidValue());
+        }
+    }
+
     public void performCalculations() {
         calculateTotalDue();
         calculatePaymentsSelected();
 
-        switch (withholdingTaxCalculationStatus) {
+        String status = withholdingTaxCalculationStatus != null ? withholdingTaxCalculationStatus : "Depending On Payments";
+        switch (status) {
             case "Depending On Payments":
                 calculateWithholdingTaxDependingOnPayments();
                 break;
@@ -463,7 +567,9 @@ public class StaffPaymentBillController implements Serializable {
     public void calculatePaymentsSelected() {
         totalPaying = 0;
         for (BillFee f : payingBillFees) {
-            totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
+            double outstanding = f.getFeeValue() - f.getPaidValue();
+            double amount = f.getPayingAmount() != null ? f.getPayingAmount() : outstanding;
+            totalPaying = totalPaying + amount;
         }
     }
 
@@ -590,12 +696,22 @@ public class StaffPaymentBillController implements Serializable {
         currentStaff = s;
         speciality = s.getSpeciality();
         calculateDueFeesOpdForSelectedPeriod();
+        initializeWithholdingTaxOptions();
         return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
 
     public String navigateToViewOpdPayProfessionalPayments() {
         recreateModel();
+        initializeWithholdingTaxOptions();
+        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
+    }
 
+    // Shared by both navigation entry points into payment_staff_bill.xhtml (this bean is
+    // @SessionScoped, so withholdingTaxCalculationStatus must be set here for either path
+    // to get a config-driven default; performCalculations() falls back to "Depending On
+    // Payments" if this was ever skipped, but that fallback ignores this installation's
+    // configured WHT default).
+    private void initializeWithholdingTaxOptions() {
         allowUserToSelectPayWithholdingTaxDuringProfessionalPayments
                 = configOptionApplicationController.getBooleanValueByKey(
                         "Allow User To Select Whether To Pay Withholding Tax During Professional Payments", true);
@@ -619,8 +735,6 @@ public class StaffPaymentBillController implements Serializable {
         } else {
             withholdingTaxCalculationStatus = "Depending On Payments";  // Default to "Depending On Payments"
         }
-
-        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
 
     private boolean errorCheck() {
@@ -631,6 +745,19 @@ public class StaffPaymentBillController implements Serializable {
         if (dueBillFees == null) {
             JsfUtil.addErrorMessage("Please select payments to update");
             return true;
+        }
+        if (payingBillFees != null) {
+            for (BillFee f : payingBillFees) {
+                double outstanding = f.getFeeValue() - f.getPaidValue();
+                if (f.getPayingAmount() == null || f.getPayingAmount() <= 0) {
+                    JsfUtil.addErrorMessage("Please enter a valid paying amount for all selected fees");
+                    return true;
+                }
+                if (f.getPayingAmount() - outstanding > 0.1) {
+                    JsfUtil.addErrorMessage("Paying amount cannot exceed the outstanding due amount");
+                    return true;
+                }
+            }
         }
         performCalculations();
         if (totalPaying == 0) {
@@ -686,11 +813,14 @@ public class StaffPaymentBillController implements Serializable {
 
     private void saveBillCompo(Bill paymentBill, Payment paymentBillPayment) {
         for (BillFee originalBillFee : getPayingBillFees()) {
+            double amountPaidNow = originalBillFee.getPayingAmount() != null
+                    ? originalBillFee.getPayingAmount()
+                    : (originalBillFee.getFeeValue() - originalBillFee.getPaidValue());
 //            saveBillItemForPaymentBill(b, bf); //for create bill fees and billfee payments
-            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment);
+            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment, amountPaidNow);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
-            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
-            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
+            originalBillFee.setPaidValue(originalBillFee.getPaidValue() + amountPaidNow);
+            originalBillFee.setSettleValue(originalBillFee.getSettleValue() + amountPaidNow);
             getBillFeeFacade().edit(originalBillFee);
             //////// // System.out.println("marking as paid");
         }
@@ -716,7 +846,7 @@ public class StaffPaymentBillController implements Serializable {
         b.getBillItems().add(i);
     }
 
-    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p) {
+    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p, double amountPaidNow) {
         BillItem newlyCreatedPayingBillItem = new BillItem();
         newlyCreatedPayingBillItem.setReferanceBillItem(originalBillFee.getBillItem());
         newlyCreatedPayingBillItem.setReferenceBill(originalBillFee.getBill());
@@ -725,10 +855,10 @@ public class StaffPaymentBillController implements Serializable {
         newlyCreatedPayingBillItem.setCreatedAt(Calendar.getInstance().getTime());
         newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
         newlyCreatedPayingBillItem.setDiscount(0.0);
-        newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
-        newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setGrossValue(amountPaidNow);
+        newlyCreatedPayingBillItem.setNetValue(amountPaidNow);
         newlyCreatedPayingBillItem.setQty(1.0);
-        newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setRate(amountPaidNow);
         getBillItemFacade().create(newlyCreatedPayingBillItem);
 
         BillFee newlyCreatedBillFee = saveBillFee(newlyCreatedPayingBillItem, p);
@@ -769,6 +899,15 @@ public class StaffPaymentBillController implements Serializable {
         return current;
     }
 
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
+    }
+
     public void prepareToInitializeNewProfessionalPayment() {
         currentStaff = null;
         dueBillFees = new ArrayList<>();
@@ -790,7 +929,7 @@ public class StaffPaymentBillController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
 //        getItems();
@@ -823,15 +962,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public BillFee saveBillFee(BillItem bi, Payment p) {
@@ -1305,6 +1436,14 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setAllowUserToSelectPayWithholdingTaxDuringProfessionalPayments(boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments) {
         this.allowUserToSelectPayWithholdingTaxDuringProfessionalPayments = allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
+    }
+
+    public String getPatientPhn() {
+        return patientPhn;
+    }
+
+    public void setPatientPhn(String patientPhn) {
+        this.patientPhn = patientPhn;
     }
 
 }

@@ -24,7 +24,7 @@
                             id="btnAdd"
                             value="Add"
                             icon="pi pi-plus"  
-                            class="ui-button-warning "
+                            class="ui-button-success "
                             action="#{paymentSchemeController.prepareAdd()}" 
                             process="btnAdd"
                             update="gpDetail"/>                                      
@@ -33,17 +33,30 @@
                             ajax="false" 
                             id="btnDelete" 
                             icon="pi pi-trash" 
-                            class="ui-button-danger "
+                            class="ui-button-danger"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{paymentSchemeController.delete()}"  
-                            value="Delete"  >
+                                        return false;"  
+                            action="#{paymentSchemeController.delete()}"  
+                            value="Delete" >
                         </p:commandButton>
+
+                        <p:commandButton
+                            id="btnDuplicate"
+                            value="Duplicate"
+                            class="mx-2 ui-button-warning"
+                            action="#{paymentSchemeController.duplicateSelected()}"
+                            icon="pi pi-copy"
+                            ajax="false"
+                            onclick="if (!confirm('Are you sure you want to duplicate this record?'))
+                                        return false;">
+                        </p:commandButton>
+
 
                         <p:commandButton 
                             ajax="false" 
                             class="ui-button-info" 
                             icon="pi pi-refresh" 
-                            value="Fill"
+                            value="Refresh"
                             action="#{paymentSchemeController.createPaymentSchemes()}"/>
                     </div>
                     <div class="row"  >
@@ -71,7 +84,7 @@
                                         class="ui-button-success"
                                         action="#{paymentSchemeController.saveSelected()}" 
                                         process="btnSave gpDetail"
-                                        update="lstSelect growl selectFocus"
+                                        update="lstSelect growl selectFocus gpDetail"
                                         >                                        
                                     </p:commandButton>
                                 </f:facet>
@@ -85,6 +98,19 @@
                                                 <p:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}" class="w-100 my-1" />
                                                 <h:outputText id="lblOrder" value="Order No" />
                                                 <p:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" class="w-100 my-1" />
+                                                
+                                                <h:outputText value="Expiray date" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Allowing the use of expired payment schemes', true)}"/>
+                                                <p:calendar 
+                                                    value="#{paymentSchemeController.current.expiryDate}"
+                                                    navigator="false"
+                                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Allowing the use of expired payment schemes', true)}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="dateTimePicker"
+                                                    class="w-100"
+                                                    inputStyleClass="form-control">
+                                                </p:calendar>
+                                                
+                                                
                                             </p:panelGrid>
                                         </p:tab>
 
@@ -96,6 +122,19 @@
                                                 <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForBilledBills}" />
                                                 <h:outputLabel value="Valid for Channeling" />
                                                 <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForChanneling}" />
+                                                <h:outputLabel value="Valid for Inward" />
+                                                <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForInpatientBills}" />
+                                                <h:outputLabel value="Department" />
+                                                <p:autoComplete 
+                                                    value="#{paymentSchemeController.current.department}"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"
+                                                    forceSelection="true"
+                                                    class="w-100" >
+                                                </p:autoComplete>
+                                                
                                             </p:panelGrid>
                                         </p:tab>
 

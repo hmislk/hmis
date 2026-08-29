@@ -488,16 +488,15 @@
                                                     class="w-100"
                                                     value="#{bookingControllerViewScope.settlePaymentMethod}"
                                                     >
-
                                                     <f:selectItems 
                                                         value="#{enumController.paymentMethodsForChannelSettling}"  
                                                         var="pm"
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
                                                     <p:ajax process="@this" 
-                                                            update="paymentDetails"
+                                                            update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails"
                                                             event="change"
-                                                            listener="#{bookingControllerViewScope.listnerForPaymentMethodChangeOnCreditSettle()}"/>
+                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Discount Scheme"/>
@@ -516,28 +515,30 @@
                                                         process="@this "
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
-                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettlingByBillFees()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Citizenship" ></p:outputLabel>
                                                 <p:panel>
-                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Mark Foreigner and Mark Local Buttons in Billing', true)}">
                                                         <p:commandButton
                                                             value="Mark Foreigner"
                                                             class="mx-2 my-2"
+                                                            disabled="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
                                                             action="#{bookingControllerViewScope.markAsForeignerWithBillUpdate()}"
                                                             rendered="#{!bookingControllerViewScope.foriegn}"
                                                             process="@this"
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem msg"
                                                             >
                                                         </p:commandButton>
                                                         <p:commandButton
                                                             value="Mark Local"
                                                             class="mx-2"
+                                                            disabled="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
                                                             action="#{bookingControllerViewScope.markAsLocalWithBillUpdate()}"
                                                             rendered="#{bookingControllerViewScope.foriegn}"
                                                             process="@this"
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem msg"
                                                             >
                                                         </p:commandButton>
 
@@ -806,7 +807,7 @@
                                                 icon="fas fa-plus"
                                                 class="ui-button-success"
                                                 action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
-                                                update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel :#{p:resolveFirstComponentWithId('balance',view).clientId} "
+                                                update="paymentDetails lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel gdManageBookings balance :#{p:resolveFirstComponentWithId('balance',view).clientId} "
                                                 ></p:commandButton>
 
                                             <p:dataTable id="tblBillItemsForAddingNewItem" 
@@ -815,28 +816,31 @@
                                                 <p:column >
                                                     <h:outputText value="#{bi.item.name}" ></h:outputText>
                                                 </p:column>
-                                                <p:column >
+                                                <p:column>
                                                     <h:outputText value="#{bookingControllerViewScope.foriegn ? bi.item.totalForForeigner : bi.netValue}" />
                                                 </p:column>
                                                 <p:column >
                                                     <p:commandButton 
                                                         id="btnRemove"
-                                                        ajax="false"
                                                         icon="fas fa-trash"
+                                                        disabled="#{bookingControllerViewScope.checkItemIsSessionInstance(bi)}"
                                                         class="ui-button-danger"
+                                                        update="@form"
+                                                        process="@this"
                                                         action="#{bookingControllerViewScope.removeAddedAditionalItem()}"
                                                         >
                                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedBillItem}" value="#{bi}"/>
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
-
+                                            
+                                            <p:growl id="msg" life="2000"></p:growl>
                                             <p:dataTable 
                                                 id="tblBillFeesForAddingNewItem" 
                                                 value="#{bookingControllerViewScope.selectedBillSession.bill.billFeesWIthoutZeroValue}" 
                                                 var="bf" >
                                                 <p:column headerText="Fee">
-                                                    <h:outputText value="#{bf.fee.item.name}" ></h:outputText>
+                                                    <h:outputText value="#{bf.fee.item.name} - " ></h:outputText>
                                                     <h:outputText value="#{bf.fee.name}" ></h:outputText>
                                                 </p:column>
                                                 <p:column rendered="false" headerText="Gross Fee">
@@ -850,20 +854,48 @@
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Value">
-                                                    <p:inputText id="txtFee" value="#{bookingControllerViewScope.foriegn ? bf.fee.ffee : bf.fee.fee}" onfocus="this.select()">
+                                                    <p:inputText id="txtFee" styleClass="updateFeeValue" onkeyup="validateFeeValue(this)" value="#{bf.feeValue}" onfocus="this.select()">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                         <p:ajax event="keyup" 
                                                                 process="txtFee paymentDetails" 
                                                                 update=":#{p:resolveFirstComponentWithId('lstItems',view).clientId} 
                                                                 :#{p:resolveFirstComponentWithId('tblBillItemsForAddingNewItem',view).clientId} 
                                                                 :#{p:resolveFirstComponentWithId('balance',view).clientId} 
-                                                                :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId}" 
-                                                                listener="#{bookingControllerViewScope.calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(bf)}" 
+                                                                :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} gdManageBookings balance" 
+                                                                listener="#{bookingControllerViewScope.calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(bf)}"
+                                                                onstart="return validateFeeValue(document.querySelector('.updateFeeValue'))"
                                                                 delay="500" /> <!-- Added a delay to avoid too frequent requests -->
                                                     </p:inputText>
+                                                    <p:tag styleClass="tagText" value="Not a correct value" severity="danger" style="display: none" icon="pi pi-times-circle"></p:tag>
                                                 </p:column>
 
                                             </p:dataTable>
+
+                                            <script>
+
+                                                function validateFeeValue(updateFeeInput) {
+//                                                    const updateFeeInput = document.querySelector('.updateFeeValue');
+                                                    console.log("start function");
+                                                    let value = updateFeeInput.value.trim().replace(/,/g, '');
+                                                    if(!value){
+                                                        console.log("return function "+updateFeeInput.value);
+                                                        return false;
+                                                    }
+                                                    
+                                                    console.log(value);
+
+                                                    if (value === "" || isNaN(value) || !value) {
+                                                        document.querySelector('.tagText').style.display = 'block';
+                                                        console.log("Dont send");
+                                                        return false;
+                                                    }
+                                                    
+                                                    return true;
+                                                }
+
+
+                                            </script>
+
                                         </p:panel>
 
                                         <p:dataTable 
@@ -1226,7 +1258,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Reprint" id="rePrint" >
+                        <p:tab title="Reprint" id="rePrint" disabled="#{!webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
 
                             <h:panelGroup>
                                 <div class="row">
@@ -1332,7 +1364,7 @@
                                         <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
                                             <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                             <f:selectItem itemLabel="Same As Billed Bill" itemValue="#{bookingControllerViewScope.billSession ne null ? (bookingControllerViewScope.billSession.bill.paidBill ne null ?  bookingControllerViewScope.billSession.bill.paidBill.paymentMethod : bookingControllerViewScope.billSession.bill.paymentMethod) : null}" ></f:selectItem>
-                                            <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
+                                            <f:selectItems value="#{bookingControllerViewScope.paymentMethodsToChannelCancellation}"/>
                                         </p:selectOneMenu>
                                     </div>
                                     <p:commandButton 
@@ -1552,7 +1584,7 @@
                                 <p:panel header="Current Patient for Booking" >
                                     <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                 </p:panel>
-                                <ezcommon:patient_details_view_scope_1 controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
+                                <ezcommon:patient_details_view_scope_1 editable="true" controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
                             </p:panelGrid>
                         </p:tab>
 
@@ -1588,15 +1620,16 @@
                         </p:tab>
 
                         <p:tab title="Status" id="statusTab">
-                            <p:outputLabel value="Mark As Present / Absent"/>
-                            
-                            <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
-                                                                                                  or bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.checkPaid()}"  value="#{bookingControllerViewScope.absent}" >
-                                <p:ajax process="@this" update="statusTab" listener="#{bookingControllerViewScope.updatePresentStatusOfPatient(bookingControllerViewScope.absent)}" ></p:ajax>
-                            </p:selectBooleanButton>
-                            
-                            <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appoinment." rendered="#{bookingControllerViewScope.checkPaid()}" style="color: red; font-weight: bold"/>
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:outputLabel value="Mark As Present / Absent "/>
 
+                                <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
+                                                                                                    or bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.checkPaid()}"  value="#{bookingControllerViewScope.absent}" >
+                                    <p:ajax process="@this" listener="#{bookingControllerViewScope.updatePresentStatusOfPatient(bookingControllerViewScope.absent)}" ></p:ajax>
+                                </p:selectBooleanButton>
+
+                                <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appointment." rendered="#{bookingControllerViewScopeMonth.checkPaid()}" style="color: red; font-weight: bold"/>
+                            </div>
                         </p:tab>
 
                         <p:tab title="Search" rendered="false">
@@ -1626,7 +1659,7 @@
 
 
                                 <p:column headerText="Booking ID" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"> #{bs.bill.bookingId}
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"> #{bs.bill.bookingId}
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1634,7 +1667,7 @@
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Speciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}">#{bs.serviceSession.staff.speciality.name}
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}">#{bs.serviceSession.staff.speciality.name}
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1643,7 +1676,7 @@
                                 </p:column>
                                 <p:column headerText="Consultant" filterBy="#{bs.serviceSession.staff.person.nameWithTitle}" filterMatchMode="contains">
 
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}">  #{bs.serviceSession.staff.person.nameWithTitle}
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}">  #{bs.serviceSession.staff.person.nameWithTitle}
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1652,7 +1685,7 @@
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Session Name" filterBy="#{bs.serviceSession.name}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}">  #{bs.serviceSession.name}
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}">  #{bs.serviceSession.name}
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1661,7 +1694,7 @@
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="No" filterBy="#{bs.serialNo}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"> #{bs.serialNo}
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"> #{bs.serialNo}
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedBillSession}"  value="#{bs}"/>
@@ -1670,7 +1703,7 @@
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Patient Name" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"> #{bs.bill.patient.person.nameWithTitle}
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"> #{bs.bill.patient.person.nameWithTitle}
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1679,14 +1712,14 @@
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Paid or Not" filterBy="#{bs.bill.billType}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedBillSession}" value="#{bs}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1695,14 +1728,14 @@
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="C/R" filterBy="#{bs.bill.billClass}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}">  <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}">  <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedBillSession}" value="#{bs}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}">  <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}">  <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1711,7 +1744,7 @@
                                     </h:commandLink>
                                 </p:column>   
                                 <p:column headerText="Agent" filterBy="#{bs.bill.fromInstitution.institutionCode}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"> <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>      
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"> <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>      
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1720,7 +1753,7 @@
                                     </h:commandLink>
                                 </p:column> 
                                 <p:column headerText="Agent Ref No" filterBy="#{bs.billItem.agentRefNo}" filterMatchMode="contains">
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"><p:outputLabel value="#{bs.billItem.agentRefNo}"/>     
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"><p:outputLabel value="#{bs.billItem.agentRefNo}"/>     
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1729,7 +1762,7 @@
                                     </h:commandLink>
                                 </p:column> 
                                 <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">                                      
-                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSpeciality}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                                    <h:commandLink action="channel_booking" actionListener="#{bookingControllerViewScope.resetToStartFromSelectingSpeciality}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1742,33 +1775,37 @@
 
 
                         <p:tab title="Views">
-                            <h:panelGrid columns="2">
-                                <p:panel header="Selected Session">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="Nurse View " 
-                                                         action="#{bookingControllerViewScope.navigateToNurseView}" 
-                                                         onclick="onSubmitButton();" >                                       
-                                        </p:commandButton>
-                                        <p:commandButton value="Doctor View " action="#{bookingControllerViewScope.navigateToDoctorView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="Session View " action="#{bookingControllerViewScope.navigateToSessionView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="Phone View " action="#{bookingControllerViewScope.navigateToPhoneView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="User View " action="#{bookingControllerViewScope.navigateToUserView}" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                    </h:panelGrid>
 
-                                </p:panel>
-                                <p:panel header="Today's">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                        <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
-                                        </p:commandButton>
-                                    </h:panelGrid>                                    
-                                </p:panel>
-                            </h:panelGrid>
+                            <div class="row">
+                                <div class="col-2">
+                                    <p:panel header="Selected Session">
+                                        <div class="d-flex flex-column gap-2">
+                                            <p:commandButton value="Nurse View " 
+                                                            action="#{bookingControllerViewScope.navigateToNurseView}" 
+                                                            onclick="onSubmitButton();" >                                       
+                                            </p:commandButton>
+                                            <p:commandButton value="Doctor View " action="#{bookingControllerViewScope.navigateToDoctorView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="Session View " action="#{bookingControllerViewScope.navigateToSessionView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="Phone View " action="#{bookingControllerViewScope.navigateToPhoneView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="User View " action="#{bookingControllerViewScope.navigateToUserView}" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                                <div class="col-2">
+                                    <p:panel header="Today's">
+                                        <div class="d-flex flex-column gap-2">
+                                            <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                            <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
 
                         </p:tab>
                         <p:tab title="Doctor Payment">

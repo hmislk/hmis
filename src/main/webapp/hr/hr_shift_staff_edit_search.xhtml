@@ -5,135 +5,344 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-
                 xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
-        <h:form>
-            <p:panel header="Staff Shift">
 
-                <p:panel header="Search Staff Shift" >
-                    <p:panel>
-                        <p:panelGrid columns="2" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar value="#{staffShiftController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
-                            </p:calendar>
+        <h:form styleClass="staff-shift-search-form">
 
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar value="#{staffShiftController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
-                            </p:calendar>
+            <h:outputStylesheet>
+                .staff-shift-search-form {
+                    padding: 2rem 1.75rem;
+                }
 
-                            <h:outputLabel value="Staff : "/>
-                            <au:completeStaff value="#{staffShiftController.reportKeyWord.staff}"/>
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
 
-                            <h:outputLabel value="Institution : "/>
-                            <au:institution value="#{staffShiftController.reportKeyWord.institution}"/>
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
 
-                            <h:outputLabel value="Department : "/>
-                            <au:department value="#{staffShiftController.reportKeyWord.department}"/>
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
 
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
 
-                            <h:outputLabel value="Staff Designation : "/>
-                            <au:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
 
-                            <h:outputLabel value="Staff Roster : "/>
-                            <au:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                        </p:panelGrid>
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
 
-                        <p:commandButton value="Search Created Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyCreatedDate()}" />
-                        <p:commandButton value="Search Shift Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyShiftDate()}" />
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
+
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .wt-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .wt-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .wt-table .ui-datatable-data td,
+                .wt-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .wt-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .wt-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .wt-table .col-text {
+                    text-align: left !important;
+                }
+
+                .wt-table .col-name .ui-outputlabel {
+                    font-weight: 500;
+                }
+
+                .wt-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-size: 12px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                    color: #999;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Staff Shift" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by date range, staff, department or roster and process to generate" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="fromDate" value="From date" styleClass="field-label" />
+                            <p:calendar id="fromDate"
+                                        value="#{staffShiftController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="toDate" value="To date" styleClass="field-label" />
+                            <p:calendar id="toDate"
+                                        value="#{staffShiftController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff" styleClass="field-label" />
+                            <au:completeStaff value="#{staffShiftController.reportKeyWord.staff}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Institution" styleClass="field-label" />
+                            <au:institution value="#{staffShiftController.reportKeyWord.institution}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Department" styleClass="field-label" />
+                            <au:department value="#{staffShiftController.reportKeyWord.department}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff designation" styleClass="field-label" />
+                            <au:completeDesignation value="#{hrReportController.reportKeyWord.designation}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff roster" styleClass="field-label" />
+                            <au:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                        </div>
+                    </div>
+
+                    <div class="controls-actions">
+                        <p:commandButton value="Search Created Date"
+                                         ajax="false"
+                                         action="#{staffShiftController.createStaffShiftTablebyCreatedDate()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Search Shift Date"
+                                         ajax="false"
+                                         action="#{staffShiftController.createStaffShiftTablebyShiftDate()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                    </div>
+
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                         type="button"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="gpBillPreview" />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_Shift_Staff"  />
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_Shift_Staff" />
                         </p:commandButton>
-                    </p:panel>
-                    <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                        <p:dataTable value="#{staffShiftController.staffShifts}" var="l"
-                                     rowStyleClass="#{l.retired eq true ? 'redText':''}"
-                                     scrollable="true"
-                                     scrollHeight="300" id="tb1">
-                            <f:facet name="header">
+                    </div>
 
-                                <h:outputLabel value="Staff Shift"/><br/>
-                                <h:outputLabel value="  From : "  />
-                                <h:outputLabel  value="#{staffShiftController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy "/>
-                                </h:outputLabel>
-                                <h:outputLabel/>
-                                <h:outputLabel/>
-                                <h:outputLabel value="  To : "/>
-                                <h:outputLabel  value="#{staffShiftController.toDate}">
-                                    <f:convertDateTime pattern="dd MM yy "/>
-                                </h:outputLabel><br/>
-                                <h:panelGroup rendered="#{staffShiftController.reportKeyWord.institution ne null}" >
-                                    <h:outputLabel value="#{staffShiftController.reportKeyWord.institution.name}" />
-                                    <br/>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{staffShiftController.reportKeyWord.department ne null}" >
-                                    <h:outputLabel value="Department : #{staffShiftController.reportKeyWord.department.name}"/>
-                                    <br/>
-                                </h:panelGroup>
-                            </f:facet>
-                            <p:column headerText="View" >
-                                <p:commandButton ajax="false" value="View" action="hr_staff_shift_edit" actionListener="#{staffShiftController.viewStaffShift(l)}" disabled="#{l.retired}"></p:commandButton>
-                            </p:column>
+                </div>
+            </p:panel>
 
-                            <p:column headerText="Staff">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Staff"/>
-                                </f:facet>
-                                <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
-                            </p:column>
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
 
-                            <p:column headerText="From">
-                                <f:facet name="header">
-                                    <h:outputLabel value="From"/>
-                                </f:facet>
-                                <p:outputLabel value="#{l.shiftDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd" />
-                                </p:outputLabel>
-                            </p:column>
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label"><h:outputText value="Staff Shift" /></span>
+                        <h:panelGroup rendered="#{staffShiftController.fromDate ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{staffShiftController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputText>
+                                —
+                                <h:outputText value="#{staffShiftController.toDate}">
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputText>
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{staffShiftController.reportKeyWord.institution ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{staffShiftController.reportKeyWord.institution.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{staffShiftController.reportKeyWord.department ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="Department: " />
+                                <h:outputText value="#{staffShiftController.reportKeyWord.department.name}" />
+                            </p>
+                        </h:panelGroup>
+                    </div>
+                </f:facet>
 
-                            <p:column headerText="Starting Date">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Starting Date"/>
-                                </f:facet>
-                                <p:outputLabel value="#{l.shiftStartTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss"  />
-                                </p:outputLabel>
-                            </p:column>
+                <p:dataTable id="tb1"
+                             value="#{staffShiftController.staffShifts}"
+                             var="l"
+                             rowStyleClass="#{l.retired eq true ? 'redText':''}"
+                             scrollable="true"
+                             scrollHeight="300"
+                             styleClass="wt-table">
 
-                            <p:column headerText="Ending Date">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Ending Date"/>
-                                </f:facet>
-                                <p:outputLabel value="#{l.shiftEndTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss"  />
-                                </p:outputLabel>
-                            </p:column>
+                    <p:column headerText="View" styleClass="col-text">
+                        <p:commandButton ajax="false"
+                                         value="View"
+                                         action="hr_staff_shift_edit"
+                                         actionListener="#{staffShiftController.viewStaffShift(l)}"
+                                         disabled="#{l.retired}" />
+                    </p:column>
 
-                            <p:column headerText="Creator">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Creator"/>
-                                </f:facet>
-                                <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
-                                <br></br>
-                                <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
-                            </p:column>
-                            <f:facet name="footer">
-                                <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                <p:outputLabel value="Print At : " />
-                                <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                </p:outputLabel>
-                            </f:facet>
-                        </p:dataTable>
-                    </p:panel>
-                </p:panel>
+                    <p:column headerText="Staff" styleClass="col-text col-name" style="min-width: 180px;">
+                        <p:outputLabel value="#{l.staff.person.nameWithTitle}" />
+                    </p:column>
+
+                    <p:column headerText="Shift Date" styleClass="col-text">
+                        <p:outputLabel value="#{l.shiftDate}">
+                            <f:convertDateTime pattern="yyyy MM dd" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Start Time" styleClass="col-text">
+                        <p:outputLabel value="#{l.shiftStartTime}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="hh:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="End Time" styleClass="col-text">
+                        <p:outputLabel value="#{l.shiftEndTime}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="hh:mm:ss" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Creator" styleClass="col-text">
+                        <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" />
+                        <br />
+                        <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}"
+                                       rendered="#{l.retired}"
+                                       style="color: blue;" />
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+
+                </p:dataTable>
 
             </p:panel>
+
         </h:form>
     </ui:define>
 

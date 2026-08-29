@@ -13,7 +13,8 @@ public enum LoginPage {
     OPD_QUEUE_PAGE("OPD Queue Page"),
     OPD_TOKEN_DISPLAY("OPD Token Display"),
     PHARMACY_TOKEN_DISPLAY("Pharmacy Token Display"),
-    COURIER_LANDING_PAGE("Courier Landing Page");
+    COURIER_LANDING_PAGE("Courier Landing Page"),
+    LABORATORY_DOCTER_DASHBOARD("Laboratory Docter Dashboard");
 
     private final String label;
 

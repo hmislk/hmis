@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form>
+            <p:growl id="msg"/>
+
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-allergies fa-lg"/>
+                            <p:outputLabel value="Manage Patient Allergies" class="m-2"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Back to Edit BHT"
+                                ajax="false"
+                                action="#{bhtEditController.navigateToEditAdmissionDetails()}"
+                                icon="fa fa-arrow-left"
+                                class="ui-button-warning">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Back to Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-arrow-left"
+                                class="ui-button-secondary">
+                                <f:setPropertyActionListener
+                                    value="#{bhtEditController.current}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <div class="row">
+                    <div class="col-6">
+                        <common:patient_details searchable="false" controller="#{bhtEditController}" class="w-100"/>
+                    </div>
+                    <div class="col-6">
+                        <common:admission_details admission="#{bhtEditController.current}" class="w-100"/>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p:panel header="Add Patient Allergies">
+                            <div>
+                                <div class="row">
+                                    <div class="col-10 d-flex">
+                                        <p:autoComplete
+                                            id="acAllergy"
+                                            placeholder="Search Patient Allergies"
+                                            completeMethod="#{vtmController.completeVtm}"
+                                            var="pta"
+                                            style="width: 150px"
+                                            maxResults="15"
+                                            itemLabel="#{pta}"
+                                            itemValue="#{pta}"
+                                            forceSelection="true"
+                                            value="#{bhtEditController.currentPatientAllergy.itemValue}"
+                                            inputStyleClass="form-control w-100"
+                                            class="w-100"/>
+
+                                        <p:inputText placeholder="Remark" class="mx-4 w-100" id="txtAllergy" value="#{bhtEditController.currentPatientAllergy.stringValue}"/>
+                                    </div>
+                                    <div class="col-2">
+                                        <p:commandButton
+                                            id="btnAddAllergy"
+                                            value="Add"
+                                            class="w-100"
+                                            process="btnAddAllergy acAllergy txtAllergy"
+                                            update="ptAl txtAllergy acAllergy msg"
+                                            action="#{bhtEditController.addPatientAllergy()}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <div class="row my-2">
+                                    <div class="col-12">
+                                        <h:panelGroup id="ptAl">
+                                            <ui:repeat value="#{bhtEditController.patientAllergies}" var="al">
+                                                <div class="card my-1 w-100">
+                                                    <div class="d-flex justify-content-between align-items-center p-1">
+                                                        <div>
+                                                            <h:outputText
+                                                                rendered="#{not empty al.itemValue and not empty al.stringValue}"
+                                                                value="#{al.itemValue.name.concat(' - ').concat(al.stringValue)}"/>
+                                                            <h:outputText
+                                                                rendered="#{empty al.itemValue or empty al.stringValue}"
+                                                                value="#{al.itemValue.name}#{al.stringValue}"/>
+                                                        </div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                id="btnRemove"
+                                                                class="ui-button-danger"
+                                                                process="btnRemove"
+                                                                update=":#{p:resolveClientId('@id(ptAl)', view)}"
+                                                                icon="fas fa-trash"
+                                                                action="#{bhtEditController.removePatientAllergy(al)}">
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

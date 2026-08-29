@@ -29,6 +29,7 @@
                                             ajax="false"
                                             value="Cancel Bill" 
                                             icon="fa fa-cancel"
+                                            onclick="return confirm('Are you sure you want to cancel the bill?');"
                                             class="ui-button-danger" action="#{pharmacyBillSearch.cancelPharmacyDirectIssueToBht()}" >
                                         </p:commandButton> 
                                     </div>

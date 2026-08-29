@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      template="/resources/template/template.xhtml"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/channel/channel_scheduling/index.xhtml" >
+
+            <ui:define name="subcontent">
+
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('ChannelSheduleManagement')}" >
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannelSheduleManagement')}">
+
+                    <h:form id="form">
+                        <p:growl id="msg" />
+
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-item-center">
+                                    <div>
+                                        <h:outputText styleClass="fa-solid fa-money-bill"/>
+                                        <h:outputText class="mx-4" value="Bulk Hospital Fee Editing" />
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <p:panel styleClass="mb-3">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-edit"/>
+                                    <h:outputText class="mx-4" value="New Fee Values" />
+                                </f:facet>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h:panelGrid columns="2" columnClasses="custom-col-38, custom-col-58" styleClass="w-100">
+                                            <p:outputLabel value="New Local Hospital Fee" />
+                                            <p:inputText
+                                                id="txtNewLocalFee"
+                                                value="#{channelScheduleController.newHospitalFee}"
+                                                styleClass="w-100"
+                                                onfocus="this.select()">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+
+                                            <p:outputLabel value="New Foreigner Hospital Fee" />
+                                            <p:inputText
+                                                id="txtNewForeignerFee"
+                                                value="#{channelScheduleController.newHospitalForeignerFee}"
+                                                styleClass="w-100"
+                                                onfocus="this.select()">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+                                        </h:panelGrid>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="d-flex gap-2 align-items-center h-100">
+                                            <p:commandButton
+                                                value="Update Selected Fees"
+                                                icon="fa fa-save"
+                                                styleClass="ui-button-warning"
+                                                process="@form"
+                                                update="@form"
+                                                onclick="if (!confirm('Are you sure you want to update all selected hospital fees?'))
+                                                            return false;"
+                                                action="#{channelScheduleController.updateSelectedHospitalFees()}" />
+
+                                            <p:commandButton
+                                                value="Refresh List"
+                                                icon="fa fa-refresh"
+                                                styleClass="ui-button-success"
+                                                process="@this"
+                                                update="tblHospitalFees"
+                                                action="#{channelScheduleController.loadHospitalFeeDTOs()}" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:panel>
+
+                            <p:dataTable
+                                id="tblHospitalFees"
+                                value="#{channelScheduleController.hospitalFeeDTOs}"
+                                var="fee"
+                                selection="#{channelScheduleController.selectedHospitalFeeDTOs}"
+                                rowKey="#{fee.itemFeeId}"
+                                paginator="true"
+                                rows="20"
+                                selectionMode="multiple"
+                                selectAllFilteredOnly="true"
+                                selectionPageOnly="false"
+                                rowsPerPageTemplate="10,20,50,100"
+                                paginatorPosition="bottom"
+                                emptyMessage="No hospital fees found"
+                                styleClass="w-100">
+
+                                <f:facet name="header">
+                                    <h:outputText value="Hospital Fees List" />
+                                </f:facet>
+
+                                <p:column selectionBox="true" style="width: 60px;" />
+
+                                <p:column headerText="Consultant" sortBy="#{fee.consultantName}" filterBy="#{fee.consultantName}" filterMatchMode="contains">
+                                    <h:outputText value="#{fee.consultantName}" />
+                                </p:column>
+
+                                <p:column headerText="Speciality" sortBy="#{fee.specialityName}" filterBy="#{fee.specialityName}" filterMatchMode="contains">
+                                    <h:outputText value="#{fee.specialityName}" />
+                                </p:column>
+
+                                <p:column headerText="Session Name" sortBy="#{fee.sessionName}" filterBy="#{fee.sessionName}" filterMatchMode="contains">
+                                    <h:outputText value="#{fee.sessionName}" />
+                                </p:column>
+
+                                <p:column headerText="Weekday" sortBy="#{fee.weekdayName}" filterBy="#{fee.weekdayName}" filterMatchMode="contains" style="width: 120px;">
+                                    <h:outputText value="#{fee.weekdayName}" />
+                                </p:column>
+
+                                <p:column headerText="Department" sortBy="#{fee.departmentName}" filterBy="#{fee.departmentName}" filterMatchMode="contains">
+                                    <h:outputText value="#{fee.departmentName}" />
+                                </p:column>
+
+                                <p:column headerText="Local Fee" sortBy="#{fee.hospitalFee}" filterBy="#{fee.hospitalFee}" filterMatchMode="contains" styleClass="text-right" style="width: 120px;">
+                                    <h:outputText value="#{fee.hospitalFee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Foreigner Fee" sortBy="#{fee.hospitalForeignerFee}" filterBy="#{fee.hospitalForeignerFee}" filterMatchMode="contains" styleClass="text-right" style="width: 120px;">
+                                    <h:outputText value="#{fee.hospitalForeignerFee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+
+                    </h:form>
+                </h:panelGroup>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

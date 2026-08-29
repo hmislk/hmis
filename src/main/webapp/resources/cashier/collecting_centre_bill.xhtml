@@ -15,7 +15,7 @@
     <cc:implementation>
         <p:dataTable id="#{cc.id}" value="#{cc.attrs.data.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{cc.attrs.data.bills.size()>0}">
             <f:facet name="header">  
-                <h:outputLabel value="Collocting Centre Payment Recieve"/>
+                <h:outputLabel value="Collocting Centre Payment Receive"/>
             </f:facet> 
             <p:column headerText="Bill No" style="width:16%; " >
                 <h:outputLabel value="#{b7.deptId}"/>

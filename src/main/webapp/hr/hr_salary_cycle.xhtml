@@ -7,116 +7,192 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
-
     <ui:define name="subContent">
 
-        <h:panelGroup >
-            <h:form  >
-                <p:growl />
+        <h:panelGroup style="display: block; overflow-x: hidden; width: 100%;">
+            <h:form>
+
+                <style>
+                    .ui-autocomplete,
+                    .ui-autocomplete-input,
+                    .ui-selectonemenu,
+                    .ui-inputfield {
+                        width: 100% !important;
+                        box-sizing: border-box !important;
+                    }
+                </style>
+
+                <p:growl id="growl" showDetail="true" life="4000" />
                 <p:focus id="selectFocus" context="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start;">
 
+                    <!-- LEFT: Salary Cycle List -->
+                    <p:panel header="Salary Cycles">
 
-                <p:panel header="Manage Salary Cycle" >
-                    <div class="row">
-                        <div class="col-6">
-                                <p:commandButton
-                                    class="ui-button-warning w-25" 
-                                    icon="fas fa-fill" 
-                                    ajax="false" 
-                                    value="Fill " 
-                                    action="#{salaryCycleController.listAllSalaryCycles()}"/>
-                                
-                                <p:commandButton 
-                                   
-                                    icon="fas fa-plus"
-                                    id="btnAdd"
-                                    class="ui-button-success w-25 mx-1"
-                                    value="Add"
-                                    ajax="false" 
-                                    action="#{salaryCycleController.prepareAdd()}" 
-                                    >
-
-                                </p:commandButton>
-                                <p:commandButton
-                                    class="ui-button-danger w-25" 
-                                    icon="fas fa-trash"
-                                    ajax="false" 
-                                    id="btnDelete"
-                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" 
-                                                action="#{salaryCycleController.delete()}" 
-                                                value="Delete"  >
-                                </p:commandButton>
-
-                            <p:selectOneListbox filter="true" class="w-100 mt-2 "  id="lstSelect" value="#{salaryCycleController.current}" style="height:300px">
-                                <f:selectItems  value="#{salaryCycleController.salaryCycles}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                <f:ajax render="gpDetail tbl" execute="lstSelect" >
-                                </f:ajax>
-                            </p:selectOneListbox>
+                        <!-- Toolbar -->
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <p:commandButton
+                                value="Fill"
+                                icon="fas fa-fill"
+                                styleClass="ui-button-warning"
+                                style="flex: 1;"
+                                ajax="false"
+                                action="#{salaryCycleController.listAllSalaryCycles()}" />
+                            <p:commandButton
+                                id="btnAdd"
+                                value="Add"
+                                icon="fas fa-plus"
+                                styleClass="ui-button-success"
+                                style="flex: 1;"
+                                ajax="false"
+                                action="#{salaryCycleController.prepareAdd()}" />
+                            <p:commandButton
+                                id="btnDelete"
+                                value="Delete"
+                                icon="fas fa-trash"
+                                styleClass="ui-button-danger"
+                                style="flex: 1;"
+                                ajax="false"
+                                onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
+                                action="#{salaryCycleController.delete()}" />
                         </div>
-                        
-                        <div class="col-6">
-                            <p:panel id="tbl" >
-                                <f:facet name="header">
-                                    <p:outputLabel value="#{sessionController.institution.name}" />
-                                    <br></br>
-                                    <p:outputLabel value="Salary Cycle - #{salaryCycleController.current.name}" />
-                                </f:facet>
-                                <h:panelGrid id="gpDetail" columns="1">
-                                    <h:panelGrid id="gpDetailText" columns="2">
-                                        <h:outputText  value="Salary From Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{salaryCycleController.current.salaryFromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  />
-                                        <h:outputText  value="Salary To Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{salaryCycleController.current.salaryToDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        <h:outputText  value="Salary Advance From Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{salaryCycleController.current.salaryAdvanceFromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        <h:outputText  value="Salary Advance To Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{salaryCycleController.current.salaryAdvanceToDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        <h:outputText  value="OT From Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100"  value="#{salaryCycleController.current.workedFromDate}" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                        <h:outputText  value="OT To Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{salaryCycleController.current.workedToDate}"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                        <h:outputText  value="Day off / PH  From Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{salaryCycleController.current.dayOffPhFromDate}" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                        <h:outputText  value="Day off / PH  To Date " ></h:outputText>
-                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{salaryCycleController.current.dayOffPhToDate}"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                    </h:panelGrid>
 
-                                </h:panelGrid>
-                                    <p:commandButton 
-                                        ajax="false"
-                                        id="btnSave"
-                                        value="Save"
-                                        class="ui-button-warning w-25 mt-4"
-                                        action="#{salaryCycleController.saveSelected()}" 
-                                       >
-                                    </p:commandButton>
+                        <!-- Listbox -->
+                        <p:selectOneListbox
+                            filter="true"
+                            filterMatchMode="contains"
+                            id="lstSelect"
+                            value="#{salaryCycleController.current}"
+                            style="width: 100%; height: 340px;">
+                            <f:selectItems
+                                value="#{salaryCycleController.salaryCycles}"
+                                var="myItem"
+                                itemValue="#{myItem}"
+                                itemLabel="#{myItem.name}" />
+                            <f:ajax render="gpDetail tbl" execute="lstSelect" />
+                        </p:selectOneListbox>
 
-                                    <p:commandButton
-                                        value="Print" 
-                                        ajax="false" 
-                                        icon="fas fa-print"
-                                        class="ui-button-info mx-2 w-25 mt-4"
-                                        action="#" >
-                                        <p:printer target="tbl" ></p:printer>
-                                    </p:commandButton>
-                            </p:panel>
+                    </p:panel>
 
+                    <!-- RIGHT: Detail -->
+                    <p:panel id="tbl">
+                        <f:facet name="header">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h:outputText value="Salary Cycle Detail" />
+                                <h:outputText
+                                    value="#{sessionController.institution.name}"
+                                    style="font-style: italic; font-weight: normal;" />
+                            </div>
+                        </f:facet>
+
+                        <h:panelGrid id="gpDetail" columns="1" style="width: 100%;">
+                            <h:panelGrid id="gpDetailText" columns="1" style="width: 100%;">
+
+                                <!-- Salary Period -->
+                                <h:outputText value="Salary Period"
+                                    style="display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #5a7fa8; margin-bottom: 0.3rem; margin-top: 0.25rem;" />
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem;">
+                                    <div>
+                                        <h:outputLabel value="From" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.salaryFromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="To" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.salaryToDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </div>
+                                </div>
+
+                                <!-- Salary Advance -->
+                                <h:outputText value="Salary Advance"
+                                    style="display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #5a7fa8; margin-bottom: 0.3rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem;" />
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem;">
+                                    <div>
+                                        <h:outputLabel value="From" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.salaryAdvanceFromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="To" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.salaryAdvanceToDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </div>
+                                </div>
+
+                                <!-- Overtime -->
+                                <h:outputText value="Overtime (OT)"
+                                    style="display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #5a7fa8; margin-bottom: 0.3rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem;" />
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem;">
+                                    <div>
+                                        <h:outputLabel value="OT From" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.workedFromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="OT To" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.workedToDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </div>
+                                </div>
+
+                                <!-- Day Off / Public Holiday -->
+                                <h:outputText value="Day Off / Public Holiday"
+                                    style="display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #5a7fa8; margin-bottom: 0.3rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem;" />
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                                    <div>
+                                        <h:outputLabel value="Day Off / PH From" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.dayOffPhFromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Day Off / PH To" style="display: block; margin-bottom: 4px;" />
+                                        <p:calendar inputStyleClass="w-100" style="width: 100%;"
+                                            value="#{salaryCycleController.current.dayOffPhToDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </div>
+                                </div>
+
+                            </h:panelGrid>
+                        </h:panelGrid>
+
+                        <!-- Actions -->
+                        <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem;">
+                            <p:commandButton
+    id="btnSave"
+    value="Save"
+    icon="fas fa-save"
+    styleClass="ui-button-warning"
+    style="flex: 1;"
+    process="@form"
+    update="@form"
+    action="#{salaryCycleController.saveSelected()}" />
+                            <p:commandButton
+                                value="Print"
+                                icon="fas fa-print"
+                                styleClass="ui-button-info"
+                                style="flex: 1;"
+                                type="button">
+                                <p:printer target="tbl" />
+                            </p:commandButton>
                         </div>
-                    </div>
 
-                </p:panel>
+                    </p:panel>
+
+                </div>
+
             </h:form>
-
         </h:panelGroup>
 
     </ui:define>
 
 </ui:composition>
-  

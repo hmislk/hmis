@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -47,6 +50,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class GoodsReturnController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(GoodsReturnController.class.getName());
 
     /**
      * EJBs
@@ -78,6 +83,8 @@ public class GoodsReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     /**
      * Properties
      */
@@ -164,6 +171,17 @@ public class GoodsReturnController implements Serializable {
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
+        //Out of all the payment methods allowed, only credit payments should not have a balance. They are paid in full amount and balance is zero.
+        if (getReturnBill().getPaymentMethod() != PaymentMethod.Credit) {
+            getReturnBill().setBalance(0d);
+            getReturnBill().setPaid(true);
+            getReturnBill().setPaidAmount(getReturnBill().getNetTotal());
+            getReturnBill().setPaidAt(new Date());
+        } else {
+            getReturnBill().setBalance(getReturnBill().getNetTotal());
+            getReturnBill().setPaid(false);
+            getReturnBill().setPaidAmount(0d);
+        }
 
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());
@@ -263,7 +281,7 @@ public class GoodsReturnController implements Serializable {
     }
 
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
-        double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getSessionController().getDepartment());
+        double stockQty = getPharmacyBean().getBatchStockQty(pharmaceuticalBillItem.getItemBatch(), getSessionController().getDepartment());
 
         if (pharmaceuticalBillItem.getQtyInUnit() + pharmaceuticalBillItem.getFreeQtyInUnit() > stockQty) {
             return true;
@@ -296,6 +314,9 @@ public class GoodsReturnController implements Serializable {
     }
 
     public void settle() {
+        if (!isAuthorized("SETTLE", "ReturnReceviedGoods")) {
+            return;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Select a Bill");
             return;
@@ -307,6 +328,24 @@ public class GoodsReturnController implements Serializable {
         if (getReturnBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Select Dealor");
             return;
+        }
+        if (getReturnBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+        switch (getReturnBill().getPaymentMethod()) {
+            case MultiplePaymentMethods:
+                JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed");
+                return;
+            case Agent:
+            case OnCall:
+            case PatientDeposit:
+            case PatientPoints:
+            case Staff:
+            case Staff_Welfare:
+            case None:
+                JsfUtil.addErrorMessage("This Payment Method is NOT allowed");
+                return;
         }
         if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
@@ -425,6 +464,7 @@ public class GoodsReturnController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setComments(bill.getPaymentMemo());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -435,7 +475,7 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("No Bill get selected");
             return "";
         }
-        return "/pharmacy/pharmacy_return_good";
+        return "/pharmacy/pharmacy_return_good?faces-redirect=true";
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
@@ -476,15 +516,7 @@ public class GoodsReturnController implements Serializable {
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
 //    public void onEditItem(BillItem tmp) {
@@ -612,6 +644,41 @@ public class GoodsReturnController implements Serializable {
         bill.setBalance(Math.abs(bill.getNetTotal()) - Math.abs(bill.getRefundAmount()));
         bill.setBackwardReferenceBill(getReturnBill());
         billFacade.edit(bill);
+    }
+
+    /**
+     * Authorization helper method to check Goods Return privileges and audit
+     * denied access
+     *
+     * @param action The action being attempted (SETTLE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    action);
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = null;
+            if (returnBill != null) {
+                billId = returnBill.getId();
+            } else if (bill != null) {
+                billId = bill.getId();
+            }
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Goods Return access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " goods return requests.");
+            return false;
+        }
+
+        return true;
     }
 
 }

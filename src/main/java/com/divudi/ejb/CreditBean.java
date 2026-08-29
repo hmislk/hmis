@@ -10,6 +10,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.InstitutionFacade;
@@ -99,13 +100,12 @@ public class CreditBean {
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-
         List<Bill> bs = (List<Bill>) getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return bs;
 
     }
-    
+
     public List<Payment> getCreditPayments(Institution ins, List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, boolean lessThan) {
         String jpql = "Select p From Payment p"
                 + " where p.retired=false "
@@ -129,7 +129,6 @@ public class CreditBean {
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-
         List<Payment> bs = (List<Payment>) paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return bs;
@@ -137,24 +136,37 @@ public class CreditBean {
     }
 
     public List<Bill> getCreditBillsPharmacy(Institution ins, List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
-        String sql = "Select b From BilledBill b"
+        return getCreditBillsPharmacy(ins, billTypes, fromDate, toDate, lessThan, null, null, null, null);
+    }
+
+    public List<Bill> getCreditBillsPharmacy(Institution ins,
+            List<BillType> billTypes,
+            Date fromDate,
+            Date toDate,
+            boolean lessThan,
+            Institution institutionOfDepartment,
+            Institution site,
+            Department department,
+            String visitType) {
+
+        StringBuilder sql = new StringBuilder("Select b From BilledBill b"
                 + " where b.retired=false "
-                + " and b.createdAt  between :frm and :to ";
+                + " and b.createdAt  between :frm and :to ");
 
         if (lessThan) {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
         } else {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
         }
 
-        sql += " and b.cancelledBill is null  "
+        sql.append(" and b.cancelledBill is null  "
                 + " and b.refundedBill is null "
                 + " and b.toInstitution=:cc "
                 + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
-                + " and b.toStaff is null ";
+                + " and b.toStaff is null ");
 
-        HashMap hm = new HashMap();
+        Map<String, Object> hm = new HashMap<>();
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("cc", ins);
@@ -162,7 +174,28 @@ public class CreditBean {
         hm.put("tps", billTypes);
         hm.put("val", 0.1);
 
-        return (List<Bill>) getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (institutionOfDepartment != null) {
+            sql.append(" and b.institution = :insd ");
+            hm.put("insd", institutionOfDepartment);
+        }
+
+        if (site != null) {
+            sql.append(" and b.department.site = :site ");
+            hm.put("site", site);
+        }
+
+        if (department != null) {
+            sql.append(" and b.department = :dep ");
+            hm.put("dep", department);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            sql.append(" and b.ipOpOrCc = :visitType ");
+            hm.put("visitType", visitType.trim());
+        }
+
+        List<Bill> results = (List<Bill>) getBillFacade().findByJpql(sql.toString(), hm, TemporalType.TIMESTAMP);
+        return results == null ? Collections.emptyList() : results;
     }
 
     public List<BillItem> getCreditBillItems(Institution ins, BillType billType, Date fromDate, Date toDate, boolean lessThan) {
@@ -263,42 +296,78 @@ public class CreditBean {
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-
         List<Institution> ins = getInstitutionFacade()
                 .findByJpql(jpql, params, TemporalType.TIMESTAMP);
-
 
         return ins == null ? Collections.emptyList() : ins;
     }
 
     public List<Institution> getCreditInstitutionPharmacy(List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
-        String sql;
-        HashMap hm;
-        sql = "Select distinct(b.toInstitution) From BilledBill b "
-                + " where b.retired=false ";
+        return getCreditInstitutionPharmacy(billTypes, fromDate, toDate, lessThan, null, null, null, null, null);
+    }
+
+    public List<Institution> getCreditInstitutionPharmacy(List<BillType> billTypes,
+            Date fromDate,
+            Date toDate,
+            boolean lessThan,
+            Institution institutionOfDepartment,
+            Institution site,
+            Department department,
+            String visitType,
+            Institution creditCompany) {
+
+        StringBuilder sql = new StringBuilder("Select distinct(b.toInstitution) From BilledBill b "
+                + " where b.retired=false ");
 
         if (lessThan) {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
         } else {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
         }
 
-        sql += " and b.cancelled=false "
+        sql.append(" and b.cancelled=false "
                 + " and b.refunded=false "
                 + " and b.createdAt between :frm and :to "
                 + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
-                + " and b.toStaff is null "
-                + " order by b.toInstitution.name ";
+                + " and b.toStaff is null ");
 
-        hm = new HashMap();
+        Map<String, Object> hm = new HashMap<>();
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tps", billTypes);
         hm.put("val", 0.1);
 
-        return (List<Institution>) getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (creditCompany != null) {
+            sql.append(" and b.toInstitution = :creditCompany ");
+            hm.put("creditCompany", creditCompany);
+        }
+
+        if (institutionOfDepartment != null) {
+            sql.append(" and b.institution = :insd ");
+            hm.put("insd", institutionOfDepartment);
+        }
+
+        if (site != null) {
+            sql.append(" and b.department.site = :site ");
+            hm.put("site", site);
+        }
+
+        if (department != null) {
+            sql.append(" and b.department = :dep ");
+            hm.put("dep", department);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            sql.append(" and b.ipOpOrCc = :visitType ");
+            hm.put("visitType", visitType.trim());
+        }
+
+        sql.append(" order by b.toInstitution.name ");
+
+        List<Institution> results = (List<Institution>) getInstitutionFacade().findByJpql(sql.toString(), hm, TemporalType.TIMESTAMP);
+        return results == null ? Collections.emptyList() : results;
     }
 
     public List<PatientEncounter> getCreditPatientEncounter(Institution institution, Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan) {
@@ -479,6 +548,88 @@ public class CreditBean {
 
         hm.put("val", 0.1);
         hm.put("pm", paymentMethod);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Returns unpaid InwardFinalBillCCPayment bills for a specific credit company in a date range.
+     * Outstanding balance is bill.netTotal - bill.paidAmount.
+     */
+    public List<Bill> getUnpaidInwardCCBills(Institution creditCompany, Date fromDate, Date toDate) {
+        String sql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.referenceBill.confirmedFinalBill=true "
+                + " and b.creditCompany=:cc "
+                + " and b.billDate between :frm and :to "
+                + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val "
+                + " order by b.billDate";
+        HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("cc", creditCompany);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("val", 0.01);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public List<Bill> getUnpaidInwardCCBills(Institution creditCompany, Date fromDate, Date toDate,
+            AdmissionType admissionType, String dateBasis) {
+        String dateField = "admissionDate".equals(dateBasis)
+                ? "b.patientEncounter.dateOfAdmission"
+                : "b.patientEncounter.dateOfDischarge";
+        String sql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.referenceBill.confirmedFinalBill=true "
+                + " and b.creditCompany=:cc "
+                + " and " + dateField + " between :frm and :to "
+                + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
+        HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("cc", creditCompany);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("val", 0.01);
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:at ";
+            hm.put("at", admissionType);
+        }
+        sql += " order by " + dateField;
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Returns distinct credit companies that have unpaid InwardFinalBillCCPayment bills
+     * within the given date range.
+     */
+    public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate) {
+        return getCreditCompaniesWithUnpaidInwardCCBills(fromDate, toDate, null, "dischargeDate");
+    }
+
+    public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate,
+            AdmissionType admissionType, String dateBasis) {
+        String dateField = "admissionDate".equals(dateBasis)
+                ? "b.patientEncounter.dateOfAdmission"
+                : "b.patientEncounter.dateOfDischarge";
+        String sql = "Select distinct(b.creditCompany) From Bill b "
+                + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.referenceBill.confirmedFinalBill=true "
+                + " and " + dateField + " between :frm and :to "
+                + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
+        HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("val", 0.01);
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:at ";
+            hm.put("at", admissionType);
+        }
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
@@ -690,16 +841,43 @@ public class CreditBean {
     }
 
     public double getRefundAmount(Bill b) {
-        String sql = "Select sum(b.netTotal+b.vat) "
-                + " From Bill b "
-                + " where b.retired=false "
-                + " and b.billedBill=:b ";
+        // Query to find refunds for a bill, handling different bill structures:
+        // 1. Direct refunds: b.billedBill = :b (refund directly linked to the bill)
+        // 2. Via referenceBill: b.billedBill.referenceBill = :b (pharmacy/other bills)
+        // 3. OPD batch bills returns: b.referenceBill.backwardReferenceBill = :b
+        //    (OPD refunds link via referenceBill to individual bill, which has backwardReferenceBill to batch)
+        // 4. OPD batch bills cancellations: b.billedBill.backwardReferenceBill = :b
+        //    (OPD cancellations link via billedBill to individual bill, which has backwardReferenceBill to batch)
 
-        HashMap hm = new HashMap();
-        hm.put("b", b);
+        double totalRefund = 0.0;
+        HashMap params = new HashMap();
+        params.put("b", b);
 
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
+        // Query 1: Direct refunds (b.billedBill = :b)
+        String jpql1 = "Select sum(b.netTotal+b.vat) From Bill b "
+                + " where b.retired=false and b.billedBill=:b ";
+        double refund1 = getBillItemFacade().findDoubleByJpql(jpql1, params);
 
+        // Query 2: Via billedBill.referenceBill (b.billedBill.referenceBill = :b)
+        String jpql2 = "Select sum(b.netTotal+b.vat) From Bill b "
+                + " where b.retired=false and b.billedBill.referenceBill=:b ";
+        double refund2 = getBillItemFacade().findDoubleByJpql(jpql2, params);
+
+        // Query 3: OPD batch bills returns (b.referenceBill.backwardReferenceBill = :b)
+        String jpql3 = "Select sum(b.netTotal+b.vat) From Bill b "
+                + " where b.retired=false and b.referenceBill.backwardReferenceBill=:b ";
+        double refund3 = getBillItemFacade().findDoubleByJpql(jpql3, params);
+
+        // Query 4: OPD batch bills cancellations (b.billedBill.backwardReferenceBill = :b)
+        // This handles individual bill cancellations where cancellation bill links via billedBill
+        // to the individual bill, which has backwardReferenceBill pointing to the batch bill
+        String jpql4 = "Select sum(b.netTotal+b.vat) From Bill b "
+                + " where b.retired=false and b.billedBill.backwardReferenceBill=:b ";
+        double refund4 = getBillItemFacade().findDoubleByJpql(jpql4, params);
+
+        totalRefund = refund1 + refund2 + refund3 + refund4;
+
+        return totalRefund;
     }
 
     public Object[] getRefundAmounts(Bill b) {

@@ -4,10 +4,11 @@
     font-size: 12px;
     line-height: 1.2;
     width: 5.0in;
-    height: 8.0in;
+    height: 7.9in;
     margin: auto;
     padding: 2px;
     box-sizing: border-box;
+    page-break-before: always;
     border: 1px solid #000;
 }
 
@@ -127,14 +128,15 @@
     .receipt-container {
         border: none;
         width: 5.0in!important;
-        height: 6.85in!important;
+        height: 6.70in!important;
         margin-left: 0cm!important;
         margin-right: 0cm!important;
         margin-bottom: 3cm!important;
-        margin-top: 1.0in!important;
+        margin-top: 1.25in!important;
         font-family: sans-serif !important;
-        padding-left: 0.25cm!important;
+        padding-left: 0.4cm!important;
         padding-right: 0.25cm!important;
+        page-break-before: always;
 
     }
 

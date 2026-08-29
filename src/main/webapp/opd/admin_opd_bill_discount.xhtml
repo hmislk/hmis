@@ -1,0 +1,288 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Apply Discount Scheme to Existing OPD Bill">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="Apply Discount Scheme to Existing OPD Bill" class="mt-2"></p:outputLabel>
+                                <p:commandButton
+                                    value="Back to Bill Admin"
+                                    icon="pi pi-arrow-left"
+                                    action="/opd/view/bill_admin?faces-redirect=true"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary" />
+                            </div>
+                        </f:facet>
+
+                        <!-- Warning Message -->
+                        <div class="ui-messages ui-messages-error ui-corner-all mb-3" role="alert">
+                            <div class="ui-messages-error-icon">
+                                <span class="pi pi-exclamation-triangle"></span>
+                            </div>
+                            <div class="ui-messages-error-summary">
+                                <h:outputText styleClass="fa-solid fa-triangle-exclamation text-danger"></h:outputText>
+                                <h:outputText value=" WARNING: This action will modify financial data" class="font-weight-bold text-danger"></h:outputText>
+                            </div>
+                            <div class="ui-messages-error-detail mt-2">
+                                <ul class="mb-0">
+                                    <li>This will change bill totals, discounts, and net amounts</li>
+                                    <li>Changes will also affect the batch bill associated with this OPD bill</li>
+                                    <li>Written permission from the institution is mandatory before proceeding</li>
+                                    <li>All changes will be logged in the audit trail</li>
+                                    <li>This action is IRREVERSIBLE - ensure you have proper authorization</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Bill Information -->
+                        <p:panel header="Bill Information" styleClass="mb-3">
+                            <p:panelGrid columns="4"
+                                         styleClass="w-100"
+                                         columnClasses="w-15,w-35,w-15,w-35"
+                                         layout="tabular">
+                                <h:outputLabel value="Bill Number:" class="font-weight-bold"/>
+                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.deptId}" />
+
+                                <h:outputLabel value="Bill Date:" class="font-weight-bold"/>
+                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+
+                                <h:outputLabel value="Patient:" class="font-weight-bold"/>
+                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.patient.person.name}" />
+
+                                <h:outputLabel value="Current Payment Scheme:" class="font-weight-bold"/>
+                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.paymentScheme.name}"
+                                              rendered="#{adminOpdBillDiscountController.selectedBill.paymentScheme != null}"/>
+                                <h:outputText value="No Discount Scheme"
+                                              rendered="#{adminOpdBillDiscountController.selectedBill.paymentScheme == null}"
+                                              styleClass="text-muted"/>
+                            </p:panelGrid>
+                        </p:panel>
+
+                        <!-- Current Bill Values -->
+                        <p:panel header="Current Bill Values" styleClass="mb-3">
+                            <h:panelGroup id="currentValues">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h:outputText value="OPD Bill Values" styleClass="d-block font-weight-bold mb-2"></h:outputText>
+                                        <p:panelGrid columns="2"
+                                                     styleClass="w-100"
+                                                     columnClasses="w-50,w-50"
+                                                     layout="tabular">
+                                            <h:outputLabel value="Total:" />
+                                            <h:outputText value="#{adminOpdBillDiscountController.selectedBill.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Discount:" />
+                                            <h:outputText value="#{adminOpdBillDiscountController.selectedBill.discount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Net Total:" class="font-weight-bold"/>
+                                            <h:outputText value="#{adminOpdBillDiscountController.selectedBill.netTotal}"
+                                                          styleClass="font-weight-bold">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:panelGrid>
+                                    </div>
+
+                                    <h:panelGroup rendered="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill != null}">
+                                        <div class="col-md-6">
+                                            <h:outputText value="Batch Bill Values" styleClass="d-block font-weight-bold mb-2"></h:outputText>
+                                            <p:panelGrid columns="2"
+                                                         styleClass="w-100"
+                                                         columnClasses="w-50,w-50"
+                                                         layout="tabular">
+                                                <h:outputLabel value="Total:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Discount:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Net Total:" class="font-weight-bold"/>
+                                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.netTotal}"
+                                                              styleClass="font-weight-bold">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:panelGrid>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
+                        </p:panel>
+
+                        <!-- Discount Scheme Selection -->
+                        <p:panel header="Select New Discount Scheme" styleClass="mb-3">
+                            <h:panelGroup id="discountSelection">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h:outputLabel value="Select Discount Scheme:" class="d-block mb-2"/>
+                                        <p:selectOneMenu
+                                            value="#{adminOpdBillDiscountController.newPaymentScheme}"
+                                            class="w-100">
+                                            <f:selectItem itemLabel="Select Discount Scheme" itemValue="#{null}"/>
+                                            <f:selectItems
+                                                value="#{paymentSchemeController.paymentSchemesForOPD}"
+                                                var="ps"
+                                                itemLabel="#{ps.name}"
+                                                itemValue="#{ps}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-end">
+                                        <p:commandButton
+                                            value="Calculate Preview"
+                                            icon="pi pi-calculator"
+                                            styleClass="ui-button-info"
+                                            action="#{adminOpdBillDiscountController.calculatePreview()}"
+                                            update="previewPanel"
+                                            process="@form" />
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                        </p:panel>
+
+                        <!-- Preview Panel -->
+                        <h:panelGroup id="previewPanel">
+                            <p:panel header="Preview - Values After Applying Discount"
+                                     styleClass="mb-3"
+                                     rendered="#{adminOpdBillDiscountController.previewCalculated}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h:outputText value="New OPD Bill Values" styleClass="d-block font-weight-bold mb-2 text-success"></h:outputText>
+                                        <p:panelGrid columns="2"
+                                                     styleClass="w-100"
+                                                     columnClasses="w-50,w-50"
+                                                     layout="tabular">
+                                            <h:outputLabel value="Total:" />
+                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['billTotal']}"
+                                                          styleClass="text-success">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Discount:" />
+                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['billDiscount']}"
+                                                          styleClass="text-success">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Net Total:" class="font-weight-bold"/>
+                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['billNetTotal']}"
+                                                          styleClass="font-weight-bold text-success">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Difference:" class="font-weight-bold text-primary"/>
+                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['billNetTotal'] - adminOpdBillDiscountController.selectedBill.netTotal}"
+                                                          styleClass="font-weight-bold text-primary">
+                                                <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
+                                            </h:outputText>
+                                        </p:panelGrid>
+                                    </div>
+
+                                    <h:panelGroup rendered="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill != null}">
+                                        <div class="col-md-6">
+                                            <h:outputText value="New Batch Bill Values" styleClass="d-block font-weight-bold mb-2 text-success"></h:outputText>
+                                            <p:panelGrid columns="2"
+                                                         styleClass="w-100"
+                                                         columnClasses="w-50,w-50"
+                                                         layout="tabular">
+                                                <h:outputLabel value="Total:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillTotal']}"
+                                                              styleClass="text-success">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Discount:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillDiscount']}"
+                                                              styleClass="text-success">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Net Total:" class="font-weight-bold"/>
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillNetTotal']}"
+                                                              styleClass="font-weight-bold text-success">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Difference:" class="font-weight-bold text-primary"/>
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillNetTotal'] - adminOpdBillDiscountController.selectedBill.backwardReferenceBill.netTotal}"
+                                                              styleClass="font-weight-bold text-primary">
+                                                    <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
+                                                </h:outputText>
+                                            </p:panelGrid>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <div class="ui-messages ui-messages-info ui-corner-all mt-3" role="alert">
+                                    <div class="ui-messages-info-icon">
+                                        <span class="pi pi-info-circle"></span>
+                                    </div>
+                                    <div class="ui-messages-info-summary">
+                                        <h:outputText value="Preview calculated successfully. Review the values above and provide authorization details below to proceed." />
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Authorization and Comments -->
+                        <p:panel header="Authorization Details" styleClass="mb-3">
+                            <h:panelGroup id="authorizationPanel">
+                                <h:outputLabel value="Authorization Comment (Mandatory):"
+                                               class="d-block mb-2 font-weight-bold"/>
+                                <p:outputLabel value="Provide details of the written request, including request number, date, and authorization from institution management."
+                                               styleClass="d-block mb-2 text-muted"/>
+                                <p:inputTextarea
+                                    value="#{adminOpdBillDiscountController.adminComment}"
+                                    rows="5"
+                                    cols="80"
+                                    class="w-100"
+                                    placeholder="Example: Request No: REQ-2024-001, Date: 05-Nov-2024, Authorized by: Hospital Director Dr. John Smith. Reason: Patient was eligible for staff discount but it was not applied at the time of billing."
+                                    required="true"
+                                    requiredMessage="Authorization comment is mandatory" />
+                            </h:panelGroup>
+                        </p:panel>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-3">
+                            <p:commandButton
+                                value="Back to Bill Admin"
+                                icon="pi pi-arrow-left"
+                                action="/opd/view/bill_admin?faces-redirect=true"
+                                ajax="false"
+                                styleClass="ui-button-secondary" />
+
+                            <p:commandButton
+                                value="Apply Discount Scheme"
+                                icon="pi pi-check"
+                                styleClass="ui-button-success"
+                                action="#{adminOpdBillDiscountController.applyDiscountScheme()}"
+                                ajax="false"
+                                disabled="#{!adminOpdBillDiscountController.previewCalculated}"
+                                onclick="return confirm('Are you sure you want to apply this discount scheme? This action is IRREVERSIBLE and will modify financial data.');" />
+                        </div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

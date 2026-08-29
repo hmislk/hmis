@@ -23,8 +23,8 @@ public class BillExpenseFacade extends AbstractFacade<BillExpense> {
 
     @Override
     protected EntityManager getEntityManager() {
-        if (em == null) {
-        }
+        // EntityManager is injected by the container. If this is null, check
+        // the persistence context configuration.
         return em;
     }
 

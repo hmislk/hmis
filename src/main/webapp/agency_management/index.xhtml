@@ -22,6 +22,12 @@
                                         <h:panelGrid columns="1" class="w-100" >
                                             <p:commandButton icon="fa fa-check-circle" 
                                                              ajax="false" 
+                                                             value="View And Register Agency"
+                                                             action="/agency_management/agency_management?faces-redirect=true"
+                                                             
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa fa-check-circle" 
+                                                             ajax="false" 
                                                              value="Accept Agency Deposits"
                                                              action="/agency_management/agency_deposit_bill?faces-redirect=true"
                                                              actionListener="#{agentAndCcPaymentController.prepareNewBill()}"

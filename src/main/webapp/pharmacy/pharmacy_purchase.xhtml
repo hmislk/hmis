@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -97,7 +97,7 @@
                                         <h:outputLabel value="Payment Method" class="mb-2"/>
                                         <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method" />
-                                            <f:selectItems value="#{enumController.paymentMethodsForPharmacyPurchase}" />
+                                            <f:selectItems value="#{enumController.paymentMethodsForGrn}" />
                                             <p:ajax event="change" process="cmbPs" update="paymentMethodDetails" ></p:ajax>
                                         </p:selectOneMenu>
 
@@ -157,7 +157,7 @@
                                         id="acItem"
                                         value="#{pharmacyPurchaseController.currentBillItem.item}"
                                         forceSelection="true"
-                                        completeMethod="#{itemController.completeAmpAndAmppItem}"
+                                        minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
                                         var="vt"
                                         maxResults="20"
                                         itemLabel="#{vt.name}"
@@ -225,7 +225,7 @@
                                             onfocus="this.select()"
                                             styleClass="numericTxt"
                                             value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
-                                            <!--<f:ajax event="keyup" execute="@this acItem" render="txtRetailRate" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>-->
+                                            <!--<f:ajax event="keyup" execute="@this acItem" render="txtRetailRate" listener="#{pharmacyPurchaseController.calculateSaleRate()}"></f:ajax>-->
                                         </p:inputText>
                                         <p:inputText
                                             autocomplete="off"
@@ -233,7 +233,7 @@
                                             onfocus="this.select()"
                                             styleClass="numericTxt"
                                             value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRatePack}"  >
-                                            <!--<f:ajax event="keyup" execute="@this acItem" render="txtRetailRate" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>-->
+                                            <!--<f:ajax event="keyup" execute="@this acItem" render="txtRetailRate" listener="#{pharmacyPurchaseController.calculateSaleRate()}"></f:ajax>-->
                                         </p:inputText>
                                     </h:panelGroup>
 
@@ -294,7 +294,7 @@
                                     id="exItem"
                                     value="#{pharmacyPurchaseController.currentBillItem.item}"
                                     forceSelection="true"
-                                    completeMethod="#{itemController.completeAmpItem}"
+                                    minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItemForLoggedDepartment}"
                                     var="vt"
                                     itemLabel="#{vt.name}"
                                     itemValue="#{vt}" >
@@ -509,7 +509,7 @@
                             id="acExpense"
                             value="#{pharmacyPurchaseController.currentExpense.item}"
                             forceSelection="true"
-                            completeMethod="#{itemController.completeExpenseItem}"
+                            minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeExpenseItem}"
                             var="ex"
                             itemLabel="#{ex.name}"
                             itemValue="#{ex}"

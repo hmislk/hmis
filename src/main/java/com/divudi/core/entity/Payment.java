@@ -34,7 +34,7 @@ public class Payment implements Serializable, RetirableEntity {
     static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @ManyToOne
@@ -90,12 +90,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     private String retireComments;
 
+    @Deprecated // Use referenceNo
     private String chequeRefNo;
+
+    @Deprecated // Use referenceNo
+    private String creditCardRefNo;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date chequeDate;
-
-    private String creditCardRefNo;
 
     private double paidValue;
 
@@ -131,11 +133,19 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean paymentRecordCompleted;
 
     private boolean selectedForHandover;
+    private boolean handoverProofMissing;
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
     private boolean handingOverStarted;
     private boolean handingOverCompleted;
+
+    // Non-Cash Settlement (Phase 4, issue #17964)
+    // Set when a non-cash payment (Card/Cheque/Slip/eWallet/Online) has been
+    // settled with the bank or processor. Always false for cash.
+    private boolean paymentSettled;
+    @ManyToOne
+    private Bill paymentSettlementBill;
 
     //Payment Record Creation
     @ManyToOne
@@ -152,6 +162,8 @@ public class Payment implements Serializable, RetirableEntity {
     private CashBookEntry cashbookEntry;
     @ManyToOne
     private CashBook cashbook;
+
+    private boolean deposited;
 
     private boolean cancelled;
     @ManyToOne
@@ -189,6 +201,9 @@ public class Payment implements Serializable, RetirableEntity {
     @ManyToOne
     private Institution toInstitution;
 
+    @ManyToOne
+    private WebUser floatRecipient;
+
     private Staff toStaff;
 
     // newly added fields
@@ -202,6 +217,7 @@ public class Payment implements Serializable, RetirableEntity {
         paymentRecordCompleted = false;
         chequeRealized = false;
         chequePaid = false;
+        paymentSettled = false;
         paymentDate = new Date();
     }
 
@@ -385,10 +401,12 @@ public class Payment implements Serializable, RetirableEntity {
     }
 
     // Can be use as a reference number for any payment method
+    @Deprecated // Use getReferenceNo()
     public String getChequeRefNo() {
         return chequeRefNo;
     }
 
+    @Deprecated // Use setReferenceNo()
     public void setChequeRefNo(String chequeRefNo) {
         this.chequeRefNo = chequeRefNo;
     }
@@ -401,10 +419,12 @@ public class Payment implements Serializable, RetirableEntity {
         this.chequeDate = chequeDate;
     }
 
+    @Deprecated // Use getReferenceNo()
     public String getCreditCardRefNo() {
         return creditCardRefNo;
     }
 
+    @Deprecated // Use setReferenceNo()
     public void setCreditCardRefNo(String creditCardRefNo) {
         this.creditCardRefNo = creditCardRefNo;
     }
@@ -587,12 +607,25 @@ public class Payment implements Serializable, RetirableEntity {
     }
 
     public String getReferenceNo() {
-
+        // Backward compatibility: if referenceNo is null or blank, try deprecated fields
+        if (referenceNo == null || referenceNo.trim().isEmpty()) {
+            if (chequeRefNo != null && !chequeRefNo.trim().isEmpty()) {
+                return chequeRefNo;
+            }
+            if (creditCardRefNo != null && !creditCardRefNo.trim().isEmpty()) {
+                return creditCardRefNo;
+            }
+        }
         return referenceNo;
     }
 
     public void setReferenceNo(String referenceNo) {
         this.referenceNo = referenceNo;
+        // Sync deprecated fields during migration period for backward compatibility
+        if (referenceNo != null && !referenceNo.trim().isEmpty()) {
+            setChequeRefNo(referenceNo);
+            setCreditCardRefNo(referenceNo);
+        }
     }
 
     public boolean getCashbookEntryCompleted() {
@@ -669,7 +702,9 @@ public class Payment implements Serializable, RetirableEntity {
 
     public Date getPaymentDate() {
         if (paymentDate == null) {
-            if (this.getBill() != null) {
+            if (chequeDate != null) {
+                paymentDate = chequeDate;
+            } else if (this.getBill() != null) {
                 paymentDate = this.getBill().getCreatedAt();
             }
         }
@@ -702,6 +737,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setSelectedForHandover(boolean selectedForHandover) {
         this.selectedForHandover = selectedForHandover;
+    }
+
+    public boolean isHandoverProofMissing() {
+        return handoverProofMissing;
+    }
+
+    public void setHandoverProofMissing(boolean handoverProofMissing) {
+        this.handoverProofMissing = handoverProofMissing;
     }
 
     public boolean isSelectedForRecording() {
@@ -737,6 +780,22 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setCurrentHolder(WebUser currentHolder) {
         this.currentHolder = currentHolder;
+    }
+
+    public WebUser getFloatRecipient() {
+        return floatRecipient;
+    }
+
+    public void setFloatRecipient(WebUser floatRecipient) {
+        this.floatRecipient = floatRecipient;
+    }
+
+    public boolean isDeposited() {
+        return deposited;
+    }
+
+    public void setDeposited(boolean deposited) {
+        this.deposited = deposited;
     }
 
     public boolean isCancelled() {
@@ -927,6 +986,22 @@ public class Payment implements Serializable, RetirableEntity {
     @Transient
     public Double getAbsolutePaidValueTransient() {
         return Math.abs(this.paidValue);
+    }
+
+    public boolean isPaymentSettled() {
+        return paymentSettled;
+    }
+
+    public void setPaymentSettled(boolean paymentSettled) {
+        this.paymentSettled = paymentSettled;
+    }
+
+    public Bill getPaymentSettlementBill() {
+        return paymentSettlementBill;
+    }
+
+    public void setPaymentSettlementBill(Bill paymentSettlementBill) {
+        this.paymentSettlementBill = paymentSettlementBill;
     }
 
 }
