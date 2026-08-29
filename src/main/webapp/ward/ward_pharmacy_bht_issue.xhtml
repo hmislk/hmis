@@ -387,6 +387,7 @@
                                     icon="pi pi-refresh"
                                     id="btnSelectSubstitute"
                                     title="Select a Substitute"
+                                    rendered="#{bItm.referanceBillItem != null}"
                                     action="#{pharmacySaleBhtController.prepareSubstitute(bItm)}"
                                     update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
                                     oncomplete="PF('substituteDialog').show();"
@@ -419,6 +420,12 @@
                                     </p:autoComplete>
                                 </f:facet>
                             </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Expiry" style="width:7rem; padding: 6px;">
+                            <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
                         </p:column>
 
                         <p:column headerText="Qty"
