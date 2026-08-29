@@ -340,6 +340,9 @@ public class PharmacySaleBhtController implements Serializable {
     private BillBeanController billBean;
     private Stock tmpStock;
     private Double billItemTotal;
+    private Double billItemGrossTotal;
+    private Double billItemMarginTotal;
+    private Double billItemDiscountTotal;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -452,15 +455,14 @@ public class PharmacySaleBhtController implements Serializable {
     public void onEditing(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
 
-        tmp.setQty(tmp.getPharmaceuticalBillItem().getQtyInUnit());
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() <= 0) {
+        if (tmp.getQty() == null || !Double.isFinite(tmp.getQty()) || tmp.getQty() <= 0) {
             setZeroToQty(tmp);
             recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
-        if (fetchedStock != null && tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
+        if (fetchedStock != null && tmp.getQty() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
             recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
@@ -469,8 +471,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (tmp.getReferanceBillItem() != null) {
             double remaining = getRemainingQuantityForItem(tmp.getReferanceBillItem());
-            if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > remaining) {
-                JsfUtil.addErrorMessage("Cannot issue " + tmp.getPharmaceuticalBillItem().getQtyInUnit()
+            if (tmp.getQty() > remaining) {
+                JsfUtil.addErrorMessage("Cannot issue " + tmp.getQty()
                         + " units of " + tmp.getItem().getName() + ". Only " + remaining + " units remaining to be issued.");
                 tmp.setQty(remaining);
                 tmp.getPharmaceuticalBillItem().setQtyInUnit((float) remaining);
@@ -495,14 +497,16 @@ public class PharmacySaleBhtController implements Serializable {
      * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
      * COGS saw +10 instead of -10).
      *
-     * Uses qty (not qtyInUnit) because the UI binds directly to qty for editing;
-     * qtyInUnit is not updated by JSF and retains its original value.
+     * The Qty column's cellEditor binds directly to BillItem.qty (kept positive
+     * by convention throughout this controller), not to the internal negative
+     * PharmaceuticalBillItem.qty mirror, so tmp.getQty() is the authoritative
+     * just-edited value.
      */
     private void recalculateEditedIssueRow(BillItem tmp) {
         if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
             return;
         }
-        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQty());
+        double editedQty = Math.abs(tmp.getQty());
         tmp.setQty(editedQty);
         tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
         tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
@@ -2049,7 +2053,8 @@ public class PharmacySaleBhtController implements Serializable {
             financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
         }
 
-        calculateBillTotalsForTransferIssue(getPreBill());
+        calculateRates(itemForSubstitution);
+        calCurrentBillItemTotal(getBillItems());
 
         JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
@@ -2643,7 +2648,12 @@ public class PharmacySaleBhtController implements Serializable {
         getBillItems().remove(b);
         issuingSelections.remove(b);
 
-        calTotal();
+        // calTotal() operates on the unrelated preBill.getBillItems() list, not the
+        // grid actually rendered here — it left billItemTotal/Gross/Margin/Discount
+        // stale after a deletion. calCurrentBillItemTotal() is the helper this
+        // controller already uses elsewhere for the real billItems list. CodeRabbit
+        // review on #23330.
+        calCurrentBillItemTotal(getBillItems());
     }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
@@ -3380,8 +3390,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void calCurrentBillItemTotal(List<BillItem> billItems) {
         billItemTotal = 0.0;
+        billItemGrossTotal = 0.0;
+        billItemMarginTotal = 0.0;
+        billItemDiscountTotal = 0.0;
         for (BillItem bi : billItems) {
             billItemTotal += bi.getNetValue();
+            billItemGrossTotal += bi.getGrossValue();
+            billItemMarginTotal += bi.getMarginValue();
+            billItemDiscountTotal += bi.getDiscount();
         }
     }
 
@@ -3804,6 +3820,30 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillItemTotal(Double billItemTotal) {
         this.billItemTotal = billItemTotal;
+    }
+
+    public Double getBillItemGrossTotal() {
+        return billItemGrossTotal;
+    }
+
+    public void setBillItemGrossTotal(Double billItemGrossTotal) {
+        this.billItemGrossTotal = billItemGrossTotal;
+    }
+
+    public Double getBillItemMarginTotal() {
+        return billItemMarginTotal;
+    }
+
+    public void setBillItemMarginTotal(Double billItemMarginTotal) {
+        this.billItemMarginTotal = billItemMarginTotal;
+    }
+
+    public Double getBillItemDiscountTotal() {
+        return billItemDiscountTotal;
+    }
+
+    public void setBillItemDiscountTotal(Double billItemDiscountTotal) {
+        this.billItemDiscountTotal = billItemDiscountTotal;
     }
 
     // DTO-based properties and methods for improved performance
