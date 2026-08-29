@@ -4767,6 +4767,21 @@ public class BhtSummeryController implements Serializable {
         this.due = due;
     }
 
+    public double getVisibleIssueTotal(List<Bill> issues) {
+        if (issues == null) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (Bill iss : issues) {
+            boolean visible = (iss instanceof PreBill)
+                    || (iss instanceof RefundBill && iss.getBilledBill() != null);
+            if (visible) {
+                total += iss.getNetTotal();
+            }
+        }
+        return total;
+    }
+
     public Date getCurrentTime() {
         currentTime = Calendar.getInstance().getTime();
 
