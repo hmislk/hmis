@@ -2440,6 +2440,41 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
+    /**
+     * Same FEFO greedy-take logic as {@link com.divudi.ejb.PharmacyBean#depleteStockForQty(java.util.List, double)},
+     * but treats each Stock's available quantity as already reduced by whatever
+     * {@code reservedQtyByStockId} says an earlier requested line in the same
+     * {@link #generateIssueBillComponentsForBhtRequest(Bill)} pass already took from
+     * it. Needed because that method caches the raw Stock list per AMP
+     * (rawStockByAmpId) — without this, two requested lines resolving to the same
+     * AMP would both see the same unreduced Stock.getStock() figures and could both
+     * get auto-assigned the same batch. Never mutates the Stock entities themselves —
+     * purely in-memory bookkeeping against the passed-in map. CodeRabbit review on
+     * #23343.
+     */
+    private List<StockQty> depleteStockForQtyExcludingReserved(List<Stock> rawStocks, double qty, Map<Long, Double> reservedQtyByStockId) {
+        List<StockQty> list = new ArrayList<>();
+        if (rawStocks == null) {
+            return list;
+        }
+        double toAddQty = qty;
+        for (Stock s : rawStocks) {
+            double reserved = s.getId() != null ? reservedQtyByStockId.getOrDefault(s.getId(), 0.0) : 0.0;
+            double available = s.getStock() - reserved;
+            if (available <= 0) {
+                continue;
+            }
+            if (available >= toAddQty) {
+                list.add(new StockQty(s, toAddQty));
+                break;
+            } else {
+                toAddQty = toAddQty - available;
+                list.add(new StockQty(s, available));
+            }
+        }
+        return list;
+    }
+
     public void addBillItem() {
 
         if (getPreBill() == null) {
@@ -3111,6 +3146,16 @@ public class PharmacySaleBhtController implements Serializable {
         // stock. Populated lazily per request so a VTM shared by multiple requested lines
         // is only queried once. Issue #23055.
         Map<Long, List<Amp>> ampsByVtmId = new HashMap<>();
+        // Tracks how much of each Stock (by id) has already been assigned to an earlier
+        // requested line within THIS generation pass. rawStockByAmpId caches the raw
+        // Stock list per AMP so repeated requested lines for the same medicine don't
+        // re-query, but that means two lines resolving to the same AMP would otherwise
+        // see the exact same (unmodified) Stock.getStock() figures and could both get
+        // auto-assigned the same batch. This map is purely in-memory bookkeeping — it
+        // never mutates the Stock entities themselves (they're JPA-managed; touching
+        // their qty field here would risk a premature, unintended stock deduction on
+        // flush, before the bill is even settled). CodeRabbit review on #23343.
+        Map<Long, Double> reservedQtyByStockId = new HashMap<>();
 
         for (BillItem i : b.getBillItems()) {
             if (i.getItem() == null) {
@@ -3219,7 +3264,7 @@ public class PharmacySaleBhtController implements Serializable {
                 }
 
                 List<Stock> rawStocks = rawStockByAmpId.computeIfAbsent(candidate.getId(), id -> pharmacyBean.getRawStockListForAmp(candidate, dept));
-                List<StockQty> stockQtys = pharmacyBean.depleteStockForQty(rawStocks, candidateQty);
+                List<StockQty> stockQtys = depleteStockForQtyExcludingReserved(rawStocks, candidateQty, reservedQtyByStockId);
                 if (stockQtys == null || stockQtys.isEmpty()) {
                     continue;
                 }
@@ -3282,6 +3327,19 @@ public class PharmacySaleBhtController implements Serializable {
                 selectedStockQtys = null;
                 isSubstitute = false;
                 selectedCandidateQty = issuableQty;
+            }
+
+            // Reserve what this line actually consumed so a later requested line
+            // resolving to the same AMP/stock sees reduced availability instead of
+            // being offered the same batch again. Must happen only for the finally
+            // selected candidate, not the ones evaluated and discarded above.
+            if (selectedStockQtys != null) {
+                for (StockQty sq : selectedStockQtys) {
+                    if (sq.getStock() == null || sq.getStock().getId() == null || sq.getQty() <= 0) {
+                        continue;
+                    }
+                    reservedQtyByStockId.merge(sq.getStock().getId(), sq.getQty(), Double::sum);
+                }
             }
 
             if (selectedStockQtys != null && !selectedStockQtys.isEmpty()) {
