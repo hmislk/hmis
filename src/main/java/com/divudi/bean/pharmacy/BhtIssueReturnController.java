@@ -530,7 +530,13 @@ public class BhtIssueReturnController implements Serializable {
             bi.setReferenceBill(getBill());
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
-            bi.setMarginRate(bi.getNetRate() - bi.getRate());
+            // marginRate is never persisted at issue time (only marginValue is - see
+            // InpatientDirectIssueNativeSqlService.settle()'s BILLITEM insert column list),
+            // so it must be reconstructed here. netRate = rate + marginRate - discountRate,
+            // so marginRate = netRate - rate + discountRate. Omitting "+ discountRate"
+            // (the previous formula) understates margin by the discount amount whenever
+            // the original item had a nonzero discount (issue #23334).
+            bi.setMarginRate(bi.getNetRate() - bi.getRate() + bi.getDiscountRate());
             bi.setQty(0.0);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
