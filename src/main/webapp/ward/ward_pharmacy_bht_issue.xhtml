@@ -121,8 +121,10 @@
                                             <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                             <p:autoComplete accesskey="i" id="acStock"
                                                             value="#{pharmacySaleBhtController.tmpStock}"
+                                                            converter="stockConverter"
                                                             minQueryLength="3" queryDelay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="10" size="100"
+                                                            forceSelection="true"
                                                             styleClass="w-100"
                                                             inputStyleClass="w-100 form-control">
                                                 <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
