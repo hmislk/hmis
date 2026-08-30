@@ -51,6 +51,10 @@ public enum PaperType {
             case PosPaper:
                 label = "POS Paper";
                 break;
+                
+            case FiveFivePaperCoustom1:
+                label = "5x5 Paper Custom 1";
+                break;
         }
 
         return label;

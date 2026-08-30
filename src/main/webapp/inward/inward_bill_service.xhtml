@@ -1000,6 +1000,18 @@
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
+                                                    
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'}">
+                                                        <ui:repeat value="#{billBhtController.bills}" var="ffb">
+                                                            <div style="page-break-after: always;">
+                                                                <print:five_five_paper_custom_1_inward_bill_service
+                                                                    bill="#{ffb}"
+                                                                    duplicate="false"
+                                                                    cancelled="false" />
+                                                            </div>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
 
                                                 </h:panelGroup>
                                             </p:panel>
