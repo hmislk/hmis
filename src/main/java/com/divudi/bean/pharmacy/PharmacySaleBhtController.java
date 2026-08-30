@@ -1390,12 +1390,29 @@ public class PharmacySaleBhtController implements Serializable {
         //TODO: What is this doing here. Need to investigate
         getBillBean().setSurgeryData(getPreBill(), getBatchBill(), SurgeryBillType.PharmacyItem);
 
-        if (getPreBill().getId() == null) {
-            getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-            getPreBill().setCreater(getSessionController().getLoggedUser());
-            getBillFacade().create(getPreBill());
-        } else {
-            getBillFacade().edit(getPreBill());
+        // Bill.billItems is cascade=ALL, and getPreBill().getBillItems() may already be
+        // aliased to the live Issuing Items grid list (generateIssueBillComponentsForBhtRequest()
+        // sets it when the page is generated, well before settlement). Persisting/merging
+        // the parent Bill here would cascade-persist those items as a side effect — BEFORE
+        // savePreBillItemsFinally()'s stock-sufficiency check even runs — leaving orphan
+        // BillItem rows behind on a rejected settlement. Detach the collection for this
+        // call only; restore the reference right after so validation and the real persist
+        // loop in savePreBillItemsFinally() still see the correct items. BillFacade is a
+        // @Stateless EJB, so create()/edit() each commit as their own transaction — nulling
+        // the reference here has no effect on anything already committed by an earlier
+        // attempt. Issue #23358.
+        List<BillItem> pendingBillItems = getPreBill().getBillItems();
+        getPreBill().setBillItems(null);
+        try {
+            if (getPreBill().getId() == null) {
+                getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+                getPreBill().setCreater(getSessionController().getLoggedUser());
+                getBillFacade().create(getPreBill());
+            } else {
+                getBillFacade().edit(getPreBill());
+            }
+        } finally {
+            getPreBill().setBillItems(pendingBillItems);
         }
 
     }
@@ -1435,6 +1452,27 @@ public class PharmacySaleBhtController implements Serializable {
             getPreBill().setBillItems(new ArrayList<>());
         }
 
+        // Validate BEFORE persisting anything. getPreBill().getBillItems() is
+        // already aliased to `list` (generateIssueBillComponentsForBhtRequest()
+        // does getPreBill().setBillItems(billItems) with the same List object
+        // when the page is generated), so this check needs nothing persisted
+        // first — it only reads each item's already-set stock/qty, never
+        // item.getBill() or item.getId(). Moved ahead of the persist loop below
+        // so a rejected settlement leaves no orphan BillItem behind: previously
+        // this ran AFTER create()/edit(), so a correctly-rejected
+        // insufficient-stock settlement still left a real, persisted BillItem
+        // referencing the original request item, permanently inflating that
+        // item's billed-quantity aggregate and making the request appear
+        // "fully issued" forever even though nothing was actually issued.
+        // Issue #23358.
+        if (!directIssueBatchService.validateBillForSettlement(getPreBill())) {
+            String errorMsg = "One or more items have insufficient stock. Please refresh and try again.";
+            LOGGER.log(Level.SEVERE, "Batch stock validation failed during BHT settlement for Bill ID: {0}",
+                    getPreBill().getId());
+            JsfUtil.addErrorMessage(errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
+
         for (BillItem tbi : list) {
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -1445,14 +1483,6 @@ public class PharmacySaleBhtController implements Serializable {
             } else {
                 getBillItemFacade().edit(tbi);
             }
-        }
-
-        if (!directIssueBatchService.validateBillForSettlement(getPreBill())) {
-            String errorMsg = "One or more items have insufficient stock. Please refresh and try again.";
-            LOGGER.log(Level.SEVERE, "Batch stock validation failed during BHT settlement for Bill ID: {0}",
-                    getPreBill().getId());
-            JsfUtil.addErrorMessage(errorMsg);
-            throw new RuntimeException(errorMsg);
         }
 
         if (!settlementStockDeducted) {
