@@ -30,8 +30,11 @@ public class BhtPaymentSummaryDTO implements Serializable {
     private Date dateOfDischarge;
     private AdmissionType admissionType;
 
-    /** Sum of deposit bill payments, keyed by payment method. */
+    /** Sum of "Make a Deposit" (INWARD_DEPOSIT) bill payments, keyed by payment method. */
     private Map<PaymentMethod, Double> depositsByMethod = new EnumMap<>(PaymentMethod.class);
+
+    /** Sum of "Make a Payment" (INWARD_PAYMENT) bill payments, keyed by payment method. */
+    private Map<PaymentMethod, Double> paymentsByMethod = new EnumMap<>(PaymentMethod.class);
 
     /** Sum of post-final-bill payments, keyed by payment method. */
     private Map<PaymentMethod, Double> postFinalPaymentsByMethod = new EnumMap<>(PaymentMethod.class);
@@ -86,6 +89,39 @@ public class BhtPaymentSummaryDTO implements Serializable {
         return getTotalDeposits() - getDepositCash() - getDepositCard();
     }
 
+    public double getTotalPayments() {
+        return paymentsByMethod.values().stream().mapToDouble(Double::doubleValue).sum();
+    }
+
+    public double getPaymentForMethod(PaymentMethod method) {
+        return paymentsByMethod.getOrDefault(method, 0.0);
+    }
+
+    public void addPayment(PaymentMethod method, double amount) {
+        if (method == null) {
+            LOG.log(Level.WARNING, "BHT {0}: payment of {1} has null PaymentMethod — amount dropped from totals",
+                    new Object[]{bhtNo, amount});
+            return;
+        }
+        paymentsByMethod.merge(method, amount, Double::sum);
+    }
+
+    public double getPaymentCash() {
+        return getPaymentForMethod(PaymentMethod.Cash);
+    }
+
+    public double getPaymentCard() {
+        return getPaymentForMethod(PaymentMethod.Card);
+    }
+
+    public double getPaymentCredit() {
+        return getPaymentForMethod(PaymentMethod.Credit);
+    }
+
+    public double getPaymentOther() {
+        return getTotalPayments() - getPaymentCash() - getPaymentCard() - getPaymentCredit();
+    }
+
     public double getTotalPostFinalPayments() {
         return postFinalPaymentsByMethod.values().stream().mapToDouble(Double::doubleValue).sum();
     }
@@ -129,6 +165,11 @@ public class BhtPaymentSummaryDTO implements Serializable {
 
     public double getPostFinalOther() {
         return getTotalPostFinalPayments() - getPostFinalCash() - getPostFinalCard() - getPostFinalCredit();
+    }
+
+    /** Deposits + payments + post-final-bill payments — every money-in stream for this BHT. */
+    public double getTotalAllMoneyIn() {
+        return getTotalDeposits() + getTotalPayments() + getTotalPostFinalPayments();
     }
 
     public void addCreditCompanyBill(double billedAmount, double settledAmount, String companyName) {
@@ -203,6 +244,10 @@ public class BhtPaymentSummaryDTO implements Serializable {
         return depositsByMethod;
     }
 
+    public Map<PaymentMethod, Double> getPaymentsByMethod() {
+        return paymentsByMethod;
+    }
+
     public Map<PaymentMethod, Double> getPostFinalPaymentsByMethod() {
         return postFinalPaymentsByMethod;
     }
@@ -248,17 +293,18 @@ public class BhtPaymentSummaryDTO implements Serializable {
     }
 
     /**
-     * Balance = final bill net total − (deposits + post-final payments + credit billed).
+     * Balance = final bill net total − (deposits + payments + post-final payments + credit billed).
      * Positive means amount still due; negative means overpayment / refund due.
      * Returns 0 when no final bill exists — checked via finalBillNumber presence,
      * not finalBillTotal, so a genuine final bill with a zero net total still
-     * nets out any deposits/post-final payments/credit billed instead of being
-     * mistaken for "no final bill".
+     * nets out any deposits/payments/post-final payments/credit billed instead of
+     * being mistaken for "no final bill".
      */
     public double getTotalBalance() {
         if (finalBillNumber == null || finalBillNumber.isBlank()) {
             return 0.0;
         }
-        return finalBillTotal - getTotalDeposits() - getTotalPostFinalPayments() - creditBilledTotal;
+        return finalBillTotal - getTotalDeposits() - getTotalPayments()
+                - getTotalPostFinalPayments() - creditBilledTotal;
     }
 }
