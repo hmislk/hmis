@@ -645,7 +645,12 @@ public class TransferRequestController implements Serializable {
         return false;
     }
 
-    public void saveTransferRequestPreBillAndBillItems() {
+    // synchronized because this bean is @SessionScoped and CDI does not serialise
+    // concurrent requests within a session: a double-clicked Save puts two threads on
+    // the same instance, and both would read a null id below -- creating two PRE bills
+    // and, since both would capture newRequest = true, notifying subscribers twice.
+    // Serialising per session is enough; two sessions never share a request bill.
+    public synchronized void saveTransferRequestPreBillAndBillItems() {
         // Captured before the bill is persisted below: this method is re-entered by both
         // Save and Finalize, and a ward can press Save repeatedly while still adding
         // items. Only the call that actually creates the request notifies subscribers,
