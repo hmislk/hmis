@@ -2138,6 +2138,58 @@ subject to the same row-scope constraint. Verified while fixing issue
 needed the identical treatment, not just the two components fixed in the
 original pass).
 
+## 83. A page-local `<style>` rule can silently lose to the PrimeFaces theme — verify with a computed-style probe, not a screenshot
+
+A page-local `<style>` block that targets a PrimeFaces sub-part (title bar, row,
+header cell) can look plausible in review and still never apply, because the
+Material theme qualifies the same part with a leading element selector:
+
+```css
+/* theme.css — specificity (0,2,1): two classes PLUS the `body` element */
+body .ui-panel .ui-panel-titlebar { background: #f8f9fa; }
+
+/* page-local — specificity (0,2,0): loses, even though it comes later */
+.my-highlight > .ui-panel-titlebar { background: rgba(13,110,253,.10); }
+```
+
+Later-in-document does **not** save you here: the theme wins on specificity, so
+the rule is simply discarded. Adding the same `body` + owning-class prefix
+restores the win:
+
+```css
+body .ui-panel.my-highlight > .ui-panel-titlebar { background: rgba(13,110,253,.10); }
+```
+
+The trap is that a *partial* application looks like success — an outer `border`
+on the panel itself can land (nothing in the theme sets it) while the title-bar
+`background` on the very next line is dropped, so the screenshot shows "some
+highlight" and the defect passes review.
+
+Don't judge this from a screenshot. Read the computed style, and — when the rule
+is print-scoped — read it under emulated print media (see §43; never click the
+real `p:printer` button):
+
+```js
+async (page) => {
+  const probe = async () => await page.evaluate(() => {
+    const bar = document.querySelector('body .ui-panel.my-highlight > .ui-panel-titlebar');
+    return getComputedStyle(bar).backgroundColor;
+  });
+  await page.emulateMedia({ media: 'screen' }); const onScreen = await probe();
+  await page.emulateMedia({ media: 'print'  }); const onPrint  = await probe();
+  await page.emulateMedia({ media: 'screen' });
+  return { onScreen, onPrint };
+}
+```
+
+To find *which* rule actually won, enumerate `document.styleSheets` for rules the
+element `matches()` and print each one's `selectorText` plus originating
+stylesheet — that names the offending theme selector directly, instead of
+guessing at specificity.
+
+Found on `inward/pharmacy_bill_return_bht_issue.xhtml` while adding the Return
+Bill Preview highlight (issue #23338).
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
