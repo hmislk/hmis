@@ -4245,6 +4245,24 @@ public class BhtSummeryController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
+        Long previousId = this.patientEncounter == null ? null : this.patientEncounter.getId();
+        Long newId = patientEncounter == null ? null : patientEncounter.getId();
+        if (!java.util.Objects.equals(previousId, newId)) {
+            // The six Medicine Issue lists (and childPatientEncouters) are lazily
+            // recomputed by their getters (see getEtuMedicineIssues() etc.) so the
+            // Interim Bill page still populates even when createTables() is skipped
+            // (issue #23350). That lazy-init means a stale, non-null list from a
+            // previously viewed encounter would otherwise leak into this encounter's
+            // view instead of being recomputed - clear them here whenever the
+            // encounter actually changes.
+            etuMedicineIssues = null;
+            pharmacyMedicineIssues = null;
+            inwardMedicineIssues = null;
+            theatreMedicineIssues = null;
+            storeMedicineIssues = null;
+            inventryMedicineIssues = null;
+            childPatientEncouters = null;
+        }
         this.patientEncounter = patientEncounter;
         invalidateUnifiedGanttBarsCache();
     }
