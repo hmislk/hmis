@@ -121,8 +121,10 @@
                                             <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                             <p:autoComplete accesskey="i" id="acStock"
                                                             value="#{pharmacySaleBhtController.tmpStock}"
+                                                            converter="stockConverter"
                                                             minQueryLength="3" queryDelay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="10" size="100"
+                                                            forceSelection="true"
                                                             styleClass="w-100"
                                                             inputStyleClass="w-100 form-control">
                                                 <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -256,10 +258,16 @@
                                                rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
                                                            and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"
                                                style="background-color:#{pharmacySaleBhtController.bhtRequestBill.priority.priorityColor}; color:#212529;"></p:tag>
+                                        <p:outputLabel value="Gross Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemGrossTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                         <p:outputLabel value="Discount" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
                                         <p:outputLabel value=":" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ></p:outputLabel>
-                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
-                                        <p:outputLabel value="Net Total" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemDiscountTotal}" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Margin" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.billItemMarginTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="Net Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
                                         <p:outputLabel value=":" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                         <p:outputLabel value="Comment" ></p:outputLabel>
@@ -334,6 +342,20 @@
                         .auto-substituted-row { background-color: #FFF3CD !important; }
                         .auto-substituted-row td { background-color: #FFF3CD !important; }
                     </style>
+                    <!-- ANY AJAX call originating from a component inside this editable p:dataTable's
+                         row scope — the table's own rowEdit/rowEditCancel behaviors, a p:ajax nested
+                         inside a cellEditor (the autocomplete's itemSelect below), and even a plain
+                         p:commandButton in a row (the delete button below) — has its "update" target
+                         silently constrained to the table itself client-side. Extra ids added to
+                         update="" are ignored no matter what the server-rendered markup says; a
+                         component OUTSIDE the table (like this p:remoteCommand) is unaffected and can
+                         update billDetailsPanel freely. Verified live for all three cases: the
+                         browser's actual request always sends javax.faces.partial.render=itemList
+                         only, even with update="itemList billDetailsPanel" in the source and after a
+                         full app/domain redeploy. p:remoteCommand + oncomplete is the standard
+                         workaround: it issues a second, independent AJAX call from outside the table's
+                         row scope. Issue #23328. -->
+                    <p:remoteCommand name="refreshBillDetails" update="billDetailsPanel" />
                     <p:dataTable
                         var="bItm"
                         value="#{pharmacySaleBhtController.billItems}"
@@ -342,8 +364,8 @@
                         sortBy="#{bItm.searialNo}"
                         rowStyleClass="#{bItm.autoSubstituted ? 'auto-substituted-row' : ''}"
                         editable="true">
-                        <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
-                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
+                        <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" oncomplete="refreshBillDetails();" />
+                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" oncomplete="refreshBillDetails();" />
 
                         <!-- Description/Comment/Batch No/Expiry are detail fields, not needed to scan the
                              list at a glance — moved into the row-expansion panel below instead of forcing
@@ -365,6 +387,7 @@
                                     icon="pi pi-refresh"
                                     id="btnSelectSubstitute"
                                     title="Select a Substitute"
+                                    rendered="#{bItm.referanceBillItem != null}"
                                     action="#{pharmacySaleBhtController.prepareSubstitute(bItm)}"
                                     update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
                                     oncomplete="PF('substituteDialog').show();"
@@ -374,35 +397,63 @@
                         </p:column>
 
                         <p:column headerText="Issuing Bill Item" style="padding: 6px;">
-                            <p:autoComplete id="Isitem"
-                                            value="#{pharmacySaleBhtController.issuingSelections[bItm]}"
-                                            converter="stockConverter"
-                                            completeMethod="#{pharmacySaleBhtController.completeAllDepartmentStock}"
-                                            var="stk"
-                                            itemLabel="#{stk.itemBatch.item.name} (Batch: #{stk.itemBatch.batchNo}, Qty: #{stk.stock})"
-                                            itemValue="#{stk}"
-                                            forceSelection="true"
-                                            minQueryLength="2"
-                                            inputStyleClass="w-100"
-                                            placeholder="#{bItm.item.name}">
-                                <p:ajax event="itemSelect" process="@this"
-                                        listener="#{pharmacySaleBhtController.replaceIssuingBillItem(bItm)}"
-                                        update="itemList" />
-                            </p:autoComplete>
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{bItm.item.name}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:autoComplete id="Isitem"
+                                                    value="#{pharmacySaleBhtController.issuingSelections[bItm]}"
+                                                    converter="stockConverter"
+                                                    completeMethod="#{pharmacySaleBhtController.completeAllDepartmentStock}"
+                                                    var="stk"
+                                                    itemLabel="#{stk.itemBatch.item.name} (Batch: #{stk.itemBatch.batchNo}, Qty: #{stk.stock})"
+                                                    itemValue="#{stk}"
+                                                    forceSelection="true"
+                                                    minQueryLength="2"
+                                                    styleClass="w-100"
+                                                    inputStyleClass="w-100"
+                                                    placeholder="#{bItm.item.name}">
+                                        <p:ajax event="itemSelect" process="@this"
+                                                listener="#{pharmacySaleBhtController.replaceIssuingBillItem(bItm)}"
+                                                update="itemList" oncomplete="refreshBillDetails();" />
+                                    </p:autoComplete>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Expiry" style="width:7rem; padding: 6px;">
+                            <h:outputText value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
                         </p:column>
 
                         <p:column headerText="Qty"
                                   style="width:6rem; text-align: right; padding: 6px;">
                             <p:cellEditor>
                                 <f:facet name="output">
-                                    <h:outputText value="#{bItm.pharmaceuticalBillItem.qty}" >
+                                    <h:outputText value="#{bItm.qty}" >
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bItm.pharmaceuticalBillItem.qty}" style="width:96%"/>
+                                    <p:inputText autocomplete="off" value="#{bItm.qty}" style="width:96%"/>
                                 </f:facet>
                             </p:cellEditor>
+                        </p:column>
+
+                        <p:column headerText="Gross Value" style="width:8rem; text-align: right; padding: 6px;"
+                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                            <h:outputLabel value="#{bItm.grossValue}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Margin" style="width:8rem; text-align: right; padding: 6px;"
+                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                            <h:outputLabel value="#{bItm.marginValue}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Net Total"  style="width:8rem; text-align: right; padding: 6px;"
@@ -412,17 +463,30 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column style="width:6rem; text-align: right; padding: 6px;">
-                            <div class="d-flex justify-content-end gap-2">
-                                <p:rowEditor/>
-                                <p:commandButton
-                                    icon="fas fa-trash"
-                                    action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}"
-                                    class="ui-button-danger"
-                                    process="@this"
-                                    update="itemList">
-                                </p:commandButton>
-                            </div>
+                        <p:column headerText="Discount" style="width:8rem; text-align: right; padding: 6px;"
+                                  rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                            <h:outputLabel value="#{bItm.discount}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column style="width:6rem; text-align: right; padding: 6px; display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+                            <!-- p:rowEditor must render as a DIRECT child of this td — PrimeFaces'
+                                 row-edit click handler is delegated with the selector
+                                 "> tr > td > div.ui-row-editor > a"; a wrapping <div> here (as this
+                                 column used to have) breaks that match and the pencil silently does
+                                 nothing on click. Verified live: with the wrapper, clicking the pencil
+                                 produces no DOM change at all; without it, the row correctly enters
+                                 edit mode. Issue #23328. -->
+                            <p:rowEditor/>
+                            <p:commandButton
+                                icon="fas fa-trash"
+                                action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}"
+                                class="ui-button-danger"
+                                process="@this"
+                                update="itemList"
+                                oncomplete="refreshBillDetails();">
+                            </p:commandButton>
 
                         </p:column>
 
@@ -479,12 +543,6 @@
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
                                 </h:panelGroup>
-                            </h:panelGroup>
-                            <h:panelGroup layout="block" styleClass="col-md-3" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
-                                <strong>Matrix Value: </strong>
-                                <h:outputLabel value="#{bItm.marginValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
                             </h:panelGroup>
                         </p:rowExpansion>
 

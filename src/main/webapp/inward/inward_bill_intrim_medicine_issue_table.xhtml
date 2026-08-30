@@ -5,6 +5,7 @@
                 xmlns:p="http://primefaces.org/ui">
 
     <p:dataTable
+        id="#{tableId}"
         value="#{issues}"
         var="iss"
         rowIndexVar="rowIndex"
@@ -103,6 +104,24 @@
             </div>
 
         </p:column>
+
+        <p:columnGroup type="footer">
+            <p:row>
+                <p:column colspan="3" footerText="Total"/>
+                <p:column style="text-align: right;">
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{bhtSummeryController.getVisibleIssueTotal(issues)}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+            </p:row>
+        </p:columnGroup>
     </p:dataTable>
 
 </ui:composition>
