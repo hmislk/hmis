@@ -314,6 +314,20 @@ public class PharmacySaleBhtController implements Serializable {
     // When true, medicines are issued at retail rate with NO inward price-matrix
     // service charge (used by the Issue Discharge Medicines page).
     boolean dischargeIssueMode = false;
+    // Idempotency guards for the two irreversible stock mutations inside a
+    // settlement attempt. batchStockDeduction()/transferIssuedStockToPorter()
+    // each run as their own committed EJB transaction, independent of whatever
+    // happens afterwards (financial-detail creation, margin update, bill
+    // reload). Without these guards, a later step failing lets the settlement
+    // be retried from settleBhtIssueRequestAccept()/settleBhtIssue() with the
+    // bill's items kept visible on purpose — and a retry would re-run the
+    // already-committed deduction/transfer a second time, silently
+    // over-deducting stock. Set true right after each mutation succeeds,
+    // checked (and skipped, not re-applied) on the next attempt for the same
+    // bill; reset in clearBill() once a settlement actually completes.
+    // CodeRabbit review on #23353.
+    private boolean settlementStockDeducted = false;
+    private boolean settlementPorterTransferred = false;
     // Per-prescription conversion report shown on the discharge issue page so the
     // pharmacist sees the original prescription against what was actually resolved
     // (and any low/no-stock shortfall) — prevents silent omissions. Issue #21334.
@@ -1441,22 +1455,28 @@ public class PharmacySaleBhtController implements Serializable {
             throw new RuntimeException(errorMsg);
         }
 
-        try {
-            directIssueBatchService.batchStockDeduction(list);
-            LOGGER.log(Level.INFO, "Successfully processed batch stock deduction for {0} items in Bill ID: {1}",
-                    new Object[]{list.size(), getPreBill().getId()});
-        } catch (Exception e) {
-            String errorMsg = "Failed to process stock deductions. " + e.getMessage();
-            LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement: {0}", errorMsg);
-            LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
-                    new Object[]{
-                        getPreBill().getId(),
-                        getPreBill().getDepartment() != null ? getPreBill().getDepartment().getName() : "unknown",
-                        getSessionController().getLoggedUser() != null
-                            ? getSessionController().getLoggedUser().getName() : "unknown"
-                    });
-            JsfUtil.addErrorMessage(errorMsg);
-            throw new RuntimeException(errorMsg);
+        if (!settlementStockDeducted) {
+            try {
+                directIssueBatchService.batchStockDeduction(list);
+                settlementStockDeducted = true;
+                LOGGER.log(Level.INFO, "Successfully processed batch stock deduction for {0} items in Bill ID: {1}",
+                        new Object[]{list.size(), getPreBill().getId()});
+            } catch (Exception e) {
+                String errorMsg = "Failed to process stock deductions. " + e.getMessage();
+                LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement: {0}", errorMsg);
+                LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
+                        new Object[]{
+                            getPreBill().getId(),
+                            getPreBill().getDepartment() != null ? getPreBill().getDepartment().getName() : "unknown",
+                            getSessionController().getLoggedUser() != null
+                                ? getSessionController().getLoggedUser().getName() : "unknown"
+                        });
+                JsfUtil.addErrorMessage(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
+        } else {
+            LOGGER.log(Level.INFO, "Stock already deducted for this settlement attempt (retrying after a later "
+                    + "step failed) — skipping re-deduction for Bill ID: {0}", getPreBill().getId());
         }
 
         getBillFacade().edit(getPreBill());
@@ -1466,9 +1486,18 @@ public class PharmacySaleBhtController implements Serializable {
      * After stock is deducted from the issuing pharmacy, credit the same
      * quantities to the porter's staff stock (with stock history), so the
      * medicines are tracked as carried by the porter on the way to the ward.
+     *
+     * Guarded by settlementPorterTransferred (see field javadoc) so a retry
+     * after a later settlement step fails doesn't credit the porter twice
+     * for the same items.
      */
     private void transferIssuedStockToPorter(List<BillItem> list, Staff porter) {
         if (porter == null) {
+            return;
+        }
+        if (settlementPorterTransferred) {
+            LOGGER.log(Level.INFO, "Porter stock transfer already applied for this settlement attempt "
+                    + "(retrying after a later step failed) — skipping re-transfer.");
             return;
         }
         for (BillItem tbi : list) {
@@ -1478,6 +1507,7 @@ public class PharmacySaleBhtController implements Serializable {
             pbi.setStaffStock(staffStock);
             getPharmaceuticalBillItemFacade().edit(pbi);
         }
+        settlementPorterTransferred = true;
     }
 
     private void savePreBillItemsFinallyRequest(List<BillItem> list) {
@@ -3593,6 +3623,11 @@ public class PharmacySaleBhtController implements Serializable {
         }
         preBill = null;
         userStockContainer = null;
+        // A settlement actually completed — reset the idempotency guards so the
+        // NEXT bill's genuinely-new stock deduction/porter transfer isn't
+        // skipped. See the field javadoc on settlementStockDeducted.
+        settlementStockDeducted = false;
+        settlementPorterTransferred = false;
     }
 
     private void clearBillItem() {
