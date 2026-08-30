@@ -157,6 +157,30 @@
                      button below - and navigates the user away to Page Configuration Management.
                      Enter must add the selected service instead. -->
                 <p:defaultCommand target="btnAddIx" />
+                <script type="text/javascript">
+                    //<![CDATA[
+                    // The default command above is form-wide, and PrimeFaces only exempts
+                    // textarea/button/submit/link/.ql-editor from it. Enter inside the item
+                    // list's Filter box would therefore fire Add and bill whichever item was
+                    // already highlighted, which is never what "filter the list" means.
+                    // Swallow Enter there (capture phase, so it never reaches the form).
+                    if (!window.inwardServiceFilterEnterGuard) {
+                        window.inwardServiceFilterEnterGuard = true;
+                        document.addEventListener('keydown', function (e) {
+                            if (e.key !== 'Enter') {
+                                return;
+                            }
+                            var t = e.target;
+                            if (t.classList) {
+                                if (t.classList.contains('ui-selectlistbox-filter')) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }
+                            }
+                        }, true);
+                    }
+                    //]]>
+                </script>
                 <p:panel>
                     <f:facet name="header">
                         <div class="d-flex justify-content-between">
