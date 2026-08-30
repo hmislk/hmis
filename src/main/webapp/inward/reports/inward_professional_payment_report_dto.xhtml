@@ -42,6 +42,14 @@
 
                                 <h:panelGroup id="rangeInputs" layout="block">
                                 <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'dateRange'}" layout="block">
+                                    <h:outputLabel value="Date Basis" for="dateBasis" class="mt-2 d-block"/>
+                                    <p:selectOneMenu id="dateBasis" value="#{inwardReportControllerBht.professionalPaymentDateBasis}" class="w-100">
+                                        <f:selectItem itemLabel="Admission Date" itemValue="admission"/>
+                                        <f:selectItem itemLabel="Discharge Date" itemValue="discharge"/>
+                                        <f:selectItem itemLabel="Final Bill Created Date" itemValue="finalBillCreated"/>
+                                        <f:selectItem itemLabel="Professional Fee Added Date" itemValue="feeAdded"/>
+                                    </p:selectOneMenu>
+
                                     <h:outputLabel value="From Date" for="fromDate" />
                                     <p:calendar
                                         styleClass="dateTimePicker"
@@ -92,6 +100,12 @@
                                     </p:autoComplete>
                                 </h:panelGroup>
                                 </h:panelGroup>
+
+                                <h:outputLabel value="Admission Type" for="admissionType" class="mt-2 d-block"/>
+                                <p:selectOneMenu id="admissionType" value="#{inwardReportControllerBht.professionalPaymentAdmissionType}" class="w-100">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                                </p:selectOneMenu>
 
                                 <h:panelGroup layout="block" styleClass="mt-2">
                                     <p:selectBooleanCheckbox id="onlyWithoutFees" value="#{inwardReportControllerBht.onlyAdmissionsWithoutProfessionalFees}"/>

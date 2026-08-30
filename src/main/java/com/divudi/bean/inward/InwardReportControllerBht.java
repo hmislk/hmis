@@ -173,6 +173,15 @@ public class InwardReportControllerBht implements Serializable {
     private PatientEncounter admissionToForProfessionalPaymentReport;
     private boolean onlyAdmissionsWithoutProfessionalFees;
 
+    // Issue #23306 - Date Basis selector for the date-range search mode:
+    // "admission" | "discharge" | "finalBillCreated" | "feeAdded"
+    private String professionalPaymentDateBasis = "admission";
+
+    // Issue #23307 - Admission Type filter (BHT / OPD Card / etc.), null = All.
+    // Separate from the bean's existing generic `admissionType` field (used by
+    // other reports on this same bean via getReportKeyWord()) to avoid collisions.
+    private AdmissionType professionalPaymentAdmissionType;
+
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
 
@@ -1451,8 +1460,21 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     private List<InwardProfessionalPaymentAdmissionGroupDTO> fetchInwardProfessionalPaymentReportGroups() {
-        List<InwardProfessionalPaymentAdmissionDTO> admissions = fetchProfessionalPaymentAdmissionsForDepartment();
         List<InwardProfessionalPaymentFeeRowDTO> feeRows = fetchProfessionalFeeRowsForDepartment();
+
+        // Issue #23306 - "Professional Fee Added Date" basis has no meaningful
+        // admission-side predicate (BillFee.createdAt isn't reachable from
+        // PatientEncounter), so the admission list is restricted to whichever
+        // encounters actually have a fee row in range, fetched by ID instead
+        // of by date.
+        boolean filterByFeeAdded = "feeAdded".equals(professionalPaymentDateBasis)
+                && "dateRange".equals(professionalPaymentSearchMode);
+        List<InwardProfessionalPaymentAdmissionDTO> admissions = filterByFeeAdded
+                ? fetchProfessionalPaymentAdmissionsByEncounterIds(feeRows.stream()
+                        .map(InwardProfessionalPaymentFeeRowDTO::getPatientEncounterId)
+                        .distinct()
+                        .collect(Collectors.toList()))
+                : fetchProfessionalPaymentAdmissionsForDepartment();
 
         Map<Long, List<InwardProfessionalPaymentFeeRowDTO>> feeRowsByEncounter = feeRows.stream()
                 .collect(Collectors.groupingBy(InwardProfessionalPaymentFeeRowDTO::getPatientEncounterId, LinkedHashMap::new, Collectors.toList()));
@@ -1491,6 +1513,12 @@ public class InwardReportControllerBht implements Serializable {
 
     // Issue #22805 review - shared by both query builders below, so the
     // BHT-range/date-range predicate can't drift between them.
+    // Issue #23306 - Date Basis selector. "feeAdded" is intentionally NOT
+    // handled here: it doesn't apply to the admissions query (BillFee.createdAt
+    // isn't reachable from PatientEncounter without pulling in BillFee), so the
+    // admissions list is instead re-derived from the filtered fee rows in
+    // fetchInwardProfessionalPaymentReportGroups(); the fee-rows query applies
+    // its own bf.createdAt predicate directly (see fetchProfessionalFeeRowsForDepartment).
     private String appendProfessionalPaymentRangePredicate(String jpql, Map<String, Object> params) {
         if ("bhtRange".equals(professionalPaymentSearchMode)
                 && admissionFromForProfessionalPaymentReport != null
@@ -1503,10 +1531,26 @@ public class InwardReportControllerBht implements Serializable {
         }
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        return jpql + "AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ";
+        return jpql + "AND " + resolveProfessionalPaymentDatePath() + " BETWEEN :fromDate AND :toDate ";
+    }
+
+    // "feeAdded" falls back to admission date here - the admissions query has
+    // no BillFee join, and this basis is applied to the fee-rows query only
+    // (see fetchInwardProfessionalPaymentReportGroups, which re-derives the
+    // admission list from the filtered fee rows for this basis).
+    private String resolveProfessionalPaymentDatePath() {
+        if ("discharge".equals(professionalPaymentDateBasis)) {
+            return "pe.dateOfDischarge";
+        } else if ("finalBillCreated".equals(professionalPaymentDateBasis)) {
+            return "fb.createdAt";
+        }
+        return "pe.dateOfAdmission";
     }
 
     private List<InwardProfessionalPaymentAdmissionDTO> fetchProfessionalPaymentAdmissionsForDepartment() {
+        boolean filterByFinalBillCreated = "finalBillCreated".equals(professionalPaymentDateBasis)
+                && "dateRange".equals(professionalPaymentSearchMode);
+
         String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO("
                 + "pe.id, "
                 + "COALESCE(pe.bhtNo, ''), "
@@ -1514,12 +1558,13 @@ public class InwardReportControllerBht implements Serializable {
                 + "pe.dateOfDischarge, "
                 + "COALESCE(fb.deptId, '')) "
                 + "FROM PatientEncounter pe "
-                + "LEFT JOIN pe.finalBill fb "
+                + (filterByFinalBillCreated ? "JOIN pe.finalBill fb " : "LEFT JOIN pe.finalBill fb ")
                 + "WHERE pe.department = :department ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("department", department);
 
+        jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
         jpql = appendProfessionalPaymentRangePredicate(jpql, params);
 
         jpql += "ORDER BY pe.dateOfAdmission, pe.id";
@@ -1528,7 +1573,46 @@ public class InwardReportControllerBht implements Serializable {
         return result != null ? result : new ArrayList<>();
     }
 
+    // Issue #23307 - shared by both admission and fee-row query builders.
+    private String appendProfessionalPaymentAdmissionTypePredicate(String jpql, Map<String, Object> params) {
+        if (professionalPaymentAdmissionType == null) {
+            return jpql;
+        }
+        params.put("admissionType", professionalPaymentAdmissionType);
+        return jpql + "AND pe.admissionType = :admissionType ";
+    }
+
+    // Issue #23306 - "Professional Fee Added Date" basis: admissions are
+    // looked up by the encounter IDs that survived the fee-rows date filter,
+    // not by their own admission date.
+    private List<InwardProfessionalPaymentAdmissionDTO> fetchProfessionalPaymentAdmissionsByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO("
+                + "pe.id, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "pe.dateOfAdmission, "
+                + "pe.dateOfDischarge, "
+                + "COALESCE(fb.deptId, '')) "
+                + "FROM PatientEncounter pe "
+                + "LEFT JOIN pe.finalBill fb "
+                + "WHERE pe.department = :department "
+                + "AND pe.id IN :encounterIds "
+                + "ORDER BY pe.dateOfAdmission, pe.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", department);
+        params.put("encounterIds", encounterIds);
+
+        List<InwardProfessionalPaymentAdmissionDTO> result = (List<InwardProfessionalPaymentAdmissionDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
     private List<InwardProfessionalPaymentFeeRowDTO> fetchProfessionalFeeRowsForDepartment() {
+        boolean filterByFeeAdded = "feeAdded".equals(professionalPaymentDateBasis)
+                && "dateRange".equals(professionalPaymentSearchMode);
+
         String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentFeeRowDTO("
                 + "pe.id, "
                 + "st.id, "
@@ -1543,6 +1627,7 @@ public class InwardReportControllerBht implements Serializable {
                 + "FROM BillFee bf "
                 + "JOIN bf.bill b "
                 + "JOIN b.patientEncounter pe "
+                + (filterByFeeAdded ? "" : "LEFT JOIN pe.finalBill fb ")
                 + "LEFT JOIN bf.staff st "
                 + "LEFT JOIN st.person per "
                 + "LEFT JOIN bf.speciality sp "
@@ -1558,7 +1643,15 @@ public class InwardReportControllerBht implements Serializable {
         params.put("billType", BillType.InwardProfessional);
         params.put("department", department);
 
-        jpql = appendProfessionalPaymentRangePredicate(jpql, params);
+        jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
+
+        if (filterByFeeAdded) {
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+            jpql += "AND bf.createdAt BETWEEN :fromDate AND :toDate ";
+        } else {
+            jpql = appendProfessionalPaymentRangePredicate(jpql, params);
+        }
 
         jpql += "ORDER BY pe.id, st.id, sp.id";
 
@@ -3473,6 +3566,22 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setProfessionalPaymentSearchMode(String professionalPaymentSearchMode) {
         this.professionalPaymentSearchMode = professionalPaymentSearchMode;
+    }
+
+    public String getProfessionalPaymentDateBasis() {
+        return professionalPaymentDateBasis;
+    }
+
+    public void setProfessionalPaymentDateBasis(String professionalPaymentDateBasis) {
+        this.professionalPaymentDateBasis = professionalPaymentDateBasis;
+    }
+
+    public AdmissionType getProfessionalPaymentAdmissionType() {
+        return professionalPaymentAdmissionType;
+    }
+
+    public void setProfessionalPaymentAdmissionType(AdmissionType professionalPaymentAdmissionType) {
+        this.professionalPaymentAdmissionType = professionalPaymentAdmissionType;
     }
 
     public PatientEncounter getAdmissionFromForProfessionalPaymentReport() {
