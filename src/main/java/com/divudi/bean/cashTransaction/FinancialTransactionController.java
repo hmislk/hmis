@@ -4110,6 +4110,9 @@ public class FinancialTransactionController implements Serializable {
             othersPayments.stream()
                     .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
         }
+        // Fund transfer payments (float-out / float-in between users) change the cash this
+        // user should physically have, same as navigateToHandoverCreateBillForCurrentShift().
+        List<Payment> fundTransferPayments = fetchFundTransferPaymentsForShift(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
 
         Set<Payment> uniquePaymentSet = new HashSet<>();
         if (shiftPayments != null) {
@@ -4120,6 +4123,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (othersPayments != null) {
             uniquePaymentSet.addAll(othersPayments);
+        }
+        if (fundTransferPayments != null) {
+            uniquePaymentSet.addAll(fundTransferPayments);
         }
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
@@ -4137,6 +4143,22 @@ public class FinancialTransactionController implements Serializable {
         // calculateTotalsByChildBundlesForHandover() applies for the separate handover
         // flow — here cashHandoverValue is wanted as the system-expected reference figure.
         bundle.aggregateTotalsFromAllChildBundles();
+        // aggregateTotalsFromAllChildBundles() deliberately skips float rows (isFloatRow()),
+        // so the net fund-transfer cash adjustment above has to be folded in separately —
+        // otherwise a float sent/received mid-shift would silently drop out of the
+        // expected cash figure this screen shows.
+        double netFloatCash = 0.0;
+        if (bundle.getBundles() != null) {
+            for (ReportTemplateRowBundle childBundle : bundle.getBundles()) {
+                if (childBundle.isFloatRow()) {
+                    netFloatCash += childBundle.getCashHandoverValue();
+                }
+            }
+        }
+        if (netFloatCash != 0.0) {
+            bundle.setCashValue(bundle.getCashValue() + netFloatCash);
+            bundle.setCashHandoverValue(bundle.getCashHandoverValue() + netFloatCash);
+        }
 
         boolean requireDenominationBreakdown = configOptionApplicationController.getBooleanValueByKey(
                 "Shift End Cash Handover - Require Denomination Breakdown", false);
