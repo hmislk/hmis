@@ -181,6 +181,10 @@
                                                 <print:A4_paper_without_headings bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
 
                                             </h:panelGroup>
+                                            
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                <print:five_five_paper_coustom_1_inward_service_refund bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
+                                            </h:panelGroup>
 
                                         </h:panelGroup>
 
