@@ -152,6 +152,11 @@
             </h:panelGroup>
 
             <h:panelGroup  rendered="#{billBhtController.patientEncounter ne null}">
+                <!-- Without this, pressing Enter falls back to browser implicit submission, which
+                     activates the first submit button of this single page-wide form - the Config
+                     button below - and navigates the user away to Page Configuration Management.
+                     Enter must add the selected service instead. -->
+                <p:defaultCommand target="btnAddIx" />
                 <p:panel>
                     <f:facet name="header">
                         <div class="d-flex justify-content-between">
