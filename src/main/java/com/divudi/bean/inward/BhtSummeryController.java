@@ -1222,6 +1222,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getEtuMedicineIssues() {
+        if (etuMedicineIssues == null && patientEncounter != null) {
+            etuMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Etu);
+        }
         return etuMedicineIssues;
     }
 
@@ -1230,6 +1233,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getPharmacyMedicineIssues() {
+        if (pharmacyMedicineIssues == null && patientEncounter != null) {
+            pharmacyMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Pharmacy);
+        }
         return pharmacyMedicineIssues;
     }
 
@@ -1238,6 +1244,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getInwardMedicineIssues() {
+        if (inwardMedicineIssues == null && patientEncounter != null) {
+            inwardMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Inward);
+        }
         return inwardMedicineIssues;
     }
 
@@ -1246,6 +1255,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getTheatreMedicineIssues() {
+        if (theatreMedicineIssues == null && patientEncounter != null) {
+            theatreMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Theatre);
+        }
         return theatreMedicineIssues;
     }
 
@@ -1254,6 +1266,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getStoreMedicineIssues() {
+        if (storeMedicineIssues == null && patientEncounter != null) {
+            storeMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Store);
+        }
         return storeMedicineIssues;
     }
 
@@ -1262,6 +1277,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getInventryMedicineIssues() {
+        if (inventryMedicineIssues == null && patientEncounter != null) {
+            inventryMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Inventry);
+        }
         return inventryMedicineIssues;
     }
 
@@ -4227,6 +4245,24 @@ public class BhtSummeryController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
+        Long previousId = this.patientEncounter == null ? null : this.patientEncounter.getId();
+        Long newId = patientEncounter == null ? null : patientEncounter.getId();
+        if (!java.util.Objects.equals(previousId, newId)) {
+            // The six Medicine Issue lists (and childPatientEncouters) are lazily
+            // recomputed by their getters (see getEtuMedicineIssues() etc.) so the
+            // Interim Bill page still populates even when createTables() is skipped
+            // (issue #23350). That lazy-init means a stale, non-null list from a
+            // previously viewed encounter would otherwise leak into this encounter's
+            // view instead of being recomputed - clear them here whenever the
+            // encounter actually changes.
+            etuMedicineIssues = null;
+            pharmacyMedicineIssues = null;
+            inwardMedicineIssues = null;
+            theatreMedicineIssues = null;
+            storeMedicineIssues = null;
+            inventryMedicineIssues = null;
+            childPatientEncouters = null;
+        }
         this.patientEncounter = patientEncounter;
         invalidateUnifiedGanttBarsCache();
     }
