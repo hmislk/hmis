@@ -2258,20 +2258,34 @@ public class PharmacySaleBhtController implements Serializable {
 
         // No need to clear billItems - let savePreBillItemsFinally handle it properly
 
-        savePreBillFinally(pt, matrixDepartment, btp, bta);
-        savePreBillItemsFinally(tmpBillItems);
-        transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
-        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
+        // savePreBillItemsFinally() can throw (e.g. the fresh stock recheck inside
+        // it rejects the settlement) — without this try/catch that RuntimeException
+        // propagated uncaught to the container, crashing to the generic "System
+        // Error" page instead of a normal on-page message. Mirrors the same
+        // try/catch settleBhtIssue() already uses for its equivalent call. Issue #23352.
+        try {
+            savePreBillFinally(pt, matrixDepartment, btp, bta);
+            savePreBillItemsFinally(tmpBillItems);
+            transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
+            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-        // Calculation Margin
-        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
-        //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
+            // Calculation Margin
+            updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+            //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
 
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
+            setPrintBill(getBillFacade().find(getPreBill().getId()));
 
-        clearBill();
-        clearBillItem();
-        billPreview = true;
+            clearBill();
+            clearBillItem();
+            billPreview = true;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during BHT request settlement for patient encounter: {0}",
+                    new Object[]{getPatientEncounter() != null ? getPatientEncounter().getId() : "unknown"});
+            LOGGER.log(Level.SEVERE, "Settlement failure details", e);
+            JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
+            // DO NOT clear the bill - keep items visible so user doesn't lose their work
+            return false;
+        }
 
         return true;
     }
