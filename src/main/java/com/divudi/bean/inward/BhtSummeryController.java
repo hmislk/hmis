@@ -1222,6 +1222,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getEtuMedicineIssues() {
+        if (etuMedicineIssues == null && patientEncounter != null) {
+            etuMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Etu);
+        }
         return etuMedicineIssues;
     }
 
@@ -1230,6 +1233,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getPharmacyMedicineIssues() {
+        if (pharmacyMedicineIssues == null && patientEncounter != null) {
+            pharmacyMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Pharmacy);
+        }
         return pharmacyMedicineIssues;
     }
 
@@ -1238,6 +1244,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getInwardMedicineIssues() {
+        if (inwardMedicineIssues == null && patientEncounter != null) {
+            inwardMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Inward);
+        }
         return inwardMedicineIssues;
     }
 
@@ -1246,6 +1255,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getTheatreMedicineIssues() {
+        if (theatreMedicineIssues == null && patientEncounter != null) {
+            theatreMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Theatre);
+        }
         return theatreMedicineIssues;
     }
 
@@ -1254,6 +1266,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getStoreMedicineIssues() {
+        if (storeMedicineIssues == null && patientEncounter != null) {
+            storeMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Store);
+        }
         return storeMedicineIssues;
     }
 
@@ -1262,6 +1277,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getInventryMedicineIssues() {
+        if (inventryMedicineIssues == null && patientEncounter != null) {
+            inventryMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Inventry);
+        }
         return inventryMedicineIssues;
     }
 
