@@ -225,41 +225,129 @@ public class ExcelController {
 
         int currentRow = 0;
 
-        // Row 0: Institution Name
+        // Date formatter
+        // Styles
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(titleFont);
+
+        CellStyle subTitleStyle = workbook.createCellStyle();
+        subTitleStyle.setAlignment(HorizontalAlignment.CENTER);
+        subTitleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font subTitleFont = workbook.createFont();
+        subTitleFont.setBold(true);
+        subTitleFont.setFontHeightInPoints((short) 12);
+        subTitleStyle.setFont(subTitleFont);
+
+        CellStyle labelStyle = workbook.createCellStyle();
+        org.apache.poi.ss.usermodel.Font labelFont = workbook.createFont();
+        labelFont.setBold(true);
+        labelStyle.setFont(labelFont);
+
+        CellStyle valueStyle = workbook.createCellStyle();
+        valueStyle.setWrapText(true);
+
+        CellStyle leftSmallStyle = workbook.createCellStyle();
+        leftSmallStyle.setAlignment(HorizontalAlignment.LEFT);
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 9);
+        leftSmallStyle.setFont(smallFont);
+
+        CellStyle rightSmallStyle = workbook.createCellStyle();
+        rightSmallStyle.setAlignment(HorizontalAlignment.RIGHT);
+        org.apache.poi.ss.usermodel.Font smallFont2 = workbook.createFont();
+        smallFont2.setFontHeightInPoints((short) 9);
+        rightSmallStyle.setFont(smallFont2);
+
+        // ===== Header =====
+
+        // Row 0 - Institution name
         Row institutionRow = dataSheet.createRow(currentRow++);
         Cell institutionCell = institutionRow.createCell(0);
         String institutionName = sessionController.getInstitution() != null
                 ? sessionController.getInstitution().getName()
                 : "Institution";
         institutionCell.setCellValue(institutionName);
-        institutionCell.setCellStyle(centerBoldStyle);
-        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+        institutionCell.setCellStyle(titleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
 
-        // Row 1: Report Title (dynamic based on bundle name)
+        // Row 1 - Report title
         Row reportTitleRow = dataSheet.createRow(currentRow++);
         Cell reportTitleCell = reportTitleRow.createCell(0);
-        String reportTitle = "Cashier Report";
-        if (rootBundle.getName() != null) {
-            if (rootBundle.getName().toLowerCase().contains("summary")) {
-                reportTitle = "Cashier Summary Report";
-            } else if (rootBundle.getName().toLowerCase().contains("detail")) {
-                reportTitle = "Cashier Details Report";
-            }
-        }
-        reportTitleCell.setCellValue(reportTitle);
-        reportTitleCell.setCellStyle(centerStyle);
-        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
+        reportTitleCell.setCellValue(rootBundle.getName() != null ? rootBundle.getName() : "Cashier Summary Report");
+        reportTitleCell.setCellStyle(subTitleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
 
-        // Row 2: Date Range
-        Row dateRangeRow = dataSheet.createRow(currentRow++);
-        Cell dateRangeCell = dateRangeRow.createCell(0);
-        String dateRangeText = "From Date - " + dateTimeFormat.format(fromDate)
-                + "     To Date - " + dateTimeFormat.format(toDate);
-        dateRangeCell.setCellValue(dateRangeText);
-        dateRangeCell.setCellStyle(centerStyle);
-        dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 6));
+        // Blank row
+        currentRow++;
 
-        // Leave row 3 blank
+        // Row 3 - From / To
+        Row row1 = dataSheet.createRow(currentRow++);
+        Cell c00 = row1.createCell(0);
+        c00.setCellValue("From Date");
+        c00.setCellStyle(labelStyle);
+
+        Cell c01 = row1.createCell(1);
+        c01.setCellValue(rootBundle.getFromDate() != null ? dateTimeFormat.format(rootBundle.getFromDate()) : "");
+        c01.setCellStyle(valueStyle);
+
+        Cell c03 = row1.createCell(3);
+        c03.setCellValue("To Date");
+        c03.setCellStyle(labelStyle);
+
+        Cell c04 = row1.createCell(4);
+        c04.setCellValue(rootBundle.getToDate() != null ? dateTimeFormat.format(rootBundle.getToDate()) : "");
+        c04.setCellStyle(valueStyle);
+
+        // Row 4 - Institution / Site
+        Row row2 = dataSheet.createRow(currentRow++);
+        Cell c10 = row2.createCell(0);
+        c10.setCellValue("Institution");
+        c10.setCellStyle(labelStyle);
+
+        Cell c11 = row2.createCell(1);
+        c11.setCellValue(rootBundle.getFilterInstitution() != null
+                ? rootBundle.getFilterInstitution().getName()
+                : "All Institutions");
+        c11.setCellStyle(valueStyle);
+
+        Cell c13 = row2.createCell(3);
+        c13.setCellValue("Site");
+        c13.setCellStyle(labelStyle);
+
+        Cell c14 = row2.createCell(4);
+        c14.setCellValue(rootBundle.getFilterSite() != null
+                ? rootBundle.getFilterSite().getName()
+                : "All Sites");
+        c14.setCellStyle(valueStyle);
+
+        // Row 5 - Department / Cashier
+        Row row3 = dataSheet.createRow(currentRow++);
+        Cell c20 = row3.createCell(0);
+        c20.setCellValue("Department");
+        c20.setCellStyle(labelStyle);
+
+        Cell c21 = row3.createCell(1);
+        c21.setCellValue(rootBundle.getFilterDepartment() != null
+                ? rootBundle.getFilterDepartment().getName()
+                : "All Departments");
+        c21.setCellStyle(valueStyle);
+
+        Cell c23 = row3.createCell(3);
+        c23.setCellValue("Cashier / User");
+        c23.setCellStyle(labelStyle);
+
+        Cell c24 = row3.createCell(4);
+        c24.setCellValue(rootBundle.getFilterWebUser() != null
+                ? rootBundle.getFilterWebUser().getName()
+                : "All Users");
+        c24.setCellStyle(valueStyle);
+
+        // Blank row before data
         currentRow++;
 
         if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {

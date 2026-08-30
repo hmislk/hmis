@@ -80,6 +80,9 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 
 import java.util.function.Supplier;
+import com.itextpdf.kernel.colors.DeviceGray;
+import com.itextpdf.layout.borders.SolidBorder;
+import com.itextpdf.layout.element.Div;
 
 /**
  *
@@ -2063,42 +2066,94 @@ public class PdfController {
         document.add(lineSeparator);
     }
 
-    private void addReportHeader(Document document, ReportTemplateRowBundle rootBundle) {
-        String institutionName = "";
-        if (sessionController != null && sessionController.getLoggedUser() != null
-                && sessionController.getLoggedUser().getInstitution() != null) {
-            institutionName = sessionController.getLoggedUser().getInstitution().getName();
-        }
+    private void addReportHeader(Document document, ReportTemplateRowBundle bundle) throws IOException {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
-        if (!institutionName.isEmpty()) {
-            Paragraph instPara = new Paragraph(institutionName)
-                    .setBold()
-                    .setFontSize(16)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(2);
-            document.add(instPara);
-        }
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
 
-        Paragraph titlePara = new Paragraph(rootBundle.getName())
+        // ===== Main Title =====
+        Paragraph hospitalPara = new Paragraph(institutionName)
                 .setBold()
-                .setFontSize(14)
+                .setFontSize(16)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMarginBottom(2);
-        document.add(titlePara);
+        document.add(hospitalPara);
 
-        if (rootBundle.getDescription() != null && !rootBundle.getDescription().isEmpty()) {
-            Paragraph descPara = new Paragraph(rootBundle.getDescription())
-                    .setFontSize(10)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(10);
-            document.add(descPara);
-        }
+        Paragraph reportTitlePara = new Paragraph(bundle.getName() != null ? bundle.getName() : "Cashier Summary Report")
+                .setFontSize(12)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(12);
+        document.add(reportTitlePara);
 
-        SolidLine headerLine = new SolidLine(1.5f);
-        LineSeparator headerSeparator = new LineSeparator(headerLine);
-        headerSeparator.setStrokeColor(ColorConstants.BLACK);
-        document.add(headerSeparator);
-        document.add(new Paragraph("").setMarginBottom(5));
+        // ===== Filter Box (2 columns x 3 rows) =====
+        Table filterTable = new Table(UnitValue.createPercentArray(new float[]{50f, 50f}))
+                .useAllAvailableWidth();
+
+        filterTable.addCell(createFilterCell(
+                "FROM DATE",
+                bundle.getFromDate() != null ? sdf.format(bundle.getFromDate()) : ""
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "TO DATE",
+                bundle.getToDate() != null ? sdf.format(bundle.getToDate()) : ""
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "INSTITUTION",
+                bundle.getFilterInstitution() != null
+                        ? bundle.getFilterInstitution().getName()
+                        : "All Institutions"
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "SITE",
+                bundle.getFilterSite() != null
+                        ? bundle.getFilterSite().getName()
+                        : "All Sites"
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "DEPARTMENT",
+                bundle.getFilterDepartment() != null
+                        ? bundle.getFilterDepartment().getName()
+                        : "All Departments"
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "CASHIER / USER",
+                bundle.getFilterWebUser() != null
+                        ? bundle.getFilterWebUser().getName()
+                        : "All Users"
+        ));
+
+        document.add(filterTable);
+        document.add(new Paragraph(" ").setMarginBottom(8));
+    }
+    
+    private Cell createFilterCell(String label, String value) {
+        Paragraph labelPara = new Paragraph(label)
+                .setBold()
+                .setFontSize(9)
+                .setMarginBottom(4);
+
+        Paragraph valuePara = new Paragraph(value != null ? value : "")
+                .setFontSize(11)
+                .setMarginBottom(0);
+
+        Div content = new Div();
+        content.add(labelPara);
+        content.add(valuePara);
+
+        return new Cell()
+                .add(content)
+                .setPaddingTop(10)
+                .setPaddingBottom(10)
+                .setPaddingLeft(12)
+                .setPaddingRight(12)
+                .setBorder(new SolidBorder(new DeviceGray(0.85f), 1));
     }
 
     private void addDtoReportHeader(Document document, com.divudi.core.data.dto.DailyReturnBundleDTO rootBundle) {
@@ -2140,34 +2195,26 @@ public class PdfController {
     }
 
     private void addReportFooter(Document document) {
-        String userName = "";
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            userName = sessionController.getLoggedUser().getName();
-        }
-        String printedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String userName = sessionController.getLoggedUser() != null
+                ? sessionController.getLoggedUser().getName()
+                : "";
+        String printedTime = new SimpleDateFormat("dd MMM yyyy HH:mm:ss").format(new Date());
 
-        document.add(new Paragraph("").setMarginTop(15));
+        document.add(new Paragraph(" "));
 
-        SolidLine footerLine = new SolidLine(0.5f);
-        LineSeparator footerSeparator = new LineSeparator(footerLine);
-        footerSeparator.setStrokeColor(ColorConstants.GRAY);
-        document.add(footerSeparator);
+        Table footerTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
+                .useAllAvailableWidth();
 
-        float[] columnWidths = {1, 1};
-        Table footerTable = new Table(columnWidths).useAllAvailableWidth();
-        footerTable.setBorder(Border.NO_BORDER);
+        footerTable.addCell(new Cell()
+                .add(new Paragraph("Printed By : " + userName).setFontSize(9))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
 
-        Cell userCell = new Cell()
-                .add(new Paragraph("Printed by: " + userName).setFontSize(9).setTextAlignment(TextAlignment.LEFT))
-                .setBorder(Border.NO_BORDER);
-        footerTable.addCell(userCell);
+        footerTable.addCell(new Cell()
+                .add(new Paragraph("Printed On : " + printedTime).setFontSize(9))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
 
-        Cell timeCell = new Cell()
-                .add(new Paragraph("Printed on: " + printedTime).setFontSize(9).setTextAlignment(TextAlignment.RIGHT))
-                .setBorder(Border.NO_BORDER);
-        footerTable.addCell(timeCell);
-
-        footerTable.setMarginTop(5);
         document.add(footerTable);
     }
 

@@ -165,6 +165,61 @@ public class ReportTemplateRowBundle implements Serializable {
     private boolean cashierExcludedTotalComputed;
     private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
     private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+    
+    private Date fromDate;
+    private Date toDate;
+    private Institution filterInstitution;
+    private Institution filterSite;
+    private Department filterDepartment;
+    private WebUser filterWebUser;
+    
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getFilterInstitution() {
+        return filterInstitution;
+    }
+
+    public void setFilterInstitution(Institution filterInstitution) {
+        this.filterInstitution = filterInstitution;
+    }
+
+    public Institution getFilterSite() {
+        return filterSite;
+    }
+
+    public void setFilterSite(Institution filterSite) {
+        this.filterSite = filterSite;
+    }
+
+    public Department getFilterDepartment() {
+        return filterDepartment;
+    }
+
+    public void setFilterDepartment(Department filterDepartment) {
+        this.filterDepartment = filterDepartment;
+    }
+
+    public WebUser getFilterWebUser() {
+        return filterWebUser;
+    }
+
+    public void setFilterWebUser(WebUser filterWebUser) {
+        this.filterWebUser = filterWebUser;
+    }
 
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();

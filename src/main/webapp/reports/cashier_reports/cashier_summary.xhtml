@@ -30,39 +30,56 @@
                             </div>
                         </f:facet>
 
-                        <h:panelGrid columns="8" class="w-100">
-                            <h:outputLabel value="From"/>
-                            <p:calendar
-                                class="w-100 "
-                                inputStyleClass="w-100"
-                                id="fromDate"
-                                value="#{searchController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                            </p:calendar>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:outputLabel value="To"/>
-                            <p:calendar
-                                class="w-100 "
-                                inputStyleClass="w-100"
-                                id="toDate"
-                                value="#{searchController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                            </p:calendar>
-
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        <h:panelGrid columns="4" styleClass="w-100" columnClasses="col-md-2,col-md-4,col-md-2,col-md-4" rowClasses="mb-3,mb-3,mb-3">
+                            <h:panelGroup layout="block" styleClass="d-flex align-items-center font-weight-bold" style="padding-bottom:12px;">
+                                <i class="fas fa-calendar-alt mr-2" style="margin-right:10px;"></i>
+                                <h:outputLabel value="From Date" for="fromDate"/>
                             </h:panelGroup>
+
+                            <h:panelGroup layout="block" style="padding-bottom:12px;">
+                            <p:datePicker
+                                id="fromDate"
+                                styleClass="d-block w-100"
+                                inputStyleClass="form-control"
+                                showTime="true" 
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true" 
+                                title="Filter by from date"
+                                hideOnDateTimeSelect="true"
+                                value="#{searchController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" styleClass="d-flex align-items-center font-weight-bold" style="padding-left:50px; padding-bottom:12px" >
+                                <i class="fas fa-calendar-alt mr-2" style="margin-right:10px;"></i>
+                                <h:outputLabel value="To Date" for="toDate"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" style="padding-bottom:12px;">
+                            <p:datePicker
+                                id="toDate"
+                                styleClass="d-block w-100"
+                                inputStyleClass="form-control"
+                                showTime="true" 
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true" 
+                                title="Filter by from date"
+                                hideOnDateTimeSelect="true"
+                                value="#{searchController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="d-flex align-items-center font-weight-bold" style="padding-bottom:12px;" >
+                                <i class="fa fa-university mr-2" style="margin-right:10px;"></i>
+                                <h:outputLabel value="Institution" for="cmbIns"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" style="padding-bottom:12px;">
                             <p:selectOneMenu
                                 id="cmbIns"
-                                styleClass="w-100 form-control"
+                                style="width:100%"
                                 value="#{searchController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions"/>
@@ -70,16 +87,17 @@
                                                itemValue="#{ins}"/>
                                 <p:ajax process="cmbIns" update="cmbDept"/>
                             </p:selectOneMenu>
-
-                            <p:spacer></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
                             </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="d-flex align-items-center font-weight-bold" style="padding-left:50px; padding-bottom:12px">
+                                <i class="fa fa-map-marker-alt mr-2" style="margin-right:10px;"></i>
+                                <h:outputLabel value="Site" for="siteMenu"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" style="padding-bottom:12px;">
                             <p:selectOneMenu
                                 id="siteMenu"
-                                styleClass="w-100 form-control"
+                                style="width:100%"
                                 value="#{searchController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
@@ -87,14 +105,13 @@
                                                itemValue="#{site}"/>
                                 <p:ajax process="siteMenu" update="cmbDept"/>
                             </p:selectOneMenu>
-
-                            <p:spacer></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
                             </h:panelGroup>
-                            <h:panelGroup id="cmbDept">
+
+                            <h:panelGroup layout="block" styleClass="d-flex align-items-center font-weight-bold" style="padding-bottom:12px;">
+                                <i class="fa fa-sitemap mr-2" style="margin-right:10px;"></i>
+                                <h:outputLabel value="Department" for="cmbDept"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept" layout="block" style="padding-bottom:12px;">
 
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
@@ -170,8 +187,12 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
-
-                            <h:outputLabel value="User"/>
+                            <h:panelGroup layout="block" styleClass="d-flex align-items-center font-weight-bold" style="padding-left:50px; padding-bottom:12px">
+                                <i class="fa fa-user mr-2" style="margin-right:10px;"></i>
+                                <h:outputLabel value="User" for="acStaff"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup layout="block" style="padding-bottom:12px;">
                             <p:autoComplete
                                 completeMethod="#{webUserController.completeUser}"
                                 class="w-100"
@@ -189,65 +210,125 @@
                                     <h:outputText value="#{user.webUserPerson.name}"></h:outputText>
                                 </p:column>
                             </p:autoComplete>
-
-                            <p:spacer></p:spacer>
-
-
-                        </h:panelGrid>
+                        </h:panelGroup>
+                    </h:panelGrid>
+                                
+                <div class="row mb-2 mt-4">
+                    <div class="col-md-12 d-flex justify-content-start" style="gap:20px">  
 
                         <p:commandButton
+                            id="btnProcess"
+                            style="width: 100px"
                             value="Process"
                             ajax="false"
                             action="#{searchController.generateCashierSummary}"
-                            class="ui-button-warning my-2" icon="fas fa-cogs">
+                            styleClass="ui-button-warning"
+                            icon="fas fa-cogs">
                         </p:commandButton>
                         <p:commandButton
+                            id="btnPrint"
                             icon="fa-solid fa-print"
-                            class="m-2 ui-button-info"
-                            style="width: 150px"
+                            styleClass="ui-button-info"
+                            style="width: 100px"
                             ajax="false"
                             value="Print">
                             <p:printer target="printPanel"/>
                         </p:commandButton>
                         <p:commandButton
+                            id="btnExcel"
                             ajax="false"
                             icon="fas fa-file-excel"
-                            class="ui-button-success"
+                            style="width: 100px"
+                            styleClass="ui-button-success"
                             value="Excel">
                             <p:fileDownload value="#{searchController.bundleAsExcel}"/>
                         </p:commandButton>
                         <p:commandButton
-                            class="mx-2 ui-button-danger"
+                            id="btnPdf"
+                            styleClass="ui-button-danger"
+                            style="width: 100px"
                             icon="fas fa-file-pdf"
                             value="PDF"
                             ajax="false">
                             <p:fileDownload value="#{searchController.bundleAsPdf}"/>
                         </p:commandButton>
+                    </div>
+                </div>
 
-
+            </p:panel>
+            <p:panel style="margin-top:15px;">
                         <h:panelGroup id="printPanel">
-                            <div class="header">
-                                <div class="d-flex justify-content-center text-5 gap-2"
-                                     style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
-                                    <h:outputText value="#{sessionController.institution.name}"/>
+                            <div style="border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 16px; overflow: hidden; font-family: Arial, sans-serif;">
+
+                                <!-- Institution name + Report title -->
+                                <div style="text-align: center; padding: 14px 20px 10px; border-bottom: 2px solid #dee2e6;">
+                                    <div style="font-weight: 700; font-size: 20px; color: #1a1a1a; margin-bottom: 3px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div style="font-weight: 400; font-size: 15px; color: #555; letter-spacing: 0.02em;">
+                                        Cashier Summary Report
+                                    </div>
                                 </div>
-                                <div class="d-flex justify-content-center text-5 gap-2"
-                                     style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
-                                    <h:outputText value="Cashier Summary Report"/>
-                                </div>
-                                <div class="d-flex justify-content-center text-5 gap-2"
-                                     style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
-                                    <h:outputText value="From Date - "/>
-                                    <h:outputText value="#{searchController.fromDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputText>
-                                    <h:outputText value="" style="width: 2em!important;" class="text-center"/>
-                                    <h:outputText value="To Date - "/>
-                                    <h:outputText value="#{searchController.toDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputText>
+
+                                <!-- Filter details grid -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: #f8f9fa;">
+
+                                    <!-- From Date -->
+                                    <div style="padding: 8px 16px; border-right: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;">
+                                        <div style="font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;">From Date</div>
+                                        <div style="font-size: 13px; font-weight: 500; color: #1a1a1a;">
+                                            <h:outputText value="#{searchController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+
+                                    <!-- To Date -->
+                                    <div style="padding: 8px 16px; border-bottom: 1px solid #dee2e6;">
+                                        <div style="font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;">To Date</div>
+                                        <div style="font-size: 13px; font-weight: 500; color: #1a1a1a;">
+                                            <h:outputText value="#{searchController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+
+                                    <!-- Institution -->
+                                    <div style="padding: 8px 16px; border-right: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;">
+                                        <div style="font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;">Institution</div>
+                                        <div style="font-size: 13px; font-weight: 500; color: #1a1a1a;">
+                                            <h:outputText value="#{searchController.institution.name}" rendered="#{searchController.institution ne null}"/>
+                                            <h:outputText value="All Institutions" rendered="#{searchController.institution eq null}"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Site -->
+                                    <div style="padding: 8px 16px; border-bottom: 1px solid #dee2e6;">
+                                        <div style="font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;">Site</div>
+                                        <div style="font-size: 13px; font-weight: 500; color: #1a1a1a;">
+                                            <h:outputText value="#{searchController.site.name}" rendered="#{searchController.site ne null}"/>
+                                            <h:outputText value="All Sites" rendered="#{searchController.site eq null}"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Department -->
+                                    <div style="padding: 8px 16px; border-right: 1px solid #dee2e6;">
+                                        <div style="font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;">Department</div>
+                                        <div style="font-size: 13px; font-weight: 500; color: #1a1a1a;">
+                                            <h:outputText value="#{searchController.department.name}" rendered="#{searchController.department ne null}"/>
+                                            <h:outputText value="All Departments" rendered="#{searchController.department eq null}"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- User -->
+                                    <div style="padding: 8px 16px;">
+                                        <div style="font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;">Cashier / User</div>
+                                        <div style="font-size: 13px; font-weight: 500; color: #1a1a1a;">
+                                            <h:outputText value="#{searchController.webUser.webUserPerson.name}" rendered="#{searchController.webUser ne null}"/>
+                                            <h:outputText value="All Users" rendered="#{searchController.webUser eq null}"/>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
@@ -408,7 +489,6 @@
                             <ez:netCash id="netCash" bundle="#{searchController.bundle}"/>
 
                         </h:panelGroup>
-
 
                     </p:panel>
 
