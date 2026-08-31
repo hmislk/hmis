@@ -2235,6 +2235,33 @@ row will time out on a working page. Detect the transition instead — e.g.
 `document.body.innerText.includes('Patient Selection') === false`, or the presence
 of `form:btnAddIx`. Found while verifying issue #23342.
 
+## 86. A `p:inputText`/`p:inputNumber` bound to a `Map<String, Integer>` entry silently stores the raw `String` — the write is lost with no error until you read it back
+
+Binding a form input to `#{bean.someMap[key]}` where `someMap` is declared `Map<String, Integer>`
+compiles fine and *looks* like it should coerce, because a normal bean property setter
+(`setSomeField(int)`) does get EL's automatic string-to-primitive coercion via reflection on the
+setter's declared parameter type. A `Map` entry gets no such coercion: `MapELResolver.setValue()`
+just calls `map.put(key, value)` with whatever raw type the component submitted — generics are
+erased at the bytecode level, so the resolver has no way to know the map is supposed to hold
+`Integer`. The submitted value lands in the map as a plain `String`.
+
+The failure doesn't surface where you'd look for it. The command button's `update` re-renders the
+component from that same in-memory map object, so the browser still shows the value you just typed
+— it *looks* saved. The real breakage happens the next time server-side code reads the map entry as
+`Integer` (e.g. `Integer order = orderMap.get(key);`) — a `ClassCastException: String cannot be cast
+to Integer` that aborts the whole action method, so nothing after that line (including the actual
+persistence call) ever runs. `p:messages`/`p:growl` stays silent because the exception happens inside
+the JSF lifecycle's invoke-application phase, not inside a `catch` the page bothers to show — the
+only trace is a `SEVERE javax.faces.el.EvaluationException` in `server.log`.
+
+**Fix**: keep the map typed `Map<String, String>` (matching how every other free-text-bound map in
+this codebase already works) and parse the string to the target type only where the value is actually
+consumed — never type a directly-bound map as anything but `String`. **Verification**: a screenshot or
+an in-session AJAX re-read is not proof of a save — the model object doesn't go away just because the
+action method threw. Always confirm with a fresh `SELECT` after the request completes (a full page
+reload session's own display of "the value I set" proves nothing, since it's the same still-open
+transactional model that never got rolled back). Found and fixed while testing issue #23340.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including

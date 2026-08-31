@@ -1405,6 +1405,26 @@ public class ConfigOptionApplicationController implements Serializable {
         saveShortTextOption(key, customLabel == null ? "" : customLabel.trim());
     }
 
+    public int getInwardChargeTypeReportOrder(InwardChargeType type) {
+        String key = "Inward Charge Type Report Order - " + type.name();
+        Integer v = getIntegerValueByKey(key, (type.ordinal() + 1) * 10);
+        return v == null ? (type.ordinal() + 1) * 10 : v;
+    }
+
+    public void saveInwardChargeTypeReportOrder(InwardChargeType type, int order) {
+        setIntegerValueByKey("Inward Charge Type Report Order - " + type.name(), order);
+    }
+
+    public int getInwardChargeTypeFinalBillOrder(InwardChargeType type) {
+        String key = "Inward Charge Type Final Bill Order - " + type.name();
+        Integer v = getIntegerValueByKey(key, (type.ordinal() + 1) * 10);
+        return v == null ? (type.ordinal() + 1) * 10 : v;
+    }
+
+    public void saveInwardChargeTypeFinalBillOrder(InwardChargeType type, int order) {
+        setIntegerValueByKey("Inward Charge Type Final Bill Order - " + type.name(), order);
+    }
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
