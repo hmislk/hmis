@@ -575,6 +575,17 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
                 bi.setQty(0.0);
                 continue;
             }
+            // The return's value is priced by tracing referanceBillItem back through
+            // the receive item to the originally-priced issue item (see
+            // buildReturnLines()). If that chain is broken, reject the line rather
+            // than silently persisting a zero-valued return (issue #22990).
+            if (bi.getReferanceBillItem() == null || bi.getReferanceBillItem().getReferanceBillItem() == null) {
+                JsfUtil.addErrorMessage("Item " + (bi.getItem() != null ? bi.getItem().getName() : "?")
+                        + " could not be priced (missing link to the original issue) - nothing returned for this line. Contact support.");
+                pbi.setQty(0);
+                bi.setQty(0.0);
+                continue;
+            }
             double qtyToReturn = Math.min(requestedQty, freshReturnable);
             if (qtyToReturn + 0.0001 < requestedQty) {
                 JsfUtil.addErrorMessage("Only " + qtyToReturn + " of " + requestedQty + " units of " + bi.getItem().getName()
