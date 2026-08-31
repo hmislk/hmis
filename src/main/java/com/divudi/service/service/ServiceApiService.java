@@ -739,6 +739,49 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
+     * Bulk-update discountAllowed (item-level, not fee-level) on all non-retired
+     * items in a given category. Distinct from {@link #bulkUpdateMargin} above,
+     * which only touches ItemFee.discountAllowed — the inward discount
+     * calculation (InwardBeanController.applyInwardDiscountToBillFee) requires
+     * BOTH Item.discountAllowed and ItemFee.discountAllowed to be true, so both
+     * bulk operations are typically needed together. Works on any Item subtype
+     * (Service, Investigation, ...) since it queries generically by category.
+     */
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, Boolean discountAllowed, WebUser user) throws Exception {
+        if (categoryId == null) {
+            throw new Exception("categoryId is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for bulk update");
+        }
+        if (discountAllowed == null) {
+            throw new Exception("discountAllowed is required");
+        }
+
+        String jpql = "SELECT i FROM Item i WHERE i.category.id = :catId AND i.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("catId", categoryId);
+
+        List<Item> items = itemFacade.findByJpql(jpql, params);
+        int count = 0;
+        for (Item item : items) {
+            item.setDiscountAllowed(discountAllowed);
+            itemFacade.edit(item);
+            count++;
+        }
+
+        Map<String, Object> changes = new HashMap<>();
+        changes.put("categoryId", categoryId);
+        changes.put("discountAllowed", discountAllowed);
+        changes.put("count", count);
+        auditService.logAudit(null, changes, user, "Item", "ITEM_DISCOUNT_ALLOWED_BULK_UPDATED", null);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("count", count);
+        return result;
+    }
+
+    /**
      * Find fees with marginAllowed disabled (false or null) for items in a category.
      */
     public List<ItemFeeDTO> findFeesWithMarginDisabled(Long categoryId) throws Exception {

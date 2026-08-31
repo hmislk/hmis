@@ -511,6 +511,70 @@ public class ServiceApi {
     }
 
     /**
+     * Bulk-update discountAllowed at the item level (not fee level) for all
+     * non-retired items in a category. Item.discountAllowed is a separate flag
+     * from ItemFee.discountAllowed (see /fees/bulk-margin above) — the inward
+     * discount calculation requires both to be true, so this is typically used
+     * together with /fees/bulk-margin.
+     * POST /api/services/items/bulk-discount-allowed
+     * Body: {"categoryId": 1054, "discountAllowed": true}
+     */
+    @POST
+    @Path("/items/bulk-discount-allowed")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkUpdateItemDiscountAllowed(String requestBody) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            Long categoryId = null;
+            if (body.get("categoryId") instanceof Number) {
+                Number n = (Number) body.get("categoryId");
+                if (n.doubleValue() != Math.floor(n.doubleValue()) || Double.isInfinite(n.doubleValue())) {
+                    return errorResponse("categoryId must be a whole number", 400);
+                }
+                categoryId = n.longValue();
+            }
+
+            Boolean discountAllowed = null;
+            if (body.get("discountAllowed") != null) {
+                if (body.get("discountAllowed") instanceof Boolean) {
+                    discountAllowed = (Boolean) body.get("discountAllowed");
+                } else {
+                    return errorResponse("discountAllowed must be a boolean", 400);
+                }
+            }
+
+            Map<String, Object> result = serviceApiService.bulkUpdateItemDiscountAllowed(
+                    categoryId, discountAllowed, user);
+            return successResponse(result);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("required") || msg.contains("Invalid") || msg.contains("must be"))) {
+                return errorResponse(msg, 400);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
+    /**
      * List fees with marginAllowed disabled (false or null) in a category.
      * GET /api/services/fees/margin-disabled?categoryId=X
      */
