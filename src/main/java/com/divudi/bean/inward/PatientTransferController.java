@@ -362,9 +362,34 @@ public class PatientTransferController implements Serializable {
         req.setAcceptedAt(effectiveAt);
 
         if (req.getFromPatientRoom() == null) {
-            // Admission handover — mark room as admitted
-            req.getAdmission().setRoomAdmitted(true);
-            admissionFacade.edit(req.getAdmission());
+            // Admission handover. When the admission-time room selection already
+            // created and set this same room as current (Issue #23145), there is
+            // nothing to do here beyond confirming roomAdmitted — this request only
+            // exists as a nursing acknowledgement. Otherwise (e.g. the room was
+            // assigned later via a manually initiated transfer with no prior room),
+            // no PatientRoom has ever been created for this admission, so
+            // currentPatientRoom must be set here or it stays null forever and the
+            // "Current Department" search (#22382) can never find the patient. (#23377)
+            Admission admission = req.getAdmission();
+            PatientRoom existingCurrentRoom = admission.getCurrentPatientRoom();
+            RoomFacilityCharge targetRoomFacilityCharge = req.getToRoomFacilityCharge();
+            boolean alreadyInTargetRoom = existingCurrentRoom != null
+                    && existingCurrentRoom.getRoomFacilityCharge() != null
+                    && targetRoomFacilityCharge != null
+                    && existingCurrentRoom.getRoomFacilityCharge().getId() != null
+                    && existingCurrentRoom.getRoomFacilityCharge().getId().equals(targetRoomFacilityCharge.getId());
+            if (!alreadyInTargetRoom && targetRoomFacilityCharge != null) {
+                PatientRoom newPatientRoom = new PatientRoom();
+                newPatientRoom = inwardBean.savePatientRoom(
+                        newPatientRoom,
+                        targetRoomFacilityCharge,
+                        admission,
+                        effectiveAt,
+                        sessionController.getLoggedUser());
+                admission.setCurrentPatientRoom(newPatientRoom);
+            }
+            admission.setRoomAdmitted(true);
+            admissionFacade.edit(admission);
         } else {
             // Ward-to-ward transfer
             PatientRoom fromPatientRoom = req.getFromPatientRoom();
