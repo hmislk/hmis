@@ -4258,7 +4258,7 @@ public class BhtSummeryController implements Serializable {
             rows.add(new FinalBillPrintRowDTO(group, entry.getValue(), groupedOrder.get(group)));
         }
 
-        rows.removeIf(row -> row.getAmount() == 0.0);
+        rows.removeIf(row -> Math.abs(row.getAmount()) < 0.005);
         rows.sort(Comparator.comparingInt(FinalBillPrintRowDTO::getOrder));
         return rows;
     }
@@ -4274,11 +4274,28 @@ public class BhtSummeryController implements Serializable {
     public List<FinalBillPrintRowDTO> getBundledFinalBillRows(Bill bill) {
         List<BillItem> items = bill == null ? new ArrayList<>() : bill.getBillItems();
 
+        // Only resolve config for charge types actually present on this bill —
+        // NOT all 187 InwardChargeType values. buildBundledRows already treats a
+        // type absent from groupByType as "skip its items", so this is behavior-
+        // identical, but avoids up to ~560 ConfigOptionApplicationController
+        // getter calls (and, worse, a synchronized full-cache reload per lazily-
+        // created ConfigOption row) on every print of a hospital that has never
+        // opened the Charge Type Labels admin page (found in final review).
+        java.util.Set<InwardChargeType> presentTypes = java.util.EnumSet.noneOf(InwardChargeType.class);
+        if (items != null) {
+            for (BillItem bi : items) {
+                InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+                if (type != null) {
+                    presentTypes.add(type);
+                }
+            }
+        }
+
         Map<InwardChargeType, String> groupByType = new java.util.EnumMap<>(InwardChargeType.class);
         Map<InwardChargeType, Integer> orderByType = new java.util.EnumMap<>(InwardChargeType.class);
         Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
 
-        for (InwardChargeType type : InwardChargeType.values()) {
+        for (InwardChargeType type : presentTypes) {
             if (type == InwardChargeType.ProfessionalCharge || type == InwardChargeType.DoctorAndNurses) {
                 continue;
             }

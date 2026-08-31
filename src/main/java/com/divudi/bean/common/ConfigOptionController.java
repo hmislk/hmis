@@ -273,7 +273,7 @@ public class ConfigOptionController implements Serializable {
             return;
         }
         if (isInwardChargeTypeLabelKey(delo.getOptionKey())) {
-            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = new HashMap<>();
@@ -614,7 +614,7 @@ public class ConfigOptionController implements Serializable {
             return;
         }
         if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
-            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = null;
@@ -1130,7 +1130,7 @@ public class ConfigOptionController implements Serializable {
             return;
         }
         if (isInwardChargeTypeLabelKey(g.getOptions().get(0).getOptionKey())) {
-            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         g.getOptions().sort((a, b) -> a.getId().compareTo(b.getId()));

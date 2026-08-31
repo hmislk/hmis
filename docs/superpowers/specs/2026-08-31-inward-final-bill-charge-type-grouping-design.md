@@ -105,12 +105,16 @@ and the AI chat `manage_config_option` tool work on it immediately.
   DTO list — replacing the long hand-written chain of per-charge-type `ui:repeat`
   + `rendered="...eq 'X'..."` blocks that `finalBill.xhtml` uses, but **only**
   inside this new file.
-- **Trade-off, intentional**: a grouped row prints as a plain `Label : Total` line
-  only. It does not carry Room Charges' per-stay date sub-table or a
-  Professional/Doctor-fee per-staff breakdown — matching "one entity... combined
-  payment is sufficient, view only." A charge type an admin leaves *ungrouped*
-  keeps its normal individual rendering, sub-tables included, same as
-  `finalBill.xhtml`.
+- **Trade-off, intentional**: every row on this composite — grouped or not —
+  prints as a plain `Label : Total` line, matching "one entity... combined
+  payment is sufficient, view only." This composite does not carry Room
+  Charges' per-stay-date sub-table for ANY row, grouped or ungrouped (unlike
+  `finalBill.xhtml`, which shows it for individually-printed Room Charges).
+  Multiple `BillItem`s of the same charge type are summed into one row rather
+  than printed as separate lines. This is a deliberate simplification codified
+  in the implementation plan (Task 6) — this composite exists specifically for
+  hospitals who want simplified per-type rows, at the cost of that sub-detail,
+  for every charge type it prints, not only the ones an admin actively groups.
 - Nothing stops an admin from grouping `ProfessionalCharge`/`DoctorAndNurses` too,
   but there's no reason to for this request, and it isn't recommended — that's the
   one place per-staff detail matters to the patient.
