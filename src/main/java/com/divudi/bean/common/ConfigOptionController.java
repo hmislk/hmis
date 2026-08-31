@@ -56,6 +56,21 @@ public class ConfigOptionController implements Serializable {
      */
     private static final String INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX = "Inward Charge Type Label - ";
 
+    /**
+     * Prefix shared by every Inward Charge Type Report Order ConfigOption key
+     * (e.g. "Inward Charge Type Report Order - ROOM_CHARGE"). Same dedicated
+     * editor as {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX} (issue #23340).
+     */
+    private static final String INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX = "Inward Charge Type Report Order - ";
+
+    /**
+     * Prefix shared by every Inward Charge Type Final Bill Order ConfigOption
+     * key (e.g. "Inward Charge Type Final Bill Order - ROOM_CHARGE"). Same
+     * dedicated editor as {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX} (issue
+     * #23340).
+     */
+    private static final String INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX = "Inward Charge Type Final Bill Order - ";
+
     @EJB
     private ConfigOptionFacade optionFacade;
 
@@ -570,12 +585,18 @@ public class ConfigOptionController implements Serializable {
     }
 
     /**
-     * Inward Charge Type Labels are edited exclusively via
-     * inward/inward_charge_type_labels.xhtml (InwardChargeTypeLabelController).
-     * See {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX}.
+     * Inward Charge Type Labels, Report Orders, and Final Bill Orders are all
+     * edited exclusively via inward/inward_charge_type_labels.xhtml
+     * (InwardChargeTypeLabelController). See
+     * {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX},
+     * {@link #INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX}, and
+     * {@link #INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX}.
      */
     public boolean isInwardChargeTypeLabelKey(String optionKey) {
-        return optionKey != null && optionKey.startsWith(INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX);
+        return optionKey != null
+                && (optionKey.startsWith(INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX)
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX)
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX));
     }
 
     public void saveOption(ConfigOption option) {
