@@ -47,6 +47,16 @@ $env:JAVA_HOME="<path-to-jdk>"
   afterward.
 - Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
   before starting the browser flow.
+- **`--name` must match the actual deployed app name.** `asadmin list-applications`
+  first — on some machines it is `rh-3.0.0`, not `rh`. A `redeploy` with the
+  wrong `--name` fails with `Application with name [...] is not deployed`.
+- **Payara must run on JDK 11.** If Payara was started with JDK 21 on `PATH`,
+  deployment fails with `Unsupported class file major version 65` (65 = Java 21).
+  Fix: `asadmin stop-domain`, then set **both** `$env:JAVA_HOME` and
+  `$env:AS_JAVA` to the JDK 11 path before `start-domain`. A failed `deploy`
+  (as opposed to `redeploy`) also *removes* the app, so the next `redeploy`
+  then fails with "not deployed" — recover with a plain
+  `deploy --name rh-3.0.0 --contextroot rh <war>`.
 
 ---
 
