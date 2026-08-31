@@ -4252,6 +4252,33 @@ public class BhtSummeryController implements Serializable {
         return rows;
     }
 
+    /**
+     * CDI-aware wrapper around {@link #buildBundledRows}, used by
+     * finalBillBundledCustom1.xhtml. Deliberately excludes ProfessionalCharge
+     * and DoctorAndNurses from the charge-type universe passed to
+     * buildBundledRows — those two are always printed separately with their
+     * per-staff fee breakdown (see the composite), never folded into a
+     * generic summed row, so their BillItems must not double-count here.
+     */
+    public List<FinalBillPrintRowDTO> getBundledFinalBillRows(Bill bill) {
+        List<BillItem> items = bill == null ? new ArrayList<>() : bill.getBillItems();
+
+        Map<InwardChargeType, String> groupByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, Integer> orderByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
+
+        for (InwardChargeType type : InwardChargeType.values()) {
+            if (type == InwardChargeType.ProfessionalCharge || type == InwardChargeType.DoctorAndNurses) {
+                continue;
+            }
+            groupByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+            orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeLabel(type));
+        }
+
+        return buildBundledRows(items, groupByType, orderByType, labelByType);
+    }
+
     public String navigateToIntrimBill() {
         patientEncounter = null;
         institution = sessionController.getInstitution();
