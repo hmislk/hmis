@@ -31,7 +31,11 @@ waste a session.
 
 If the change under test isn't deployed yet, rebuild and redeploy to the local
 Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
-locations):
+locations). **This section is local dev only** — it is the `asadmin`
+build/deploy loop the `playwright-e2e` skill already mandates on a developer
+laptop. It does **not** apply to shared/staging/production Payara, where the
+"no manual/root deployment; everything through CI/CD" rule in `CLAUDE.md`
+still governs.
 
 ```powershell
 # Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
@@ -56,7 +60,8 @@ $env:JAVA_HOME="<path-to-jdk>"
   `$env:AS_JAVA` to the JDK 11 path before `start-domain`. A failed `deploy`
   (as opposed to `redeploy`) also *removes* the app, so the next `redeploy`
   then fails with "not deployed" — recover with a plain
-  `deploy --name rh-3.0.0 --contextroot rh <war>`.
+  `deploy --name <name-from-list-applications> --contextroot <its-context-root> <war>`
+  (the name/context root you confirmed above, not a hardcoded guess).
 
 ---
 
