@@ -31,6 +31,7 @@ public class InwardChargeTypeLabelController implements Serializable {
     private Map<String, String> labelMap;
     private Map<String, String> reportOrderMap;
     private Map<String, String> finalBillOrderMap;
+    private Map<String, String> finalBillGroupMap;
 
     @PostConstruct
     public void init() {
@@ -38,6 +39,7 @@ public class InwardChargeTypeLabelController implements Serializable {
         labelMap = new HashMap<>();
         reportOrderMap = new HashMap<>();
         finalBillOrderMap = new HashMap<>();
+        finalBillGroupMap = new HashMap<>();
         for (InwardChargeType type : chargeTypes) {
             String custom = configOptionApplicationController.getShortTextValueByKey(
                     "Inward Charge Type Label - " + type.name(), "");
@@ -50,6 +52,7 @@ public class InwardChargeTypeLabelController implements Serializable {
             // where actually needed, in orderOrDefault().
             reportOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeReportOrder(type)));
             finalBillOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type)));
+            finalBillGroupMap.put(type.name(), configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
         }
     }
 
@@ -59,6 +62,7 @@ public class InwardChargeTypeLabelController implements Serializable {
             configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
             configOptionApplicationController.saveInwardChargeTypeReportOrder(type, orderOrDefault(reportOrderMap, type));
             configOptionApplicationController.saveInwardChargeTypeFinalBillOrder(type, orderOrDefault(finalBillOrderMap, type));
+            configOptionApplicationController.saveInwardChargeTypeFinalBillGroup(type, finalBillGroupMap.get(type.name()));
         }
     }
 
@@ -67,6 +71,7 @@ public class InwardChargeTypeLabelController implements Serializable {
         configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
         configOptionApplicationController.saveInwardChargeTypeReportOrder(type, orderOrDefault(reportOrderMap, type));
         configOptionApplicationController.saveInwardChargeTypeFinalBillOrder(type, orderOrDefault(finalBillOrderMap, type));
+        configOptionApplicationController.saveInwardChargeTypeFinalBillGroup(type, finalBillGroupMap.get(type.name()));
     }
 
     /**
@@ -113,5 +118,13 @@ public class InwardChargeTypeLabelController implements Serializable {
 
     public void setFinalBillOrderMap(Map<String, String> finalBillOrderMap) {
         this.finalBillOrderMap = finalBillOrderMap;
+    }
+
+    public Map<String, String> getFinalBillGroupMap() {
+        return finalBillGroupMap;
+    }
+
+    public void setFinalBillGroupMap(Map<String, String> finalBillGroupMap) {
+        this.finalBillGroupMap = finalBillGroupMap;
     }
 }

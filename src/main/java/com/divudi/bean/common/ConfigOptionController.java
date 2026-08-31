@@ -71,6 +71,14 @@ public class ConfigOptionController implements Serializable {
      */
     private static final String INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX = "Inward Charge Type Final Bill Order - ";
 
+    /**
+     * Prefix shared by every Inward Charge Type Final Bill Group ConfigOption
+     * key (e.g. "Inward Charge Type Final Bill Group - ROOM_CHARGE"). Same
+     * dedicated editor as {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX}
+     * (configurable Final Bill charge-type grouping, #23340 follow-up).
+     */
+    private static final String INWARD_CHARGE_TYPE_FINAL_BILL_GROUP_KEY_PREFIX = "Inward Charge Type Final Bill Group - ";
+
     @EJB
     private ConfigOptionFacade optionFacade;
 
@@ -596,7 +604,8 @@ public class ConfigOptionController implements Serializable {
         return optionKey != null
                 && (optionKey.startsWith(INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX)
                 || optionKey.startsWith(INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX)
-                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX));
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX)
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_GROUP_KEY_PREFIX));
     }
 
     public void saveOption(ConfigOption option) {

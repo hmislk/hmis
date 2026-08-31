@@ -1425,6 +1425,23 @@ public class ConfigOptionApplicationController implements Serializable {
         setIntegerValueByKey("Inward Charge Type Final Bill Order - " + type.name(), order);
     }
 
+    /**
+     * Free-text grouping key for the "Bundled Custom 1" Final Bill print
+     * format: charge types sharing the same non-blank group text print as
+     * one summed line (see BhtSummeryController#buildBundledRows). Default
+     * empty — every charge type prints on its own line until an admin sets
+     * this, so no hospital is affected until it opts in.
+     */
+    public String getInwardChargeTypeFinalBillGroup(InwardChargeType type) {
+        String key = "Inward Charge Type Final Bill Group - " + type.name();
+        return getShortTextValueByKey(key, "");
+    }
+
+    public void saveInwardChargeTypeFinalBillGroup(InwardChargeType type, String group) {
+        String key = "Inward Charge Type Final Bill Group - " + type.name();
+        saveShortTextOption(key, group == null ? "" : group.trim());
+    }
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
