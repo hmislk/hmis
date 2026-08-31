@@ -472,11 +472,14 @@ public class CapabilityStatementResource {
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
-                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on ItemFee rows in a category; "
-                        + "fee-level only). "
+                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on ItemFee rows in a category "
+                        + "and/or item subtype; fee-level only). "
                         + "/items/bulk-discount-allowed (POST bulk-update Item-level discountAllowed for all non-retired "
-                        + "items in a category; body: categoryId, discountAllowed. Works generically on any Item subtype "
-                        + "by category, including InvestigationCategory — not just services). "
+                        + "items in a category and/or item subtype; body: categoryId, itemType, discountAllowed). "
+                        + "Both bulk endpoints accept categoryId and/or itemType (Investigation | Service | InwardService) "
+                        + "— at least one is required. itemType targets every item of that subtype directly (e.g. every "
+                        + "Investigation) since there is no API to enumerate every category id to loop over instead; "
+                        + "categoryId alone still works and is not InvestigationCategory-restricted. "
                         + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
