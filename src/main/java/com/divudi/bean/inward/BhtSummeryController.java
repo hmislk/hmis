@@ -241,6 +241,7 @@ public class BhtSummeryController implements Serializable {
     private boolean showCustomBill2Format;
     private boolean showCustomBill3Format;
     private boolean showCustomBill4Format;
+    private boolean showBundledCustom1Format;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -486,12 +487,14 @@ public class BhtSummeryController implements Serializable {
         showCustomBill2Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 2 Format", true);
         showCustomBill3Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 3 Format", false);
         showCustomBill4Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 4 Format", false);
+        showBundledCustom1Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Bundled Custom 1 Format", false);
     }
 
     private void persistCustomBillFormatVisibility() {
         configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 2 Format", showCustomBill2Format);
         configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 3 Format", showCustomBill3Format);
         configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 4 Format", showCustomBill4Format);
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Bundled Custom 1 Format", showBundledCustom1Format);
     }
 
     public void loadCustom2Config() {
@@ -666,6 +669,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setShowCustomBill4Format(boolean showCustomBill4Format) {
         this.showCustomBill4Format = showCustomBill4Format;
+    }
+
+    public boolean isShowBundledCustom1Format() {
+        return showBundledCustom1Format;
+    }
+
+    public void setShowBundledCustom1Format(boolean showBundledCustom1Format) {
+        this.showBundledCustom1Format = showBundledCustom1Format;
     }
     // </editor-fold>
 
