@@ -313,28 +313,43 @@
                             <f:facet name="footer">
                                 <div class="text-end">
                                     <strong>Deposits — </strong>
-                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedPaymentMethods}" var="pm">
+                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedDepositMethods}" var="pm">
                                         <strong>
                                             <h:outputText value="#{pm.label}" />:
                                         </strong>
-                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForMethod(pm)}">
+                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForDepositMethod(pm)}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;
                                     </ui:repeat>
                                     &#160;&#160;&#160;
-                                    <strong>Final Payments — </strong>
-                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedFinalPaymentMethods}" var="pm">
+                                    <strong>Payments — </strong>
+                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedPaymentMethods}" var="pm">
                                         <strong>
                                             <h:outputText value="#{pm.label}" />:
                                         </strong>
-                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForFinalPaymentMethod(pm)}">
+                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForPaymentMethod(pm)}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;
                                     </ui:repeat>
-                                    <strong>Total Final: </strong>
-                                    <h:outputText value="#{bhtPaymentDetailReportController.grandTotalFinalPayments}">
+                                    <strong>Total Payments: </strong>
+                                    <h:outputText value="#{bhtPaymentDetailReportController.grandTotalPayments}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <strong>Post Payments — </strong>
+                                    <ui:repeat value="#{bhtPaymentDetailReportController.usedPostPaymentMethods}" var="pm">
+                                        <strong>
+                                            <h:outputText value="#{pm.label}" />:
+                                        </strong>
+                                        <h:outputText value="#{bhtPaymentDetailReportController.getTotalForPostPaymentMethod(pm)}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;
+                                    </ui:repeat>
+                                    <strong>Total Post Payments: </strong>
+                                    <h:outputText value="#{bhtPaymentDetailReportController.grandTotalPostPayments}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;

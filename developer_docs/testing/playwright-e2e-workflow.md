@@ -1975,6 +1975,19 @@ actually proves the WAR builds and packages the fix correctly. Verified while
 testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
 way in seconds instead of a multi-minute rebuild).
 
+**Caveat — the hot-swap only works if that page has not been rendered yet in
+the current app instance.** With `javax.faces.PROJECT_STAGE=Production` (this
+project's `web.xml`) the Facelets refresh period is `-1`, so a page is compiled
+once and cached for the lifetime of the deployment. Swap the file *before* the
+first hit and the reload picks it up; swap it *after* the page has already been
+rendered once and every subsequent reload silently serves the stale cached
+facelet — the file on disk is right, the browser output is old, and nothing is
+logged. Symptom: your newly added component simply isn't in the rendered page.
+Fix: `asadmin deploy --force` (a new app classloader drops the cache); a browser
+reload or hard refresh will not. Found while verifying issue #23342, where an
+A/B run (original file → reproduce, fixed file → verify) needed a real redeploy
+between the two halves.
+
 ## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
 
 To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
@@ -2189,6 +2202,38 @@ guessing at specificity.
 
 Found on `inward/pharmacy_bill_return_bht_issue.xhtml` while adding the Return
 Bill Preview highlight (issue #23338).
+
+## 84. A markup-less PrimeFaces component (`p:defaultCommand`, `p:focus`, …) cannot be confirmed by searching the rendered HTML — look for its event handler instead
+
+These components emit no DOM element at all, only a `PrimeFaces.cw(...)` init
+script, and PrimeFaces removes inline scripts from the document once they have
+run. So `document.documentElement.innerHTML.includes('DefaultCommand')` returns
+`false` on a page where the component is present and working — an easy false
+negative that looks like "my fix didn't deploy".
+
+Confirm it the way the widget actually manifests:
+
+```js
+// the widget object (its key is widget_<clientId>, name mangled by minification)
+Object.keys(PrimeFaces.widgets);
+// what p:defaultCommand really does: a namespaced keydown handler on the form
+jQuery._data(document.getElementById('form'), 'events').keydown.map(h => h.namespace);
+// -> ["form:j_idt579"]  ← the defaultCommand's own client id
+```
+
+Then assert the *behaviour* (press Enter, check the URL didn't change and the
+intended action ran), which is the only proof that matters anyway. Found while
+verifying issue #23342.
+
+## 85. `inward_bill_service.xhtml`'s patient search auto-selects on an exact BHT match — no suggestion click needed
+
+Typing a complete BHT number (e.g. `BHT/55359`) into the "Patient Search"
+autocomplete on the Patient Selection screen commits the encounter and re-renders
+straight into the Add Services view, without ever showing an autocomplete panel
+to click. A test that types the BHT and then waits for a `.ui-autocomplete-panel`
+row will time out on a working page. Detect the transition instead — e.g.
+`document.body.innerText.includes('Patient Selection') === false`, or the presence
+of `form:btnAddIx`. Found while verifying issue #23342.
 
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
