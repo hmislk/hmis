@@ -327,11 +327,14 @@
 
                             <!-- Alternate rendering when the hospital wants every doctor's fees
                                  (DoctorAndNurses + ProfessionalCharge) summed into one row per
-                                 doctor instead of one row per fee — same
-                                 bhtSummeryController.getSummaryOfDoctorChargers(...) helper
-                                 finalBill.xhtml uses for this option. -->
+                                 doctor instead of one row per fee. Passes showProfessional through
+                                 so the Hospital Copy (showProfessional=false) excludes
+                                 ProfessionalCharge from the aggregate — its printed Total uses
+                                 bill.hospitalFee, which itself excludes ProfessionalCharge; without
+                                 this the printed rows would sum to more than the printed Total
+                                 (found in review). DoctorAndNurses is always included regardless. -->
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
-                                <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter)}" var="bip">
+                                <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter,cc.attrs.showProfessional)}" var="bip">
                                     <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                             <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">

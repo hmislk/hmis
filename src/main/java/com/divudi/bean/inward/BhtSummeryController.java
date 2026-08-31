@@ -4130,6 +4130,20 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
+        return getSummaryOfDoctorChargers(bi, pe, true);
+    }
+
+    /**
+     * Same as {@link #getSummaryOfDoctorChargers(List, PatientEncounter)}, but lets
+     * a caller exclude ProfessionalCharge from the aggregation — needed by the
+     * Hospital Copy print (showProfessional=false), whose printed Total uses
+     * {@code Bill.hospitalFee}, which itself excludes ProfessionalCharge. Without
+     * this, aggregating ProfessionalCharge in unconditionally on that copy makes
+     * the printed charge rows sum to more than the printed Total (found in
+     * review). DoctorAndNurses is always included regardless — it IS part of
+     * {@code hospitalFee}.
+     */
+    public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe, boolean includeProfessionalCharge) {
         List<BillItem> newBillItems = new ArrayList<>();
         // LinkedHashMap preserves first-appearance order of each staff member, which follows
         // the orderNo ordering of proFees, so the manual drag order survives in this layout too.
@@ -4137,8 +4151,10 @@ public class BhtSummeryController implements Serializable {
         double totalFee = 0.0;
 
         for (BillItem i : bi) {
-            if ((i.getInwardChargeType() == InwardChargeType.ProfessionalCharge
-                    || i.getInwardChargeType() == InwardChargeType.DoctorAndNurses)
+            boolean isProfessionalCharge = i.getInwardChargeType() == InwardChargeType.ProfessionalCharge;
+            boolean isDoctorAndNurses = i.getInwardChargeType() == InwardChargeType.DoctorAndNurses;
+            if ((isProfessionalCharge || isDoctorAndNurses)
+                    && (includeProfessionalCharge || !isProfessionalCharge)
                     && i.getAdjustedValue() != 0) {
 //                System.out.println("i = " + i);
 //                System.out.println("i.getInwardChargeType() = " + i.getInwardChargeType());

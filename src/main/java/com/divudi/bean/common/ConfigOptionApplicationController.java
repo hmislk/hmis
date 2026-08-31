@@ -113,6 +113,32 @@ public class ConfigOptionApplicationController implements Serializable {
         return option;
     }
 
+    /**
+     * Runs {@code seeding} with the same reentrancy guard {@link #loadApplicationOptions()}
+     * uses internally, so any {@code getXxxValueByKey}/{@code createApplicationOptionIfAbsent}
+     * calls inside it that lazily create a missing row do NOT each trigger their own
+     * synchronized full cache reload — at most one reload happens, after {@code seeding}
+     * finishes. Use this around any loop that may touch many keys that could all be
+     * missing at once (e.g. seeding every {@code InwardChargeType}'s rows on a hospital's
+     * first visit to an admin/discovery page) — without it, such a loop could trigger one
+     * full, synchronized, application-wide cache reload per missing key (found in review
+     * of issue #23340's charge-type ordering/grouping follow-up).
+     */
+    public void seedInBatch(Runnable seeding) {
+        boolean alreadyBatching = isLoadingApplicationOptions;
+        if (!alreadyBatching) {
+            isLoadingApplicationOptions = true;
+        }
+        try {
+            seeding.run();
+        } finally {
+            if (!alreadyBatching) {
+                isLoadingApplicationOptions = false;
+                loadApplicationOptions();
+            }
+        }
+    }
+
     @PostConstruct
     public void init() {
         loadApplicationOptions();

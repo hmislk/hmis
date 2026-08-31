@@ -94,11 +94,13 @@ and the AI chat `manage_config_option` tool work on it immediately.
 - **New helper**, `BhtSummeryController.getBundledFinalBillRows(Bill bill)` →
   `List<FinalBillPrintRowDTO>` (new small DTO: `label`, `amount`, `order`).
   Logic:
-  1. Walk `bill.billItems`; resolve each item's charge type's Final Bill Group.
-  2. Items whose group is non-empty are summed by group text into one row per
-     distinct group value; items with an empty group keep their own row (label =
-     existing custom/default label for that charge type, one row per item exactly
-     as `finalBill.xhtml` does today).
+  1. Walk `bill.billItems`; sum by charge type first (multiple `BillItem`s of the
+     same charge type always collapse into one total, whether grouped or not —
+     matching `buildBundledRows`'s actual behavior).
+  2. Per-type totals whose group is non-empty are summed again by group text
+     into one row per distinct group value; totals with an empty group keep
+     their own row, one row per charge type (not per `BillItem`), labeled with
+     the existing custom/default label for that type.
   3. Sort by Final Bill Order (group rows use the min across members).
   4. Skip zero/near-zero rows (same `!= 0` guard as today).
 - `finalBillBundledCustom1.xhtml`'s charge table is a single `ui:repeat` over this

@@ -211,16 +211,21 @@ public class ConfigResource {
         }
 
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        for (InwardChargeType type : InwardChargeType.values()) {
-            JsonObjectBuilder obj = Json.createObjectBuilder()
-                    .add("name", type.name())
-                    .add("defaultLabel", type.getLabel() != null ? type.getLabel() : "")
-                    .add("label", configOptionApplicationController.getInwardChargeTypeLabel(type))
-                    .add("reportOrder", configOptionApplicationController.getInwardChargeTypeReportOrder(type))
-                    .add("finalBillOrder", configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type))
-                    .add("finalBillGroup", configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
-            arrayBuilder.add(obj);
-        }
+        // Batched: same reasoning as InwardChargeTypeLabelController.init() — this
+        // endpoint's whole purpose is seeding every missing row in one call, so
+        // suppress the per-key cache reload and do it once at the end instead.
+        configOptionApplicationController.seedInBatch(() -> {
+            for (InwardChargeType type : InwardChargeType.values()) {
+                JsonObjectBuilder obj = Json.createObjectBuilder()
+                        .add("name", type.name())
+                        .add("defaultLabel", type.getLabel() != null ? type.getLabel() : "")
+                        .add("label", configOptionApplicationController.getInwardChargeTypeLabel(type))
+                        .add("reportOrder", configOptionApplicationController.getInwardChargeTypeReportOrder(type))
+                        .add("finalBillOrder", configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type))
+                        .add("finalBillGroup", configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+                arrayBuilder.add(obj);
+            }
+        });
         return Response.ok(arrayBuilder.build().toString()).build();
     }
 
