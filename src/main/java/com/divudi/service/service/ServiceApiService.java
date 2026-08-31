@@ -790,6 +790,10 @@ public class ServiceApiService implements Serializable {
      * Investigation" directly, since there is no API to enumerate every
      * InvestigationCategory id to loop over instead.
      */
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, Boolean discountAllowed, WebUser user) throws Exception {
+        return bulkUpdateItemDiscountAllowed(categoryId, null, discountAllowed, user);
+    }
+
     public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, String itemTypeStr,
             Boolean discountAllowed, WebUser user) throws Exception {
         Class<? extends Item> itemType = resolveItemType(itemTypeStr);
