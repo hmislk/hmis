@@ -1975,6 +1975,19 @@ actually proves the WAR builds and packages the fix correctly. Verified while
 testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
 way in seconds instead of a multi-minute rebuild).
 
+**Caveat — the hot-swap only works if that page has not been rendered yet in
+the current app instance.** With `javax.faces.PROJECT_STAGE=Production` (this
+project's `web.xml`) the Facelets refresh period is `-1`, so a page is compiled
+once and cached for the lifetime of the deployment. Swap the file *before* the
+first hit and the reload picks it up; swap it *after* the page has already been
+rendered once and every subsequent reload silently serves the stale cached
+facelet — the file on disk is right, the browser output is old, and nothing is
+logged. Symptom: your newly added component simply isn't in the rendered page.
+Fix: `asadmin deploy --force` (a new app classloader drops the cache); a browser
+reload or hard refresh will not. Found while verifying issue #23342, where an
+A/B run (original file → reproduce, fixed file → verify) needed a real redeploy
+between the two halves.
+
 ## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
 
 To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
@@ -2190,6 +2203,65 @@ guessing at specificity.
 Found on `inward/pharmacy_bill_return_bht_issue.xhtml` while adding the Return
 Bill Preview highlight (issue #23338).
 
+## 84. A markup-less PrimeFaces component (`p:defaultCommand`, `p:focus`, …) cannot be confirmed by searching the rendered HTML — look for its event handler instead
+
+These components emit no DOM element at all, only a `PrimeFaces.cw(...)` init
+script, and PrimeFaces removes inline scripts from the document once they have
+run. So `document.documentElement.innerHTML.includes('DefaultCommand')` returns
+`false` on a page where the component is present and working — an easy false
+negative that looks like "my fix didn't deploy".
+
+Confirm it the way the widget actually manifests:
+
+```js
+// the widget object (its key is widget_<clientId>, name mangled by minification)
+Object.keys(PrimeFaces.widgets);
+// what p:defaultCommand really does: a namespaced keydown handler on the form
+jQuery._data(document.getElementById('form'), 'events').keydown.map(h => h.namespace);
+// -> ["form:j_idt579"]  ← the defaultCommand's own client id
+```
+
+Then assert the *behaviour* (press Enter, check the URL didn't change and the
+intended action ran), which is the only proof that matters anyway. Found while
+verifying issue #23342.
+
+## 85. `inward_bill_service.xhtml`'s patient search auto-selects on an exact BHT match — no suggestion click needed
+
+Typing a complete BHT number (e.g. `BHT/55359`) into the "Patient Search"
+autocomplete on the Patient Selection screen commits the encounter and re-renders
+straight into the Add Services view, without ever showing an autocomplete panel
+to click. A test that types the BHT and then waits for a `.ui-autocomplete-panel`
+row will time out on a working page. Detect the transition instead — e.g.
+`document.body.innerText.includes('Patient Selection') === false`, or the presence
+of `form:btnAddIx`. Found while verifying issue #23342.
+
+## 86. A `p:inputText`/`p:inputNumber` bound to a `Map<String, Integer>` entry silently stores the raw `String` — the write is lost with no error until you read it back
+
+Binding a form input to `#{bean.someMap[key]}` where `someMap` is declared `Map<String, Integer>`
+compiles fine and *looks* like it should coerce, because a normal bean property setter
+(`setSomeField(int)`) does get EL's automatic string-to-primitive coercion via reflection on the
+setter's declared parameter type. A `Map` entry gets no such coercion: `MapELResolver.setValue()`
+just calls `map.put(key, value)` with whatever raw type the component submitted — generics are
+erased at the bytecode level, so the resolver has no way to know the map is supposed to hold
+`Integer`. The submitted value lands in the map as a plain `String`.
+
+The failure doesn't surface where you'd look for it. The command button's `update` re-renders the
+component from that same in-memory map object, so the browser still shows the value you just typed
+— it *looks* saved. The real breakage happens the next time server-side code reads the map entry as
+`Integer` (e.g. `Integer order = orderMap.get(key);`) — a `ClassCastException: String cannot be cast
+to Integer` that aborts the whole action method, so nothing after that line (including the actual
+persistence call) ever runs. `p:messages`/`p:growl` stays silent because the exception happens inside
+the JSF lifecycle's invoke-application phase, not inside a `catch` the page bothers to show — the
+only trace is a `SEVERE javax.faces.el.EvaluationException` in `server.log`.
+
+**Fix**: keep the map typed `Map<String, String>` (matching how every other free-text-bound map in
+this codebase already works) and parse the string to the target type only where the value is actually
+consumed — never type a directly-bound map as anything but `String`. **Verification**: a screenshot or
+an in-session AJAX re-read is not proof of a save — the model object doesn't go away just because the
+action method threw. Always confirm with a fresh `SELECT` after the request completes (a full page
+reload session's own display of "the value I set" proves nothing, since it's the same still-open
+transactional model that never got rolled back). Found and fixed while testing issue #23340.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
@@ -2259,6 +2331,45 @@ Always pair this with the **negative test** — a record with nothing pending mu
 otherwise you have not distinguished "correctly blocks" from "blocks everything". Undo any state the
 negative test creates through the app's own Cancel action, never with an `UPDATE`.
 Verified while testing issue #23222.
+
+## A department/room created by direct SQL needs more than the FK columns
+
+When a test scenario needs a *new* Department or RoomFacilityCharge that doesn't already exist
+locally (e.g. to simulate a patient's room belonging to a different department than the one they
+were admitted from), inserting just the obvious FK columns produces a department that silently
+breaks large parts of the UI instead of erroring:
+
+- **`DEPARTMENT.DTYPE` must be set** (`'Department'`, matching the existing rows) — `Department` is
+  `@Inheritance`-annotated, so a `NULL` discriminator isn't just "unmapped for this row", it makes
+  the **entire polymorphic query return an empty list** (e.g. `SessionController.listLoggableDepts`
+  during login), not just exclude the bad row. Symptom: login fails with "This user has no privilage
+  to login to any Department" even though the WebUserDepartment row is correct.
+- **`DEPARTMENT.DEPARTMENTTYPE` is compared case-sensitively** against the literal used elsewhere in
+  the codebase (`'Inward'`, not `'INWARD'`). A mismatch doesn't error — the department loads and the
+  header renders, but the entire top menu bar and all page-level toolbars silently disappear because
+  their `rendered` conditions never match.
+- **`DEPARTMENT.SITE_ID` should be copied from a real department of the same kind** — leaving it
+  `NULL` is a further contributor to missing toolbar/menu regions on some pages.
+- **Privileges (`WEBUSERPRIVILEGE`) are scoped by `DEPARTMENT_ID`**, and
+  `SessionController.getUserPrivileges()` looks them up against `loggedUser.getDepartment()` (the
+  session's *currently selected* department after login), not just the user. A brand-new department
+  has zero privilege rows for any user, so every `hasPrivilege(...)`-gated button vanishes even
+  though the same user has full privileges in their usual department. Fix: copy the relevant
+  `WEBUSERPRIVILEGE` rows, changing only `DEPARTMENT_ID`, to the new department.
+- **`ROOMFACILITYCHARGE.COMPANY_ID` must be set** when the scenario will exercise an
+  institute-scoped search/filter (e.g. "Logged Institute"/"Logged Department" scope buttons) — those
+  queries `AND` on `roomFacilityCharge.company = :loggedInstitution`, and a `NULL` company silently
+  drops the row from every institute-scoped result with no error, while institute-unscoped ("Any
+  Institute") searches still find it fine. This made a genuine fix look like it wasn't working until
+  the room's `COMPANY_ID` was backfilled to match the test institution.
+
+Each of the above requires a **Payara restart** to take effect if the row (or a row referencing it)
+was already read once in the current server process — EclipseLink's shared L2 cache can otherwise
+keep serving the pre-fix version of the entity even though the DB row is already corrected and a
+brand new login/HTTP session is used. A plain redeploy is not enough; use
+`asadmin stop-domain && asadmin start-domain`.
+
+Verified while testing issue #23377.
 
 ## Quick checklist
 

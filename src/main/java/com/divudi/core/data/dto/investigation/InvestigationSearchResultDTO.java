@@ -18,6 +18,7 @@ public class InvestigationSearchResultDTO {
     private String containerName;
     private Long analyzerId;
     private String analyzerName;
+    private Boolean discountAllowed;
 
     public InvestigationSearchResultDTO() {}
 
@@ -64,4 +65,6 @@ public class InvestigationSearchResultDTO {
     public void setAnalyzerId(Long analyzerId) { this.analyzerId = analyzerId; }
     public String getAnalyzerName() { return analyzerName; }
     public void setAnalyzerName(String analyzerName) { this.analyzerName = analyzerName; }
+    public Boolean getDiscountAllowed() { return discountAllowed; }
+    public void setDiscountAllowed(Boolean discountAllowed) { this.discountAllowed = discountAllowed; }
 }
