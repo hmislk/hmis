@@ -26,6 +26,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.ChargeItemTotal;
 import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.dataStructure.InwardBillItem;
+import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
@@ -4180,6 +4181,75 @@ public class BhtSummeryController implements Serializable {
         }
 
         return newBillItems;
+    }
+
+    /**
+     * Pure grouping/summing algorithm behind the "Bundled Custom 1" Final Bill
+     * format (configurable charge-type grouping, #23340 follow-up). Kept
+     * static and free of CDI-injected fields so it is directly unit-testable
+     * (see BhtSummeryControllerBundledRowsTest), following the same pattern as
+     * InwardProfessionalFeeSummaryController's static summary methods.
+     *
+     * <p>{@code groupByType}, {@code orderByType}, and {@code labelByType}
+     * must share the same key set. A charge type <b>absent</b> from
+     * {@code groupByType} is excluded from this bundled view entirely — its
+     * BillItems are silently skipped (this is how callers keep charge types
+     * with their own special rendering, like ProfessionalCharge, out of the
+     * generic row list). A charge type <b>present</b> with a blank (after
+     * trim) group value prints as its own row, labeled via
+     * {@code labelByType}. Charge types sharing the same non-blank group text
+     * are summed into one row labeled with that group text.
+     *
+     * <p>Rows whose final amount is exactly {@code 0.0} are dropped. The
+     * result is sorted ascending by order; a grouped row's order is the
+     * minimum {@code orderByType} value among its members.
+     */
+    public static List<FinalBillPrintRowDTO> buildBundledRows(
+            List<BillItem> billItems,
+            Map<InwardChargeType, String> groupByType,
+            Map<InwardChargeType, Integer> orderByType,
+            Map<InwardChargeType, String> labelByType) {
+
+        Map<InwardChargeType, Double> totalsByType = new java.util.EnumMap<>(InwardChargeType.class);
+        if (billItems != null) {
+            for (BillItem bi : billItems) {
+                InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+                if (type == null || !groupByType.containsKey(type)) {
+                    continue;
+                }
+                totalsByType.merge(type, bi.getAdjustedValue(), Double::sum);
+            }
+        }
+
+        List<FinalBillPrintRowDTO> individualRows = new ArrayList<>();
+        Map<String, Double> groupedTotals = new LinkedHashMap<>();
+        Map<String, Integer> groupedOrder = new LinkedHashMap<>();
+
+        for (Map.Entry<InwardChargeType, Double> entry : totalsByType.entrySet()) {
+            InwardChargeType type = entry.getKey();
+            double amount = entry.getValue();
+            String rawGroup = groupByType.get(type);
+            String group = rawGroup == null ? "" : rawGroup.trim();
+            int order = orderByType.getOrDefault(type, Integer.MAX_VALUE);
+
+            if (group.isEmpty()) {
+                String label = labelByType.getOrDefault(type, type.getLabel());
+                individualRows.add(new FinalBillPrintRowDTO(label, amount, order));
+            } else {
+                groupedTotals.merge(group, amount, Double::sum);
+                groupedOrder.merge(group, order, Math::min);
+            }
+        }
+
+        List<FinalBillPrintRowDTO> rows = new ArrayList<>(individualRows);
+        for (Map.Entry<String, Double> entry : groupedTotals.entrySet()) {
+            String group = entry.getKey();
+            rows.add(new FinalBillPrintRowDTO(group, entry.getValue(), groupedOrder.get(group)));
+        }
+
+        rows.removeIf(row -> row.getAmount() == 0.0);
+        rows.sort(Comparator.comparingInt(FinalBillPrintRowDTO::getOrder));
+        return rows;
     }
 
     public String navigateToIntrimBill() {
