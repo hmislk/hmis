@@ -2332,6 +2332,45 @@ otherwise you have not distinguished "correctly blocks" from "blocks everything"
 negative test creates through the app's own Cancel action, never with an `UPDATE`.
 Verified while testing issue #23222.
 
+## A department/room created by direct SQL needs more than the FK columns
+
+When a test scenario needs a *new* Department or RoomFacilityCharge that doesn't already exist
+locally (e.g. to simulate a patient's room belonging to a different department than the one they
+were admitted from), inserting just the obvious FK columns produces a department that silently
+breaks large parts of the UI instead of erroring:
+
+- **`DEPARTMENT.DTYPE` must be set** (`'Department'`, matching the existing rows) — `Department` is
+  `@Inheritance`-annotated, so a `NULL` discriminator isn't just "unmapped for this row", it makes
+  the **entire polymorphic query return an empty list** (e.g. `SessionController.listLoggableDepts`
+  during login), not just exclude the bad row. Symptom: login fails with "This user has no privilage
+  to login to any Department" even though the WebUserDepartment row is correct.
+- **`DEPARTMENT.DEPARTMENTTYPE` is compared case-sensitively** against the literal used elsewhere in
+  the codebase (`'Inward'`, not `'INWARD'`). A mismatch doesn't error — the department loads and the
+  header renders, but the entire top menu bar and all page-level toolbars silently disappear because
+  their `rendered` conditions never match.
+- **`DEPARTMENT.SITE_ID` should be copied from a real department of the same kind** — leaving it
+  `NULL` is a further contributor to missing toolbar/menu regions on some pages.
+- **Privileges (`WEBUSERPRIVILEGE`) are scoped by `DEPARTMENT_ID`**, and
+  `SessionController.getUserPrivileges()` looks them up against `loggedUser.getDepartment()` (the
+  session's *currently selected* department after login), not just the user. A brand-new department
+  has zero privilege rows for any user, so every `hasPrivilege(...)`-gated button vanishes even
+  though the same user has full privileges in their usual department. Fix: copy the relevant
+  `WEBUSERPRIVILEGE` rows, changing only `DEPARTMENT_ID`, to the new department.
+- **`ROOMFACILITYCHARGE.COMPANY_ID` must be set** when the scenario will exercise an
+  institute-scoped search/filter (e.g. "Logged Institute"/"Logged Department" scope buttons) — those
+  queries `AND` on `roomFacilityCharge.company = :loggedInstitution`, and a `NULL` company silently
+  drops the row from every institute-scoped result with no error, while institute-unscoped ("Any
+  Institute") searches still find it fine. This made a genuine fix look like it wasn't working until
+  the room's `COMPANY_ID` was backfilled to match the test institution.
+
+Each of the above requires a **Payara restart** to take effect if the row (or a row referencing it)
+was already read once in the current server process — EclipseLink's shared L2 cache can otherwise
+keep serving the pre-fix version of the entity even though the DB row is already corrected and a
+brand new login/HTTP session is used. A plain redeploy is not enough; use
+`asadmin stop-domain && asadmin start-domain`.
+
+Verified while testing issue #23377.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
