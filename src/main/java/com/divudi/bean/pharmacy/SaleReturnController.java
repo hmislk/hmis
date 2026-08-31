@@ -768,6 +768,15 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     public void settle() {
+        // Reject negative returning quantities before any other check, so a
+        // negative-qty row can never be masked by a coincidental zero total
+        for (BillItem bi : getBillItems()) {
+            if (bi.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning quantity cannot be negative.");
+                return;
+            }
+        }
+
         String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
         if (returnBlockReason != null) {
             JsfUtil.addErrorMessage(returnBlockReason);
@@ -788,14 +797,6 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         for (BillItem bi : getBillItems()) {
             if (bi.getQty() > 0 && bi.getItem() != null && !bi.getItem().isRefundsAllowed()) {
                 JsfUtil.addErrorMessage("Item '" + bi.getItem().getName() + "' is not allowed to be returned. Refunds are not permitted for this item.");
-                return;
-            }
-        }
-
-        // Reject negative returning quantities
-        for (BillItem bi : getBillItems()) {
-            if (bi.getQty() < 0) {
-                JsfUtil.addErrorMessage("Returning quantity cannot be negative.");
                 return;
             }
         }
