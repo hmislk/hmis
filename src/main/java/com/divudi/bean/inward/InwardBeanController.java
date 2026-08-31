@@ -2178,6 +2178,8 @@ public class InwardBeanController implements Serializable {
 
                 itm.setTransCheckedCount(calCheckedBillItemCount(itm, patientEncounter));
                 itm.setTransBillItemCount(billed - (cancelld + refund));
+                itm.setTransCancelledBillItemCount(cancelld);
+                itm.setTransRefundedBillItemCount(refund);
 
                 long itemTime = System.currentTimeMillis() - itemStartTime;
                 if (itemTime > 100) {
@@ -2263,6 +2265,8 @@ public class InwardBeanController implements Serializable {
 
                     itm.setTransCheckedCount(checked);
                     itm.setTransBillItemCount(billed - (cancelled + refund));
+                    itm.setTransCancelledBillItemCount(cancelled);
+                    itm.setTransRefundedBillItemCount(refund);
                     itm.setTransGrossValue(values[0]);
                     itm.setTransDiscount(values[1]);
                     itm.setTransMarginValue(values[2]);

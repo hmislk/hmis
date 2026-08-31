@@ -31,7 +31,11 @@ waste a session.
 
 If the change under test isn't deployed yet, rebuild and redeploy to the local
 Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
-locations):
+locations). **This section is local dev only** — it is the `asadmin`
+build/deploy loop the `playwright-e2e` skill already mandates on a developer
+laptop. It does **not** apply to shared/staging/production Payara, where the
+"no manual/root deployment; everything through CI/CD" rule in `CLAUDE.md`
+still governs.
 
 ```powershell
 # Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
@@ -47,6 +51,17 @@ $env:JAVA_HOME="<path-to-jdk>"
   afterward.
 - Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
   before starting the browser flow.
+- **`--name` must match the actual deployed app name.** `asadmin list-applications`
+  first — on some machines it is `rh-3.0.0`, not `rh`. A `redeploy` with the
+  wrong `--name` fails with `Application with name [...] is not deployed`.
+- **Payara must run on JDK 11.** If Payara was started with JDK 21 on `PATH`,
+  deployment fails with `Unsupported class file major version 65` (65 = Java 21).
+  Fix: `asadmin stop-domain`, then set **both** `$env:JAVA_HOME` and
+  `$env:AS_JAVA` to the JDK 11 path before `start-domain`. A failed `deploy`
+  (as opposed to `redeploy`) also *removes* the app, so the next `redeploy`
+  then fails with "not deployed" — recover with a plain
+  `deploy --name <name-from-list-applications> --contextroot <its-context-root> <war>`
+  (the name/context root you confirmed above, not a hardcoded guess).
 
 ---
 
