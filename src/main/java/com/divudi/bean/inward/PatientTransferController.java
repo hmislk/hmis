@@ -348,20 +348,33 @@ public class PatientTransferController implements Serializable {
     }
 
     public void acceptTransfer(PatientTransferRequest req) {
-        if (req == null) {
+        if (req == null || req.getId() == null) {
             return;
         }
-        if (req.getTheatreTransferType() == TheatreTransferType.SEND_TO_THEATRE) {
+        // Re-fetch and atomically claim PENDING to prevent a double-accept (double-click,
+        // two sessions) from both creating a PatientRoom for the same request — mirrors
+        // the reload-by-ID pattern already used in cancelPendingAndReopen()/acceptInTheatre().
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(req.getId());
+        if (persisted == null || persisted.getStatus() != TransferRequestStatus.PENDING) {
+            loadPendingForDepartment();
+            JsfUtil.addErrorMessage("This transfer request is no longer pending and cannot be accepted.");
+            return;
+        }
+        if (persisted.getTheatreTransferType() == TheatreTransferType.SEND_TO_THEATRE) {
             JsfUtil.addErrorMessage("This is a theatre transfer request. Use \"Accept Theatre Patient\" instead.");
             loadPendingForDepartment();
             return;
         }
 
-        java.util.Map<String, Object> beforeAccept = transferAuditMap(req);
-        Date effectiveAt = req.getAcceptedAt() != null ? req.getAcceptedAt() : new Date();
-        req.setAcceptedAt(effectiveAt);
+        java.util.Map<String, Object> beforeAccept = transferAuditMap(persisted);
+        Date effectiveAt = persisted.getAcceptedAt() != null ? persisted.getAcceptedAt() : new Date();
+        persisted.setAcceptedAt(effectiveAt);
+        // Claim PENDING immediately so a concurrent accept sees ACCEPTED and bails out above.
+        persisted.setStatus(TransferRequestStatus.ACCEPTED);
+        persisted.setAcceptedBy(sessionController.getLoggedUser());
+        patientTransferRequestFacade.edit(persisted);
 
-        if (req.getFromPatientRoom() == null) {
+        if (persisted.getFromPatientRoom() == null) {
             // Admission handover. When the admission-time room selection already
             // created and set this same room as current (Issue #23145), there is
             // nothing to do here beyond confirming roomAdmitted — this request only
@@ -370,9 +383,9 @@ public class PatientTransferController implements Serializable {
             // no PatientRoom has ever been created for this admission, so
             // currentPatientRoom must be set here or it stays null forever and the
             // "Current Department" search (#22382) can never find the patient. (#23377)
-            Admission admission = req.getAdmission();
+            Admission admission = persisted.getAdmission();
             PatientRoom existingCurrentRoom = admission.getCurrentPatientRoom();
-            RoomFacilityCharge targetRoomFacilityCharge = req.getToRoomFacilityCharge();
+            RoomFacilityCharge targetRoomFacilityCharge = persisted.getToRoomFacilityCharge();
             boolean alreadyInTargetRoom = existingCurrentRoom != null
                     && existingCurrentRoom.getRoomFacilityCharge() != null
                     && targetRoomFacilityCharge != null
@@ -392,7 +405,7 @@ public class PatientTransferController implements Serializable {
             admissionFacade.edit(admission);
         } else {
             // Ward-to-ward transfer
-            PatientRoom fromPatientRoom = req.getFromPatientRoom();
+            PatientRoom fromPatientRoom = persisted.getFromPatientRoom();
             fromPatientRoom.setDischarged(true);
             fromPatientRoom.setDischargedAt(effectiveAt);
             fromPatientRoom.setDischargedBy(sessionController.getLoggedUser());
@@ -402,22 +415,19 @@ public class PatientTransferController implements Serializable {
             newPatientRoom = inwardBean.savePatientRoom(
                     newPatientRoom,
                     fromPatientRoom,
-                    req.getToRoomFacilityCharge(),
-                    req.getAdmission(),
+                    persisted.getToRoomFacilityCharge(),
+                    persisted.getAdmission(),
                     effectiveAt,
                     sessionController.getLoggedUser());
 
             fromPatientRoom.setNextRoom(newPatientRoom);
             patientRoomFacade.edit(fromPatientRoom);
 
-            req.getAdmission().setCurrentPatientRoom(newPatientRoom);
-            admissionFacade.edit(req.getAdmission());
+            persisted.getAdmission().setCurrentPatientRoom(newPatientRoom);
+            admissionFacade.edit(persisted.getAdmission());
         }
 
-        req.setStatus(TransferRequestStatus.ACCEPTED);
-        req.setAcceptedBy(sessionController.getLoggedUser());
-        patientTransferRequestFacade.edit(req);
-        auditTransfer(req, "Transfer Accepted", beforeAccept);
+        auditTransfer(persisted, "Transfer Accepted", beforeAccept);
 
         loadPendingForDepartment();
         JsfUtil.addSuccessMessage("Patient accepted successfully.");
