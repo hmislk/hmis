@@ -30,8 +30,12 @@ import javax.persistence.TemporalType;
  * Controller for BHT Deposit and Credit Settlement Summary Report.
  * Issue #19345
  *
- * One row per PatientEncounter (BHT). Columns show deposit totals broken down
- * by PaymentMethod plus a combined credit-settlement column.
+ * One row per PatientEncounter (BHT). Money-in is shown as three separate
+ * PaymentMethod-broken-down column groups (issue #23262):
+ * "Make a Deposit" (BillTypeAtomic.INWARD_DEPOSIT),
+ * "Make a Payment" (BillTypeAtomic.INWARD_PAYMENT) and
+ * "Post Final Payment" (BillType.PostFinalBillInwardPayment),
+ * plus a Grand Total column and a combined credit-settlement column.
  */
 @Named
 @SessionScoped
@@ -72,6 +76,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private double grandTotalDepositCash;
     private double grandTotalDepositCard;
     private double grandTotalDepositOther;
+    private double grandTotalPayments;
+    private double grandTotalPaymentCash;
+    private double grandTotalPaymentCard;
+    private double grandTotalPaymentCredit;
+    private double grandTotalPaymentOther;
     private double grandTotalPostFinalPayments;
     private double grandTotalPostFinalCash;
     private double grandTotalPostFinalCard;
@@ -82,6 +91,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private double grandTotalCreditBalance;
     private double grandTotalFinalBills;
     private double grandTotalBalance;
+    private double grandTotalAllMoneyIn;
 
     // -------------------------------------------------------------------------
     // Main generate method
@@ -93,6 +103,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalDepositCash = 0;
         grandTotalDepositCard = 0;
         grandTotalDepositOther = 0;
+        grandTotalPayments = 0;
+        grandTotalPaymentCash = 0;
+        grandTotalPaymentCard = 0;
+        grandTotalPaymentCredit = 0;
+        grandTotalPaymentOther = 0;
         grandTotalPostFinalPayments = 0;
         grandTotalPostFinalCash = 0;
         grandTotalPostFinalCard = 0;
@@ -103,6 +118,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalCreditBalance = 0;
         grandTotalFinalBills = 0;
         grandTotalBalance = 0;
+        grandTotalAllMoneyIn = 0;
 
         List<PatientEncounter> encounters = fetchEncounters();
         if (encounters == null || encounters.isEmpty()) {
@@ -117,6 +133,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
             grandTotalDepositCash += row.getDepositCash();
             grandTotalDepositCard += row.getDepositCard();
             grandTotalDepositOther += row.getDepositOther();
+            grandTotalPayments += row.getTotalPayments();
+            grandTotalPaymentCash += row.getPaymentCash();
+            grandTotalPaymentCard += row.getPaymentCard();
+            grandTotalPaymentCredit += row.getPaymentCredit();
+            grandTotalPaymentOther += row.getPaymentOther();
             grandTotalPostFinalPayments += row.getTotalPostFinalPayments();
             grandTotalPostFinalCash += row.getPostFinalCash();
             grandTotalPostFinalCard += row.getPostFinalCard();
@@ -127,6 +148,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
             grandTotalCreditBalance += row.getCreditBalance();
             grandTotalFinalBills += row.getFinalBillTotal();
             grandTotalBalance += row.getTotalBalance();
+            grandTotalAllMoneyIn += row.getTotalAllMoneyIn();
         }
     }
 
@@ -218,10 +240,16 @@ public class BhtPaymentSummaryReportController implements Serializable {
         row.setDateOfDischarge(enc.getDateOfDischarge());
         row.setAdmissionType(enc.getAdmissionType());
 
-        // --- deposit payments ---
+        // --- "Make a Deposit" payments (INWARD_DEPOSIT) ---
         List<Payment> depositPayments = fetchDepositPayments(enc);
         for (Payment p : depositPayments) {
             row.addDeposit(p.getPaymentMethod(), Math.abs(p.getPaidValue()));
+        }
+
+        // --- "Make a Payment" payments (INWARD_PAYMENT) ---
+        List<Payment> payments = fetchPayments(enc);
+        for (Payment p : payments) {
+            row.addPayment(p.getPaymentMethod(), Math.abs(p.getPaidValue()));
         }
 
         // --- post-final-bill payments ---
@@ -267,10 +295,30 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
-     * Fetch all Payment records linked to INWARD_PAYMENT bills for this encounter.
-     * Payment bills link to the encounter via bill.patientEncounter directly.
+     * Fetch all Payment records linked to INWARD_DEPOSIT ("Make a Deposit") bills
+     * for this encounter. Deposit bills link to the encounter via
+     * bill.patientEncounter directly.
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
+        String jpql = "select p from Payment p"
+                + " where p.retired = false"
+                + " and p.bill.retired = false"
+                + " and p.bill.cancelled = false"
+                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.patientEncounter = :enc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("enc", enc);
+        return paymentFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * Fetch all Payment records linked to INWARD_PAYMENT ("Make a Payment") bills
+     * for this encounter — payments toward the bill made any time during the
+     * stay, kept separate from deposits (INWARD_DEPOSIT) and from post-final-bill
+     * payments (BillType.PostFinalBillInwardPayment). Issue #23262.
+     */
+    private List<Payment> fetchPayments(PatientEncounter enc) {
         String jpql = "select p from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
@@ -355,6 +403,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalDepositCash = 0;
         grandTotalDepositCard = 0;
         grandTotalDepositOther = 0;
+        grandTotalPayments = 0;
+        grandTotalPaymentCash = 0;
+        grandTotalPaymentCard = 0;
+        grandTotalPaymentCredit = 0;
+        grandTotalPaymentOther = 0;
         grandTotalPostFinalPayments = 0;
         grandTotalPostFinalCash = 0;
         grandTotalPostFinalCard = 0;
@@ -365,6 +418,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalCreditBalance = 0;
         grandTotalFinalBills = 0;
         grandTotalBalance = 0;
+        grandTotalAllMoneyIn = 0;
     }
 
     // -------------------------------------------------------------------------
@@ -408,6 +462,16 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     public double getGrandTotalDepositOther() { return grandTotalDepositOther; }
 
+    public double getGrandTotalPayments() { return grandTotalPayments; }
+
+    public double getGrandTotalPaymentCash() { return grandTotalPaymentCash; }
+
+    public double getGrandTotalPaymentCard() { return grandTotalPaymentCard; }
+
+    public double getGrandTotalPaymentCredit() { return grandTotalPaymentCredit; }
+
+    public double getGrandTotalPaymentOther() { return grandTotalPaymentOther; }
+
     public double getGrandTotalPostFinalPayments() { return grandTotalPostFinalPayments; }
 
     public double getGrandTotalPostFinalCash() { return grandTotalPostFinalCash; }
@@ -427,4 +491,6 @@ public class BhtPaymentSummaryReportController implements Serializable {
     public double getGrandTotalFinalBills() { return grandTotalFinalBills; }
 
     public double getGrandTotalBalance() { return grandTotalBalance; }
+
+    public double getGrandTotalAllMoneyIn() { return grandTotalAllMoneyIn; }
 }

@@ -7,8 +7,8 @@ import java.util.Date;
 
 /**
  * DTO for BHT Deposit and Credit Settlement Detail Report.
- * One instance per individual payment (deposit, post-final/"Make Payment"
- * settlement, or CC settlement) - see {@link #getPaymentCategory()}.
+ * One instance per individual payment ("Make a Deposit", "Make a Payment",
+ * "Post Final Payment", or CC settlement) - see {@link #getPaymentCategory()}.
  */
 public class BhtPaymentDetailDTO implements Serializable {
 
@@ -26,11 +26,13 @@ public class BhtPaymentDetailDTO implements Serializable {
 
     /**
      * Distinguishes which kind of transaction this row is: "Deposit"
-     * (Make Deposit), "Final Payment" (Make Payment / post-final-bill
-     * settlement), or "CC Settlement" (credit company payment). Not set by
-     * every caller of this DTO (e.g. {@code BhtDepositDetailReportController}
-     * predates this field) - callers that don't set it leave rows blank
-     * rather than defaulting to a possibly-wrong category.
+     * ("Make a Deposit" / INWARD_DEPOSIT), "Payment" ("Make a Payment" /
+     * INWARD_PAYMENT), "Post Payment" ("Post Final Payment" /
+     * BillType.PostFinalBillInwardPayment), or "CC Settlement" (credit company
+     * payment). Not set by every caller of this DTO (e.g.
+     * {@code BhtDepositDetailReportController} predates this field) - callers
+     * that don't set it leave rows blank rather than defaulting to a
+     * possibly-wrong category.
      */
     private String paymentCategory;
 
