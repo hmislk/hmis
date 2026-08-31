@@ -2272,6 +2272,30 @@ Logging into `http://localhost:8080/rh` with the production app-login credential
 
 Found while verifying issue #22990.
 
+## 88. `pharmacy_search_pre_bill_for_return_item_only.xhtml`'s "Return Item Only" button can fail completely silently — no `p:messages`/growl update, plus `Bill` is L2-cached
+
+Two independent gotchas stack here, found while testing issue #23304 (reject negative return quantity):
+
+1. **Silent navigation failure.** `PreReturnController.navigateToReturnRetailSaleItemsOnly()` calls
+   `pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill)` and returns `null` (staying on the
+   same page) when the sale bill is older than the "no approval" day limit (default 3 days) and has no
+   approved return request — see `PharmacyRetailSaleReturnPolicyService`. `pharmacy_search_pre_bill_for_return_item_only.xhtml`
+   has **no `p:messages`/`p:growl` component at all**, so `JsfUtil.addErrorMessage(...)` is added to the
+   `FacesContext` but never rendered — clicking "Return Item Only" just silently reloads the same search
+   page with zero visible feedback. Don't mistake this for the button/click not registering; check the
+   row's day-limit first (a "Request Approval" button appearing alongside "Return Item Only" is the tell
+   that the bill is past the no-approval window).
+2. **`Bill` is also L2-cached.** Same class of staleness as `feedback_cogs_report_testing_gotcha` and item
+   87's `WebUser` case: if you shift a `Bill.createdAt` via raw SQL to get a test bill inside the day-limit
+   window, and the app already loaded that `Bill` earlier in the same session (e.g. an earlier search hit
+   it), `checkReturnAllowed` keeps evaluating against the stale cached `createdAt` — the day-limit block
+   persists even though the DB row is correct. Use a bill your test session has never touched yet for the
+   `UPDATE`, or restart the domain, rather than assuming the fresh `UPDATE` took effect.
+
+Also: revert any `createdAt` shift back to the bill's real original value immediately after the test —
+day-based reports (Cost of Goods Sold, F15) key off it, and leaving it shifted taints those reports for
+both the original date and the shifted date.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including

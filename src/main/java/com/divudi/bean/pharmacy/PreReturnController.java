@@ -265,6 +265,11 @@ public class PreReturnController implements Serializable {
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
+        if (tmp.getQty() < 0) {
+            tmp.setQty(0.0);
+            JsfUtil.addErrorMessage("Returning quantity cannot be negative. The returning quantity was set to 0.");
+        }
+
         if (tmp.getQty() > getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem())) {
             tmp.setQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
@@ -415,6 +420,14 @@ public class PreReturnController implements Serializable {
         for (BillItem bi : getBillItems()) {
             if (bi.getQty() > 0 && bi.getItem() != null && !bi.getItem().isRefundsAllowed()) {
                 JsfUtil.addErrorMessage("Item '" + bi.getItem().getName() + "' is not allowed to be returned. Refunds are not permitted for this item.");
+                return;
+            }
+        }
+
+        // Reject negative returning quantities
+        for (BillItem bi : getBillItems()) {
+            if (bi.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning quantity cannot be negative.");
                 return;
             }
         }
