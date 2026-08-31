@@ -423,7 +423,10 @@ public class CapabilityStatementResource {
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows. "
                         + "Category/sample/container(tube)/analyzer(machine) can each be set via an ID referencing an existing row "
                         + "(categoryId, sampleId, containerId, analyzerId — errors if not found) or a name "
-                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists).",
+                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists). "
+                        + "discountAllowed (Item-level flag) is readable/writable on all of GET /search, GET /{id}, POST, PUT — "
+                        + "note this is distinct from the fee-level discountAllowed on /fees below; the inward discount calculation "
+                        + "requires BOTH to be true (see Services /items/bulk-discount-allowed for bulk-setting this one by category).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
@@ -469,7 +472,11 @@ public class CapabilityStatementResource {
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
-                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on fees in a category). "
+                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on ItemFee rows in a category; "
+                        + "fee-level only). "
+                        + "/items/bulk-discount-allowed (POST bulk-update Item-level discountAllowed for all non-retired "
+                        + "items in a category; body: categoryId, discountAllowed. Works generically on any Item subtype "
+                        + "by category, including InvestigationCategory — not just services). "
                         + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
