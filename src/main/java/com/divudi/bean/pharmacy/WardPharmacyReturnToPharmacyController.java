@@ -322,6 +322,18 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             bi.setQty(0.0);
             bi.setPatientEncounter(receiveItem.getPatientEncounter());
             bi.setReferanceBillItem(receiveItem);
+            // The receive bill item itself carries no pricing (it's just a stock
+            // confirmation - see WardPharmacyBhtIssueReceiveController), so trace back
+            // one more hop through its own referanceBillItem to the originally priced
+            // ISSUE_MEDICINE_ON_REQUEST_INWARD item to recover a rate for this return
+            // (issue #22990 - returns via this porter flow were saved with netTotal 0).
+            BillItem issuedItem = receiveItem.getReferanceBillItem();
+            if (issuedItem != null) {
+                bi.setRate(issuedItem.getRate());
+                bi.setNetRate(issuedItem.getNetRate());
+                bi.setMarginRate(issuedItem.getMarginRate());
+                bi.setDiscountRate(issuedItem.getDiscountRate());
+            }
 
             PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
             pbi.copy(receivePbi);
@@ -583,6 +595,26 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
         Department wardDept = sessionController.getDepartment();
 
+        // Value the return as a negative mirror of what was originally issued, so the
+        // Interim Bill's Medicine total (which sums Bill.netTotal) nets it out the same
+        // way DIRECT_ISSUE_INWARD_MEDICINE_RETURN and ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+        // already do. Mirrors BhtIssueReturnController.calTotal()'s negation (issue #22990).
+        double grossTotal = 0.0;
+        double netTotal = 0.0;
+        double marginTotal = 0.0;
+        for (BillItem bi : itemsToReturn) {
+            double lineQty = bi.getQty();
+            double lineGross = 0 - Math.abs(bi.getRate() * lineQty);
+            double lineNet = 0 - Math.abs(bi.getNetRate() * lineQty);
+            double lineMargin = 0 - Math.abs(bi.getMarginRate() * lineQty);
+            bi.setGrossValue(lineGross);
+            bi.setNetValue(lineNet);
+            bi.setMarginValue(lineMargin);
+            grossTotal += lineGross;
+            netTotal += lineNet;
+            marginTotal += lineMargin;
+        }
+
         BilledBill bill = new BilledBill();
         bill.setBillType(BillType.PharmacyIssue);
         bill.setBillTypeAtomic(BillTypeAtomic.RETURN_MEDICINE_INWARD);
@@ -594,6 +626,9 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         bill.setPatient(selectedReceiveBill.getPatient());
         bill.setPatientEncounter(selectedReceiveBill.getPatientEncounter());
         bill.setReferenceBill(selectedReceiveBill);
+        bill.setTotal(grossTotal);
+        bill.setNetTotal(netTotal);
+        bill.setMargin(marginTotal);
         bill.setCreatedAt(new Date());
         bill.setCreater(sessionController.getLoggedUser());
 
@@ -623,9 +658,20 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             } else {
                 JsfUtil.addErrorMessage("Insufficient ward stock for " + bi.getItem().getName()
                         + " batch " + pbi.getItemBatch().getBatchNo() + " - this line was skipped.");
+                // Line skipped after totals above already counted it (stock covered the
+                // line moments ago in wardStockCoversAllLines(), so this is only a rare
+                // race) - back its value out of the bill totals so netTotal stays
+                // consistent with the sum of the persisted item values.
+                bill.setTotal(bill.getTotal() - bi.getGrossValue());
+                bill.setNetTotal(bill.getNetTotal() - bi.getNetValue());
+                bill.setMargin(bill.getMargin() - bi.getMarginValue());
                 bi.setQty(0.0);
                 pbi.setQty(0.0);
+                bi.setGrossValue(0.0);
+                bi.setNetValue(0.0);
+                bi.setMarginValue(0.0);
                 billItemFacade.edit(bi);
+                billFacade.edit(bill);
             }
         }
 
