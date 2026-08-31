@@ -5218,6 +5218,12 @@ public class BhtSummeryController implements Serializable {
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // Porter-based ward return flow (#21466/#21470): value now negated in
+        // WardPharmacyReturnToPharmacyController.doSettle() - without these, the
+        // returned amount was silently never deducted from the Medicine total
+        // (issue #22990).
+        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
@@ -5230,6 +5236,8 @@ public class BhtSummeryController implements Serializable {
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
         medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        medicineCancellationBtas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 

@@ -2262,6 +2262,16 @@ action method threw. Always confirm with a fresh `SELECT` after the request comp
 reload session's own display of "the value I set" proves nothing, since it's the same still-open
 transactional model that never got rolled back). Found and fixed while testing issue #23340.
 
+## 87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect
+
+Logging into `http://localhost:8080/rh` with the production app-login credentials from the external credentials file (see `developer_docs/deployment/persistence-verification.md`) fails locally with "Invalid User! Login Failure" even though a `WEBUSER` row with that username exists. The local `coop` database is a data snapshot, not a fresh seed — its `WEBUSERPASSWORD` hash predates whatever the current production password is, and there's no way to know it from the codebase.
+
+`SessionController.checkUsersWithoutDepartment()` calls `SecurityController.matchPassword(password, u.getWebUserPassword())`, which uses jasypt's `BasicPasswordEncryptor` (salted digest, not a fixed hash you can look up) — `SecurityController.java`'s `hashAndCheck()`/`matchPassword()`. To log in locally: generate a compatible hash with the same class (the jar is already on the classpath at `~/.m2/repository/org/jasypt/jasypt/1.9.3/jasypt-1.9.3.jar` — compile and run a two-line `BasicPasswordEncryptor().encryptPassword("SomeTestPassword")` snippet), then `UPDATE WEBUSER SET WEBUSERPASSWORD='<hash>' WHERE ID=<id>` directly against the local `coop` DB (safe — local test data, no schema change, see the `dev-issue-unattended` skill's hard limits on this point).
+
+**The password won't take effect until Payara restarts.** `WebUser` is one of the reference entities EclipseLink L2-caches (`eclipselink.cache.size.default=1000` in `persistence_for_local_testing.xml`, explicitly called out for "departments, items, users"), and a plain SQL `UPDATE` doesn't invalidate that cache — the already-running app keeps serving the old hash to every subsequent login attempt from its in-memory copy, so retrying with the new password fails identically. `asadmin restart-domain domain1` (not just redeploying the WAR) clears it. This is the same L2-cache-staleness class of gotcha noted for the COGS report (`feedback_cogs_report_testing_gotcha` memory) — always double-confirm a direct SQL write against a running local Payara actually took effect, rather than assuming it did because the `UPDATE` succeeded.
+
+Found while verifying issue #22990.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
