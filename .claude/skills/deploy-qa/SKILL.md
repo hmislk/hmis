@@ -1,69 +1,81 @@
 ---
 name: deploy-qa
 description: >
-  Deploy to QA environment (QA1 or QA2). Use when deploying code to the QA testing
-  environments via GitHub Actions. Includes pre-deployment checks for persistence.xml.
+  Sync development into QA/testing environment branches (QA1-QA4, local RH staging)
+  via PR + merge on GitHub. Use when deploying/promoting the latest development
+  code to any HMIS QA instance or the local RH staging environment.
 disable-model-invocation: true
 allowed-tools: Bash, Read, Grep
-argument-hint: "[qa1|qa2]"
+argument-hint: "[qa1|qa2|qa3|qa4|rh-local|all]"
 ---
 
-# Deploy to QA Environment
+# Deploy to QA / Local Staging Environments
 
-Deploy the latest development code to QA1 or QA2 via GitHub Actions.
+Sync `development` into one or more QA/testing branches via a GitHub PR + merge
+(not a direct push). These branches are QA/testing-only — no production traffic —
+so merging is low-risk, but going through a PR still gets CI (`check-branch`) to
+run before the merge lands.
 
-## Arguments
+## Branch Map
 
-- `$0` - Target environment: `qa1` or `qa2`
+| Argument   | Target branch        | Notes                                   |
+|------------|-----------------------|------------------------------------------|
+| `qa1`      | `hims-qa1-migrated`   |                                          |
+| `qa2`      | `hims-qa2-migrated`   |                                          |
+| `qa3`      | `hims-qa3-migrated`   |                                          |
+| `qa4`      | `hims-qa4-migrated`   |                                          |
+| `rh-local` | `rh-local-staging`    | Local RH staging — does NOT share prod's `ruhunu` DB |
+| `all`      | all five branches above | Run each independently; one failing doesn't block the rest |
 
-## Pre-Deployment Checklist
+**Do not use** the non-`-migrated` branches (`hims-qa1`, `hims-qa2`, `hims-qa4`) or
+`hims-qa2-old` / `rh-stg-old` — these are stale/legacy (weeks-to-months since last
+commit) and superseded by the `-migrated` branches. `hims-qa3` (no suffix) and
+`rh-stg` / `rh-stg-migrated` are separate, actively-diverging lineages — do not
+touch them under this skill without explicit confirmation from the user, since
+they are not necessarily the same environments as `qa3` / `rh-local` above.
 
-Before deploying, MUST verify:
+Note: `hims-qa1-migrated` through `hims-qa4-migrated` are sometimes synced
+automatically by an external process — if `gh pr create` reports "No commits
+between X and development", that branch is already up to date; skip it.
 
-1. **persistence.xml uses environment variables** — read
-   `src/main/resources/META-INF/persistence.xml` and confirm both
-   `<jta-data-source>` values are `${JDBC_DATASOURCE}` /
-   `${JDBC_AUDIT_DATASOURCE}`, not a hardcoded local JNDI name (e.g.
-   `jdbc/coop`, `jdbc/ruhunuAudit`)
-2. **No hardcoded DDL generation paths** — no
-   `eclipselink.application-location` pointing at `c:/tmp/` or `/home/*/tmp/`
-3. **All changes committed and pushed**
+## Deployment Process (per branch)
 
-## Deployment Process
-
-### QA1 Deployment
 ```bash
-# Merge development into qa1 branch
 git fetch origin
-git checkout qa1
-git merge origin/development
-git push origin qa1
+
+# 1. Dry-run the merge to catch conflicts before opening a PR
+git merge-tree --write-tree origin/<target-branch> origin/development
+# exit code 0 with a tree hash = clean; non-zero / "CONFLICT" text = stop and
+# resolve manually before proceeding
+
+# 2. Open the sync PR (development -> target branch)
+gh pr create --repo hmislk/hmis --base <target-branch> --head development \
+  --title "chore(sync): merge development into <target-branch>" \
+  --body "Syncs the <target-branch> QA/testing environment branch with the latest development. QA/testing-only branch — safe to merge."
+# If it fails with "No commits between X and development", the branch is
+# already in sync — nothing more to do for it.
+
+# 3. Confirm CI passed before merging
+gh pr checks <PR-number> --repo hmislk/hmis
+
+# 4. Merge (regular merge commit, keep both branches)
+gh pr merge <PR-number> --repo hmislk/hmis --merge --delete-branch=false
 ```
 
-### QA2 Deployment
-```bash
-# Merge development into qa2 branch
-git fetch origin
-git checkout qa2
-git merge origin/development
-git push origin qa2
-```
-
-GitHub Actions will automatically:
-1. Build the application with Maven
-2. Deploy to the target QA server
-3. Restart the Payara application server
+GitHub Actions will then automatically build with Maven, deploy to the target
+QA/staging server, and restart the Payara application server.
 
 ## Post-Deployment
 
 - Monitor GitHub Actions for build status
-- Check QA environment is accessible after deployment
+- Check the environment is accessible after deployment
 - Verify the deployed feature works as expected
 
 ## Troubleshooting
 
 If deployment fails:
 1. Check GitHub Actions logs for build errors
-2. Verify persistence.xml configuration
-3. Check if QA server is accessible
+2. Verify `src/main/resources/META-INF/persistence.xml` uses `${JDBC_DATASOURCE}` /
+   `${JDBC_AUDIT_DATASOURCE}` on these branches (not a hardcoded local JNDI name)
+3. Check if the target server is accessible
 4. See [QA Troubleshooting Guide](../../developer_docs/deployment/qa-troubleshooting.md)
