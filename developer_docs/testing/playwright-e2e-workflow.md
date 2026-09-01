@@ -31,7 +31,11 @@ waste a session.
 
 If the change under test isn't deployed yet, rebuild and redeploy to the local
 Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
-locations):
+locations). **This section is local dev only** — it is the `asadmin`
+build/deploy loop the `playwright-e2e` skill already mandates on a developer
+laptop. It does **not** apply to shared/staging/production Payara, where the
+"no manual/root deployment; everything through CI/CD" rule in `CLAUDE.md`
+still governs.
 
 ```powershell
 # Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
@@ -47,6 +51,17 @@ $env:JAVA_HOME="<path-to-jdk>"
   afterward.
 - Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
   before starting the browser flow.
+- **`--name` must match the actual deployed app name.** `asadmin list-applications`
+  first — on some machines it is `rh-3.0.0`, not `rh`. A `redeploy` with the
+  wrong `--name` fails with `Application with name [...] is not deployed`.
+- **Payara must run on JDK 11.** If Payara was started with JDK 21 on `PATH`,
+  deployment fails with `Unsupported class file major version 65` (65 = Java 21).
+  Fix: `asadmin stop-domain`, then set **both** `$env:JAVA_HOME` and
+  `$env:AS_JAVA` to the JDK 11 path before `start-domain`. A failed `deploy`
+  (as opposed to `redeploy`) also *removes* the app, so the next `redeploy`
+  then fails with "not deployed" — recover with a plain
+  `deploy --name <name-from-list-applications> --contextroot <its-context-root> <war>`
+  (the name/context root you confirmed above, not a hardcoded guess).
 
 ---
 
@@ -1975,6 +1990,19 @@ actually proves the WAR builds and packages the fix correctly. Verified while
 testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
 way in seconds instead of a multi-minute rebuild).
 
+**Caveat — the hot-swap only works if that page has not been rendered yet in
+the current app instance.** With `javax.faces.PROJECT_STAGE=Production` (this
+project's `web.xml`) the Facelets refresh period is `-1`, so a page is compiled
+once and cached for the lifetime of the deployment. Swap the file *before* the
+first hit and the reload picks it up; swap it *after* the page has already been
+rendered once and every subsequent reload silently serves the stale cached
+facelet — the file on disk is right, the browser output is old, and nothing is
+logged. Symptom: your newly added component simply isn't in the rendered page.
+Fix: `asadmin deploy --force` (a new app classloader drops the cache); a browser
+reload or hard refresh will not. Found while verifying issue #23342, where an
+A/B run (original file → reproduce, fixed file → verify) needed a real redeploy
+between the two halves.
+
 ## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
 
 To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
@@ -2096,6 +2124,193 @@ leave "Search All" unchecked and widen the **From Date** via the calendar grid
 today's default date range silently returns "No records found." for anything
 not created today. Verified while testing issue #23249.
 
+## 82. Any AJAX call from inside an editable `p:dataTable`'s row scope has its `update` target silently constrained to the table itself — extra ids you add are dropped, even on a plain `p:commandButton`
+
+`ward_pharmacy_bht_issue.xhtml`'s "Issuing Items" grid needed the row-edit
+checkmark, the inline item-swap autocomplete, AND the row's delete
+(trash) button to also refresh a separate `billDetailsPanel` outside the
+table. The obvious fix — add `billDetailsPanel` to each component's own
+`update=""` (`p:ajax event="rowEdit"`, a `p:ajax event="itemSelect"` nested
+inside an autocomplete that itself lives inside a `p:cellEditor`, and even
+a completely ordinary `p:commandButton` in a row with no cellEditor/rowEdit
+involvement at all) — compiles and deploys with no error, but the extra id
+is silently dropped at runtime in **all three cases**: the browser's actual
+AJAX request always sends `javax.faces.partial.render=<table-id>` only,
+never the second id, no matter what `update=""` says server-side. Confirmed
+by reading the button's own rendered `onclick` directly off the live DOM
+(`document.querySelector('button.ui-button-danger').getAttribute('onclick')`)
+— the compiled `PrimeFaces.ab({...})` call has `u:"<table-id>"` baked in
+verbatim, already missing the second id before the click ever happens. This
+survives a normal `asadmin deploy --force`, a full `undeploy`+`deploy`, and
+even a full `stop-domain`/`start-domain` — it isn't a caching artifact. A
+component genuinely *outside* the table (e.g. a `p:remoteCommand` declared
+as the table's sibling) is unaffected and can update `billDetailsPanel`
+freely — so this isn't about the DataTable's own `rowEdit`/`rowEditCancel`
+widget behaviors specifically (as originally assumed here); it's the row
+*scope* itself, for anything nested inside it.
+
+Confirm this is what's happening by reading the actual request body
+Playwright captured (`browser_network_request` with `part: "request-body"`)
+— or the rendered `onclick` off the live DOM for a plain button — and
+checking for the missing id, not by re-reading the source XHTML, which will
+keep looking correct.
+
+Fix: add a `p:remoteCommand name="refreshX" update="theOtherPanel"` once,
+elsewhere in the same form (outside the table), then set
+`oncomplete="refreshX();"` on every row-scoped component that needs the
+extra update — `rowEdit`/`rowEditCancel`, a nested `itemSelect`, or a plain
+`p:commandButton` alike — instead of trying to widen their own `update`.
+The remote command fires as a second, independent AJAX call that isn't
+subject to the same row-scope constraint. Verified while fixing issue
+#23328 (including a CodeRabbit-caught follow-up: the row's delete button
+needed the identical treatment, not just the two components fixed in the
+original pass).
+
+## 83. A page-local `<style>` rule can silently lose to the PrimeFaces theme — verify with a computed-style probe, not a screenshot
+
+A page-local `<style>` block that targets a PrimeFaces sub-part (title bar, row,
+header cell) can look plausible in review and still never apply, because the
+Material theme qualifies the same part with a leading element selector:
+
+```css
+/* theme.css — specificity (0,2,1): two classes PLUS the `body` element */
+body .ui-panel .ui-panel-titlebar { background: #f8f9fa; }
+
+/* page-local — specificity (0,2,0): loses, even though it comes later */
+.my-highlight > .ui-panel-titlebar { background: rgba(13,110,253,.10); }
+```
+
+Later-in-document does **not** save you here: the theme wins on specificity, so
+the rule is simply discarded. Adding the same `body` + owning-class prefix
+restores the win:
+
+```css
+body .ui-panel.my-highlight > .ui-panel-titlebar { background: rgba(13,110,253,.10); }
+```
+
+The trap is that a *partial* application looks like success — an outer `border`
+on the panel itself can land (nothing in the theme sets it) while the title-bar
+`background` on the very next line is dropped, so the screenshot shows "some
+highlight" and the defect passes review.
+
+Don't judge this from a screenshot. Read the computed style, and — when the rule
+is print-scoped — read it under emulated print media (see §43; never click the
+real `p:printer` button):
+
+```js
+async (page) => {
+  const probe = async () => await page.evaluate(() => {
+    const bar = document.querySelector('body .ui-panel.my-highlight > .ui-panel-titlebar');
+    return getComputedStyle(bar).backgroundColor;
+  });
+  await page.emulateMedia({ media: 'screen' }); const onScreen = await probe();
+  await page.emulateMedia({ media: 'print'  }); const onPrint  = await probe();
+  await page.emulateMedia({ media: 'screen' });
+  return { onScreen, onPrint };
+}
+```
+
+To find *which* rule actually won, enumerate `document.styleSheets` for rules the
+element `matches()` and print each one's `selectorText` plus originating
+stylesheet — that names the offending theme selector directly, instead of
+guessing at specificity.
+
+Found on `inward/pharmacy_bill_return_bht_issue.xhtml` while adding the Return
+Bill Preview highlight (issue #23338).
+
+## 84. A markup-less PrimeFaces component (`p:defaultCommand`, `p:focus`, …) cannot be confirmed by searching the rendered HTML — look for its event handler instead
+
+These components emit no DOM element at all, only a `PrimeFaces.cw(...)` init
+script, and PrimeFaces removes inline scripts from the document once they have
+run. So `document.documentElement.innerHTML.includes('DefaultCommand')` returns
+`false` on a page where the component is present and working — an easy false
+negative that looks like "my fix didn't deploy".
+
+Confirm it the way the widget actually manifests:
+
+```js
+// the widget object (its key is widget_<clientId>, name mangled by minification)
+Object.keys(PrimeFaces.widgets);
+// what p:defaultCommand really does: a namespaced keydown handler on the form
+jQuery._data(document.getElementById('form'), 'events').keydown.map(h => h.namespace);
+// -> ["form:j_idt579"]  ← the defaultCommand's own client id
+```
+
+Then assert the *behaviour* (press Enter, check the URL didn't change and the
+intended action ran), which is the only proof that matters anyway. Found while
+verifying issue #23342.
+
+## 85. `inward_bill_service.xhtml`'s patient search auto-selects on an exact BHT match — no suggestion click needed
+
+Typing a complete BHT number (e.g. `BHT/55359`) into the "Patient Search"
+autocomplete on the Patient Selection screen commits the encounter and re-renders
+straight into the Add Services view, without ever showing an autocomplete panel
+to click. A test that types the BHT and then waits for a `.ui-autocomplete-panel`
+row will time out on a working page. Detect the transition instead — e.g.
+`document.body.innerText.includes('Patient Selection') === false`, or the presence
+of `form:btnAddIx`. Found while verifying issue #23342.
+
+## 86. A `p:inputText`/`p:inputNumber` bound to a `Map<String, Integer>` entry silently stores the raw `String` — the write is lost with no error until you read it back
+
+Binding a form input to `#{bean.someMap[key]}` where `someMap` is declared `Map<String, Integer>`
+compiles fine and *looks* like it should coerce, because a normal bean property setter
+(`setSomeField(int)`) does get EL's automatic string-to-primitive coercion via reflection on the
+setter's declared parameter type. A `Map` entry gets no such coercion: `MapELResolver.setValue()`
+just calls `map.put(key, value)` with whatever raw type the component submitted — generics are
+erased at the bytecode level, so the resolver has no way to know the map is supposed to hold
+`Integer`. The submitted value lands in the map as a plain `String`.
+
+The failure doesn't surface where you'd look for it. The command button's `update` re-renders the
+component from that same in-memory map object, so the browser still shows the value you just typed
+— it *looks* saved. The real breakage happens the next time server-side code reads the map entry as
+`Integer` (e.g. `Integer order = orderMap.get(key);`) — a `ClassCastException: String cannot be cast
+to Integer` that aborts the whole action method, so nothing after that line (including the actual
+persistence call) ever runs. `p:messages`/`p:growl` stays silent because the exception happens inside
+the JSF lifecycle's invoke-application phase, not inside a `catch` the page bothers to show — the
+only trace is a `SEVERE javax.faces.el.EvaluationException` in `server.log`.
+
+**Fix**: keep the map typed `Map<String, String>` (matching how every other free-text-bound map in
+this codebase already works) and parse the string to the target type only where the value is actually
+consumed — never type a directly-bound map as anything but `String`. **Verification**: a screenshot or
+an in-session AJAX re-read is not proof of a save — the model object doesn't go away just because the
+action method threw. Always confirm with a fresh `SELECT` after the request completes (a full page
+reload session's own display of "the value I set" proves nothing, since it's the same still-open
+transactional model that never got rolled back). Found and fixed while testing issue #23340.
+
+## 87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect
+
+Logging into `http://localhost:8080/rh` with the production app-login credentials from the external credentials file (see `developer_docs/deployment/persistence-verification.md`) fails locally with "Invalid User! Login Failure" even though a `WEBUSER` row with that username exists. The local `coop` database is a data snapshot, not a fresh seed — its `WEBUSERPASSWORD` hash predates whatever the current production password is, and there's no way to know it from the codebase.
+
+`SessionController.checkUsersWithoutDepartment()` calls `SecurityController.matchPassword(password, u.getWebUserPassword())`, which uses jasypt's `BasicPasswordEncryptor` (salted digest, not a fixed hash you can look up) — `SecurityController.java`'s `hashAndCheck()`/`matchPassword()`. To log in locally: generate a compatible hash with the same class (the jar is already on the classpath at `~/.m2/repository/org/jasypt/jasypt/1.9.3/jasypt-1.9.3.jar` — compile and run a two-line `BasicPasswordEncryptor().encryptPassword("SomeTestPassword")` snippet), then `UPDATE WEBUSER SET WEBUSERPASSWORD='<hash>' WHERE ID=<id>` directly against the local `coop` DB (safe — local test data, no schema change, see the `dev-issue-unattended` skill's hard limits on this point).
+
+**The password won't take effect until Payara restarts.** `WebUser` is one of the reference entities EclipseLink L2-caches (`eclipselink.cache.size.default=1000` in `persistence_for_local_testing.xml`, explicitly called out for "departments, items, users"), and a plain SQL `UPDATE` doesn't invalidate that cache — the already-running app keeps serving the old hash to every subsequent login attempt from its in-memory copy, so retrying with the new password fails identically. `asadmin restart-domain domain1` (not just redeploying the WAR) clears it. This is the same L2-cache-staleness class of gotcha noted for the COGS report (`feedback_cogs_report_testing_gotcha` memory) — always double-confirm a direct SQL write against a running local Payara actually took effect, rather than assuming it did because the `UPDATE` succeeded.
+
+Found while verifying issue #22990.
+
+## 88. `pharmacy_search_pre_bill_for_return_item_only.xhtml`'s "Return Item Only" button can fail completely silently — no `p:messages`/growl update, plus `Bill` is L2-cached
+
+Two independent gotchas stack here, found while testing issue #23304 (reject negative return quantity):
+
+1. **Silent navigation failure.** `PreReturnController.navigateToReturnRetailSaleItemsOnly()` calls
+   `pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill)` and returns `null` (staying on the
+   same page) when the sale bill is older than the "no approval" day limit (default 3 days) and has no
+   approved return request — see `PharmacyRetailSaleReturnPolicyService`. `pharmacy_search_pre_bill_for_return_item_only.xhtml`
+   has **no `p:messages`/`p:growl` component at all**, so `JsfUtil.addErrorMessage(...)` is added to the
+   `FacesContext` but never rendered — clicking "Return Item Only" just silently reloads the same search
+   page with zero visible feedback. Don't mistake this for the button/click not registering; check the
+   row's day-limit first (a "Request Approval" button appearing alongside "Return Item Only" is the tell
+   that the bill is past the no-approval window).
+2. **`Bill` is also L2-cached.** Same class of staleness as `feedback_cogs_report_testing_gotcha` and item
+   87's `WebUser` case: if you shift a `Bill.createdAt` via raw SQL to get a test bill inside the day-limit
+   window, and the app already loaded that `Bill` earlier in the same session (e.g. an earlier search hit
+   it), `checkReturnAllowed` keeps evaluating against the stale cached `createdAt` — the day-limit block
+   persists even though the DB row is correct. Use a bill your test session has never touched yet for the
+   `UPDATE`, or restart the domain, rather than assuming the fresh `UPDATE` took effect.
+
+Also: revert any `createdAt` shift back to the bill's real original value immediately after the test —
+day-based reports (Cost of Goods Sold, F15) key off it, and leaving it shifted taints those reports for
+both the original date and the shifted date.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
@@ -2165,6 +2380,45 @@ Always pair this with the **negative test** — a record with nothing pending mu
 otherwise you have not distinguished "correctly blocks" from "blocks everything". Undo any state the
 negative test creates through the app's own Cancel action, never with an `UPDATE`.
 Verified while testing issue #23222.
+
+## A department/room created by direct SQL needs more than the FK columns
+
+When a test scenario needs a *new* Department or RoomFacilityCharge that doesn't already exist
+locally (e.g. to simulate a patient's room belonging to a different department than the one they
+were admitted from), inserting just the obvious FK columns produces a department that silently
+breaks large parts of the UI instead of erroring:
+
+- **`DEPARTMENT.DTYPE` must be set** (`'Department'`, matching the existing rows) — `Department` is
+  `@Inheritance`-annotated, so a `NULL` discriminator isn't just "unmapped for this row", it makes
+  the **entire polymorphic query return an empty list** (e.g. `SessionController.listLoggableDepts`
+  during login), not just exclude the bad row. Symptom: login fails with "This user has no privilage
+  to login to any Department" even though the WebUserDepartment row is correct.
+- **`DEPARTMENT.DEPARTMENTTYPE` is compared case-sensitively** against the literal used elsewhere in
+  the codebase (`'Inward'`, not `'INWARD'`). A mismatch doesn't error — the department loads and the
+  header renders, but the entire top menu bar and all page-level toolbars silently disappear because
+  their `rendered` conditions never match.
+- **`DEPARTMENT.SITE_ID` should be copied from a real department of the same kind** — leaving it
+  `NULL` is a further contributor to missing toolbar/menu regions on some pages.
+- **Privileges (`WEBUSERPRIVILEGE`) are scoped by `DEPARTMENT_ID`**, and
+  `SessionController.getUserPrivileges()` looks them up against `loggedUser.getDepartment()` (the
+  session's *currently selected* department after login), not just the user. A brand-new department
+  has zero privilege rows for any user, so every `hasPrivilege(...)`-gated button vanishes even
+  though the same user has full privileges in their usual department. Fix: copy the relevant
+  `WEBUSERPRIVILEGE` rows, changing only `DEPARTMENT_ID`, to the new department.
+- **`ROOMFACILITYCHARGE.COMPANY_ID` must be set** when the scenario will exercise an
+  institute-scoped search/filter (e.g. "Logged Institute"/"Logged Department" scope buttons) — those
+  queries `AND` on `roomFacilityCharge.company = :loggedInstitution`, and a `NULL` company silently
+  drops the row from every institute-scoped result with no error, while institute-unscoped ("Any
+  Institute") searches still find it fine. This made a genuine fix look like it wasn't working until
+  the room's `COMPANY_ID` was backfilled to match the test institution.
+
+Each of the above requires a **Payara restart** to take effect if the row (or a row referencing it)
+was already read once in the current server process — EclipseLink's shared L2 cache can otherwise
+keep serving the pre-fix version of the entity even though the DB row is already corrected and a
+brand new login/HTTP session is used. A plain redeploy is not enough; use
+`asadmin stop-domain && asadmin start-domain`.
+
+Verified while testing issue #23377.
 
 ## Quick checklist
 

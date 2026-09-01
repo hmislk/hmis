@@ -335,6 +335,46 @@ If 3+ fix attempts don't converge, that's the systematic-debugging
 architecture-question trigger, not a reason to keep guessing: stop, post
 findings, end the run.
 
+## 8a. Claude self-review before first push
+
+The only review this skill otherwise gets is step 14's CodeRabbit/Codex loop
+— and both bots can be unavailable at once (rate-limited, usage-exhausted)
+with no fallback, leaving a PR that ships with zero substantive review. This
+step adds an earlier, Claude-driven pass so a caught bug becomes part of the
+initial push instead of a second commit reacting to a bot (or a human) after
+the fact. It runs once step 8's Iterate loop passes end-to-end, before
+step 9/11.
+
+1. **Pick an effort level.** Default `medium`. Bump to `high` if the diff
+   touches billing, pharmacy, API (`ws/`), or security/privilege code — the
+   same shared/core risk areas `merge-gate` already flags ("touches
+   shared/core code (API, billing, pharmacy) where a regression could
+   silently break unrelated functions"), extended here to security/privilege
+   code given this skill's existing hard limit against writing such changes
+   at all.
+2. **Run `/code-review`** at that effort level against the working diff —
+   the uncommitted changes on the branch, before the first commit/push, not
+   against an already-open PR.
+3. **Triage each finding into one of three buckets:**
+   - **In-scope, confirmed bug** → fix it, rebuild/redeploy, re-run the
+     relevant Playwright/DB verification from step 7, and fold the fix into
+     the same commit as the original change.
+   - **Valid but outside the issue's named files/screens** → leave this PR's
+     diff alone; file a separate GitHub issue describing the pattern (same
+     shape as issue #23385, filed from this exact gap), and reference it in
+     this PR's description under a short "Follow-up" note. This is filing an
+     issue, which step 0's blanket authorization already covers — no
+     separate confirmation needed.
+   - **Low-confidence / stylistic / reuse-nitpick** → no fix, no new issue;
+     note it under the PR's "Decisions made without approval" section (step
+     13) so a human can look later.
+4. **Document the pass** in that same PR section — which findings came up,
+   which bucket each landed in, and why — the same judgment-call-logging
+   convention already used for steps 3 and 13.
+
+Step 14's CodeRabbit/Codex loop is unchanged by this step — this is an
+earlier, additional layer, not a replacement.
+
 ## 9. Record learnings
 
 Same as `dev-issue` step 9 — append new Playwright/dev gotchas to
