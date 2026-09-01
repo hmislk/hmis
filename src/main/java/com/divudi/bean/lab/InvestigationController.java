@@ -1285,13 +1285,24 @@ public class InvestigationController implements Serializable {
         InvestigationConversionService.ConversionResult result
                 = investigationConversionService.convertInvestigationsToServices(investigationIds);
 
-        if (result.isCompletelySuccessful()) {
+        // Each row is converted in its own transaction, so anything reported as
+        // converted is already committed - the caches have to be refreshed even
+        // when part of the batch failed.
+        if (result.getSuccessCount() > 0) {
             fillItemsFromDatabaseWithoutCache();
             itemApplicationController.fillAllItemsBypassingCache();
-            JsfUtil.addSuccessMessage("Successfully converted " + result.getSuccessCount() + " investigations to services");
+        }
+
+        String skipped = result.hasSkipped()
+                ? " " + result.getSkippedCount() + " were no longer found and were skipped."
+                : "";
+
+        if (result.isCompletelySuccessful()) {
+            JsfUtil.addSuccessMessage("Successfully converted " + result.getSuccessCount()
+                    + " investigations to services." + skipped);
         } else {
             JsfUtil.addErrorMessage("Conversion completed with " + result.getSuccessCount() + " successes and "
-                    + result.getFailureCount() + " failures. Check logs for details.");
+                    + result.getFailureCount() + " failures." + skipped + " Check logs for details.");
         }
 
         selectedInvestigationDtos = null;

@@ -161,14 +161,25 @@ public class TransactionLeakGuardFilter implements Filter {
         }
     }
 
+    /**
+     * Describes the request by method and path only.
+     *
+     * <p>
+     * The query string is deliberately left out: HMIS URLs carry patient and bill
+     * identifiers, and this line is written at SEVERE into a log that is retained
+     * and shipped. The path is enough to identify the page that leaked, and JSF
+     * posts its parameters in the body anyway, so almost nothing diagnostic is
+     * lost. The remote user is kept - it is not a credential, the application
+     * records usernames throughout its audit trail, and knowing whose action
+     * leaked the transaction is the point of this entry.
+     * </p>
+     */
     private String describe(ServletRequest request) {
         if (!(request instanceof HttpServletRequest)) {
             return "non-HTTP request";
         }
         HttpServletRequest http = (HttpServletRequest) request;
-        String uri = http.getMethod() + " " + http.getRequestURI();
-        String query = http.getQueryString();
-        return query == null ? uri : uri + "?" + query;
+        return http.getMethod() + " " + http.getRequestURI();
     }
 
     private String remoteUser(ServletRequest request) {

@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -32,6 +34,8 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class PaymentSchemeDuplicationService {
+
+    private static final Logger LOGGER = Logger.getLogger(PaymentSchemeDuplicationService.class.getName());
 
     @EJB
     private PaymentSchemeFacade paymentSchemeFacade;
@@ -92,7 +96,7 @@ public class PaymentSchemeDuplicationService {
         List<PriceMatrix> matrices = priceMatrixFacade.findByJpql(jpql, params);
 
         for (PriceMatrix pm : matrices) {
-            PriceMatrix npm = new PriceMatrix();
+            PriceMatrix npm = newMatrixOfSameType(pm);
             npm.setBillType(pm.getBillType());
             npm.setCategory(pm.getCategory());
             npm.setInstitution(pm.getInstitution());
@@ -116,5 +120,38 @@ public class PaymentSchemeDuplicationService {
         }
 
         return dup;
+    }
+
+    /**
+     * Creates an empty price matrix of the same concrete type as the source.
+     *
+     * <p>
+     * {@link PriceMatrix} is a single-table hierarchy and the discount lookups
+     * query the subtypes directly - {@code PaymentSchemeDiscount},
+     * {@code OpdMemberShipDiscount} and so on. Copying every row into a plain
+     * {@code PriceMatrix} would write the base discriminator, and the duplicated
+     * scheme's discounts would then be invisible to every one of those queries.
+     * </p>
+     *
+     * <p>
+     * Reflection is safe here because none of the subtypes declares a field of its
+     * own; they exist purely to carry the discriminator, so copying the fields
+     * declared on {@code PriceMatrix} copies the whole row. If a subtype ever gains
+     * its own state, this method is where that has to be handled.
+     * </p>
+     *
+     * @param source the row being duplicated
+     * @return a new, empty instance of the same concrete type, or a plain
+     *         {@code PriceMatrix} if that type cannot be instantiated
+     */
+    private PriceMatrix newMatrixOfSameType(PriceMatrix source) {
+        Class<? extends PriceMatrix> type = source.getClass();
+        try {
+            return type.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOGGER.log(Level.WARNING, "Could not instantiate " + type.getName()
+                    + " while duplicating a price matrix; falling back to PriceMatrix.", e);
+            return new PriceMatrix();
+        }
     }
 }
