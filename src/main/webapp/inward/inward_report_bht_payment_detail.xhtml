@@ -512,30 +512,6 @@
                                 </f:facet>
                             </p:column>
 
-                            <f:facet name="footer">
-                                <div class="text-end">
-                                    <strong>Grand Total Deposits: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDeposits}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Payments: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPayments}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Post Payments: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPostFinalPayments}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Credit Settlements: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditSettlement}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </div>
-                            </f:facet>
-
                         </p:dataTable>
 
                     </p:panel>
