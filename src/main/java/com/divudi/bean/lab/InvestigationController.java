@@ -38,6 +38,7 @@ import com.divudi.core.entity.lab.WorksheetItem;
 import com.divudi.core.data.dto.InvestigationDTO;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.service.lab.InvestigationConversionService;
 import com.divudi.core.facade.InvestigationItemFacade;
 import com.divudi.core.facade.InvestigationItemValueFlagFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -76,7 +77,6 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -122,6 +122,8 @@ public class InvestigationController implements Serializable {
      */
     @EJB
     private InvestigationFacade ejbFacade;
+    @EJB
+    private InvestigationConversionService investigationConversionService;
     @EJB
     private SpecialityFacade specialityFacade;
     @EJB
@@ -1267,39 +1269,29 @@ public class InvestigationController implements Serializable {
 
     }
 
-    @Transactional
     public void convertSelectedInvestigationsToServices() {
         if (selectedInvestigationDtos == null || selectedInvestigationDtos.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Convert");
             return;
         }
 
-        int successCount = 0;
-        int failureCount = 0;
-
+        List<Long> investigationIds = new ArrayList<>();
         for (InvestigationDTO dto : selectedInvestigationDtos) {
-            try {
-                Investigation ix = getFacade().find(dto.getId());
-                if (ix == null) {
-                    continue;
-                }
-                String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
-                List<Object> params = Arrays.asList("Service", ix.getId());
-                itemFacade.executeNativeSql(sql, params);
-                successCount++;
-            } catch (Exception e) {
-                Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
-                failureCount++;
-            }
+            investigationIds.add(dto.getId());
         }
 
-        if (failureCount == 0) {
-            itemFacade.flush();
+        // The database work runs inside the stateless service's own container-managed
+        // transaction, so no transaction is held across this session-scoped action.
+        InvestigationConversionService.ConversionResult result
+                = investigationConversionService.convertInvestigationsToServices(investigationIds);
+
+        if (result.isCompletelySuccessful()) {
             fillItemsFromDatabaseWithoutCache();
             itemApplicationController.fillAllItemsBypassingCache();
-            JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
+            JsfUtil.addSuccessMessage("Successfully converted " + result.getSuccessCount() + " investigations to services");
         } else {
-            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
+            JsfUtil.addErrorMessage("Conversion completed with " + result.getSuccessCount() + " successes and "
+                    + result.getFailureCount() + " failures. Check logs for details.");
         }
 
         selectedInvestigationDtos = null;
