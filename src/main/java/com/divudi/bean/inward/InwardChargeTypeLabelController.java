@@ -31,6 +31,7 @@ public class InwardChargeTypeLabelController implements Serializable {
     private Map<String, String> labelMap;
     private Map<String, String> reportOrderMap;
     private Map<String, String> finalBillOrderMap;
+    private Map<String, String> finalBillGroupMap;
 
     @PostConstruct
     public void init() {
@@ -38,19 +39,28 @@ public class InwardChargeTypeLabelController implements Serializable {
         labelMap = new HashMap<>();
         reportOrderMap = new HashMap<>();
         finalBillOrderMap = new HashMap<>();
-        for (InwardChargeType type : chargeTypes) {
-            String custom = configOptionApplicationController.getShortTextValueByKey(
-                    "Inward Charge Type Label - " + type.name(), "");
-            labelMap.put(type.name(), custom == null ? "" : custom);
-            // Kept as String (not Integer) the same way labelMap is: a p:inputText
-            // bound to a Map<String, Integer> entry submits a raw String, since
-            // MapELResolver.setValue() puts the value as-is without consulting the
-            // map's erased generic type — an Integer-typed map caused a
-            // ClassCastException on save (issue #23340 QA). Parsed back to int only
-            // where actually needed, in orderOrDefault().
-            reportOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeReportOrder(type)));
-            finalBillOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type)));
-        }
+        finalBillGroupMap = new HashMap<>();
+        // Batched: on a hospital's first visit to this page, most/all of these
+        // ~187 x 4 rows are missing and would otherwise be lazily created one at
+        // a time, each triggering its own synchronized full ConfigOption cache
+        // reload (found in review). seedInBatch() defers that reload to once,
+        // after every row in this loop has been seeded.
+        configOptionApplicationController.seedInBatch(() -> {
+            for (InwardChargeType type : chargeTypes) {
+                String custom = configOptionApplicationController.getShortTextValueByKey(
+                        "Inward Charge Type Label - " + type.name(), "");
+                labelMap.put(type.name(), custom == null ? "" : custom);
+                // Kept as String (not Integer) the same way labelMap is: a p:inputText
+                // bound to a Map<String, Integer> entry submits a raw String, since
+                // MapELResolver.setValue() puts the value as-is without consulting the
+                // map's erased generic type — an Integer-typed map caused a
+                // ClassCastException on save (issue #23340 QA). Parsed back to int only
+                // where actually needed, in orderOrDefault().
+                reportOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeReportOrder(type)));
+                finalBillOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type)));
+                finalBillGroupMap.put(type.name(), configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+            }
+        });
     }
 
     public void saveAll() {
@@ -59,6 +69,7 @@ public class InwardChargeTypeLabelController implements Serializable {
             configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
             configOptionApplicationController.saveInwardChargeTypeReportOrder(type, orderOrDefault(reportOrderMap, type));
             configOptionApplicationController.saveInwardChargeTypeFinalBillOrder(type, orderOrDefault(finalBillOrderMap, type));
+            configOptionApplicationController.saveInwardChargeTypeFinalBillGroup(type, finalBillGroupMap.get(type.name()));
         }
     }
 
@@ -67,6 +78,7 @@ public class InwardChargeTypeLabelController implements Serializable {
         configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
         configOptionApplicationController.saveInwardChargeTypeReportOrder(type, orderOrDefault(reportOrderMap, type));
         configOptionApplicationController.saveInwardChargeTypeFinalBillOrder(type, orderOrDefault(finalBillOrderMap, type));
+        configOptionApplicationController.saveInwardChargeTypeFinalBillGroup(type, finalBillGroupMap.get(type.name()));
     }
 
     /**
@@ -113,5 +125,13 @@ public class InwardChargeTypeLabelController implements Serializable {
 
     public void setFinalBillOrderMap(Map<String, String> finalBillOrderMap) {
         this.finalBillOrderMap = finalBillOrderMap;
+    }
+
+    public Map<String, String> getFinalBillGroupMap() {
+        return finalBillGroupMap;
+    }
+
+    public void setFinalBillGroupMap(Map<String, String> finalBillGroupMap) {
+        this.finalBillGroupMap = finalBillGroupMap;
     }
 }

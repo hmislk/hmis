@@ -26,6 +26,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.ChargeItemTotal;
 import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.dataStructure.InwardBillItem;
+import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
@@ -240,6 +241,7 @@ public class BhtSummeryController implements Serializable {
     private boolean showCustomBill2Format;
     private boolean showCustomBill3Format;
     private boolean showCustomBill4Format;
+    private boolean showBundledCustom1Format;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -485,12 +487,14 @@ public class BhtSummeryController implements Serializable {
         showCustomBill2Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 2 Format", true);
         showCustomBill3Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 3 Format", false);
         showCustomBill4Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Custom Bill 4 Format", false);
+        showBundledCustom1Format = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Show Bundled Custom 1 Format", false);
     }
 
     private void persistCustomBillFormatVisibility() {
         configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 2 Format", showCustomBill2Format);
         configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 3 Format", showCustomBill3Format);
         configOptionController.setBooleanValueByKey("Inward Final Bill - Show Custom Bill 4 Format", showCustomBill4Format);
+        configOptionController.setBooleanValueByKey("Inward Final Bill - Show Bundled Custom 1 Format", showBundledCustom1Format);
     }
 
     public void loadCustom2Config() {
@@ -665,6 +669,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setShowCustomBill4Format(boolean showCustomBill4Format) {
         this.showCustomBill4Format = showCustomBill4Format;
+    }
+
+    public boolean isShowBundledCustom1Format() {
+        return showBundledCustom1Format;
+    }
+
+    public void setShowBundledCustom1Format(boolean showBundledCustom1Format) {
+        this.showBundledCustom1Format = showBundledCustom1Format;
     }
     // </editor-fold>
 
@@ -4118,6 +4130,20 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
+        return getSummaryOfDoctorChargers(bi, pe, true);
+    }
+
+    /**
+     * Same as {@link #getSummaryOfDoctorChargers(List, PatientEncounter)}, but lets
+     * a caller exclude ProfessionalCharge from the aggregation — needed by the
+     * Hospital Copy print (showProfessional=false), whose printed Total uses
+     * {@code Bill.hospitalFee}, which itself excludes ProfessionalCharge. Without
+     * this, aggregating ProfessionalCharge in unconditionally on that copy makes
+     * the printed charge rows sum to more than the printed Total (found in
+     * review). DoctorAndNurses is always included regardless — it IS part of
+     * {@code hospitalFee}.
+     */
+    public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe, boolean includeProfessionalCharge) {
         List<BillItem> newBillItems = new ArrayList<>();
         // LinkedHashMap preserves first-appearance order of each staff member, which follows
         // the orderNo ordering of proFees, so the manual drag order survives in this layout too.
@@ -4125,8 +4151,10 @@ public class BhtSummeryController implements Serializable {
         double totalFee = 0.0;
 
         for (BillItem i : bi) {
-            if ((i.getInwardChargeType() == InwardChargeType.ProfessionalCharge
-                    || i.getInwardChargeType() == InwardChargeType.DoctorAndNurses)
+            boolean isProfessionalCharge = i.getInwardChargeType() == InwardChargeType.ProfessionalCharge;
+            boolean isDoctorAndNurses = i.getInwardChargeType() == InwardChargeType.DoctorAndNurses;
+            if ((isProfessionalCharge || isDoctorAndNurses)
+                    && (includeProfessionalCharge || !isProfessionalCharge)
                     && i.getAdjustedValue() != 0) {
 //                System.out.println("i = " + i);
 //                System.out.println("i.getInwardChargeType() = " + i.getInwardChargeType());
@@ -4180,6 +4208,119 @@ public class BhtSummeryController implements Serializable {
         }
 
         return newBillItems;
+    }
+
+    /**
+     * Pure grouping/summing algorithm behind the "Bundled Custom 1" Final Bill
+     * format (configurable charge-type grouping, #23340 follow-up). Kept
+     * static and free of CDI-injected fields so it is directly unit-testable
+     * (see BhtSummeryControllerBundledRowsTest), following the same pattern as
+     * InwardProfessionalFeeSummaryController's static summary methods.
+     *
+     * <p>{@code groupByType}, {@code orderByType}, and {@code labelByType}
+     * must share the same key set. A charge type <b>absent</b> from
+     * {@code groupByType} is excluded from this bundled view entirely — its
+     * BillItems are silently skipped (this is how callers keep charge types
+     * with their own special rendering, like ProfessionalCharge, out of the
+     * generic row list). A charge type <b>present</b> with a blank (after
+     * trim) group value prints as its own row, labeled via
+     * {@code labelByType}. Charge types sharing the same non-blank group text
+     * are summed into one row labeled with that group text.
+     *
+     * <p>Rows whose final amount is exactly {@code 0.0} are dropped. The
+     * result is sorted ascending by order; a grouped row's order is the
+     * minimum {@code orderByType} value among its members.
+     */
+    public static List<FinalBillPrintRowDTO> buildBundledRows(
+            List<BillItem> billItems,
+            Map<InwardChargeType, String> groupByType,
+            Map<InwardChargeType, Integer> orderByType,
+            Map<InwardChargeType, String> labelByType) {
+
+        Map<InwardChargeType, Double> totalsByType = new java.util.EnumMap<>(InwardChargeType.class);
+        if (billItems != null) {
+            for (BillItem bi : billItems) {
+                InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+                if (type == null || !groupByType.containsKey(type)) {
+                    continue;
+                }
+                totalsByType.merge(type, bi.getAdjustedValue(), Double::sum);
+            }
+        }
+
+        List<FinalBillPrintRowDTO> individualRows = new ArrayList<>();
+        Map<String, Double> groupedTotals = new LinkedHashMap<>();
+        Map<String, Integer> groupedOrder = new LinkedHashMap<>();
+
+        for (Map.Entry<InwardChargeType, Double> entry : totalsByType.entrySet()) {
+            InwardChargeType type = entry.getKey();
+            double amount = entry.getValue();
+            String rawGroup = groupByType.get(type);
+            String group = rawGroup == null ? "" : rawGroup.trim();
+            int order = orderByType.getOrDefault(type, Integer.MAX_VALUE);
+
+            if (group.isEmpty()) {
+                String label = labelByType.getOrDefault(type, type.getLabel());
+                individualRows.add(new FinalBillPrintRowDTO(label, amount, order));
+            } else {
+                groupedTotals.merge(group, amount, Double::sum);
+                groupedOrder.merge(group, order, Math::min);
+            }
+        }
+
+        List<FinalBillPrintRowDTO> rows = new ArrayList<>(individualRows);
+        for (Map.Entry<String, Double> entry : groupedTotals.entrySet()) {
+            String group = entry.getKey();
+            rows.add(new FinalBillPrintRowDTO(group, entry.getValue(), groupedOrder.get(group)));
+        }
+
+        rows.removeIf(row -> Math.abs(row.getAmount()) < 0.005);
+        rows.sort(Comparator.comparingInt(FinalBillPrintRowDTO::getOrder));
+        return rows;
+    }
+
+    /**
+     * CDI-aware wrapper around {@link #buildBundledRows}, used by
+     * finalBillBundledCustom1.xhtml. Deliberately excludes ProfessionalCharge
+     * and DoctorAndNurses from the charge-type universe passed to
+     * buildBundledRows — those two are always printed separately with their
+     * per-staff fee breakdown (see the composite), never folded into a
+     * generic summed row, so their BillItems must not double-count here.
+     */
+    public List<FinalBillPrintRowDTO> getBundledFinalBillRows(Bill bill) {
+        List<BillItem> items = bill == null ? new ArrayList<>() : bill.getBillItems();
+
+        // Only resolve config for charge types actually present on this bill —
+        // NOT all 187 InwardChargeType values. buildBundledRows already treats a
+        // type absent from groupByType as "skip its items", so this is behavior-
+        // identical, but avoids up to ~560 ConfigOptionApplicationController
+        // getter calls (and, worse, a synchronized full-cache reload per lazily-
+        // created ConfigOption row) on every print of a hospital that has never
+        // opened the Charge Type Labels admin page (found in final review).
+        java.util.Set<InwardChargeType> presentTypes = java.util.EnumSet.noneOf(InwardChargeType.class);
+        if (items != null) {
+            for (BillItem bi : items) {
+                InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+                if (type != null) {
+                    presentTypes.add(type);
+                }
+            }
+        }
+
+        Map<InwardChargeType, String> groupByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, Integer> orderByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
+
+        for (InwardChargeType type : presentTypes) {
+            if (type == InwardChargeType.ProfessionalCharge || type == InwardChargeType.DoctorAndNurses) {
+                continue;
+            }
+            groupByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+            orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeLabel(type));
+        }
+
+        return buildBundledRows(items, groupByType, orderByType, labelByType);
     }
 
     public String navigateToIntrimBill() {
@@ -5218,6 +5359,12 @@ public class BhtSummeryController implements Serializable {
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // Porter-based ward return flow (#21466/#21470): value now negated in
+        // WardPharmacyReturnToPharmacyController.doSettle() - without these, the
+        // returned amount was silently never deducted from the Medicine total
+        // (issue #22990).
+        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
@@ -5230,6 +5377,8 @@ public class BhtSummeryController implements Serializable {
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
         medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        medicineCancellationBtas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        medicineCancellationBtas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 

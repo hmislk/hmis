@@ -71,6 +71,14 @@ public class ConfigOptionController implements Serializable {
      */
     private static final String INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX = "Inward Charge Type Final Bill Order - ";
 
+    /**
+     * Prefix shared by every Inward Charge Type Final Bill Group ConfigOption
+     * key (e.g. "Inward Charge Type Final Bill Group - ROOM_CHARGE"). Same
+     * dedicated editor as {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX}
+     * (configurable Final Bill charge-type grouping, #23340 follow-up).
+     */
+    private static final String INWARD_CHARGE_TYPE_FINAL_BILL_GROUP_KEY_PREFIX = "Inward Charge Type Final Bill Group - ";
+
     @EJB
     private ConfigOptionFacade optionFacade;
 
@@ -265,7 +273,7 @@ public class ConfigOptionController implements Serializable {
             return;
         }
         if (isInwardChargeTypeLabelKey(delo.getOptionKey())) {
-            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = new HashMap<>();
@@ -596,7 +604,8 @@ public class ConfigOptionController implements Serializable {
         return optionKey != null
                 && (optionKey.startsWith(INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX)
                 || optionKey.startsWith(INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX)
-                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX));
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX)
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_GROUP_KEY_PREFIX));
     }
 
     public void saveOption(ConfigOption option) {
@@ -605,7 +614,7 @@ public class ConfigOptionController implements Serializable {
             return;
         }
         if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
-            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = null;
@@ -1121,7 +1130,7 @@ public class ConfigOptionController implements Serializable {
             return;
         }
         if (isInwardChargeTypeLabelKey(g.getOptions().get(0).getOptionKey())) {
-            JsfUtil.addErrorMessage("Inward Charge Type Labels can only be changed from the Inward Charge Type Labels page.");
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         g.getOptions().sort((a, b) -> a.getId().compareTo(b.getId()));

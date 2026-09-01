@@ -40,7 +40,7 @@
                                 headerText="Enum Name"
                                 sortBy="#{chargeType.name()}"
                                 filterBy="#{chargeType.name()}"
-                                style="width: 20%; padding: 7px;">
+                                style="width: 18%; padding: 7px;">
                                 <h:outputText value="#{chargeType.name()}" style="font-family: monospace; color: #666;"/>
                             </p:column>
 
@@ -48,13 +48,13 @@
                                 headerText="Default Label"
                                 sortBy="#{chargeType.label}"
                                 filterBy="#{chargeType.label}"
-                                style="width: 22%; padding: 7px;">
+                                style="width: 20%; padding: 7px;">
                                 <h:outputText value="#{chargeType.label}"/>
                             </p:column>
 
                             <p:column
                                 headerText="Custom Label"
-                                style="width: 25%; padding: 7px;">
+                                style="width: 20%; padding: 7px;">
                                 <p:inputText
                                     style="width: 100%;"
                                     value="#{inwardChargeTypeLabelController.labelMap[chargeType.name()]}"
@@ -63,7 +63,7 @@
 
                             <p:column
                                 headerText="Report Order"
-                                style="width: 12%; padding: 7px;">
+                                style="width: 10%; padding: 7px;">
                                 <p:inputText
                                     style="width: 100%; text-align: right;"
                                     value="#{inwardChargeTypeLabelController.reportOrderMap[chargeType.name()]}"
@@ -74,13 +74,23 @@
 
                             <p:column
                                 headerText="Final Bill Order"
-                                style="width: 13%; padding: 7px;">
+                                style="width: 10%; padding: 7px;">
                                 <p:inputText
                                     style="width: 100%; text-align: right;"
                                     value="#{inwardChargeTypeLabelController.finalBillOrderMap[chargeType.name()]}"
                                     title="Final bill order for #{chargeType.name()}">
                                     <f:validateRegex pattern="^[0-9]{1,6}$"/>
                                 </p:inputText>
+                            </p:column>
+
+                            <p:column
+                                headerText="Final Bill Group"
+                                style="width: 14%; padding: 7px;">
+                                <p:inputText
+                                    style="width: 100%;"
+                                    value="#{inwardChargeTypeLabelController.finalBillGroupMap[chargeType.name()]}"
+                                    placeholder="Leave blank to print alone"
+                                    title="Charge types sharing the same text here print as one summed line on the Bundled Custom 1 Final Bill format"/>
                             </p:column>
 
                             <p:column

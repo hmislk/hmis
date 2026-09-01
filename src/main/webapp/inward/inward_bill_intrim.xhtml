@@ -730,7 +730,25 @@
 
                                                 <p:column styleClass="text-end">
                                                     <f:facet name="header" >
-                                                        <h:outputLabel value="Count"/>
+                                                        <h:outputLabel value="Billed Count"/>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column styleClass="text-end">
+                                                    <f:facet name="header" >
+                                                        <h:outputLabel value="Returned / Cancelled"/>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column styleClass="text-end">
+                                                    <f:facet name="header" >
+                                                        <h:outputLabel value="Net Count"/>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column >
+                                                    <f:facet name="header">
+                                                        <h:outputLabel value="Status"/>
                                                     </f:facet>
                                                 </p:column>
 
@@ -777,36 +795,70 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="#{dep.department.name}"/>
                                             </f:facet>
+                                            <!--
+                                                #23321 - keep returned/cancelled Service &amp; Investigation rows visible.
+                                                everBilled = the item was billed to this encounter at all, even if the
+                                                net (billed - cancelled - refund) is now zero. transBillItemCount keeps
+                                                its original "net active count" meaning for the other pages that read it.
+                                            -->
                                             <p:column styleClass="text-start">
-                                                <h:outputLabel value="#{ser.name}" rendered="#{ser.transBillItemCount ne 0}"/>
+                                                <h:outputLabel value="#{ser.name}" rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}"/>
                                             </p:column>
                                             <p:column styleClass="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-                                                <h:outputLabel value="#{ser.transGrossValue}" rendered="#{ser.transBillItemCount ne 0}">
+                                                <h:outputLabel value="#{ser.transGrossValue}" rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column styleClass="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-                                                <h:outputLabel value="#{ser.transDiscount}" rendered="#{ser.transBillItemCount ne 0}">
+                                                <h:outputLabel value="#{ser.transDiscount}" rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column styleClass="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-                                                <h:outputLabel value="#{ser.transMarginValue}" rendered="#{ser.transBillItemCount ne 0}">
+                                                <h:outputLabel value="#{ser.transMarginValue}" rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column styleClass="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-                                                <h:outputLabel value="#{ser.transNetValue}" rendered="#{ser.transBillItemCount ne 0}">
+                                                <h:outputLabel value="#{ser.transNetValue}" rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column styleClass="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-                                                <h:outputLabel value="#{ser.transVat}" rendered="#{ser.transBillItemCount ne 0}">
+                                                <h:outputLabel value="#{ser.transVat}" rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
                                                     <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <!-- Billed Count = original billed qty (net + returned/cancelled) -->
+                                            <p:column styleClass="text-end">
+                                                <h:outputLabel value="#{ser.transBillItemCount + ser.transCancelledBillItemCount + ser.transRefundedBillItemCount}"
+                                                               rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
+                                                    <f:convertNumber pattern="#,##0.##"/>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column styleClass="text-end">
-                                                <h:outputLabel value="#{ser.transBillItemCount}" rendered="#{ser.transBillItemCount ne 0}"/>
+                                                <h:outputLabel style="color: red;"
+                                                               value="#{ser.transCancelledBillItemCount + ser.transRefundedBillItemCount}"
+                                                               rendered="#{ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
+                                                    <f:convertNumber pattern="#,##0.##"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column styleClass="text-end">
+                                                <h:outputLabel value="#{ser.transBillItemCount}"
+                                                               rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}">
+                                                    <f:convertNumber pattern="#,##0.##"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column styleClass="text-start">
+                                                <h:outputLabel styleClass="badge bg-success"
+                                                               value="Active"
+                                                               rendered="#{ser.transBillItemCount ne 0 and ser.transCancelledBillItemCount eq 0 and ser.transRefundedBillItemCount eq 0}"/>
+                                                <h:outputLabel styleClass="badge bg-warning text-dark"
+                                                               value="Partially Returned / Cancelled"
+                                                               rendered="#{ser.transBillItemCount ne 0 and (ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0)}"/>
+                                                <h:outputLabel styleClass="badge bg-danger"
+                                                               value="Fully Returned / Cancelled"
+                                                               rendered="#{ser.transBillItemCount eq 0 and (ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0)}"/>
                                             </p:column>
                                             <p:column styleClass="text-end">
                                                 <h:outputLabel value="#{ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}"/>
@@ -817,7 +869,7 @@
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column styleClass="text-start">
-                                                <h:outputLabel value="#{ser.inwardChargeType}" rendered="#{ser.transBillItemCount ne 0}"/>
+                                                <h:outputLabel value="#{ser.inwardChargeType}" rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}"/>
                                             </p:column>
 
                                             <p:column styleClass="text-start">
@@ -830,9 +882,9 @@
                                             </p:column>
 
                                             <p:column styleClass="text-start">
-                                                <p:commandButton 
-                                                    ajax="false" 
-                                                    rendered="#{ser.transBillItemCount ne 0}"
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    rendered="#{ser.transBillItemCount ne 0 or ser.transCancelledBillItemCount ne 0 or ser.transRefundedBillItemCount ne 0}"
                                                     action="inward_edit_bill_item_view?faces-redirect=true"
                                                     value="View Bill Items"  >
                                                     <f:setPropertyActionListener value="#{ser}" target="#{bhtSummeryController.item}"/>
