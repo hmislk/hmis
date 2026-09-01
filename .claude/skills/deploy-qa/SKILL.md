@@ -63,7 +63,14 @@ gh pr merge <PR-number> --repo hmislk/hmis --merge --delete-branch=false
 ```
 
 GitHub Actions will then automatically build with Maven, deploy to the target
-QA/staging server, and restart the Payara application server.
+QA/staging server, and restart the Payara application server — **except for
+`hims-qa1-migrated` through `hims-qa4-migrated`, which currently have no
+matching CI/CD workflow** (`.github/workflows/hims_qa*_ci_cd.yml` still trigger
+only on the non-migrated `hims-qa1`..`hims-qa4` branch names). Merging into
+those four branches updates the branch content but does not deploy it — verify
+with whoever owns those environments before relying on this to actually push
+code live. `rh-local-staging` does have a working deploy trigger
+(`ruhunu_local_server_ci_cd.yml`).
 
 ## Post-Deployment
 
@@ -78,4 +85,4 @@ If deployment fails:
 2. Verify `src/main/resources/META-INF/persistence.xml` uses `${JDBC_DATASOURCE}` /
    `${JDBC_AUDIT_DATASOURCE}` on these branches (not a hardcoded local JNDI name)
 3. Check if the target server is accessible
-4. See [QA Troubleshooting Guide](../../developer_docs/deployment/qa-troubleshooting.md)
+4. See [QA Troubleshooting Guide](../../../developer_docs/deployment/qa-troubleshooting.md)
