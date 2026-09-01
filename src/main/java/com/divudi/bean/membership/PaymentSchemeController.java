@@ -20,8 +20,7 @@ import com.divudi.core.entity.membership.RestrictedPaymentMethod;
 import com.divudi.core.facade.AllowedPaymentMethodFacade;
 import com.divudi.core.facade.RestrictedPaymentMethodFacade;
 import com.divudi.core.facade.PaymentSchemeFacade;
-import com.divudi.core.facade.PriceMatrixFacade;
-import com.divudi.core.entity.PriceMatrix;
+import com.divudi.service.membership.PaymentSchemeDuplicationService;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -39,8 +38,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.ejb.EJBException;
-import javax.transaction.Transactional;
 
 /**
  *
@@ -62,7 +59,7 @@ public class PaymentSchemeController implements Serializable {
     @EJB
     RestrictedPaymentMethodFacade restrictedPaymentMethodFacade;
     @EJB
-    PriceMatrixFacade priceMatrixFacade;
+    private PaymentSchemeDuplicationService paymentSchemeDuplicationService;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -453,72 +450,23 @@ public class PaymentSchemeController implements Serializable {
         getCurrent();
     }
 
-    @Transactional
     public void duplicateSelected() {
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Nothing to Duplicate");
             return;
         }
 
-        PaymentScheme dup = new PaymentScheme();
-        dup.setName("a copy of " + paymentScheme.getName());
-        dup.setPrintingName(paymentScheme.getPrintingName());
-        dup.setOrderNo(paymentScheme.getOrderNo());
-        dup.setValidForPharmacy(paymentScheme.isValidForPharmacy());
-        dup.setValidForBilledBills(paymentScheme.isValidForBilledBills());
-        dup.setValidForInpatientBills(paymentScheme.isValidForInpatientBills());
-        dup.setValidForChanneling(paymentScheme.isValidForChanneling());
-        dup.setStaffMemberRequired(paymentScheme.isStaffMemberRequired());
-        dup.setMembershipRequired(paymentScheme.isMembershipRequired());
-        dup.setStaffRequired(paymentScheme.isStaffRequired());
-        dup.setStaffOrFamilyRequired(paymentScheme.isStaffOrFamilyRequired());
-        dup.setMemberRequired(paymentScheme.isMemberRequired());
-        dup.setMemberOrFamilyRequired(paymentScheme.isMemberOrFamilyRequired());
-        dup.setSeniorCitizenRequired(paymentScheme.isSeniorCitizenRequired());
-        dup.setPregnantMotherRequired(paymentScheme.isPregnantMotherRequired());
-        dup.setExpiryDate(paymentScheme.getExpiryDate());
-        dup.setCliantType(paymentScheme.getCliantType());
-        dup.setInstitution(paymentScheme.getInstitution());
-        dup.setPerson(paymentScheme.getPerson());
-        dup.setDepartment(paymentScheme.getDepartment());
-        dup.setCreatedAt(new Date());
-        dup.setCreater(getSessionController().getLoggedUser());
-
-        getFacade().create(dup);
-
-        HashMap hm = new HashMap();
-        hm.put("ps", paymentScheme);
-        String jpql = "select pm from PriceMatrix pm where pm.retired=false and pm.paymentScheme=:ps";
-        List<PriceMatrix> matrices = priceMatrixFacade.findByJpql(jpql, hm);
-
-        for (PriceMatrix pm : matrices) {
-            try {
-                PriceMatrix npm = new PriceMatrix();
-                npm.setBillType(pm.getBillType());
-                npm.setCategory(pm.getCategory());
-                npm.setInstitution(pm.getInstitution());
-                npm.setDepartment(pm.getDepartment());
-                npm.setItem(pm.getItem());
-                npm.setFromPrice(pm.getFromPrice());
-                npm.setToPrice(pm.getToPrice());
-                npm.setMargin(pm.getMargin());
-                npm.setRoomLocation(pm.getRoomLocation());
-                npm.setMembershipScheme(pm.getMembershipScheme());
-                npm.setPaymentScheme(dup);
-                npm.setPaymentMethod(pm.getPaymentMethod());
-                npm.setInwardChargeType(pm.getInwardChargeType());
-                npm.setDiscountPercent(pm.getDiscountPercent());
-                npm.setAdmissionType(pm.getAdmissionType());
-                npm.setRoomCategory(pm.getRoomCategory());
-                npm.setToInstitution(pm.getToInstitution());
-                npm.setCreatedAt(new Date());
-                npm.setCreater(getSessionController().getLoggedUser());
-                priceMatrixFacade.create(npm);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Failed to duplicate PriceMatrix", e);
-                JsfUtil.addErrorMessage("Failed to duplicate PriceMatrix entries");
-                throw new EJBException(e);
-            }
+        PaymentScheme dup;
+        try {
+            // The copy runs inside the stateless service's own container-managed
+            // transaction, so no transaction is held across this session-scoped
+            // action, and a failed price-matrix copy rolls the whole copy back.
+            dup = paymentSchemeDuplicationService.duplicate(
+                    paymentScheme.getId(), getSessionController().getLoggedUser());
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to duplicate payment scheme", e);
+            JsfUtil.addErrorMessage("Failed to duplicate the Discount Scheme. No changes were saved.");
+            return;
         }
 
         createPaymentSchemes();
