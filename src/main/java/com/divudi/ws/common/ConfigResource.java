@@ -190,9 +190,10 @@ public class ConfigResource {
 
     /**
      * Discovery endpoint for the InwardChargeType enum: for every value,
-     * returns its default/custom label plus the two admin-configurable
-     * ordering numbers (Report Order, Final Bill Order) introduced in issue
-     * #23340. Reading each value here also lazily seeds any of their
+     * returns its default/custom label, the two admin-configurable ordering
+     * numbers (Report Order, Final Bill Order) introduced in issue #23340,
+     * and the Final Bill Group text (configurable charge-type grouping,
+     * #23340 follow-up). Reading each value here also lazily seeds any of their
      * ConfigOption rows that don't exist yet (same lazy-create behavior as
      * the dedicated inward_charge_type_labels.xhtml admin page), so a caller
      * can immediately follow up with PUT /api/config/{key} or
@@ -210,15 +211,21 @@ public class ConfigResource {
         }
 
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        for (InwardChargeType type : InwardChargeType.values()) {
-            JsonObjectBuilder obj = Json.createObjectBuilder()
-                    .add("name", type.name())
-                    .add("defaultLabel", type.getLabel() != null ? type.getLabel() : "")
-                    .add("label", configOptionApplicationController.getInwardChargeTypeLabel(type))
-                    .add("reportOrder", configOptionApplicationController.getInwardChargeTypeReportOrder(type))
-                    .add("finalBillOrder", configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
-            arrayBuilder.add(obj);
-        }
+        // Batched: same reasoning as InwardChargeTypeLabelController.init() — this
+        // endpoint's whole purpose is seeding every missing row in one call, so
+        // suppress the per-key cache reload and do it once at the end instead.
+        configOptionApplicationController.seedInBatch(() -> {
+            for (InwardChargeType type : InwardChargeType.values()) {
+                JsonObjectBuilder obj = Json.createObjectBuilder()
+                        .add("name", type.name())
+                        .add("defaultLabel", type.getLabel() != null ? type.getLabel() : "")
+                        .add("label", configOptionApplicationController.getInwardChargeTypeLabel(type))
+                        .add("reportOrder", configOptionApplicationController.getInwardChargeTypeReportOrder(type))
+                        .add("finalBillOrder", configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type))
+                        .add("finalBillGroup", configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+                arrayBuilder.add(obj);
+            }
+        });
         return Response.ok(arrayBuilder.build().toString()).build();
     }
 

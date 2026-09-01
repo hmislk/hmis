@@ -31,7 +31,11 @@ waste a session.
 
 If the change under test isn't deployed yet, rebuild and redeploy to the local
 Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
-locations):
+locations). **This section is local dev only** — it is the `asadmin`
+build/deploy loop the `playwright-e2e` skill already mandates on a developer
+laptop. It does **not** apply to shared/staging/production Payara, where the
+"no manual/root deployment; everything through CI/CD" rule in `CLAUDE.md`
+still governs.
 
 ```powershell
 # Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
@@ -47,6 +51,17 @@ $env:JAVA_HOME="<path-to-jdk>"
   afterward.
 - Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
   before starting the browser flow.
+- **`--name` must match the actual deployed app name.** `asadmin list-applications`
+  first — on some machines it is `rh-3.0.0`, not `rh`. A `redeploy` with the
+  wrong `--name` fails with `Application with name [...] is not deployed`.
+- **Payara must run on JDK 11.** If Payara was started with JDK 21 on `PATH`,
+  deployment fails with `Unsupported class file major version 65` (65 = Java 21).
+  Fix: `asadmin stop-domain`, then set **both** `$env:JAVA_HOME` and
+  `$env:AS_JAVA` to the JDK 11 path before `start-domain`. A failed `deploy`
+  (as opposed to `redeploy`) also *removes* the app, so the next `redeploy`
+  then fails with "not deployed" — recover with a plain
+  `deploy --name <name-from-list-applications> --contextroot <its-context-root> <war>`
+  (the name/context root you confirmed above, not a hardcoded guess).
 
 ---
 
@@ -2261,6 +2276,40 @@ an in-session AJAX re-read is not proof of a save — the model object doesn't g
 action method threw. Always confirm with a fresh `SELECT` after the request completes (a full page
 reload session's own display of "the value I set" proves nothing, since it's the same still-open
 transactional model that never got rolled back). Found and fixed while testing issue #23340.
+
+## 87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect
+
+Logging into `http://localhost:8080/rh` with the production app-login credentials from the external credentials file (see `developer_docs/deployment/persistence-verification.md`) fails locally with "Invalid User! Login Failure" even though a `WEBUSER` row with that username exists. The local `coop` database is a data snapshot, not a fresh seed — its `WEBUSERPASSWORD` hash predates whatever the current production password is, and there's no way to know it from the codebase.
+
+`SessionController.checkUsersWithoutDepartment()` calls `SecurityController.matchPassword(password, u.getWebUserPassword())`, which uses jasypt's `BasicPasswordEncryptor` (salted digest, not a fixed hash you can look up) — `SecurityController.java`'s `hashAndCheck()`/`matchPassword()`. To log in locally: generate a compatible hash with the same class (the jar is already on the classpath at `~/.m2/repository/org/jasypt/jasypt/1.9.3/jasypt-1.9.3.jar` — compile and run a two-line `BasicPasswordEncryptor().encryptPassword("SomeTestPassword")` snippet), then `UPDATE WEBUSER SET WEBUSERPASSWORD='<hash>' WHERE ID=<id>` directly against the local `coop` DB (safe — local test data, no schema change, see the `dev-issue-unattended` skill's hard limits on this point).
+
+**The password won't take effect until Payara restarts.** `WebUser` is one of the reference entities EclipseLink L2-caches (`eclipselink.cache.size.default=1000` in `persistence_for_local_testing.xml`, explicitly called out for "departments, items, users"), and a plain SQL `UPDATE` doesn't invalidate that cache — the already-running app keeps serving the old hash to every subsequent login attempt from its in-memory copy, so retrying with the new password fails identically. `asadmin restart-domain domain1` (not just redeploying the WAR) clears it. This is the same L2-cache-staleness class of gotcha noted for the COGS report (`feedback_cogs_report_testing_gotcha` memory) — always double-confirm a direct SQL write against a running local Payara actually took effect, rather than assuming it did because the `UPDATE` succeeded.
+
+Found while verifying issue #22990.
+
+## 88. `pharmacy_search_pre_bill_for_return_item_only.xhtml`'s "Return Item Only" button can fail completely silently — no `p:messages`/growl update, plus `Bill` is L2-cached
+
+Two independent gotchas stack here, found while testing issue #23304 (reject negative return quantity):
+
+1. **Silent navigation failure.** `PreReturnController.navigateToReturnRetailSaleItemsOnly()` calls
+   `pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill)` and returns `null` (staying on the
+   same page) when the sale bill is older than the "no approval" day limit (default 3 days) and has no
+   approved return request — see `PharmacyRetailSaleReturnPolicyService`. `pharmacy_search_pre_bill_for_return_item_only.xhtml`
+   has **no `p:messages`/`p:growl` component at all**, so `JsfUtil.addErrorMessage(...)` is added to the
+   `FacesContext` but never rendered — clicking "Return Item Only" just silently reloads the same search
+   page with zero visible feedback. Don't mistake this for the button/click not registering; check the
+   row's day-limit first (a "Request Approval" button appearing alongside "Return Item Only" is the tell
+   that the bill is past the no-approval window).
+2. **`Bill` is also L2-cached.** Same class of staleness as `feedback_cogs_report_testing_gotcha` and item
+   87's `WebUser` case: if you shift a `Bill.createdAt` via raw SQL to get a test bill inside the day-limit
+   window, and the app already loaded that `Bill` earlier in the same session (e.g. an earlier search hit
+   it), `checkReturnAllowed` keeps evaluating against the stale cached `createdAt` — the day-limit block
+   persists even though the DB row is correct. Use a bill your test session has never touched yet for the
+   `UPDATE`, or restart the domain, rather than assuming the fresh `UPDATE` took effect.
+
+Also: revert any `createdAt` shift back to the bill's real original value immediately after the test —
+day-based reports (Cost of Goods Sold, F15) key off it, and leaving it shifted taints those reports for
+both the original date and the shifted date.
 
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
