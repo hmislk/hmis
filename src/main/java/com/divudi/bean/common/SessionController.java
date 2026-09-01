@@ -584,8 +584,17 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    public void acceptOnlineBookingForAllSessions(boolean accept) throws Exception {
-        channelService.makeAllSessionsAvailableForOnlineBookings(accept);
+    public void acceptOnlineBookingForAllSessions(boolean accept) {
+        // Was previously "throws Exception" with no catch anywhere in the call
+        // chain, so a failure here (e.g. #23406) failed with zero UI feedback -
+        // the button appeared to do nothing. Report it instead of swallowing it.
+        try {
+            channelService.makeAllSessionsAvailableForOnlineBookings(accept);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessage(e, "Failed to update online booking availability. No changes were saved.");
+            return;
+        }
         if (accept) {
             JsfUtil.addSuccessMessage("Accept Online Bookings from now.");
         } else if (!accept) {
