@@ -2311,6 +2311,21 @@ Also: revert any `createdAt` shift back to the bill's real original value immedi
 day-based reports (Cost of Goods Sold, F15) key off it, and leaving it shifted taints those reports for
 both the original date and the shifted date.
 
+## 89. Navigating Playwright straight to a `.xhtml` path without the `/faces/` prefix hangs forever, with no server-side trace
+
+Found while testing issue #23407. `web.xml`'s `FacesServlet` is mapped only to
+`/faces/*`. `browser_navigate` (and `page.goto`) to
+`http://localhost:8080/rh/inward/some_page.xhtml` (missing `/faces/`) never
+reaches the FacesServlet, and the tab hangs indefinitely — `browser_navigate`
+and every subsequent `browser_snapshot` time out at 30s, with **zero new
+lines** appended to `server.log` (confirm via `tail`/timestamp — the request
+never hit Payara at all). System load, Payara health, etc. are red herrings;
+the fix is just the URL. Close the hung tab (`browser_tabs` → `close`) rather
+than retrying the same broken URL, open a fresh tab, and navigate to
+`http://localhost:8080/rh/faces/inward/some_page.xhtml` instead — this loads
+normally. Any local deep-link into an inner page (bypassing a menu click)
+needs the `/faces/` segment.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
