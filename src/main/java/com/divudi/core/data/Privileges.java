@@ -115,8 +115,18 @@ public enum Privileges {
     InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
     InwardFinalBillRetire("Inward Final Bill Retire"),
     InwardFinalBillEmail("Inward Final Bill Email"),
+    InwardFinalBillApprove("Inward Final Bill Approve"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
+    // Inpatient Dashboard - Reports Panel individual button privileges (issue: admission_profile.xhtml Reports panel)
+    InwardReportPharmacyIssueSummary("Inward Report - Pharmacy Issue Summary"),
+    InwardReportServiceSummary("Inward Report - Service Summary"),
+    InwardReportServiceBills("Inward Report - All Inward Service Bills"),
+    InwardReportPaymentsAndCancellations("Inward Report - Payments & Cancellations"),
+    InwardReportPharmacyAndServiceSummary("Inward Report - Pharmacy & Services Summary"),
+    InwardReportLabBillSummary("Inward Report - Lab Bill Summary"),
+    InwardReportLabResultSummary("Inward Report - Lab Result Summary"),
+    InwardReportPharmacyIssueSummaryLegacy("Inward Report - Pharmacy Issue Summary (Legacy)"),
     InwardPostDischargeReports("Inward Post-Discharge Reports"),
     InwardLaboratory("Inward Laboratory"),
     InwardLaboratoryBarcodeGeneration("Inward Laboratory Barcode Generation"),
@@ -684,6 +694,7 @@ public enum Privileges {
     PharmacyTransfer("Pharmacy Transfer"),
     PharmacyTransferViewRates("Pharmacy Transfer View Rates"),
     NursingIPBillingViewRates("Nursing IP Billing View Rates"),
+    IPBillingViewDiscount("IP Billing View Discount"),
     IPRequestViewRates("IP Request View Rates"),
     StockRequestViewRates("Stock Request View Rates"),
     ConsumptionViewRates("Consumption View Rates"),
@@ -1370,6 +1381,7 @@ public enum Privileges {
             case PharmacyTransfer:
             case PharmacyTransferViewRates:
             case NursingIPBillingViewRates:
+            case IPBillingViewDiscount:
             case IPRequestViewRates:
             case StockRequestViewRates:
             case ConsumptionViewRates:
@@ -1668,6 +1680,7 @@ public enum Privileges {
             case InwardFinalBillSetConfirmed:
             case InwardFinalBillRetire:
             case InwardFinalBillEmail:
+            case InwardFinalBillApprove:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:
@@ -1688,6 +1701,14 @@ public enum Privileges {
             case InpatientDashboardPanelPharmaceuticals:
             case InpatientDashboardPanelDocuments:
             case InpatientDashboardPanelReports:
+            case InwardReportPharmacyIssueSummary:
+            case InwardReportServiceSummary:
+            case InwardReportServiceBills:
+            case InwardReportPaymentsAndCancellations:
+            case InwardReportPharmacyAndServiceSummary:
+            case InwardReportLabBillSummary:
+            case InwardReportLabResultSummary:
+            case InwardReportPharmacyIssueSummaryLegacy:
             case InwardEditPatientDetailsFromAdmission:
             case InwardEditPaymentDetails:
             case InwardManageAllergies:

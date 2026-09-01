@@ -81,6 +81,12 @@ public class PatientTransferController implements Serializable {
     private List<PatientTransferRequest> inTheatreRequests;
     private List<PatientTransferRequest> pendingReturnRequests;
 
+    // Focused single-admission theatre status view — the active theatre
+    // transfer and any pending return-to-ward request for one admission,
+    // used by the per-patient Theatre Status page (#23166)
+    private PatientTransferRequest currentTheatreRequest;
+    private PatientTransferRequest currentTheatreReturnRequest;
+
     public List<Admission> completePatientByInstitution(String query) {
         return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
     }
@@ -342,26 +348,64 @@ public class PatientTransferController implements Serializable {
     }
 
     public void acceptTransfer(PatientTransferRequest req) {
-        if (req == null) {
+        if (req == null || req.getId() == null) {
             return;
         }
-        if (req.getTheatreTransferType() == TheatreTransferType.SEND_TO_THEATRE) {
+        // Re-fetch and atomically claim PENDING to prevent a double-accept (double-click,
+        // two sessions) from both creating a PatientRoom for the same request — mirrors
+        // the reload-by-ID pattern already used in cancelPendingAndReopen()/acceptInTheatre().
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(req.getId());
+        if (persisted == null || persisted.getStatus() != TransferRequestStatus.PENDING) {
+            loadPendingForDepartment();
+            JsfUtil.addErrorMessage("This transfer request is no longer pending and cannot be accepted.");
+            return;
+        }
+        if (persisted.getTheatreTransferType() == TheatreTransferType.SEND_TO_THEATRE) {
             JsfUtil.addErrorMessage("This is a theatre transfer request. Use \"Accept Theatre Patient\" instead.");
             loadPendingForDepartment();
             return;
         }
 
-        java.util.Map<String, Object> beforeAccept = transferAuditMap(req);
-        Date effectiveAt = req.getAcceptedAt() != null ? req.getAcceptedAt() : new Date();
-        req.setAcceptedAt(effectiveAt);
+        java.util.Map<String, Object> beforeAccept = transferAuditMap(persisted);
+        Date effectiveAt = persisted.getAcceptedAt() != null ? persisted.getAcceptedAt() : new Date();
+        persisted.setAcceptedAt(effectiveAt);
+        // Claim PENDING immediately so a concurrent accept sees ACCEPTED and bails out above.
+        persisted.setStatus(TransferRequestStatus.ACCEPTED);
+        persisted.setAcceptedBy(sessionController.getLoggedUser());
+        patientTransferRequestFacade.edit(persisted);
 
-        if (req.getFromPatientRoom() == null) {
-            // Admission handover — mark room as admitted
-            req.getAdmission().setRoomAdmitted(true);
-            admissionFacade.edit(req.getAdmission());
+        if (persisted.getFromPatientRoom() == null) {
+            // Admission handover. When the admission-time room selection already
+            // created and set this same room as current (Issue #23145), there is
+            // nothing to do here beyond confirming roomAdmitted — this request only
+            // exists as a nursing acknowledgement. Otherwise (e.g. the room was
+            // assigned later via a manually initiated transfer with no prior room),
+            // no PatientRoom has ever been created for this admission, so
+            // currentPatientRoom must be set here or it stays null forever and the
+            // "Current Department" search (#22382) can never find the patient. (#23377)
+            Admission admission = persisted.getAdmission();
+            PatientRoom existingCurrentRoom = admission.getCurrentPatientRoom();
+            RoomFacilityCharge targetRoomFacilityCharge = persisted.getToRoomFacilityCharge();
+            boolean alreadyInTargetRoom = existingCurrentRoom != null
+                    && existingCurrentRoom.getRoomFacilityCharge() != null
+                    && targetRoomFacilityCharge != null
+                    && existingCurrentRoom.getRoomFacilityCharge().getId() != null
+                    && existingCurrentRoom.getRoomFacilityCharge().getId().equals(targetRoomFacilityCharge.getId());
+            if (!alreadyInTargetRoom && targetRoomFacilityCharge != null) {
+                PatientRoom newPatientRoom = new PatientRoom();
+                newPatientRoom = inwardBean.savePatientRoom(
+                        newPatientRoom,
+                        targetRoomFacilityCharge,
+                        admission,
+                        effectiveAt,
+                        sessionController.getLoggedUser());
+                admission.setCurrentPatientRoom(newPatientRoom);
+            }
+            admission.setRoomAdmitted(true);
+            admissionFacade.edit(admission);
         } else {
             // Ward-to-ward transfer
-            PatientRoom fromPatientRoom = req.getFromPatientRoom();
+            PatientRoom fromPatientRoom = persisted.getFromPatientRoom();
             fromPatientRoom.setDischarged(true);
             fromPatientRoom.setDischargedAt(effectiveAt);
             fromPatientRoom.setDischargedBy(sessionController.getLoggedUser());
@@ -371,22 +415,19 @@ public class PatientTransferController implements Serializable {
             newPatientRoom = inwardBean.savePatientRoom(
                     newPatientRoom,
                     fromPatientRoom,
-                    req.getToRoomFacilityCharge(),
-                    req.getAdmission(),
+                    persisted.getToRoomFacilityCharge(),
+                    persisted.getAdmission(),
                     effectiveAt,
                     sessionController.getLoggedUser());
 
             fromPatientRoom.setNextRoom(newPatientRoom);
             patientRoomFacade.edit(fromPatientRoom);
 
-            req.getAdmission().setCurrentPatientRoom(newPatientRoom);
-            admissionFacade.edit(req.getAdmission());
+            persisted.getAdmission().setCurrentPatientRoom(newPatientRoom);
+            admissionFacade.edit(persisted.getAdmission());
         }
 
-        req.setStatus(TransferRequestStatus.ACCEPTED);
-        req.setAcceptedBy(sessionController.getLoggedUser());
-        patientTransferRequestFacade.edit(req);
-        auditTransfer(req, "Transfer Accepted", beforeAccept);
+        auditTransfer(persisted, "Transfer Accepted", beforeAccept);
 
         loadPendingForDepartment();
         JsfUtil.addSuccessMessage("Patient accepted successfully.");
@@ -926,6 +967,161 @@ public class PatientTransferController implements Serializable {
                 + "ORDER BY b.createdAt";
         List<Bill> result = billFacade.findByJpql(jpql, params);
         return result != null ? result : new ArrayList<>();
+    }
+
+    /**
+     * Focused single-admission theatre status flow launched from the
+     * Inpatient Dashboard / Nursing WorkBench — shows the live theatre
+     * workflow milestones for just this admission instead of the
+     * department-wide theatre worklists (#23166, mirrors the
+     * navigateToPatientAcceptForAdmission pattern from #22420).
+     */
+    public String navigateToTheatreStatus(Admission admission) {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No patient selected.");
+            return "";
+        }
+        current = admission;
+        loadTheatreStatusForAdmission(admission);
+        return "/inward/inward_theatre_status?faces-redirect=true";
+    }
+
+    /**
+     * Loads the active theatre transfer and any pending return-to-ward
+     * request scoped to a single admission (#23166).
+     */
+    private void loadTheatreStatusForAdmission(Admission admission) {
+        if (admission == null) {
+            currentTheatreRequest = null;
+            currentTheatreReturnRequest = null;
+            return;
+        }
+        currentTheatreRequest = findActiveSendToTheatreRequest(admission);
+        currentTheatreReturnRequest = findPendingReturnRequestForAdmission(admission);
+    }
+
+    /**
+     * Finds the PENDING RETURN_TO_WARD request for a single admission, if
+     * any — mirrors findActiveSendToTheatreRequest (#23166).
+     */
+    public PatientTransferRequest findPendingReturnRequestForAdmission(Admission admission) {
+        if (admission == null) {
+            return null;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("type", TheatreTransferType.RETURN_TO_WARD);
+        params.put("status", TransferRequestStatus.PENDING);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status = :status "
+                + "AND r.retired = false "
+                + "ORDER BY r.createdAt DESC";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    /**
+     * True when there is a PENDING theatre return request for this admission
+     * (#23166). Named without the "is" prefix (unlike the no-arg
+     * isHasPendingTheatreRequestsForDepartment()-style booleans elsewhere in
+     * this class) because JSF EL only applies the isXxx()/getXxx() JavaBean
+     * property convention to no-argument property access — a parameterized
+     * call like #{bean.hasPendingTheatreReturnForAdmission(x)} resolves by
+     * the literal method name, not the "is"-stripped property name.
+     */
+    public boolean hasPendingTheatreReturnForAdmission(Admission admission) {
+        return findPendingReturnRequestForAdmission(admission) != null;
+    }
+
+    /**
+     * Accept from the single-admission focused theatre status view (#23166)
+     * — delegates to acceptInTheatre() then refreshes the admission-scoped
+     * theatre status instead of the department-wide worklists.
+     */
+    public void acceptInTheatreForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        acceptInTheatre(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Mark In Theatre from the single-admission focused theatre status view
+     * (#23166) — delegates to markInTheatre() then refreshes the
+     * admission-scoped theatre status.
+     */
+    public void markInTheatreForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        markInTheatre(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Mark Procedure Completed from the single-admission focused theatre
+     * status view (#23166) — delegates to markProcedureCompleted() then
+     * refreshes the admission-scoped theatre status.
+     */
+    public void markProcedureCompletedForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        markProcedureCompleted(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Return To Ward from the single-admission focused theatre status view
+     * (#23166) — delegates to returnToWard() then refreshes the
+     * admission-scoped theatre status.
+     */
+    public void returnToWardForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        returnToWard(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    /**
+     * Accept Return To Ward from the single-admission focused theatre status
+     * view (#23166). Takes an Admission (not a request) since this is also
+     * called directly from the Inpatient Dashboard / Nursing WorkBench
+     * buttons, which only have the Admission in scope, not the return
+     * request object.
+     */
+    public void acceptReturnToWardForAdmission(Admission admission) {
+        PatientTransferRequest req = findPendingReturnRequestForAdmission(admission);
+        if (req == null) {
+            JsfUtil.addErrorMessage("No pending theatre return found for this patient.");
+            return;
+        }
+        // Same target-department constraint as loadPendingReturnsForWard() —
+        // without it, a user with WardAcceptTheatreReturn could accept a
+        // return bound for a different ward's department (CodeRabbit #23175).
+        // Falls back to the logged-in WebUser's own department for sessions
+        // established via loginForRequests(), which set loggedUser but never
+        // call sessionController.setDepartment() — getDepartment() itself must
+        // stay non-populating so it doesn't skip the interactive department
+        // selection screen for ordinary logins.
+        Department userDepartment = sessionController.getDepartment();
+        if (userDepartment == null && sessionController.getLoggedUser() != null) {
+            userDepartment = sessionController.getLoggedUser().getDepartment();
+        }
+        Department targetDepartment = req.getToRoomFacilityCharge() != null
+                ? req.getToRoomFacilityCharge().getDepartment() : null;
+        if (userDepartment == null || userDepartment.getId() == null
+                || targetDepartment == null || targetDepartment.getId() == null
+                || !userDepartment.getId().equals(targetDepartment.getId())) {
+            JsfUtil.addErrorMessage("This theatre return belongs to a different ward.");
+            return;
+        }
+        acceptReturnToWard(req);
+        loadTheatreStatusForAdmission(admission);
+    }
+
+    public PatientTransferRequest getCurrentTheatreRequest() {
+        return currentTheatreRequest;
+    }
+
+    public PatientTransferRequest getCurrentTheatreReturnRequest() {
+        return currentTheatreReturnRequest;
     }
 
     public List<Bill> getSurgeryBillsForCurrentAdmission() {

@@ -5,6 +5,8 @@
  */
 package com.divudi.core.data.dto.timeditem;
 
+import com.divudi.core.data.inward.TimedItemDurationUnit;
+
 /**
  * DTO representing a single TimedItemFee.
  *
@@ -22,6 +24,7 @@ public class TimedItemFeeDTO {
     private int sortOrder;
     private boolean repeating;
     private boolean retired;
+    private TimedItemDurationUnit durationUnit;
 
     public TimedItemFeeDTO() {
     }
@@ -104,5 +107,13 @@ public class TimedItemFeeDTO {
 
     public void setRetired(boolean retired) {
         this.retired = retired;
+    }
+
+    public TimedItemDurationUnit getDurationUnit() {
+        return durationUnit;
+    }
+
+    public void setDurationUnit(TimedItemDurationUnit durationUnit) {
+        this.durationUnit = durationUnit;
     }
 }

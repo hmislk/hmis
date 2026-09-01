@@ -441,9 +441,13 @@ public class ServiceApi {
     }
 
     /**
-     * Bulk-update marginAllowed and/or discountAllowed on fees in a category.
+     * Bulk-update marginAllowed and/or discountAllowed on fees in a category
+     * and/or item subtype. At least one of categoryId/itemType is required.
+     * itemType is one of Investigation, Service, InwardService — use it to
+     * target e.g. "every Investigation" when there's no practical way to
+     * enumerate every relevant category id.
      * POST /api/services/fees/bulk-margin
-     * Body: {"categoryId": 1054, "feeType": "OwnInstitution", "marginAllowed": true, "discountAllowed": null}
+     * Body: {"categoryId": 1054, "itemType": "Investigation", "feeType": "OwnInstitution", "marginAllowed": true, "discountAllowed": null}
      */
     @POST
     @Path("/fees/bulk-margin")
@@ -477,6 +481,7 @@ public class ServiceApi {
                 }
                 categoryId = n.longValue();
             }
+            String itemType = body.get("itemType") != null ? body.get("itemType").toString() : null;
             String feeType = body.get("feeType") != null ? body.get("feeType").toString() : null;
 
             Boolean marginAllowed = null;
@@ -498,7 +503,75 @@ public class ServiceApi {
             }
 
             Map<String, Object> result = serviceApiService.bulkUpdateMargin(
-                    categoryId, feeType, marginAllowed, discountAllowed, user);
+                    categoryId, itemType, feeType, marginAllowed, discountAllowed, user);
+            return successResponse(result);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("required") || msg.contains("Invalid") || msg.contains("must be"))) {
+                return errorResponse(msg, 400);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
+    /**
+     * Bulk-update discountAllowed at the item level (not fee level) for all
+     * non-retired items in a category and/or item subtype. Item.discountAllowed
+     * is a separate flag from ItemFee.discountAllowed (see /fees/bulk-margin
+     * above) — the inward discount calculation requires both to be true, so
+     * this is typically used together with /fees/bulk-margin. At least one of
+     * categoryId/itemType is required. itemType is one of Investigation,
+     * Service, InwardService — use it to target e.g. "every Investigation"
+     * when there's no practical way to enumerate every relevant category id.
+     * POST /api/services/items/bulk-discount-allowed
+     * Body: {"categoryId": 1054, "itemType": "Investigation", "discountAllowed": true}
+     */
+    @POST
+    @Path("/items/bulk-discount-allowed")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkUpdateItemDiscountAllowed(String requestBody) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            Long categoryId = null;
+            if (body.get("categoryId") instanceof Number) {
+                Number n = (Number) body.get("categoryId");
+                if (n.doubleValue() != Math.floor(n.doubleValue()) || Double.isInfinite(n.doubleValue())) {
+                    return errorResponse("categoryId must be a whole number", 400);
+                }
+                categoryId = n.longValue();
+            }
+            String itemType = body.get("itemType") != null ? body.get("itemType").toString() : null;
+
+            Boolean discountAllowed = null;
+            if (body.get("discountAllowed") != null) {
+                if (body.get("discountAllowed") instanceof Boolean) {
+                    discountAllowed = (Boolean) body.get("discountAllowed");
+                } else {
+                    return errorResponse("discountAllowed must be a boolean", 400);
+                }
+            }
+
+            Map<String, Object> result = serviceApiService.bulkUpdateItemDiscountAllowed(
+                    categoryId, itemType, discountAllowed, user);
             return successResponse(result);
 
         } catch (Exception e) {

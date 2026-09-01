@@ -1829,6 +1829,8 @@ public class InwardReportController implements Serializable {
                 addRoomOccupancyPdfRow(table, roomOccupancyGrandTotal, exportCategories, totalFont, totalBg);
             }
 
+            document.add(table);
+
             document.close();
 
             byte[] pdfBytes = baos.toByteArray();

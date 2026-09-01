@@ -774,7 +774,12 @@ public class AnthropicApiService implements Serializable {
                         "Manage inward room master data: room categories, rooms, and room facility charges (room fee configs). "
                         + "Methods: LIST_CATEGORIES, POST_CATEGORY, PUT_CATEGORY, DELETE_CATEGORY, "
                         + "LIST_ROOMS, POST_ROOM, PUT_ROOM, DELETE_ROOM, "
-                        + "LIST_CHARGES, POST_CHARGE, PUT_CHARGE, DELETE_CHARGE. "
+                        + "LIST_CHARGES, POST_CHARGE, PUT_CHARGE, DELETE_CHARGE, "
+                        + "LIST_TIMED_ITEMS, ADD_TIMED_ITEM, REMOVE_TIMED_ITEM (attach/detach TimedItem services that "
+                        + "auto-bill by duration of stay alongside a room facility charge's fixed fees; id = the "
+                        + "room facility charge id, timedItemId = the TimedItem to attach for ADD_TIMED_ITEM, "
+                        + "id/linkId identify the attachment to remove for REMOVE_TIMED_ITEM; retireComments is "
+                        + "optional for REMOVE_TIMED_ITEM). "
                         + "Always confirm with the user before creating, updating, or retiring records.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
@@ -784,11 +789,19 @@ public class AnthropicApiService implements Serializable {
                                         .add("enum", Json.createArrayBuilder()
                                                 .add("LIST_CATEGORIES").add("GET_CATEGORY").add("POST_CATEGORY").add("PUT_CATEGORY").add("DELETE_CATEGORY")
                                                 .add("LIST_ROOMS").add("GET_ROOM").add("POST_ROOM").add("PUT_ROOM").add("DELETE_ROOM")
-                                                .add("LIST_CHARGES").add("GET_CHARGE").add("POST_CHARGE").add("PUT_CHARGE").add("DELETE_CHARGE"))
+                                                .add("LIST_CHARGES").add("GET_CHARGE").add("POST_CHARGE").add("PUT_CHARGE").add("DELETE_CHARGE")
+                                                .add("LIST_TIMED_ITEMS").add("ADD_TIMED_ITEM").add("REMOVE_TIMED_ITEM"))
                                         .add("description", "Operation to perform."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Record id. Required for PUT and DELETE methods."))
+                                        .add("description", "Record id. Required for PUT and DELETE methods. "
+                                                + "For LIST_TIMED_ITEMS/ADD_TIMED_ITEM/REMOVE_TIMED_ITEM this is the room facility charge id."))
+                                .add("timedItemId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "TimedItem id to attach. Required for ADD_TIMED_ITEM."))
+                                .add("linkId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "RoomFacilityTimedItem attachment id to remove. Required for REMOVE_TIMED_ITEM."))
                                 .add("name", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Name of the record. Required for POST methods."))
@@ -846,6 +859,11 @@ public class AnthropicApiService implements Serializable {
                                 .add("timedItemFeeDurationDaysForMoCharge", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Duration days for MO charge calculation. Optional."))
+                                .add("timedItemFeeDurationUnit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "ONE_TIME, MINUTE, HOUR or DAY — the unit the two values above are "
+                                                + "counted in. Optional; defaults to HOUR. Use DAY to charge the room per day "
+                                                + "and ONE_TIME to charge it once regardless of the length of stay."))
                                 .add("query", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Search text for LIST methods. Optional."))
@@ -1776,8 +1794,12 @@ public class AnthropicApiService implements Serializable {
                         "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots. "
                         + "TimedItems are consumed by the inward timed service page to bill patients for duration-based charges. "
                         + "Fees are ordered by sortOrder; each fee defines a durationHours block with an optional overShootHours grace window. "
-                        + "Methods for items: LIST, GET, POST, PUT, DELETE, ACTIVATE, DEACTIVATE. "
-                        + "Methods for fees: LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE. "
+                        + "durationUnit says what durationHours/overShootHours are counted in (ONE_TIME, MINUTE, HOUR, DAY) and defaults to HOUR. "
+                        + "Methods for items: LIST, GET, POST, PUT, DELETE, RESTORE, ACTIVATE, DEACTIVATE. "
+                        + "Methods for fees: LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE, RESTORE_FEE, PUT_FEES. "
+                        + "DELETE and DELETE_FEE only soft-retire, and RESTORE / RESTORE_FEE undo them, so a "
+                        + "mistaken retire is recoverable — pass includeRetired=true to LIST or GET to see what "
+                        + "was retired and get the id to restore. "
                         + "Always confirm with the user before creating, updating, or retiring records.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
@@ -1785,16 +1807,17 @@ public class AnthropicApiService implements Serializable {
                                 .add("method", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("enum", Json.createArrayBuilder()
-                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE").add("RESTORE")
                                                 .add("ACTIVATE").add("DEACTIVATE")
-                                                .add("LIST_FEES").add("POST_FEE").add("PUT_FEE").add("DELETE_FEE"))
+                                                .add("LIST_FEES").add("POST_FEE").add("PUT_FEE").add("DELETE_FEE")
+                                                .add("RESTORE_FEE").add("PUT_FEES"))
                                         .add("description", "Operation to perform."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Timed item id. Required for GET, PUT, DELETE, ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE."))
+                                        .add("description", "Timed item id. Required for GET, PUT, DELETE, RESTORE, ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE, RESTORE_FEE, PUT_FEES."))
                                 .add("feeId", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Fee id. Required for PUT_FEE and DELETE_FEE."))
+                                        .add("description", "Fee id. Required for PUT_FEE, DELETE_FEE and RESTORE_FEE."))
                                 .add("name", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Name of the timed item or fee. Required for POST and POST_FEE."))
@@ -1827,10 +1850,13 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "Foreigner fee amount. Optional; defaults to fee if omitted."))
                                 .add("durationHours", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Block duration in hours this fee tier covers. Required for POST_FEE (must be > 0)."))
+                                        .add("description", "Block duration this fee tier covers, counted in durationUnit. Required for POST_FEE unless durationUnit is ONE_TIME (must be > 0)."))
+                                .add("durationUnit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "ONE_TIME, MINUTE, HOUR or DAY — the unit durationHours/overShootHours are counted in. Optional; defaults to HOUR. ONE_TIME charges the fee once regardless of duration."))
                                 .add("overShootHours", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Grace hours beyond durationHours before the next tier applies. Optional."))
+                                        .add("description", "Grace period beyond durationHours, in the same durationUnit, before the next tier applies. Optional."))
                                 .add("durationDaysForMoCharge", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Duration days for monthly charge calculation. Optional."))
@@ -1840,12 +1866,30 @@ public class AnthropicApiService implements Serializable {
                                 .add("repeating", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "true or false — whether this fee repeats for multiple blocks. Optional."))
+                                .add("fees", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PUT_FEES only — the complete slot list as a JSON array string, e.g. "
+                                                + "[{\"name\":\"First hour\",\"fee\":500,\"durationHours\":1,\"durationUnit\":\"HOUR\",\"sortOrder\":1},"
+                                                + "{\"id\":123,\"name\":\"Thereafter\",\"fee\":300,\"durationHours\":1,\"sortOrder\":2,\"repeating\":true}]. "
+                                                + "Include an id to update an existing slot, omit it to add one. Any existing slot "
+                                                + "missing from the array is retired. Send [] to clear every slot. Prefer this over "
+                                                + "repeated POST_FEE calls when configuring a tiered service — it is validated and "
+                                                + "applied as one atomic set."))
                                 .add("query", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Search text for LIST. Optional."))
+                                        .add("description", "Search text for LIST. Matched against name and code, case-insensitively. Optional."))
                                 .add("size", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Max results (1–100). Optional."))
+                                        .add("description", "Max results per page for LIST (1–100). Optional; defaults to 30."))
+                                .add("offset", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "LIST only — rows to skip, for paging through a catalogue larger than one page. "
+                                                + "The response carries a total count so you can tell whether more remain. Optional; defaults to 0."))
+                                .add("includeRetired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — include retired records in LIST, GET and LIST_FEES. "
+                                                + "Optional; defaults to false. Use it to find a record that was retired by mistake "
+                                                + "so it can be restored with RESTORE / RESTORE_FEE."))
                                 .add("retireComments", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Reason for retirement. Optional for DELETE/DELETE_FEE.")))
@@ -2342,14 +2386,17 @@ public class AnthropicApiService implements Serializable {
                     String durationHours  = toolInput.containsKey("timedItemFeeDurationHours")      ? toolInput.getString("timedItemFeeDurationHours", "")      : "";
                     String overShoot      = toolInput.containsKey("timedItemFeeOverShootHours")     ? toolInput.getString("timedItemFeeOverShootHours", "")     : "";
                     String durationDays   = toolInput.containsKey("timedItemFeeDurationDaysForMoCharge") ? toolInput.getString("timedItemFeeDurationDaysForMoCharge", "") : "";
+                    String durationUnit   = toolInput.containsKey("timedItemFeeDurationUnit")       ? toolInput.getString("timedItemFeeDurationUnit", "")       : "";
                     String query          = toolInput.containsKey("query")                          ? toolInput.getString("query", "")                          : "";
                     String size           = toolInput.containsKey("size")                           ? toolInput.getString("size", "")                           : "";
                     String retireComments = toolInput.containsKey("retireComments")                 ? toolInput.getString("retireComments", "")                 : "";
+                    String timedItemId    = toolInput.containsKey("timedItemId")                    ? toolInput.getString("timedItemId", "")                    : "";
+                    String linkId         = toolInput.containsKey("linkId")                         ? toolInput.getString("linkId", "")                         : "";
                     return callInwardRoomsApi(method, id, name, code, desc, roomCategoryId, roomId,
                             departmentId, filled, svgChildView, roomCharge, maintCharge, linenCharge, nursingCharge,
                             moCharge, moAfterCharge, adminCharge, medCareCharge,
-                            durationHours, overShoot, durationDays,
-                            query, size, retireComments, hmisBaseUrl, hmisApiKey);
+                            durationHours, overShoot, durationDays, durationUnit,
+                            query, size, retireComments, timedItemId, linkId, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_bed_board_svg": {
                     String method        = toolInput.getString("method", "GET_SITE");
@@ -2472,13 +2519,17 @@ public class AnthropicApiService implements Serializable {
                     String durationDays = toolInput.containsKey("durationDaysForMoCharge") ? toolInput.getString("durationDaysForMoCharge", "") : "";
                     String sortOrder    = toolInput.containsKey("sortOrder")         ? toolInput.getString("sortOrder", "")         : "";
                     String repeating    = toolInput.containsKey("repeating")         ? toolInput.getString("repeating", "")         : "";
+                    String durationUnit = toolInput.containsKey("durationUnit")      ? toolInput.getString("durationUnit", "")      : "";
+                    String feesJson     = toolInput.containsKey("fees")              ? toolInput.getString("fees", "")              : "";
                     String query        = toolInput.containsKey("query")             ? toolInput.getString("query", "")             : "";
                     String size         = toolInput.containsKey("size")              ? toolInput.getString("size", "")              : "";
+                    String offset       = toolInput.containsKey("offset")            ? toolInput.getString("offset", "")            : "";
+                    String includeRetired = toolInput.containsKey("includeRetired")  ? toolInput.getString("includeRetired", "")    : "";
                     String retireComments = toolInput.containsKey("retireComments")  ? toolInput.getString("retireComments", "")    : "";
                     return callTimedItemsApi(method, id, feeId, name, code, deptType, chargeType,
                             departmentId, institutionId, categoryId, inactive,
-                            fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating,
-                            query, size, retireComments, hmisBaseUrl, hmisApiKey);
+                            fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating, durationUnit,
+                            feesJson, query, size, offset, includeRetired, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -3872,7 +3923,8 @@ public class AnthropicApiService implements Serializable {
             String roomCharge, String maintananceCharge, String linenCharge, String nursingCharge,
             String moCharge, String moChargeForAfterDuration, String adminstrationCharge, String medicalCareCharge,
             String timedItemFeeDurationHours, String timedItemFeeOverShootHours, String timedItemFeeDurationDaysForMoCharge,
-            String query, String size, String retireComments,
+            String timedItemFeeDurationUnit,
+            String query, String size, String retireComments, String timedItemId, String linkId,
             String hmisBaseUrl, String hmisApiKey) {
 
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
@@ -4031,6 +4083,7 @@ public class AnthropicApiService implements Serializable {
                     if (timedItemFeeDurationHours != null && !timedItemFeeDurationHours.isEmpty()) bodyMap.put("timedItemFeeDurationHours", Double.parseDouble(timedItemFeeDurationHours));
                     if (timedItemFeeOverShootHours != null && !timedItemFeeOverShootHours.isEmpty()) bodyMap.put("timedItemFeeOverShootHours", Double.parseDouble(timedItemFeeOverShootHours));
                     if (timedItemFeeDurationDaysForMoCharge != null && !timedItemFeeDurationDaysForMoCharge.isEmpty()) bodyMap.put("timedItemFeeDurationDaysForMoCharge", Long.parseLong(timedItemFeeDurationDaysForMoCharge));
+                    if (timedItemFeeDurationUnit != null && !timedItemFeeDurationUnit.isEmpty()) bodyMap.put("timedItemFeeDurationUnit", timedItemFeeDurationUnit.trim().toUpperCase(java.util.Locale.ROOT));
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges"))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -4056,6 +4109,7 @@ public class AnthropicApiService implements Serializable {
                     if (timedItemFeeDurationHours != null && !timedItemFeeDurationHours.isEmpty()) bodyMap.put("timedItemFeeDurationHours", Double.parseDouble(timedItemFeeDurationHours));
                     if (timedItemFeeOverShootHours != null && !timedItemFeeOverShootHours.isEmpty()) bodyMap.put("timedItemFeeOverShootHours", Double.parseDouble(timedItemFeeOverShootHours));
                     if (timedItemFeeDurationDaysForMoCharge != null && !timedItemFeeDurationDaysForMoCharge.isEmpty()) bodyMap.put("timedItemFeeDurationDaysForMoCharge", Long.parseLong(timedItemFeeDurationDaysForMoCharge));
+                    if (timedItemFeeDurationUnit != null && !timedItemFeeDurationUnit.isEmpty()) bodyMap.put("timedItemFeeDurationUnit", timedItemFeeDurationUnit.trim().toUpperCase(java.util.Locale.ROOT));
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges/" + id))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -4066,6 +4120,34 @@ public class AnthropicApiService implements Serializable {
                 case "DELETE_CHARGE": {
                     if (id == null || id.isEmpty()) return "Error: id is required for DELETE_CHARGE.";
                     StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-facility-charges/").append(id);
+                    if (retireComments != null && !retireComments.isEmpty()) url.append("?retireComments=").append(java.net.URLEncoder.encode(retireComments, java.nio.charset.StandardCharsets.UTF_8));
+                    request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .DELETE().build();
+                    break;
+                }
+                case "LIST_TIMED_ITEMS": {
+                    if (id == null || id.isEmpty()) return "Error: id (room facility charge id) is required for LIST_TIMED_ITEMS.";
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges/" + id + "/timed-items"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    break;
+                }
+                case "ADD_TIMED_ITEM": {
+                    if (id == null || id.isEmpty()) return "Error: id (room facility charge id) is required for ADD_TIMED_ITEM.";
+                    if (timedItemId == null || timedItemId.isEmpty()) return "Error: timedItemId is required for ADD_TIMED_ITEM.";
+                    java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                    bodyMap.put("timedItemId", Long.parseLong(timedItemId));
+                    String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                    request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/room-facility-charges/" + id + "/timed-items"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+                    break;
+                }
+                case "REMOVE_TIMED_ITEM": {
+                    if (id == null || id.isEmpty()) return "Error: id (room facility charge id) is required for REMOVE_TIMED_ITEM.";
+                    if (linkId == null || linkId.isEmpty()) return "Error: linkId is required for REMOVE_TIMED_ITEM.";
+                    StringBuilder url = new StringBuilder(baseUrl).append("/api/inward/room-facility-charges/").append(id).append("/timed-items/").append(linkId);
                     if (retireComments != null && !retireComments.isEmpty()) url.append("?retireComments=").append(java.net.URLEncoder.encode(retireComments, java.nio.charset.StandardCharsets.UTF_8));
                     request = HttpRequest.newBuilder().uri(URI.create(url.toString()))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -5625,8 +5707,9 @@ public class AnthropicApiService implements Serializable {
     private String callTimedItemsApi(String method, String id, String feeId, String name, String code,
             String departmentType, String inwardChargeType, String departmentId, String institutionId,
             String categoryId, String inactive, String fee, String ffee, String durationHours, String overShootHours,
-            String durationDaysForMoCharge, String sortOrder, String repeating,
-            String query, String size, String retireComments,
+            String durationDaysForMoCharge, String sortOrder, String repeating, String durationUnit,
+            String feesJson, String query, String size, String offset, String includeRetired,
+            String retireComments,
             String hmisBaseUrl, String hmisApiKey) {
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
             return "Error: HMIS base URL is not configured.";
@@ -5641,16 +5724,24 @@ public class AnthropicApiService implements Serializable {
             switch (method.toUpperCase()) {
                 case "LIST": {
                     StringBuilder url = new StringBuilder(baseUrl).append("/search?limit=").append(size.isEmpty() ? "30" : size);
+                    if (!offset.isEmpty()) url.append("&offset=").append(URLEncoder.encode(offset, StandardCharsets.UTF_8));
                     if (!query.isEmpty()) url.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
                     if (!departmentType.isEmpty()) url.append("&departmentType=").append(URLEncoder.encode(departmentType, StandardCharsets.UTF_8));
+                    if (!inwardChargeType.isEmpty()) url.append("&inwardChargeType=").append(URLEncoder.encode(inwardChargeType, StandardCharsets.UTF_8));
+                    if (!categoryId.isEmpty()) url.append("&categoryId=").append(URLEncoder.encode(categoryId, StandardCharsets.UTF_8));
+                    if (!departmentId.isEmpty()) url.append("&departmentId=").append(URLEncoder.encode(departmentId, StandardCharsets.UTF_8));
+                    if (!institutionId.isEmpty()) url.append("&institutionId=").append(URLEncoder.encode(institutionId, StandardCharsets.UTF_8));
                     if (!inactive.isEmpty()) url.append("&inactive=").append(URLEncoder.encode(inactive, StandardCharsets.UTF_8));
+                    if (!includeRetired.isEmpty()) url.append("&includeRetired=").append(URLEncoder.encode(includeRetired, StandardCharsets.UTF_8));
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
                     return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
                 }
                 case "GET": {
                     if (id.isEmpty()) return "Error: id is required for GET.";
-                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                    StringBuilder url = new StringBuilder(baseUrl).append("/").append(id);
+                    if (!includeRetired.isEmpty()) url.append("?includeRetired=").append(URLEncoder.encode(includeRetired, StandardCharsets.UTF_8));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
                     return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
                 }
@@ -5697,6 +5788,13 @@ public class AnthropicApiService implements Serializable {
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).DELETE().build();
                     return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
                 }
+                case "RESTORE": {
+                    if (id.isEmpty()) return "Error: id is required for RESTORE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/restore"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .method("PATCH", HttpRequest.BodyPublishers.noBody()).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
                 case "ACTIVATE": {
                     if (id.isEmpty()) return "Error: id is required for ACTIVATE.";
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/activate"))
@@ -5713,20 +5811,24 @@ public class AnthropicApiService implements Serializable {
                 }
                 case "LIST_FEES": {
                     if (id.isEmpty()) return "Error: id is required for LIST_FEES.";
-                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees"))
+                    StringBuilder url = new StringBuilder(baseUrl).append("/").append(id).append("/fees");
+                    if (!includeRetired.isEmpty()) url.append("?includeRetired=").append(URLEncoder.encode(includeRetired, StandardCharsets.UTF_8));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
                     return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
                 }
                 case "POST_FEE": {
                     if (id.isEmpty()) return "Error: id is required for POST_FEE.";
                     if (name.isEmpty()) return "Error: name is required for POST_FEE.";
-                    if (durationHours.isEmpty()) return "Error: durationHours is required for POST_FEE.";
-                    double dh = Double.parseDouble(durationHours);
-                    if (dh <= 0) return "Error: durationHours must be > 0.";
+                    boolean oneTime = "ONE_TIME".equalsIgnoreCase(durationUnit.trim());
+                    if (durationHours.isEmpty() && !oneTime) return "Error: durationHours is required for POST_FEE.";
+                    double dh = durationHours.isEmpty() ? 0.0 : Double.parseDouble(durationHours);
+                    if (dh <= 0 && !oneTime) return "Error: durationHours must be > 0.";
                     javax.json.JsonObjectBuilder b = Json.createObjectBuilder()
                             .add("name", name)
                             .add("durationHours", dh)
                             .add("fee", fee.isEmpty() ? 0.0 : Double.parseDouble(fee));
+                    if (!durationUnit.isEmpty()) b.add("durationUnit", durationUnit.trim().toUpperCase(java.util.Locale.ROOT));
                     if (!ffee.isEmpty()) b.add("ffee", Double.parseDouble(ffee));
                     if (!overShootHours.isEmpty()) b.add("overShootHours", Double.parseDouble(overShootHours));
                     if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
@@ -5750,6 +5852,7 @@ public class AnthropicApiService implements Serializable {
                     if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
                     if (!sortOrder.isEmpty()) b.add("sortOrder", Integer.parseInt(sortOrder));
                     if (!repeating.isEmpty()) b.add("repeating", Boolean.parseBoolean(repeating));
+                    if (!durationUnit.isEmpty()) b.add("durationUnit", durationUnit.trim().toUpperCase(java.util.Locale.ROOT));
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees/" + feeId))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
                             .header("Content-Type", "application/json")
@@ -5763,8 +5866,38 @@ public class AnthropicApiService implements Serializable {
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).DELETE().build();
                     return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
                 }
+                case "RESTORE_FEE": {
+                    if (id.isEmpty()) return "Error: id is required for RESTORE_FEE.";
+                    if (feeId.isEmpty()) return "Error: feeId is required for RESTORE_FEE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees/" + feeId + "/restore"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .method("PATCH", HttpRequest.BodyPublishers.noBody()).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "PUT_FEES": {
+                    if (id.isEmpty()) return "Error: id is required for PUT_FEES.";
+                    if (feesJson == null || feesJson.trim().isEmpty()) {
+                        return "Error: fees is required for PUT_FEES. Pass the complete slot list as a JSON array, or [] to clear every slot.";
+                    }
+                    // Parsed rather than concatenated so a malformed array is reported here
+                    // instead of reaching the API as an unparseable body.
+                    com.google.gson.JsonArray arr;
+                    try {
+                        arr = com.google.gson.JsonParser.parseString(feesJson.trim()).getAsJsonArray();
+                    } catch (Exception ex) {
+                        return "Error: fees must be a JSON array. " + ex.getMessage();
+                    }
+                    com.google.gson.JsonObject wrapper = new com.google.gson.JsonObject();
+                    wrapper.add("fees", arr);
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(wrapper.toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
                 default:
-                    return "Unknown method: " + method + ". Valid: LIST, GET, POST, PUT, DELETE, ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE";
+                    return "Unknown method: " + method + ". Valid: LIST, GET, POST, PUT, DELETE, RESTORE, "
+                            + "ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE, RESTORE_FEE, PUT_FEES";
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -5912,6 +6045,12 @@ public class AnthropicApiService implements Serializable {
           .append("POST_CATEGORY / POST_ROOM / POST_CHARGE to create new records. ")
           .append("PUT_CATEGORY / PUT_ROOM / PUT_CHARGE to update. ")
           .append("DELETE_CATEGORY / DELETE_ROOM / DELETE_CHARGE to soft-retire. ")
+          .append("LIST_TIMED_ITEMS / ADD_TIMED_ITEM / REMOVE_TIMED_ITEM manage the TimedItem services attached to a ")
+          .append("room facility charge so they auto-bill by duration of stay alongside its fixed fees ")
+          .append("(id = room facility charge id; timedItemId required for ADD_TIMED_ITEM; linkId required for REMOVE_TIMED_ITEM). ")
+          .append("A charge's billing block is set with timedItemFeeDurationHours, timedItemFeeOverShootHours and ")
+          .append("timedItemFeeDurationUnit (ONE_TIME | MINUTE | HOUR | DAY, default HOUR) — the unit says what the other two ")
+          .append("are counted in, so pass DAY to charge a room per day rather than per hour. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward room billing.\n\n");
         sb.append("### manage_bed_board_svg\n");
         sb.append("Read and set the graphical bed-board SVG drawings used by the Inpatient Bed Board page. ")
@@ -5964,14 +6103,21 @@ public class AnthropicApiService implements Serializable {
         sb.append("### manage_timed_items\n");
         sb.append("Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots. ")
           .append("TimedItems (DTYPE=TimedItem) are consumed by the inward timed service page to bill patients for duration-based charges. ")
-          .append("Use LIST to search items (filter by departmentType e.g. Inward or Theatre). ")
+          .append("Use LIST to search items — filters: query (name/code, case-insensitive), departmentType (e.g. Inward or Theatre), ")
+          .append("inwardChargeType, categoryId, departmentId, institutionId, inactive. Paged with size + offset; the response carries ")
+          .append("a total count so you can tell whether more rows remain. ")
           .append("Use GET to fetch a single item with its fees. ")
           .append("Use POST to create a new timed item — required: name, departmentType, inwardChargeType. ")
           .append("Use PUT to update name, code, departmentType, inwardChargeType, departmentId, institutionId, categoryId, or inactive flag. ")
-          .append("Use DELETE to soft-retire an item. Use ACTIVATE / DEACTIVATE to toggle availability without retiring. ")
+          .append("Use DELETE to soft-retire an item and RESTORE to undo that. Use ACTIVATE / DEACTIVATE to toggle availability without retiring. ")
+          .append("Retired records are hidden by default — pass includeRetired=true to LIST, GET or LIST_FEES to find something retired by mistake and get its id. ")
           .append("For tiered fee management: LIST_FEES lists all fees ordered by sortOrder. ")
-          .append("POST_FEE creates a fee tier — required: name, durationHours (> 0). fee, ffee, overShootHours, sortOrder, repeating are optional. ")
-          .append("PUT_FEE updates an existing fee tier (requires feeId). DELETE_FEE soft-retires a fee tier. ")
+          .append("POST_FEE creates a fee tier — required: name, durationHours (> 0, not needed when durationUnit is ONE_TIME). fee, ffee, overShootHours, sortOrder, repeating, durationUnit are optional. ")
+          .append("durationUnit (ONE_TIME | MINUTE | HOUR | DAY, default HOUR) sets what durationHours/overShootHours count in. ")
+          .append("sortOrder is the billing slot: it must be 1 or greater and unique within the service, and is auto-assigned to the next free slot if omitted. ")
+          .append("PUT_FEE updates an existing fee tier (requires feeId). DELETE_FEE soft-retires a fee tier and RESTORE_FEE undoes that. ")
+          .append("PUT_FEES replaces the entire slot list in one atomic, fully-validated call — prefer it over a run of POST_FEE calls when ")
+          .append("configuring a tiered service; slots you leave out of the array are retired. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — changes affect live inward timed billing.\n\n");
         sb.append("### manage_inpatient_templates\n");
         sb.append("Create, read, update, and retire document templates (HTML with placeholder tokens). ")
@@ -6596,7 +6742,10 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/inward/room-facility-charges/{id}", "Fetch one room facility charge"},
                     {"POST",   "/inward/room-facility-charges",    "Create room facility charge. Body: name (required), roomId, roomCategoryId, departmentId, charge fields, timedItemFee fields"},
                     {"PUT",    "/inward/room-facility-charges/{id}", "Update room facility charge"},
-                    {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"}
+                    {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"},
+                    {"GET",    "/inward/room-facility-charges/{id}/timed-items", "List TimedItems attached to a room facility charge"},
+                    {"POST",   "/inward/room-facility-charges/{id}/timed-items", "Attach a TimedItem. Body: timedItemId (required)"},
+                    {"DELETE", "/inward/room-facility-charges/{id}/timed-items/{linkId}", "Soft-retire a TimedItem attachment"}
                 });
 
         appendModule(sb, "Inward - Item Requests", "/itemrequests",
@@ -6618,20 +6767,24 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "Timed Items", "/timed-items",
                 "Manage timed item master data and their tiered fee slots for duration-based inward billing. "
                 + "Items have departmentType (Inward, Theatre) and inwardChargeType. "
-                + "Each item can have multiple TimedItemFee tiers ordered by sortOrder.",
-                githubUrl(branch, "developer_docs/api/building-apis/rest-api-development-guide.md"),
+                + "Each item can have multiple TimedItemFee tiers ordered by sortOrder, which must be >= 1 and "
+                + "unique per item. Retire is soft and reversible via the restore endpoints.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_TIMED_ITEMS.md"),
                 new String[][]{
-                    {"GET",    "/timed-items/search?query=&departmentType=&limit=", "Search timed items"},
-                    {"GET",    "/timed-items/{id}",          "Fetch one timed item with fees"},
+                    {"GET",    "/timed-items/search?query=&departmentType=&inwardChargeType=&categoryId=&departmentId=&institutionId=&inactive=&includeRetired=&limit=&offset=", "Search timed items. Returns {items, total, limit, offset}"},
+                    {"GET",    "/timed-items/{id}?includeRetired=", "Fetch one timed item with fees"},
                     {"POST",   "/timed-items",               "Create timed item. Body: name, departmentType, inwardChargeType (all required); code, departmentId, institutionId, categoryId, inactive optional"},
                     {"PUT",    "/timed-items/{id}",          "Update timed item (all fields optional, including categoryId)"},
                     {"DELETE", "/timed-items/{id}",          "Soft-retire timed item"},
+                    {"PATCH",  "/timed-items/{id}/restore",  "Un-retire timed item"},
                     {"PATCH",  "/timed-items/{id}/activate", "Set inactive=false"},
                     {"PATCH",  "/timed-items/{id}/deactivate", "Set inactive=true"},
-                    {"GET",    "/timed-items/{id}/fees",     "List fee tiers for an item (ordered by sortOrder)"},
-                    {"POST",   "/timed-items/{id}/fees",     "Add fee tier. Body: name, durationHours (required); fee, ffee, overShootHours, sortOrder, repeating optional"},
+                    {"GET",    "/timed-items/{id}/fees?includeRetired=", "List fee tiers for an item (ordered by sortOrder)"},
+                    {"POST",   "/timed-items/{id}/fees",     "Add fee tier. Body: name, durationHours (required unless durationUnit=ONE_TIME); fee, ffee, overShootHours, sortOrder, repeating, durationUnit optional"},
+                    {"PUT",    "/timed-items/{id}/fees",     "Replace the whole slot list atomically. Body: {fees:[...]}; slots omitted from the array are retired"},
                     {"PUT",    "/timed-items/{id}/fees/{feeId}", "Update fee tier"},
-                    {"DELETE", "/timed-items/{id}/fees/{feeId}", "Soft-retire fee tier"}
+                    {"DELETE", "/timed-items/{id}/fees/{feeId}", "Soft-retire fee tier"},
+                    {"PATCH",  "/timed-items/{id}/fees/{feeId}/restore", "Un-retire fee tier"}
                 });
 
         // ── Login History / Config ────────────────────────────────────────────

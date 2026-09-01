@@ -4085,14 +4085,90 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToRecordShiftEndCash() {
         resetClassVariables();
         Bill startBill = fetchNonClosedShiftStartFundBill();
-        bundle = new ReportTemplateRowBundle();
         if (startBill == null) {
             JsfUtil.addErrorMessage("Shift not yet started.");
             return null;
         }
+
+        // Same payment-gathering steps as navigateToHandoverCreateBillForSelectedShift() —
+        // this is what computes the *HandoverValue figures (cashHandoverValue,
+        // cardHandoverValue, ...) and hasXxxTransaction flags per payment method for the
+        // shift, which this screen shows as the "Expected" reference value next to what
+        // the cashier actually declares.
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        if (shiftPayments != null) {
+            shiftPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
+        }
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+        if (shiftFloats != null) {
+            shiftFloats.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
+        }
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(startBill, sessionController.getLoggedUser());
+        if (othersPayments != null) {
+            othersPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
+        }
+        // Fund transfer payments (float-out / float-in between users) change the cash this
+        // user should physically have, same as navigateToHandoverCreateBillForCurrentShift().
+        List<Payment> fundTransferPayments = fetchFundTransferPaymentsForShift(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+
+        Set<Payment> uniquePaymentSet = new HashSet<>();
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+        if (fundTransferPayments != null) {
+            uniquePaymentSet.addAll(fundTransferPayments);
+        }
+        List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
+
+        bundle = generatePaymentBundleForHandovers(startBill,
+                startBill.getReferenceBill(),
+                allUniquePayments,
+                PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION
+        );
         bundle.setUser(sessionController.getLoggedUser());
         bundle.setStartBill(startBill);
-        bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.setDenominations(sessionController.findDefaultDenominations());
+        bundle.selectAllChildBundles();
+        // Aggregates *Value/*HandoverValue and hasXxxTransaction from the child bundles
+        // without the "zero cashHandoverValue until counted" sync rule that
+        // calculateTotalsByChildBundlesForHandover() applies for the separate handover
+        // flow — here cashHandoverValue is wanted as the system-expected reference figure.
+        bundle.aggregateTotalsFromAllChildBundles();
+        // aggregateTotalsFromAllChildBundles() deliberately skips float rows (isFloatRow()),
+        // so the net fund-transfer cash adjustment above has to be folded in separately —
+        // otherwise a float sent/received mid-shift would silently drop out of the
+        // expected cash figure this screen shows.
+        double netFloatCash = 0.0;
+        if (bundle.getBundles() != null) {
+            for (ReportTemplateRowBundle childBundle : bundle.getBundles()) {
+                if (childBundle.isFloatRow()) {
+                    netFloatCash += childBundle.getCashHandoverValue();
+                }
+            }
+        }
+        if (netFloatCash != 0.0) {
+            bundle.setCashValue(bundle.getCashValue() + netFloatCash);
+            bundle.setCashHandoverValue(bundle.getCashHandoverValue() + netFloatCash);
+        }
+
+        boolean requireDenominationBreakdown = configOptionApplicationController.getBooleanValueByKey(
+                "Shift End Cash Handover - Require Denomination Breakdown", false);
+        if (requireDenominationBreakdown) {
+            bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        } else {
+            bundle.setDenominationTransactions(bundle.createLumpSumCashHandoverTransaction());
+        }
+        bundle.setPaymentMethodHandoverTransactions(bundle.createPaymentMethodHandoverTransactions());
+
         return "/cashier/shift_end_cash_in_hand?faces-redirect=true";
     }
 
@@ -6689,21 +6765,33 @@ public class FinancialTransactionController implements Serializable {
 
         billController.save(currentBill);
 
-        Double cashHandover = 0.0;
+        List<DenominationTransaction> allHandoverTransactions = new ArrayList<>();
         if (bundle.getDenominationTransactions() != null) {
-            for (DenominationTransaction dt : bundle.getDenominationTransactions()) {
-                dt.setBill(currentBill);
-                if (dt.getDenominationValue() != null) {
-                    cashHandover += dt.getDenominationValue();
-                }
-                denominationTransactionController.save(dt);
-            }
+            allHandoverTransactions.addAll(bundle.getDenominationTransactions());
         }
-        currentBill.setTotal(cashHandover);
-        currentBill.setNetTotal(cashHandover);
+        if (bundle.getPaymentMethodHandoverTransactions() != null) {
+            allHandoverTransactions.addAll(bundle.getPaymentMethodHandoverTransactions());
+        }
+
+        Double totalHandover = 0.0;
+        for (DenominationTransaction dt : allHandoverTransactions) {
+            dt.setBill(currentBill);
+            if (dt.getDenominationValue() != null) {
+                totalHandover += dt.getDenominationValue();
+            }
+            denominationTransactionController.save(dt);
+        }
+        currentBill.setTotal(totalHandover);
+        currentBill.setNetTotal(totalHandover);
 
         billController.save(currentBill);
         bundle.setHandoverBill(currentBill);
+        // Combine cash + non-cash rows into one list so the print page — which reads
+        // bundle.denominationTransactions directly, the same field
+        // navigateToViewShiftEndCashInHandBill() re-populates with every
+        // DenominationTransaction row saved against this bill when viewed later —
+        // renders both consistently regardless of entry point.
+        bundle.setDenominationTransactions(allHandoverTransactions);
 
         return "/cashier/shift_end_cash_in_hand_print?faces-redirect=true";
     }

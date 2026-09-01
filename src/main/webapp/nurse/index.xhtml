@@ -460,12 +460,24 @@
                                                     <div class="d-grid gap-3">
                                                         <p:commandButton
                                                             id="btnNurseTheatreDashboard"
-                                                            value="Theatre Dashboard"
+                                                            value="Theatre Status"
                                                             icon="fa fa-procedures"
                                                             ajax="false"
-                                                            rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
-                                                            action="#{theatreDashboardController.navigateToTheatreDashboard()}"
+                                                            rendered="#{(webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')) and admissionController.current ne null}"
+                                                            action="#{patientTransferController.navigateToTheatreStatus(admissionController.current)}"
                                                             class="w-100 ui-button-warning">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            id="btnNurseAcceptTheatreReturn"
+                                                            value="Accept Return from Theatre"
+                                                            icon="fa fa-undo"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('WardAcceptTheatreReturn')}"
+                                                            disabled="#{not patientTransferController.hasPendingTheatreReturnForAdmission(admissionController.current)}"
+                                                            action="#{patientTransferController.acceptReturnToWardForAdmission(admissionController.current)}"
+                                                            title="Accept theatre return for #{admissionController.current.bhtNo}"
+                                                            onclick="if (!confirm('Accept this patient back from theatre?')) return false;"
+                                                            class="w-100 ui-button-success">
                                                         </p:commandButton>
                                                         <p:commandButton
                                                             id="btnNurseSendToTheatre"

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -85,8 +86,11 @@ public class InwardInvoiceJournalController implements Serializable {
     /**
      * All InwardChargeType values — drives the dynamic columns in XHTML.
      * Columns where every row has 0 are hidden via rendered="#{...}".
+     * Re-sorted by the admin-configurable Report Order at the top of
+     * {@link #generateReport()}; the inline default here only covers the very
+     * first page render, before the user searches (issue #23340).
      */
-    private final List<InwardChargeType> allChargeTypes = Arrays.asList(InwardChargeType.values());
+    private List<InwardChargeType> allChargeTypes = new ArrayList<>(Arrays.asList(InwardChargeType.values()));
 
     /**
      * Set of charge types that have at least one non-zero value in the current
@@ -109,6 +113,12 @@ public class InwardInvoiceJournalController implements Serializable {
     // -------------------------------------------------------------------------
 
     public void generateReport() {
+        // Recompute the column order from the admin-configurable Report Order
+        // ConfigOption for each InwardChargeType (issue #23340). A stable
+        // sort keeps ordinal order among types the admin has not reordered.
+        allChargeTypes = new ArrayList<>(Arrays.asList(InwardChargeType.values()));
+        allChargeTypes.sort(Comparator.comparingInt(configOptionApplicationController::getInwardChargeTypeReportOrder));
+
         reportRows               = new ArrayList<>();
         columnTotals             = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes        = EnumSet.noneOf(InwardChargeType.class);
