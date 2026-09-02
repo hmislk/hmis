@@ -13,17 +13,10 @@ argument-hint: "<pr-number>"
 
 # Review and Fix (HMIS)
 
-Full design rationale: `developer_docs/git/2026-09-02-review-and-fix-skill-design.md`.
-
-This exists because `merge-gate` deliberately **never fixes anything** — it
-finds blocking issues and hands back a report. On a real run (PRs `#23348`,
-`#23229`, `#22041`) handing that report to the contributor to fix turned out
-to be slower and less reliable than fixing it directly: the fixes needed
-project-convention knowledge (one flagged "bug" on #22041 was a false
-positive — `b.createdAt` is the same "invoice approved" proxy the sibling
-inpatient reports use) plus a real verify loop (rebuild → local redeploy →
-drive the workflow in Playwright → check the DB) to prove each fix held.
-That middle step had no skill. This is it.
+Given one open PR: fresh deep code review → classify and discuss the
+non-obvious findings → apply the fixes → verify each one live (build →
+local redeploy → Playwright + DB, or browser-only for JSF-only changes) →
+commit → push → **drive CI to green** → reply to the review threads.
 
 **This skill never merges, approves, or requests changes.** It ends when the
 PR is fixed, pushed, its review threads answered, and **CI is green on the
@@ -33,6 +26,74 @@ Invoking this skill is the explicit authorization for every commit / push /
 thread-reply step below — do not re-ask before each one. The discussion
 gate is step 3 (classify + discuss the non-obvious findings); that is the
 only point where you pause for the user.
+
+## Background
+
+`merge-gate` deliberately **never fixes anything** — it finds blocking
+issues and hands back a report. On its first substantial run against
+contributor PRs (`#23348`, `#23229`, `#22041`) the gate did its job: it
+found a footer column-alignment defect on `#23229` and four High-severity
+correctness findings on `#22041` (`paidAt` overwritten on every row save,
+implicit INNER-join row drops inside `SELECT NEW`, a date-only "To Date"
+excluding the last selected day, `paidAmount` left stale when "Paid" is
+unchecked). Handing that report back to the contributor to fix proved
+slower and less reliable than fixing it directly, for two reasons:
+
+1. **Project-convention knowledge.** One flagged "bug" on `#22041` — the
+   "Invoice Approved" filter keying on `b.createdAt` instead of an approval
+   timestamp — was a false positive: `b.createdAt` is the exact proxy the
+   sibling `InwardReportController` uses, and outside-charge bills never
+   populate `approveAt`, so "fixing" it would make the filter match
+   nothing. Telling that apart from a real bug needs someone who can read
+   the sibling report.
+2. **A real verification loop.** Confidence that the `paidAt`-preservation
+   fix held required rebuilding, redeploying locally, seeding test rows,
+   driving the Update flow in Playwright, and checking the `bill` row in
+   the DB before and after editing an unrelated field on an already-paid
+   row.
+
+No existing skill covers that middle step. This one does.
+
+## Non-goals
+
+- **Not a replacement for `merge-gate`.** `merge-gate` decides *whether* a
+  batch of PRs is safe to merge and runs two fixed baseline regression
+  checks unrelated to any PR's scope. This skill *fixes* one PR the gate
+  (or the user) has already flagged.
+- **Not a replacement for `review-pr`.** It *invokes* `review-pr` for the
+  thread-reply step rather than re-implementing the cardinal rules.
+- **Not a general test-automation framework.** It drives the existing
+  `code-review`, `playwright-e2e`, and `review-pr` skills.
+- **Not batch.** One PR per invocation — the verify loop needs focus;
+  `merge-gate` already frames the batch.
+- **Does not merge.** Final review and the merge button are always the
+  user's.
+
+## Where this sits among the review skills
+
+| Skill | Fixes? | Fresh review? | Live verify? | CI-green loop? |
+|---|---|---|---|---|
+| `merge-gate` | No (by design) | Yes (`code-review --comment`) | Yes (E2E + 2 baselines) | No — reports outcome |
+| `review-pr` | Yes | No — triages existing bot threads | No (`Read/Grep/Glob/Bash`) | Partial (checks green before replying) |
+| `review-code` | No | Manual checklist | No | No |
+| `code-review` (built-in) | `--fix` blind-applies | Yes | No | No |
+| **`review-and-fix`** (this) | **Yes** | **Yes** | **Yes** | **Yes — hard exit condition** |
+
+Composed with `merge-gate`:
+
+```text
+merge-gate #A #B #C          # gate a batch
+  -> #A PASSED
+  -> #B BLOCKED-REVIEW
+  -> #C BLOCKED-REVIEW
+review-and-fix #B            # fix + verify + push + CI-green #B
+review-and-fix #C            # fix + verify + push + CI-green #C
+merge-gate #B #C             # re-gate -> PASSED
+# user merges
+```
+
+Each skill stays single-purpose; `merge-gate` keeps its "never touches
+code" identity.
 
 ## Arguments
 

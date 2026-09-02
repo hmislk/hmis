@@ -187,7 +187,7 @@ gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
 - The `/review-pr` skill automates the investigation and fix steps of this workflow
 - The `/review-and-fix` skill goes further: it runs a fresh deep `code-review` on
   a PR, applies the fixes, verifies each one live (build → local redeploy →
-  Playwright + DB), then calls `/review-pr` for the thread replies and drives CI
-  to green. Use it on a PR that needs correcting rather than just triaging
-  existing comments — e.g. one a `/merge-gate` run left `BLOCKED-REVIEW`. See
-  [Review-and-Fix Skill Design](2026-09-02-review-and-fix-skill-design.md).
+  Playwright + DB), drives CI to green, then calls `/review-pr` for the thread
+  replies. Use it on a PR that needs correcting rather than just triaging
+  existing comments — e.g. one a `/merge-gate` run left `BLOCKED-REVIEW`. Its
+  full workflow and rationale are in `.claude/skills/review-and-fix/SKILL.md`.
