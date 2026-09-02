@@ -5,6 +5,14 @@ report's "Adjustment Transactions" section, and in its Level 1 / Level 2 drill-d
 
 **Issue:** #23411. Earlier related work: #22580, #18774.
 
+**In a hurry?** [Quick steps](f15-adjustment-correction-quick-steps.md) is the
+click-by-click order without the reasoning.
+
+> **Coop staging writes to production.** `stg-migrated.carecode.org/coop` uses
+> `jdbc/coopStg` -> `jdbc:mysql://10.30.2.6:3306/coop`, which is db3, the live coop
+> database. On coop there is no "try it on staging first": the Preview button is the
+> try-it-first, and every Backfill click is a production change. Verified 2026-09-02.
+
 ---
 
 ## 1. What is actually wrong
