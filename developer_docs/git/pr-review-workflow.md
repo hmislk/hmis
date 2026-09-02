@@ -185,3 +185,9 @@ gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
 - Replying ONLY UNDER existing reviewer threads maintains a clean audit trail without creating new manual-resolve chores
 - Self-review items go in commit messages, not as new inline comments
 - The `/review-pr` skill automates the investigation and fix steps of this workflow
+- The `/review-and-fix` skill goes further: it runs a fresh deep `code-review` on
+  a PR, applies the fixes, verifies each one live (build → local redeploy →
+  Playwright + DB), then calls `/review-pr` for the thread replies and drives CI
+  to green. Use it on a PR that needs correcting rather than just triaging
+  existing comments — e.g. one a `/merge-gate` run left `BLOCKED-REVIEW`. See
+  [Review-and-Fix Skill Design](2026-09-02-review-and-fix-skill-design.md).
