@@ -9,7 +9,7 @@ report's "Adjustment Transactions" section, and in its Level 1 / Level 2 drill-d
 > the live coop production database — the same schema the hospital is using. On coop there
 > is no "try it on staging first": the Preview button is the try-it-first, and every
 > Backfill click is a production change. Verified 2026-09-02; see
-> [Confirming which database an environment uses](#confirming-which-database-an-environment-uses).
+> [Confirming which database an environment uses](#7-confirming-which-database-an-environment-uses).
 
 ---
 
@@ -246,7 +246,35 @@ none does. A persistence failure aborts the whole run and the page reports the e
 will not silently save some bills and skip others. If a run reports an error, treat the
 range as untouched and re-run the Preview to confirm before trying again.
 
-## 6. Confirming which database an environment uses
+## 6. Do not point another app instance at a production database
+
+It is tempting to avoid a deployment window by running the corrected code somewhere else -
+a developer machine, a spare server - with its datasource aimed at the production database,
+just long enough to run the backfill. Do not.
+
+The application runs background jobs on automatic timers as soon as it starts, and they are
+not gated on the instance being "the real one":
+
+| Timer | Interval | Effect on whatever database it is pointed at |
+|---|---|---|
+| `ScheduledTaskManager.executeRetireNonSettledOnlineBills` | 5 min | Retires unsettled online bills. **No config guard at all.** |
+| `ScheduledTaskManager.executeScheduledProcesses` | hourly | Runs whatever `ScheduledProcessConfiguration` rows say is due |
+| `SmsManagerEjb.processPendingLabReportApprovalSmsQueue` | 1 min | Sends queued SMS to real recipients |
+| `SmsManagerEjb.sendSmsToDoctorsBeforeSessionTimer` | 1 min | Sends session reminder SMS |
+| `EmailManagerEjb.processPendingLabReportApprovalEmailQueue` | 1 min | Sends queued email |
+
+The SMS and email timers are gated on config options, but those options live in the same
+database - so a second instance reads production's settings and behaves exactly like
+production. The bill-retirement timer has no gate whatever.
+
+Deploy through the normal pipeline into a window agreed with the hospital instead.
+
+**Worth checking separately:** any environment that already points at a production database
+is running these same timers against it. Where two instances share one database, the
+unguarded five-minute and hourly jobs run from both. Whether that is harmful depends on how
+idempotent those particular methods are, but it is worth confirming rather than assuming.
+
+## 7. Confirming which database an environment uses
 
 Never assume an environment named "staging" has its own data. Check before writing:
 
@@ -265,7 +293,7 @@ Never assume an environment named "staging" has its own data. Check before writi
    store. If they match, the environment is production for all write purposes, whatever it
    is called.
 
-## 7. Notes and limits
+## 8. Notes and limits
 
 - **Cost values on stock adjustments.** `pharmaceuticalbillitem.costRate` is 0 on most
   historical bills. The service falls back to the `StockHistory` snapshot taken at the moment
