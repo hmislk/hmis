@@ -32,6 +32,7 @@ public class BillListReportDTO implements Serializable {
     private String bhtNo;
     private String deptId;
     private BigDecimal serviceCharge;
+    private String referenceBillNumber;
 
     // Default constructor
     public BillListReportDTO() {
@@ -120,6 +121,27 @@ public class BillListReportDTO implements Serializable {
         this.bhtNo = bhtNo;
         this.deptId = deptId;
         this.serviceCharge = serviceCharge != null ? BigDecimal.valueOf(serviceCharge) : null;
+    }
+
+    // Constructor for the encounter-scoped Inpatient Pharmacy Issue Returns list
+    // (issue #21852). Adds referenceBillNumber (the original sale bill's printed
+    // number, i.e. RefundBill.billedBill.deptId) on top of the #21247
+    // encounter-scoped constructor above, without touching that existing
+    // constructor's signature (per project rule: never modify existing
+    // constructors, only add new ones).
+    public BillListReportDTO(Long billId, String billNumber,
+                            BillTypeAtomic billTypeAtomicEnum, PaymentMethod paymentMethodEnum,
+                            String patientName, Date createdAt,
+                            String createdUserName, Boolean retired,
+                            Boolean cancelled, Boolean refunded,
+                            Double total, Double discount,
+                            Double netTotal,
+                            String bhtNo, String deptId, Double serviceCharge,
+                            String referenceBillNumber) {
+        this(billId, billNumber, billTypeAtomicEnum, paymentMethodEnum, patientName, createdAt,
+                createdUserName, retired, cancelled, refunded, total, discount, netTotal,
+                bhtNo, deptId, serviceCharge);
+        this.referenceBillNumber = referenceBillNumber;
     }
 
     // Getters and Setters
@@ -257,6 +279,14 @@ public class BillListReportDTO implements Serializable {
 
     public void setServiceCharge(BigDecimal serviceCharge) {
         this.serviceCharge = serviceCharge;
+    }
+
+    public String getReferenceBillNumber() {
+        return referenceBillNumber;
+    }
+
+    public void setReferenceBillNumber(String referenceBillNumber) {
+        this.referenceBillNumber = referenceBillNumber;
     }
 
     @Override

@@ -101,6 +101,10 @@ public class PatientRoom implements Serializable, RetirableEntity {
     double calculatedLinenCharge = 0;
     double calculatedAdministrationCharge = 0;
     double calculatedMedicalCareCharge = 0;
+
+    private boolean fromPackage;
+    private Double includedRoomDurationHours;
+
 //Discount
     private double discountRoomCharge;
     private double discountMaintainCharge;
@@ -132,6 +136,21 @@ public class PatientRoom implements Serializable, RetirableEntity {
     private long tmpStayedTime;
     @Transient
     private double tmpTotalRoomCharge;
+    //Room-category price-matrix margin (display-only, recomputed on every calculation)
+    @Transient
+    private double marginRoomCharge;
+    @Transient
+    private double marginMaintainCharge;
+    @Transient
+    private double marginMoCharge;
+    @Transient
+    private double marginNursingCharge;
+    @Transient
+    private double marginLinenCharge;
+    @Transient
+    private double marginAdministrationCharge;
+    @Transient
+    private double marginMedicalCareCharge;
 
     public double getAddedRoomCharge() {
         return addedRoomCharge;
@@ -689,6 +708,62 @@ public class PatientRoom implements Serializable, RetirableEntity {
         this.ajdustedNursingCharge = ajdustedNursingCharge;
     }
 
+    public double getMarginRoomCharge() {
+        return marginRoomCharge;
+    }
+
+    public void setMarginRoomCharge(double marginRoomCharge) {
+        this.marginRoomCharge = marginRoomCharge;
+    }
+
+    public double getMarginMaintainCharge() {
+        return marginMaintainCharge;
+    }
+
+    public void setMarginMaintainCharge(double marginMaintainCharge) {
+        this.marginMaintainCharge = marginMaintainCharge;
+    }
+
+    public double getMarginMoCharge() {
+        return marginMoCharge;
+    }
+
+    public void setMarginMoCharge(double marginMoCharge) {
+        this.marginMoCharge = marginMoCharge;
+    }
+
+    public double getMarginNursingCharge() {
+        return marginNursingCharge;
+    }
+
+    public void setMarginNursingCharge(double marginNursingCharge) {
+        this.marginNursingCharge = marginNursingCharge;
+    }
+
+    public double getMarginLinenCharge() {
+        return marginLinenCharge;
+    }
+
+    public void setMarginLinenCharge(double marginLinenCharge) {
+        this.marginLinenCharge = marginLinenCharge;
+    }
+
+    public double getMarginAdministrationCharge() {
+        return marginAdministrationCharge;
+    }
+
+    public void setMarginAdministrationCharge(double marginAdministrationCharge) {
+        this.marginAdministrationCharge = marginAdministrationCharge;
+    }
+
+    public double getMarginMedicalCareCharge() {
+        return marginMedicalCareCharge;
+    }
+
+    public void setMarginMedicalCareCharge(double marginMedicalCareCharge) {
+        this.marginMedicalCareCharge = marginMedicalCareCharge;
+    }
+
     public double getCurrentMoChargeForAfterDuration() {
         return currentMoChargeForAfterDuration;
     }
@@ -703,6 +778,22 @@ public class PatientRoom implements Serializable, RetirableEntity {
 
     public void setAdmitted(boolean admitted) {
         this.admitted = admitted;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public Double getIncludedRoomDurationHours() {
+        return includedRoomDurationHours;
+    }
+
+    public void setIncludedRoomDurationHours(Double includedRoomDurationHours) {
+        this.includedRoomDurationHours = includedRoomDurationHours;
     }
 
     @OneToMany(mappedBy = "patientRoom", cascade = CascadeType.ALL)

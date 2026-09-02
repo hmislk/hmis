@@ -25,12 +25,52 @@
                          ============================================================ -->
                     <p:panel rendered="#{!retailSaleNativeSqlController.billPreview}">
 
+                        <p:dialog
+                            header="Search Any Medicine..."
+                            widgetVar="findAMP"
+                            minHeight="300"
+                            width="1100"
+                            position="top"
+                            modal="true"
+                            closeOnEscape="true">
+                            <p:autoComplete
+                                id="exItem"
+                                forceSelection="true"
+                                class="w-100 formgrid grid"
+                                placeholder="Search Any Medicine..."
+                                maxResults="20"
+                                minQueryLength="3"
+                                inputStyleClass="w-100"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
+                                var="vt"
+                                onfocus="this.select()"
+                                itemLabel="#{vt.name}"
+                                itemValue="#{vt}">
+                                <p:column headerText="Code" style="padding: 6px;width: 4em;">
+                                    <h:outputLabel value="#{vt.code}" />
+                                </p:column>
+                                <p:column headerText="Item" style="width: 350px; padding: 6px;">
+                                    <h:outputLabel value="#{vt.name}" />
+                                </p:column>
+                                <p:column headerText="Stock" style="padding: 6px; text-align: center;width: 5em;">
+                                    <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department, vt)}">
+                                        <f:convertNumber pattern="#,###" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Price" style="padding: 6px; text-align: right;width: 6em;">
+                                    <p:outputLabel value="#{pharmacyPurchaseController.findLastRetailRate(vt)}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                        </p:dialog>
+
                         <p:panel class="w-100">
                             <f:facet name="header">
                                 <div class="row w-100 align-items-center">
-                                    <div class="col-4">
+                                    <div class="col-md-3">
                                         <h:outputText styleClass="fas fa-mortar-pestle" />
-                                        <h:outputLabel value="Pharmacy Retail Sale" class="mx-2" />
+                                        <h:outputLabel value="Pharmacy Retail Sale (Sale 1)" class="mx-2" />
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 value="Config"
@@ -41,7 +81,45 @@
                                                 class="ui-button-secondary mx-1" />
                                         </h:panelGroup>
                                     </div>
-                                    <div class="col-4 text-center">
+                                    <div class="col-md-5 text-center">
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 1"
+                                            title="Sale window 1"
+                                            ajax="false" disabled="true"
+                                            action="pharmacy_bill_retail_sale_native?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 2"
+                                            title="Sale window 2"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native_1?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController1.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 3"
+                                            title="Sale window 3"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native_2?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController2.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 4"
+                                            title="Sale window 4"
+                                            ajax="false"
+                                            action="pharmacy_bill_retail_sale_native_3?faces-redirect=true"
+                                            actionListener="#{retailSaleNativeSqlController3.switchToThisSaleWindow()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    </div>
+                                    <div class="col-md-2 text-center">
                                         <p:commandButton
                                             icon="fa fa-search"
                                             value="Search Sale Bills"
@@ -50,7 +128,7 @@
                                             actionListener="#{searchController.makeListNull}"
                                             class="ui-button-info" />
                                     </div>
-                                    <div class="col-4 text-end">
+                                    <div class="col-md-2 text-end">
                                         <p:commandButton
                                             ajax="false"
                                             accesskey="s"
@@ -81,25 +159,38 @@
                                         <div class="row w-100 m-1 p-1">
                                             <div class="col-md-5">
                                                 <p:focus id="focusForAcIx" for="acStock" />
-                                                <p:outputLabel class="w-100" for="acStock">Medicines or Devices</p:outputLabel>
+                                                <p:outputLabel class="w-100" for="acStock">
+                                                    Medicines or Devices
+                                                    <i class="fas fa-shopping-cart"
+                                                       onclick="PF('findAMP').show()"
+                                                       onkeypress="if(event.key==='Enter'||event.key===' ')PF('findAMP').show()"
+                                                       role="button"
+                                                       tabindex="0"
+                                                       title="Search Any Medicine"
+                                                       aria-label="Open Search Any Medicine dialog"
+                                                       style="font-size: 14px; color: purple; margin-left: 8px; cursor: pointer;">
+                                                    </i>
+                                                </p:outputLabel>
                                                 <h:panelGroup id="acStock">
                                                     <p:autoComplete
                                                         id="acStockField"
                                                         accesskey="i"
                                                         inputStyleClass="w-100"
                                                         minQueryLength="3"
-                                                        maxResults="10"
+                                                        maxResults="30"
                                                         styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{retailSaleNativeSqlController.stockDto}"
-                                                        queryDelay="300" completeMethod="#{retailSaleNativeSqlController.completeAvailableStockOptimizedDto}"
+                                                        queryDelay="300" 
+                                                        scrollHeight="450"
+                                                        completeMethod="#{retailSaleNativeSqlController.completeAvailableStockOptimizedDto}"
                                                         converter="#{retailSaleNativeSqlController.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
                                                         <p:column
                                                             headerText="Item"
-                                                            width="400"
+                                                            style="padding: 6px; width: 650px;"
                                                             styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputText value="#{i.itemName}" />
                                                             &#160;<p:tag
@@ -108,14 +199,14 @@
                                                                 severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'danger' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'warning' : ''}" />
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used', true)}"
                                                             headerText="Code"
                                                             styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputText value="#{i.code}" />
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
                                                             headerText="Rate"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.retailRate}">
@@ -123,7 +214,7 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
                                                             headerText="Stocks"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.stockQty}">
@@ -131,7 +222,16 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:column
-                                                            width="20em"
+                                                            style="padding: 6px; width: 100px;"
+                                                            headerText="Total Stock"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKeyReadOnly('Pharmacy Retail Sale - Show Total AMP Stock in Autocomplete', false)}"
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.totalStockQty}">
+                                                                <f:convertNumber pattern="#,###" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+                                                        <p:column
+                                                            style="padding: 6px; width: 150px;"
                                                             headerText="Expiry"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.dateOfExpire}">
@@ -222,6 +322,16 @@
                                             </p:column>
                                             <p:column headerText="Item" style="padding: 6px;">
                                                 <h:outputLabel value="#{bi.itemName}" />
+                                                <p:commandButton
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show alternative medicines available during retail sale', true)}"
+                                                    id="btnSelectSubstitute"
+                                                    icon="pi pi-refresh"
+                                                    title="Show Alternatives"
+                                                    action="#{retailSaleNativeSqlController.prepareSubstitute(bi)}"
+                                                    update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
+                                                    oncomplete="PF('substituteDialog').show();"
+                                                    process="@this"
+                                                    styleClass="ui-button-warning ui-button-icon-only mx-1" />
                                             </p:column>
                                             <p:column headerText="Rate" style="width: 5em; padding: 6px;">
                                                 <h:outputLabel value="#{bi.rate}">
@@ -269,6 +379,64 @@
                                                     style="display: inline-block;" />
                                             </p:column>
                                         </p:dataTable>
+
+                                        <p:dialog
+                                            id="substituteDlg"
+                                            widgetVar="substituteDialog"
+                                            modal="true"
+                                            position="top"
+                                            fitViewport="true"
+                                            appendTo="@(body)"
+                                            header="Alternatives"
+                                            width="60%">
+                                            <div class="mb-3 p-3 bg-light border rounded">
+                                                <h:outputLabel value="Selected Item: " styleClass="fw-bold text-primary"/>
+                                                <h:outputText value="#{retailSaleNativeSqlController.itemDataForSubstitution.itemName}" styleClass="fw-bold text-dark"/>
+                                            </div>
+                                            <p:dataTable
+                                                id="substituteTable"
+                                                value="#{retailSaleNativeSqlController.substituteStocks}"
+                                                var="sStock"
+                                                rowKey="#{sStock.stockId}"
+                                                paginator="true"
+                                                rows="10"
+                                                paginatorPosition="bottom"
+                                                emptyMessage="No substitute stocks found"
+                                                styleClass="table-striped">
+                                                <p:column headerText="Item">
+                                                    <h:outputText value="#{sStock.itemName}"/>
+                                                </p:column>
+                                                <p:column headerText="Code">
+                                                    <h:outputText value="#{sStock.code}"/>
+                                                </p:column>
+                                                <p:column headerText="Rate" style="text-align: right;">
+                                                    <h:outputText value="#{sStock.retailRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Stock" style="text-align: right;">
+                                                    <h:outputText value="#{sStock.stockQty}">
+                                                        <f:convertNumber pattern="#,###.#"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Expiry">
+                                                    <h:outputText value="#{sStock.dateOfExpire}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Action" style="width: 8em;">
+                                                    <p:commandButton
+                                                        id="btnReplace"
+                                                        value="Replace"
+                                                        action="#{retailSaleNativeSqlController.replaceSelectedSubstitute}"
+                                                        update=":#{p:resolveFirstComponentWithId('tblBillItem', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}"
+                                                        oncomplete="PF('substituteDialog').hide();"
+                                                        process="@this">
+                                                        <f:setPropertyActionListener value="#{sStock}" target="#{retailSaleNativeSqlController.selectedSubstituteStock}" />
+                                                    </p:commandButton>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:dialog>
                                     </p:panel>
                                 </div>
 
@@ -480,7 +648,7 @@
                                                         <h:outputLabel value="Payment Details" class="mx-4" />
                                                     </f:facet>
                                                     <div class="row">
-                                                        <div class="col-md-5">
+                                                        <div class="col-md-6">
                                                             <p:selectOneMenu
                                                                 id="pay"
                                                                 value="#{retailSaleNativeSqlController.paymentMethod}"
@@ -489,7 +657,8 @@
                                                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}" />
                                                                 <p:ajax process="@this cmbPs cmbPaymentScheme" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
-
+                                                        </div>
+                                                        <div class="col-md-6">
                                                             <p:selectOneMenu
                                                                 id="cmbPaymentScheme"
                                                                 value="#{retailSaleNativeSqlController.paymentScheme}"
@@ -499,8 +668,60 @@
                                                                 <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                                                                 <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
+
+                                                            <p:selectOneMenu
+                                                                id="cmbPs"
+                                                                value="#{retailSaleNativeSqlController.paymentScheme}"
+                                                                rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}"
+                                                                class="my-1">
+                                                                <f:selectItem itemLabel="Discount Scheme" />
+                                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController.listnerForPaymentMethodChange()}" />
+                                                            </p:selectOneMenu>
                                                         </div>
                                                     </div>
+
+                                                    <!-- Bill totals (merged former Bill Details panel) -->
+                                                    <h:panelGroup layout="block" id="panelBillDetails" class="my-1">
+                                                        <h:panelGrid columns="2" columnClasses="numberCol, textCol">
+                                                            <h:outputLabel value="Total" styleClass="fw-bold" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                                <h:outputLabel id="total" value="#{retailSaleNativeSqlController.preBill.total}" styleClass="fw-bold">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Discount" styleClass="fw-bold" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                                <h:outputLabel id="dis" value="#{retailSaleNativeSqlController.preBill.discount}" styleClass="fw-bold">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Net Total" styleClass="fw-bold fs-5 text-primary" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                                <h:outputLabel id="netTotal" value="#{retailSaleNativeSqlController.preBill.netTotal}" styleClass="fw-bold fs-5 text-primary">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Tendered" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Cash'}" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Cash'}">
+                                                                <p:inputText
+                                                                    id="paid"
+                                                                    value="#{retailSaleNativeSqlController.cashPaid}"
+                                                                    class="form-control text-end"
+                                                                    autocomplete="off"
+                                                                    accesskey="t"
+                                                                    onfocus="this.select()">
+                                                                    <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
+                                                                </p:inputText>
+                                                            </h:panelGroup>
+                                                            <h:outputLabel value="Balance" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Cash'}" />
+                                                            <h:panelGroup layout="block" class="text-end mx-4 my-1" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Cash'}">
+                                                                <h:outputLabel id="balance" value="#{retailSaleNativeSqlController.balance}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                        </h:panelGrid>
+                                                    </h:panelGroup>
 
                                                     <div class="row">
                                                         <div class="my-1">
@@ -623,18 +844,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-5">
-                                                        <p:selectOneMenu
-                                                            id="cmbPs"
-                                                            value="#{retailSaleNativeSqlController.paymentScheme}"
-                                                            rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}"
-                                                            class="my-1">
-                                                            <f:selectItem itemLabel="Discount Scheme" />
-                                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                                            <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController.listnerForPaymentMethodChange()}" />
-                                                        </p:selectOneMenu>
-                                                    </div>
-
+                                                    <h:outputLabel value="Additional Details" styleClass="fw-bold mb-1 d-block" />
                                                     <h:panelGrid columns="2" class="my-2">
                                                         <p:outputLabel value="Referring Doctor" />
                                                         <p:autoComplete
@@ -648,52 +858,6 @@
                                                             inputStyleClass="form-control" />
                                                         <p:outputLabel value="Comments" />
                                                         <p:inputTextarea id="txtComment" class="w-100 mx-4" value="#{retailSaleNativeSqlController.comment}" />
-                                                    </h:panelGrid>
-                                                </p:panel>
-
-                                                <!-- Bill Details panel -->
-                                                <p:panel id="panelBillDetails" class="my-1">
-                                                    <f:facet name="header">
-                                                        <h:outputText styleClass="fas fa-list" />
-                                                        <h:outputLabel value="Bill Details" class="mx-4" />
-                                                    </f:facet>
-                                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol">
-                                                        <h:outputLabel value="Total" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="total" value="#{retailSaleNativeSqlController.preBill.total}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Discount" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="dis" value="#{retailSaleNativeSqlController.preBill.discount}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Net Total" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="netTotal" value="#{retailSaleNativeSqlController.preBill.netTotal}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Tendered" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <p:inputText
-                                                                id="paid"
-                                                                value="#{retailSaleNativeSqlController.cashPaid}"
-                                                                class="form-control text-end"
-                                                                autocomplete="off"
-                                                                accesskey="t"
-                                                                onfocus="this.select()">
-                                                                <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
-                                                            </p:inputText>
-                                                        </h:panelGroup>
-                                                        <h:outputLabel value="Balance" />
-                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="balance" value="#{retailSaleNativeSqlController.balance}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:panelGroup>
                                                     </h:panelGrid>
                                                 </p:panel>
                                             </div>
@@ -752,6 +916,47 @@
                             </div>
                         </div>
 
+                        <div class="row w-100 align-items-center">
+                            <div class="col-12 text-center">
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 1"
+                                    title="Sale window 1"
+                                    ajax="false" disabled="true"
+                                    action="pharmacy_bill_retail_sale_native?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 2"
+                                    title="Sale window 2"
+                                    ajax="false"
+                                    action="pharmacy_bill_retail_sale_native_1?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController1.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 3"
+                                    title="Sale window 3"
+                                    ajax="false"
+                                    action="pharmacy_bill_retail_sale_native_2?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController2.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton
+                                    class="m-1"
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 4"
+                                    title="Sale window 4"
+                                    ajax="false"
+                                    action="pharmacy_bill_retail_sale_native_3?faces-redirect=true"
+                                    actionListener="#{retailSaleNativeSqlController3.switchToThisSaleWindow()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            </div>
+                        </div>
+
                         <h:panelGroup id="gpBillPreview">
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper', true)}">
 <!--                                <phi:saleBill_without_item_native
@@ -772,7 +977,7 @@
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS paper with header', true)}">
-                                <phi:saleBill_Header_Inward_native
+                                <phi:saleBill_Header_native
                                     bill="#{retailSaleNativeSqlController.printBill}"
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
@@ -787,7 +992,7 @@
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper', false)}">
-                                <phi:saleBill_Header_Inward_native
+                                <phi:saleBill_Header_native
                                     bill="#{retailSaleNativeSqlController.printBill}"
                                     items="#{retailSaleNativeSqlController.printBillItems}" />
                             </h:panelGroup>

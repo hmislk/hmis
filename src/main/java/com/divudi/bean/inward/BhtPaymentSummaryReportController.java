@@ -9,11 +9,9 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
 import java.io.Serializable;
@@ -32,8 +30,12 @@ import javax.persistence.TemporalType;
  * Controller for BHT Deposit and Credit Settlement Summary Report.
  * Issue #19345
  *
- * One row per PatientEncounter (BHT). Columns show deposit totals broken down
- * by PaymentMethod plus a combined credit-settlement column.
+ * One row per PatientEncounter (BHT). Money-in is shown as three separate
+ * PaymentMethod-broken-down column groups (issue #23262):
+ * "Make a Deposit" (BillTypeAtomic.INWARD_DEPOSIT),
+ * "Make a Payment" (BillTypeAtomic.INWARD_PAYMENT) and
+ * "Post Final Payment" (BillType.PostFinalBillInwardPayment),
+ * plus a Grand Total column and a combined credit-settlement column.
  */
 @Named
 @SessionScoped
@@ -44,8 +46,6 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
-    @EJB
-    private BillItemFacade billItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
     @EJB
@@ -72,15 +72,26 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     private List<BhtPaymentSummaryDTO> reportRows;
 
-    /** Payment methods that have at least one non-zero deposit in the current result set. */
-    private List<PaymentMethod> allPaymentMethods = new ArrayList<>();
-
-    /** Column totals, keyed by PaymentMethod ordinal. */
-    private Map<PaymentMethod, Double> columnTotals = new HashMap<>();
     private double grandTotalDeposits;
+    private double grandTotalDepositCash;
+    private double grandTotalDepositCard;
+    private double grandTotalDepositOther;
+    private double grandTotalPayments;
+    private double grandTotalPaymentCash;
+    private double grandTotalPaymentCard;
+    private double grandTotalPaymentCredit;
+    private double grandTotalPaymentOther;
+    private double grandTotalPostFinalPayments;
+    private double grandTotalPostFinalCash;
+    private double grandTotalPostFinalCard;
+    private double grandTotalPostFinalCredit;
+    private double grandTotalPostFinalOther;
+    private double grandTotalCreditBilled;
     private double grandTotalCreditSettlement;
+    private double grandTotalCreditBalance;
     private double grandTotalFinalBills;
     private double grandTotalBalance;
+    private double grandTotalAllMoneyIn;
 
     // -------------------------------------------------------------------------
     // Main generate method
@@ -88,15 +99,29 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     public void generateReport() {
         reportRows = new ArrayList<>();
-        columnTotals = new HashMap<>();
         grandTotalDeposits = 0;
+        grandTotalDepositCash = 0;
+        grandTotalDepositCard = 0;
+        grandTotalDepositOther = 0;
+        grandTotalPayments = 0;
+        grandTotalPaymentCash = 0;
+        grandTotalPaymentCard = 0;
+        grandTotalPaymentCredit = 0;
+        grandTotalPaymentOther = 0;
+        grandTotalPostFinalPayments = 0;
+        grandTotalPostFinalCash = 0;
+        grandTotalPostFinalCard = 0;
+        grandTotalPostFinalCredit = 0;
+        grandTotalPostFinalOther = 0;
+        grandTotalCreditBilled = 0;
         grandTotalCreditSettlement = 0;
+        grandTotalCreditBalance = 0;
         grandTotalFinalBills = 0;
         grandTotalBalance = 0;
+        grandTotalAllMoneyIn = 0;
 
         List<PatientEncounter> encounters = fetchEncounters();
         if (encounters == null || encounters.isEmpty()) {
-            allPaymentMethods = new ArrayList<>();
             return;
         }
 
@@ -104,22 +129,26 @@ public class BhtPaymentSummaryReportController implements Serializable {
             BhtPaymentSummaryDTO row = buildRow(enc);
             reportRows.add(row);
 
-            // accumulate column totals across all known methods
-            for (PaymentMethod pm : PaymentMethod.values()) {
-                columnTotals.merge(pm, row.getDepositForMethod(pm), Double::sum);
-            }
             grandTotalDeposits += row.getTotalDeposits();
+            grandTotalDepositCash += row.getDepositCash();
+            grandTotalDepositCard += row.getDepositCard();
+            grandTotalDepositOther += row.getDepositOther();
+            grandTotalPayments += row.getTotalPayments();
+            grandTotalPaymentCash += row.getPaymentCash();
+            grandTotalPaymentCard += row.getPaymentCard();
+            grandTotalPaymentCredit += row.getPaymentCredit();
+            grandTotalPaymentOther += row.getPaymentOther();
+            grandTotalPostFinalPayments += row.getTotalPostFinalPayments();
+            grandTotalPostFinalCash += row.getPostFinalCash();
+            grandTotalPostFinalCard += row.getPostFinalCard();
+            grandTotalPostFinalCredit += row.getPostFinalCredit();
+            grandTotalPostFinalOther += row.getPostFinalOther();
+            grandTotalCreditBilled += row.getCreditBilledTotal();
             grandTotalCreditSettlement += row.getCreditSettlementTotal();
+            grandTotalCreditBalance += row.getCreditBalance();
             grandTotalFinalBills += row.getFinalBillTotal();
-            grandTotalBalance += row.getBalance();
-        }
-
-        // only show columns where at least one BHT had a non-zero deposit
-        allPaymentMethods = new ArrayList<>();
-        for (PaymentMethod pm : PaymentMethod.values()) {
-            if (columnTotals.getOrDefault(pm, 0.0) != 0.0) {
-                allPaymentMethods.add(pm);
-            }
+            grandTotalBalance += row.getTotalBalance();
+            grandTotalAllMoneyIn += row.getTotalAllMoneyIn();
         }
     }
 
@@ -211,20 +240,31 @@ public class BhtPaymentSummaryReportController implements Serializable {
         row.setDateOfDischarge(enc.getDateOfDischarge());
         row.setAdmissionType(enc.getAdmissionType());
 
-        // --- deposit payments ---
+        // --- "Make a Deposit" payments (INWARD_DEPOSIT) ---
         List<Payment> depositPayments = fetchDepositPayments(enc);
         for (Payment p : depositPayments) {
             row.addDeposit(p.getPaymentMethod(), Math.abs(p.getPaidValue()));
         }
 
-        // --- credit settlements ---
-        List<BillItem> creditItems = fetchCreditSettlementItems(enc);
-        for (BillItem bi : creditItems) {
-            String companyName = "";
-            if (bi.getReferenceBill() != null && bi.getReferenceBill().getCreditCompany() != null) {
-                companyName = bi.getReferenceBill().getCreditCompany().getName();
-            }
-            row.addCreditSettlement(bi.getNetValue(), companyName);
+        // --- "Make a Payment" payments (INWARD_PAYMENT) ---
+        List<Payment> payments = fetchPayments(enc);
+        for (Payment p : payments) {
+            row.addPayment(p.getPaymentMethod(), Math.abs(p.getPaidValue()));
+        }
+
+        // --- post-final-bill payments ---
+        // No Math.abs() here — see fetchPostFinalPayments() javadoc: cancellations
+        // arrive as separate negative-amount rows that must net out.
+        List<Payment> postFinalPayments = fetchPostFinalPayments(enc);
+        for (Payment p : postFinalPayments) {
+            row.addPostFinalPayment(p.getPaymentMethod(), p.getPaidValue());
+        }
+
+        // --- credit company bills ---
+        List<Bill> creditCompanyBills = fetchCreditCompanyBills(enc);
+        for (Bill b : creditCompanyBills) {
+            String companyName = b.getCreditCompany() != null ? b.getCreditCompany().getName() : "";
+            row.addCreditCompanyBill(b.getNetTotal(), b.getPaidAmount(), companyName);
         }
 
         // --- final bill (latest non-cancelled InwardFinalBill for this encounter) ---
@@ -245,6 +285,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + " where b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billType = :bt"
+                + " and b.confirmedFinalBill = true"
                 + " and b.patientEncounter = :enc"
                 + " order by b.id desc";
         Map<String, Object> params = new HashMap<>();
@@ -254,8 +295,9 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
-     * Fetch all Payment records linked to INWARD_DEPOSIT bills for this encounter.
-     * Deposit bills link to the encounter via bill.patientEncounter directly.
+     * Fetch all Payment records linked to INWARD_DEPOSIT ("Make a Deposit") bills
+     * for this encounter. Deposit bills link to the encounter via
+     * bill.patientEncounter directly.
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         String jpql = "select p from Payment p"
@@ -271,32 +313,70 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
-     * Fetch BillItems from INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED and
-     * INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION bills that reference this encounter.
-     * Including both types allows cancellation items (negative netValue) to naturally
-     * offset the received items, so the net total is correct even when payments are cancelled.
+     * Fetch all Payment records linked to INWARD_PAYMENT ("Make a Payment") bills
+     * for this encounter — payments toward the bill made any time during the
+     * stay, kept separate from deposits (INWARD_DEPOSIT) and from post-final-bill
+     * payments (BillType.PostFinalBillInwardPayment). Issue #23262.
      */
-    private List<BillItem> fetchCreditSettlementItems(PatientEncounter enc) {
-        String jpql = "select bi from BillItem bi"
-                + " where bi.retired = false"
-                + " and bi.bill.retired = false"
-                + " and bi.bill.billTypeAtomic in :btas"
-                + " and bi.patientEncounter = :enc";
+    private List<Payment> fetchPayments(PatientEncounter enc) {
+        String jpql = "select p from Payment p"
+                + " where p.retired = false"
+                + " and p.bill.retired = false"
+                + " and p.bill.cancelled = false"
+                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.patientEncounter = :enc";
         Map<String, Object> params = new HashMap<>();
-        params.put("btas", java.util.Arrays.asList(
-                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED,
-                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION));
+        params.put("bta", BillTypeAtomic.INWARD_PAYMENT);
         params.put("enc", enc);
-        return billItemFacade.findByJpql(jpql, params);
+        return paymentFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * Fetch post-final-bill payments for this encounter.
+     *
+     * Deliberately does NOT filter on {@code bill.cancelled=false}: cancellation
+     * and refund of a post-final-bill payment are represented as a separate
+     * negative-amount row of the same bill type, rather than by flagging the
+     * original row, so summing every row's paid value with its natural sign
+     * (no {@code Math.abs()}) nets out correctly. This mirrors
+     * {@link PostFinalBillInwardPaymentController#getPostFinalPaymentTotal},
+     * which uses the same unfiltered, sign-preserving sum pattern.
+     */
+    private List<Payment> fetchPostFinalPayments(PatientEncounter enc) {
+        String jpql = "select p from Payment p"
+                + " where p.retired = false"
+                + " and p.bill.retired = false"
+                + " and p.bill.billType = :bt"
+                + " and p.bill.patientEncounter = :enc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PostFinalBillInwardPayment);
+        params.put("enc", enc);
+        return paymentFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * Fetch credit company bills (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY)
+     * that reference this encounter directly, excluding cancelled/refunded bills.
+     */
+    private List<Bill> fetchCreditCompanyBills(PatientEncounter enc) {
+        String jpql = "select b from Bill b"
+                + " where b.retired = false"
+                + " and b.billTypeAtomic = :bta"
+                + " and b.paymentMethod = :pm"
+                + " and b.cancelled = false"
+                + " and b.cancelledBill is null"
+                + " and b.refundedBill is null"
+                + " and b.patientEncounter = :enc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("enc", enc);
+        return billFacade.findByJpql(jpql, params);
     }
 
     // -------------------------------------------------------------------------
     // UI helpers
     // -------------------------------------------------------------------------
-
-    public double getColumnTotal(PaymentMethod pm) {
-        return columnTotals.getOrDefault(pm, 0.0);
-    }
 
     private static Date startOfCurrentMonth() {
         Calendar cal = Calendar.getInstance();
@@ -319,12 +399,26 @@ public class BhtPaymentSummaryReportController implements Serializable {
         site = null;
         department = null;
         reportRows = null;
-        columnTotals = new HashMap<>();
         grandTotalDeposits = 0;
+        grandTotalDepositCash = 0;
+        grandTotalDepositCard = 0;
+        grandTotalDepositOther = 0;
+        grandTotalPayments = 0;
+        grandTotalPaymentCash = 0;
+        grandTotalPaymentCard = 0;
+        grandTotalPaymentCredit = 0;
+        grandTotalPaymentOther = 0;
+        grandTotalPostFinalPayments = 0;
+        grandTotalPostFinalCash = 0;
+        grandTotalPostFinalCard = 0;
+        grandTotalPostFinalCredit = 0;
+        grandTotalPostFinalOther = 0;
+        grandTotalCreditBilled = 0;
         grandTotalCreditSettlement = 0;
+        grandTotalCreditBalance = 0;
         grandTotalFinalBills = 0;
         grandTotalBalance = 0;
-        allPaymentMethods = new ArrayList<>();
+        grandTotalAllMoneyIn = 0;
     }
 
     // -------------------------------------------------------------------------
@@ -360,15 +454,43 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     public List<BhtPaymentSummaryDTO> getReportRows() { return reportRows; }
 
-    public List<PaymentMethod> getAllPaymentMethods() { return allPaymentMethods; }
-
-    public Map<PaymentMethod, Double> getColumnTotals() { return columnTotals; }
-
     public double getGrandTotalDeposits() { return grandTotalDeposits; }
 
+    public double getGrandTotalDepositCash() { return grandTotalDepositCash; }
+
+    public double getGrandTotalDepositCard() { return grandTotalDepositCard; }
+
+    public double getGrandTotalDepositOther() { return grandTotalDepositOther; }
+
+    public double getGrandTotalPayments() { return grandTotalPayments; }
+
+    public double getGrandTotalPaymentCash() { return grandTotalPaymentCash; }
+
+    public double getGrandTotalPaymentCard() { return grandTotalPaymentCard; }
+
+    public double getGrandTotalPaymentCredit() { return grandTotalPaymentCredit; }
+
+    public double getGrandTotalPaymentOther() { return grandTotalPaymentOther; }
+
+    public double getGrandTotalPostFinalPayments() { return grandTotalPostFinalPayments; }
+
+    public double getGrandTotalPostFinalCash() { return grandTotalPostFinalCash; }
+
+    public double getGrandTotalPostFinalCard() { return grandTotalPostFinalCard; }
+
+    public double getGrandTotalPostFinalCredit() { return grandTotalPostFinalCredit; }
+
+    public double getGrandTotalPostFinalOther() { return grandTotalPostFinalOther; }
+
+    public double getGrandTotalCreditBilled() { return grandTotalCreditBilled; }
+
     public double getGrandTotalCreditSettlement() { return grandTotalCreditSettlement; }
+
+    public double getGrandTotalCreditBalance() { return grandTotalCreditBalance; }
 
     public double getGrandTotalFinalBills() { return grandTotalFinalBills; }
 
     public double getGrandTotalBalance() { return grandTotalBalance; }
+
+    public double getGrandTotalAllMoneyIn() { return grandTotalAllMoneyIn; }
 }

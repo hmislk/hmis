@@ -760,35 +760,17 @@
 
 
                 <!-- Wholesale -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'wholesale_sale' and webUserController.hasPrivilege('PharmacyWholesaleSale')}">
+                <h:panelGroup layout="block" class="col-1 p-1" rendered="#{ui.icon eq 'wholesale_sale' and webUserController.hasPrivilege('PharmacyWholesaleSale')}">
                     <h:form>
-                        <p:tooltip for="wholesale_sale" value="Wholesale"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:tooltip for="wholesale_sale" value="Wholesale" showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
                             id="wholesale_sale"
-                            ajax="false" 
-                            action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"  
-
-                            actionListener="#{pharmacySaleController.resetAll()}"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_bill_wholesale_sale_native?faces-redirect=true"
+                            actionListener="#{wholesaleSaleNativeSqlController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/truck-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale" />
-                        </p:commandLink>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Whole Sale for cashier-->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'wholesale_sale_for_cashier' and webUserController.hasPrivilege('PharmacyWholesaleSaleForCashier')}">
-                    <h:form>
-                        <p:tooltip for="wholesale_sale_for_cashier" value="Wholesale for cashier"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
-                            id="wholesale_sale_for_cashier"
-                            ajax="false" 
-                            action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"  
-
-                            actionListener="#{pharmacySaleController.resetAll()}"
-                            styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/sack-dollar-solid.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Wholesale for cashier" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -938,7 +920,7 @@
                             id="direct_issue_to_BHTs"
                             ajax="false"
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
-                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="direct_issue_to_BHTs.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to BHTs" />
@@ -953,7 +935,7 @@
                         <p:commandLink
                             id="direct_issue_to_BHTs_native"
                             ajax="false"
-                            action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="direct_issue_to_BHTs_native.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1186,7 +1168,7 @@
                         <p:commandLink
                             id="Goods_Receipt"
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Goods Receipt" />
@@ -1194,7 +1176,15 @@
                     </h:form>
                 </h:panelGroup>
 
-                <!-- Goods Receipt With Approval -->
+                <!-- Goods Receipt With Approval: deprecated, issue #21289.
+                     Routed into the legacy GrnController approval flow, whose
+                     settle() always fails with "Please select a payment
+                     method" (never assigns grnBill). "Goods Receipt" above
+                     already routes every GRN through GrnCostingController's
+                     Save/Finalize/Approve pipeline whenever "Manage Costing"
+                     is enabled, making this tile a redundant, broken
+                     duplicate. -->
+                <!--
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_With_Approval' and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval') and webUserController.hasPrivilege('GoodsRecipt')}">
                     <h:form>
                         <p:tooltip for="Goods_Receipt_With_Approval" value="Goods Receipt With Approval"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -1208,6 +1198,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
+                -->
 
                 <!-- Goods Receipt Costing -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_Costing' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
@@ -1289,7 +1280,7 @@
                 <!-- Pharmacy Disposal Direct Issue -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_disposal_issue' and webUserController.hasPrivilege('PharmacyDisposalIssue')}">
                     <h:form>
-                        <p:tooltip for="pharmacy_disposal_issue" value="Pharmacy Disposal Direct Issue"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:tooltip for="pharmacy_disposal_issue" value="Pharmacy Consumption Direct Issue"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
                             id="pharmacy_disposal_issue"
                             ajax="false"
@@ -1297,7 +1288,7 @@
                             actionListener="#{pharmacyIssueController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_disposal_issue.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Pharmacy Disposal - Direct Issue" />
+                            <h:outputText style="display: none;" value="Pharmacy Consumption - Direct Issue" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -1368,7 +1359,7 @@
                 </h:panelGroup>
 
                 <!-- Request -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_request' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_request' and webUserController.hasPrivilege('PharmacyDisbursementRequest')}">
                     <h:form>
                         <p:tooltip for="pharmacy_request" value="Request"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
@@ -1385,7 +1376,7 @@
                 </h:panelGroup>
 
                 <!-- Issue for Requests -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_issue_for_request' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_issue_for_request' and webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}">
                     <h:form>
                         <p:tooltip for="pharmacy_issue_for_request" value="Issue for Requests"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
@@ -1402,7 +1393,7 @@
                 </h:panelGroup>
 
                 <!-- Direct Issue -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_direct_issue' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_direct_issue' and webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}">
                     <h:form>
                         <p:tooltip for="pharmacy_direct_issue" value="Direct Issue"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
@@ -1419,7 +1410,7 @@
                 </h:panelGroup>
 
                 <!-- Receive -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_receive' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_receive' and webUserController.hasPrivilege('PharmacyDisbursementRecieve')}">
                     <h:form>
                         <p:tooltip for="pharmacy_receive" value="Receive"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
@@ -1436,7 +1427,7 @@
                 </h:panelGroup>
 
                 <!-- Reports -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_disbursement_reports' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_disbursement_reports' and webUserController.hasPrivilege('PharmacyDisbursementReports')}">
                     <h:form>
                         <p:tooltip for="pharmacy_disbursement_reports" value="Reports"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
@@ -2002,10 +1993,10 @@
                 <!-- Room Change -->
                 <h:panelGroup rendered="#{ui.icon eq 'Room_Change' and webUserController.hasPrivilege('InwardRoomRoomChange')}" layout="block" class="col-1 p-1">
                     <h:form>
-                        <p:tooltip for="Room_Change" value="Room Change" showDelay="0" hideDelay="0"/>
+                        <p:tooltip for="Room_Change" value="Room Change (Deprecated - use Patient Room Details instead)" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Room_Change" ajax="false" action="#{admissionController.navigateToRoomChange()}" styleClass="svg-link">
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Room_Change.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Room Change"/>
+                            <h:outputText style="display: none;" value="Room Change (Deprecated)"/>
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -2013,10 +2004,10 @@
                 <!-- Guardian Room Change -->
                 <h:panelGroup rendered="#{ui.icon eq 'Guardian_Room_Change' and webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" layout="block" class="col-1 p-1">
                     <h:form>
-                        <p:tooltip for="Guardian_Room_Change" value="Guardian Room Change" showDelay="0" hideDelay="0"/>
+                        <p:tooltip for="Guardian_Room_Change" value="Guardian Room Change (Deprecated - use Patient Room Details instead)" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Guardian_Room_Change" ajax="false" action="#{admissionController.navigateToGuardianRoomChange()}" styleClass="svg-link">
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Guardian_Room_Change.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Guardian Room Change"/>
+                            <h:outputText style="display: none;" value="Guardian Room Change (Deprecated)"/>
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>

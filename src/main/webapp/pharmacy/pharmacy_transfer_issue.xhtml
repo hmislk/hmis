@@ -181,40 +181,41 @@
                                     onclick="if (!confirm('Are you sure you want to Settle This Bill ?')) return false;"
                                     ajax="false"
                                     class="ui-button-success mx-2"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}"
                                     rendered="#{!configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false) and !transferIssueForRequestsController.draftMode}"/>
 
                                 <!-- 3-step workflow buttons -->
                                 <p:commandButton
                                     id="btnSaveDraftIssue"
                                     value="Save Draft"
-                                    icon="fas fa-save"
+                                    icon="fas fa-floppy-disk"
                                     actionListener="#{transferIssueForRequestsController.saveDraftIssue()}"
                                     style="float: right;"
                                     onclick="if (!confirm('Save this issue as a draft?')) return false;"
                                     ajax="false"
-                                    class="ui-button-warning mx-2"
+                                    styleClass="ui-button-stage-save mx-2"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false) and !transferIssueForRequestsController.issuedBill.completed and webUserController.hasPrivilege('PharmacyIssueForRequestSave')}"/>
 
                                 <p:commandButton
                                     id="btnFinalizeIssue"
                                     value="Finalize"
-                                    icon="fas fa-clipboard-check"
+                                    icon="fas fa-lock"
                                     actionListener="#{transferIssueForRequestsController.finalizeDraftIssue()}"
                                     style="float: right;"
                                     onclick="if (!confirm('Finalize this issue draft?')) return false;"
                                     ajax="false"
-                                    class="ui-button-warning mx-2"
+                                    styleClass="ui-button-stage-finalize mx-2"
                                     rendered="#{transferIssueForRequestsController.draftMode and transferIssueForRequestsController.issuedBill.id ne null and !transferIssueForRequestsController.issuedBill.completed and webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}"/>
 
                                 <p:commandButton
                                     id="btnApproveIssue"
                                     value="Approve"
-                                    icon="fas fa-check-circle"
+                                    icon="fas fa-check-double"
                                     action="#{transferIssueForRequestsController.approveDraftIssue()}"
                                     style="float: right;"
                                     onclick="if (!confirm('Approve this issue? Stock will be moved.')) return false;"
                                     ajax="false"
-                                    class="ui-button-success mx-2"
+                                    styleClass="ui-button-stage-approve mx-2"
                                     rendered="#{transferIssueForRequestsController.draftMode and transferIssueForRequestsController.issuedBill.completed and !transferIssueForRequestsController.issuedBill.checked and webUserController.hasPrivilege('PharmacyIssueForRequestApprove')}"/>
 
                                 <p:commandButton

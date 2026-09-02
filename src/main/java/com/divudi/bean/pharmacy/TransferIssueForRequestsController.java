@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
@@ -15,6 +16,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -49,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -65,6 +69,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class TransferIssueForRequestsController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(TransferIssueForRequestsController.class.getName());
 
     @EJB
     private BillFacade billFacade;
@@ -88,6 +94,8 @@ public class TransferIssueForRequestsController implements Serializable {
     private UserStockController userStockController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private BillController billController;
     @Inject
@@ -459,6 +467,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Saves the current items as a PHARMACY_ISSUE_PRE bill without moving stock.
      */
     public void saveDraftIssue() {
+        if (!isAuthorized("SAVE_DRAFT_ISSUE", "PharmacyIssueForRequestSave")) {
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please select a department to issue to");
             return;
@@ -521,6 +532,10 @@ public class TransferIssueForRequestsController implements Serializable {
         }
         setBillItems(nonZeroItems);
 
+        // Stamp after zero-qty removal so dropped lines cannot decide the type;
+        // persisted by the final bill edit below.
+        stampDepartmentTypeFromItemsIfMissing();
+
         for (BillItem bi : getBillItems()) {
             updateBillItemRateAndValue(bi);
             bi.setBill(getIssuedBill());
@@ -557,6 +572,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Finalizes the current PHARMACY_ISSUE_PRE draft (sets completed=true).
      */
     public void finalizeDraftIssue() {
+        if (!isAuthorized("FINALIZE_DRAFT_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No draft to finalize. Please save first.");
             return;
@@ -582,6 +600,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Approves the PHARMACY_ISSUE_PRE draft: moves stock and converts to PHARMACY_ISSUE.
      */
     public synchronized void approveDraftIssue() {
+        if (!isAuthorized("APPROVE_DRAFT_ISSUE", "PharmacyIssueForRequestApprove")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No finalized draft to approve.");
             return;
@@ -741,6 +762,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Cancels a saved/finalized PHARMACY_ISSUE_PRE draft (retires it before approval).
      */
     public void cancelPendingIssue() {
+        if (!isAuthorized("CANCEL_PENDING_ISSUE", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No draft to cancel.");
             return;
@@ -770,7 +794,82 @@ public class TransferIssueForRequestsController implements Serializable {
         JsfUtil.addSuccessMessage("Issue draft cancelled.");
     }
 
+    /**
+     * Aggregates requested qty per Stock row across ALL lines in this settle()
+     * call and validates each Stock's live DB quantity can cover the combined
+     * total - not just each line checked independently against the same
+     * stale-relative-to-each-other snapshot. Closes the gap where two lines
+     * drawing from the same batch each pass an individual check but together
+     * exceed what is available (#22938: this is what let bill TI/COOP/26/000488
+     * persist a 141-unit line against a batch that only had 140 in stock).
+     *
+     * Runs entirely before any Bill/BillItem/PharmaceuticalBillItem is
+     * created, so on failure there is nothing to roll back - just an error
+     * message. A concurrent transaction consuming stock in the tiny window
+     * between this check and the per-item deductFromStock() calls further
+     * down is still possible (true TOCTOU); that residual race is handled by
+     * logging a reconciliation alert rather than attempting a multi-entity
+     * rollback (Bill/BillItem/PharmaceuticalBillItem/Stock/StockHistory/
+     * StaffStock/originalOrderItem) after the fact.
+     *
+     * @return null if all stock is sufficient, otherwise a user-facing error message
+     */
+    private String findInsufficientStockError() {
+        Map<Long, Double> requestedByStockId = new HashMap<>();
+        Map<Long, String> itemNameByStockId = new HashMap<>();
+        for (BillItem bi : getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+                continue;
+            }
+            Long stockId = pbi.getStock().getId();
+            double qty = Math.abs(pbi.getQty());
+            requestedByStockId.merge(stockId, qty, Double::sum);
+            itemNameByStockId.putIfAbsent(stockId,
+                    bi.getItem() != null ? bi.getItem().getName() : "one of the items");
+        }
+        for (Map.Entry<Long, Double> entry : requestedByStockId.entrySet()) {
+            Stock liveStock = stockFacade.find(entry.getKey());
+            if (liveStock == null || liveStock.getStock() < entry.getValue()) {
+                double available = liveStock == null ? 0.0 : liveStock.getStock();
+                return "Insufficient stock to issue " + itemNameByStockId.get(entry.getKey())
+                        + " (requested " + entry.getValue() + ", available " + available + "). "
+                        + "Stock levels may have changed since this page was loaded. "
+                        + "Please refresh and try again.";
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Last-resort handler for the residual TOCTOU race: findInsufficientStockError()
+     * passed, but a concurrent transaction consumed the same stock before this
+     * item's deductFromStock() ran. By this point the current item's Bill/
+     * BillItem/PharmaceuticalBillItem (and possibly earlier items' full stock
+     * movements) are already committed, so a clean rollback is not attempted -
+     * log loudly for manual reconciliation via BillDataCorrectionApi/
+     * PharmacyAdjustmentApi (the same tools used for #22938) instead of
+     * silently continuing.
+     */
+    private void logResidualStockRace(BillItem failedItem) {
+        Bill bill = getIssuedBill();
+        String itemName = failedItem != null && failedItem.getItem() != null
+                ? failedItem.getItem().getName() : "unknown item";
+        LOGGER.log(Level.SEVERE,
+                "Transfer Issue settle() stock race: bill {0} (billItem {1}) failed deductFromStock "
+                + "after passing the pre-loop aggregate stock check - concurrent stock consumption "
+                + "during settle(). Needs manual reconciliation (see #22938). Item: {2}",
+                new Object[]{bill != null ? bill.getId() : null,
+                    failedItem != null ? failedItem.getId() : null, itemName});
+        JsfUtil.addErrorMessage("Insufficient stock to issue " + itemName + " - stock changed while this "
+                + "transfer was being processed. This has been logged for review. Some earlier items in "
+                + "this transfer may have already been issued; please check the transfer before retrying.");
+    }
+
     public synchronized void settle() {
+        if (!isAuthorized("SETTLE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (getIssuedBill() != null && getIssuedBill().getId() != null) {
             JsfUtil.addErrorMessage("This bill has already been saved.");
             return;
@@ -813,16 +912,6 @@ public class TransferIssueForRequestsController implements Serializable {
                     JsfUtil.addErrorMessage(name + " is not available in the stock.");
                     return;
                 }
-            } else {
-                if (pbi.getStock() != null && pbi.getStock().getId() != null) {
-                    Stock liveStock = stockFacade.find(pbi.getStock().getId());
-                    if (liveStock == null || liveStock.getStock() < pbi.getQty()) {
-                        JsfUtil.addErrorMessage("Insufficient stock for one or more items. "
-                                + "Stock levels may have changed since this page was loaded. "
-                                + "Please refresh and try again.");
-                        return;
-                    }
-                }
             }
 
             double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
@@ -852,9 +941,21 @@ public class TransferIssueForRequestsController implements Serializable {
             return;
         }
 
+        // Aggregate stock check across all lines in this settle() call, run last
+        // (right before any persistence) so it reflects exactly what is about to
+        // be issued. Catches two-or-more lines drawing from the same Stock row
+        // that would each pass an individual per-line check but together exceed
+        // what is available (#22938).
+        String stockError = findInsufficientStockError();
+        if (stockError != null) {
+            JsfUtil.addErrorMessage(stockError);
+            return;
+        }
+
         if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
             getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
         }
+        stampDepartmentTypeFromItemsIfMissing();
 
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
@@ -924,7 +1025,17 @@ public class TransferIssueForRequestsController implements Serializable {
                 getBillItemFacade().edit(billItemsInIssue);
                 getBillItemFacade().edit(originalOrderItem);
             } else {
-                getBillItemFacade().edit(billItemsInIssue);
+                // findInsufficientStockError() already validated aggregate stock for
+                // this whole settle() call before any persistence started - reaching
+                // here means a concurrent transaction consumed the same stock in the
+                // narrow window since that check. deductFromStock() did NOT move any
+                // stock or write StockHistory for this item. This BillItem/
+                // PharmaceuticalBillItem is already committed, and earlier items in
+                // this loop may have already moved real stock, so a clean rollback
+                // is not attempted here - log for manual reconciliation instead of
+                // silently keeping a phantom line (#22938).
+                logResidualStockRace(billItemsInIssue);
+                return;
             }
 
             getPharmaceuticalBillItemFacade().edit(billItemsInIssue.getPharmaceuticalBillItem());
@@ -1501,6 +1612,32 @@ public class TransferIssueForRequestsController implements Serializable {
         }
     }
 
+    // Fallback when the request bill carries no departmentType (e.g. legacy
+    // requests): department-type-filtered reports drop bills left NULL (#22056).
+    // Stamps only when all non-null item types agree; mixed-type items are left
+    // unset rather than misclassifying the whole bill. When no item carries a
+    // type at all, default to Pharmacy (#19168) to match the fallback already
+    // used by TransferIssueDirectController and TransferRequestController
+    // .createNewApprovedTransferRequestBill() (#22146) — this is the last
+    // standard-flow bill-save path that could otherwise still persist NULL.
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getIssuedBill().getDepartmentType() != null) {
+            return;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return;
+            }
+        }
+        getIssuedBill().setDepartmentType(found != null ? found : DepartmentType.Pharmacy);
+    }
+
     public Bill getIssuedBill() {
         if (issuedBill == null) {
             issuedBill = new BilledBill();
@@ -1920,6 +2057,36 @@ public class TransferIssueForRequestsController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(issuedListMetadata);
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Transfer Issue For
+     * Requests privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. SAVE_DRAFT_ISSUE, FINALIZE_DRAFT_ISSUE, APPROVE_DRAFT_ISSUE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, issuedBill != null ? issuedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = issuedBill != null ? issuedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Transfer Issue For Requests access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer issues.");
+            return false;
+        }
+
+        return true;
     }
 
 }

@@ -679,6 +679,19 @@ public class DepartmentController implements Serializable {
         return departmentList;
     }
 
+    public List<Department> completeInwardDepartments(String qry) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and c.inactive=false "
+                + " and c.departmentType = com.divudi.core.data.DepartmentType.Inward "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        return getFacade().findByJpql(sql, hm);
+    }
+
     public List<Department> completeDeptWithIns(String qry) {
         FacesContext context = FacesContext.getCurrentInstance();
         Institution selectedInstitution = (Institution) UIComponent.getCurrentComponent(context).getAttributes().get("selectedInstitution");
@@ -972,9 +985,16 @@ public class DepartmentController implements Serializable {
         return ejbFacade;
     }
 
+    /**
+     * Active departments, for the {@code departmentController.items} dropdowns.
+     * <p>
+     * This used to call {@code fillSearchItems()}, which only ever assigns
+     * {@code searchItems} — {@code items} stayed null, so every page binding
+     * this getter rendered an empty dropdown and re-ran the query on each call.
+     */
     public List<Department> getItems() {
         if (items == null) {
-            fillSearchItems();
+            items = fillAllItems();
         }
         return items;
     }

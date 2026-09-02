@@ -210,6 +210,8 @@ public class PharmacyController implements Serializable {
     private List<BillItem> directPurchase;
     private List<PharmacyItemPurchaseDTO> directPurchaseDtos;
     private List<Bill> bills;
+    // GRN Summary Report "Stock Amount" column — bill.id -> summed BillItemFinanceDetails.valueAtPurchaseRate. See #23170.
+    private Map<Long, BigDecimal> grnStockAmountsByBillId;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
     private int managePharamcyReportIndex = -1;
     double persentage;
@@ -260,6 +262,10 @@ public class PharmacyController implements Serializable {
     private Institution fromInstitution;
     private PaymentMethod paymentMethod;
     private String reportType;
+    // Purchase-type filter for the GRN Summary Report page (grn_summary_report.xhtml).
+    // "grn" restricts to GRN bill types, "direct" to Direct Purchase bill types,
+    // null/unset keeps the existing behaviour of generateGrnReport() (all types). Issue #22984.
+    private String purchaseType;
     private double totalCreditPurchaseValue;
     private double totalCashPurchaseValue;
     private double totalCashCostValue;
@@ -1231,7 +1237,7 @@ public class PharmacyController implements Serializable {
      * avoid loading full entity graph
      */
     public void fillAmpsDto() {
-        String jpql = "SELECT new com.divudi.core.data.dto.AmpDTO("
+        String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, "
                 + "a.name, "
                 + "a.category.id, "
@@ -2317,6 +2323,16 @@ public class PharmacyController implements Serializable {
                 params.put("departmentTypes", selectedDepartmentTypes);
             }
 
+            if (category != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+                params.put("category", category);
+            }
+
+            if (dosageForm != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+                params.put("df", dosageForm);
+            }
+
             jpql += " order by b.id desc";
 
             try {
@@ -2485,11 +2501,39 @@ public class PharmacyController implements Serializable {
         filters.put("Institution", institution != null ? institution.getName() : "All");
         filters.put("Site", site != null ? site.getName() : "All");
         filters.put("Department", dept != null ? dept.getName() : "All");
-        
+        filters.put("Category", category != null ? category.getName() : "All");
+        filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
+
         filters.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All");
         filters.put("Supplier", fromInstitution != null ? fromInstitution.getName() : "All");
         filters.put("report type", reportType != null ? reportType : "All");
-       
+
+
+        return filters;
+    }
+
+    /**
+     * Filters map for the standalone GRN Summary Report page
+     * (reports/inventoryReports/grn_summary_report.xhtml), which only exposes
+     * From/To Date, Institution, Site, Department/Store, Payment Mode and
+     * Purchase Type as inputs. {@link #getFiltersForGRNDetailReport()} lists
+     * fields (Department Type, Category, Dosage Form, Supplier) that belong to
+     * the older combined GRN/Direct Purchase report (grn.xhtml) and are not
+     * present on this page — using it here showed those as "All" on every PDF
+     * and Excel export regardless of what the user actually filtered by. See
+     * issue #23170.
+     */
+    public Map<String, Object> getFiltersForGRNSummaryReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+        filters.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        filters.put("Site", site != null ? site.getName() : "All Sites");
+        filters.put("Department/Store", dept != null ? dept.getName() : "All Departments");
+        filters.put("Payment Mode", paymentMethod != null ? paymentMethod.getLabel() : "All Modes");
+        filters.put("Purchase Type", "grn".equals(purchaseType) ? "GRN" : "direct".equals(purchaseType) ? "Direct Purchase" : "All Types");
 
         return filters;
     }
@@ -6389,22 +6433,10 @@ public class PharmacyController implements Serializable {
         return data;
     }
 
-    public boolean isInvalidFilter() {
-        if (item != null && (reportType.equals("summeryReport") || reportType.equals("byBill"))) {
-            return true;
-        }
-        return false;
-    }
-
     public void createStockTransferReport() {
         reportTimerController.trackReportExecution(() -> {
             resetFields();
 //            BillType bt;
-
-            if (isInvalidFilter()) {
-                JsfUtil.addErrorMessage("Item filter cannot be applied for 'Summary' or 'Bill' report types. Please remove the item filter or choose a 'Detail' Report.");
-                return;
-            }
 
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             if ("issue".equals(transferType)) {
@@ -6925,6 +6957,10 @@ public class PharmacyController implements Serializable {
         if (dosageForm != null) {
             sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df) ");
             parameters.put("df", dosageForm);
+        }
+        if (item != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item) ");
+            parameters.put("item", item);
         }
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             sql.append(" AND b.departmentType IN :departmentTypes ");
@@ -10520,12 +10556,16 @@ public class PharmacyController implements Serializable {
 
         List<BillTypeAtomic> bta = new ArrayList<>();
 
-        bta.add(BillTypeAtomic.PHARMACY_GRN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        if (!"direct".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        }
+        if (!"grn".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        }
 
         bills = new ArrayList<>();
 
@@ -10602,6 +10642,66 @@ public class PharmacyController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
+
+        loadGrnStockAmounts();
+    }
+
+    /**
+     * Batch-computes the "Stock Amount" (value at purchase rate) for each bill
+     * currently loaded into {@link #bills}, summed from BillItemFinanceDetails.
+     * <p>
+     * Bill-level BillFinanceDetails.totalPurchaseValue is only populated via the
+     * GRN Costing workflow (see GrnCostingController) or the GRN BFD backfill
+     * service, so most GRNs never carry an aggregate on the bill itself. Summing
+     * from the line-level finance details (already populated at GRN receipt time
+     * for every bill item) avoids depending on that separate workflow having run.
+     * See issue #23170.
+     */
+    private void loadGrnStockAmounts() {
+        grnStockAmountsByBillId = new HashMap<>();
+        if (bills == null || bills.isEmpty()) {
+            return;
+        }
+        List<Long> billIds = new ArrayList<>();
+        for (Bill b : bills) {
+            if (b.getId() != null) {
+                billIds.add(b.getId());
+            }
+        }
+        if (billIds.isEmpty()) {
+            return;
+        }
+        String stockAmountJpql = "SELECT bi.bill.id, SUM(bi.billItemFinanceDetails.valueAtPurchaseRate) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill.id IN :billIds AND bi.retired = false "
+                + " GROUP BY bi.bill.id";
+        Map<String, Object> stockAmountParams = new HashMap<>();
+        stockAmountParams.put("billIds", billIds);
+        try {
+            List<Object[]> rows = getBillItemFacade().findObjectsArrayByJpql(stockAmountJpql, stockAmountParams, TemporalType.TIMESTAMP);
+            if (rows != null) {
+                for (Object[] row : rows) {
+                    if (row[0] != null && row[1] != null) {
+                        grnStockAmountsByBillId.put((Long) row[0], (BigDecimal) row[1]);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error computing GRN stock amounts", e);
+        }
+    }
+
+    /**
+     * "Stock Amount" for a single bill row on the GRN Summary Report — see
+     * {@link #loadGrnStockAmounts()}. Falls back to zero when nothing was
+     * posted to stock (e.g. cancelled bills with no surviving bill items).
+     */
+    public BigDecimal getGrnStockAmount(Bill bill) {
+        if (bill == null || bill.getId() == null || grnStockAmountsByBillId == null) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal amt = grnStockAmountsByBillId.get(bill.getId());
+        return amt != null ? amt : BigDecimal.ZERO;
     }
 
     public Double calculateTotalGrnAmount() {
@@ -10617,21 +10717,27 @@ public class PharmacyController implements Serializable {
         double total = 0.0;
 
         for (Bill b : bills) {
-            if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
+            BillTypeAtomic bta = b.getBillTypeAtomic();
+            if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN))) {
                 total -= b.getNetTotal();
-            } else if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)) {
+            } else if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))) {
                 total -= b.getNetTotal();
-            } else if (b.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
+            } else if (bta != null && bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
                 // Direct purchases have no separate PO, so use the bill's own net total
                 total += b.getNetTotal();
             } else {
-                total += b.getReferenceBill().getNetTotal();
+                total += (b.getReferenceBill() != null ? b.getReferenceBill().getNetTotal() : 0);
             }
         }
         return total;
     }
 
    public void exportGRNAndDirectPurchaseDetailReportToExcel() {
+    if (bills == null || bills.isEmpty()) {
+        JsfUtil.addErrorMessage("No data available to export");
+        return;
+    }
+
     FacesContext context = FacesContext.getCurrentInstance();
     HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -10722,8 +10828,9 @@ public class PharmacyController implements Serializable {
             emptyRow.createCell(16).setCellValue("-");
             emptyRow.createCell(17).setCellValue("-");
             emptyRow.createCell(18).setCellValue("-");
-            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic() != null
+                    && (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN))
                     ? -1 *(bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 )  : (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 ));
             emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
@@ -10758,11 +10865,27 @@ public class PharmacyController implements Serializable {
                         (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
                         && billItem.getItem().getMeasurementUnit().getName() != null)
                         ? billItem.getItem().getMeasurementUnit().getName() : "-");
-                emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
-                emptyInnerRow.createCell(12).setCellValue(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                emptyInnerRow.createCell(13).setCellValue(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
+                } else {
+                    emptyInnerRow.createCell(11).setCellValue("-");
+                }
+                emptyInnerRow.createCell(12).setCellValue(
+                        billItem.getPharmaceuticalBillItem() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo() != null
+                        ? billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "-");
+                emptyInnerRow.createCell(13).setCellValue(
+                        billItem.getPharmaceuticalBillItem() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                        && billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire() != null
+                        ? sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()) : "-");
                 emptyInnerRow.createCell(14).setCellValue("-");
-                emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                } else {
+                    emptyInnerRow.createCell(15).setCellValue("-");
+                }
                 emptyInnerRow.createCell(16).setCellValue(billItem.getDiscount());
                 emptyInnerRow.createCell(17).setCellValue(billItem.getNetValue());
                 emptyInnerRow.createCell(18).setCellValue(billItem.getBill().getNetTotal());
@@ -10797,7 +10920,8 @@ public class PharmacyController implements Serializable {
         context.responseComplete();
 
     } catch (Exception e) {
-        e.printStackTrace();
+        Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating GRN/Direct Purchase detail Excel report", e);
+        context.responseComplete();
     }
 }
 
@@ -11194,8 +11318,172 @@ public class PharmacyController implements Serializable {
         }
     }
     
+    /**
+     * PDF export for the standalone GRN Summary Report page
+     * (reports/inventoryReports/grn_summary_report.xhtml). Columns mirror that
+     * page's on-screen table exactly and filters are scoped to just the inputs
+     * that page actually exposes. See issue #23170.
+     * <p>
+     * NOT used by the older combined GRN/Direct Purchase report (grn.xhtml) —
+     * that page keeps using {@link #exportGRNAndDirectPurchaseSummaryReportToPDF()}
+     * unchanged, since its own on-screen "summary" table has a different,
+     * narrower column set that method already matches.
+     */
+    public void exportGRNSummaryReportToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+
+        List<Bill> rows = getBills();
+        if (rows == null || rows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export");
+            return;
+        }
+
+        String fileName = "GRN_Summary_Report_"
+                + fromDateFormatted() + "_to_" + toDateFormatted() + ".pdf";
+
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        SimpleDateFormat sdfDateOnly = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat());
+        com.itextpdf.text.Font bodyFontSmall =
+                com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+        com.itextpdf.text.Document document = null;
+        OutputStream out = null;
+
+        try {
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            out = externalContext.getResponseOutputStream();
+
+            document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("GRN Summary Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            Map<String, Object> filters = getFiltersForGRNSummaryReport();
+            PdfPTable infoTable = createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(12);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{0.6f, 1.3f, 1.2f, 1.2f, 1.1f, 1.2f, 1.8f, 1.1f, 1f, 1f, 1f, 1.1f});
+
+            String[] headers = {
+                "S.No", "GRN No", "Purchase Type", "GRN Date", "Invoice No", "Invoice Date",
+                "Vendor Name", "Payment Mode", "Amount", "Dis. Amount", "Stock Amount", "Status"
+            };
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell =
+                        new com.itextpdf.text.pdf.PdfPCell(
+                                new com.itextpdf.text.Phrase(header,
+                                        com.itextpdf.text.FontFactory.getFont(
+                                                com.itextpdf.text.FontFactory.HELVETICA_BOLD, 7)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            BigDecimal totalDiscount = BigDecimal.ZERO;
+            BigDecimal totalStockAmount = BigDecimal.ZERO;
+
+            int index = 1;
+            for (Bill f : rows) {
+                BigDecimal stockAmount = getGrnStockAmount(f);
+                totalDiscount = totalDiscount.add(BigDecimal.valueOf(f.getDiscount()));
+                totalStockAmount = totalStockAmount.add(stockAmount);
+
+                table.addCell(numCell(index++, bodyFontSmall));
+                table.addCell(textCell(f.getDeptId(), bodyFontSmall));
+                table.addCell(textCell(f.getBillTypeAtomic() != null ? f.getBillTypeAtomic().getLabel() : "-", bodyFontSmall));
+                table.addCell(textCell(f.getCreatedAt() != null ? sdfDateOnly.format(f.getCreatedAt()) : "-", bodyFontSmall));
+                table.addCell(textCell(f.getInvoiceNumber(), bodyFontSmall));
+                table.addCell(textCell(f.getInvoiceDate() != null ? sdfDateOnly.format(f.getInvoiceDate()) : "-", bodyFontSmall));
+                table.addCell(textCell((f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)
+                        ? (f.getToInstitution() != null ? f.getToInstitution().getName() : "-")
+                        : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
+                table.addCell(textCell(f.getPaymentMethod() != null ? f.getPaymentMethod().getLabel() : "-", bodyFontSmall));
+                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getDiscount(), bodyFontSmall));
+                table.addCell(numCell(stockAmount.doubleValue(), bodyFontSmall));
+                table.addCell(textCell(grnSummaryStatusLabel(f), bodyFontSmall));
+            }
+
+            com.itextpdf.text.pdf.PdfPCell footerCell =
+                    new com.itextpdf.text.pdf.PdfPCell(
+                            new com.itextpdf.text.Phrase("Total",
+                                    com.itextpdf.text.FontFactory.getFont(
+                                            com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+            footerCell.setColspan(8);
+            footerCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+            footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            table.addCell(footerCell);
+
+            table.addCell(numCell(calculateTotalGrnAmount(), bodyFontSmall));
+            table.addCell(numCell(totalDiscount.doubleValue(), bodyFontSmall));
+            table.addCell(numCell(totalStockAmount.doubleValue(), bodyFontSmall));
+            com.itextpdf.text.pdf.PdfPCell blankStatusFooterCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(""));
+            blankStatusFooterCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+            table.addCell(blankStatusFooterCell);
+
+            document.add(table);
+
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating GRN Summary Report PDF", e);
+        } finally {
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
+            context.responseComplete();
+        }
+    }
+
+    /**
+     * Same "Status" logic as the on-screen GRN Summary Report table
+     * (grn_summary_report.xhtml) — kept here so the PDF export matches it.
+     */
+    private String grnSummaryStatusLabel(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return "-";
+        }
+        BillTypeAtomic bta = bill.getBillTypeAtomic();
+        if (bta == BillTypeAtomic.PHARMACY_GRN_CANCELLED || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) {
+            return "Cancelled";
+        }
+        if (bta == BillTypeAtomic.PHARMACY_GRN_RETURN || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
+            return "Returned";
+        }
+        if ((bta == BillTypeAtomic.PHARMACY_GRN && bill.isCompleted()) || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
+            return "Approved";
+        }
+        if (bta == BillTypeAtomic.PHARMACY_GRN && !bill.isCompleted()) {
+            return "Pending Approval";
+        }
+        return "-";
+    }
+
     // PostProcessor for grn and direct purchase summary report excel export
     public void postProcessGRNAndDirectPurchaseReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN and Direct Purchase Report", getFiltersForGRNDetailReport());
+    }
+
+    public void postProcessGRNSummaryReportExcel(Object document) {
+        postProcessGRNAndDirectPurchaseReportExcel(document, "GRN Summary Report", getFiltersForGRNSummaryReport());
+    }
+
+    private void postProcessGRNAndDirectPurchaseReportExcel(Object document, String reportTitle, Map<String, Object> filters) {
         if (document == null) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
             return;
@@ -11210,15 +11498,31 @@ public class PharmacyController implements Serializable {
             return;
         }
 
-        workbook.setSheetName(0, "GRN and Direct Purchase Report");
-        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+        workbook.setSheetName(0, reportTitle);
 
-        Map<String, Object> filters = getFiltersForGRNDetailReport();
+        // Reserve exactly enough rows for the metadata block below: institution row +
+        // title row + ceil(filterCount / 3) filter rows (addMetaDataToExcelSheet packs
+        // 3 label/value pairs per row) + 1 blank spacer row (reused as the "Generated
+        // On" row) + 1 trailing blank spacer before the report's own header row.
+        // This used to be a hardcoded 7, tuned for exactly the GRN Summary Report's 7
+        // filters — with the GRN/Direct Purchase Report's 11 filters (one more filter
+        // row), the fixed rowIndex=5 for "Generated On" silently overwrote the last
+        // filter row's Supplier/report-type values instead of landing on the blank
+        // spacer. Computing both from the actual filter count keeps this correct for
+        // either caller. See issue #23170 (CodeRabbit review on PR #23195).
+        int filterCount = (filters != null) ? filters.size() : 0;
+        int filterRows = (int) Math.ceil(filterCount / 3.0);
+        int metadataContentRows = 2 + filterRows; // institution + title + filter rows
+        int shiftAmount = metadataContentRows + 2; // + blank spacer (Generated On) + trailing blank
+        sheet.shiftRows(0, sheet.getLastRowNum(), shiftAmount);
 
+        int rowIndex = 0;
         if (filters != null && !filters.isEmpty()) {
-            addMetaDataToExcelSheet(workbook, sheet, 0, "GRN and Direct Purchase Report", filters);
+            // addMetaDataToExcelSheet() returns the row index just past its own
+            // trailing blank spacer row; back up one row to write "Generated On" into
+            // that spacer row instead of appending a whole extra row after it.
+            rowIndex = addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters) - 1;
         }
-        int rowIndex = 5;
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         // Add "Generated On" row with current date and time
         Row generatedOnRow = sheet.createRow(rowIndex++);
@@ -12208,6 +12512,14 @@ public class PharmacyController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getPurchaseType() {
+        return purchaseType;
+    }
+
+    public void setPurchaseType(String purchaseType) {
+        this.purchaseType = purchaseType;
     }
 
     public Department getDept() {

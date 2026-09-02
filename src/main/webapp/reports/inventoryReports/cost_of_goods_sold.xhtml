@@ -25,38 +25,39 @@
                             </p:commandButton>
                         </f:facet>
 
-                        <p:panelGrid columns="4" class="w-100">
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
 
+                            <!-- Row 1: From | To | Department Type -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-3" />
                                 <p:outputLabel value="From Date" class="mx-3" for="fromDate"/>
                             </h:panelGroup>
                             <p:calendar
-                                class="w-100"
-                                inputStyleClass="w-100"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
                                 id="fromDate"
                                 ariaLabel="From Date"
                                 value="#{pharmacyReportController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-
+                            <p:spacer width="50" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa ml-3" />
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <p:outputLabel value="To Date" class="mx-3" for="toDate"/>
                             </h:panelGroup>
                             <p:calendar
-                                class="w-100"
-                                inputStyleClass="w-100"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
                                 id="toDate"
                                 ariaLabel="To Date"
                                 value="#{pharmacyReportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-
+                            <p:spacer width="50" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building ml-5"/>
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="Department Type" class="mx-3" for="departmentTypeFilter"/>
                             </h:panelGroup>
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -64,7 +65,8 @@
                                     id="departmentTypeFilter"
                                     value="#{pharmacyReportController.selectedDepartmentTypes}"
                                     label="Select Department Types"
-                                    class="w-100"
+                                    updateLabel="true"
+                                    styleClass="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
                                     showHeader="true"
@@ -79,14 +81,14 @@
                                 <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
                             </h:panelGroup>
 
-
+                            <!-- Row 2: Institution | Site | Department (aligned on one level) -->
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university ml-3" />
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Institution" class="mx-3" for="phmIns"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="phmIns"
-                                class="w-100"
+                                styleClass="w-100 form-control"
                                 ariaLabel="Institution"
                                 value="#{pharmacyReportController.institution}"
                                 filter="true">
@@ -96,14 +98,15 @@
                                 <p:ajax process="phmIns" update="phmDept"/>
                             </p:selectOneMenu>
 
+                            <p:spacer width="50" />
+
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-3" />
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Site" class="mx-3" for="phmSite"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="phmSite"
-                                class="w-100"
-                                styleClass="w-100"
+                                styleClass="w-100 form-control"
                                 ariaLabel="Site"
                                 value="#{pharmacyReportController.site}"
                                 filter="true">
@@ -113,8 +116,10 @@
                                 <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
 
+                            <p:spacer width="50" />
+
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building ml-3" />
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Department" class="mx-3" for="phmDept"/>
                             </h:panelGroup>
                             <h:panelGroup id="phmDept">
@@ -122,6 +127,7 @@
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
+                                    styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     ariaLabel="Department"
                                     filterMatchMode="contains"
@@ -137,6 +143,7 @@
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
+                                    styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     ariaLabel="Department"
                                     filterMatchMode="contains"
@@ -152,13 +159,14 @@
                                 <!-- Component 3: With Institution Only -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
+                                    styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     ariaLabel="Department"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyReportController.institution)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
@@ -167,6 +175,7 @@
                                 <!-- Component 4: With Both Institution and Site -->
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
+                                    styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     ariaLabel="Department"
                                     filterMatchMode="contains"
@@ -180,14 +189,15 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
+                            <!-- Row 3: Item + trailing spacers -->
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-pills ml-3" />
+                                <h:outputText value="&#xf484;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Item" class="mx-3" for="phmItem"/>
                             </h:panelGroup>
                             <p:autoComplete
                                 id="phmItem"
-                                class="w-100"
-                                inputStyleClass="w-100"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
                                 ariaLabel="Item"
                                 value="#{pharmacyReportController.item}"
                                 completeMethod="#{itemController.completeItem}"
@@ -200,7 +210,14 @@
                                 </p:column>
                             </p:autoComplete>
 
-                        </p:panelGrid>
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                        </h:panelGrid>
 
                         <div class="d-flex align-items-center">
                             <p:commandButton class="ui-button-warning mx-1"

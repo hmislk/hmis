@@ -38,6 +38,24 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
     }
 
     /**
+     * Finds the StockHistory row written at the time of a given stock movement
+     * (e.g. a stock-quantity adjustment), so its cost/purchase/retail rate
+     * snapshot - captured by PharmacyBean.addToStockHistory at that exact
+     * moment - can be used instead of the item batch's CURRENT rate, which may
+     * have since changed via a later rate adjustment.
+     */
+    public StockHistory findByPharmaceuticalBillItem(com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbItem) {
+        if (pbItem == null || pbItem.getId() == null) {
+            return null;
+        }
+        String jpql = "select sh from StockHistory sh where sh.pbItem=:pbItem order by sh.id desc";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("pbItem", pbItem);
+        List<StockHistory> results = findByJpql(jpql, params);
+        return (results == null || results.isEmpty()) ? null : results.get(0);
+    }
+
+    /**
      * Calculates the stock value at retail rate for a given date and department.
      * This method uses a simplified native SQL query for better performance.
      *
@@ -59,12 +77,14 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             return calculateStockValueAtRetailRateOptimized(date, departmentId);
         }
         try {
-            String src     = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED") + " sh";
+            // See calculateStockValueAtRetailRateOptimized(Date, Long) for why sh.RETAILRATE
+            // must be preferred over the item batch's current rate.
+            String src     = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED, RETAILRATE") + " sh";
             String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
             String sql =
                 "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.retail_rate), 0.0) AS total_value " +
                 "FROM ( " +
-                "    SELECT sh.STOCKQTY, COALESCE(ib.RETAILSALERATE, 0.0) AS retail_rate " +
+                "    SELECT sh.STOCKQTY, COALESCE(NULLIF(sh.RETAILRATE, 0), ib.RETAILSALERATE, 0.0) AS retail_rate " +
                 "    FROM " + src + " " +
                 "    INNER JOIN ( " +
                 "        SELECT DEPARTMENT_ID, ITEMBATCH_ID, MAX(ID) AS max_id " +
@@ -98,12 +118,20 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             // Use native SQL for better performance
             // This query finds the latest stock history record for each item batch before the given date
             // and calculates the total retail value
+            // Prefer the retail rate snapshot recorded on the StockHistory row itself
+            // (sh.RETAILRATE, written by PharmacyBean.addToStockHistory at the time of
+            // that stock movement) over the item batch's CURRENT retail rate. Without this,
+            // a mid-period PHARMACY_RETAIL_RATE_ADJUSTMENT is invisible to this calculation
+            // (both "opening" and "closing" would use the same current rate), which double-
+            // counts the adjustment bill's own delta when the F15 report reconciles
+            // Opening + Sales + Purchases + Transfers + Adjustments = Closing. This mirrors
+            // the already-correct pattern in calculateStockValueAtPurchaseRateOptimized.
             String sql =
                 "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.retail_rate), 0.0) AS total_value " +
                 "FROM ( " +
                 "    SELECT  " +
                 "        sh.STOCKQTY, " +
-                "        COALESCE(ib.RETAILSALERATE, 0.0) AS retail_rate " +
+                "        COALESCE(NULLIF(sh.RETAILRATE, 0), ib.RETAILSALERATE, 0.0) AS retail_rate " +
                 "    FROM STOCKHISTORY sh " +
                 "    INNER JOIN ( " +
                 "        SELECT  " +
@@ -237,13 +265,16 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             return calculateStockValueAtCostRateOptimized(date, departmentId);
         }
         try {
-            String src      = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED") + " sh";
+            // See calculateStockValueAtCostRateOptimized(Date, Long) for why sh.COSTRATE
+            // must be preferred over the item batch's current rate.
+            String src      = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, STOCKQTY, RETIRED, COSTRATE") + " sh";
             String srcSmall = shUnionSrc("ID, DEPARTMENT_ID, ITEMBATCH_ID, RETIRED, CREATEDAT") + " combined";
             String sql =
                 "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.cost_rate), 0.0) AS total_value " +
                 "FROM ( " +
                 "    SELECT sh.STOCKQTY, " +
-                "        CASE WHEN ib.COSTRATE IS NOT NULL AND ib.COSTRATE != 0 THEN ib.COSTRATE " +
+                "        CASE WHEN sh.COSTRATE IS NOT NULL AND sh.COSTRATE != 0 THEN sh.COSTRATE " +
+                "             WHEN ib.COSTRATE IS NOT NULL AND ib.COSTRATE != 0 THEN ib.COSTRATE " +
                 "             WHEN ib.PURCAHSERATE IS NOT NULL AND ib.PURCAHSERATE != 0 THEN ib.PURCAHSERATE " +
                 "             ELSE 0.0 END AS cost_rate " +
                 "    FROM " + src + " " +
@@ -277,13 +308,16 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
         try {
             // Use native SQL for better performance
             // This query finds the latest stock history record for each item batch before the given date
-            // and calculates the total cost value using the cost rate fallback logic
+            // and calculates the total cost value using the cost rate fallback logic.
+            // Prefer sh.COSTRATE (the snapshot recorded at that stock movement) over the item
+            // batch's CURRENT cost rate - see calculateStockValueAtRetailRateOptimized for why.
             String sql =
                 "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.cost_rate), 0.0) AS total_value " +
                 "FROM ( " +
                 "    SELECT  " +
                 "        sh.STOCKQTY, " +
                 "        CASE " +
+                "            WHEN sh.COSTRATE IS NOT NULL AND sh.COSTRATE != 0 THEN sh.COSTRATE " +
                 "            WHEN ib.COSTRATE IS NOT NULL AND ib.COSTRATE != 0 THEN ib.COSTRATE " +
                 "            WHEN ib.PURCAHSERATE IS NOT NULL AND ib.PURCAHSERATE != 0 THEN ib.PURCAHSERATE " +
                 "            ELSE 0.0 " +

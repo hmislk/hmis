@@ -34,7 +34,7 @@
                         >
                         </p:autoComplete>
                         <h:outputLabel value="Movement Type"></h:outputLabel>
-                        <p:selectCheckboxMenu class="w-100 mx-4" value="#{reportsStock.billTypes}" label="Bill Types">
+                        <p:selectCheckboxMenu class="w-100 mx-4" value="#{reportsStock.billTypes}" label="Bill Types" updateLabel="true">
                             <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt"
                                            itemLabel="#{pbt.label}" itemValue="#{pbt}"></f:selectItems>
                         </p:selectCheckboxMenu>

@@ -196,6 +196,9 @@ public class InstitutionController implements Serializable {
         } else {
             getFacade().edit(current);
         }
+        if (current.isDefaultInstitution()) {
+            getFacade().clearDefaultInstitutionExceptFor(current.getId());
+        }
         return toListInstitutions();
     }
 

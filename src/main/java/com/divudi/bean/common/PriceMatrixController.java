@@ -220,6 +220,91 @@ public class PriceMatrixController implements Serializable {
         return result;
     }
 
+    // =========================================================================
+    // Room-category-aware fetchInwardMargin overloads (issue #21977)
+    //
+    // Thread the patient's current room category through to the room-category-
+    // aware getInwardPriceAdjustment lookup. A null roomCategory restricts the
+    // lookup to wildcard (NULL) rows, so callers with no room context behave
+    // exactly as before. The category cascade (item category then parent
+    // category) and the config-gated payment-method dimension are preserved.
+    // =========================================================================
+
+    public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department,
+            PaymentMethod paymentMethod, Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
+        return fetchInwardMargin(billItem.getItem(), serviceValue, department, paymentMethod, creditCompany, admissionType, roomCategory);
+    }
+
+    public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department,
+            PaymentMethod paymentMethod, Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
+        boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
+        Category category = resolveInwardMatrixCategory(item);
+        PaymentMethod pm = isPaymentMethodAllowedInInwardMatrix ? paymentMethod : null;
+        PriceMatrix result = getInwardPriceAdjustment(department, serviceValue, category, pm, creditCompany, admissionType, roomCategory);
+        if (result == null && category != null) {
+            result = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), pm, creditCompany, admissionType, roomCategory);
+        }
+        return result;
+    }
+
+    /**
+     * Inward-margin lookup for room charges themselves (room/maintenance/
+     * linen/nursing/MO/administration/medical-care), as opposed to a service
+     * or pharmacy item. These matrix rows are configured with no category
+     * (category is null) and a room category, via the room-category price
+     * matrix admin page.
+     */
+    public PriceMatrix fetchRoomChargeMargin(Department department, double chargeValue, PaymentMethod paymentMethod,
+            Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
+        if (department == null) {
+            return null;
+        }
+        boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
+        PaymentMethod pm = isPaymentMethodAllowedInInwardMatrix ? paymentMethod : null;
+        return getRoomChargePriceAdjustment(department, chargeValue, pm, creditCompany, admissionType, roomCategory);
+    }
+
+    private InwardPriceAdjustment getRoomChargePriceAdjustment(Department department, double dbl, PaymentMethod paymentMethod,
+            Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
+        StringBuilder sql = new StringBuilder("select a from InwardPriceAdjustment a "
+                + " where a.retired=false"
+                + " and a.category is null "
+                + " and a.department=:dep"
+                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)");
+        HashMap hm = new HashMap();
+        hm.put("dep", department);
+        hm.put("frPrice", dbl);
+        hm.put("tPrice", dbl);
+
+        if (paymentMethod != null) {
+            sql.append(" and a.paymentMethod=:pm");
+            hm.put("pm", paymentMethod);
+        }
+
+        if (creditCompany == null) {
+            sql.append(" and a.creditCompany is null");
+        } else {
+            sql.append(" and a.creditCompany=:cc");
+            hm.put("cc", creditCompany);
+        }
+
+        if (admissionType == null) {
+            sql.append(" and a.admissionType is null");
+        } else {
+            sql.append(" and (a.admissionType=:at or a.admissionType is null)");
+            hm.put("at", admissionType);
+        }
+
+        sql.append(roomCategoryPredicate(roomCategory));
+        if (roomCategory != null) {
+            hm.put("rc", roomCategory);
+        }
+
+        sql.append(inwardMatrixOrderBy(admissionType != null, roomCategory != null));
+
+        return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql.toString(), hm));
+    }
+
     public double getItemWithInwardMargin(Item item) {
         if (item == null) {
             return 0.0;
@@ -464,6 +549,125 @@ public class PriceMatrixController implements Serializable {
             hm.put("at", admissionType);
         }
         return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql, hm));
+    }
+
+    // =========================================================================
+    // Room-category-aware inward price-adjustment lookup (issue #21977)
+    //
+    // Adds the patient's current room category as an optional matrix dimension,
+    // additive on top of the existing paymentMethod / creditCompany /
+    // admissionType dimensions. Semantics mirror admissionType (issue #21551):
+    //
+    //   - A row created WITH a roomCategory applies only to that room category.
+    //   - A row created WITHOUT a roomCategory (NULL) is a wildcard and applies
+    //     to every room category — this preserves the behaviour of all existing
+    //     matrices, which have no room category set.
+    //   - When both a matching room-category-specific row and a wildcard row
+    //     exist for the same dept/category/price-range (and payment method /
+    //     credit company / admission type), the specific row wins.
+    //   - When roomCategory is null at the call site (patient not in a room yet),
+    //     the lookup restricts to wildcard (NULL) rows only, identical to the
+    //     legacy behaviour.
+    //
+    // Rather than doubling every existing overload, all of them are consolidated
+    // to delegate to one predicate-builder that appends a WHERE fragment per
+    // supplied dimension and orders wildcards last. The tie-break between
+    // admission-type specificity and room-category specificity is controlled by
+    // the config option below so deployments can choose which dimension is the
+    // dominant sort key.
+    // =========================================================================
+
+    private static final String CONFIG_ROOM_CATEGORY_OVER_ADMISSION_TYPE =
+            "Inward Matrix - Room Category takes priority over Admission Type";
+
+    /**
+     * Builds the ORDER BY that ranks the most specific matrix row first and the
+     * full wildcard row last, across the admissionType and roomCategory
+     * dimensions. Each dimension contributes 0 when specific and 1 when wildcard
+     * (NULL). The config flag decides which dimension is the primary sort key;
+     * a row that is specific on both always outranks any partially-specific row,
+     * which in turn outranks the full wildcard.
+     */
+    private String inwardMatrixOrderBy(boolean admissionTypeSupplied, boolean roomCategorySupplied) {
+        if (!admissionTypeSupplied && !roomCategorySupplied) {
+            return "";
+        }
+        String roomRank = roomCategorySupplied
+                ? "case when a.roomCategory is null then 1 else 0 end" : null;
+        String admRank = admissionTypeSupplied
+                ? "case when a.admissionType is null then 1 else 0 end" : null;
+        boolean roomFirst = configOptionApplicationController
+                .getBooleanValueByKey(CONFIG_ROOM_CATEGORY_OVER_ADMISSION_TYPE, false);
+        StringBuilder order = new StringBuilder(" order by ");
+        if (roomRank != null && admRank != null) {
+            order.append(roomFirst ? roomRank + ", " + admRank : admRank + ", " + roomRank);
+        } else {
+            order.append(roomRank != null ? roomRank : admRank);
+        }
+        return order.toString();
+    }
+
+    /**
+     * Appends the "(a.roomCategory = :rc or a.roomCategory is null)" fragment
+     * when a room category is supplied, else restricts to wildcard rows only —
+     * so a caller with no room context never picks up a room-specific row.
+     */
+    private String roomCategoryPredicate(RoomCategory roomCategory) {
+        if (roomCategory == null) {
+            return " and a.roomCategory is null";
+        }
+        return " and (a.roomCategory=:rc or a.roomCategory is null)";
+    }
+
+    /**
+     * Full inward price-adjustment lookup with every optional dimension threaded
+     * through. paymentMethod / creditCompany / admissionType / roomCategory are
+     * each optional (null = not filtered / wildcard-only, per the semantics
+     * documented above). This is the single method all the public overloads
+     * ultimately delegate to.
+     */
+    public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category,
+            PaymentMethod paymentMethod, Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
+        StringBuilder sql = new StringBuilder("select a from InwardPriceAdjustment a "
+                + " where a.retired=false"
+                + " and a.category=:cat "
+                + " and a.department=:dep"
+                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)");
+        HashMap hm = new HashMap();
+        hm.put("dep", department);
+        hm.put("frPrice", dbl);
+        hm.put("tPrice", dbl);
+        hm.put("cat", category);
+
+        if (paymentMethod == null) {
+            // No payment-method filter: match rows regardless of payment method.
+        } else {
+            sql.append(" and a.paymentMethod=:pm");
+            hm.put("pm", paymentMethod);
+        }
+
+        if (creditCompany == null) {
+            sql.append(" and a.creditCompany is null");
+        } else {
+            sql.append(" and a.creditCompany=:cc");
+            hm.put("cc", creditCompany);
+        }
+
+        if (admissionType == null) {
+            sql.append(" and a.admissionType is null");
+        } else {
+            sql.append(" and (a.admissionType=:at or a.admissionType is null)");
+            hm.put("at", admissionType);
+        }
+
+        sql.append(roomCategoryPredicate(roomCategory));
+        if (roomCategory != null) {
+            hm.put("rc", roomCategory);
+        }
+
+        sql.append(inwardMatrixOrderBy(admissionType != null, roomCategory != null));
+
+        return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql.toString(), hm));
     }
 
     public InwardMemberShipDiscount getInwardMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Institution ins, InwardChargeType inwardChargeType, AdmissionType admissionType) {
@@ -1531,6 +1735,17 @@ public class PriceMatrixController implements Serializable {
      * a.inwardChargeType IS NULL to keep service/pharmacy rows isolated from
      * room-charge-type rows.
      */
+    /**
+     * NOTE (2026-08-31, issue #23237): department now wildcard-matches like
+     * paymentMethod/admissionType do in this same query, mirroring the fix
+     * already applied to the native-SQL path (PriceMatrixNativeSqlService.
+     * fetchDiscountPct) in #23220. This method has a live caller —
+     * InwardBeanController.applyInwardDiscountToBillFee, used by inpatient
+     * service/investigation billing — so the department-exact-match gap was
+     * silently dropping investigation discounts whenever a matrix row was
+     * saved without a department (meant as "any department") against an
+     * investigation that has its own department set. See issue #23308.
+     */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,
             InwardChargeType chargeType, boolean chargeTypeSpecific, Institution creditCompany) {
@@ -1561,7 +1776,7 @@ public class PriceMatrixController implements Serializable {
             jpql.append(" and a.paymentScheme is null");
         }
         if (department != null) {
-            jpql.append(" and a.department = :dep");
+            jpql.append(" and (a.department = :dep or a.department is null)");
             params.put("dep", department);
         } else {
             jpql.append(" and a.department is null");

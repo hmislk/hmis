@@ -9,7 +9,7 @@
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
     <ui:define name="content">
 
-        <h:form id="form" onkeypress="if (event.keyCode === 13) { event.preventDefault(); return false; }">
+        <h:form id="form" onkeypress="if (event.keyCode === 13 &amp;&amp; event.target.tagName !== 'TEXTAREA') { event.preventDefault(); return false; }">
 
             <!-- Search panel: shown when no surgery bill is selected -->
             <h:panelGroup rendered="#{inwardTimedItemController.batchBill eq null}">
@@ -192,7 +192,7 @@
                                             <p:column headerText="Service">
                                                 <h:outputLabel value="#{ix.name}"/>
                                             </p:column>
-                                            <p:column headerText="Rate">
+                                            <p:column headerText="Rate" rendered="#{webUserController.hasPrivilege('ShowServiceCharges') or webUserController.hasPrivilege('ShowTimeServiceCharges')}">
                                                 <h:outputLabel value="#{ix.total}"/>
                                             </p:column>
                                         </p:autoComplete>
@@ -222,6 +222,18 @@
                                             timeInput="true"
                                             value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.toTime}"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </div>
+                                </div>
+                                <div class="row m-1">
+                                    <div class="col-4">
+                                        <p:outputLabel value="Comment"/>
+                                    </div>
+                                    <div class="col-8">
+                                        <p:inputTextarea
+                                            id="comment"
+                                            rows="2"
+                                            class="w-100"
+                                            value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.comment}"/>
                                     </div>
                                 </div>
                                 <div class="row m-1">
@@ -265,12 +277,18 @@
                                     value="#{ti.billFee.patientItem.toTime}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </p:column>
-                            <p:column headerText="Total" styleClass="averageNumericColumn">
+                            <p:column headerText="Total" styleClass="averageNumericColumn" rendered="#{webUserController.hasPrivilege('ShowTimeServiceCharges')}">
                                 <h:outputLabel value="#{ti.billFee.patientItem.serviceValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Comments">
+                                <p:inputTextarea
+                                    id="rowComment"
+                                    rows="2"
+                                    class="w-100"
+                                    value="#{ti.billFee.patientItem.comment}"
+                                    disabled="#{ti.billFee.id eq null or ti.billFee.retired or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
                                 <h:outputLabel value="Added by #{ti.billFee.creater.webUserPerson.name}"/>
                                 <br/>
                                 <h:panelGroup rendered="#{ti.billFee.retired}">

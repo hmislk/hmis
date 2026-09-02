@@ -75,6 +75,24 @@ public class SmsManagerEjb {
     // Processes pending lab report approval SMS messages based on configurable delay strategies
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     public void processPendingLabReportApprovalSmsQueue() {
+        // Guard the automatic-timer callback. If a timeout method throws an
+        // exception out to the EJB container (e.g. a transient database
+        // connectivity failure while reading config options or running the
+        // query below), the non-persistent automatic timer can stop firing and
+        // never recover until the server is restarted. That was the root cause
+        // of the recurring "pending Lab Report SMS freeze" on Southern Lanka
+        // production: a brief DB outage killed this timer, and every restart
+        // only masked it. Swallow everything here so the timer always survives
+        // and resumes sending on its own once the underlying issue clears.
+        try {
+            processPendingLabReportApprovalSmsQueueInternal();
+        } catch (Throwable t) {
+            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,
+                    "processPendingLabReportApprovalSmsQueue failed; timer will retry next minute", t);
+        }
+    }
+
+    private void processPendingLabReportApprovalSmsQueueInternal() {
         if (configOptionApplicationController == null || smsFacade == null) {
             return;
         }
@@ -126,12 +144,11 @@ public class SmsManagerEjb {
         minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
 
         String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
-                + " and e.smsType = :smsType and e.sendingFailed =:failed "
+                + " and e.smsType = :smsType and (e.sendingFailed = false or e.sendingFailed is null) "
                 + " and e.createdAt between :from and :to";
         Map<String, Object> params = new HashMap<>();
         params.put("from", minCreatedAt.getTime());
         params.put("to", delayThreshold.getTime());
-        params.put("failed", false);
         params.put("smsType", MessageType.LabReport);
 
         List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);

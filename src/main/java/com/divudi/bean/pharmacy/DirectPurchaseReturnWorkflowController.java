@@ -248,7 +248,11 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
     }
 
-    public String cancelCurrentReturn() {
+    // synchronized: no double-click guard exists on the Cancel action. A double-click
+    // could race two calls through this session-scoped bean past the guards below before
+    // either had persisted currentBill.cancelled, both attempting to cancel the same bill
+    // (same bug class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized String cancelCurrentReturn() {
         // Validate bill exists and is persisted
         if (currentBill == null || currentBill.getId() == null) {
             JsfUtil.addErrorMessage("Cannot cancel: No valid Direct Purchase Return found.");
@@ -341,13 +345,26 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         JsfUtil.addSuccessMessage("Direct Purchase Return Request Saved Successfully");
     }
 
-    public void finalizeRequest() {
+    // synchronized: no double-click guard exists on the Finalize action. A double-click
+    // could race two calls through this session-scoped bean past validateFinalization()
+    // (which never checks whether the bill was already finalized) before either had
+    // persisted currentBill.checkedBy, duplicating the finalize save (same bug class as
+    // PurchaseOrderController.approve(), issue #22194).
+    public synchronized void finalizeRequest() {
         if (!isAuthorized("FINALIZE", "FinalizeDirectPurchaseReturn")) {
             return;
         }
 
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No bill selected to finalize");
+            return;
+        }
+
+        // Check if this return request is already finalized to prevent a queued
+        // double-submit (blocked on the synchronized lock above) from finalizing it
+        // a second time.
+        if (currentBill.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("This return request is already finalized");
             return;
         }
 
@@ -466,7 +483,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         return allMatch;
     }
 
-    public void approve() {
+    // synchronized: no double-click guard exists on the Approve action. validateApproval()'s
+    // already-approved check reads the session-scoped currentBill rather than fresh DB
+    // state, so it is non-atomic - a double-click could race two calls past it before either
+    // had persisted currentBill.completed, duplicating stock deduction/payment creation
+    // (same bug class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized void approve() {
         if (!isAuthorized("APPROVE", "ApproveDirectPurchaseReturn")) {
             return;
         }
@@ -572,14 +594,22 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if the original Direct Purchase is fully returned and mark it as fullReturned
+        // Update the original Direct Purchase's refundAmount so Supplier Payment
+        // screens (SupplierPaymentController) settle on the net-of-return amount
+        // instead of the full original Direct Purchase amount (hmislk/hmis#18280).
+        // Also check if the original Direct Purchase is now fully returned.
         Bill originalDirectPurchaseBill = currentBill.getReferenceBill();
-        if (originalDirectPurchaseBill != null && isDirectPurchaseFullyReturned(originalDirectPurchaseBill)) {
-            originalDirectPurchaseBill.setFullReturned(true);
-            originalDirectPurchaseBill.setFullReturnedBy(sessionController.getLoggedUser());
-            originalDirectPurchaseBill.setFullReturnedAt(new Date());
+        if (originalDirectPurchaseBill != null) {
+            originalDirectPurchaseBill.setRefundAmount(Math.abs(originalDirectPurchaseBill.getRefundAmount()) + Math.abs(currentBill.getNetTotal()));
+            if (isDirectPurchaseFullyReturned(originalDirectPurchaseBill)) {
+                originalDirectPurchaseBill.setFullReturned(true);
+                originalDirectPurchaseBill.setFullReturnedBy(sessionController.getLoggedUser());
+                originalDirectPurchaseBill.setFullReturnedAt(new Date());
+            }
             billFacade.edit(originalDirectPurchaseBill);
-            JsfUtil.addSuccessMessage("Original Direct Purchase has been fully returned and marked as complete.");
+            if (originalDirectPurchaseBill.isFullReturned()) {
+                JsfUtil.addSuccessMessage("Original Direct Purchase has been fully returned and marked as complete.");
+            }
         }
 
         // Reload via billService to show items in print preview without
@@ -2381,8 +2411,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
     /**
      * Calculates the net value adjustment based on actual net value entered by
-     * user Adjustment = Net Total (calculated) - Actual Net Value Positive
-     * adjustment means calculated is higher than actual Negative adjustment
+     * user Adjustment = |Net Total (calculated)| - |Actual Net Value|
+     * netTotal follows the return sign convention (negative = value returning to
+     * supplier); actualNetValue is entered by staff as the physical counted amount,
+     * always a positive magnitude. Comparing absolute values keeps the result
+     * correct regardless of netTotal's sign, so equal amounts net to zero.
+     * Positive adjustment means calculated is higher than actual Negative adjustment
      * means calculated is lower than actual
      */
     public void calculateNetValueAdjustment() {
@@ -2396,7 +2430,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         BigDecimal netTotal = bfd.getNetTotal();
 
         if (actualNetValue != null && netTotal != null) {
-            BigDecimal adjustment = netTotal.subtract(actualNetValue);
+            BigDecimal adjustment = netTotal.abs().subtract(actualNetValue.abs());
             bfd.setNetValueAdjustment(adjustment);
         } else {
             bfd.setNetValueAdjustment(null);

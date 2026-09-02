@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa fa-check-circle fa-lg"/>
+                            <p:outputLabel value="Accept Patient" class="m-2"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <!-- Patient Identity Banner -->
+                <div class="d-flex flex-wrap gap-4 align-items-center p-3 mb-3 rounded" style="background:#f0f4f8; border-left:6px solid #0d6efd;">
+                    <div>
+                        <div class="text-muted small">Name</div>
+                        <div class="fs-4 fw-bold"><h:outputText value="#{patientTransferController.current.patient.person.nameWithTitle}"/></div>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Age</div>
+                        <div class="fs-4 fw-bold"><h:outputText value="#{patientTransferController.current.patient.person.ageAsString}"/></div>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Sex</div>
+                        <div class="fs-4 fw-bold"><h:outputText value="#{patientTransferController.current.patient.person.sex}"/></div>
+                    </div>
+                    <div>
+                        <div class="text-muted small">BHT No</div>
+                        <div class="fs-4 fw-bold"><h:outputText value="#{patientTransferController.current.bhtNo}"/></div>
+                    </div>
+                </div>
+
+                <p:dataTable
+                    value="#{patientTransferController.pendingRequestsForAdmission}"
+                    var="req"
+                    emptyMessage="No pending transfer/admission request for this patient.">
+
+                    <p:column headerText="Type">
+                        <h:outputText value="#{req.fromPatientRoom == null ? 'Admission' : 'Transfer'}"/>
+                    </p:column>
+
+                    <p:column headerText="From">
+                        <h:outputText value="#{req.fromPatientRoom != null ? req.fromPatientRoom.roomFacilityCharge.name : 'Admission Desk'}"/>
+                    </p:column>
+
+                    <p:column headerText="To Room">
+                        <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Initiated By">
+                        <h:outputText value="#{req.initiatedBy.webUserPerson.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Initiated At">
+                        <h:outputText value="#{req.initiatedAt}">
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Accepted At">
+                        <p:datePicker
+                            value="#{req.acceptedAt}"
+                            showTime="true"
+                            timeInput="true"
+                            pattern="dd MMM yyyy HH:mm:ss"/>
+                    </p:column>
+
+                    <p:column headerText="Actions">
+                        <div class="d-flex gap-1">
+                            <p:commandButton
+                                value="Accept"
+                                icon="fa fa-check"
+                                ajax="false"
+                                class="ui-button-success"
+                                action="#{patientTransferController.acceptTransferForAdmission(req)}"
+                                onclick="if (!confirm('Accept this patient?')) return false;"/>
+                            <p:commandButton
+                                value="Cancel"
+                                icon="fa fa-times"
+                                ajax="false"
+                                class="ui-button-danger"
+                                action="#{patientTransferController.cancelTransferForAdmission(req)}"
+                                onclick="if (!confirm('Cancel this transfer request?')) return false;"/>
+                        </div>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

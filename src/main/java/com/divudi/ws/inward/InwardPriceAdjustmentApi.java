@@ -25,6 +25,7 @@ import com.divudi.core.entity.ServiceSubCategory;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardPriceAdjustment;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
@@ -148,6 +149,7 @@ public class InwardPriceAdjustmentApi {
             Long departmentId    = longParam("departmentId");
             Long categoryId      = longParam("categoryId");
             Long creditCompanyId = longParam("creditCompanyId");
+            Long roomCategoryId  = longParam("roomCategoryId");
             String paymentMethodStr = param("paymentMethod");
             int limit = intParam("limit", 200, 1, 1000);
 
@@ -194,6 +196,10 @@ public class InwardPriceAdjustmentApi {
             if (creditCompanyId != null) {
                 jpql.append(" and a.creditCompany.id = :ccid");
                 params.put("ccid", creditCompanyId);
+            }
+            if (roomCategoryId != null) {
+                jpql.append(" and a.roomCategory.id = :rcid");
+                params.put("rcid", roomCategoryId);
             }
 
             jpql.append(" order by a.department.name, a.category.name, a.fromPrice");
@@ -326,8 +332,21 @@ public class InwardPriceAdjustmentApi {
                 }
             }
 
+            RoomCategory roomCategory = null;
+            Long roomCategoryId = asLong(body.get("roomCategoryId"));
+            if (roomCategoryId != null) {
+                Category rc = categoryFacade.find(roomCategoryId);
+                if (rc == null || rc.isRetired()) {
+                    return errorResponse("Room category not found: " + roomCategoryId, 400);
+                }
+                if (!(rc instanceof RoomCategory)) {
+                    return errorResponse("Category " + roomCategoryId + " is not a RoomCategory", 400);
+                }
+                roomCategory = (RoomCategory) rc;
+            }
+
             InwardPriceAdjustment existing = findDuplicate(
-                    department, category, paymentMethod, fromPrice, toPrice, creditCompany);
+                    department, category, paymentMethod, fromPrice, toPrice, creditCompany, roomCategory);
             if (existing != null) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -346,6 +365,7 @@ public class InwardPriceAdjustmentApi {
             entry.setToPrice(toPrice);
             entry.setMargin(margin);
             entry.setCreditCompany(creditCompany);
+            entry.setRoomCategory(roomCategory);
             if (department != null) {
                 entry.setInstitution(department.getInstitution());
             }
@@ -483,9 +503,26 @@ public class InwardPriceAdjustmentApi {
                 }
             }
 
+            if (body.containsKey("roomCategoryId")) {
+                Long rcId = asLong(body.get("roomCategoryId"));
+                if (rcId == null) {
+                    entry.setRoomCategory(null);
+                } else {
+                    Category rc = categoryFacade.find(rcId);
+                    if (rc == null || rc.isRetired()) {
+                        return errorResponse("Room category not found: " + rcId, 400);
+                    }
+                    if (!(rc instanceof RoomCategory)) {
+                        return errorResponse("Category " + rcId + " is not a RoomCategory", 400);
+                    }
+                    entry.setRoomCategory((RoomCategory) rc);
+                }
+            }
+
             InwardPriceAdjustment dup = findDuplicate(
                     entry.getDepartment(), entry.getCategory(), entry.getPaymentMethod(),
-                    entry.getFromPrice(), entry.getToPrice(), entry.getCreditCompany());
+                    entry.getFromPrice(), entry.getToPrice(), entry.getCreditCompany(),
+                    entry.getRoomCategory());
             if (dup != null && !dup.getId().equals(entry.getId())) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -720,12 +757,52 @@ public class InwardPriceAdjustmentApi {
         }
     }
 
+    /**
+     * Search room categories by name.
+     * GET /api/inward-price-adjustment/room-categories/search?query=&limit=
+     */
+    @GET
+    @Path("/room-categories/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchRoomCategories() {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            String query = param("query");
+            int limit = intParam("limit", 30, 1, 200);
+            StringBuilder jpql = new StringBuilder(
+                    "select c from RoomCategory c where c.retired = false");
+            Map<String, Object> params = new HashMap<>();
+            if (query != null && !query.trim().isEmpty()) {
+                jpql.append(" and upper(c.name) like :q");
+                params.put("q", "%" + query.trim().toUpperCase() + "%");
+            }
+            jpql.append(" order by c.name");
+            List<Category> results = categoryFacade.findByJpql(jpql.toString(), params, limit);
+            List<Map<String, Object>> payload = new ArrayList<>();
+            if (results != null) {
+                for (Category c : results) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("id", c.getId());
+                    row.put("name", c.getName());
+                    payload.add(row);
+                }
+            }
+            return successResponse(payload);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
     // =========================================================================
     // Helpers
     // =========================================================================
 
     private InwardPriceAdjustment findDuplicate(Department department, Category category,
-            PaymentMethod paymentMethod, Double fromPrice, Double toPrice, Institution creditCompany) {
+            PaymentMethod paymentMethod, Double fromPrice, Double toPrice, Institution creditCompany,
+            Category roomCategory) {
 
         StringBuilder jpql = new StringBuilder(
                 "select a from InwardPriceAdjustment a where a.retired = false");
@@ -762,6 +839,12 @@ public class InwardPriceAdjustmentApi {
         } else {
             jpql.append(" and a.creditCompany = :cc");
             params.put("cc", creditCompany);
+        }
+        if (roomCategory == null) {
+            jpql.append(" and a.roomCategory is null");
+        } else {
+            jpql.append(" and a.roomCategory = :rc");
+            params.put("rc", roomCategory);
         }
 
         @SuppressWarnings("unchecked")
@@ -829,6 +912,15 @@ public class InwardPriceAdjustmentApi {
             row.put("creditCompany", cc);
         } else {
             row.put("creditCompany", null);
+        }
+
+        if (pm.getRoomCategory() != null) {
+            Map<String, Object> rc = new LinkedHashMap<>();
+            rc.put("id", pm.getRoomCategory().getId());
+            rc.put("name", pm.getRoomCategory().getName());
+            row.put("roomCategory", rc);
+        } else {
+            row.put("roomCategory", null);
         }
 
         row.put("retired", pm.isRetired());
@@ -955,6 +1047,7 @@ public class InwardPriceAdjustmentApi {
             double price = priceParam != null ? priceParam : item.getTotal();
             AdmissionType admissionType = encounter.getAdmissionType();
             Institution creditCompany = resolveSingleCreditCompany(encounter);
+            RoomCategory roomCategory = resolveCurrentRoomCategory(encounter);
 
             // The category actually used by the price-matrix lookup: for an
             // Investigation it is the investigation category (unless the config
@@ -967,8 +1060,9 @@ public class InwardPriceAdjustmentApi {
                 effectiveCategory = item.getCategory();
             }
 
-            // Price-matrix lookup: reuse the exact cascade + config gating used in billing.
-            PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(item, price, department, paymentMethod, creditCompany);
+            // Price-matrix lookup: reuse the exact cascade + config gating used in billing,
+            // including the admission-type and room-category dimensions (issues #21551, #21977).
+            PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(item, price, department, paymentMethod, creditCompany, admissionType, roomCategory);
 
             // Margin is applied to every non-Staff fee on the item: BillBhtController
             // creates a BillFee per item fee and calls setBillFeeMargin, whose
@@ -1039,6 +1133,8 @@ public class InwardPriceAdjustmentApi {
             data.put("patientEncounterId", encounter.getId());
             data.put("admissionTypeId", admissionType != null ? admissionType.getId() : null);
             data.put("creditCompanyId", creditCompany != null ? creditCompany.getId() : null);
+            data.put("roomCategoryId", roomCategory != null ? roomCategory.getId() : null);
+            data.put("roomCategoryName", roomCategory != null ? roomCategory.getName() : null);
             data.put("price", price);
             data.put("marginWillBeApplied", marginWillBeApplied);
             data.put("expectedMarginPercent", matrixFound ? priceMatrix.getMargin() : null);
@@ -1082,6 +1178,21 @@ public class InwardPriceAdjustmentApi {
             return list.get(0).getInstitution();
         }
         return null;
+    }
+
+    /**
+     * Room category of the encounter's current room, or null when the patient is
+     * not in a room (or the room has no facility charge / category) — mirrors
+     * InwardBeanController.resolveCurrentRoomCategory so the diagnostic matches
+     * real billing (issue #21977).
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
     }
 
     /**

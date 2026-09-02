@@ -152,20 +152,24 @@
                     <td styleClass="itemHeadingsFiveFive">
                         <h:outputText value="Item" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)" ></h:outputText>
                     </td>
-                    <td styleClass="itemHeadingsFiveFive" style="text-align:right; padding-right: 0.5cm;">
-                        <h:outputText value="Value" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)" ></h:outputText>
-                    </td>
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                        <td styleClass="itemHeadingsFiveFive" style="text-align:right; padding-right: 0.5cm;">
+                            <h:outputText value="Value" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)" ></h:outputText>
+                        </td>
+                    </h:panelGroup>
                 </tr>
                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                     <tr>
                         <td style="text-transform: capitalize!important;">
                             <h:outputLabel value="#{bip.searialNo+1} - #{bip.item.name}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
                         </td>
-                        <td style="text-align:right; padding-right: 0.5cm;">
-                            <h:outputLabel value="#{bip.grossValue}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                            <td style="text-align:right; padding-right: 0.5cm;">
+                                <h:outputLabel value="#{bip.grossValue}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </h:panelGroup>
                     </tr>
                 </ui:repeat>
             </table>
@@ -174,25 +178,27 @@
             <br/>
 
             <!-- Bill Totals -->
-            <h:panelGrid columns="3" columnClasses="billLabel, billSeparator, billValue" style="width: 100%;">
-                <h:outputLabel value="Gross Total" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
-                <h:outputLabel value=":" />
-                <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputLabel>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                <h:panelGrid columns="3" columnClasses="billLabel, billSeparator, billValue" style="width: 100%;">
+                    <h:outputLabel value="Gross Total" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                    <h:outputLabel value=":" />
+                    <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
 
-                <h:outputLabel value="Discount" style="font-weight: bolder!important; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
-                <h:outputLabel value=":" />
-                <h:outputLabel value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important; font-size: var(--sub-header-font-size); font-family: var(--font-family)">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputLabel>
+                    <h:outputLabel value="Discount" style="font-weight: bolder!important; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                    <h:outputLabel value=":" />
+                    <h:outputLabel value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important; font-size: var(--sub-header-font-size); font-family: var(--font-family)">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
 
-                <h:outputLabel value="Net Total" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
-                <h:outputLabel value=":" />
-                <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputLabel>
-            </h:panelGrid>
+                    <h:outputLabel value="Net Total" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                    <h:outputLabel value=":" />
+                    <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
+                </h:panelGrid>
+            </h:panelGroup>
 
             <br/>
 
@@ -409,26 +415,28 @@
                                     <div>
                                         <table>
 
-                                            <tr>
-                                                <td>
-                                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"  value="Discount"/>
-                                                </td>
-                                                <td >
-                                                    <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
-                                                </td>
-                                                <td>
-                                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}"  >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </td>
-                                            </tr>
+                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                <tr>
+                                                    <td>
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"  value="Discount"/>
+                                                    </td>
+                                                    <td >
+                                                        <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}"  >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
 
                                             <tr>
                                                 <td colspan="2" >

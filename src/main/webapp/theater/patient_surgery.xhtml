@@ -7,7 +7,8 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
     <ui:define name="content">
@@ -39,37 +40,10 @@
                     </f:facet>
 
                     <h:outputLabel value="Type Patient Name or BHT : " class="mx-2"/>
-                    <p:autoComplete
-                        forceSelection="true"
+                    <admcc:admission_search
                         value="#{surgeryBillController.surgeryBill.patientEncounter}"
                         completeMethod="#{admissionController.completePatient}"
-                        var="apt2"
-                        itemLabel="#{apt2.patient.person.name}"
-                        itemValue="#{apt2}"
-                        size="40"
-                        class="m-2" >
-
-                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                            <h:outputLabel value="#{apt2.patient.phn}"/>
-                        </p:column>
-                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                            <h:outputLabel value="#{apt2.bhtNo}"/>
-                        </p:column>
-                        <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
-                            <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
-                        </p:column>
-                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                        </p:column>
-                        <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                            <div class="d-flex justify-content-center">
-                                <span class="#{apt2.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                    #{apt2.discharged ? 'Discharged' : 'Not Discharged'}
-                                </span>
-                            </div>
-                        </p:column>
-
-                    </p:autoComplete>
+                        continueClientId="form:btnSelect" />
 
                     <p:commandButton
                         value="Select"
@@ -190,6 +164,9 @@
                                     <h:outputLabel value="Surgery" class="mx-4"/>
                                 </f:facet>
                                 <in:surgeryDetail bill="#{surgeryBillController.surgeryBill}"/>
+                                <p:badge value="Surgery Validated / Completed" severity="success"
+                                          rendered="#{surgeryBillController.surgeryBill.completed}"
+                                          style="display:block; margin-top:0.5rem;"/>
                             </p:panel>
 
                             <!-- Navigate to Edit Surgery page -->
@@ -391,7 +368,8 @@
                                         ajax="false"
                                         action="#{billBhtController.navigateToSurgeryServices(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-plus-square"
-                                        class="w-100"/>
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}"/>
 
                                     <p:commandButton
                                         value="Direct Issue Medicines"
@@ -399,7 +377,8 @@
                                         action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                         actionListener="#{pharmacySaleBhtController.resetAll()}"
                                         icon="fa fa-pills"
-                                        class="w-100">
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
                                         <f:setPropertyActionListener
                                             value="#{surgeryBillController.surgeryBill}"
                                             target="#{pharmacySaleBhtController.batchBill}"/>
@@ -410,7 +389,8 @@
                                         ajax="false"
                                         action="#{inwardTimedItemController.navigateToSurgeryTimedServices(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-clock"
-                                        class="w-100">
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -418,7 +398,21 @@
                                         ajax="false"
                                         action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFees(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-user-md"
-                                        class="w-100">
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        value="Add Outside Charges"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddOutSideCharges')}"
+                                        action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromInpatientProfile()}"
+                                        icon="fa fa-external-link-square-alt"
+                                        class="w-100"
+                                        disabled="#{surgeryBillController.surgeryBill.completed}">
+                                        <f:setPropertyActionListener
+                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                            target="#{inwardAdditionalChargeController.current.patientEncounter}"/>
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -434,6 +428,14 @@
                                         ajax="false"
                                         action="#{surgeryBillController.navigateToSurgicalDetails(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-notes-medical"
+                                        class="w-100">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        value="Surgery Bill Summary / Validate"
+                                        ajax="false"
+                                        action="#{surgeryBillController.navigateToSurgeryBillSummary(surgeryBillController.surgeryBill)}"
+                                        icon="fa fa-clipboard-check"
                                         class="w-100">
                                     </p:commandButton>
                                 </div>

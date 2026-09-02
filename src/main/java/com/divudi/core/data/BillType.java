@@ -30,6 +30,7 @@ public enum BillType {
     OpdBill,
     OpdPreBill,
     InwardPaymentBill,
+    PostFinalBillInwardPayment,
     InwardFinalBill,
     InwardOriginalFinalBill,
     InwardProvisionalBill,
@@ -72,6 +73,7 @@ public enum BillType {
     PharmacyBhtIssue,
     PharmacyBhtPre,
     InwardPharmacyRequest,
+    InwardServiceItemRequest,
     @Deprecated
     StoreBhtIssue,
     StoreBhtPre,
@@ -215,6 +217,8 @@ public enum BillType {
                 return "Agent Payment Receive Bill";
             case InwardPaymentBill:
                 return "Inward Payment Receive Bill";
+            case PostFinalBillInwardPayment:
+                return "Post Final Bill Inward Payment Receive Bill";
             case PharmacyOrder:
                 return "Purchase Order Request";
             case PharmacyWholeSale:

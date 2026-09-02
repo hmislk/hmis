@@ -32,6 +32,12 @@ public class AmpDto implements Serializable {
     private Long dosageFormId;
     private String dosageFormName;
 
+    // Issue unit / strength unit relationship fields
+    private Long issueUnitId;
+    private String issueUnitName;
+    private Long strengthUnitId;
+    private String strengthUnitName;
+
     // Department type
     private DepartmentType departmentType;
 
@@ -165,6 +171,23 @@ public class AmpDto implements Serializable {
                   Boolean discountAllowed, Boolean allowFractions,
                   Boolean consumptionAllowed, Boolean refundsAllowed) {
         this(id, name, code, barcode, inactive);
+        this.discountAllowed = discountAllowed;
+        this.allowFractions = allowFractions;
+        this.consumptionAllowed = consumptionAllowed;
+        this.refundsAllowed = refundsAllowed;
+    }
+
+    /**
+     * AMP list constructor with category — used by fillAmpsDto() JPQL.
+     * category path uses implicit inner join so only AMPs with a category are returned.
+     */
+    public AmpDto(Long id, String name, Long categoryId, String categoryName,
+                  Boolean discountAllowed, Boolean allowFractions,
+                  Boolean consumptionAllowed, Boolean refundsAllowed) {
+        this.id = id;
+        this.name = name;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
         this.discountAllowed = discountAllowed;
         this.allowFractions = allowFractions;
         this.consumptionAllowed = consumptionAllowed;
@@ -369,6 +392,40 @@ public class AmpDto implements Serializable {
 
     public void setDosageFormName(String dosageFormName) {
         this.dosageFormName = dosageFormName;
+    }
+
+    // Issue unit / strength unit relationship getters and setters
+
+    public Long getIssueUnitId() {
+        return issueUnitId;
+    }
+
+    public void setIssueUnitId(Long issueUnitId) {
+        this.issueUnitId = issueUnitId;
+    }
+
+    public String getIssueUnitName() {
+        return issueUnitName;
+    }
+
+    public void setIssueUnitName(String issueUnitName) {
+        this.issueUnitName = issueUnitName;
+    }
+
+    public Long getStrengthUnitId() {
+        return strengthUnitId;
+    }
+
+    public void setStrengthUnitId(Long strengthUnitId) {
+        this.strengthUnitId = strengthUnitId;
+    }
+
+    public String getStrengthUnitName() {
+        return strengthUnitName;
+    }
+
+    public void setStrengthUnitName(String strengthUnitName) {
+        this.strengthUnitName = strengthUnitName;
     }
 
     // Short expiry days getter and setter

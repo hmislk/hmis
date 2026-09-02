@@ -10,19 +10,23 @@
     <ui:define name="subcontent">
 
         <!-- Admin Config Button (Admin Only) -->
-        <div class="d-flex justify-content-start mb-2">
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
-                <p:commandButton
-                    value="Config"
-                    icon="fa fa-cog"
-                    title="Page Configuration Management"
-                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_issue_native')}"
-                    ajax="false"
-                    styleClass="ui-button-secondary ui-button-sm p-button-outlined"
-                    style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                </p:commandButton>
-            </h:panelGroup>
-        </div>
+        <!-- Wrapped in its own h:form: a p:commandButton with ajax="false" is a
+             plain HTML form submit and does nothing outside an h:form (#22995). -->
+        <h:form>
+            <div class="d-flex justify-content-start mb-2">
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                    <p:commandButton
+                        value="Config"
+                        icon="fa fa-cog"
+                        title="Page Configuration Management"
+                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_issue_native')}"
+                        ajax="false"
+                        styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                        style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                    </p:commandButton>
+                </h:panelGroup>
+            </div>
+        </h:form>
 
         <h:form>
 
@@ -42,15 +46,17 @@
                             class="ui-button-success mx-2"
                             action="#{transferIssueNativeSqlController.settle}"
                             ajax="false"
+                            onclick="if (!confirm('Do you want to process this transfer issue?')) return false;"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}"
                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false) and !transferIssueNativeSqlController.draftMode}"/>
 
                         <!-- Save Draft (when flag ON, not yet completed) -->
                         <p:commandButton
                             id="btnSaveDraftNative"
                             value="Save Draft"
-                            icon="fas fa-save"
+                            icon="fas fa-floppy-disk"
                             style="float: right;"
-                            class="ui-button-secondary mx-2"
+                            styleClass="ui-button-stage-save mx-2"
                             actionListener="#{transferIssueNativeSqlController.saveDraftNativeIssue()}"
                             ajax="false"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false) and !transferIssueNativeSqlController.draftMode and webUserController.hasPrivilege('PharmacyIssueForRequestSave')}"/>
@@ -59,22 +65,24 @@
                         <p:commandButton
                             id="btnFinalizeNative"
                             value="Finalize"
-                            icon="fas fa-tasks"
+                            icon="fas fa-lock"
                             style="float: right;"
-                            class="ui-button-warning mx-2"
+                            styleClass="ui-button-stage-finalize mx-2"
                             actionListener="#{transferIssueNativeSqlController.finalizeDraftNativeIssue()}"
                             ajax="false"
+                            onclick="if (!confirm('Finalize this issue draft? This cannot be undone.')) return false;"
                             rendered="#{transferIssueNativeSqlController.draftMode and transferIssueNativeSqlController.issuedBill.id ne null and !transferIssueNativeSqlController.issuedBill.completed and webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}"/>
 
                         <!-- Approve (draft finalized, not yet checked) -->
                         <p:commandButton
                             id="btnApproveNative"
                             value="Approve"
-                            icon="fas fa-check-circle"
+                            icon="fas fa-check-double"
                             style="float: right;"
-                            class="ui-button-success mx-2"
+                            styleClass="ui-button-stage-approve mx-2"
                             action="#{transferIssueNativeSqlController.approveDraftNativeIssue()}"
                             ajax="false"
+                            onclick="if (!confirm('Approve this issue? Stock will be moved.')) return false;"
                             rendered="#{transferIssueNativeSqlController.draftMode and transferIssueNativeSqlController.issuedBill.completed and !transferIssueNativeSqlController.issuedBill.checked and webUserController.hasPrivilege('PharmacyIssueForRequestApprove')}"/>
 
                         <!-- Cancel Draft -->

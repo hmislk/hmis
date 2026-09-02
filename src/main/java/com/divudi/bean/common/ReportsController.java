@@ -25,6 +25,7 @@ import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.facade.*;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -95,6 +96,8 @@ public class ReportsController implements Serializable {
     @EJB
     PatientReportFacade patientReportFacade;
     @EJB
+    PatientReportItemValueFacade patientReportItemValueFacade;
+    @EJB
     private PatientFacade patientFacade;
     @EJB
     private DrawerFacade drawerFacade;
@@ -160,6 +163,7 @@ public class ReportsController implements Serializable {
     private List<BillItem> billItems;
     private List<PatientInvestigation> patientInvestigations;
     private List<PatientReport> patientReports;
+    private List<PatientReportItemValue> organismAntibioticSensitivityData;
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
@@ -3983,7 +3987,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -7359,9 +7363,9 @@ public class ReportsController implements Serializable {
         List<BillTypeAtomic> bts = new ArrayList<>();
 
         if (visitType.equalsIgnoreCase("IP")) {
-            bts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-            bts.add(BillTypeAtomic.INWARD_DEPOSIT);
-            bts.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            bts.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+            bts.add(BillTypeAtomic.INWARD_PAYMENT);
+            bts.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
         }
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
@@ -8739,11 +8743,27 @@ public class ReportsController implements Serializable {
             Map<String, Object> filters = getFiltersForRouteAnalysisReport();
             int rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters);
 
-            rowIndex = addRouteAnalysisChartImage(workbook, sheet, rowIndex, "Sample Count Over Months",
-                    getRouteAnalysisSampleCountChartData(detailReport), "Month", "Sample Count");
-            rowIndex = addRouteAnalysisChartImage(workbook, sheet, rowIndex, "Service Amount Over Months",
-                    getRouteAnalysisServiceAmountChartData(detailReport), "Month", "Service Amount");
-            rowIndex++;
+            if (showChart) {
+                rowIndex = addRouteAnalysisChartImage(
+                        workbook,
+                        sheet,
+                        rowIndex,
+                        "Sample Count Over Months",
+                        getRouteAnalysisSampleCountChartData(detailReport),
+                        "Month",
+                        "Sample Count");
+
+                rowIndex = addRouteAnalysisChartImage(
+                        workbook,
+                        sheet,
+                        rowIndex,
+                        "Service Amount Over Months",
+                        getRouteAnalysisServiceAmountChartData(detailReport),
+                        "Month",
+                        "Service Amount");
+
+                rowIndex++;
+            }
 
             writeRouteAnalysisExcelTable(workbook, sheet, rowIndex, detailReport);
 
@@ -8957,21 +8977,32 @@ public class ReportsController implements Serializable {
                 document.add(infoTable);
             }
             
-            document.add(new Paragraph("Sample Count Over Months", titleFont));
-            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months",
-                    getSampleCountChartData(), "Month", "Sample Count"));
-            countChartImage.scaleToFit(500, 300);
-            countChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(countChartImage);
+           if (showChart) {
 
-            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
-            Image amountChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months",
-                    getServiceAmountChartData(), "Month", "Service Amount"));
-            amountChartImage.scaleToFit(500, 300);
-            amountChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(amountChartImage);
+                document.add(new Paragraph("Sample Count Over Months", titleFont));
+                Image countChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Sample Count Over Months",
+                                getSampleCountChartData(),
+                                "Month",
+                                "Sample Count"));
+                countChartImage.scaleToFit(500, 300);
+                countChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(countChartImage);
 
-            document.newPage();
+                document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+                Image serviceChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Service Amount Over Months",
+                                getServiceAmountChartData(),
+                                "Month",
+                                "Service Amount"));
+                serviceChartImage.scaleToFit(500, 300);
+                serviceChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(serviceChartImage);
+
+                document.newPage();
+            }
 
             PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
@@ -9053,19 +9084,32 @@ public class ReportsController implements Serializable {
                 document.add(infoTable);
             }
 
-            document.add(new Paragraph("Sample Count Over Months", titleFont));
-            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months", getSampleCountChartData(), "Month", "Sample Count"));
-            countChartImage.scaleToFit(500, 300);
-            countChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(countChartImage);
+            if (showChart) {
 
-            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
-            Image serviceChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months", getServiceAmountChartData(), "Month", "Service Amount"));
-            serviceChartImage.scaleToFit(500, 300);
-            serviceChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(serviceChartImage);
+                document.add(new Paragraph("Sample Count Over Months", titleFont));
+                Image countChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Sample Count Over Months",
+                                getSampleCountChartData(),
+                                "Month",
+                                "Sample Count"));
+                countChartImage.scaleToFit(500, 300);
+                countChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(countChartImage);
 
-            document.newPage();
+                document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+                Image serviceChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Service Amount Over Months",
+                                getServiceAmountChartData(),
+                                "Month",
+                                "Service Amount"));
+                serviceChartImage.scaleToFit(500, 300);
+                serviceChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(serviceChartImage);
+
+                document.newPage();
+            }
 
             PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
@@ -9481,6 +9525,30 @@ public class ReportsController implements Serializable {
         }
 
         return dueAmountNetTotal;
+    }
+
+    public void organismAntibioticSensitivityReport() {
+        String jpql = "select priv from PatientReportItemValue priv "
+                + " join priv.patientReport pr "
+                + " join pr.patientInvestigation pi "
+                + " join pi.billItem bi "
+                + " join bi.bill b "
+                + " where pr.retired = false "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and priv.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Antibiotic "
+                + " order by pi.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        organismAntibioticSensitivityData = patientReportItemValueFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<PatientReportItemValue> getOrganismAntibioticSensitivityData() {
+        return organismAntibioticSensitivityData;
+    }
+
+    public void setOrganismAntibioticSensitivityData(List<PatientReportItemValue> organismAntibioticSensitivityData) {
+        this.organismAntibioticSensitivityData = organismAntibioticSensitivityData;
     }
 
 }

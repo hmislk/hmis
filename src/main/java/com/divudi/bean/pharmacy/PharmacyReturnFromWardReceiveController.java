@@ -5,6 +5,7 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.Privileges;
+import com.divudi.core.data.dto.PharmacyReturnFromWardPendingReturnDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
@@ -28,6 +29,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -71,14 +73,16 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
     private BillService billService;
 
     private Bill returnedBill;
+    private Long returnedBillId;
     private Bill receivedBill;
-    private List<Bill> pendingReturnBills;
+    private List<PharmacyReturnFromWardPendingReturnDTO> pendingReturnBills;
     private boolean printPreview;
     private boolean settling;
     private boolean completed;
 
     public void makeNull() {
         returnedBill = null;
+        returnedBillId = null;
         receivedBill = null;
         printPreview = false;
         completed = false;
@@ -91,7 +95,18 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
     }
 
     public void loadPendingReturnBills() {
-        String jpql = "SELECT b FROM Bill b WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
+        // DTO projection avoids loading full Bill entities (and their lazy
+        // associations) for what is a read-only listing (#21471).
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyReturnFromWardPendingReturnDTO("
+                + "b.id, b.deptId, COALESCE(fromDept.name, ''), COALESCE(createrPerson.name, ''), "
+                + "toStaff.id, toStaffPerson.title, COALESCE(toStaffPerson.name, ''), b.createdAt) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.fromDepartment fromDept "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson createrPerson "
+                + "LEFT JOIN b.toStaff toStaff "
+                + "LEFT JOIN toStaff.person toStaffPerson "
+                + "WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
                 + "AND b.toDepartment = :dept "
                 + "AND b.cancelled = false "
                 + "AND (b.fullyIssued = false OR b.fullyIssued IS NULL) "
@@ -101,22 +116,128 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         params.put("bt", BillType.PharmacyIssue);
         params.put("bta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
         params.put("dept", sessionController.getDepartment());
-        List<Bill> candidates = billFacade.findByJpql(jpql, params);
+        List<PharmacyReturnFromWardPendingReturnDTO> candidates
+                = (List<PharmacyReturnFromWardPendingReturnDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         // Defense for pre-#21510 data: returns fully accepted before this change
         // were never stamped with fullyIssued/completed, so the flag filter above
         // alone would resurface them. Drop anything already fully accepted.
-        pendingReturnBills = new ArrayList<>();
-        for (Bill b : candidates) {
-            if (!isFullyAccepted(b)) {
-                pendingReturnBills.add(b);
+        pendingReturnBills = filterOutFullyAccepted(candidates);
+    }
+
+    /**
+     * Drops candidates whose every return line has already been fully accepted.
+     * Bill-item-only variant of {@link #isFullyAccepted(Bill)} for the
+     * pending-list filter above, so listing candidates do not need a full
+     * {@link Bill} entity fetch just to check remaining quantities.
+     *
+     * <p>Outstanding quantities are resolved with two grouped queries covering
+     * the whole candidate set rather than one query per bill plus one per bill
+     * item, so the pending list stays a fixed number of queries however long
+     * the return queue grows.</p>
+     */
+    private List<PharmacyReturnFromWardPendingReturnDTO> filterOutFullyAccepted(
+            List<PharmacyReturnFromWardPendingReturnDTO> candidates) {
+        List<PharmacyReturnFromWardPendingReturnDTO> remaining = new ArrayList<>();
+        if (candidates == null || candidates.isEmpty()) {
+            return remaining;
+        }
+
+        List<Long> billIds = new ArrayList<>();
+        for (PharmacyReturnFromWardPendingReturnDTO dto : candidates) {
+            if (dto.getId() != null) {
+                billIds.add(dto.getId());
             }
         }
+
+        // billId -> (returnItemId -> returned qty)
+        Map<Long, Map<Long, Double>> returnedQtyByBill = new HashMap<>();
+        List<Long> returnItemIds = new ArrayList<>();
+        if (!billIds.isEmpty()) {
+            String itemJpql = "SELECT bi.bill.id, bi.id, bi.qty FROM BillItem bi "
+                    + "WHERE bi.bill.id IN :billIds";
+            Map<String, Object> itemParams = new HashMap<>();
+            itemParams.put("billIds", billIds);
+            List<Object[]> itemRows = billItemFacade.findObjectsArrayByJpql(itemJpql, itemParams, TemporalType.TIMESTAMP);
+            if (itemRows != null) {
+                for (Object[] row : itemRows) {
+                    Long billId = (Long) row[0];
+                    Long itemId = (Long) row[1];
+                    if (billId == null || itemId == null) {
+                        continue;
+                    }
+                    double qty = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                    Map<Long, Double> lines = returnedQtyByBill.get(billId);
+                    if (lines == null) {
+                        lines = new HashMap<>();
+                        returnedQtyByBill.put(billId, lines);
+                    }
+                    lines.put(itemId, qty);
+                    returnItemIds.add(itemId);
+                }
+            }
+        }
+
+        // returnItemId -> qty already accepted, mirroring the filters in
+        // getRemainingQuantityForReturnItem.
+        Map<Long, Double> acceptedQtyByItem = new HashMap<>();
+        if (!returnItemIds.isEmpty()) {
+            String acceptedJpql = "SELECT bi.referanceBillItem.id, SUM(ABS(bi.qty)) FROM BillItem bi "
+                    + "WHERE bi.referanceBillItem.id IN :refIds "
+                    + "AND bi.bill.billTypeAtomic = :acceptBta "
+                    + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL) "
+                    + "AND bi.bill.cancelled = false "
+                    + "GROUP BY bi.referanceBillItem.id";
+            Map<String, Object> acceptedParams = new HashMap<>();
+            acceptedParams.put("refIds", returnItemIds);
+            acceptedParams.put("acceptBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+            List<Object[]> acceptedRows = billItemFacade.findObjectsArrayByJpql(acceptedJpql, acceptedParams, TemporalType.TIMESTAMP);
+            if (acceptedRows != null) {
+                for (Object[] row : acceptedRows) {
+                    Long itemId = (Long) row[0];
+                    if (itemId == null) {
+                        continue;
+                    }
+                    acceptedQtyByItem.put(itemId, row[1] != null ? ((Number) row[1]).doubleValue() : 0.0);
+                }
+            }
+        }
+
+        for (PharmacyReturnFromWardPendingReturnDTO dto : candidates) {
+            Map<Long, Double> lines = dto.getId() != null ? returnedQtyByBill.get(dto.getId()) : null;
+            // A return with no lines at all counts as not fully accepted, as in
+            // the per-bill check this replaced, so anomalous bills stay visible.
+            if (lines == null || lines.isEmpty()) {
+                remaining.add(dto);
+                continue;
+            }
+            for (Map.Entry<Long, Double> line : lines.entrySet()) {
+                Double accepted = acceptedQtyByItem.get(line.getKey());
+                double outstanding = line.getValue() - (accepted != null ? accepted : 0.0);
+                if (outstanding > 0.001) {
+                    remaining.add(dto);
+                    break;
+                }
+            }
+        }
+        return remaining;
     }
 
     public String navigateToReceive() {
-        if (returnedBill == null || returnedBill.getId() == null) {
+        if (returnedBillId == null) {
             JsfUtil.addErrorMessage("No return selected.");
+            return null;
+        }
+        returnedBill = billFacade.find(returnedBillId);
+        if (returnedBill == null || !isWithinPendingScope(returnedBill)) {
+            // This bean is @SessionScoped, so a department switch after the
+            // pending list was rendered can leave a stale row pointing at
+            // another department's return. Receiving it would credit the stock
+            // to the current department instead (#21471).
+            returnedBill = null;
+            returnedBillId = null;
+            JsfUtil.addErrorMessage("No return selected.");
+            loadPendingReturnBills();
             return null;
         }
         if (isFullyAccepted(returnedBill)) {
@@ -128,6 +249,20 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         printPreview = false;
         completed = false;
         return "/pharmacy/pharmacy_return_from_ward_receive?faces-redirect=true";
+    }
+
+    /**
+     * Whether a bill still satisfies the predicates of
+     * {@link #loadPendingReturnBills()}, i.e. it really is an uncancelled
+     * ward return addressed to the department currently in session.
+     */
+    private boolean isWithinPendingScope(Bill bill) {
+        return bill.getBillType() == BillType.PharmacyIssue
+                && bill.getBillTypeAtomic() == BillTypeAtomic.RETURN_MEDICINE_INWARD
+                && !bill.isCancelled()
+                && bill.getToDepartment() != null
+                && sessionController.getDepartment() != null
+                && bill.getToDepartment().equals(sessionController.getDepartment());
     }
 
     private void generateBillComponent() {
@@ -282,6 +417,11 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         Staff porter = returnedBill.getToStaff();
         if (porter == null) {
             JsfUtil.addErrorMessage("This return has no carrying staff (porter) recorded - cannot receive. Please contact the returning ward.");
+            return;
+        }
+        if (returnedBill.getPatientEncounter() != null
+                && returnedBill.getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
             return;
         }
 
@@ -440,6 +580,14 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         this.returnedBill = returnedBill;
     }
 
+    public Long getReturnedBillId() {
+        return returnedBillId;
+    }
+
+    public void setReturnedBillId(Long returnedBillId) {
+        this.returnedBillId = returnedBillId;
+    }
+
     public Bill getReceivedBill() {
         if (receivedBill == null) {
             receivedBill = new BilledBill();
@@ -451,14 +599,14 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         this.receivedBill = receivedBill;
     }
 
-    public List<Bill> getPendingReturnBills() {
+    public List<PharmacyReturnFromWardPendingReturnDTO> getPendingReturnBills() {
         if (pendingReturnBills == null) {
             pendingReturnBills = new ArrayList<>();
         }
         return pendingReturnBills;
     }
 
-    public void setPendingReturnBills(List<Bill> pendingReturnBills) {
+    public void setPendingReturnBills(List<PharmacyReturnFromWardPendingReturnDTO> pendingReturnBills) {
         this.pendingReturnBills = pendingReturnBills;
     }
 

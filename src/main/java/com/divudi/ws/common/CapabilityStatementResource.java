@@ -146,6 +146,19 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Admission Number Counters", "/api/admission-numbers",
+                        "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
+                        "API Key (Finance header)", "GET", "PUT"))
+                .add(resource("Admission Search", "/api/inward/admissions",
+                        "General-purpose admission search — list all currently active (not-discharged) "
+                        + "admissions, or search past or current admissions by BHT no, patient name, "
+                        + "MRN/PHN, phone, or NIC. Unlike /api/apiInward/admissions this is not scoped to "
+                        + "unpaid/open admissions and has no row cap (paginated via page/size). "
+                        + "Params: status (ADMITTED_BUT_NOT_DISCHARGED default, "
+                        + "DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED, DISCHARGED_AND_FINAL_BILL_COMPLETED, "
+                        + "ANY_STATUS), bhtNo, patientName, mrn, phone, nic, admissionTypeId, institutionId, "
+                        + "departmentId, fromDate, toDate, page, size.",
+                        "API Key (Finance header)", "GET"))
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
@@ -209,9 +222,28 @@ public class CapabilityStatementResource {
                         + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
                         + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
                         + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
-                        + "timedItemFeeDurationDaysForMoCharge.",
+                        + "timedItemFeeDurationDaysForMoCharge, timedItemFeeDurationUnit "
+                        + "(ONE_TIME | MINUTE | HOUR | DAY, default HOUR — what the hour fields are counted in).",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Facility Timed Items", "/api/inward/room-facility-charges/{id}/timed-items",
+                        "Manage the list of TimedItem services attached to a room facility charge (backs the "
+                        + "'Timed Items' section of /inward/inward_room_facility.xhtml), so they auto-bill "
+                        + "based on duration of stay alongside the fixed room charges. "
+                        + "POST body: timedItemId (required). A TimedItem cannot be attached twice while active "
+                        + "(409 conflict). DELETE soft-retires the attachment, not the TimedItem itself.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
+                .add(resource("Item Requests", "/api/itemrequests",
+                        "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as "
+                        + "InwardService items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's "
+                        + "active BHT. Requests are saved Pending (no charge, no stock movement) and routed to a "
+                        + "target department's in-app approval queue. A department user approves (charges the BHT and "
+                        + "deducts stock atomically, failing the whole approval if any line has insufficient stock) or "
+                        + "rejects (records a reason) the request via the JSF approval page — this API does not expose "
+                        + "approve/reject. External systems poll GET /{id} for status: PENDING, APPROVED, REJECTED, CANCELLED.",
+                        "API Key",
+                        "GET", "POST", "PUT"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
@@ -258,7 +290,10 @@ public class CapabilityStatementResource {
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
                         "Pharmaceutical item master data. AMP create/update accepts "
                         + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
-                        + "for strength-ratio based dispensing substitution.",
+                        + "for strength-ratio based dispensing substitution. VMP and AMP create/update "
+                        + "also accept issueUnitId (Long, MeasurementUnit) and, for VMP, strengthUnitId "
+                        + "-- both surfaced back as issueUnitId/issueUnitName/strengthUnitId/strengthUnitName "
+                        + "on GET/POST/PUT single-item responses.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Items", "/api/pharmacy/items",
@@ -268,9 +303,33 @@ public class CapabilityStatementResource {
                         "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
-                        "Pharmacy stock and adjustment operations",
+                        "Pharmacy stock and adjustment operations. "
+                        + "POST /backfill_finance_details is an admin-only, idempotent backfill: recomputes "
+                        + "BillFinanceDetails + bill totals for adjustment bills created before this fix existed, "
+                        + "using each bill's own stored before/after audit values. Bills that already have "
+                        + "BillFinanceDetails are skipped, not overwritten. Body: departmentId, fromDate, toDate "
+                        + "(yyyy-MM-dd), apply (false = dry run).",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Pharmacy Discounts", "/api/pharmacy/discounts",
+                        "Manage PaymentSchemeDiscount rows that control per-category discount percentages "
+                        + "applied during pharmacy billing for a given payment scheme. "
+                        + "POST /api/pharmacy/discounts/bulk creates or updates a discount % across "
+                        + "all pharmacy item categories at once (idempotent). "
+                        + "GET lists rows (filter: paymentSchemeId, paymentSchemeName, billType, limit). "
+                        + "POST creates a single row. PUT /{id} updates discountPercent. DELETE /{id} soft-retires.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Payment Schemes", "/api/payment-scheme",
+                        "List and update PaymentScheme records. "
+                        + "GET lists all active schemes (optional ?query=name-filter&limit=). "
+                        + "Response includes all billing-scope flags: validForInpatientBills, validForPharmacy, "
+                        + "validForBilledBills, validForChanneling, and eligibility flags "
+                        + "(staffMemberRequired, membershipRequired, staffRequired, staffOrFamilyRequired, "
+                        + "memberRequired, memberOrFamilyRequired, seniorCitizenRequired, pregnantMotherRequired). "
+                        + "PUT /{id} performs a partial update — only fields present in the request body are changed.",
+                        "API Key (Finance header)",
+                        "GET", "PUT"))
                 .add(resource("Pharmacy Search", "/api/pharmacy_adjustments/search",
                         "Pharmacy stock search",
                         "API Key",
@@ -316,7 +375,23 @@ public class CapabilityStatementResource {
                         + "Supports filtering by departmentId and query string. "
                         + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
                         + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
-                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department.",
+                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department. "
+                        + "Role-template operations (roles are admin-time templates; runtime reads user-level records only): "
+                        + "POST /{id}/role/reset resets a user's records for the given aspects/departments to a role template "
+                        + "(roleId optional — defaults to the user's own role; body: {roleId?, departmentIds[], aspects[]?, updateUserRole?, preview?}). "
+                        + "POST /{id}/role/expand and POST /{id}/role/narrow add/strip a role template's records "
+                        + "(body: {roleId, departmentIds[], aspects[]?, preview?}; roleId required). "
+                        + "aspects values: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE (default [\"PRIVILEGES\"]). "
+                        + "preview=true returns counts without writing. "
+                        + "POST /bulk/role-operations applies RESET/EXPAND/NARROW to many users at once (explicit userIds or a role/department filter); "
+                        + "for safety it requires preview=true first, then confirm=true to actually apply. "
+                        + "GET /roles lists active roles with template summary counts (privileges/icons/subscriptions) and template login page. "
+                        + "PUT /{id}/login-page (body: {departmentId, loginPage}) and DELETE /{id}/login-page/{departmentId} manage the "
+                        + "per-user-per-department default login page override. "
+                        + "POST /{id}/force-password-reset flags needToResetPassword=true without requiring a new password value "
+                        + "(distinct from /reset-password, which sets an actual password). "
+                        + "GET /password-status (optional ?from=&to=, yyyy-MM-dd) reports lastPasswordResetAt and needToResetPassword "
+                        + "per active user; omitted range returns all users including those who have never reset.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",
@@ -345,7 +420,13 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
-                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows. "
+                        + "Category/sample/container(tube)/analyzer(machine) can each be set via an ID referencing an existing row "
+                        + "(categoryId, sampleId, containerId, analyzerId — errors if not found) or a name "
+                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists). "
+                        + "discountAllowed (Item-level flag) is readable/writable on all of GET /search, GET /{id}, POST, PUT — "
+                        + "note this is distinct from the fee-level discountAllowed on /fees below; the inward discount calculation "
+                        + "requires BOTH to be true (see Services /items/bulk-discount-allowed for bulk-setting this one by category).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
@@ -355,10 +436,50 @@ public class CapabilityStatementResource {
                         + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
+                        "Manage InvestigationComponent groupings used to organize report items within an investigation's format "
+                        + "(componentName only). GET lists components for the investigation. POST creates one. "
+                        + "PUT /{componentId} renames one. DELETE /{componentId} permanently removes one — rejected with an error "
+                        + "if any report item (InvestigationItem) still references it.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Fees", "/api/investigations/{investigationId}/fees",
+                        "Manage investigation pricing (ItemFee), mirroring the Services /fees sub-resource. "
+                        + "GET lists non-retired fees for the investigation. POST adds a fee "
+                        + "(body: name, feeType, fee, ffee, discountAllowed, institutionId, departmentId, specialityId, staffId). "
+                        + "PUT /{feeId} updates a fee (only non-null fields are applied). "
+                        + "DELETE /{feeId} soft-deletes (retires) a fee. All mutations recalculate the investigation's "
+                        + "total/totalForForeigner and are rejected against a retired investigation.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Validators", "/api/investigations/{investigationId}/validators",
+                        "Manage InvestigationValidator result-range checks (name, maximumValue, minimumValue) for an "
+                        + "investigation. GET lists non-retired validators. POST creates one. "
+                        + "PUT /{validatorId} updates one (only non-null/non-blank fields are applied). "
+                        + "DELETE /{validatorId} soft-deletes (retires) one. All mutations are rejected against a "
+                        + "retired investigation. Note: the legacy InvestigationValidaterComponent relation is dead "
+                        + "code in the app today and is intentionally not exposed by this API.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Full Definition", "/api/investigations/{investigationId}/full",
+                        "Read-only aggregation of an investigation's complete definition into one nested JSON "
+                        + "document: metadata (incl. category/sample/container/analyzer), components, report "
+                        + "format (items, item values, calculations, flags, dynamic labels), validators, and fees. "
+                        + "Pure composition over the other investigation sub-resources — no new mutation logic. "
+                        + "Supersedes the old 'Export Investigation as JSON' idea (#458).",
+                        "API Key",
+                        "GET"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
-                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on fees in a category). "
+                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on ItemFee rows in a category "
+                        + "and/or item subtype; fee-level only). "
+                        + "/items/bulk-discount-allowed (POST bulk-update Item-level discountAllowed for all non-retired "
+                        + "items in a category and/or item subtype; body: categoryId, itemType, discountAllowed). "
+                        + "Both bulk endpoints accept categoryId and/or itemType (Investigation | Service | InwardService) "
+                        + "— at least one is required. itemType targets every item of that subtype directly (e.g. every "
+                        + "Investigation) since there is no API to enumerate every category id to loop over instead; "
+                        + "categoryId alone still works and is not InvestigationCategory-restricted. "
                         + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
@@ -366,9 +487,18 @@ public class CapabilityStatementResource {
                         "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
                         + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
                         + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
-                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "durationUnit (ONE_TIME | MINUTE | HOUR | DAY, default HOUR) sets what durationHours/overShootHours are counted in. "
+                        + "sortOrder must be 1 or greater and unique per item — it is the billing slot position — and is auto-assigned "
+                        + "to the next free slot when omitted; the same rules apply on the fee page and on this API. "
+                        + "GET /search filters on query (name/code, case-insensitive), departmentType, inwardChargeType, categoryId, "
+                        + "departmentId, institutionId, inactive and includeRetired, and pages with limit + offset, returning "
+                        + "{items, total, limit, offset}. "
+                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management; PUT on that path replaces the whole slot "
+                        + "list atomically (slots absent from the body are retired). "
                         + "Sub-resource: /timed-items/categories for TimedItemCategory CRUD (GET list, GET /{id}, POST, PUT /{id}, DELETE /{id}). "
-                        + "PATCH /activate and /deactivate control availability without retiring.",
+                        + "PATCH /activate and /deactivate control availability without retiring. "
+                        + "DELETE only soft-retires; PATCH /{id}/restore and PATCH /{id}/fees/{feeId}/restore undo it, and "
+                        + "includeRetired=true on the read paths lists what was retired.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",

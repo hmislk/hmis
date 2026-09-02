@@ -67,21 +67,22 @@
 
                 </div>
 
-                <p:dataTable   
-                    value="#{financialTransactionController.bundle.denominationTransactions}" 
+                <p:dataTable
+                    value="#{financialTransactionController.bundle.denominationTransactions}"
                     var="deno"  >
-                    <p:column headerText="Denomination">
-                        <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
+                    <p:column headerText="Denomination / Payment Method">
+                        <p:outputLabel value="#{deno.denomination.displayName}" rendered="#{deno.denomination ne null}" ></p:outputLabel>
+                        <p:outputLabel value="#{deno.paymentMethod.label}" rendered="#{deno.denomination eq null}" ></p:outputLabel>
                     </p:column>
-                    <p:column 
+                    <p:column
                         headerText="Number"
                         class="text-end"
                         title="Number">
-                        <p:outputLabel 
-                            class="w-100" 
+                        <p:outputLabel
+                            class="w-100"
                             id="txtDenoQtyHandover"
-                            value="#{deno.denominationQty}" 
-                            style="width: 100%;" 
+                            value="#{deno.denominationQty}"
+                            style="width: 100%;"
                             onfocus="this.select()"/>
                     </p:column>
                     <p:column

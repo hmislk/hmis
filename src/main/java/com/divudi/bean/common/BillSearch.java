@@ -21,6 +21,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -57,6 +58,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.inward.InwardSearch;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.bean.pharmacy.GrnReturnWithCostingController;
@@ -132,6 +134,7 @@ import com.divudi.bean.pharmacy.SaleReturnController;
 import com.divudi.bean.pharmacy.TransferIssueNativeSqlController;
 import com.divudi.bean.pharmacy.TransferReceiveNativeSqlController;
 import com.divudi.bean.pharmacy.InpatientDirectIssueNativeSqlController;
+import com.divudi.bean.pharmacy.RetailSaleForCashierNativeSqlController;
 import com.divudi.bean.pharmacy.RetailSaleNativeSqlController;
 import com.divudi.bean.pharmacy.PurchaseOrderNativeSqlController;
 import com.divudi.bean.pharmacy.GrnNativeSqlController;
@@ -266,6 +269,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     @Inject
     PatientDepositController patientDepositController;
     @Inject
+    InwardSearch inwardSearch;
+    @Inject
     OpdBillController opdBillController;
     @Inject
     SearchController searchController;
@@ -339,6 +344,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     @Inject
     RetailSaleNativeSqlController retailSaleNativeSqlController;
     @Inject
+    RetailSaleForCashierNativeSqlController retailSaleForCashierNativeSqlController;
+    @Inject
     PurchaseOrderNativeSqlController purchaseOrderNativeSqlController;
     @Inject
     GrnNativeSqlController grnNativeSqlController;
@@ -351,6 +358,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private double refundAmount;
     private String txtSearch;
     private Bill bill;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private BillLight billLight;
     private Long selectedBillId;
     private Bill printingBill;
@@ -2314,6 +2323,18 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         billController.save(rb);
         currentRefundBill = rb;
 
+        // Explicitly persist the refund bill items and their fees. These are built
+        // in-memory by createBillItemsAndBillFeesForOpdRefund() and must not rely on
+        // JPA cascade alone — if the cascaded persist inside billController.save()
+        // above fails for any reason it is silently retried as a merge, which can
+        // leave the bill (and its later payment) saved with no bill items at all.
+        for (BillItem rbi : rb.getBillItems()) {
+            billItemController.save(rbi);
+            for (BillFee rbf : rbi.getBillFees()) {
+                billFeeController.save(rbf);
+            }
+        }
+
         // Update the original bill
         List<Bill> refundBills = new ArrayList<>(bill.getRefundBills());
         refundBills.add(rb);
@@ -3807,6 +3828,15 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         this.bill = bill;
     }
 
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != bill) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(bill);
+            individualVoucherGroupsBill = bill;
+        }
+        return individualVoucherGroups;
+    }
+
     public Long getSelectedBillId() {
         return selectedBillId;
     }
@@ -4798,6 +4828,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return inpatientDirectIssueNativeSqlController.viewByBillId(BillId);
             case PHARMACY_RETAIL_SALE:
                 return retailSaleNativeSqlController.viewByBillId(BillId);
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                return retailSaleForCashierNativeSqlController.viewByBillId(BillId);
             case PHARMACY_TRANSFER_REQUEST_PRE:
             case PHARMACY_TRANSFER_REQUEST:
                 return pharmacyBillSearch.viewRequestByBillId(BillId);
@@ -5288,6 +5320,50 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
             case DRAWER_ADJUSTMENT:
                 return requestController.navigateToDrawerAdjustmentApproveByBill(bill);
+
+            case INWARD_PAYMENT:
+                inwardSearch.setBill(bill);
+                return "/inward/inward_reprint_bill_payment?faces-redirect=true";
+
+            case INWARD_PAYMENT_CANCELLATION: {
+                // `bill` here is the cancellation bill itself (a CancelledBill).
+                // InwardSearch.createCancelDepositBill() links it back to the
+                // original deposit bill via billedBill, and the original bill's
+                // cancelledBill points forward to this cancellation bill.
+                // The view page (inward_deposit_cancel_bill_payment.xhtml) needs
+                // the ORIGINAL bill loaded with printPreview=true so it can show
+                // inwardSearch.bill.cancelledBill.
+                Bill originalDepositBill = bill.getBilledBill();
+                if (originalDepositBill == null || originalDepositBill.getId() == null) {
+                    JsfUtil.addErrorMessage("Original bill not found for this cancellation");
+                    return "";
+                }
+                Bill reloadedOriginalDepositBill = billService.reloadBill(originalDepositBill.getId());
+                return inwardSearch.navigateToViewInwardDepositCancellationBill(reloadedOriginalDepositBill);
+            }
+
+            case INWARD_PAYMENT_REFUND:
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
+                // No dedicated view/reprint page exists yet for these two atomics.
+                // Both are still InwardPaymentBill-family bills created via
+                // Bill.copy() of the original deposit bill, so patientEncounter
+                // (and therefore the patient/admission details on the receipt)
+                // is preserved. Falling back to the generic Inward payment
+                // reprint page is a reasonable, functioning view.
+                inwardSearch.setBill(bill);
+                return "/inward/inward_reprint_bill_payment?faces-redirect=true";
+
+            case INWARD_APPOINTMENT_BILL:
+            case INWARD_APPOINTMENT_CANCEL_BILL:
+                // Unlike deposit bills, InwardAppointmentBill never populates
+                // patientEncounter (it lives only on Appointment.patientEncounter,
+                // set later at admission time). inward_reprint_bill_payment.xhtml
+                // reads bill.patientEncounter.* directly, so it can't be reused
+                // here. Instead route to a thin DTO-backed view page whose query
+                // (BillFacade.findInwardBillReceiptDTO) resolves the patient via
+                // LEFT JOINs and tolerates the null patientEncounter.
+                inwardSearch.setAppointmentReceiptBillId(bill.getId());
+                return "/inward/inward_view_appointment_bill_receipt?faces-redirect=true";
 
         }
 
@@ -6050,6 +6126,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case FUND_SHIFT_SHORTAGE_BILL:
             case FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
+            case INWARD_SERVICE_BILL:
+            case INWARD_SERVICE_BATCH_BILL:
+                return navigateToInwardSearchService();
             //                opdBillController.setBill(bill);
 //                return opdBillController.navigateToViewPackageBatchBill();
 
@@ -6061,6 +6140,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     public String navigateToViewCcBill(Bill bill) {
         loadBillDetails(bill); // Load the bill details
         return "/collecting_centre/view/cc_bill_view?faces-redirect=true";
+    }
+
+    public String navigateToCcOriginalBillPrint() {
+        return "/collecting_centre/view/cc_original_bill_reprint?faces-redirect=true";
     }
 
     public String navigateToViewCcBillCancellation(Bill bill) {

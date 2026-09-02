@@ -18,6 +18,9 @@ import com.divudi.core.data.Sex;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.dto.InwardBillReceiptDTO;
+import com.divudi.core.data.EmailAttachment;
+import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -26,6 +29,7 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillComponentFacade;
@@ -46,9 +50,12 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +66,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -93,6 +103,12 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     DrawerService drawerService;
+    @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
+    private com.divudi.core.facade.EmailFacade emailFacade;
+    @EJB
+    private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
 
     /**
      * JSF Controllers
@@ -121,12 +137,26 @@ public class InwardSearch implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     InwardPaymentController inwardPaymentController;
+    @Inject
+    InwardDepositController inwardDepositController;
 
     /**
      * Properties
      */
     private Bill bill;
     private boolean printPreview = false;
+
+    /**
+     * Bill id to render on {@code /inward/inward_view_appointment_bill_receipt}
+     * (Issue #22783 — appointment bill / appointment cancel bill view, routed
+     * from {@code BillSearch.navigateToViewBillByAtomicBillType}). Appointment
+     * bills never have {@code Bill.patientEncounter} populated, so they can't
+     * use the regular {@code inward_reprint_bill_payment} template; the DTO
+     * query behind {@link #getAppointmentBillReceipt()} handles that via
+     * LEFT JOINs instead.
+     */
+    private Long appointmentReceiptBillId;
+    private InwardBillReceiptDTO appointmentBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -141,6 +171,7 @@ public class InwardSearch implements Serializable {
     List<BillItem> refundingItems;
     private List<Bill> bills;
     private List<BillItem> tempbillItems;
+    private List<Bill> finalBillVersions;
     /////////////////////
 
     PaymentMethod paymentMethod;
@@ -305,8 +336,12 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
             return "";
         }
+        if (bill.isRefunded()) {
+            JsfUtil.addErrorMessage("This bill has already been refunded and cannot be cancelled.");
+            return "";
+        }
         switch (bill.getBillTypeAtomic()) {
-            case INWARD_DEPOSIT:
+            case INWARD_PAYMENT:
                 inwardDepositCancelationPaymentMethods = new ArrayList<>();
                 getInwardDepositCancelationPaymentMethods().add(PaymentMethod.Cash);
                 
@@ -318,12 +353,43 @@ public class InwardSearch implements Serializable {
                 
                 paymentMethodData = new PaymentMethodData();
                 
+                refillPaymentDetail();
+                
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
-            case INWARD_DEPOSIT_REFUND:
+            case INWARD_PAYMENT_REFUND:
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
+    }
+
+    public String navigateToDepositBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+        if (bill.isRefunded()) {
+            JsfUtil.addErrorMessage("This bill has already been refunded and cannot be cancelled.");
+            return "";
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.INWARD_DEPOSIT) {
+            JsfUtil.addErrorMessage("Selected bill is not an Inward Deposit bill.");
+            return "";
+        }
+        inwardDepositCancelationPaymentMethods = new ArrayList<>();
+        getInwardDepositCancelationPaymentMethods().add(PaymentMethod.Cash);
+        if (bill.getPaymentMethod() != PaymentMethod.Cash) {
+            inwardDepositCancelationPaymentMethods.add(bill.getPaymentMethod());
+        }
+        originalBillPaymentMethodData = new PaymentMethodData();
+        originalBillPaymentMethodData = loadCurrentBillPaymentMethodData(bill);
+        paymentMethodData = new PaymentMethodData();
+        refillPaymentDetail();
+        return "inward_cancel_bill_deposit?faces-redirect=true";
     }
 
     public String navigateToCancelInwardServiceBillFromReprint() {
@@ -356,8 +422,46 @@ public class InwardSearch implements Serializable {
             return "";
         }
         bill = b;
+        billItems = null;
         printPreview = true;
         return "/inward/inward_deposit_cancel_bill_payment?faces-redirect=true";
+    }
+
+    public String navigateToViewDepositBillCancellation(Bill b) {
+        if (b == null || b.getCancelledBill() == null) {
+            JsfUtil.addErrorMessage("No cancellation bill found");
+            return "";
+        }
+        bill = b;
+        billItems = null;
+        printPreview = true;
+        return "/inward/inward_cancel_bill_deposit?faces-redirect=true";
+    }
+
+    /**
+     * Reprint navigation for a row in the Interim Bill's Payments tab, which
+     * can hold Payment bills, Deposit bills, and either feature's Refund
+     * bills all mixed together (issue #22826). Routes each to the correct
+     * reprint page: Refund bills (either feature) go to the shared generic
+     * refund reprint page; Deposit pay bills go to the new Deposit reprint
+     * page; everything else (Payment pay bills) keeps the existing Payment
+     * reprint page.
+     */
+    public String navigateToPaymentOrDepositReprint(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        bill = b;
+        billItems = null;
+        printPreview = false;
+        if (b instanceof RefundBill) {
+            return "/inward/inward_reprint_bill_refund?faces-redirect=true";
+        }
+        if (b.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
+            return "/inward/inward_reprint_bill_deposit?faces-redirect=true";
+        }
+        return "/inward/inward_reprint_bill_payment?faces-redirect=true";
     }
 
     public void editBillDetails() {
@@ -431,15 +535,6 @@ public class InwardSearch implements Serializable {
         } else {
             return "/inward/inward_cancel_bill_service?faces-redirect=true";
         }
-    }
-
-    public boolean showProfessionalFee() {
-        if (withProfessionalFee == true) {
-            withProfessionalFee = false;
-        } else {
-            withProfessionalFee = true;
-        }
-        return withProfessionalFee;
     }
 
     public void edit() {
@@ -565,6 +660,7 @@ public class InwardSearch implements Serializable {
         refundingItems = null;
         bills = null;
         tempbillItems = null;
+        sentEmailsForBill = null;
     }
 
     public WebUser getUser() {
@@ -591,28 +687,497 @@ public class InwardSearch implements Serializable {
             return "";
         }
 
-        String jpql;
-        Map temMap = new HashMap();
-        jpql = "select b from Bill b where"
-                + " b.billType = :billType and "
-                + " b.retired=false ";
+        finalBillVersions = null;
+        List<Bill> versions = fetchFinalBillVersions(admission);
 
-        jpql += " and  b.patientEncounter=:pe ";
-        temMap.put("pe", admission);
-
-        temMap.put("billType", BillType.InwardFinalBill);
-        jpql += " order by b.id desc ";
-
-        // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        bill = getBillFacade().findFirstByJpql(jpql, temMap);
-
-        if (bill == null) {
+        if (versions.isEmpty()) {
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
         }
-        withProfessionalFee = false;
 
-        return "/inward/inward_reprint_bill_final?faces-redirect=true";
+        if (versions.size() == 1) {
+            bill = versions.get(0);
+            billItems = null;
+            withProfessionalFee = false;
+            return "/inward/inward_reprint_bill_final?faces-redirect=true";
+        }
+
+        return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
+    public String navigateToManageFinalBills() {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+
+        finalBillVersions = null;
+        List<Bill> versions = fetchFinalBillVersions(admission);
+
+        if (versions.isEmpty()) {
+            JsfUtil.addErrorMessage("No Final Bill Created");
+            return "";
+        }
+
+        return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
+    /**
+     * Lazily fetches and caches all final-bill versions for the currently
+     * selected {@link #admission}. Callers that switch admissions must reset
+     * {@link #finalBillVersions} to null before calling this getter again.
+     */
+    public List<Bill> getFinalBillVersions() {
+        if (finalBillVersions == null && admission != null) {
+            finalBillVersions = fetchFinalBillVersions(admission);
+        }
+        return finalBillVersions;
+    }
+
+    private List<Bill> fetchFinalBillVersions(PatientEncounter admission) {
+        // billTypeAtomic (not just billType) is required here — the cancellation-record
+        // Bill created by createCancelBill() copies billType=InwardFinalBill from the
+        // bill it cancels, so filtering on billType alone would list cancellation
+        // records as if they were final bill versions.
+        String jpql = "select b from Bill b where b.patientEncounter = :pe and b.billType = :billType"
+                + " and b.billTypeAtomic = :atomic and b.retired = false order by b.finalBillVersionSerial asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", admission);
+        params.put("billType", BillType.InwardFinalBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    public boolean hasAnyFinalBillVersion(PatientEncounter admission) {
+        if (admission == null) {
+            return false;
+        }
+        return !fetchFinalBillVersions(admission).isEmpty();
+    }
+
+    /**
+     * User-facing action to mark {@code newConfirmed} as the confirmed final
+     * bill version for its admission. Privilege checks are done in the XHTML
+     * via {@code rendered}, not here.
+     */
+    public void setAsConfirmedFinalBill(Bill newConfirmed) {
+        if (newConfirmed == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        if (newConfirmed.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot confirm a cancelled bill");
+            return;
+        }
+        if (newConfirmed.getApproveAt() == null) {
+            JsfUtil.addErrorMessage("Cannot confirm an unapproved bill");
+            return;
+        }
+        setAsConfirmedFinalBillInternal(newConfirmed);
+        JsfUtil.addSuccessMessage("Final Bill Version Confirmed");
+        finalBillVersions = null;
+    }
+
+    /**
+     * Navigates to the approval page for the given final bill version,
+     * mirroring {@link #prepareEmailFinalBillVersion(Bill)}'s use of the
+     * shared {@link #bill} session field for the target page.
+     */
+    public String navigateToApproveFinalBill(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        bill = b;
+        return "/inward/inward_final_bill_approve?faces-redirect=true";
+    }
+
+    /**
+     * User-facing action to approve a final bill version. Approval is a
+     * prerequisite for confirming a version ({@link #setAsConfirmedFinalBill})
+     * and for emailing it ({@link #emailFinalBillVersionInternal}). Privilege
+     * checks are done in the XHTML via {@code rendered}, not here.
+     *
+     * Reuses the generic {@code Bill.approveUser}/{@code approveAt} fields
+     * (same pair GRN/PO/Petty Cash/etc. approval already uses) rather than a
+     * final-bill-specific field, following the existing codebase convention
+     * that approval state is a plain {@code approveAt != null} check scoped
+     * by {@code billType}/{@code billTypeAtomic} at each call site.
+     */
+    public void approveFinalBillVersion(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        if (b.getApproveAt() != null) {
+            JsfUtil.addErrorMessage("Bill already approved");
+            return;
+        }
+        b.setApproveUser(sessionController.getLoggedUser());
+        b.setApproveAt(new Date());
+        getBillFacade().edit(b);
+
+        auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
+                null, b.getId(), sessionController.getLoggedUser(),
+                "Bill", b.getId());
+
+        JsfUtil.addSuccessMessage("Final Bill Approved");
+        finalBillVersions = null;
+    }
+
+    /**
+     * Repoints {@code pe.finalBill} to {@code newConfirmed}, flips the
+     * {@code confirmedFinalBill} flag on the old and new bills, and mirrors
+     * the totals copy done in {@link BhtSummeryController#settle()}. Shared
+     * by the explicit "set as confirmed" action and the cancel-triggered
+     * auto-promotion of the next latest version.
+     */
+    private void setAsConfirmedFinalBillInternal(Bill newConfirmed) {
+        PatientEncounter pe = newConfirmed.getPatientEncounter();
+
+        Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
+
+        if (pe.getFinalBill() != null && !pe.getFinalBill().getId().equals(newConfirmed.getId())) {
+            Bill oldConfirmed = pe.getFinalBill();
+            oldConfirmed.setConfirmedFinalBill(false);
+            getBillFacade().edit(oldConfirmed);
+        }
+
+        newConfirmed.setConfirmedFinalBill(true);
+        getBillFacade().edit(newConfirmed);
+
+        pe.setFinalBill(newConfirmed);
+        pe.setGrantTotal(newConfirmed.getGrantTotal());
+        pe.setDiscount(newConfirmed.getDiscount());
+        pe.setNetTotal(newConfirmed.getNetTotal());
+        getPatientEncounterFacade().edit(pe);
+
+        auditService.logEncounterAudit(pe, "Final Bill Version Confirmed",
+                previousFinalBillId, newConfirmed.getId(), sessionController.getLoggedUser(),
+                "Bill", newConfirmed.getId());
+    }
+
+    /**
+     * User-facing action to retire (soft delete) a final bill version.
+     * Irreversible — there is no un-retire action. Privilege checks are done
+     * in the XHTML via {@code rendered}, not here.
+     */
+    public void retireFinalBillVersion(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        if (b.isRetired()) {
+            JsfUtil.addErrorMessage("Bill is already retired");
+            return;
+        }
+        if (b.isConfirmedFinalBill()) {
+            JsfUtil.addErrorMessage("Cannot retire the Confirmed Final Bill. Confirm a different version first.");
+            return;
+        }
+        List<Bill> versions = fetchFinalBillVersions(b.getPatientEncounter());
+        if (versions.size() <= 1) {
+            JsfUtil.addErrorMessage("Cannot retire the only remaining final bill version");
+            return;
+        }
+
+        b.setRetired(true);
+        b.setRetirer(sessionController.getLoggedUser());
+        b.setRetiredAt(new Date());
+        getBillFacade().edit(b);
+
+        auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Retired",
+                b.getId(), null, sessionController.getLoggedUser(),
+                "Bill", b.getId());
+
+        JsfUtil.addSuccessMessage("Final Bill Version Retired");
+        finalBillVersions = null;
+    }
+
+    private String emailRecipient;
+    private String emailSubject;
+    private String emailBody;
+    private List<EmailAttachment> pendingEmailAttachments;
+    private List<AppEmail> sentEmailsForBill;
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
+    }
+
+    public String getEmailSubject() {
+        return emailSubject;
+    }
+
+    public void setEmailSubject(String emailSubject) {
+        this.emailSubject = emailSubject;
+    }
+
+    public String getEmailBody() {
+        return emailBody;
+    }
+
+    public void setEmailBody(String emailBody) {
+        this.emailBody = emailBody;
+    }
+
+    public List<EmailAttachment> getPendingEmailAttachments() {
+        return pendingEmailAttachments;
+    }
+
+    /**
+     * Navigates from the Final Bill Versions list to the email review page
+     * for {@code b}, prefilling recipient/subject/body so the cashier can
+     * check and edit them — and attach extra documents — before anything is
+     * actually sent. Replaces the old pattern of sending straight from a
+     * "Recipient + Send" dialog with no review step.
+     */
+    public String prepareEmailFinalBillVersion(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        bill = b;
+        PatientEncounter pe = b.getPatientEncounter();
+        emailRecipient = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
+                ? pe.getPatient().getPerson().getEmail() : null;
+        emailSubject = "Final Bill " + b.getDeptId();
+        emailBody = "Please find attached the final bill " + b.getDeptId() + ".";
+        pendingEmailAttachments = new ArrayList<>();
+        return "/inward/inward_final_bill_email?faces-redirect=true";
+    }
+
+    // Attachments are held Base64-encoded in this SessionScoped bean until sent —
+    // capped here (in addition to the fileUpload's client-side sizeLimit) so a
+    // careless or malicious upload can't grow session memory unbounded.
+    private static final int MAX_EMAIL_ATTACHMENTS = 5;
+    private static final long MAX_EMAIL_ATTACHMENT_FILE_BYTES = 10_000_000L;
+    private static final long MAX_EMAIL_ATTACHMENT_TOTAL_BYTES = 20_000_000L;
+
+    /**
+     * Adds a cashier-chosen file (e.g. a supporting document requested by the
+     * credit company) to the attachment list for the email being composed.
+     * Kept separate from the auto-generated final bill PDF, which is always
+     * attached in addition to whatever is added here.
+     */
+    public void uploadEmailAttachment(FileUploadEvent event) {
+        if (pendingEmailAttachments == null) {
+            pendingEmailAttachments = new ArrayList<>();
+        }
+        UploadedFile file = event.getFile();
+        if (pendingEmailAttachments.size() >= MAX_EMAIL_ATTACHMENTS) {
+            JsfUtil.addErrorMessage("Cannot attach more than " + MAX_EMAIL_ATTACHMENTS + " documents");
+            return;
+        }
+        if (file.getSize() > MAX_EMAIL_ATTACHMENT_FILE_BYTES) {
+            JsfUtil.addErrorMessage(file.getFileName() + " exceeds the 10MB attachment size limit");
+            return;
+        }
+        long attachedSoFar = 0;
+        for (EmailAttachment existing : pendingEmailAttachments) {
+            attachedSoFar += existing.getBase64Content() != null ? existing.getBase64Content().length() * 3L / 4 : 0;
+        }
+        if (attachedSoFar + file.getSize() > MAX_EMAIL_ATTACHMENT_TOTAL_BYTES) {
+            JsfUtil.addErrorMessage("Total attachments cannot exceed 20MB");
+            return;
+        }
+        try {
+            EmailAttachment attachment = new EmailAttachment(
+                    file.getFileName(),
+                    file.getContentType(),
+                    Base64.getEncoder().encodeToString(file.getContent()));
+            pendingEmailAttachments.add(attachment);
+            JsfUtil.addSuccessMessage("Attached " + file.getFileName());
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Failed to attach file");
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill email attachment failed", ex);
+        }
+    }
+
+    public void removeEmailAttachment(EmailAttachment attachment) {
+        if (pendingEmailAttachments != null) {
+            pendingEmailAttachments.remove(attachment);
+        }
+    }
+
+    /**
+     * Emails a one-page summary of the given final bill version (patient,
+     * admission, and totals — not a full itemized reprint) as a PDF
+     * attachment, plus any cashier-attached documents, and logs the send via
+     * {@link AppEmail} so it shows up in the "Sent Emails" history on the
+     * view/print screen.
+     */
+    public void emailFinalBillVersion(Bill b) {
+        boolean sent = false;
+        try {
+            sent = emailFinalBillVersionInternal(b);
+        } finally {
+            // Tell the client whether the send succeeded so the dialog closes
+            // only on success (see the Send button's oncomplete), mirroring
+            // BhtSummeryController.addNewCreditCompany()'s creditCompanyAdded.
+            if (PrimeFaces.current().isAjaxRequest()) {
+                PrimeFaces.current().ajax().addCallbackParam("emailSent", sent);
+            }
+        }
+    }
+
+    private boolean emailFinalBillVersionInternal(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return false;
+        }
+        // InwardSearch.bill is shared session state set by many unrelated flows
+        // (interim estimates, staff payment cancel, etc.), and this page is reachable
+        // by direct URL — without this check, a stale/unrelated bill left over from
+        // another flow could be sent out mislabeled as a Final Bill.
+        // billTypeAtomic is required in addition to billType: createCancelBill()
+        // copies billType=InwardFinalBill onto the cancellation record it creates
+        // (see fetchFinalBillVersions()), so billType alone would let a cancellation
+        // record through as if it were a real final bill.
+        if (b.getBillType() != BillType.InwardFinalBill
+                || b.getBillTypeAtomic() != BillTypeAtomic.INWARD_FINAL_BILL) {
+            JsfUtil.addErrorMessage("Selected bill is not a Final Bill");
+            return false;
+        }
+        if (b.getApproveAt() == null) {
+            JsfUtil.addErrorMessage("Cannot email an unapproved Final Bill");
+            return false;
+        }
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No recipient Email");
+            return false;
+        }
+        if (!CommonFunctions.isValidEmail(emailRecipient)) {
+            JsfUtil.addErrorMessage("Recipient Email is NOT valid");
+            return false;
+        }
+
+        String subject = (emailSubject != null && !emailSubject.trim().isEmpty())
+                ? emailSubject : "Final Bill " + b.getDeptId();
+        String body = (emailBody != null && !emailBody.trim().isEmpty())
+                ? emailBody : "Please find attached the final bill " + b.getDeptId() + ".";
+
+        AppEmail email = new AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(emailRecipient);
+        email.setMessageSubject(subject);
+        email.setMessageBody(body);
+        email.setDepartment(b.getDepartment());
+        email.setInstitution(b.getInstitution());
+        email.setBill(b);
+        email.setPatientEncounter(b.getPatientEncounter());
+        email.setMessageType(MessageType.InwardFinalBillEmail);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        boolean success = false;
+        try {
+            byte[] pdfBytes = buildFinalBillPdf(b);
+            EmailAttachment attachment = new EmailAttachment(
+                    "FinalBill_" + b.getFinalBillVersionSerial() + ".pdf",
+                    "application/pdf",
+                    Base64.getEncoder().encodeToString(pdfBytes));
+
+            List<EmailAttachment> attachments = new ArrayList<>();
+            attachments.add(attachment);
+            if (pendingEmailAttachments != null) {
+                attachments.addAll(pendingEmailAttachments);
+            }
+
+            success = emailManagerEjb.sendEmail(
+                    Collections.singletonList(email.getReceipientEmail()),
+                    email.getMessageBody(),
+                    email.getMessageSubject(),
+                    false,
+                    attachments);
+
+            if (success) {
+                email.setSentAt(new Date());
+                email.setSentSuccessfully(true);
+                email.setPending(false);
+                emailFacade.edit(email);
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+                pendingEmailAttachments = new ArrayList<>();
+            } else {
+                email.setPending(false);
+                emailFacade.edit(email);
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+        } catch (Exception ex) {
+            email.setPending(false);
+            emailFacade.edit(email);
+            JsfUtil.addErrorMessage("Sending Email Failed");
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill email failed", ex);
+        }
+
+        sentEmailsForBill = null;
+        return success;
+    }
+
+    private byte[] buildFinalBillPdf(Bill b) throws Exception {
+        String html = buildFinalBillHtml(b);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            com.itextpdf.kernel.pdf.PdfWriter writer = new com.itextpdf.kernel.pdf.PdfWriter(out);
+            com.itextpdf.kernel.pdf.PdfDocument pdfDoc = new com.itextpdf.kernel.pdf.PdfDocument(writer);
+            pdfDoc.setDefaultPageSize(com.itextpdf.kernel.geom.PageSize.A4);
+            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(html, pdfDoc, new com.itextpdf.html2pdf.ConverterProperties());
+            return out.toByteArray();
+        }
+    }
+
+    private String buildFinalBillHtml(Bill b) {
+        PatientEncounter pe = b.getPatientEncounter();
+        String patientName = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
+                ? pe.getPatient().getPerson().getNameWithTitle() : "";
+        String bhtNo = pe != null ? pe.getBhtNo() : "";
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body style='font-family:sans-serif;font-size:12px;'>");
+        sb.append("<h2>Final Bill</h2>");
+        sb.append("<table style='width:100%;margin-bottom:10px;'>");
+        sb.append("<tr><td><b>Bill Number</b></td><td>").append(escapeHtml(b.getDeptId())).append("</td></tr>");
+        sb.append("<tr><td><b>Version</b></td><td>").append(b.getFinalBillVersionSerial()).append("</td></tr>");
+        sb.append("<tr><td><b>Patient</b></td><td>").append(escapeHtml(patientName)).append("</td></tr>");
+        sb.append("<tr><td><b>BHT No</b></td><td>").append(escapeHtml(bhtNo)).append("</td></tr>");
+        sb.append("</table>");
+        sb.append("<table style='width:100%;border-collapse:collapse;' border='1' cellpadding='4'>");
+        sb.append("<tr><th style='text-align:left;'>Description</th><th style='text-align:right;'>Amount</th></tr>");
+        sb.append("<tr><td>Gross Total</td><td style='text-align:right;'>").append(df.format(b.getGrantTotal())).append("</td></tr>");
+        sb.append("<tr><td>Discount</td><td style='text-align:right;'>").append(df.format(b.getDiscount())).append("</td></tr>");
+        sb.append("<tr><td>Net Total</td><td style='text-align:right;'>").append(df.format(b.getNetTotal())).append("</td></tr>");
+        sb.append("<tr><td>Claimable Total</td><td style='text-align:right;'>").append(df.format(b.getClaimableTotal())).append("</td></tr>");
+        sb.append("</table>");
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private String escapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    public List<AppEmail> getSentEmailsForBill() {
+        if (sentEmailsForBill == null && bill != null) {
+            sentEmailsForBill = fetchSentEmailsForBill(bill);
+        }
+        return sentEmailsForBill;
+    }
+
+    private List<AppEmail> fetchSentEmailsForBill(Bill b) {
+        String jpql = "select e from AppEmail e where e.bill = :bill order by e.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", b);
+        return emailFacade.findByJpql(jpql, params);
     }
 
     public String navigateToProvisionalBillForAdmission() {
@@ -635,6 +1200,7 @@ public class InwardSearch implements Serializable {
 
         // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         bill = getBillFacade().findFirstByJpql(jpql, temMap);
+        billItems = null;
 
         if (bill == null) {
             JsfUtil.addErrorMessage("No Provisional Bill Created");
@@ -664,6 +1230,17 @@ public class InwardSearch implements Serializable {
         } else {
             return "/inward/inward_bill_payment?faces-redirect=true";
         }
+    }
+
+    public String navigateMakeDeposit() {
+        PatientEncounter pe = inwardDepositController.getCurrent().getPatientEncounter();
+        inwardDepositController.makeNull();
+        inwardDepositController.getCurrent().setPatientEncounter(pe);
+        inwardDepositController.setPatient(pe.getPatient());
+
+        inwardDepositController.paymentListener();
+
+        return inwardDepositController.navigateToInwardDeposit();
     }
 
     public boolean calculateRefundTotal() {
@@ -805,6 +1382,7 @@ public class InwardSearch implements Serializable {
         printPreview = false;
         tempbillItems = null;
         comment = null;
+        sentEmailsForBill = null;
     }
 
     private void cancelBillComponents(Bill can, BillItem bt) {
@@ -893,6 +1471,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
+        
         if (getBill().isRefunded()) {
             JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
@@ -902,6 +1481,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
             return true;
         }
+        
         if (getBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("You can't cancel. Because this BHT is Already Discharged.");
             return true;
@@ -911,6 +1491,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Please select a payment Method.");
             return true;
         }
+        
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
@@ -995,6 +1576,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
@@ -1093,6 +1679,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
             if (checkPaid()) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
@@ -1146,6 +1737,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
@@ -1259,6 +1855,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().isRefunded()) {
+                JsfUtil.addErrorMessage("This bill has already been refunded and cannot be cancelled.");
+                return;
+            }
+
             double dbl = getInwardBean().getPaidValue(getBill().getPatientEncounter());
 
             if (dbl < getBill().getNetTotal()) {
@@ -1309,6 +1910,67 @@ public class InwardSearch implements Serializable {
 
     }
 
+    public void cancelInwardDepositBill() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (check()) {
+                return;
+            }
+
+            if (getBill().getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+
+            if (getBill().isRefunded()) {
+                JsfUtil.addErrorMessage("This bill has already been refunded and cannot be cancelled.");
+                return;
+            }
+
+            double dbl = getInwardBean().getPaidValue(getBill().getPatientEncounter());
+
+            if (dbl < getBill().getNetTotal()) {
+                JsfUtil.addErrorMessage("This Bht has No Enough Vallue To Cancel");
+                return;
+            }
+
+            CancelledBill cb = createCancelInwardDepositBill();
+
+            getBillFacade().create(cb);
+            cancelBillItems(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit((BilledBill) getBill());
+
+            getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
+
+            paymentService.createPayment(
+                cb,
+                cb.getPaymentMethod(),
+                paymentMethodData,
+                sessionController.getInstitution(),
+                sessionController.getDepartment(),
+                sessionController.getLoggedUser());
+
+            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+                getInwardBean().updateFinalFill(getBill().getPatientEncounter());
+                if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                    getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                }
+
+            }
+
+            WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+            getSessionController().setLoggedUser(wb);
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
@@ -1329,12 +1991,16 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This bill has already been cancelled.");
+                return;
+            }
+
 //            if (getBill().getPatientEncounter().isPaymentFinalized()) {
 //                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
 //                return;
 //            }
             RefundBill cb = createRefundCancelBill();
-            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
             //Copy & paste
             getBillFacade().create(cb);
             cancelBillItems(cb);
@@ -1423,6 +2089,8 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            boolean wasConfirmedFinalBill = getBill().isConfirmedFinalBill();
+
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
@@ -1431,15 +2099,53 @@ public class InwardSearch implements Serializable {
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
+            getBill().setConfirmedFinalBill(false);
             getBillFacade().edit((BilledBill) getBill());
 
-            getBill().getPatientEncounter().setGrantTotal(0);
-            getBill().getPatientEncounter().setDiscount(0);
-            getBill().getPatientEncounter().setNetTotal(0);
-            getBill().getPatientEncounter().setAdjustedTotal(0);
-            getBill().getPatientEncounter().setPaymentFinalized(false);
-            getBill().getPatientEncounter().setCreditUsedAmount(0);
-            getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+            // Only the cancellation of the *confirmed* version affects the encounter's
+            // totals/paymentFinalized/finalBill — cancelling an already-superseded,
+            // non-confirmed version must leave the confirmed version's state untouched.
+            if (wasConfirmedFinalBill) {
+                List<Bill> remainingVersions = fetchFinalBillVersions(getBill().getPatientEncounter());
+                List<Bill> nonCancelled = new ArrayList<>();
+                if (remainingVersions != null) {
+                    for (Bill v : remainingVersions) {
+                        if (!v.isCancelled()) {
+                            nonCancelled.add(v);
+                        }
+                    }
+                }
+                if (nonCancelled.isEmpty()) {
+                    getBill().getPatientEncounter().setGrantTotal(0);
+                    getBill().getPatientEncounter().setDiscount(0);
+                    getBill().getPatientEncounter().setNetTotal(0);
+                    getBill().getPatientEncounter().setAdjustedTotal(0);
+                    getBill().getPatientEncounter().setPaymentFinalized(false);
+                    getBill().getPatientEncounter().setCreditUsedAmount(0);
+                    getBill().getPatientEncounter().setFinalBill(null);
+                    getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+                } else {
+                    Bill nextConfirmed = nonCancelled.get(0);
+                    for (Bill v : nonCancelled) {
+                        if (v.getFinalBillVersionSerial() != null
+                                && (nextConfirmed.getFinalBillVersionSerial() == null
+                                || v.getFinalBillVersionSerial() > nextConfirmed.getFinalBillVersionSerial())) {
+                            nextConfirmed = v;
+                        }
+                    }
+                    // nextConfirmed was loaded by a separate query, so its patientEncounter
+                    // association is a distinct (though same-row) managed instance from
+                    // getBill().getPatientEncounter(). Force identity before promoting so
+                    // setAsConfirmedFinalBillInternal's edit() is the single, authoritative
+                    // persist for this encounter — otherwise a second edit() on the stale
+                    // getBill().getPatientEncounter() instance would silently clobber the
+                    // finalBill repoint this call just made.
+                    nextConfirmed.setPatientEncounter(getBill().getPatientEncounter());
+                    setAsConfirmedFinalBillInternal(nextConfirmed);
+                }
+            } else {
+                getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+            }
 
             JsfUtil.addSuccessMessage("Cancelled");
 
@@ -1578,6 +2284,10 @@ public class InwardSearch implements Serializable {
                 JsfUtil.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
                 return;
             }
+            if (getBill().getPatientEncounter() != null && getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
@@ -1649,10 +2359,62 @@ public class InwardSearch implements Serializable {
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 //        cb.setBillType(BillType.InwardProfessional);
+        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+
+        AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
+                ? getBill().getPatientEncounter().getAdmissionType() : null;
+        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        if (uniqueSerialPerAdmissionType) {
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+        } else {
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic()));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic()));
+        }
+        return cb;
+    }
+
+    private CancelledBill createCancelInwardDepositBill() {
+        CancelledBill cb = new CancelledBill();
+        cb.copy(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
+        cb.setBilledBill(getBill());
+        if (getBill().getPatient() != null) {
+            cb.setPatient(getBill().getPatient());
+        } else if (getBill().getPatientEncounter() != null) {
+            cb.setPatient(getBill().getPatientEncounter().getPatient());
+        }
+
+        ////////////
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+        cb.setComments(comment);
+        cb.setPaymentMethod(paymentMethod);
+        //TODO: Find null Point Exception
+
+        cb.setDepartment(getSessionController().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+
         cb.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+
+        AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
+                ? getBill().getPatientEncounter().getAdmissionType() : null;
+        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        if (uniqueSerialPerAdmissionType) {
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+        } else {
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic()));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic()));
+        }
+
         return cb;
     }
 
@@ -1703,8 +2465,23 @@ public class InwardSearch implements Serializable {
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
+        BillTypeAtomic cancelAtomic = getBill().getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT_REFUND
+                ? BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
+                : BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION;
+        cb.setBillTypeAtomic(cancelAtomic);
+
+        AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
+                ? getBill().getPatientEncounter().getAdmissionType() : null;
+        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        if (uniqueSerialPerAdmissionType) {
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cancelAtomic, admissionTypeForBillNumber));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cancelAtomic, admissionTypeForBillNumber));
+        } else {
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cancelAtomic));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cancelAtomic));
+        }
 
         cb.invertAndAssignValuesFromOtherBill(getBill());
         return cb;
@@ -1734,6 +2511,11 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isDischarged()) {
+                JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
@@ -2029,6 +2811,32 @@ public class InwardSearch implements Serializable {
         return bill;
     }
 
+    public Long getAppointmentReceiptBillId() {
+        return appointmentReceiptBillId;
+    }
+
+    public void setAppointmentReceiptBillId(Long appointmentReceiptBillId) {
+        this.appointmentReceiptBillId = appointmentReceiptBillId;
+        this.appointmentBillReceipt = null;
+    }
+
+    /**
+     * DTO for {@code /inward/inward_view_appointment_bill_receipt} — null
+     * until {@link #appointmentReceiptBillId} is set by the BillSearch
+     * routing case. Lazily loaded and cached for the lifetime of this bean
+     * (the composite receipt templates dereference it many times per
+     * render); the cache is cleared by {@link #setAppointmentReceiptBillId}.
+     */
+    public InwardBillReceiptDTO getAppointmentBillReceipt() {
+        if (appointmentReceiptBillId == null) {
+            return null;
+        }
+        if (appointmentBillReceipt == null) {
+            appointmentBillReceipt = billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
+        }
+        return appointmentBillReceipt;
+    }
+
     public void markAsChecked() {
         Bill b = bill;
         if (b == null) {
@@ -2110,12 +2918,14 @@ public class InwardSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
-        hm.put("b", getBill());
-        billItems = getBillItemFacede().findByJpql(sql, hm);
         if (billItems == null) {
-            billItems = new ArrayList<>();
+            HashMap hm = new HashMap();
+            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
+            hm.put("b", getBill());
+            billItems = getBillItemFacede().findByJpql(sql, hm);
+            if (billItems == null) {
+                billItems = new ArrayList<>();
+            }
         }
 
         return billItems;

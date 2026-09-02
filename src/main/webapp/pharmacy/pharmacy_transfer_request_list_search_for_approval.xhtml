@@ -53,8 +53,8 @@
                     </div>
 
                     <div class="col-md-10">
-                        <p:dataTable 
-                            value="#{searchController.bills}" 
+                        <p:dataTable
+                            value="#{searchController.transferRequestApprovalSearchDtos}"
                             var="p"
                             rows="10"
                             paginator="true"
@@ -100,34 +100,34 @@
                                     title="Edit Request" 
                                     icon="fas fa-edit"
                                     class="ui-button-warning m-1"
-                                    disabled="#{p.checkedBy ne null or p.cancelled eq true}"
-                                    action="#{transferRequestController.navigateToEditRequest}">
-                                    <f:setPropertyActionListener 
-                                        target="#{transferRequestController.transferRequestBillPre}"
-                                        value="#{p}"/>
+                                    disabled="#{p.checked or p.cancelled}"
+                                    action="#{transferRequestController.navigateToEditRequestById}">
+                                    <f:setPropertyActionListener
+                                        target="#{transferRequestController.billId}"
+                                        value="#{p.billId}"/>
                                 </p:commandButton>
-                                <p:commandButton 
+                                <p:commandButton
                                     id="approve"
                                     ajax="false"
-                                    title="To Approve" 
+                                    title="To Approve"
                                     icon="fas fa-check-circle"
                                     class="ui-button-success m-1"
-                                    disabled="#{p.checkedBy eq null or p.approveUser ne null or p.cancelled eq true and not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
-                                    action="#{transferRequestController.navigateToApproveRequest()}">
-                                    <f:setPropertyActionListener 
-                                        target="#{transferRequestController.transferRequestBillPre}"
-                                        value="#{p}"/>
+                                    disabled="#{not p.checked or p.approved or p.cancelled or not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
+                                    action="#{transferRequestController.navigateToApproveRequestById}"
+                                    onclick="return confirm('Proceed to review and approve this transfer request?');">
+                                    <f:setPropertyActionListener
+                                        target="#{transferRequestController.billId}"
+                                        value="#{p.billId}"/>
                                 </p:commandButton>
 
-                                <p:commandButton  
-                                    class="m-1"  
+                                <p:commandButton
+                                    class="m-1"
                                     icon="fa fa-eye"
-                                    title="View Bill" 
+                                    title="View Bill"
                                     ajax="false"
-                                    action="/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true" 
-                                    disabled="#{p.approveUser eq null}">
-                                    <f:setPropertyActionListener target="#{transferRequestController.bill}" value="#{p}"/>
-                                    <f:setPropertyActionListener target="#{transferRequestController.printPreview}" value="true"/>
+                                    action="#{transferRequestController.navigateToViewApprovedRequestById}"
+                                    disabled="#{not p.approved}">
+                                    <f:setPropertyActionListener target="#{transferRequestController.billId}" value="#{p.billId}"/>
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>

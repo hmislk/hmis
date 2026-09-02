@@ -145,13 +145,18 @@
                                                 action="#{inwardPaymentController.navigateToInwardDepositPayment()}"
                                                 rendered="#{webUserController.hasPrivilege('InwardBilling')}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" 
-                                                value="Payment Search" 
-                                                title="Payment Search" action="/inward/inward_search_payment?faces-redirect=true" 
-                                                actionListener="#{searchController.makeListNull}" 
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Payment Search"
+                                                title="Payment Search" action="/inward/inward_search_payment?faces-redirect=true"
+                                                actionListener="#{searchController.makeListNull}"
                                                 rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" >
+                                            </p:commandButton>
+                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false"
+                                                value="Deposit Search" title="Deposit Search" action="/inward/inward_search_deposit?faces-redirect=true"
+                                                actionListener="#{searchController.makeListNull}"
+                                                rendered="#{webUserController.hasPrivilege('InwardBillSearch')}">
                                             </p:commandButton>
                                             <p:commandButton
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
@@ -169,6 +174,27 @@
                                                 action="/inward/inward_search_refund?faces-redirect=true" 
                                                 actionListener="#{searchController.makeListNull}" 
                                                 rendered="#{webUserController.hasPrivilege('InwardBillSearch')}">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Post Final Bill Payment">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Payment"
+                                                title="Payment"
+                                                action="#{postFinalBillInwardPaymentController.navigateToPostFinalPayment()}"
+                                                rendered="#{webUserController.hasPrivilege('InwardPostFinalPaymentAccess')}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Refund"
+                                                title="Refund"
+                                                action="#{postFinalBillInwardPaymentController.navigateToPostFinalPaymentRefund()}"
+                                                rendered="#{webUserController.hasPrivilege('InwardPostFinalPaymentAccess')}">
                                             </p:commandButton>
                                         </div>
                                     </p:tab>

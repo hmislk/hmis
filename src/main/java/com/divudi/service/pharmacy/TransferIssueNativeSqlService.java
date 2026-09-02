@@ -77,7 +77,14 @@ public class TransferIssueNativeSqlService {
     /**
      * Loads requested items for the native issue UI.
      * Returns only items with remaining qty greater than zero (tolerance 0.001).
-     * Skips Vmpp items (same behaviour as TransferIssueForRequestsController).
+     * Skips Vmpp items (pack-level generic items are not yet supported).
+     *
+     * When a requested line is a Vmp (generic ingredient, e.g. "Amoxicillin 250mg
+     * capsules"), stock is never recorded against the Vmp itself — only against a
+     * specific brand Amp (e.g. "Amoxil 250mg capsule"). Such lines are resolved to
+     * every brand Amp linked to that Vmp and allocated FEFO across all of them
+     * combined, same as the existing substitute-stock convention elsewhere in the
+     * codebase (see VmpController.ampsOfVmp). See issue #22137.
      *
      * Uses a two-query approach:
      *   Query 1 - Load all requested bill items with item / pack-size data
@@ -110,7 +117,8 @@ public class TransferIssueNativeSqlService {
                 + " COALESCE(i.code, '') AS itemCode,"
                 + " i.DTYPE AS itemDtype,"
                 + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.dblValue, 1.0) ELSE 1.0 END AS packSize,"
-                + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.amp_ID, i.ID) ELSE i.ID END AS ampItemId"
+                + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.amp_ID, i.ID) ELSE i.ID END AS ampItemId,"
+                + " i.departmentType AS departmentType"
                 + " FROM " + billItemTable() + " bi"
                 + " JOIN " + itemTable() + " i ON i.ID = bi.item_ID"
                 + " WHERE bi.bill_ID = ? AND (bi.retired IS NULL OR bi.retired = 0)"
@@ -125,16 +133,53 @@ public class TransferIssueNativeSqlService {
             return Collections.emptyList();
         }
 
-        // Collect unique amp item IDs (skipping Vmpp)
+        // Collect unique amp item IDs (skipping Vmpp) and unique Vmp IDs whose brand
+        // Amps need to be resolved (stock is only ever recorded against the brand).
         List<Long> ampItemIds = new ArrayList<>();
+        List<Long> vmpIdsNeedingBrands = new ArrayList<>();
         for (Object[] row : reqRows) {
             String dtype = row[8] == null ? "" : row[8].toString();
-            if ("Vmpp".equals(dtype) || "Vmp".equals(dtype)) {
+            if ("Vmpp".equals(dtype)) {
+                continue;
+            }
+            if ("Vmp".equals(dtype)) {
+                long vmpId = ((Number) row[5]).longValue();
+                if (!vmpIdsNeedingBrands.contains(vmpId)) {
+                    vmpIdsNeedingBrands.add(vmpId);
+                }
                 continue;
             }
             long ampItemId = ((Number) row[10]).longValue();
             if (!ampItemIds.contains(ampItemId)) {
                 ampItemIds.add(ampItemId);
+            }
+        }
+
+        // Resolve each requested Vmp to its brand Amps: ampId -> {ampId, vmpId, name, code}
+        Map<Long, List<Object[]>> brandAmpsOfVmp = new LinkedHashMap<>();
+        Map<Long, Object[]> brandInfoByAmpId = new LinkedHashMap<>();
+        if (!vmpIdsNeedingBrands.isEmpty()) {
+            StringBuilder vmpInClause = new StringBuilder();
+            for (int i = 0; i < vmpIdsNeedingBrands.size(); i++) {
+                if (i > 0) vmpInClause.append(',');
+                vmpInClause.append(vmpIdsNeedingBrands.get(i));
+            }
+            String sqlBrandAmps = "SELECT ID, VMP_ID, NAME, COALESCE(CODE, '')"
+                    + " FROM " + itemTable()
+                    + " WHERE DTYPE = 'Amp' AND VMP_ID IN (" + vmpInClause + ")"
+                    + " AND (RETIRED IS NULL OR RETIRED = 0)";
+            @SuppressWarnings("unchecked")
+            List<Object[]> brandRows = em.createNativeQuery(sqlBrandAmps).getResultList();
+            if (brandRows != null) {
+                for (Object[] bRow : brandRows) {
+                    long brandAmpId = ((Number) bRow[0]).longValue();
+                    long vmpId = ((Number) bRow[1]).longValue();
+                    brandAmpsOfVmp.computeIfAbsent(vmpId, k -> new ArrayList<>()).add(bRow);
+                    brandInfoByAmpId.put(brandAmpId, bRow);
+                    if (!ampItemIds.contains(brandAmpId)) {
+                        ampItemIds.add(brandAmpId);
+                    }
+                }
             }
         }
 
@@ -188,7 +233,7 @@ public class TransferIssueNativeSqlService {
 
         for (Object[] reqRow : reqRows) {
             String dtype = reqRow[8] == null ? "" : reqRow[8].toString();
-            if ("Vmpp".equals(dtype) || "Vmp".equals(dtype)) {
+            if ("Vmpp".equals(dtype)) {
                 continue;
             }
 
@@ -202,13 +247,44 @@ public class TransferIssueNativeSqlService {
             double packSize      = toDouble(reqRow[9]);
             if (packSize <= 0) packSize = 1.0;
             long ampItemId       = ((Number) reqRow[10]).longValue();
+            String deptType      = reqRow[11] == null ? null : reqRow[11].toString();
+            boolean isVmp        = "Vmp".equals(dtype);
 
             if (remainingQty <= 0.001) {
                 continue;
             }
 
             double remainingUnits = remainingQty * packSize;
-            List<Object[]> stocks = stockByAmpItem.get(ampItemId);
+
+            // For a Vmp request, merge stock across every brand Amp of that Vmp and
+            // allocate FEFO over the combined pool (stock is never recorded against
+            // the Vmp itself). For Amp/Ampp, use that item's own stock as before.
+            List<Object[]> stocks;
+            if (isVmp) {
+                List<Object[]> brandAmps = brandAmpsOfVmp.get(itemId);
+                if (brandAmps == null || brandAmps.isEmpty()) {
+                    stocks = null;
+                } else {
+                    List<Object[]> merged = new ArrayList<>();
+                    for (Object[] brand : brandAmps) {
+                        long brandAmpId = ((Number) brand[0]).longValue();
+                        List<Object[]> brandStocks = stockByAmpItem.get(brandAmpId);
+                        if (brandStocks != null) {
+                            merged.addAll(brandStocks);
+                        }
+                    }
+                    merged.sort((a, b) -> {
+                        Date da = toUtilDate(a[4]);
+                        Date db = toUtilDate(b[4]);
+                        long ta = da == null ? Long.MIN_VALUE : da.getTime();
+                        long tb = db == null ? Long.MIN_VALUE : db.getTime();
+                        return Long.compare(ta, tb);
+                    });
+                    stocks = merged;
+                }
+            } else {
+                stocks = stockByAmpItem.get(ampItemId);
+            }
 
             if (stocks == null || stocks.isEmpty()) {
                 // No stock — include an empty placeholder row so user sees the gap
@@ -220,6 +296,7 @@ public class TransferIssueNativeSqlService {
                 empty.setItemName(itemName);
                 empty.setItemCode(itemCode);
                 empty.setItemDtype(dtype);
+                empty.setDepartmentType(deptType);
                 empty.setUnitsPerPack(packSize);
                 empty.setRequestedQty(requestedQty);
                 empty.setAlreadyIssuedQty(alreadyIssued);
@@ -262,14 +339,34 @@ public class TransferIssueNativeSqlService {
 
                 BigDecimal grossRate = computeTransferRate(purchaseRate, retailRate, costRate, packSize, byPurchaseRate, byCostRate);
 
+                // For a Vmp request, the row's item identity is the specific brand
+                // Amp that actually holds the stock being issued, not the generic Vmp.
+                long rowItemId    = itemId;
+                long rowAmpItemId = ampItemId;
+                String rowItemName = itemName;
+                String rowItemCode = itemCode;
+                String rowDtype     = dtype;
+                if (isVmp) {
+                    long stockAmpId = ((Number) sRow[9]).longValue();
+                    rowItemId = stockAmpId;
+                    rowAmpItemId = stockAmpId;
+                    rowDtype = "Amp";
+                    Object[] brandInfo = brandInfoByAmpId.get(stockAmpId);
+                    if (brandInfo != null) {
+                        rowItemName = brandInfo[2] == null ? "" : brandInfo[2].toString();
+                        rowItemCode = brandInfo[3] == null ? "" : brandInfo[3].toString();
+                    }
+                }
+
                 TransferIssueItemRowDto dto = new TransferIssueItemRowDto();
                 dto.setSerialNo(serialNo++);
                 dto.setRequestedBillItemId(reqBillItemId);
-                dto.setItemId(itemId);
-                dto.setAmpItemId(ampItemId);
-                dto.setItemName(itemName);
-                dto.setItemCode(itemCode);
-                dto.setItemDtype(dtype);
+                dto.setItemId(rowItemId);
+                dto.setAmpItemId(rowAmpItemId);
+                dto.setItemName(rowItemName);
+                dto.setItemCode(rowItemCode);
+                dto.setItemDtype(rowDtype);
+                dto.setDepartmentType(deptType);
                 dto.setUnitsPerPack(packSize);
                 dto.setDeptStockId(stockId);
                 dto.setItemBatchId(itemBatchId);
@@ -305,6 +402,7 @@ public class TransferIssueNativeSqlService {
                 empty.setItemName(itemName);
                 empty.setItemCode(itemCode);
                 empty.setItemDtype(dtype);
+                empty.setDepartmentType(deptType);
                 empty.setUnitsPerPack(packSize);
                 empty.setRequestedQty(requestedQty);
                 empty.setAlreadyIssuedQty(alreadyIssued);
@@ -607,6 +705,15 @@ public class TransferIssueNativeSqlService {
                             ? bill.getCreater().getId() : null);
         }
 
+        // The bill was persisted with billItems nulled because the items are inserted
+        // natively, so the in-memory entity claims it has none — and Bill.getBillItems()
+        // hands out an empty list rather than a lazy one. Anything that later merges this
+        // instance writes that empty collection into the shared cache, so every subsequent
+        // read of the bill shows a bill with no items. Issue #22511, same cause as #22506.
+        // Refreshing rebuilds the lazy collection from the rows just written, and also picks
+        // up the totals and reference links updated above.
+        em.refresh(bill);
+
         LOGGER.log(Level.INFO, "[TINativeSettle] DONE items={0} ms={1}",
                 new Object[]{itemsToProcess.size(), System.currentTimeMillis() - t0});
 
@@ -818,7 +925,20 @@ public class TransferIssueNativeSqlService {
         if (bill.getApproveUser() != null && bill.getApproveUser().getWebUserPerson() != null) {
             bill.getApproveUser().getWebUserPerson().getName();
         }
+        // Bill.forwardReferenceBills holds the bills that point AT this one via THEIR
+        // backwardReferenceBill (e.g. an Issue bill pointing at its request) - the
+        // Cancel-Request guard (PharmacyBillSearch.isTransferRequestCancellable())
+        // reads this to detect a downstream issue, so eager-load it here while the
+        // entity is still attached (issue #23112).
         if (bill.getForwardReferenceBills() != null) bill.getForwardReferenceBills().size();
+        // This page (pharmacy_transfer_request_list_approved.xhtml) links to the PRE-bill
+        // (PHARMACY_TRANSFER_REQUEST_PRE), but Transfer Issues point at the *approved*
+        // bill created at Approve time (pre-bill.forwardReferenceBill) - eager-load one
+        // hop further so the guard can detect a downstream issue from the pre-bill's view.
+        Bill approvedBill = bill.getForwardReferenceBill();
+        if (approvedBill != null && approvedBill.getForwardReferenceBills() != null) {
+            approvedBill.getForwardReferenceBills().size();
+        }
         if (bill.getBillItems() != null) {
             for (BillItem bi : bill.getBillItems()) {
                 if (bi.getItem() != null) bi.getItem().getName();

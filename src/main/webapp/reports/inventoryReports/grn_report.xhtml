@@ -47,6 +47,7 @@
                                     id="departmentTypeFilter"
                                     value="#{pharmacyController.selectedDepartmentTypes}"
                                     label="Select Department Types"
+                                    updateLabel="true"
                                     class="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
@@ -61,6 +62,44 @@
                                 </p:selectCheckboxMenu>
                                 <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
                             </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags ml-5"/>
+                                <p:outputLabel value="Category" for="phmCategory" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmCategory"
+                                value="#{pharmacyController.category}"
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All Categories"/>
+                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                               var="category"
+                                               itemLabel="#{category.name}"
+                                               itemValue="#{category}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-capsules ml-5"/>
+                                <p:outputLabel value="Dosage Form" for="phmDf" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDf"
+                                value="#{pharmacyController.dosageForm}"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Dosage Forms"/>
+                                <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5"/>
@@ -91,8 +130,8 @@
                                                itemValue="#{site}"/>
                                 <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
-                            
-                             <p:spacer width="20"/>
+
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group ">
                                 <h:outputText styleClass="fa fa-building ml-5"/>
@@ -107,8 +146,6 @@
                                     value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}"
                                     var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                             </p:selectOneMenu>
-
-                           
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-credit-card ml-5"/>
@@ -139,8 +176,8 @@
                                 completeMethod="#{dealerController.completeDealor}"
                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
                             </p:autoComplete>
-                            
-                             <p:spacer width="20"/>
+
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group ">
                                 <h:outputText styleClass="fa fa-list-alt ml-5"/>

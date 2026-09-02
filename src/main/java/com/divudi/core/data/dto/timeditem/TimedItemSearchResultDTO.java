@@ -21,6 +21,14 @@ public class TimedItemSearchResultDTO {
     private Double total;
     private Double totalForForeigner;
     private boolean inactive;
+    /**
+     * Always false unless the caller asked for retired rows with includeRetired=true —
+     * the search excludes them otherwise. Exposed so an agent that retired the wrong
+     * service can list what it retired and pick the id to restore (issue #23236 §2).
+     */
+    private boolean retired;
+    private Long categoryId;
+    private String categoryName;
 
     public TimedItemSearchResultDTO() {
     }
@@ -95,5 +103,29 @@ public class TimedItemSearchResultDTO {
 
     public void setInactive(boolean inactive) {
         this.inactive = inactive;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }
