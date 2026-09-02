@@ -2311,6 +2311,34 @@ Also: revert any `createdAt` shift back to the bill's real original value immedi
 day-based reports (Cost of Goods Sold, F15) key off it, and leaving it shifted taints those reports for
 both the original date and the shifted date.
 
+## 89. A missing `/faces/` prefix can also hang the Playwright tab itself, not just serve broken markup — don't assume item 47's symptom is the only failure mode
+
+Addendum to item 47, found while testing issue #23407. Item 47 established
+that a missing `/faces/` segment makes Payara serve the raw Facelets source as
+a static file — confirmed here too: `curl -D-` against
+`http://localhost:8080/rh/inward/inward_bill_outside_charge.xhtml` (no
+`/faces/`) returns instantly with `HTTP/1.1 200`, `Content-Type:
+application/xhtml+xml`, and the literal unprocessed `<ui:composition>` source
+— consistent with item 47, and **not** a server-side hang; `TransactionLeakGuardFilter`
+(the only `/*`-mapped filter in `web.xml`) only runs cleanup after the chain
+completes and cannot cause this either.
+
+But driving the same URL through `browser_navigate` in an authenticated
+Playwright session did not render item 47's "broken page with literal EL
+text" — the tab hung indefinitely instead, with `browser_navigate` and every
+subsequent `browser_snapshot` timing out at 30s and zero new lines appended to
+`server.log` in the meantime (the server had already answered; the hang was
+client-side). The exact trigger wasn't isolated further — possibly Chromium's
+handling of a non-`text/html` `application/xhtml+xml` response during a
+Playwright-driven navigation — but don't burn time debugging the server or
+checking Payara/system health when this happens, since the server side is
+demonstrably fine either way. Close the hung tab (`browser_tabs` → `close`),
+open a fresh tab, and navigate to
+`http://localhost:8080/rh/faces/inward/inward_bill_outside_charge.xhtml`
+(with `/faces/`) instead — this always loads normally. Any local deep-link
+into an inner page (bypassing a menu click) needs the `/faces/` segment
+regardless of which of the two symptoms it would otherwise hit.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
