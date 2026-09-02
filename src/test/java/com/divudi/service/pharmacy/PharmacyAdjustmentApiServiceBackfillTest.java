@@ -142,16 +142,41 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         BillBackfillResult result = run(bill, true);
 
         assertEquals(BackfillStatus.UPDATED, result.getStatus());
-        // Historical: 15 * 55.0 = 825.0, not 15 * 60.0 = 900.0 (the current rate).
+        // Cost: 15 * 55.0 = 825.0 from the snapshot, not 15 * 60.0 = 900.0 from the item
+        // batch's current rate. PharmaceuticalBillItem carries no cost rate of its own here,
+        // so this is what proves the snapshot beats the current rate.
         assertEquals(0, BigDecimal.valueOf(825.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()),
                 "Expected cost value from the historical StockHistory snapshot (55.0), not the current rate (60.0)");
-        // Historical: 15 * 65.0 = 975.0, not 15 * 70.0 = 1050.0.
-        assertEquals(0, BigDecimal.valueOf(975.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
-                "Expected purchase value from the historical StockHistory snapshot (65.0), not the current rate (70.0)");
+        // Purchase: 15 * 70.0 = 1050.0 from the LINE's own rate, which outranks the snapshot.
+        // PharmaceuticalBillItem.setItemBatch() copies the batch's purchase rate onto the line
+        // when the adjustment is saved, so on a real bill that field already holds the rate as
+        // it stood at the time — a better source than any later reconstruction.
+        assertEquals(0, BigDecimal.valueOf(1050.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
+                "Expected purchase value from the line's own point-in-time rate (70.0)");
 
         assertNotNull(result.getNote());
         assertFalse(result.getNote().contains("approximated using current item batch rates"),
-                "A real historical snapshot was found, so no approximation should be disclosed, got: " + result.getNote());
+                "Every rate came from a point-in-time source, so nothing should be disclosed: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("With no purchase rate on the line, the snapshot still outranks the current batch rate")
+    public void testSnapshotPurchaseRateBeatsCurrentBatchRateWhenLineHasNone() throws Exception {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0); // delta qty = 15
+        PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
+        // Model a line that never recorded a purchase rate, so the fallback chain is exercised.
+        ph.setPurchaseRate(0.0);
+
+        StockHistory snapshot = new StockHistory();
+        snapshot.setPurchaseRate(65.0);
+        setSnapshot(ph, snapshot);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        // 15 * 65.0 = 975.0 from the snapshot, not 15 * 70.0 = 1050.0 from the current rate.
+        assertEquals(0, BigDecimal.valueOf(975.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
+                "Expected purchase value from the historical snapshot (65.0), not the current rate (70.0)");
     }
 
     @Test

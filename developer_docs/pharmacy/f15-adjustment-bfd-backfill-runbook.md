@@ -70,6 +70,8 @@ be an improvement rather than asserted to be one.
 2. Count what needs repair:
 
 ```sql
+-- Bound this to the same range you will give the backfill, or the counts cannot be
+-- compared with what F15 shows for that range.
 SELECT b.billTypeAtomic,
        DATE_FORMAT(b.createdAt, '%Y-%m') AS month,
        COUNT(*) AS bills,
@@ -78,6 +80,7 @@ SELECT b.billTypeAtomic,
 FROM bill b
 WHERE b.retired = 0
   AND b.billTypeAtomic IN ('PHARMACY_STOCK_ADJUSTMENT', 'PHARMACY_RETAIL_RATE_ADJUSTMENT')
+  AND b.createdAt BETWEEN '2026-06-01 00:00:00' AND '2026-07-31 23:59:59'
 GROUP BY 1, 2
 ORDER BY 1, 2;
 ```
@@ -90,7 +93,7 @@ output someone will actually read.
 
 The preview reports:
 
-```
+```text
 === DRY RUN - nothing was saved - Retail Rate Adjustment BFD Backfill ===
 Candidates in range: 27
 Would correct: 27
@@ -151,24 +154,31 @@ Click the matching **Backfill** button and confirm. For each corrected bill it w
 
 ```sql
 -- Every corrected bill should agree with its own recorded change value.
+-- bfd.netTotal is one figure per BILL, so the line values must be summed per bill first;
+-- comparing it against each joined billitem row reports false MISMATCHes on multi-line bills.
 SELECT b.id, b.deptId,
-       ROUND(f.netTotal, 2)  AS bfd_net,
-       ROUND(bi.netValue, 2) AS expected,
-       CASE WHEN ABS(f.netTotal - bi.netValue) < 0.01 THEN 'MATCH' ELSE 'MISMATCH' END AS verdict
+       ROUND(f.netTotal, 2)       AS bfd_net,
+       ROUND(SUM(bi.netValue), 2) AS expected,
+       CASE WHEN ABS(f.netTotal - SUM(bi.netValue)) < 0.01 THEN 'MATCH' ELSE 'MISMATCH' END AS verdict
 FROM bill b
-JOIN billitem bi ON bi.bill_id = b.id
+JOIN billitem bi ON bi.bill_id = b.id AND bi.retired = 0
 JOIN billfinancedetails f ON f.id = b.billFinanceDetails_id
 WHERE b.billTypeAtomic = 'PHARMACY_RETAIL_RATE_ADJUSTMENT'
   AND b.retired = 0
-  AND b.comments LIKE '%[BFD Backfill]%';
+  AND b.comments LIKE '%[BFD Backfill]%'
+GROUP BY b.id, b.deptId, f.netTotal;
 ```
+
+For a purchase rate adjustment the same check applies, but its value sits in
+`f.totalPurchaseValue` with `f.totalRetailSaleValue` at zero by design.
 
 Then reopen F15 for the same date as the baseline and confirm the Adjustment Transactions
 section now shows the values, and that the section total equals the preview's reported net.
 
-Re-running the Preview over the same range should now report `Candidates in range: 0`. The
-operation is idempotent; a bill whose genuine value change is zero is reported as SKIPPED
-every time, which is correct rather than a failure.
+Re-run the Preview over the same range. The check is **`Would correct: 0`**, not
+`Candidates in range: 0` — a bill whose genuine value change is zero stays a candidate on
+every run and is reported SKIPPED, which is correct rather than a failure. Investigate any
+`Unresolved` or `Errors` before considering the range done.
 
 ### 4.6 Record it
 
@@ -178,9 +188,31 @@ per bill, including which reading was used.
 
 ## 5. Rollback
 
-There is no undo button. Each corrected bill carries a `[BFD Backfill]` block in
-`bill.comments` recording the time, the reading used, and the values written, so a run is
-identifiable and reversible by hand:
+**Take a snapshot before every apply, whatever the size of the range.** The backfill also
+repairs BFDs that already exist, so there is no safe generic undo: deleting the BFD and
+zeroing the totals would discard fields the backfill never touched, and would be wrong for
+any bill that had legitimate values before the run.
+
+```sql
+-- Run this BEFORE the apply, with the same range and bill type.
+CREATE TABLE bfd_backfill_snapshot_20260902 AS
+SELECT b.id AS bill_id, b.total, b.netTotal, b.comments, b.billFinanceDetails_id,
+       f.grossTotal, f.netTotal AS bfd_net, f.totalRetailSaleValue, f.totalCostValue,
+       f.totalPurchaseValue, f.totalQuantity,
+       f.totalBeforeAdjustmentValue, f.totalAfterAdjustmentValue
+FROM bill b
+LEFT JOIN billfinancedetails f ON f.id = b.billFinanceDetails_id
+WHERE b.retired = 0
+  AND b.billTypeAtomic = 'PHARMACY_RETAIL_RATE_ADJUSTMENT'
+  AND b.createdAt BETWEEN '2026-06-01 00:00:00' AND '2026-07-31 23:59:59';
+```
+
+To reverse, restore each bill's `total`, `netTotal`, `comments` and BFD columns from that
+snapshot inside one transaction. Only delete a `billfinancedetails` row where the snapshot
+shows `billFinanceDetails_id` was NULL — i.e. the backfill created it.
+
+A run is identifiable afterwards from the `[BFD Backfill]` block the backfill appends to
+`bill.comments`, which records the time, the reading used and the values written:
 
 ```sql
 SELECT b.id, b.deptId, b.total, b.netTotal, b.comments
@@ -189,9 +221,13 @@ WHERE b.comments LIKE '%[BFD Backfill]%'
   AND b.comments LIKE '%2026-09-02%';   -- the run date
 ```
 
-To reverse, null out `bill.billFinanceDetails_id`, delete the orphaned `billfinancedetails`
-row, and reset `bill.total` / `bill.netTotal` to 0. Take a backup of the affected rows before
-applying if the range is large.
+### One run is one transaction
+
+The service is a `@Stateless` EJB with the default `REQUIRED` attribute, so a single click
+of a Backfill button is a single transaction: every bill in the range commits together, or
+none does. A persistence failure aborts the whole run and the page reports the error — it
+will not silently save some bills and skip others. If a run reports an error, treat the
+range as untouched and re-run the Preview to confirm before trying again.
 
 ## 6. Notes and limits
 

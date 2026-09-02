@@ -69,6 +69,20 @@ import javax.persistence.TemporalType;
  * {@code PharmacyAdjustmentApiService.backfillFinanceDetails()} (VALUE-only, but the
  * source of the dry-run mode and the StockHistory rate resolution kept here).
  *
+ * <h3>Transactions</h3>
+ *
+ * This is a {@code @Stateless} bean with the default {@code REQUIRED} attribute, so one
+ * call to {@link #backfillAdjustmentBfds} is one transaction: every bill it corrects
+ * commits together or not at all. Facade {@code edit()} is a bare {@code merge()} with no
+ * flush, so a per-bill "UPDATED" is a statement about the persistence context, not about
+ * the database, until that transaction commits.
+ *
+ * <p>Persistence failures therefore are NOT caught per bill. Swallowing one would mark the
+ * transaction rollback-only and let every later bill report UPDATED while nothing whatever
+ * is saved — the same silent "it ran and did nothing" that let the original missing-BFD
+ * problem go unnoticed for months. A persistence failure aborts the run and the caller
+ * reports the error. Computation failures, which touch no transaction, stay per-bill.</p>
+ *
  * Issue #23411. Related: #22580, #18774.
  */
 @Stateless
@@ -168,20 +182,34 @@ public class PharmacyBfdBackfillService {
      */
     public BillBackfillResult applyToBill(Bill bill, boolean apply, String auditComment,
             String approvedBy, WebUser performedBy) {
+
+        BillBackfillResult result;
         try {
             if (!needsCorrection(bill)) {
-                BillBackfillResult result = new BillBackfillResult(bill);
+                result = new BillBackfillResult(bill);
                 result.setStatus(BackfillStatus.SKIPPED);
                 result.setNote("Skipped: BillFinanceDetails already present and populated");
                 return result;
             }
-            return processBill(bill, apply, auditComment, approvedBy, performedBy);
+            result = computeBill(bill);
         } catch (Exception ex) {
-            BillBackfillResult result = new BillBackfillResult(bill);
+            // Reading and arithmetic only — a failure here touches no transaction, so the
+            // run can carry on and report this one bill.
+            result = new BillBackfillResult(bill);
             result.setStatus(BackfillStatus.ERROR);
             result.setNote(ex.getClass().getSimpleName() + ": " + ex.getMessage());
             return result;
         }
+
+        if (!apply || result.getStatus() != BackfillStatus.WOULD_UPDATE) {
+            return result;
+        }
+
+        // Deliberately NOT wrapped: see the transaction note on the class. A persistence
+        // failure marks the whole run's transaction rollback-only, so swallowing it here
+        // would let every subsequent bill report UPDATED while nothing is saved.
+        persistBill(bill, result, auditComment, approvedBy, performedBy);
+        return result;
     }
 
     /**
@@ -309,8 +337,11 @@ public class PharmacyBfdBackfillService {
     // Per-bill computation
     // -------------------------------------------------------------------------
 
-    private BillBackfillResult processBill(Bill bill, boolean apply, String auditComment,
-            String approvedBy, WebUser performedBy) {
+    /**
+     * Works out what the bill's finance details should be. Writes nothing — the same code
+     * backs the preview and the apply, so what an operator reviews is what gets saved.
+     */
+    private BillBackfillResult computeBill(Bill bill) {
 
         BillBackfillResult result = new BillBackfillResult(bill);
 
@@ -385,14 +416,22 @@ public class PharmacyBfdBackfillService {
         result.setComputedNetTotal(primaryValue);
         result.setComputedQuantity(quantity);
         result.setRatesApproximated(ratesApproximated);
+        result.setComputedBeforeAdjustmentValue(beforeValue);
+        result.setComputedAfterAdjustmentValue(afterValue);
+        result.setStatus(BackfillStatus.WOULD_UPDATE);
+        result.setNote(ratesApproximated ? DRY_RUN_NOTE + APPROXIMATION_NOTE : DRY_RUN_NOTE);
+        return result;
+    }
 
-        if (!apply) {
-            result.setStatus(BackfillStatus.WOULD_UPDATE);
-            result.setNote(ratesApproximated
-                    ? DRY_RUN_NOTE + APPROXIMATION_NOTE
-                    : DRY_RUN_NOTE);
-            return result;
-        }
+    /**
+     * Writes the computed values onto the bill. Any persistence failure propagates: the run
+     * is a single transaction, so there is no such thing as a partial save to report.
+     */
+    private void persistBill(Bill bill, BillBackfillResult result, String auditComment,
+            String approvedBy, WebUser performedBy) {
+
+        BigDecimal grossValue = result.getComputedGrossTotal();
+        BigDecimal primaryValue = result.getComputedNetTotal();
 
         boolean isNew = !bill.hasBillFinanceDetails();
         BillFinanceDetails bfd;
@@ -405,12 +444,12 @@ public class PharmacyBfdBackfillService {
 
         bfd.setGrossTotal(grossValue);
         bfd.setNetTotal(primaryValue);
-        bfd.setTotalRetailSaleValue(retailValue);
-        bfd.setTotalCostValue(costValue);
-        bfd.setTotalPurchaseValue(purchaseValue);
-        bfd.setTotalQuantity(quantity);
-        bfd.setTotalBeforeAdjustmentValue(beforeValue);
-        bfd.setTotalAfterAdjustmentValue(afterValue);
+        bfd.setTotalRetailSaleValue(result.getComputedRetailValue());
+        bfd.setTotalCostValue(result.getComputedCostValue());
+        bfd.setTotalPurchaseValue(result.getComputedPurchaseValue());
+        bfd.setTotalQuantity(result.getComputedQuantity());
+        bfd.setTotalBeforeAdjustmentValue(result.getComputedBeforeAdjustmentValue());
+        bfd.setTotalAfterAdjustmentValue(result.getComputedAfterAdjustmentValue());
         if (bfd.getTotalWholesaleValue() == null) {
             bfd.setTotalWholesaleValue(BigDecimal.ZERO);
         }
@@ -433,8 +472,7 @@ public class PharmacyBfdBackfillService {
 
         result.setStatus(BackfillStatus.UPDATED);
         result.setNote((isNew ? "Created new BFD" : "Updated existing BFD")
-                + (ratesApproximated ? APPROXIMATION_NOTE : ""));
-        return result;
+                + (result.isRatesApproximated() ? APPROXIMATION_NOTE : ""));
     }
 
     // -------------------------------------------------------------------------
@@ -482,7 +520,7 @@ public class PharmacyBfdBackfillService {
 
         ResolvedRate retail = resolveRetailRate(pbi, snapshot, billItem, itemBatch);
         ResolvedRate cost = resolveCostRate(pbi, snapshot, itemBatch);
-        ResolvedRate purchase = resolvePurchaseRate(snapshot, itemBatch);
+        ResolvedRate purchase = resolvePurchaseRate(pbi, snapshot, itemBatch);
         double retailRate = retail.rate;
         double costRate = cost.rate;
         double purchaseRate = purchase.rate;
@@ -639,7 +677,14 @@ public class PharmacyBfdBackfillService {
         return ResolvedRate.currentBatchRate(itemBatch.getPurcahseRate());
     }
 
-    private ResolvedRate resolvePurchaseRate(StockHistory snapshot, ItemBatch itemBatch) {
+    private ResolvedRate resolvePurchaseRate(PharmaceuticalBillItem pbi, StockHistory snapshot,
+            ItemBatch itemBatch) {
+        // PharmaceuticalBillItem.setItemBatch() copies the batch's purchase rate onto the
+        // line when the adjustment is saved, so this is the rate as it stood at the time —
+        // the same reason retail and cost consult the line first.
+        if (pbi != null && pbi.getPurchaseRate() > 0) {
+            return ResolvedRate.pointInTime(pbi.getPurchaseRate());
+        }
         if (snapshot != null && snapshot.getPurchaseRate() > 0) {
             return ResolvedRate.pointInTime(snapshot.getPurchaseRate());
         }
@@ -755,6 +800,8 @@ public class PharmacyBfdBackfillService {
         private BigDecimal computedCostValue = BigDecimal.ZERO;
         private BigDecimal computedPurchaseValue = BigDecimal.ZERO;
         private BigDecimal computedQuantity = BigDecimal.ZERO;
+        private BigDecimal computedBeforeAdjustmentValue = BigDecimal.ZERO;
+        private BigDecimal computedAfterAdjustmentValue = BigDecimal.ZERO;
 
         public BillBackfillResult() {
         }
@@ -899,6 +946,22 @@ public class PharmacyBfdBackfillService {
 
         public void setComputedQuantity(BigDecimal computedQuantity) {
             this.computedQuantity = computedQuantity;
+        }
+
+        public BigDecimal getComputedBeforeAdjustmentValue() {
+            return computedBeforeAdjustmentValue;
+        }
+
+        public void setComputedBeforeAdjustmentValue(BigDecimal computedBeforeAdjustmentValue) {
+            this.computedBeforeAdjustmentValue = computedBeforeAdjustmentValue;
+        }
+
+        public BigDecimal getComputedAfterAdjustmentValue() {
+            return computedAfterAdjustmentValue;
+        }
+
+        public void setComputedAfterAdjustmentValue(BigDecimal computedAfterAdjustmentValue) {
+            this.computedAfterAdjustmentValue = computedAfterAdjustmentValue;
         }
     }
 

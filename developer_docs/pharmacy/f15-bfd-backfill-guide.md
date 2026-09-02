@@ -31,9 +31,13 @@ silently treats that bill's stock value as **zero**, producing a discrepancy in 
 
 ## When to Use This Guide
 
-- **Adjustment bill discrepancies**: If the F15 `adjustments` section shows 0.00 for
-  `PHARMACY_STOCK_ADJUSTMENT` or `PHARMACY_RETAIL_RATE_ADJUSTMENT` bills, follow the
-  [adjustment runbook](f15-adjustment-bfd-backfill-runbook.md) — preview before applying.
+- **Adjustment bill discrepancies**: If the F15 `adjustments` section shows values that are
+  missing, zero, or otherwise not what the underlying adjustments imply — for
+  `PHARMACY_STOCK_ADJUSTMENT`, `PHARMACY_RETAIL_RATE_ADJUSTMENT` or
+  `PHARMACY_PURCHASE_RATE_ADJUSTMENT` bills — follow the
+  [adjustment runbook](f15-adjustment-bfd-backfill-runbook.md). A non-zero figure can still
+  be wrong if the bill's stored before/after values were written in the other convention;
+  preview before applying.
 
 - **Pre-bill / cancelled-pre discrepancies**: If the F15 `sales` section is missing values for
   pre-bills or cancelled pre-bills, use the `PATCH /api/bill_data_correction` endpoint (see
