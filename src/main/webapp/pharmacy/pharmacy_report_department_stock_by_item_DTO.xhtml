@@ -140,10 +140,21 @@
                                  content. -->
                             <style>
                                 [id="frm:tbl"] td, [id="frm:tbl"] th { white-space: nowrap; }
+                                /* All three scrollable tables (header / body / footer) must auto-size
+                                   to content AND use border-box so a width set from outerWidth()
+                                   renders as the same box on all three. Leaving the footer out (or
+                                   leaving it content-box) is what let the totals row drift out of
+                                   alignment for long item names - issue #23209. */
                                 [id="frm:tbl"] .ui-datatable-scrollable-header table,
-                                [id="frm:tbl"] .ui-datatable-scrollable-body table {
+                                [id="frm:tbl"] .ui-datatable-scrollable-body table,
+                                [id="frm:tbl"] .ui-datatable-scrollable-footer table {
                                     table-layout: auto !important;
                                     width: auto !important;
+                                }
+                                [id="frm:tbl"] .ui-datatable-scrollable-header th,
+                                [id="frm:tbl"] .ui-datatable-scrollable-body td,
+                                [id="frm:tbl"] .ui-datatable-scrollable-footer td {
+                                    box-sizing: border-box;
                                 }
                             </style>
                             <script>
@@ -158,9 +169,17 @@
                                     if (!$headerCells.length || !$bodyRows.length) {
                                         return;
                                     }
+
+                                    // Clear any previously pinned widths so every cell reports its
+                                    // natural content width again.
                                     $headerCells.css('width', '');
                                     $bodyRows.find('> td').css('width', '');
                                     $footerCells.css('width', '');
+
+                                    // PASS 1 - measure only. Pinning a column before the later columns
+                                    // are measured redistributes space in a table-layout:auto table and
+                                    // corrupts their outerWidth(), so all reads must happen first.
+                                    var widths = [];
                                     $headerCells.each(function(colIndex) {
                                         var maxWidth = $(this).outerWidth() || 0;
                                         $bodyRows.each(function() {
@@ -173,16 +192,38 @@
                                         if (footerWidth > maxWidth) {
                                             maxWidth = footerWidth;
                                         }
-                                        $(this).css('width', maxWidth + 'px');
+                                        widths[colIndex] = maxWidth;
+                                    });
+
+                                    // PASS 2 - apply. With box-sizing:border-box (set in CSS above) the
+                                    // border-box width from outerWidth() maps 1:1 onto css('width').
+                                    $headerCells.each(function(colIndex) {
+                                        var w = widths[colIndex] + 'px';
+                                        $(this).css('width', w);
                                         $bodyRows.each(function() {
-                                            $(this).find('> td').eq(colIndex).css('width', maxWidth + 'px');
+                                            $(this).find('> td').eq(colIndex).css('width', w);
                                         });
-                                        $footerCells.eq(colIndex).css('width', maxWidth + 'px');
+                                        $footerCells.eq(colIndex).css('width', w);
                                     });
                                 }
-                                $(document).ready(function() {
+                                // Run once the DOM is ready, then again after the browser has
+                                // finished layout/paint and PrimeFaces has run its own scrollable
+                                // column sync - on a full-page load (the non-AJAX "Process" submit)
+                                // there is no oncomplete hook, and a bare ready() call measures the
+                                // table before PF has laid out the three scrollable sub-tables.
+                                function alignStockByItemColumnsDeferred() {
                                     alignStockByItemColumns();
-                                });
+                                    if (window.requestAnimationFrame) {
+                                        requestAnimationFrame(function() {
+                                            requestAnimationFrame(alignStockByItemColumns);
+                                        });
+                                    } else {
+                                        setTimeout(alignStockByItemColumns, 50);
+                                    }
+                                    setTimeout(alignStockByItemColumns, 250);
+                                }
+                                $(document).ready(alignStockByItemColumnsDeferred);
+                                $(window).on('load', alignStockByItemColumnsDeferred);
                             </script>
 
                             <p:dataTable
