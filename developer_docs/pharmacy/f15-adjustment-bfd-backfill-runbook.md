@@ -8,10 +8,11 @@ report's "Adjustment Transactions" section, and in its Level 1 / Level 2 drill-d
 **In a hurry?** [Quick steps](f15-adjustment-correction-quick-steps.md) is the
 click-by-click order without the reasoning.
 
-> **Coop staging writes to production.** `stg-migrated.carecode.org/coop` uses
-> `jdbc/coopStg` -> `jdbc:mysql://10.30.2.6:3306/coop`, which is db3, the live coop
-> database. On coop there is no "try it on staging first": the Preview button is the
-> try-it-first, and every Backfill click is a production change. Verified 2026-09-02.
+> **Coop staging writes to production.** The coop staging app's datasource resolves to
+> the live coop production database — the same schema the hospital is using. On coop there
+> is no "try it on staging first": the Preview button is the try-it-first, and every
+> Backfill click is a production change. Verified 2026-09-02; see
+> [Confirming which database an environment uses](#confirming-which-database-an-environment-uses).
 
 ---
 
@@ -201,9 +202,14 @@ repairs BFDs that already exist, so there is no safe generic undo: deleting the 
 zeroing the totals would discard fields the backfill never touched, and would be wrong for
 any bill that had legitimate values before the run.
 
+Name the snapshot for the run, not the day. The procedure has you apply month by month and
+type by type, so a date-only name would collide on the second run of a day — `CREATE TABLE`
+would fail, or worse you would restore from the wrong range. Use bill type + range:
+
 ```sql
--- Run this BEFORE the apply, with the same range and bill type.
-CREATE TABLE bfd_backfill_snapshot_20260902 AS
+-- Run this BEFORE each apply, with exactly the same type and range you are about to apply.
+-- Naming: bfd_snap_<short type>_<from>_<to>
+CREATE TABLE bfd_snap_retailrate_20260601_20260630 AS
 SELECT b.id AS bill_id, b.total, b.netTotal, b.comments, b.billFinanceDetails_id,
        f.grossTotal, f.netTotal AS bfd_net, f.totalRetailSaleValue, f.totalCostValue,
        f.totalPurchaseValue, f.totalQuantity,
@@ -212,22 +218,28 @@ FROM bill b
 LEFT JOIN billfinancedetails f ON f.id = b.billFinanceDetails_id
 WHERE b.retired = 0
   AND b.billTypeAtomic = 'PHARMACY_RETAIL_RATE_ADJUSTMENT'
-  AND b.createdAt BETWEEN '2026-06-01 00:00:00' AND '2026-07-31 23:59:59';
+  AND b.createdAt BETWEEN '2026-06-01 00:00:00' AND '2026-06-30 23:59:59';
 ```
 
 To reverse, restore each bill's `total`, `netTotal`, `comments` and BFD columns from that
 snapshot inside one transaction. Only delete a `billfinancedetails` row where the snapshot
 shows `billFinanceDetails_id` was NULL — i.e. the backfill created it.
 
-A run is identifiable afterwards from the `[BFD Backfill]` block the backfill appends to
-`bill.comments`, which records the time, the reading used and the values written:
+Afterwards a run is identifiable from the `[BFD Backfill]` block appended to
+`bill.comments`, which records the time, bill type, reading used and values written. Match
+on the range you snapshotted rather than the date alone — several runs can share a date:
 
 ```sql
-SELECT b.id, b.deptId, b.total, b.netTotal, b.comments
+SELECT b.id, b.deptId, b.billTypeAtomic, b.total, b.netTotal, b.comments
 FROM bill b
 WHERE b.comments LIKE '%[BFD Backfill]%'
-  AND b.comments LIKE '%2026-09-02%';   -- the run date
+  AND b.billTypeAtomic = 'PHARMACY_RETAIL_RATE_ADJUSTMENT'
+  AND b.createdAt BETWEEN '2026-06-01 00:00:00' AND '2026-06-30 23:59:59';
 ```
+
+To distinguish two runs over the same bills, put something identifying in the audit comment
+the tool records — the admin page writes a fixed comment, so if you need a finer trail use
+`POST /api/pharmacy/backfill_bfd`, whose `auditComment` you control.
 
 ### One run is one transaction
 
@@ -237,7 +249,26 @@ none does. A persistence failure aborts the whole run and the page reports the e
 will not silently save some bills and skip others. If a run reports an error, treat the
 range as untouched and re-run the Preview to confirm before trying again.
 
-## 6. Notes and limits
+## 6. Confirming which database an environment uses
+
+Never assume an environment named "staging" has its own data. Check before writing:
+
+1. Connection details for every environment live in the operations credentials store
+   outside this repository, not here.
+2. On the app server, read the datasource the app is deployed with and follow it to its
+   pool, then read that pool's `url` property:
+
+   ```bash
+   grep -A2 'jndi-name="<the app's datasource>"' \
+     /opt/payara5/glassfish/domains/domain1/config/domain.xml
+   # then find the matching <jdbc-connection-pool name="..."> and read its url property
+   ```
+
+3. Compare the host and schema in that URL against the production entry in the credentials
+   store. If they match, the environment is production for all write purposes, whatever it
+   is called.
+
+## 7. Notes and limits
 
 - **Cost values on stock adjustments.** `pharmaceuticalbillitem.costRate` is 0 on most
   historical bills. The service falls back to the `StockHistory` snapshot taken at the moment

@@ -11,9 +11,11 @@ Issue #23411. PR #23427.
 
 **Coop staging uses the live coop production database.**
 
-`https://stg-migrated.carecode.org/coop/` connects through `jdbc/coopStg` →
-`jdbc:mysql://10.30.2.6:3306/coop`, which is db3 — the same schema the hospital is using
-right now. Verified 2026-09-02 on the staging VM.
+The coop staging app's datasource resolves to the same database and schema the hospital is
+using right now — it is not a copy. Verified 2026-09-02 by reading the datasource on the
+staging server; connection details live in the operations credentials store outside this
+repository, and the runbook's *Confirming which database an environment uses* section shows
+how to re-check it.
 
 So on coop staging:
 
@@ -33,8 +35,8 @@ try-it-first. Treat every Backfill click as a production change.
 2. Deploy to coop staging: push `development` into `coop-stg-migrated`, which triggers the
    `COOP-STG Build & Deployment Pipeline` workflow. (It can also be started manually —
    the workflow has `workflow_dispatch`.)
-3. Wait for the workflow to go green and check the app is up:
-   `https://stg-migrated.carecode.org/coop/faces/index1.xhtml`
+3. Wait for the workflow to go green, then open the coop staging app (URL in the
+   operations credentials store) and check it comes up.
 
 ## Step 2 — Record what F15 shows now
 
@@ -92,6 +94,10 @@ expected; you do not need to do anything about it.
 ## Step 5 — Apply
 
 Only after step 4 is clean, and only with agreement that production may be written.
+
+**Take the rollback snapshot first** — the SQL is in the runbook. Name it for the bill type
+and date range you are about to apply (e.g. `bfd_snap_retailrate_20260601_20260630`), not
+for today's date, or the second run of the day will collide with the first.
 
 1. Same page, same date range.
 2. Click **Backfill Retail Rate Adjustment BFDs** and confirm the dialog.
