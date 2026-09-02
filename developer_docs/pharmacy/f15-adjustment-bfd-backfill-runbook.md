@@ -5,9 +5,6 @@ report's "Adjustment Transactions" section, and in its Level 1 / Level 2 drill-d
 
 **Issue:** #23411. Earlier related work: #22580, #18774.
 
-**In a hurry?** [Quick steps](f15-adjustment-correction-quick-steps.md) is the
-click-by-click order without the reasoning.
-
 > **Coop staging writes to production.** The coop staging app's datasource resolves to
 > the live coop production database — the same schema the hospital is using. On coop there
 > is no "try it on staging first": the Preview button is the try-it-first, and every
