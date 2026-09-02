@@ -28,6 +28,23 @@
         <param-value>/faces/</param-value>
     </context-param>
 
+    <!-- Filter Configuration -->
+    <!--
+        Declared in web.xml rather than with @WebFilter so the mapping order is
+        deterministic: this guard has to be the outermost filter, otherwise a
+        transaction leaked by an inner filter would slip past it. Keep it first.
+    -->
+    <filter>
+        <filter-name>TransactionLeakGuardFilter</filter-name>
+        <filter-class>com.divudi.web.filter.TransactionLeakGuardFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>TransactionLeakGuardFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ERROR</dispatcher>
+    </filter-mapping>
+
     <!-- Servlet Configuration -->
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
