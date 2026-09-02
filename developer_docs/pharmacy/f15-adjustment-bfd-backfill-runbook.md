@@ -200,6 +200,12 @@ applying if the range is large.
   of the adjustment, and only then to the item batch's current rate. When it has to use the
   current rate it says so in the note, because the batch rate may have moved since — the
   retail value is exact, the cost value is an estimate.
+- **Purchase rate adjustments** are supported, but only through the API paths — there is no
+  admin button for them, because none has been asked for. Their value lands in the purchase
+  column and their retail value is zero *by design*: a purchase rate change does not alter
+  what the stock sells for. Candidate selection therefore tests `bfd.netTotal`, the bill's
+  primary value change, and never the retail column — testing retail would mark every
+  correctly written purchase-rate bill as broken and rewrite it on every run.
 - **Wholesale and cost rate adjustments** are not supported: no writer populates the audit
   fields for them, so there is nothing to reconstruct from.
 - **The `suwani` schema** predates `BillFinanceDetails` entirely — the tool does not apply.

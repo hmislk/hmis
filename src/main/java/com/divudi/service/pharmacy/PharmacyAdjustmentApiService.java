@@ -706,7 +706,11 @@ public class PharmacyAdjustmentApiService implements Serializable {
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
         billItem.setQty(stock.getStock());
-        billItem.setGrossValue(changeValue);
+        // Rate, and gross as an absolute with net carrying the sign — matching the UI page
+        // and the retail-rate path. This left rate unset (persisting 0) and put the signed
+        // change in both gross and net. Issue #23411.
+        billItem.setRate(newPurchaseRate);
+        billItem.setGrossValue(Math.abs(changeValue));
         billItem.setNetValue(changeValue);
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(bill);

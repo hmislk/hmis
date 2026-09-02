@@ -299,6 +299,8 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         // does not count as already fixed.
         com.divudi.core.entity.BillFinanceDetails bfd = new com.divudi.core.entity.BillFinanceDetails(bill);
         bfd.setTotalRetailSaleValue(BigDecimal.valueOf(999.0));
+        bfd.setNetTotal(BigDecimal.valueOf(999.0));
+        bfd.setGrossTotal(BigDecimal.valueOf(999.0));
         bill.setBillFinanceDetails(bfd);
         bill.setTotal(999.0);
         bill.setNetTotal(999.0);
@@ -317,6 +319,8 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         // bill.total of 0, so an "IS NULL"-only backfill never touched them.
         Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
         bill.setBillFinanceDetails(new com.divudi.core.entity.BillFinanceDetails(bill));
+
+        assertTrue(service.needsCorrection(bill));
 
         BillBackfillResult result = run(bill, true);
 
@@ -340,6 +344,155 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
                 "Expected the dry-run base message, got: " + result.getNote());
         assertTrue(result.getNote().contains("Cost and purchase values approximated using current item batch rates"),
                 "Expected the dry run to disclose the same approximation as the apply path, got: " + result.getNote());
+    }
+
+    // ------------------------------------------------------------------
+    // Purchase rate adjustments — the dimension that is NOT retail
+    // ------------------------------------------------------------------
+
+    private Bill buildPurchaseRateBill(double qty, double before, double after, double signedChange) {
+        Bill bill = new Bill();
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+        bill.setBillFinanceDetails(null);
+
+        ItemBatch itemBatch = new ItemBatch();
+        itemBatch.setItem(new Item());
+
+        Stock stock = new Stock();
+        stock.setItemBatch(itemBatch);
+
+        BillItem billItem = new BillItem();
+        billItem.setBill(bill);
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
+        billItem.setCreatedAt(Calendar.getInstance().getTime());
+        billItem.setQty(qty);
+        billItem.setNetValue(signedChange);
+        billItem.setGrossValue(Math.abs(signedChange));
+
+        PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
+        phItem.setStock(stock);
+        phItem.setItemBatch(itemBatch);
+        phItem.setBeforeAdjustmentValue(before);
+        phItem.setAfterAdjustmentValue(after);
+        billItem.setPharmaceuticalBillItem(phItem);
+        phItem.setBillItem(billItem);
+
+        bill.getBillItems().add(billItem);
+        return bill;
+    }
+
+    @Test
+    @DisplayName("A purchase rate change lands in the purchase column only, never the retail one")
+    public void testPurchaseRateChangeDoesNotTouchRetailValue() {
+        // 100 units, purchase rate 50.00 -> 45.00, so the change is -500.00.
+        Bill bill = buildPurchaseRateBill(100.0, 50.0, 45.0, -500.0);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        assertEquals(0, BigDecimal.valueOf(-500.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
+        // A purchase rate move does not change what the stock sells for. Writing the same
+        // figure into the retail column would report one movement as two, and would
+        // contradict what the save path stores (an explicit retail value of zero).
+        assertEquals(0, BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()),
+                "A purchase rate adjustment must leave the retail column at zero");
+        // The bill's headline value still comes from the dimension that actually moved.
+        assertEquals(-500.0, bill.getNetTotal(), 0.001);
+        assertEquals(500.0, bill.getTotal(), 0.001);
+        assertEquals(0, BigDecimal.valueOf(-500.0).compareTo(result.getComputedNetTotal()));
+    }
+
+    @Test
+    @DisplayName("A correctly written purchase rate bill is not a backfill candidate, so re-runs cannot corrupt it")
+    public void testCorrectPurchaseRateBillIsNotSelectedForRepair() {
+        // As the save path writes it: the change in the purchase column, retail explicitly
+        // zero, and the same change mirrored into netTotal / bill totals.
+        Bill bill = buildPurchaseRateBill(100.0, 50.0, 45.0, -500.0);
+        com.divudi.core.entity.BillFinanceDetails bfd = new com.divudi.core.entity.BillFinanceDetails(bill);
+        bfd.setTotalPurchaseValue(BigDecimal.valueOf(-500.0));
+        bfd.setTotalRetailSaleValue(BigDecimal.ZERO);
+        bfd.setNetTotal(BigDecimal.valueOf(-500.0));
+        bfd.setGrossTotal(BigDecimal.valueOf(500.0));
+        bill.setBillFinanceDetails(bfd);
+        bill.setTotal(500.0);
+        bill.setNetTotal(-500.0);
+
+        assertFalse(service.needsCorrection(bill),
+                "A purchase rate bill's retail value is legitimately zero — that must not read as broken");
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.SKIPPED, result.getStatus());
+        assertEquals(0, BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()),
+                "Re-running the backfill must not write the purchase change into the retail column");
+        assertTrue(billFacade.edited.isEmpty());
+    }
+
+    @Test
+    @DisplayName("A purchase rate bill with no finance details at all is still repaired")
+    public void testMissingBfdOnPurchaseRateBillIsStillRepaired() {
+        Bill bill = buildPurchaseRateBill(100.0, 50.0, 45.0, -500.0);
+
+        assertTrue(service.needsCorrection(bill));
+        assertEquals(BackfillStatus.UPDATED, run(bill, true).getStatus());
+    }
+
+    // ------------------------------------------------------------------
+    // Rate-source disclosure
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("A point-in-time cost rate on the bill item is not reported as an approximation")
+    public void testPointInTimeCostRateIsNotDisclosedAsApproximate() {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
+        PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
+        // A real cost rate recorded on the line at the time — the first source in the chain.
+        ph.setCostRate(58.0);
+        // The purchase rate still has to fall back, so provide a snapshot for it.
+        StockHistory snapshot = new StockHistory();
+        snapshot.setPurchaseRate(65.0);
+        setSnapshot(ph, snapshot);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        assertEquals(0, BigDecimal.valueOf(870.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()),
+                "15 * 58.0 from the line's own recorded cost rate");
+        assertFalse(result.getNote().contains("approximated using current item batch rates"),
+                "Every rate came from a point-in-time source, so nothing should be disclosed: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("A snapshot that carries no cost rate still falls back to the current rate, and says so")
+    public void testSnapshotWithoutCostRateStillDisclosesApproximation() {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
+        PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
+        // A snapshot exists, but its cost rate was never recorded. Testing only for the
+        // snapshot's presence would call the resulting figure exact when it is not.
+        StockHistory snapshot = new StockHistory();
+        snapshot.setPurchaseRate(65.0);
+        snapshot.setCostRate(0.0);
+        setSnapshot(ph, snapshot);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        // Fell through to the item batch's current cost rate of 60.0: 15 * 60.0.
+        assertEquals(0, BigDecimal.valueOf(900.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()));
+        assertTrue(result.getNote().contains("approximated using current item batch rates"),
+                "The cost rate came from the current batch rate and must be disclosed: " + result.getNote());
+    }
+
+    private void setSnapshot(PharmaceuticalBillItem target, StockHistory snapshot) {
+        try {
+            inject(service, "stockHistoryFacade", new StockHistoryFacade() {
+                @Override public StockHistory findByPharmaceuticalBillItem(PharmaceuticalBillItem pbItem) {
+                    return pbItem == target ? snapshot : null;
+                }
+            });
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Test

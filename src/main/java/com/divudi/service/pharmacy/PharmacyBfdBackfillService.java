@@ -204,8 +204,12 @@ public class PharmacyBfdBackfillService {
             return true;
         }
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
-        if (bfd.getTotalRetailSaleValue() == null
-                || bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) == 0) {
+        // netTotal, not totalRetailSaleValue: every writer puts the bill's primary value
+        // change in netTotal, whichever dimension that is. A purchase rate adjustment
+        // legitimately carries totalRetailSaleValue = 0 (it moves purchase value only), so
+        // testing the retail column would mark every correctly written purchase-rate bill
+        // as broken and rewrite it on every run.
+        if (bfd.getNetTotal() == null || bfd.getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
             return true;
         }
         return bill.getTotal() == 0;
@@ -242,9 +246,13 @@ public class PharmacyBfdBackfillService {
 
     /**
      * A bill needs repair when it has no BillFinanceDetails at all, when its BFD carries
-     * no retail value, or when bill.total was never written. The last two cases were
-     * missed by the button's {@code billFinanceDetails IS NULL} filter, which is why
-     * bills with a present-but-empty BFD stayed at 0.00 through repeated backfill runs.
+     * no net value, or when bill.total was never written. The last two cases were missed
+     * by the button's {@code billFinanceDetails IS NULL} filter, which is why bills with a
+     * present-but-empty BFD stayed at 0.00 through repeated backfill runs.
+     *
+     * <p>The test is on {@code bfd.netTotal}, the bill's primary value change, never on
+     * {@code totalRetailSaleValue}: a purchase rate adjustment moves purchase value only
+     * and so carries a retail value of 0 by design.</p>
      */
     private List<Bill> findCandidateBills(List<BillTypeAtomic> types, Long departmentId,
             Date fromDate, Date toDate) {
@@ -258,8 +266,8 @@ public class PharmacyBfdBackfillService {
                 + " and b.billTypeAtomic in :types"
                 + " and b.createdAt between :from and :to"
                 + " and (bfd is null"
-                + "      or bfd.totalRetailSaleValue is null"
-                + "      or bfd.totalRetailSaleValue = 0"
+                + "      or bfd.netTotal is null"
+                + "      or bfd.netTotal = 0"
                 + "      or b.total = 0)"
                 + (departmentId != null ? " and b.department.id = :deptId" : "")
                 + " order by b.createdAt";
@@ -316,6 +324,7 @@ public class PharmacyBfdBackfillService {
         BigDecimal retailValue = BigDecimal.ZERO;
         BigDecimal costValue = BigDecimal.ZERO;
         BigDecimal purchaseValue = BigDecimal.ZERO;
+        BigDecimal primaryValue = BigDecimal.ZERO;
         BigDecimal grossValue = BigDecimal.ZERO;
         BigDecimal quantity = BigDecimal.ZERO;
         BigDecimal beforeValue = BigDecimal.ZERO;
@@ -347,7 +356,8 @@ public class PharmacyBfdBackfillService {
             retailValue = retailValue.add(line.getRetailValue());
             costValue = costValue.add(line.getCostValue());
             purchaseValue = purchaseValue.add(line.getPurchaseValue());
-            grossValue = grossValue.add(line.getRetailValue().abs());
+            primaryValue = primaryValue.add(line.getPrimaryValue());
+            grossValue = grossValue.add(line.getPrimaryValue().abs());
             quantity = quantity.add(line.getQuantity().abs());
             beforeValue = beforeValue.add(line.getBeforeValue());
             afterValue = afterValue.add(line.getAfterValue());
@@ -372,7 +382,7 @@ public class PharmacyBfdBackfillService {
         result.setComputedCostValue(costValue);
         result.setComputedPurchaseValue(purchaseValue);
         result.setComputedGrossTotal(grossValue);
-        result.setComputedNetTotal(retailValue);
+        result.setComputedNetTotal(primaryValue);
         result.setComputedQuantity(quantity);
         result.setRatesApproximated(ratesApproximated);
 
@@ -394,7 +404,7 @@ public class PharmacyBfdBackfillService {
         }
 
         bfd.setGrossTotal(grossValue);
-        bfd.setNetTotal(retailValue);
+        bfd.setNetTotal(primaryValue);
         bfd.setTotalRetailSaleValue(retailValue);
         bfd.setTotalCostValue(costValue);
         bfd.setTotalPurchaseValue(purchaseValue);
@@ -409,10 +419,10 @@ public class PharmacyBfdBackfillService {
         // to the BFD when bill.total is 0, but every other report that reads bill.total
         // directly stays at zero unless these are set.
         bill.setTotal(grossValue.doubleValue());
-        bill.setNetTotal(retailValue.doubleValue());
+        bill.setNetTotal(primaryValue.doubleValue());
 
         appendAuditLog(bill, auditComment, approvedBy, performedBy, isNew,
-                result.getSemantics(), grossValue, retailValue);
+                result.getSemantics(), grossValue, primaryValue);
 
         if (isNew) {
             billFinanceDetailsFacade.create(bfd);
@@ -470,9 +480,12 @@ public class PharmacyBfdBackfillService {
         StockHistory snapshot = stockHistoryFacade.findByPharmaceuticalBillItem(pbi);
         ItemBatch itemBatch = pbi.getItemBatch();
 
-        double retailRate = resolveRetailRate(pbi, snapshot, billItem, itemBatch);
-        double costRate = resolveCostRate(pbi, snapshot, itemBatch);
-        double purchaseRate = resolvePurchaseRate(snapshot, itemBatch);
+        ResolvedRate retail = resolveRetailRate(pbi, snapshot, billItem, itemBatch);
+        ResolvedRate cost = resolveCostRate(pbi, snapshot, itemBatch);
+        ResolvedRate purchase = resolvePurchaseRate(snapshot, itemBatch);
+        double retailRate = retail.rate;
+        double costRate = cost.rate;
+        double purchaseRate = purchase.rate;
 
         if (retailRate == 0.0) {
             line.setSemantics(AuditValueSemantics.UNRESOLVED);
@@ -482,13 +495,20 @@ public class PharmacyBfdBackfillService {
         }
 
         line.setSemantics(AuditValueSemantics.QUANTITY);
+        line.setPrimaryValue(BigDecimal.valueOf(qtyDelta * retailRate));
         line.setRetailValue(BigDecimal.valueOf(qtyDelta * retailRate));
         line.setCostValue(BigDecimal.valueOf(qtyDelta * costRate));
         line.setPurchaseValue(BigDecimal.valueOf(qtyDelta * purchaseRate));
         line.setQuantity(BigDecimal.valueOf(qtyDelta));
         line.setBeforeValue(BigDecimal.valueOf(beforeQty * retailRate));
         line.setAfterValue(BigDecimal.valueOf(afterQty * retailRate));
-        line.setRatesApproximated(snapshot == null && (costRate != 0.0 || purchaseRate != 0.0));
+        // Disclose when a value actually came from a CURRENT batch rate. Testing
+        // "no snapshot existed" instead both over- and under-reports: a point-in-time rate
+        // on the bill item needs no disclosure, while a snapshot that happens to carry a
+        // zero cost rate falls through to the current rate and does.
+        line.setRatesApproximated(retail.fromCurrentBatchRate
+                || cost.fromCurrentBatchRate
+                || purchase.fromCurrentBatchRate);
         return line;
     }
 
@@ -534,11 +554,12 @@ public class PharmacyBfdBackfillService {
 
         // A retail rate change moves retail value only; a purchase rate change moves
         // purchase value only. Neither touches quantity, so cost value is unaffected.
+        // The change is recorded in its own dimension AND as the bill's primary value —
+        // writing it into the retail column for a purchase rate adjustment would report
+        // the same movement twice and contradict what the save path stores.
+        line.setPrimaryValue(BigDecimal.valueOf(change));
         if (bta == BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT) {
             line.setPurchaseValue(BigDecimal.valueOf(change));
-            // grossTotal/netTotal for a purchase rate adjustment are carried by the
-            // purchase dimension; mirror it into retail so the bill has a primary value.
-            line.setRetailValue(BigDecimal.valueOf(change));
         } else {
             line.setRetailValue(BigDecimal.valueOf(change));
         }
@@ -584,48 +605,73 @@ public class PharmacyBfdBackfillService {
      * item batch's current rate. The batch rate is last because it may have moved since
      * — using it for a bill from weeks ago silently produces the wrong value.
      */
-    private double resolveRetailRate(PharmaceuticalBillItem pbi, StockHistory snapshot,
+    private ResolvedRate resolveRetailRate(PharmaceuticalBillItem pbi, StockHistory snapshot,
             BillItem billItem, ItemBatch itemBatch) {
         if (pbi.getRetailRate() > 0) {
-            return pbi.getRetailRate();
+            return ResolvedRate.pointInTime(pbi.getRetailRate());
         }
         if (snapshot != null && snapshot.getRetailRate() > 0) {
-            return snapshot.getRetailRate();
+            return ResolvedRate.pointInTime(snapshot.getRetailRate());
         }
         // The rate the line was billed at, captured when the adjustment was made.
         if (billItem != null && billItem.getNetRate() > 0) {
-            return billItem.getNetRate();
+            return ResolvedRate.pointInTime(billItem.getNetRate());
         }
         if (itemBatch != null) {
-            return itemBatch.getRetailsaleRate();
+            return ResolvedRate.currentBatchRate(itemBatch.getRetailsaleRate());
         }
-        return 0.0;
+        return ResolvedRate.pointInTime(0.0);
     }
 
-    private double resolveCostRate(PharmaceuticalBillItem pbi, StockHistory snapshot, ItemBatch itemBatch) {
+    private ResolvedRate resolveCostRate(PharmaceuticalBillItem pbi, StockHistory snapshot, ItemBatch itemBatch) {
         if (pbi.getCostRate() > 0) {
-            return pbi.getCostRate();
+            return ResolvedRate.pointInTime(pbi.getCostRate());
         }
         if (snapshot != null && snapshot.getCostRate() > 0) {
-            return snapshot.getCostRate();
+            return ResolvedRate.pointInTime(snapshot.getCostRate());
         }
         if (itemBatch == null) {
-            return 0.0;
+            return ResolvedRate.pointInTime(0.0);
         }
         if (itemBatch.getCostRate() != null && itemBatch.getCostRate() > 0) {
-            return itemBatch.getCostRate();
+            return ResolvedRate.currentBatchRate(itemBatch.getCostRate());
         }
-        return itemBatch.getPurcahseRate();
+        return ResolvedRate.currentBatchRate(itemBatch.getPurcahseRate());
     }
 
-    private double resolvePurchaseRate(StockHistory snapshot, ItemBatch itemBatch) {
+    private ResolvedRate resolvePurchaseRate(StockHistory snapshot, ItemBatch itemBatch) {
         if (snapshot != null && snapshot.getPurchaseRate() > 0) {
-            return snapshot.getPurchaseRate();
+            return ResolvedRate.pointInTime(snapshot.getPurchaseRate());
         }
         if (itemBatch != null) {
-            return itemBatch.getPurcahseRate();
+            return ResolvedRate.currentBatchRate(itemBatch.getPurcahseRate());
         }
-        return 0.0;
+        return ResolvedRate.pointInTime(0.0);
+    }
+
+    /**
+     * A rate together with whether it had to be taken from the item batch's CURRENT value
+     * rather than a point-in-time record — which is the difference between a figure and an
+     * estimate, and is disclosed to the caller.
+     */
+    private static class ResolvedRate {
+
+        private final double rate;
+        private final boolean fromCurrentBatchRate;
+
+        private ResolvedRate(double rate, boolean fromCurrentBatchRate) {
+            this.rate = rate;
+            // A zero rate contributes nothing, so it is not worth disclosing as an estimate.
+            this.fromCurrentBatchRate = fromCurrentBatchRate && rate != 0.0;
+        }
+
+        static ResolvedRate pointInTime(double rate) {
+            return new ResolvedRate(rate, false);
+        }
+
+        static ResolvedRate currentBatchRate(double rate) {
+            return new ResolvedRate(rate, true);
+        }
     }
 
     /**
@@ -949,6 +995,8 @@ public class PharmacyBfdBackfillService {
         private AuditValueSemantics semantics = AuditValueSemantics.UNRESOLVED;
         private String note;
         private boolean ratesApproximated;
+        /** The bill's headline change, whichever dimension carries it. Drives gross/net. */
+        private BigDecimal primaryValue = BigDecimal.ZERO;
         private BigDecimal retailValue = BigDecimal.ZERO;
         private BigDecimal costValue = BigDecimal.ZERO;
         private BigDecimal purchaseValue = BigDecimal.ZERO;
@@ -978,6 +1026,14 @@ public class PharmacyBfdBackfillService {
 
         void setRatesApproximated(boolean ratesApproximated) {
             this.ratesApproximated = ratesApproximated;
+        }
+
+        BigDecimal getPrimaryValue() {
+            return primaryValue;
+        }
+
+        void setPrimaryValue(BigDecimal primaryValue) {
+            this.primaryValue = primaryValue;
         }
 
         BigDecimal getRetailValue() {
