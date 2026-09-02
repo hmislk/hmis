@@ -712,12 +712,15 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         calculateRefundingAmount();
 
-        Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+        if (!configOptionApplicationController.getBooleanValueByKey("OPD Refund - Bypass the Drawer to Refund", false)) {
 
-        if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
-            JsfUtil.addErrorMessage("Your Draver does not have enough Money");
-            returningStarted.set(false);
-            return null;
+            Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+
+            if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
+                JsfUtil.addErrorMessage("Your Draver does not have enough Money");
+                returningStarted.set(false);
+                return null;
+            }
         }
 
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
