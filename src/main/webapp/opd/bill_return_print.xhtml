@@ -32,6 +32,7 @@
                                     <f:selectItems value="#{enumController.paperTypes}" />
                                 </p:selectOneMenu>
                                 <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1 " title="Redraw Bill"></p:commandButton>
+                                
                             </div>
 
                             <p:commandButton 
@@ -39,7 +40,6 @@
                                 class="ui-button-info m-1"
                                 icon="fa fa-print"
                                 style="float: right"
-                                rendered="#{billSearch.bill.refunded}"
                                 ajax="false">
                                 <p:printer target="refundPrint" />
                             </p:commandButton>
