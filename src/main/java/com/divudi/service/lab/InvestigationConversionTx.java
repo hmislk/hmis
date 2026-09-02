@@ -75,7 +75,15 @@ public class InvestigationConversionTx {
         if (ix == null) {
             return false;
         }
-        String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
+        // Table name resolved at runtime rather than hardcoded: EclipseLink's default
+        // naming for an @Entity with no @Table annotation is uppercase ("ITEM"), which
+        // only matches by luck on a case-insensitive MySQL. A literal "Item" fails with
+        // "Table doesn't exist" on a case-sensitive deployment (Linux with the default
+        // lower_case_table_names=0). getTableName() reads the name EclipseLink itself
+        // resolved, so this works on both. Same fix already established for this exact
+        // bug class elsewhere (AbstractFacade.getTableName(), closes #19648). Closes #23406.
+        String table = itemFacade.getTableName();
+        String sql = "UPDATE " + table + " SET DTYPE = ? WHERE id = ?";
         List<Object> params = Arrays.asList("Service", ix.getId());
         itemFacade.executeNativeSql(sql, params);
         return true;
