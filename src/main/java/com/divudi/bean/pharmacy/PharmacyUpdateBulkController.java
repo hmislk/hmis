@@ -139,15 +139,6 @@ public class PharmacyUpdateBulkController implements Serializable {
 
     }
 
-    public void makeAllPharmaceuticalsToAllowDiscount() {
-        amps = getAmpFacade().findAll();
-        for (Amp a : amps) {
-            a.setDiscountAllowed(Boolean.TRUE);
-            getAmpFacade().edit(a);
-        }
-        JsfUtil.addSuccessMessage("Updated...");
-    }
-
     public AmpFacade getAmpFacade() {
         return ampFacade;
     }

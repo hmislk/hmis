@@ -11,15 +11,21 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
+                    <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
 
                     <p:panel header="IP Unsettled Invoices">
 
-                        <p:panelGrid columns="6" class="w-100" style="align-items:center">
+                        <h:panelGrid columns="8" class="ui-fluid" style="table-layout: fixed; width: 100%;"
+                                     columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                                 fp-col-extraWidth-label2,fp-col-input2,fp-col-space2,
+                                                 fp-col-label3,fp-col-input3">
 
                             <!-- Admission From Date -->
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Admission From Date " class="m-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Admission From Date" for="fromdate" />
+                                </div>
                             </h:panelGroup>
                             <p:datePicker
                                 id="fromdate"
@@ -33,11 +39,14 @@
                                 inputStyleClass="w-100 form-control"
                                 />
 
+                            <p:spacer width="50" />
 
                             <!-- Admission To Date -->
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Admission To Date " class="m-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Admission To Date" for="todate" />
+                                </div>
                             </h:panelGroup>
                             <p:datePicker
                                 id="todate"
@@ -50,13 +59,17 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 />
-                            <p:spacer />
-                            <p:spacer />
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
 
                             <!-- Discharge From Date -->
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Discharge From Date " class="m-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Discharge From Date" for="dischargefromdate" />
+                                </div>
                             </h:panelGroup>
                             <p:datePicker
                                 id="dischargefromdate"
@@ -70,10 +83,14 @@
                                 inputStyleClass="w-100 form-control"
                                 />
 
+                            <p:spacer width="50" />
+
                             <!-- Discharge To Date -->
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Discharge To Date " class="m-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Discharge To Date" for="dischargetodate" />
+                                </div>
                             </h:panelGroup>
                             <p:datePicker
                                 id="dischargetodate"
@@ -87,12 +104,16 @@
                                 inputStyleClass="w-100 form-control"
                                 />
 
-                            <p:spacer />
-                            <p:spacer />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
                             <!-- Invoice Approved From Date -->
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Invoice Approved From Date" class="m-3" />
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Invoice Approved From Date" for="invoicefromdate" />
+                                </div>
                             </h:panelGroup>
                             <p:datePicker
                                 id="invoicefromdate"
@@ -106,12 +127,15 @@
                                 inputStyleClass="w-100 form-control"
                                 />
 
-                            <!-- Invoice Approved To Date -->
-                            <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Invoice Approved To Date" class="m-3" />
-                            </h:panelGroup>
+                            <p:spacer width="50" />
 
+                            <!-- Invoice Approved To Date -->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf073;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Invoice Approved To Date" for="invoicetodate" />
+                                </div>
+                            </h:panelGroup>
                             <p:datePicker
                                 id="invoicetodate"
                                 value="#{inwardReportController.invoiceApprovedToDate}"
@@ -123,18 +147,181 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 />
-                            <p:spacer />
-                            <p:spacer />
 
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university ml-5" />
-                                <p:outputLabel value="Institution" class="mx-3" >
-                                </p:outputLabel>
+                            <!-- Consultant -->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-user-md"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Consultant" for="acConsultant" />
+                                </div>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                id="acConsultant"
+                                forceSelection="true"
+                                value="#{inwardReportController.consultant}"
+                                requiredMessage="Please select referring consultant"
+                                completeMethod="#{consultantController.completeConsultant}"
+                                var="mysp"
+                                itemLabel="#{mysp.person.nameWithTitle}"
+                                itemValue="#{mysp}"
+                                styleClass="w-100"
+                                placeholder="Consultant"
+                                maxResults="15"
+                                inputStyleClass="w-100 form-control">
+                            </p:autoComplete>
+
+                            <p:spacer width="50" />
+
+                            <!-- Service Centre -->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-building"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Service Center" for="serviceCenter" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="serviceCenter" value="#{inwardReportController.serviceCenter}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All Service Centers"/>
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="dept"
+                                    itemLabel="#{dept.name}"
+                                    itemValue="#{dept}"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <!--Sponsor-->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-user"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Sponsor Name" for="sponsor" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="sponsor" value="#{inwardReportController.sponsor}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All Sponsors"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="s"
+                                                itemValue="#{s}" itemLabel="#{s.name}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <!--Discharge Type-->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-medkit"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Discharge Type" for="dischargeType" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="dischargeType" value="#{inwardReportController.dischargeType}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <!--Patient Category-->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-user"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Patient Category" for="patientCategory" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="patientCategory" value="#{inwardReportController.patientCategory}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All Categories"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <!--Admission Status-->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-user"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Admission Status" for="admissionStatus" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="admissionStatus" value="#{inwardReportController.admissionStatus}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All Admission Statuses"/>
+                                <f:selectItems value="#{enumController.admissionStatuses}"
+                                               var="status"
+                                               itemValue="#{status}" itemLabel="#{status.label}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <!--Admission Types-->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-user"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Admission Types" for="admissionType" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="admissionType" value="#{inwardReportController.admissionType}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" ></f:selectItems>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <!--Payment Mode-->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-credit-card"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Payment Mode" for="paymentMethod" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="paymentMethod" value="#{inwardReportController.paymentMethod}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All"/>
+                                <f:selectItems  value="#{enumController.paymentMethodsForIpReports}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.label}"></f:selectItems>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <!--Room Category-->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-bed"/>
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Room Category" for="roomCategory" />
+                                </div>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="roomCategory" value="#{inwardReportController.roomCategory}" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All"/>
+                                <f:selectItems value="#{roomCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <!-- Institution -->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-university" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Institution" for="phmIns" />
+                                </div>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="phmIns"
-                                class="w-100"
+                                styleClass="w-100 form-control"
                                 value="#{inwardReportController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions"/>
@@ -143,14 +330,18 @@
                                 <p:ajax process="phmIns" update="phmDept"/>
                             </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
-                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                            <p:spacer width="50" />
+
+                            <!-- Site -->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-map-marker-alt" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Site" for="phmSite" />
+                                </div>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="phmSite"
-                                class="w-100"
-                                styleClass="w-100"
+                                styleClass="w-100 form-control"
                                 value="#{inwardReportController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
@@ -159,16 +350,21 @@
                                 <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building ml-5" />
-                                <p:outputLabel value="Department" class="mx-3">
-                                </p:outputLabel>
+                            <p:spacer width="50" />
+
+                            <!-- Department -->
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText styleClass="fa fa-building" />
+                                <div class="fp-label-text">
+                                    <p:outputLabel value="Department" for="phmDept" />
+                                </div>
                             </h:panelGroup>
                             <h:panelGroup id="phmDept">
 
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
+                                    styleClass="w-100 form-control"
                                     value="#{inwardReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
@@ -183,6 +379,7 @@
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
                                     rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
+                                    styleClass="w-100 form-control"
                                     value="#{inwardReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
@@ -197,12 +394,13 @@
                                 <!-- Component 3: With Institution Only -->
                                 <p:selectOneMenu
                                     rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
+                                    styleClass="w-100 form-control"
                                     value="#{inwardReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
@@ -211,6 +409,7 @@
                                 <!-- Component 4: With Both Institution and Site -->
                                 <p:selectOneMenu
                                     rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
+                                    styleClass="w-100 form-control"
                                     value="#{inwardReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
@@ -223,120 +422,7 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
-                            <!-- Consultant -->
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-user-md mr-2"/>
-                                <p:outputLabel value="Consultant" class="m-3"/>
-                            </h:panelGroup>
-
-                            <p:autoComplete 
-                                forceSelection="true" 
-                                value="#{inwardReportController.consultant}" 
-                                requiredMessage="Please select referring consultant"
-                                completeMethod="#{consultantController.completeConsultant}" 
-                                var="mysp"
-                                itemLabel="#{mysp.person.nameWithTitle}" 
-                                itemValue="#{mysp}"
-                                styleClass="form-control w-100"
-                                class="w-100" 
-                                placeholder="Consultant"
-                                maxResults="15"
-                                inputStyleClass="w-100">
-                            </p:autoComplete>
-
-                            <!-- Service Centre -->
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Service Center" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.serviceCenter}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Service Centers"/>
-                                <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                    var="dept"
-                                    itemLabel="#{dept.name}"
-                                    itemValue="#{dept}"/>
-
-                            </p:selectOneMenu>                        
-
-
-                            <!--Sponsor--> 
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-user mr-2"/>
-                                <p:outputLabel value="Sponsor Name" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.sponsor}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Sponsors"/>
-                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="s" 
-                                                itemValue="#{s}" itemLabel="#{s.name}" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <!--Discharge Type--> 
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-medkit mr-2"/>
-                                <p:outputLabel value="Discharge Type" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.dischargeType}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All"/>
-
-                            </p:selectOneMenu>
-
-                            <!--Patient Category--> 
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-user mr-2"/>
-                                <p:outputLabel value="Patient Category" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.patientCategory}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Categories"/>
-
-                            </p:selectOneMenu>
-
-                            <!--Admission Status--> 
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-user mr-2"/>
-                                <p:outputLabel value="Admission Status" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.admissionStatus}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Admission Statuses"/>
-                                <f:selectItems value="#{enumController.admissionStatuses}"
-                                               var="status"
-                                               itemValue="#{status}" itemLabel="#{status.label}" />
-                            </p:selectOneMenu>
-
-                            <!--Admission Types--> 
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-user mr-2"/>
-                                <p:outputLabel value="Admission Types" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.admissionType}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All"/>
-                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" ></f:selectItems>
-
-                            </p:selectOneMenu>
-
-                            <!--Payment Mode--> 
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-credit-card mr-2"/>
-                                <p:outputLabel value="Payment Mode" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.paymentMethod}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All"/>
-                                <f:selectItems  value="#{enumController.paymentMethodsForIpReports}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.label}"></f:selectItems>
-
-                            </p:selectOneMenu>
-
-                            <!--Room Category--> 
-                            <h:panelGroup>
-                                <h:outputText styleClass="fa fa-bed mr-2"/>
-                                <p:outputLabel value="Room Category" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.roomCategory}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All"/>
-                                <f:selectItems value="#{roomCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-
-                            </p:selectOneMenu>
-
-                        </p:panelGrid>
+                        </h:panelGrid>
 
 
                         <!-- Buttons -->
