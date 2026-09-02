@@ -4151,6 +4151,7 @@ public class ExcelController {
 
         switch (bundle.getBundleType()) {
             case "whtIndividualReceipts":
+            case "opdProfessionalPayments":
                 addDataToWhtIndividualReceipts(dataSheet, currentRow, bundle);
                 break;
             case "whtMonthlySummary":
