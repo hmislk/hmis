@@ -144,6 +144,12 @@ public class OutsidePaymentReportDto implements Serializable {
     }
 
     public Double getDueAmount() {
+        // Cancelled / refunded bills carry a negative netTotal (selected into
+        // invoiceTotal), which would render a large-negative "Due" next to live
+        // rows and pollute any column total. Nothing is due on those.
+        if (Boolean.TRUE.equals(cancelled) || Boolean.TRUE.equals(refunded)) {
+            return 0.0;
+        }
         return invoiceTotal - (paidAmount != null ? paidAmount : 0.0);
     }
 

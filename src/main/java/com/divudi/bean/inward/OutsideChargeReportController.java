@@ -99,13 +99,18 @@ public class OutsideChargeReportController implements Serializable {
             return;
         }
 
+        // Every relation reached inside SELECT NEW is joined with an explicit
+        // LEFT JOIN. A dotted path such as enc.patient.person.name in the SELECT
+        // list forces an implicit INNER JOIN, which silently drops any row whose
+        // patient or person is null, and multi-hop dotted paths off a join alias
+        // have returned zero rows outright in EclipseLink (see #23222).
         StringBuilder jpql = new StringBuilder(
                 "SELECT new com.divudi.core.data.dto.OutsidePaymentReportDto("
                 + "bi.id, "
                 + "b.id, "
                 + "COALESCE(b.deptId, ''), "
-                + "COALESCE(enc.patient.phn, ''), "
-                + "COALESCE(enc.patient.person.name, ''), "
+                + "COALESCE(pt.phn, ''), "
+                + "COALESCE(ptPerson.name, ''), "
                 + "COALESCE(enc.bhtNo, ''), "
                 + "COALESCE(item.name, ''), "
                 + "enc.dateOfDischarge, "
@@ -123,6 +128,8 @@ public class OutsideChargeReportController implements Serializable {
                 + "FROM BillItem bi "
                 + "JOIN bi.bill b "
                 + "JOIN b.patientEncounter enc "
+                + "LEFT JOIN enc.patient pt "
+                + "LEFT JOIN pt.person ptPerson "
                 + "LEFT JOIN bi.item item "
                 + "LEFT JOIN bi.creater creater "
                 + "LEFT JOIN creater.webUserPerson createrPerson "
@@ -137,15 +144,22 @@ public class OutsideChargeReportController implements Serializable {
         params.put("td", toDate);
 
         if (dischargeFromDate != null && dischargeToDate != null) {
+            // These pickers are date-only (time 00:00:00). Widen the bounds to
+            // the full day so a BETWEEN ... TIMESTAMP does not silently exclude
+            // everything discharged on the last selected day.
             jpql.append("AND enc.dateOfDischarge BETWEEN :dfd AND :dtd ");
-            params.put("dfd", dischargeFromDate);
-            params.put("dtd", dischargeToDate);
+            params.put("dfd", CommonFunctions.getStartOfDay(dischargeFromDate));
+            params.put("dtd", CommonFunctions.getEndOfDay(dischargeToDate));
         }
 
         if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            // b.createdAt is the outside-charge invoice bill's creation time -
+            // the same "invoice approved" proxy the sibling inpatient reports
+            // use (InwardReportController -> pe.finalBill.createdAt). Same
+            // date-only widening as above.
             jpql.append("AND b.createdAt BETWEEN :iafd AND :iatd ");
-            params.put("iafd", invoiceApprovedFromDate);
-            params.put("iatd", invoiceApprovedToDate);
+            params.put("iafd", CommonFunctions.getStartOfDay(invoiceApprovedFromDate));
+            params.put("iatd", CommonFunctions.getEndOfDay(invoiceApprovedToDate));
         }
 
         if (institution != null) {
@@ -213,10 +227,24 @@ public class OutsideChargeReportController implements Serializable {
                 JsfUtil.addErrorMessage("Bill not found for this row.");
                 return;
             }
-            bill.setPaidAmount(row.getPaidAmount() != null ? row.getPaidAmount() : 0.0);
+
             boolean paid = row.getPaid() != null && row.getPaid();
+            boolean wasPaid = bill.isPaid();
+
+            // A paid row carries its entered amount; an unpaid row must not keep a
+            // stale positive paidAmount (would leave paidAmount>0 / paid=false).
+            bill.setPaidAmount(paid ? (row.getPaidAmount() != null ? row.getPaidAmount() : 0.0) : 0.0);
             bill.setPaid(paid);
-            bill.setPaidAt(paid ? new Date() : null);
+
+            // Only stamp paidAt on an unpaid -> paid transition. Editing an
+            // unrelated field (e.g. the memo) on an already-paid row must not
+            // overwrite the original payment date with "now". Clear it only when
+            // the row is being un-marked as paid.
+            if (paid && !wasPaid) {
+                bill.setPaidAt(new Date());
+            } else if (!paid) {
+                bill.setPaidAt(null);
+            }
             billFacade.edit(bill);
 
             if (row.getBillItemId() != null) {
@@ -226,6 +254,13 @@ public class OutsideChargeReportController implements Serializable {
                     billItemFacade.edit(billItem);
                 }
             }
+
+            // Reflect the persisted state back into the row so the re-rendered
+            // grid shows the real values without re-running the whole query.
+            // (paidDate on the DTO is final, so it can only be refreshed by a
+            // reprocess; paidAmount/paid/memo are mutable and patched here.)
+            row.setPaidAmount(bill.getPaidAmount());
+            row.setPaid(bill.isPaid());
 
             JsfUtil.addSuccessMessage("Row updated successfully.");
         } catch (Exception e) {
@@ -263,10 +298,19 @@ public class OutsideChargeReportController implements Serializable {
         }
 
         workbook.setSheetName(0, "Outside Payment Report");
-        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForOutsidePaymentReport();
         if (filters != null && !filters.isEmpty()) {
+            // Reserve exactly the rows addMetaDataToExcelSheet() will consume:
+            // 1 institution row + 1 title row + ceil(filterCount / 3) filter rows
+            // (3 label/value pairs per row) + 1 trailing blank row. Deriving this
+            // instead of hardcoding keeps the exported table header from being
+            // overwritten when a filter is added or removed later.
+            int filterRows = (filters.size() + 2) / 3;
+            int metadataRows = 1 + 1 + filterRows + 1;
+            if (sheet.getLastRowNum() >= 0) {
+                sheet.shiftRows(0, sheet.getLastRowNum(), metadataRows);
+            }
             pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Outside Payment Report", filters);
         }
     }
