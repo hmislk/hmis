@@ -2323,6 +2323,18 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         billController.save(rb);
         currentRefundBill = rb;
 
+        // Explicitly persist the refund bill items and their fees. These are built
+        // in-memory by createBillItemsAndBillFeesForOpdRefund() and must not rely on
+        // JPA cascade alone — if the cascaded persist inside billController.save()
+        // above fails for any reason it is silently retried as a merge, which can
+        // leave the bill (and its later payment) saved with no bill items at all.
+        for (BillItem rbi : rb.getBillItems()) {
+            billItemController.save(rbi);
+            for (BillFee rbf : rbi.getBillFees()) {
+                billFeeController.save(rbf);
+            }
+        }
+
         // Update the original bill
         List<Bill> refundBills = new ArrayList<>(bill.getRefundBills());
         refundBills.add(rb);

@@ -2683,6 +2683,7 @@ public class PdfController {
         if (bundle.getBundleType() != null) {
             switch (bundle.getBundleType()) {
                 case "whtIndividualReceipts":
+                case "opdProfessionalPayments":
                     populateTableForWhtIndividualReceipts(document, bundle);
                     break;
                 case "whtMonthlySummary":

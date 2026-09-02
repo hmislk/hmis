@@ -25,7 +25,66 @@ Before applying corrections, use these read-only endpoints to identify the exact
 Then apply updates using:
 
 - `PATCH /api/bill_data_correction` — update existing BFD/bill/item fields
+- `POST /api/bill_data_correction/create_bill_item` — **create** a single missing `BillItem` on an already-saved bill
 - `POST /api/pharmacy/backfill_bfd` — **create** missing BFDs for historical adjustment bills
+
+## Creating a Missing Bill Item
+
+Use this only to repair a bill that is missing a `BillItem` it should have (e.g. a refund bill whose
+item never got persisted due to a bug in the saving code). It does **not** recompute or touch the
+bill's totals, finance details, or payments — the values you supply must already be consistent with
+the bill's existing `netTotal`/`total`.
+
+- **Endpoint**: `POST /api/bill_data_correction/create_bill_item`
+- **Auth Header**: `Finance: <API_KEY>`
+
+### Request Body
+
+```json
+{
+  "billId": 5214531,
+  "itemId": 61881,
+  "referenceBillItemId": 5232165,
+  "qty": -1.0,
+  "rate": 1740.0,
+  "netRate": 1740.0,
+  "grossValue": -1740.0,
+  "netValue": -1740.0,
+  "auditComment": "Refund bill item never persisted due to saveRefundBill() bug — recreated to match original bill item 5232165",
+  "approvedBy": "Dr. Smith"
+}
+```
+
+- `billId` (required) — the bill the item should belong to.
+- `itemId` (required) — the `Item` id (service/investigation/drug) for the new bill item.
+- `referenceBillItemId` (optional) — the original bill item this one refunds/corresponds to. When
+  given, `referenceBill` is set to that item's bill automatically, and the request is rejected with
+  `409` if the target bill already has a non-retired item referencing the same source item (prevents
+  duplicate recreation).
+- `qty`, `rate`, `netRate`, `grossValue`, `netValue` — plain numeric fields copied onto the new
+  `BillItem` as-is.
+- `auditComment`, `approvedBy` — mandatory, as with `PATCH /api/bill_data_correction`.
+
+### Response (Success)
+
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "targetType": "BILL_ITEM_CREATE",
+    "billId": 5214531,
+    "createdBillItemId": 5240001,
+    "newValues": {"billItemId": 5240001, "itemId": 61881, "referenceBillItemId": 5232165, "qty": -1.0, "rate": 1740.0, "netRate": 1740.0, "grossValue": -1740.0, "netValue": -1740.0},
+    "auditComment": "...",
+    "approvedBy": "Dr. Smith",
+    "correctedAt": "2026-09-01 18:00:00",
+    "correctedByApiUser": "admin_user"
+  }
+}
+```
+
+As with `PATCH`, the correction is appended to the bill's `comments` for audit.
 
 ## Request Body
 
