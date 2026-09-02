@@ -689,7 +689,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
                             if (currentPatientSample == null) {
                                 //can Refund Item
-                            } else if (configOptionApplicationController.getBooleanValueByKey("Can Refund Item in any Status", false)) {
+                            } else if (configOptionApplicationController.getBooleanValueByKey("OPD Refund - Can Refund Item in any Status", false)) {
                                 //can Refund Item
                             } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
                                 returningStarted.set(false);
