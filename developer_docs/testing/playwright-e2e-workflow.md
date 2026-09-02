@@ -2339,6 +2339,33 @@ open a fresh tab, and navigate to
 into an inner page (bypassing a menu click) needs the `/faces/` segment
 regardless of which of the two symptoms it would otherwise hit.
 
+## 90. Simulating a barcode scan with `browser_type(..., submit: true)` on a `p:autoComplete` can submit the wrong button — use `slowly: true` and wait, don't press Enter
+
+Found while verifying issue #23165's barcode auto-select/auto-advance
+composite (`admcc:admission_search`) on `inward_room_change.xhtml`. Filling
+the autocomplete in one shot and pressing Enter immediately
+(`browser_type(..., submit: true)`, which does `fill()` then
+`press('Enter')`) fires the Enter keypress **before** PrimeFaces' debounced
+`query` AJAX call has completed, so the autocomplete's own suggestion list is
+still empty and doesn't intercept the key. The Enter falls through to the
+browser's native implicit-form-submission behavior, which submits via the
+**first** submit-type button in the form — not the intended "Continue"
+button, and not whatever the composite's own auto-advance JS would have
+clicked. On this page that meant landing on the unrelated "Nursing
+WorkBench" page instead of the admission's detail view, silently, with no
+error in `server.log` or the browser console.
+
+This is a test-methodology artifact, not evidence of a real bug — a real
+scanner still just types characters via keyboard events, and the auto-select
+JS runs off the `query` AJAX `oncomplete` callback, not off Enter. Simulate
+it correctly instead: `browser_type` with `slowly: true` (fires per-character
+keyup events, which is what triggers PrimeFaces' query debounce), no
+`submit`, then `browser_wait_for` a second or two before asserting on the
+result. Confirmed working this way: an exact single-match query auto-selects
+and auto-advances; an exact query matching multiple admissions (e.g. several
+active admissions sharing one PHN) shows the dropdown and does not
+auto-advance.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including

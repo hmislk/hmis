@@ -7,11 +7,12 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
     <ui:define name="content">
-        <h:form>
+        <h:form id="frmRoomChange">
             <div class="alert alert-warning d-flex align-items-center gap-2 my-3" role="alert">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <h:outputText value="This page is deprecated. Please use Patient Room Details (from the Interim Bill or Admission Profile page) for room management going forward. This page is kept only as a fallback and will be removed later." />
@@ -65,67 +66,25 @@
                                                            var="ins"
                                                            itemLabel="#{ins.name}"
                                                            itemValue="#{ins}" />
-                                            <p:ajax listener="#{roomChangeController.onInstitutionChange}" update="acPt pnlPatientPreview" />
+                                            <p:ajax listener="#{roomChangeController.onInstitutionChange}" update="admissionSearch pnlPatientPreview btnSelect" />
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
                                     <div class="col-12">
-                                        <h:outputLabel for="acPt" styleClass="form-label fw-bold text-dark mb-2">
+                                        <h:outputLabel styleClass="form-label fw-bold text-dark mb-2">
                                             <i class="fa-solid fa-user me-2 text-primary"></i>
                                             Patient Search
                                         </h:outputLabel>
-                                        <p:autoComplete
+                                        <admcc:admission_search
+                                            id="admissionSearch"
                                             widgetVar="aPt"
-                                            id="acPt"
-                                            forceSelection="true"
+                                            inputId="acPt"
                                             value="#{roomChangeController.current}"
                                             completeMethod="#{roomChangeController.completePatientByInstitution}"
-                                            var="myItem"
-                                            itemValue="#{myItem}"
-                                            itemLabel="#{myItem.bhtNo}"
-                                            placeholder="Type patient name, BHT number, or PHN..."
-                                            minQueryLength="2"
-                                            style="width: 100%;"
-                                            inputStyleClass="form-control form-control-lg">
-                                            <p:ajax event="itemSelect" update="pnlPatientPreview" />
-                                            <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fa-solid fa-id-card me-2 text-info"></i>
-                                                    <strong>#{myItem.patient.phn}</strong>
-                                                </div>
-                                            </p:column>
-                                            <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fa-solid fa-hospital me-2 text-warning"></i>
-                                                    <strong class="text-primary">#{myItem.bhtNo}</strong>
-                                                </div>
-                                            </p:column>
-                                            <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fa-solid fa-user me-2 text-success"></i>
-                                                    <span class="fw-medium">#{myItem.patient.person.nameWithTitle}</span>
-                                                </div>
-                                            </p:column>
-                                            <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
-                                                <h:panelGroup rendered="#{myItem.currentPatientRoom ne null}">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fa-solid fa-bed me-2 text-secondary"></i>
-                                                        <span>#{myItem.currentPatientRoom.roomFacilityCharge.name}</span>
-                                                    </div>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{myItem.currentPatientRoom eq null}">
-                                                    <span class="text-muted">
-                                                        <i class="fa-solid fa-question-circle me-1"></i>No room assigned
-                                                    </span>
-                                                </h:panelGroup>
-                                            </p:column>
-                                            <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
-                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
-                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!myItem.discharged}" />
-                                            </p:column>
-                                        </p:autoComplete>
+                                            continueClientId="frmRoomChange:btnSelect"
+                                            itemSelectUpdate=":frmRoomChange:pnlPatientPreview :frmRoomChange:btnSelect" />
                                     </div>
                                 </div>
 
