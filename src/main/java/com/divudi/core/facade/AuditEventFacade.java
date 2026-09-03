@@ -26,17 +26,12 @@ import javax.persistence.PersistenceContext;
 // though AuditEventApplicationController.saveAuditEvent() catches the
 // exception.
 //
-// The attribute is declared at CLASS level (not just on an override of
-// create/edit) because AbstractFacade<T> is generic: the EJB container
-// dispatches through the synthetic bridge methods create(Object)/edit(Object),
-// which do not inherit a method-level @TransactionAttribute. A class-level
-// attribute applies to every business method, bridges included.
-//
 // REQUIRES_NEW suspends the caller's transaction and runs each audit
 // operation in its own. If it fails, only that transaction rolls back; the
 // caller's transaction is untouched and the caught exception is logged and
-// ignored as intended. All non-write usage elsewhere is findByJpql (reads),
-// for which running in a fresh short transaction is harmless.
+// ignored as intended. All non-write usage of this facade elsewhere is
+// findByJpql (reads), for which running in a fresh short transaction is
+// harmless.
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class AuditEventFacade extends AbstractFacade<AuditEvent> {
     @PersistenceContext(unitName = "hmisAuditPU")
@@ -49,6 +44,26 @@ public class AuditEventFacade extends AbstractFacade<AuditEvent> {
 
     public AuditEventFacade() {
         super(AuditEvent.class);
+    }
+
+    // create()/edit() are inherited from the generic AbstractFacade<T>. Per the
+    // EJB spec a class-level @TransactionAttribute on this subclass applies only
+    // to methods *defined here*, not to un-overridden inherited ones, and the
+    // container dispatches writes through the synthetic bridge create(Object)/
+    // edit(Object). Override both here so the REQUIRES_NEW attribute is
+    // unambiguously in effect for the audit write path regardless of container
+    // interpretation.
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void create(AuditEvent entity) {
+        super.create(entity);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void edit(AuditEvent entity) {
+        super.edit(entity);
     }
 
 }
