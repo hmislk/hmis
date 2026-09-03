@@ -167,6 +167,12 @@ public class BillDataCorrectionApi {
             if (request.getApprovedBy() == null || request.getApprovedBy().trim().isEmpty()) {
                 return errorResponse("approvedBy is required", 400);
             }
+            if (request.getFeeValue() == null) {
+                return errorResponse("feeValue is required", 400);
+            }
+            if (request.getFeeGrossValue() == null) {
+                return errorResponse("feeGrossValue is required", 400);
+            }
 
             Map<String, Object> result = correctionService.createMissingBillFee(
                     request.getBillItemId(),
@@ -369,8 +375,8 @@ public class BillDataCorrectionApi {
 
         private Long billItemId;
         private Long referenceBillFeeId;
-        private double feeValue;
-        private double feeGrossValue;
+        private Double feeValue;
+        private Double feeGrossValue;
         private String auditComment;
         private String approvedBy;
 
@@ -390,19 +396,19 @@ public class BillDataCorrectionApi {
             this.referenceBillFeeId = referenceBillFeeId;
         }
 
-        public double getFeeValue() {
+        public Double getFeeValue() {
             return feeValue;
         }
 
-        public void setFeeValue(double feeValue) {
+        public void setFeeValue(Double feeValue) {
             this.feeValue = feeValue;
         }
 
-        public double getFeeGrossValue() {
+        public Double getFeeGrossValue() {
             return feeGrossValue;
         }
 
-        public void setFeeGrossValue(double feeGrossValue) {
+        public void setFeeGrossValue(Double feeGrossValue) {
             this.feeGrossValue = feeGrossValue;
         }
 
