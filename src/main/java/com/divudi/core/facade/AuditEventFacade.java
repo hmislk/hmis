@@ -16,6 +16,28 @@ import javax.persistence.PersistenceContext;
  * @author Sniper 619
  */
 @Stateless
+// Audit writing is best-effort and must NEVER be able to fail a business
+// operation. With the default REQUIRED attribute this facade joins the
+// caller's JTA transaction, so an audit INSERT that fails (e.g. an
+// EclipseLink sequencing edge case on a freshly migrated audit database
+// that intermittently emits "Field 'ID' doesn't have a default value")
+// calls setRollbackOnly() on the shared transaction and takes the caller's
+// work — an OPD bill settle, a discharge, a GRN, ... — down with it, even
+// though AuditEventApplicationController.saveAuditEvent() catches the
+// exception.
+//
+// The attribute is declared at CLASS level (not just on an override of
+// create/edit) because AbstractFacade<T> is generic: the EJB container
+// dispatches through the synthetic bridge methods create(Object)/edit(Object),
+// which do not inherit a method-level @TransactionAttribute. A class-level
+// attribute applies to every business method, bridges included.
+//
+// REQUIRES_NEW suspends the caller's transaction and runs each audit
+// operation in its own. If it fails, only that transaction rolls back; the
+// caller's transaction is untouched and the caught exception is logged and
+// ignored as intended. All non-write usage elsewhere is findByJpql (reads),
+// for which running in a fresh short transaction is harmless.
+@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class AuditEventFacade extends AbstractFacade<AuditEvent> {
     @PersistenceContext(unitName = "hmisAuditPU")
     private EntityManager em;
@@ -27,36 +49,6 @@ public class AuditEventFacade extends AbstractFacade<AuditEvent> {
 
     public AuditEventFacade() {
         super(AuditEvent.class);
-    }
-
-    /**
-     * Persist an audit event in its OWN transaction.
-     *
-     * Audit writing is best-effort and must never be able to fail a business
-     * operation. With the default REQUIRED attribute this facade joins the
-     * caller's JTA transaction, so an audit INSERT that fails (e.g. an
-     * EclipseLink sequencing edge case on a freshly migrated audit database
-     * that intermittently emits "Field 'ID' doesn't have a default value")
-     * calls setRollbackOnly() on the shared transaction and takes the caller's
-     * work — an OPD bill settle, a discharge, etc. — down with it, even though
-     * {@code AuditEventApplicationController.saveAuditEvent} catches the
-     * exception.
-     *
-     * REQUIRES_NEW suspends the caller's transaction and runs the audit INSERT
-     * in a separate one. If the audit write fails, only this new transaction
-     * rolls back; the caller's transaction is untouched and the caught
-     * exception is logged and ignored by the caller as intended.
-     */
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void create(AuditEvent entity) {
-        super.create(entity);
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void edit(AuditEvent entity) {
-        super.edit(entity);
     }
 
 }
