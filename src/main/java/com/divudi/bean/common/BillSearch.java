@@ -4472,7 +4472,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
         }
-        return "/opd/view/opd_refund_bill_admin?faces-redirect=true";
+        billReturnController.setNewlyReturnedBill(viewingBill);
+        
+        return "/opd/bill_return_print?faces-redirect=true";
     }
 
     public String navigateToAdminOpdRefundBill() {
