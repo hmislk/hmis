@@ -3,7 +3,7 @@
 #
 #  Copy to  hmis/.github/workflows/suwani_prod_migrated_ci_cd.yml
 #  Branch:  suwani-prod-migrated
-#  Serves:  https://suwani-migrated.carecode.org/suwani
+#  Serves:  https://suwani.carecode.org/suwani
 #
 #  Suwani had no CI pipeline on the old estate — it was deployed by
 #  hand-copied WAR. This is its first pipeline. The JNDI names match the
@@ -20,6 +20,11 @@ on:
     branches: [suwani-prod-migrated]
   workflow_dispatch:
 
+# Least privilege: this workflow only reads the repo and talks to an
+# external host over SSH; it never writes back to GitHub.
+permissions:
+  contents: read
+
 concurrency:
   # One Payara domain per VM. Two asadmin deploys at once against the same
   # domain gives you a half-deployed app and a confusing 404.
@@ -30,11 +35,17 @@ env:
   APP:        suwani
   JNDI_MAIN:  jdbc/suwani
   JNDI_AUDIT: jdbc/suwaniAudit
-  HEALTH_URL: https://suwani-migrated.carecode.org/suwani/faces/index1.xhtml
+  HEALTH_URL: https://suwani.carecode.org/suwani/faces/index1.xhtml
+  # Bounded SSH transport for every rsync/ssh below: fail fast on a dead
+  # route instead of holding the payara-shared1-migrated concurrency lock
+  # (which would stall asiripharmacy / southernlanka / digasiri / horizon
+  # deploys on the same VM) until the job's own timeout fires.
+  SSH_OPTS: "-o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=8 -o BatchMode=yes"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -85,12 +96,16 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # Longer than the intended 30-minute Payara deployment window
+    # (AS_ADMIN_READTIMEOUT below is 30 min) so a genuinely slow first
+    # deploy still completes, but a wedged step cannot run forever.
+    timeout-minutes: 45
     environment: prod-migrated        # add a required reviewer here to gate it
     env:
       APP:        suwani
       JNDI_MAIN:  jdbc/suwani
       JNDI_AUDIT: jdbc/suwaniAudit
-      HEALTH_URL: https://suwani-migrated.carecode.org/suwani/faces/index1.xhtml
+      HEALTH_URL: https://suwani.carecode.org/suwani/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -103,12 +118,22 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.PROD_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -H "${{ secrets.PROD_SHARED1_IP }}" >> ~/.ssh/known_hosts
+          # Prefer a pinned host key when PROD_SHARED1_HOST_KEY is configured
+          # (recommended — removes the TOFU window); fall back to ssh-keyscan,
+          # which is what every other *_prod_migrated_ci_cd.yml on this estate
+          # currently does.
+          if [ -n "${{ secrets.PROD_SHARED1_HOST_KEY }}" ]; then
+            printf '%s\n' "${{ secrets.PROD_SHARED1_HOST_KEY }}" >> ~/.ssh/known_hosts
+            echo "known_hosts: pinned host key"
+          else
+            ssh-keyscan -T 15 -H "${{ secrets.PROD_SHARED1_IP }}" >> ~/.ssh/known_hosts
+            echo "known_hosts: ssh-keyscan (no PROD_SHARED1_HOST_KEY secret set)"
+          fi
 
       - name: Upload WAR
         run: |
           set -euo pipefail
-          rsync -az -e "ssh -i ~/.ssh/id_deploy" "./artifact/suwani.war" \
+          rsync -az --timeout=60 -e "ssh $SSH_OPTS -i ~/.ssh/id_deploy" "./artifact/suwani.war" \
             "${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ secrets.PROD_SHARED1_IP }}:/home/appuser/app/latest/"
 
       - name: Deploy to Payara
@@ -116,11 +141,13 @@ jobs:
           TARGET: ${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ secrets.PROD_SHARED1_IP }}
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/id_deploy "$TARGET" \
+          ssh $SSH_OPTS -i ~/.ssh/id_deploy "$TARGET" \
               APP="suwani" JNDI_MAIN="jdbc/suwani" JNDI_AUDIT="jdbc/suwaniAudit" \
               'bash -euo pipefail -s' <<'REMOTE'
           PAYARA=/opt/payara5
           WAR="/home/appuser/app/latest/${APP}.war"
+          DEPLOYED="/home/appuser/app/latest/${APP}.war.deployed"
+          PREVIOUS="/home/appuser/app/latest/${APP}.war.previous"
           ASADMIN="sudo -u appuser $PAYARA/glassfish/bin/asadmin --user admin --passwordfile $PAYARA/.asadminpass"
 
           # A first deploy runs EclipseLink metadata build and schema migration
@@ -130,9 +157,8 @@ jobs:
 
           test -f "$WAR" || { echo "WAR missing: $WAR"; exit 1; }
 
-          if [ -f "/home/appuser/app/latest/${APP}.war.deployed" ]; then
-            sudo cp "/home/appuser/app/latest/${APP}.war.deployed" \
-                    "/home/appuser/app/latest/${APP}.war.previous"
+          if [ -f "$DEPLOYED" ]; then
+            sudo cp "$DEPLOYED" "$PREVIOUS"
           fi
 
           # Verify the datasources resolve BEFORE undeploying the working copy.
@@ -149,10 +175,32 @@ jobs:
               echo "pool $pool (behind $j) is not reachable"; exit 1; }
           done
 
-          $ASADMIN undeploy "$APP" 2>/dev/null || echo "not previously deployed"
-          $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true "$WAR"
+          # ── deploy with rollback ──────────────────────────────────────────
+          # undeploy drops the running app; if the new deploy then fails, the
+          # hospital is down. Restore ${APP}.war.previous before surfacing the
+          # original error. A rollback failure is reported but must not mask
+          # the deploy error that triggered it.
+          rollback() {
+            echo "::error::deploy failed — attempting rollback to ${APP}.war.previous"
+            $ASADMIN undeploy "$APP" 2>/dev/null || true
+            if [ -f "$PREVIOUS" ]; then
+              if $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true "$PREVIOUS"; then
+                echo "rollback: redeployed the previous WAR"
+              else
+                echo "::error::ROLLBACK FAILED — $APP is DOWN, manual intervention required"
+              fi
+            else
+              echo "::error::no ${APP}.war.previous to roll back to — $APP is DOWN"
+            fi
+          }
 
-          sudo cp "$WAR" "/home/appuser/app/latest/${APP}.war.deployed"
+          $ASADMIN undeploy "$APP" 2>/dev/null || echo "not previously deployed"
+          if ! $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true "$WAR"; then
+            rollback
+            exit 1
+          fi
+
+          sudo cp "$WAR" "$DEPLOYED"
           $ASADMIN list-applications
           REMOTE
 
