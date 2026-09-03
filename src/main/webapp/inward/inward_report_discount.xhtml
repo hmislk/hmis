@@ -5,6 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient"
       >
 
     <h:body>
@@ -39,31 +40,14 @@
                                                 itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="BHT No : " ></h:outputLabel>
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                            value="#{inwardReportController1.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientAll}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  >
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
-                                </p:column>
-                            </p:autoComplete> 
+                            <!-- No continueClientId: BHT is one optional filter among several here
+                                 (date range, admission type, credit company, etc.) - selecting one
+                                 must not auto-run Process before the other filters are set. -->
+                            <admcc:admission_search
+                                widgetVar="aPt"
+                                inputId="acPt"
+                                value="#{inwardReportController1.patientEncounter}"
+                                completeMethod="#{admissionController.completePatientAll}" />
                                                     </h:panelGrid>
 
                         <p:panelGrid columns="3">
