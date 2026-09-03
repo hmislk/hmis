@@ -35,6 +35,14 @@ import java.text.SimpleDateFormat;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @Named
 @SessionScoped
 public class RoomChangeReportController implements Serializable {
@@ -49,8 +57,8 @@ public class RoomChangeReportController implements Serializable {
     private Institution site;
     private Department department;
 
-    private RoomFacilityCharge fromWard;
-    private RoomFacilityCharge toWard;
+    private Department fromWard;
+    private Department toWard;
 
     private Date fromDate;
     private Date toDate;
@@ -120,12 +128,12 @@ public class RoomChangeReportController implements Serializable {
         }
 
         if (fromWard != null) {
-            jpql.append(" and fromRfc = :fw ");
+            jpql.append(" and fromDept = :fw ");
             params.put("fw", fromWard);
         }
 
         if (toWard != null) {
-            jpql.append(" and toRfc = :tw ");
+            jpql.append(" and toDept = :tw ");
             params.put("tw", toWard);
         }
 
@@ -293,6 +301,141 @@ public class RoomChangeReportController implements Serializable {
         fc.responseComplete();
     }
 
+    public void downloadRoomChangeReportExcel() {
+        if (roomChangeReportDtoList == null || roomChangeReportDtoList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please run the report first.");
+            return;
+        }
+
+        String[] headers = {
+            "S.No", "MRNO", "Patient Name", "Age", "Gender", "Visit",
+            "Admission Date", "Admission Time",
+            "Transfer Request No.", "Transfer Request Status",
+            "From Hospital", "From Department", "From Primary Consultant", "From Consultant",
+            "From Ward", "From Bed No", "From Bed Type",
+            "To Hospital", "To Department", "To Primary Consultant", "To Consultant",
+            "To Ward", "To Bed No", "To Bed Type",
+            "Transfer Date", "Transfer Time", "Transfer By", "Reason"
+        };
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Room Change Report");
+
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            CellStyle dateStyle = createDateStyle(workbook, "M/d/yyyy");
+            CellStyle timeStyle = createDateStyle(workbook, "HH:mm");
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIndex = 1;
+            int sNo = 1;
+            for (RoomChangeReportDto d : roomChangeReportDtoList) {
+                Row row = sheet.createRow(rowIndex++);
+                int col = 0;
+
+                row.createCell(col++).setCellValue(sNo++);
+                row.createCell(col++).setCellValue(nz(d.getPatientPhn()));
+                row.createCell(col++).setCellValue(nz(d.getPatientName()));
+                row.createCell(col++).setCellValue(d.getPatientAge() != null ? d.getPatientAge() : 0);
+                row.createCell(col++).setCellValue(nz(d.getPatientSex()));
+                row.createCell(col++).setCellValue(nz(d.getBhtNo()));
+
+                col = writeDateTimePair(row, col, d.getDateOfAdmission(), dateStyle, timeStyle);
+
+                row.createCell(col++).setCellValue(d.getTransferRequestId() != null ? d.getTransferRequestId() : 0);
+                row.createCell(col++).setCellValue(d.getStatus() != null ? d.getStatus().toString() : "");
+
+                row.createCell(col++).setCellValue(nz(d.getFromHospital()));
+                row.createCell(col++).setCellValue(nz(d.getFromDepartment()));
+                row.createCell(col++).setCellValue(nz(d.getFromPrimaryConsultant()));
+                row.createCell(col++).setCellValue(""); // From Consultant - no source field on DTO yet
+                row.createCell(col++).setCellValue(nz(d.getFromWardRoomName()));
+                row.createCell(col++).setCellValue(""); // From Bed No - no source field on DTO yet
+                row.createCell(col++).setCellValue(nz(d.getFromBedType()));
+
+                row.createCell(col++).setCellValue(nz(d.getToHospital()));
+                row.createCell(col++).setCellValue(nz(d.getToDepartment()));
+                row.createCell(col++).setCellValue(nz(d.getToPrimaryConsultant()));
+                row.createCell(col++).setCellValue(""); // To Consultant
+                row.createCell(col++).setCellValue(nz(d.getToWardRoomName()));
+                row.createCell(col++).setCellValue(""); // To Bed No
+                row.createCell(col++).setCellValue(nz(d.getToBedType()));
+
+                col = writeDateTimePair(row, col, d.getAcceptedAt(), dateStyle, timeStyle);
+
+                row.createCell(col++).setCellValue(nz(d.getAcceptedByName()));
+                row.createCell(col++).setCellValue(nz(d.getNotes()));
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            FacesContext fc = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+            response.reset();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"Room_Change_Detail_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".xlsx\"");
+
+            try (ServletOutputStream out = response.getOutputStream()) {
+                workbook.write(out);
+                out.flush();
+            }
+
+            fc.responseComplete();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating Excel file: " + e.getMessage());
+            Logger.getLogger(RoomChangeReportController.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private int writeDateTimePair(Row row, int col, Date value, CellStyle dateStyle, CellStyle timeStyle) {
+        Cell dateCell = row.createCell(col++);
+        Cell timeCell = row.createCell(col++);
+        if (value != null) {
+            dateCell.setCellValue(value);
+            dateCell.setCellStyle(dateStyle);
+            timeCell.setCellValue(value);
+            timeCell.setCellStyle(timeStyle);
+        }
+        return col;
+    }
+
+    private CellStyle createHeaderStyle(Workbook workbook) {
+    CellStyle style = workbook.createCellStyle();
+    org.apache.poi.ss.usermodel.Font font = workbook.createFont();
+    font.setBold(true);
+    font.setColor(IndexedColors.WHITE.getIndex());
+    style.setFont(font);
+    style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+    style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+    style.setAlignment(HorizontalAlignment.CENTER);
+    style.setVerticalAlignment(VerticalAlignment.CENTER);
+    style.setBorderBottom(BorderStyle.THIN);
+    style.setBorderTop(BorderStyle.THIN);
+    style.setBorderLeft(BorderStyle.THIN);
+    style.setBorderRight(BorderStyle.THIN);
+    return style;
+}
+
+    private CellStyle createDateStyle(Workbook workbook, String pattern) {
+        CellStyle style = workbook.createCellStyle();
+        style.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat(pattern));
+        return style;
+    }
+
+    private String nz(String value) {
+        return value != null ? value : "";
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -317,19 +460,19 @@ public class RoomChangeReportController implements Serializable {
         this.department = department;
     }
 
-    public RoomFacilityCharge getFromWard() {
+    public Department getFromWard() {
         return fromWard;
     }
 
-    public void setFromWard(RoomFacilityCharge fromWard) {
+    public void setFromWard(Department fromWard) {
         this.fromWard = fromWard;
     }
 
-    public RoomFacilityCharge getToWard() {
+    public Department getToWard() {
         return toWard;
     }
 
-    public void setToWard(RoomFacilityCharge toWard) {
+    public void setToWard(Department toWard) {
         this.toWard = toWard;
     }
 
