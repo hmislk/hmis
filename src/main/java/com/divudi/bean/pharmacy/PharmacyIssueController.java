@@ -878,10 +878,29 @@ public class PharmacyIssueController implements Serializable {
     @Inject
     private BillBeanController billBean;
 
+    /**
+     * A disposal issue always removes stock, so {@code BillItem.qty} must be
+     * persisted with the same negative sign that {@code PharmaceuticalBillItem.qty}
+     * already carries (it is set via {@code 0 - Math.abs(qty)} upstream). The
+     * editing UI deliberately works with a positive qty for its bounds checks
+     * ({@code qty > stock}, {@code qty <= 0}); normalise here, at the persist
+     * point, so the two quantities can never disagree in sign on a saved row.
+     * Historically both were negative; a regression left {@code BillItem.qty}
+     * positive from 2025-05-28, which silently broke the Consumption reports that
+     * group on {@code SUM(bi.qty)} (issue #23448).
+     */
+    private void normaliseDisposalIssueQtySign(BillItem tbi) {
+        if (tbi == null || tbi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        tbi.setQty(0 - Math.abs(tbi.getQty()));
+    }
+
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
+            normaliseDisposalIssueQtySign(tbi);
 
             if (tbi.getId() == null) {
                 tbi.setCreatedAt(Calendar.getInstance().getTime());
