@@ -70,6 +70,29 @@ user gave --dump <path>          -> Phase 0..3 per DB (no acquisition)
 **Phase 0 runs in BOTH paths.** A provided dump does not exempt the run from the
 no-SSH-tunnel assertion — the `DROP DATABASE` is just as destructive either way.
 
+## Keep the machine awake for the whole run
+
+A large import takes many minutes and **the machine going to sleep mid-import
+kills it**, leaving the target DB half-populated. Before starting, disable sleep:
+
+```bash
+powercfg //change standby-timeout-ac 0
+powercfg //change standby-timeout-dc 0
+powercfg //change hibernate-timeout-ac 0
+powercfg //change hibernate-timeout-dc 0
+```
+
+If the laptop lid may be closed, also set the lid action to "do nothing"
+(`powercfg //setacvalueindex SCHEME_CURRENT SUB_BUTTONS LIDACTION 0` +
+`//setdcvalueindex ... 0` + `//setactive SCHEME_CURRENT`). Restore the previous
+power scheme (`powercfg //setactive SCHEME_BALANCED`, or re-apply the saved
+timeouts) in Phase 3 once every DB is done.
+
+Run the import itself as a **detached process** (a hidden `powershell.exe
+Start-Process`, or `nohup` under a persistent shell) that survives the
+controlling session being interrupted, and have it write progress to a status
+file you poll.
+
 ---
 
 ## Acquisition sub-procedure (only when no `--dump` given)
@@ -238,14 +261,23 @@ Also print, for the report: `SELECT COUNT(*) FROM bill;` and
 ### 2.1 — Validate the dump file
 
 ```bash
-gzip -t <dump>                                   # integrity (skip for plain .sql)
-gzip -dc <dump> | head -40 | grep -E "^-- Host:|Database:"   # identity
-gzip -dc <dump> | grep -m1 -E "^(CREATE DATABASE|USE )"      # MUST find nothing
+gzip -t <dump>                                        # integrity (skip for plain .sql)
+gzip -dc <dump> | head -40 | grep -E "^-- Host:|Database:"       # identity
+gzip -dc <dump> | grep -c -E "^(CREATE DATABASE|USE )" || true   # MUST print 0
+gzip -dc <dump> | grep -c "^CREATE TABLE "                       # expected table count
+gzip -dc <dump> | tail -3                                        # MUST end "-- Dump completed on ..."
 ```
 
 - `-- Host:` / `Database:` should name the expected prod server and DB.
-- If the dump contains `CREATE DATABASE` or `USE`, **ABORT** — those override
-  the target DB and defeat the `mysql <db>` argument safety.
+- The `CREATE DATABASE` / `USE` count must be `0` — if not, **ABORT**: those
+  statements override the target DB and defeat the `mysql <db>` argument safety.
+- Record the `CREATE TABLE` count — Phase 2.5 compares the restored DB's table
+  count against it to detect a truncated import.
+- If the dump does **not** end with `-- Dump completed on ...`, it was itself
+  truncated (interrupted `mysqldump`, sleep, disk full) — **ABORT**, re-acquire.
+- `grep -c` on a `gzip -dc` pipe may report a broken pipe / non-zero exit
+  because `head`/`-m` closed the reader early; that is harmless, judge on the
+  printed count.
 
 ### 2.2 — Pre-restore rollback backup (unless `--skip-pre-backup`)
 
@@ -274,9 +306,15 @@ mysql --host=127.0.0.1 --port=3306 --protocol=TCP -uroot -p<simple> \
 ```
 
 If `CREATE DATABASE` hangs on "Waiting for schema metadata lock", a stale local
-Payara connection pool is holding the old schema. It clears on its own once the
-import starts; do not kill the import. Do not issue a second `CREATE DATABASE` —
-it will queue behind the metadata lock and appear stuck.
+Payara connection pool is holding the old schema. Options:
+
+- easiest: **stop local Payara before Phase 2.3** (`asadmin stop-domain`) so
+  nothing holds the schema, restart it in Phase 3.
+- or wait — the lock clears on its own once the import starts inserting.
+
+Do **not** issue a second `CREATE DATABASE` while the first is waiting — it
+queues behind the same metadata lock and looks stuck. Do not kill the import to
+"fix" a stalled `CREATE`.
 
 ### 2.4 — Import
 
@@ -285,9 +323,16 @@ gzip -dc <dump> | mysql --host=127.0.0.1 --port=3306 --protocol=TCP \
   -uroot -p<simple> <db> 2><SCRATCH>/<db>_restore.err
 ```
 
-Run in the background for anything over ~1 GB uncompressed. `mysql` reports only
-the first error; check the `.err` file (the "Using a password" line is a warning,
-not an error).
+Run this **detached** (see "Keep the machine awake") for anything over ~1 GB
+uncompressed — an interrupted import leaves the DB half-loaded. `mysql` reports
+only the first error; check the `.err` file (the "Using a password" line is a
+warning, not an error).
+
+**If the import is interrupted** (sleep, killed shell, power loss): the target
+DB is now partial. Recovery is simply to **redo Phase 2.3 + 2.4** — `DROP` the
+half-loaded DB and re-import from the same dump. The dump is a full snapshot, so
+replaying it from an empty DB is always correct; there is no "resume". The
+Phase 2.2 rollback copy and the prod dump are both untouched by a failed import.
 
 ### 2.5 — Verify
 
@@ -298,8 +343,11 @@ mysql --host=127.0.0.1 --port=3306 --protocol=TCP -uroot -p<simple> <db> -e "
   SELECT COUNT(*) AS table_count FROM information_schema.tables WHERE table_schema='<db>';"
 ```
 
-Expect production-scale counts and a recent `latest_bill`. Compare to the
-dump's own tail (`-- Dump completed on ...`).
+- `table_count` must equal the `CREATE TABLE` count recorded in Phase 2.1. If it
+  is short, the import was truncated — redo Phase 2.3 + 2.4.
+- `total_bills` should be production-scale and `latest_bill` recent (close to
+  when the dump was taken). A tiny count means the `bill` table did not finish.
+- The import `.err` file must contain nothing but the password warning.
 
 ### 2.6 — Table-name case
 
@@ -337,9 +385,13 @@ One block per DB:
   rollback copy : <BACKUP_DIR>\pre-restore\<db>_local_before_<ts>.sql.gz   [or: SKIPPED]
 ```
 
-Then remind the user to restart / redeploy local Payara so its connection pool
-reconnects to the fresh schema, and to confirm the app works before deleting the
-rollback copies.
+Then:
+- Restore the previous power scheme / sleep timeouts disabled in "Keep the
+  machine awake".
+- Restart local Payara (`asadmin restart-domain`) so its connection pool
+  reconnects to the fresh schema.
+- Tell the user to confirm the app works against the restored DB **before**
+  deleting the Phase 2.2 rollback copies.
 
 ---
 
