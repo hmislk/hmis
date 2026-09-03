@@ -236,6 +236,107 @@ public class BillDataCorrectionService {
         return result;
     }
 
+    /**
+     * Creates a single BillFee that is missing for an already-saved BillItem (e.g. a refund
+     * bill item whose fee never got persisted because of a defect in the saving code, or was
+     * left behind after {@link #createMissingBillItem} backfilled only the BillItem). This is
+     * a narrow, audited data-repair action — it does not recompute or touch any bill totals,
+     * finance details, or payments. The fee/department/institution/patient are copied from the
+     * supplied referenceBillFee (the fee this one corrects/mirrors) so the new row lines up with
+     * how the normal refund code path (BillReturnController) builds a BillFee; the caller is
+     * responsible for supplying a feeValue/feeGrossValue already consistent with the bill's
+     * existing netTotal.
+     */
+    public Map<String, Object> createMissingBillFee(Long billItemId,
+            Long referenceBillFeeId,
+            double feeValue,
+            double feeGrossValue,
+            String auditComment,
+            String approvedBy,
+            WebUser apiUser) {
+
+        if (billItemId == null) {
+            throw new IllegalArgumentException("billItemId is required");
+        }
+        if (referenceBillFeeId == null) {
+            throw new IllegalArgumentException("referenceBillFeeId is required");
+        }
+        if (auditComment == null || auditComment.trim().isEmpty()) {
+            throw new IllegalArgumentException("auditComment is required");
+        }
+        if (approvedBy == null || approvedBy.trim().isEmpty()) {
+            throw new IllegalArgumentException("approvedBy is required");
+        }
+
+        BillItem billItem = billItemFacade.find(billItemId);
+        if (billItem == null) {
+            throw new IllegalArgumentException("BillItem not found for id " + billItemId);
+        }
+
+        Bill bill = billItem.getBill();
+        if (bill == null) {
+            throw new IllegalStateException("BillItem " + billItemId + " has no parent bill");
+        }
+
+        BillFee referenceBillFee = billFeeFacade.find(referenceBillFeeId);
+        if (referenceBillFee == null) {
+            throw new IllegalArgumentException("Reference BillFee not found for id " + referenceBillFeeId);
+        }
+
+        Map<String, Object> dupCheckParams = new java.util.HashMap<>();
+        dupCheckParams.put("ref", referenceBillFee);
+        dupCheckParams.put("bi", billItem);
+        long alreadyLinked = billFeeFacade.findLongByJpql(
+                "SELECT COUNT(bf) FROM BillFee bf WHERE bf.retired = false"
+                + " AND bf.referenceBillFee = :ref AND bf.billItem = :bi",
+                dupCheckParams);
+        if (alreadyLinked > 0) {
+            throw new IllegalStateException(
+                    "BillItem " + billItemId + " already has an active BillFee referencing BillFee " + referenceBillFeeId);
+        }
+
+        BillFee newFee = new BillFee();
+        newFee.setBill(bill);
+        newFee.setBillItem(billItem);
+        newFee.setFee(referenceBillFee.getFee());
+        newFee.setDepartment(referenceBillFee.getDepartment());
+        newFee.setInstitution(referenceBillFee.getInstitution());
+        newFee.setPatient(referenceBillFee.getPatient());
+        newFee.setReferenceBillFee(referenceBillFee);
+        newFee.setReferenceBillItem(referenceBillFee.getBillItem());
+        newFee.setFeeValue(feeValue);
+        newFee.setFeeGrossValue(feeGrossValue);
+        newFee.setRetired(false);
+        newFee.setCreatedAt(new Date());
+        newFee.setCreater(apiUser);
+
+        billFeeFacade.create(newFee);
+
+        Map<String, Object> newValues = new LinkedHashMap<>();
+        newValues.put("billFeeId", newFee.getId());
+        newValues.put("billItemId", billItemId);
+        newValues.put("referenceBillFeeId", referenceBillFeeId);
+        newValues.put("feeId", referenceBillFee.getFee() != null ? referenceBillFee.getFee().getId() : null);
+        newValues.put("feeValue", feeValue);
+        newValues.put("feeGrossValue", feeGrossValue);
+
+        appendAuditLog(bill, "BILL_FEE_CREATE", newFee.getId(), new LinkedHashMap<>(), newValues, auditComment, approvedBy, apiUser);
+        billFacade.edit(bill);
+
+        String correctedBy = apiUser != null ? apiUser.getName() : null;
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("targetType", "BILL_FEE_CREATE");
+        result.put("billItemId", billItemId);
+        result.put("createdBillFeeId", newFee.getId());
+        result.put("newValues", newValues);
+        result.put("auditComment", auditComment);
+        result.put("approvedBy", approvedBy);
+        result.put("correctedAt", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        result.put("correctedByApiUser", correctedBy);
+        return result;
+    }
+
     private Bill updateBill(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues, WebUser apiUser) {
         Bill entity = billFacade.find(id);
         if (entity == null) {

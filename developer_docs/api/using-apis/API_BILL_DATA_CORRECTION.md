@@ -26,6 +26,7 @@ Then apply updates using:
 
 - `PATCH /api/bill_data_correction` — update existing BFD/bill/item fields
 - `POST /api/bill_data_correction/create_bill_item` — **create** a single missing `BillItem` on an already-saved bill
+- `POST /api/bill_data_correction/create_bill_fee` — **create** a single missing `BillFee` on an already-saved `BillItem`
 - `POST /api/pharmacy/backfill_bfd` — **create** missing BFDs for historical adjustment bills
 
 ## Creating a Missing Bill Item
@@ -79,6 +80,64 @@ the bill's existing `netTotal`/`total`.
     "auditComment": "...",
     "approvedBy": "Dr. Smith",
     "correctedAt": "2026-09-01 18:00:00",
+    "correctedByApiUser": "admin_user"
+  }
+}
+```
+
+As with `PATCH`, the correction is appended to the bill's `comments` for audit.
+
+## Creating a Missing Bill Fee
+
+Use this only to repair a `BillItem` that is missing a `BillFee` it should have — e.g. a refund item
+that was itself backfilled with `create_bill_item` above, but the corresponding fee was never
+recreated, so reports that join from `BillFee` (such as the QuickBooks Daily Return report) still
+don't see it. It does **not** recompute or touch the bill's totals, finance details, or payments.
+
+The `fee`, `department`, `institution`, and `patient` on the new row are copied from the
+`referenceBillFee` you supply — this mirrors what the normal refund code path
+(`BillReturnController`) does when it creates a refund `BillFee` by copying and inverting the
+original — so you only need to provide the (already-inverted) `feeValue`/`feeGrossValue`.
+
+- **Endpoint**: `POST /api/bill_data_correction/create_bill_fee`
+- **Auth Header**: `Finance: <API_KEY>`
+
+### Request Body
+
+```json
+{
+  "billItemId": 5251032,
+  "referenceBillFeeId": 5217123,
+  "feeValue": -1740.0,
+  "feeGrossValue": -1740.0,
+  "auditComment": "Backfill missing BillFee for refund bill RHDOM/R/26/60715 — BillItem 5251032 was recreated via create_bill_item after issue #23408, but its BillFee was never backfilled, leaving the QB Daily Return report (#23436) unable to see the refund",
+  "approvedBy": "Dr. Smith"
+}
+```
+
+- `billItemId` (required) — the `BillItem` the fee should be attached to.
+- `referenceBillFeeId` (required) — the original `BillFee` this one refunds/corrects. Its `fee`,
+  `department`, `institution`, and `patient` are copied onto the new row; the request is rejected
+  with `409` if the target bill item already has a non-retired fee referencing the same source fee
+  (prevents duplicate recreation).
+- `feeValue`, `feeGrossValue` — plain numeric fields copied onto the new `BillFee` as-is (already
+  inverted/signed as appropriate for a refund or cancellation).
+- `auditComment`, `approvedBy` — mandatory, as with `PATCH /api/bill_data_correction`.
+
+### Response (Success)
+
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "targetType": "BILL_FEE_CREATE",
+    "billItemId": 5251032,
+    "createdBillFeeId": 5300001,
+    "newValues": {"billFeeId": 5300001, "billItemId": 5251032, "referenceBillFeeId": 5217123, "feeId": 123085, "feeValue": -1740.0, "feeGrossValue": -1740.0},
+    "auditComment": "...",
+    "approvedBy": "Dr. Smith",
+    "correctedAt": "2026-09-03 12:00:00",
     "correctedByApiUser": "admin_user"
   }
 }
