@@ -49,6 +49,22 @@
             <!-- every cache hit.                                               -->
             <property name="eclipselink.jdbc.result-set-access-optimization" value="true"/>
 
+            <!-- Force full persistence-unit init (descriptor build + session   -->
+            <!-- login, incl. probing the DB platform's IDENTITY support) on    -->
+            <!-- the deploy thread instead of lazily on first use. On a freshly -->
+            <!-- deployed WAR against a freshly migrated database, lazy init    -->
+            <!-- intermittently skips IDENTITY sequencing setup for a session,  -->
+            <!-- so EclipseLink emits a plain INSERT that omits the auto-       -->
+            <!-- generated PK and MySQL rejects it with "Field 'ID' doesn't     -->
+            <!-- have a default value" (seen on OPD bill settle: Payment /      -->
+            <!-- AuditEvent inserts). deploy-on-startup makes the descriptor    -->
+            <!-- fully built before any request. The extra ~20s at deploy is    -->
+            <!-- covered by AS_ADMIN_READTIMEOUT=1800000 in the migrated        -->
+            <!-- CI/CD workflow. (Re-adds what #20695 removed for #20138; the   -->
+            <!-- CI-timeout concern that motivated #20695 is handled by the     -->
+            <!-- read-timeout override on this estate.)                         -->
+            <property name="eclipselink.deploy-on-startup" value="true"/>
+
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
@@ -57,6 +73,7 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.deploy-on-startup" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
