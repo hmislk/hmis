@@ -343,6 +343,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
+        if (tmp.getQty() < 0) {
+            tmp.setQty(0.0);
+            JsfUtil.addErrorMessage("Returning quantity cannot be negative. The returning quantity was set to 0.");
+        }
+
         double remainingQty = getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem());
         if (tmp.getQty() > remainingQty) {
             tmp.setQty(0.0);
@@ -763,6 +768,15 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     public void settle() {
+        // Reject negative returning quantities before any other check, so a
+        // negative-qty row can never be masked by a coincidental zero total
+        for (BillItem bi : getBillItems()) {
+            if (bi.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning quantity cannot be negative.");
+                return;
+            }
+        }
+
         String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
         if (returnBlockReason != null) {
             JsfUtil.addErrorMessage(returnBlockReason);
@@ -1203,15 +1217,17 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     private void calTotal() {
         double grossTotal = 0.0;
         double discount = 0;
+        double netTotal = 0;
 
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getNetRate() * p.getQty();
+            grossTotal += p.getRate() * p.getQty();
             discount += p.getDiscountRate() * p.getQty();
+            netTotal += p.getNetRate() * p.getQty();
 
         }
         getReturnBill().setDiscount(discount);
         getReturnBill().setTotal(grossTotal);
-        getReturnBill().setNetTotal(grossTotal - discount);
+        getReturnBill().setNetTotal(netTotal);
 
         //  return grossTotal;
     }

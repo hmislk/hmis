@@ -9,14 +9,15 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
 
-                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
 
     <ui:define name="subcontent">
 
         <h:panelGroup >
-            <h:form  >
+            <h:form id="frmIntrimFinalized">
                 <p:panel  >
                     <f:facet name="header">
                         <p:outputLabel value="Inward Payment Bill"/>
@@ -24,34 +25,15 @@
                         <p:commandButton ajax="false"  value="Clear" style="float:right;" action="#{bhtSummeryFinalizedController.makeNull()}"  />
                     </f:facet>
                     <h:panelGrid columns="3" style="min-width: 100%;">
-                        <p:panel header="BHT">
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true"
-                                            value="#{bhtSummeryFinalizedController.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientAll}"
-                                            var="myItem" itemValue="#{myItem}"
-                                            itemLabel="#{myItem.bhtNo}"
-                                            size="30"  >
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
-                                </p:column>
-                            </p:autoComplete>
+                        <p:panel header="BHT" style="min-width: 350px;">
+                            <admcc:admission_search
+                                widgetVar="aPt"
+                                inputId="acPt"
+                                value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                completeMethod="#{admissionController.completePatientAll}"
+                                continueClientId="frmIntrimFinalized:btnDisplay" />
 
-                            <p:commandButton ajax="false" value="Display" action="#{bhtSummeryFinalizedController.createTablesFinalized()}" >
+                            <p:commandButton id="btnDisplay" ajax="false" value="Display" action="#{bhtSummeryFinalizedController.createTablesFinalized()}" >
                             </p:commandButton>
 
                             <h:panelGroup id="panSearch2">
@@ -313,13 +295,6 @@
                                         <h:outputLabel value="Service Name"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pt.item.name}"/>
-                                </p:column>
-                                <p:column headerText="Service Name">
-
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Service Name"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{pt}"/>
                                 </p:column>
                                 <p:column headerText="Start Time">
                                     <f:facet name="header">
@@ -1118,7 +1093,7 @@
                                          value="#{bhtSummeryFinalizedController.assistBillFee}" var="pf"
                                          rowStyleClass="#{pf.feeValue ne 0
                                                           and pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
-                                <p:column headerText="id">
+                                <p:column headerText="id" style="width: 3em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="id"/>
                                     </f:facet>

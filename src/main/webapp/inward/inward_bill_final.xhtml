@@ -586,29 +586,29 @@
                             scrollHeight="300"
                             scrollable="true">
 
-                            <p:column headerText="Inward Charge Type" filterBy="#{c.inwardChargeType.name}" filterMatchMode="contains">
+                            <p:column headerText="Inward Charge Type" filterBy="#{c.inwardChargeType.name}" style="min-width: 14em;" filterMatchMode="contains">
                                 <h:outputLabel value="#{c.inwardChargeType.name}"/>
                             </p:column>
 
-                            <p:column headerText="Total" sortBy="#{c.total}" class="text-end" width="14em;">
+                            <p:column headerText="Total" sortBy="#{c.total}" class="text-end" width="10em;">
                                 <h:outputLabel value="#{c.total}" class="w-100 text-end">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Service Charge (Margin)" sortBy="#{c.margin}" class="text-end" width="12em;" title="Price matrix value already included in Total for this charge type" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                            <p:column headerText="Service Charge (Margin)" sortBy="#{c.margin}" class="text-end" width="10em;" title="Price matrix value already included in Total for this charge type" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                 <h:outputLabel value="#{c.margin}" class="w-100 text-end">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Item Discounts" class="text-end" width="12em;">
+                            <p:column headerText="Item Discounts" class="text-end" width="10em;">
                                 <h:outputLabel value="#{c.discount}" class="w-100 text-end">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Type Discount" class="text-end" width="12em;">
+                            <p:column headerText="Type Discount" class="text-end" width="10em;">
                                 <p:inputText
                                     autocomplete="off"
                                     id="catTypeDiscount"
@@ -627,13 +627,13 @@
                                 </p:inputText>
                             </p:column>
 
-                            <p:column headerText="NetTotal" class="text-end" width="14em;">
+                            <p:column headerText="NetTotal" class="text-end" width="10em;">
                                 <h:outputLabel id="catNetTotal" value="#{c.netTotal}" class="w-100 text-end">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column class="text-end" width="14em;" headerText="Adjusted Total">
+                            <p:column class="text-end" width="10em;" headerText="Adjusted Total">
                                 <p:inputText 
                                     autocomplete="off" 
                                     id="catAdj" 
@@ -658,7 +658,7 @@
                                 </p:inputText>
                             </p:column>
 
-                            <p:column headerText="Comment" width="16em;">
+                            <p:column headerText="Comment" width="14em;">
                                 <p:inputText
                                     autocomplete="off"
                                     id="catComment"

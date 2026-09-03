@@ -10,7 +10,8 @@
         xmlns:p="http://primefaces.org/ui"
         xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
         xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-        xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment">
+        xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+        xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
     <ui:define name="admin">
         <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
@@ -30,32 +31,16 @@
                                 <p:outputLabel value="Search by BHT / Patient Name" style="font-weight:bold;"/>
                             </div>
                             <div class="col-md-7">
-                                <p:autoComplete
+                                <admcc:admission_search
                                     widgetVar="aBht"
-                                    id="acBht"
-                                    forceSelection="true"
-                                    placeholder="Type BHT number or patient name"
+                                    inputId="acBht"
                                     value="#{inwardPaymentController.current.patientEncounter}"
                                     completeMethod="#{admissionController.completePatientAll}"
-                                    var="myItem"
-                                    itemValue="#{myItem}"
-                                    itemLabel="#{myItem.bhtNo}"
-                                    class="w-100"
-                                    inputStyleClass="w-100"
-                                    maxResults="20">
-                                    <p:column headerText="BHT No" style="width:8em;">
-                                        <h:outputLabel value="#{myItem.bhtNo}"/>
-                                    </p:column>
-                                    <p:column headerText="Patient" style="width:15em;">
-                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                    </p:column>
-                                    <p:column headerText="Payment" style="width:8em;">
-                                        <h:outputLabel value="#{myItem.paymentMethod}"/>
-                                    </p:column>
-                                </p:autoComplete>
+                                    continueClientId="copayForm:btnSelect" />
                             </div>
                             <div class="col-md-2">
                                 <p:commandButton
+                                    id="btnSelect"
                                     value="Select"
                                     icon="fa fa-check"
                                     class="ui-button-success w-100"

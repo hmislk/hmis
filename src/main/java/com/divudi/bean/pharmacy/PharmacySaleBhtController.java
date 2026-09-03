@@ -72,6 +72,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.service.pharmacy.DirectIssueBatchService;
+import com.divudi.service.pharmacy.PriceMatrixNativeSqlService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -168,6 +169,13 @@ public class PharmacySaleBhtController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Nursing IP Billing - Show Rate and Value",
+            "Controls whether rate/value columns are shown on the inward pharmacy BHT issue page (combined with the NursingIPBillingViewRates privilege)",
+            "Item table, row-expansion panel, autocomplete columns: rate/value visibility",
+            OptionScope.APPLICATION
+        ));
+
         // Register privileges used on this page
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -182,9 +190,15 @@ public class PharmacySaleBhtController implements Serializable {
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "ShowDrugCharges",
-            "View drug prices and financial charges in the billing interface",
-            "Item autocomplete and bill table: Rate and value columns visibility"
+            "NursingIPBillingViewRates",
+            "View drug rates, values, and net totals in the inward pharmacy BHT issue billing interface",
+            "Item table rate/value columns, row-expansion Sale Rate/Cost Rate, header summary Net Total"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "IPBillingViewDiscount",
+            "View discount amounts and margin/matrix-value (service charge equivalent) on inward pharmacy BHT issue bills",
+            "Header summary Discount field, row-expansion Matrix Value field"
         ));
 
         // Register the page metadata
@@ -235,6 +249,8 @@ public class PharmacySaleBhtController implements Serializable {
     BillService billService;
     @EJB
     private PharmacyService pharmacyService;
+    @EJB
+    private PriceMatrixNativeSqlService priceMatrixNativeSqlService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -298,6 +314,20 @@ public class PharmacySaleBhtController implements Serializable {
     // When true, medicines are issued at retail rate with NO inward price-matrix
     // service charge (used by the Issue Discharge Medicines page).
     boolean dischargeIssueMode = false;
+    // Idempotency guards for the two irreversible stock mutations inside a
+    // settlement attempt. batchStockDeduction()/transferIssuedStockToPorter()
+    // each run as their own committed EJB transaction, independent of whatever
+    // happens afterwards (financial-detail creation, margin update, bill
+    // reload). Without these guards, a later step failing lets the settlement
+    // be retried from settleBhtIssueRequestAccept()/settleBhtIssue() with the
+    // bill's items kept visible on purpose — and a retry would re-run the
+    // already-committed deduction/transfer a second time, silently
+    // over-deducting stock. Set true right after each mutation succeeds,
+    // checked (and skipped, not re-applied) on the next attempt for the same
+    // bill; reset in clearBill() once a settlement actually completes.
+    // CodeRabbit review on #23353.
+    private boolean settlementStockDeducted = false;
+    private boolean settlementPorterTransferred = false;
     // Per-prescription conversion report shown on the discharge issue page so the
     // pharmacist sees the original prescription against what was actually resolved
     // (and any low/no-stock shortfall) — prevents silent omissions. Issue #21334.
@@ -324,6 +354,9 @@ public class PharmacySaleBhtController implements Serializable {
     private BillBeanController billBean;
     private Stock tmpStock;
     private Double billItemTotal;
+    private Double billItemGrossTotal;
+    private Double billItemMarginTotal;
+    private Double billItemDiscountTotal;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -436,15 +469,14 @@ public class PharmacySaleBhtController implements Serializable {
     public void onEditing(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
 
-        tmp.setQty(tmp.getPharmaceuticalBillItem().getQtyInUnit());
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() <= 0) {
+        if (tmp.getQty() == null || !Double.isFinite(tmp.getQty()) || tmp.getQty() <= 0) {
             setZeroToQty(tmp);
             recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
-        if (fetchedStock != null && tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
+        if (fetchedStock != null && tmp.getQty() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
             recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
@@ -453,8 +485,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (tmp.getReferanceBillItem() != null) {
             double remaining = getRemainingQuantityForItem(tmp.getReferanceBillItem());
-            if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > remaining) {
-                JsfUtil.addErrorMessage("Cannot issue " + tmp.getPharmaceuticalBillItem().getQtyInUnit()
+            if (tmp.getQty() > remaining) {
+                JsfUtil.addErrorMessage("Cannot issue " + tmp.getQty()
                         + " units of " + tmp.getItem().getName() + ". Only " + remaining + " units remaining to be issued.");
                 tmp.setQty(remaining);
                 tmp.getPharmaceuticalBillItem().setQtyInUnit((float) remaining);
@@ -479,14 +511,16 @@ public class PharmacySaleBhtController implements Serializable {
      * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
      * COGS saw +10 instead of -10).
      *
-     * Uses qty (not qtyInUnit) because the UI binds directly to qty for editing;
-     * qtyInUnit is not updated by JSF and retains its original value.
+     * The Qty column's cellEditor binds directly to BillItem.qty (kept positive
+     * by convention throughout this controller), not to the internal negative
+     * PharmaceuticalBillItem.qty mirror, so tmp.getQty() is the authoritative
+     * just-edited value.
      */
     private void recalculateEditedIssueRow(BillItem tmp) {
         if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
             return;
         }
-        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQty());
+        double editedQty = Math.abs(tmp.getQty());
         tmp.setQty(editedQty);
         tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
         tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
@@ -1356,12 +1390,29 @@ public class PharmacySaleBhtController implements Serializable {
         //TODO: What is this doing here. Need to investigate
         getBillBean().setSurgeryData(getPreBill(), getBatchBill(), SurgeryBillType.PharmacyItem);
 
-        if (getPreBill().getId() == null) {
-            getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-            getPreBill().setCreater(getSessionController().getLoggedUser());
-            getBillFacade().create(getPreBill());
-        } else {
-            getBillFacade().edit(getPreBill());
+        // Bill.billItems is cascade=ALL, and getPreBill().getBillItems() may already be
+        // aliased to the live Issuing Items grid list (generateIssueBillComponentsForBhtRequest()
+        // sets it when the page is generated, well before settlement). Persisting/merging
+        // the parent Bill here would cascade-persist those items as a side effect — BEFORE
+        // savePreBillItemsFinally()'s stock-sufficiency check even runs — leaving orphan
+        // BillItem rows behind on a rejected settlement. Detach the collection for this
+        // call only; restore the reference right after so validation and the real persist
+        // loop in savePreBillItemsFinally() still see the correct items. BillFacade is a
+        // @Stateless EJB, so create()/edit() each commit as their own transaction — nulling
+        // the reference here has no effect on anything already committed by an earlier
+        // attempt. Issue #23358.
+        List<BillItem> pendingBillItems = getPreBill().getBillItems();
+        getPreBill().setBillItems(null);
+        try {
+            if (getPreBill().getId() == null) {
+                getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+                getPreBill().setCreater(getSessionController().getLoggedUser());
+                getBillFacade().create(getPreBill());
+            } else {
+                getBillFacade().edit(getPreBill());
+            }
+        } finally {
+            getPreBill().setBillItems(pendingBillItems);
         }
 
     }
@@ -1401,6 +1452,27 @@ public class PharmacySaleBhtController implements Serializable {
             getPreBill().setBillItems(new ArrayList<>());
         }
 
+        // Validate BEFORE persisting anything. getPreBill().getBillItems() is
+        // already aliased to `list` (generateIssueBillComponentsForBhtRequest()
+        // does getPreBill().setBillItems(billItems) with the same List object
+        // when the page is generated), so this check needs nothing persisted
+        // first — it only reads each item's already-set stock/qty, never
+        // item.getBill() or item.getId(). Moved ahead of the persist loop below
+        // so a rejected settlement leaves no orphan BillItem behind: previously
+        // this ran AFTER create()/edit(), so a correctly-rejected
+        // insufficient-stock settlement still left a real, persisted BillItem
+        // referencing the original request item, permanently inflating that
+        // item's billed-quantity aggregate and making the request appear
+        // "fully issued" forever even though nothing was actually issued.
+        // Issue #23358.
+        if (!directIssueBatchService.validateBillForSettlement(getPreBill())) {
+            String errorMsg = "One or more items have insufficient stock. Please refresh and try again.";
+            LOGGER.log(Level.SEVERE, "Batch stock validation failed during BHT settlement for Bill ID: {0}",
+                    getPreBill().getId());
+            JsfUtil.addErrorMessage(errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
+
         for (BillItem tbi : list) {
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -1413,30 +1485,28 @@ public class PharmacySaleBhtController implements Serializable {
             }
         }
 
-        if (!directIssueBatchService.validateBillForSettlement(getPreBill())) {
-            String errorMsg = "One or more items have insufficient stock. Please refresh and try again.";
-            LOGGER.log(Level.SEVERE, "Batch stock validation failed during BHT settlement for Bill ID: {0}",
-                    getPreBill().getId());
-            JsfUtil.addErrorMessage(errorMsg);
-            throw new RuntimeException(errorMsg);
-        }
-
-        try {
-            directIssueBatchService.batchStockDeduction(list);
-            LOGGER.log(Level.INFO, "Successfully processed batch stock deduction for {0} items in Bill ID: {1}",
-                    new Object[]{list.size(), getPreBill().getId()});
-        } catch (Exception e) {
-            String errorMsg = "Failed to process stock deductions. " + e.getMessage();
-            LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement: {0}", errorMsg);
-            LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
-                    new Object[]{
-                        getPreBill().getId(),
-                        getPreBill().getDepartment() != null ? getPreBill().getDepartment().getName() : "unknown",
-                        getSessionController().getLoggedUser() != null
-                            ? getSessionController().getLoggedUser().getName() : "unknown"
-                    });
-            JsfUtil.addErrorMessage(errorMsg);
-            throw new RuntimeException(errorMsg);
+        if (!settlementStockDeducted) {
+            try {
+                directIssueBatchService.batchStockDeduction(list);
+                settlementStockDeducted = true;
+                LOGGER.log(Level.INFO, "Successfully processed batch stock deduction for {0} items in Bill ID: {1}",
+                        new Object[]{list.size(), getPreBill().getId()});
+            } catch (Exception e) {
+                String errorMsg = "Failed to process stock deductions. " + e.getMessage();
+                LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement: {0}", errorMsg);
+                LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
+                        new Object[]{
+                            getPreBill().getId(),
+                            getPreBill().getDepartment() != null ? getPreBill().getDepartment().getName() : "unknown",
+                            getSessionController().getLoggedUser() != null
+                                ? getSessionController().getLoggedUser().getName() : "unknown"
+                        });
+                JsfUtil.addErrorMessage(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
+        } else {
+            LOGGER.log(Level.INFO, "Stock already deducted for this settlement attempt (retrying after a later "
+                    + "step failed) — skipping re-deduction for Bill ID: {0}", getPreBill().getId());
         }
 
         getBillFacade().edit(getPreBill());
@@ -1446,9 +1516,18 @@ public class PharmacySaleBhtController implements Serializable {
      * After stock is deducted from the issuing pharmacy, credit the same
      * quantities to the porter's staff stock (with stock history), so the
      * medicines are tracked as carried by the porter on the way to the ward.
+     *
+     * Guarded by settlementPorterTransferred (see field javadoc) so a retry
+     * after a later settlement step fails doesn't credit the porter twice
+     * for the same items.
      */
     private void transferIssuedStockToPorter(List<BillItem> list, Staff porter) {
         if (porter == null) {
+            return;
+        }
+        if (settlementPorterTransferred) {
+            LOGGER.log(Level.INFO, "Porter stock transfer already applied for this settlement attempt "
+                    + "(retrying after a later step failed) — skipping re-transfer.");
             return;
         }
         for (BillItem tbi : list) {
@@ -1458,6 +1537,7 @@ public class PharmacySaleBhtController implements Serializable {
             pbi.setStaffStock(staffStock);
             getPharmaceuticalBillItemFacade().edit(pbi);
         }
+        settlementPorterTransferred = true;
     }
 
     private void savePreBillItemsFinallyRequest(List<BillItem> list) {
@@ -2033,7 +2113,8 @@ public class PharmacySaleBhtController implements Serializable {
             financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
         }
 
-        calculateBillTotalsForTransferIssue(getPreBill());
+        calculateRates(itemForSubstitution);
+        calCurrentBillItemTotal(getBillItems());
 
         JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
@@ -2237,20 +2318,34 @@ public class PharmacySaleBhtController implements Serializable {
 
         // No need to clear billItems - let savePreBillItemsFinally handle it properly
 
-        savePreBillFinally(pt, matrixDepartment, btp, bta);
-        savePreBillItemsFinally(tmpBillItems);
-        transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
-        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
+        // savePreBillItemsFinally() can throw (e.g. the fresh stock recheck inside
+        // it rejects the settlement) — without this try/catch that RuntimeException
+        // propagated uncaught to the container, crashing to the generic "System
+        // Error" page instead of a normal on-page message. Mirrors the same
+        // try/catch settleBhtIssue() already uses for its equivalent call. Issue #23352.
+        try {
+            savePreBillFinally(pt, matrixDepartment, btp, bta);
+            savePreBillItemsFinally(tmpBillItems);
+            transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
+            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-        // Calculation Margin
-        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
-        //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
+            // Calculation Margin
+            updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+            //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
 
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
+            setPrintBill(getBillFacade().find(getPreBill().getId()));
 
-        clearBill();
-        clearBillItem();
-        billPreview = true;
+            clearBill();
+            clearBillItem();
+            billPreview = true;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during BHT request settlement for patient encounter: {0}",
+                    new Object[]{getPatientEncounter() != null ? getPatientEncounter().getId() : "unknown"});
+            LOGGER.log(Level.SEVERE, "Settlement failure details", e);
+            JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
+            // DO NOT clear the bill - keep items visible so user doesn't lose their work
+            return false;
+        }
 
         return true;
     }
@@ -2294,6 +2389,7 @@ public class PharmacySaleBhtController implements Serializable {
         double total = 0;
         double netTotal = 0;
         double marginTotal = 0;
+        double discountTotal = 0;
         PatientEncounter encounter = bill != null ? bill.getPatientEncounter() : null;
         for (BillItem bi : billItems) {
 
@@ -2313,18 +2409,52 @@ public class PharmacySaleBhtController implements Serializable {
 
             bi.setMarginValue(margin);
 
-            bi.setNetValue(bi.getGrossValue() + bi.getMarginValue());
+            // Inward discount-matrix application (issue #23220 — previously
+            // this flow applied margin only and never looked up a discount).
+            // BillItem (the entity) has no discountPercent/discountValue
+            // fields — those exist only on BillItemData, the DTO used by
+            // InpatientDirectIssueNativeSqlController. This flow stores the
+            // discount as a currency amount in the existing `discount`
+            // field, matching the sign convention already used by
+            // PharmacyPreSettleController.calTotal()/settle() and
+            // BhtIssueReturnController/IssueReturnController elsewhere in
+            // this codebase: netValue = grossValue [+ marginValue] - discount.
+            double discountValue = 0.0;
+            try {
+                Item item = bi.getItem();
+                if (item != null && matrixDepartment != null && priceMatrixNativeSqlService.isDiscountAllowed(item.getId())) {
+                    Long schemeId = encounter != null && encounter.getPaymentScheme() != null ? encounter.getPaymentScheme().getId() : null;
+                    Long admTypeId = encounter != null && encounter.getAdmissionType() != null ? encounter.getAdmissionType().getId() : null;
+                    String pmName = paymentMethod != null ? paymentMethod.name() : null;
+                    double discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(item.getId(), pmName, schemeId, admTypeId, matrixDepartment.getId());
+                    // Gross value in this flow is stored positive (see the
+                    // margin calculation above, which ADDS to netValue), so
+                    // the discount amount is likewise computed and applied
+                    // as a positive currency value subtracted from netValue.
+                    discountValue = (discountPct / 100.0) * Math.abs(bi.getGrossValue());
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "[updateMargin] inward discount lookup failed for billItem id={0}", bi.getId());
+            }
+            bi.setDiscount(discountValue);
+
+            bi.setNetValue(bi.getGrossValue() + bi.getMarginValue() - bi.getDiscount());
             bi.setAdjustedValue(bi.getNetValue());
             getBillItemFacade().edit(bi);
 
             total += bi.getGrossValue();
             netTotal += bi.getNetValue();
             marginTotal += bi.getMarginValue();
+            discountTotal += bi.getDiscount();
         }
 
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
         bill.setMargin(marginTotal);
+        // Roll up the discount total onto the bill, matching the existing
+        // pattern used elsewhere in this file (see calTotal(), ~line 2491,
+        // and PharmacyPreSettleController.calTotal()).
+        bill.setDiscount(discountTotal);
         getBillFacade().edit(bill);
 
     }
@@ -2368,6 +2498,55 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         return false;
+    }
+
+    private boolean isBatchAlreadyInBill(Long stockId) {
+        if (stockId == null) {
+            return false;
+        }
+        for (BillItem bItem : getBillItems()) {
+            if (bItem.getPharmaceuticalBillItem() != null
+                    && bItem.getPharmaceuticalBillItem().getStock() != null
+                    && Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), stockId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Same FEFO greedy-take logic as {@link com.divudi.ejb.PharmacyBean#depleteStockForQty(java.util.List, double)},
+     * but treats each Stock's available quantity as already reduced by whatever
+     * {@code reservedQtyByStockId} says an earlier requested line in the same
+     * {@link #generateIssueBillComponentsForBhtRequest(Bill)} pass already took from
+     * it. Needed because that method caches the raw Stock list per AMP
+     * (rawStockByAmpId) — without this, two requested lines resolving to the same
+     * AMP would both see the same unreduced Stock.getStock() figures and could both
+     * get auto-assigned the same batch. Never mutates the Stock entities themselves —
+     * purely in-memory bookkeeping against the passed-in map. CodeRabbit review on
+     * #23343.
+     */
+    private List<StockQty> depleteStockForQtyExcludingReserved(List<Stock> rawStocks, double qty, Map<Long, Double> reservedQtyByStockId) {
+        List<StockQty> list = new ArrayList<>();
+        if (rawStocks == null) {
+            return list;
+        }
+        double toAddQty = qty;
+        for (Stock s : rawStocks) {
+            double reserved = s.getId() != null ? reservedQtyByStockId.getOrDefault(s.getId(), 0.0) : 0.0;
+            double available = s.getStock() - reserved;
+            if (available <= 0) {
+                continue;
+            }
+            if (available >= toAddQty) {
+                list.add(new StockQty(s, toAddQty));
+                break;
+            } else {
+                toAddQty = toAddQty - available;
+                list.add(new StockQty(s, available));
+            }
+        }
+        return list;
     }
 
     public void addBillItem() {
@@ -2536,11 +2715,11 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-//        if (checkItemBatch()) {
-//            errorMessage = "This batch is already there in the bill.";
-//            UtilityController.addErrorMessage("Already added this item batch");
-//            return;
-//        }
+        if (isBatchAlreadyInBill(getTmpStock().getId())) {
+            errorMessage = "This batch is already in the bill.";
+            JsfUtil.addErrorMessage("This batch is already in the bill. Edit the existing row's quantity instead.");
+            return;
+        }
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
@@ -2592,7 +2771,12 @@ public class PharmacySaleBhtController implements Serializable {
         getBillItems().remove(b);
         issuingSelections.remove(b);
 
-        calTotal();
+        // calTotal() operates on the unrelated preBill.getBillItems() list, not the
+        // grid actually rendered here — it left billItemTotal/Gross/Margin/Discount
+        // stale after a deletion. calCurrentBillItemTotal() is the helper this
+        // controller already uses elsewhere for the real billItems list. CodeRabbit
+        // review on #23330.
+        calCurrentBillItemTotal(getBillItems());
     }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
@@ -3036,6 +3220,16 @@ public class PharmacySaleBhtController implements Serializable {
         // stock. Populated lazily per request so a VTM shared by multiple requested lines
         // is only queried once. Issue #23055.
         Map<Long, List<Amp>> ampsByVtmId = new HashMap<>();
+        // Tracks how much of each Stock (by id) has already been assigned to an earlier
+        // requested line within THIS generation pass. rawStockByAmpId caches the raw
+        // Stock list per AMP so repeated requested lines for the same medicine don't
+        // re-query, but that means two lines resolving to the same AMP would otherwise
+        // see the exact same (unmodified) Stock.getStock() figures and could both get
+        // auto-assigned the same batch. This map is purely in-memory bookkeeping — it
+        // never mutates the Stock entities themselves (they're JPA-managed; touching
+        // their qty field here would risk a premature, unintended stock deduction on
+        // flush, before the bill is even settled). CodeRabbit review on #23343.
+        Map<Long, Double> reservedQtyByStockId = new HashMap<>();
 
         for (BillItem i : b.getBillItems()) {
             if (i.getItem() == null) {
@@ -3144,7 +3338,7 @@ public class PharmacySaleBhtController implements Serializable {
                 }
 
                 List<Stock> rawStocks = rawStockByAmpId.computeIfAbsent(candidate.getId(), id -> pharmacyBean.getRawStockListForAmp(candidate, dept));
-                List<StockQty> stockQtys = pharmacyBean.depleteStockForQty(rawStocks, candidateQty);
+                List<StockQty> stockQtys = depleteStockForQtyExcludingReserved(rawStocks, candidateQty, reservedQtyByStockId);
                 if (stockQtys == null || stockQtys.isEmpty()) {
                     continue;
                 }
@@ -3207,6 +3401,19 @@ public class PharmacySaleBhtController implements Serializable {
                 selectedStockQtys = null;
                 isSubstitute = false;
                 selectedCandidateQty = issuableQty;
+            }
+
+            // Reserve what this line actually consumed so a later requested line
+            // resolving to the same AMP/stock sees reduced availability instead of
+            // being offered the same batch again. Must happen only for the finally
+            // selected candidate, not the ones evaluated and discarded above.
+            if (selectedStockQtys != null) {
+                for (StockQty sq : selectedStockQtys) {
+                    if (sq.getStock() == null || sq.getStock().getId() == null || sq.getQty() <= 0) {
+                        continue;
+                    }
+                    reservedQtyByStockId.merge(sq.getStock().getId(), sq.getQty(), Double::sum);
+                }
             }
 
             if (selectedStockQtys != null && !selectedStockQtys.isEmpty()) {
@@ -3329,8 +3536,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void calCurrentBillItemTotal(List<BillItem> billItems) {
         billItemTotal = 0.0;
+        billItemGrossTotal = 0.0;
+        billItemMarginTotal = 0.0;
+        billItemDiscountTotal = 0.0;
         for (BillItem bi : billItems) {
             billItemTotal += bi.getNetValue();
+            billItemGrossTotal += bi.getGrossValue();
+            billItemMarginTotal += bi.getMarginValue();
+            billItemDiscountTotal += bi.getDiscount();
         }
     }
 
@@ -3440,6 +3653,11 @@ public class PharmacySaleBhtController implements Serializable {
         }
         preBill = null;
         userStockContainer = null;
+        // A settlement actually completed — reset the idempotency guards so the
+        // NEXT bill's genuinely-new stock deduction/porter transfer isn't
+        // skipped. See the field javadoc on settlementStockDeducted.
+        settlementStockDeducted = false;
+        settlementPorterTransferred = false;
     }
 
     private void clearBillItem() {
@@ -3753,6 +3971,30 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillItemTotal(Double billItemTotal) {
         this.billItemTotal = billItemTotal;
+    }
+
+    public Double getBillItemGrossTotal() {
+        return billItemGrossTotal;
+    }
+
+    public void setBillItemGrossTotal(Double billItemGrossTotal) {
+        this.billItemGrossTotal = billItemGrossTotal;
+    }
+
+    public Double getBillItemMarginTotal() {
+        return billItemMarginTotal;
+    }
+
+    public void setBillItemMarginTotal(Double billItemMarginTotal) {
+        this.billItemMarginTotal = billItemMarginTotal;
+    }
+
+    public Double getBillItemDiscountTotal() {
+        return billItemDiscountTotal;
+    }
+
+    public void setBillItemDiscountTotal(Double billItemDiscountTotal) {
+        this.billItemDiscountTotal = billItemDiscountTotal;
     }
 
     // DTO-based properties and methods for improved performance

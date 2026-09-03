@@ -5,6 +5,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.ApiKeyType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.entity.WebUser;
@@ -184,6 +185,47 @@ public class ConfigResource {
         for (ConfigOption opt : options) {
             arrayBuilder.add(toJson(opt));
         }
+        return Response.ok(arrayBuilder.build().toString()).build();
+    }
+
+    /**
+     * Discovery endpoint for the InwardChargeType enum: for every value,
+     * returns its default/custom label, the two admin-configurable ordering
+     * numbers (Report Order, Final Bill Order) introduced in issue #23340,
+     * and the Final Bill Group text (configurable charge-type grouping,
+     * #23340 follow-up). Reading each value here also lazily seeds any of their
+     * ConfigOption rows that don't exist yet (same lazy-create behavior as
+     * the dedicated inward_charge_type_labels.xhtml admin page), so a caller
+     * can immediately follow up with PUT /api/config/{key} or
+     * POST /api/config/setInteger/{key}/{value} for any charge type even if
+     * the admin page was never opened.
+     *
+     * GET /api/config/inward-charge-types
+     */
+    @GET
+    @Path("inward-charge-types")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listInwardChargeTypes(@Context HttpHeaders headers) {
+        if (validateConfigKey(headers) == null) {
+            return unauthorizedResponse();
+        }
+
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        // Batched: same reasoning as InwardChargeTypeLabelController.init() — this
+        // endpoint's whole purpose is seeding every missing row in one call, so
+        // suppress the per-key cache reload and do it once at the end instead.
+        configOptionApplicationController.seedInBatch(() -> {
+            for (InwardChargeType type : InwardChargeType.values()) {
+                JsonObjectBuilder obj = Json.createObjectBuilder()
+                        .add("name", type.name())
+                        .add("defaultLabel", type.getLabel() != null ? type.getLabel() : "")
+                        .add("label", configOptionApplicationController.getInwardChargeTypeLabel(type))
+                        .add("reportOrder", configOptionApplicationController.getInwardChargeTypeReportOrder(type))
+                        .add("finalBillOrder", configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type))
+                        .add("finalBillGroup", configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+                arrayBuilder.add(obj);
+            }
+        });
         return Response.ok(arrayBuilder.build().toString()).build();
     }
 

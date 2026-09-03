@@ -7,7 +7,8 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
                 xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
     <ui:define name="content">
         <h:form id="bill">
@@ -80,57 +81,13 @@
                                                     <i class="fa-solid fa-user me-2 text-primary"></i>
                                                     Patient Search
                                                 </label>
-                                                <p:autoComplete
+                                                <admcc:admission_search
                                                     widgetVar="aPtNative"
-                                                    id="acPtNative"
-                                                    forceSelection="true"
+                                                    inputId="acPtNative"
                                                     value="#{inpatientDirectIssueNativeSqlController.patientEncounter}"
                                                     completeMethod="#{admissionController.completePatient}"
-                                                    var="apt"
-                                                    itemLabel="#{apt.bhtNo}"
-                                                    itemValue="#{apt}"
-                                                    placeholder="Type patient name, BHT number, or PHN..."
-                                                    minQueryLength="2"
-                                                    maxResults="20"
-                                                    style="width: 100%;"
-                                                    inputStyleClass="form-control form-control-lg"
-                                                    onkeydown="if(event.which===13){var w=PF('aPtNative');if(!w.panel||!w.panel.is(':visible')){event.preventDefault();document.getElementById('bill:btnSelect').click();}}">
-                                                    <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fa-solid fa-id-card me-2 text-info"></i>
-                                                            <strong>#{apt.patient.phn}</strong>
-                                                        </div>
-                                                    </p:column>
-                                                    <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fa-solid fa-hospital me-2 text-warning"></i>
-                                                            <strong class="text-primary">#{apt.bhtNo}</strong>
-                                                        </div>
-                                                    </p:column>
-                                                    <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fa-solid fa-user me-2 text-success"></i>
-                                                            <span class="fw-medium">#{apt.patient.person.nameWithTitle}</span>
-                                                        </div>
-                                                    </p:column>
-                                                    <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
-                                                        <h:panelGroup rendered="#{apt.currentPatientRoom ne null}">
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
-                                                                <span>#{apt.currentPatientRoom.roomFacilityCharge.name}</span>
-                                                            </div>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{apt.currentPatientRoom eq null}">
-                                                            <span class="text-muted">
-                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
-                                                            </span>
-                                                        </h:panelGroup>
-                                                    </p:column>
-                                                    <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
-                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt.discharged}" />
-                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!apt.discharged}" />
-                                                    </p:column>
-                                                </p:autoComplete>
+                                                    continueClientId="bill:btnSelect"
+                                                    placeholder="Type patient name, BHT number, MRN, or PHN..." />
                                             </div>
                                             <div class="col-12 col-md-3">
                                                 <p:commandButton
@@ -191,14 +148,6 @@
                             <!-- RIGHT: actions, left=least important -> right=primary -->
                             <div class="d-flex gap-2 align-items-center">
                                 <p:commandButton
-                                    value="New Bill"
-                                    ajax="false"
-                                    styleClass="ui-button-warning"
-                                    icon="fa-solid fa-plus"
-                                    action="pharmacy_bill_issue_bht"
-                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
-                                </p:commandButton>
-                                <p:commandButton
                                     id="btnSettleNative"
                                     value="Settle"
                                     ajax="true"
@@ -211,6 +160,15 @@
                                     style="min-width:120px"
                                     icon="fa-solid fa-check-circle">
                                 </p:commandButton>
+                                <p:commandButton
+                                    value="New Bill"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    icon="fa-solid fa-plus"
+                                    action="pharmacy_bill_issue_bht"
+                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
+                                </p:commandButton>
+                                
                             </div>
                         </div>
                     </f:facet>
@@ -431,7 +389,7 @@
                                     <p:column headerText="#" width="2em">
                                         <h:outputText value="#{s+1}"></h:outputText>
                                     </p:column>
-                                    <p:column headerText="Item" style="min-width: 20em;">
+                                    <p:column headerText="Item" style="width: 26em;">
                                         <h:outputText value="#{bid.itemName}"></h:outputText>
                                         <p:commandButton
                                             rendered="#{!bid.fromPackage}"

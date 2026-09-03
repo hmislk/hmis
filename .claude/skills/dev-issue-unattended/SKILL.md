@@ -1,16 +1,17 @@
 ---
 name: dev-issue-unattended
 description: >
-  Run a GitHub issue through its full lifecycle end-to-end with NO pauses for
-  user input — investigate, decide the approach, gather test context, and run
-  the CI/review loop entirely autonomously, documenting every judgment call
-  for after-the-fact review instead of asking. Use ONLY when the user has
-  explicitly said they will be unreachable (away from the computer, asleep,
-  offline) and wants an issue (or an unfiled bug/request they just described)
-  shipped as a mergeable PR without them. Do not use this for normal work —
-  use dev-issue instead, which asks for input at the same points this skill
-  auto-resolves.
-argument-hint: "[issue-number | problem description]"
+  Run one or more GitHub issues through their full lifecycle end-to-end with
+  NO pauses for user input — investigate, decide the approach, gather test
+  context, and run the CI/review loop entirely autonomously, documenting
+  every judgment call for after-the-fact review instead of asking. Accepts
+  a single issue, a batch of issue numbers/URLs, or an unfiled bug/request
+  described in plain text. Use ONLY when the user has explicitly said they
+  will be unreachable (away from the computer, asleep, offline) and wants
+  the issue(s) shipped as mergeable PR(s) without them. Do not use this for
+  normal work — use dev-issue instead, which asks for input at the same
+  points this skill auto-resolves.
+argument-hint: "[issue-number|issue-url][, issue-number|issue-url ...] | problem description"
 ---
 
 # Full Issue Lifecycle, Unattended (HMIS)
@@ -24,11 +25,53 @@ Invoking this skill is explicit authorization for every commit/push/PR/issue
 step below, including filing the GitHub issue itself if none exists yet — do
 not re-ask before any of them.
 
+## 0. Parse input
+
+Accept a comma/space/newline-separated list mixing bare issue numbers
+(`23100`) and full GitHub issue URLs. Accept only bare numeric tokens or a
+URL matching exactly `^https://github.com/hmislk/hmis/issues/(\d+)/?$` —
+any other host or repo path (e.g. a URL pointing at a fork or a different
+project) is an invalid token, not a source of an issue number for this
+repo. Report invalid tokens rather than guessing at what they meant.
+
+- Dedupe the resulting set of valid numbers.
+- Validate each with `gh issue view <n> --repo hmislk/hmis --json title`.
+  Only drop-and-continue when GitHub itself confirms the issue doesn't
+  exist (a clean "not found" from `gh`) or the token was invalid per the
+  URL rule above — note "could not resolve issue #N" (or the raw invalid
+  token) for the final summary (step 15) and move on. Any other failure
+  from this command — auth, permission, rate-limit, network/transport
+  errors — is not evidence the issue doesn't exist; it's the "true
+  whole-batch abort" case from the Hard limits section below (`gh` itself
+  is unreachable/broken), since it will affect every remaining issue the
+  same way. Stop and report it rather than silently dropping issues one by
+  one.
+- Process the remaining issues **one at a time, lowest issue number
+  first**. Steps 1–14 below are the per-issue body of this loop: each issue
+  gets its own branch (via `start-issue`), its own commits, its own PR, and
+  its own review loop, exactly as if `dev-issue-unattended` had been run
+  solo on just that issue.
+- If an issue hits any stop — an existing hard limit, the "insufficient
+  issue description" flag (see Hard limits below), or the "could not
+  resolve" case above — record the outcome for that issue and move on to
+  the next one. The batch is done once every issue in the list has been
+  attempted.
+- A single free-text problem description with no issue number (the
+  existing "if given only a problem description" mode in step 1) is
+  unchanged and is not part of batch mode — it still handles exactly one ad
+  hoc request per run.
+
 ## Hard limits — never bypassed, no matter how confident
 
 These are not judgment calls. If one of these is required to proceed, STOP,
 post the blocker as a comment on the issue (creating one first if needed),
-and end the run — do not guess.
+and end the run — do not guess. **"End the run," here and everywhere else
+in this skill, is always scoped to the current issue**: in batch mode
+(step 0), it means stop work on this issue, record its outcome, and
+continue the batch with the next one — never abort the whole batch.
+Reserve a true whole-batch abort for a failure that isn't scoped to one
+issue at all (e.g. `gh` itself is unreachable) — that's outside anything
+documented here, and warrants stopping and asking rather than guessing.
 
 - Never merge a PR, and never push directly to `development`, `master`, or
   any production branch — everything goes through a PR.
@@ -44,16 +87,113 @@ and end the run — do not guess.
   evidence-backed part of the approved fix. Applying that DDL to any
   database — even local — stays a human's call via the admin UI's "Add
   Missing..." page, same as it always is; this skill never runs it.
-- Never create test data with a direct database write (`INSERT`/`UPDATE`).
-  Same rule as `playwright-e2e`
-  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
-  generate it through the app, or stop — see step 4.
+- Never write to a **remote** database — production, staging, or anything
+  reached over an SSH tunnel. Read-only there, always, no exceptions.
+  A **local** database (localhost, no tunnel) is a disposable test
+  environment: no development environment is ever set up on a hosting
+  server, so "the database is local" is a reliable proxy for "this is safe
+  to modify freely". Confirm it genuinely is local before the first write —
+  the JNDI name in `persistence.xml` plus a `localhost` host with no active
+  tunnel on the DB port. If a datasource points anywhere else, treat it as
+  remote and stop. Create, mutate, and abandon local test data as needed —
+  do **not** revert it afterwards or treat local rows as precious.
+  Preferring to generate data *through the app* still applies as guidance
+  (`playwright-e2e`
+  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification)),
+  because a fixture that bypasses the app's own validation can pass a test
+  while proving nothing — but locally that is a judgement call, not a hard
+  limit, and direct SQL is fine when it is simply the faster route. See
+  step 4.
 - Never put institution names, patient/doctor names, or credentials in any
   GitHub issue, PR, or comment (same rule as `dev-issue`, non-negotiable here
   too since there's no human proofreading before it posts).
 - Never resolve genuinely ambiguous behavior — where the codebase, git
   history, and related issues give no clear signal either way — by picking an
   option silently. That is exactly the "stop and flag" case in steps 3 and 14.
+
+### Insufficient issue description — hand back to the reporter, don't just stop
+
+Two flavors of stop below get a different resolution than the rest of this
+section — this one and "Cannot reproduce with adequate information" further
+down. This one: when a stop at step 2, 2a, or 3 traces back to **the
+issue's own description being inadequate** — not a code-architecture
+question, not a schema/security limit — hand it back to whoever filed it
+instead of posting a bare blocker comment.
+
+This is a judgment call at runtime, same as any other step-3 decision:
+document the reasoning. When genuinely unclear whether a stop is a
+description problem or an architecture problem, default to the plain hard
+limit above (post a blocker comment and stop) — don't reassign work to a
+reporter who can't actually resolve a code-level question.
+
+When it does fire:
+
+1. Look up the issue's creator first, before composing anything:
+   `gh issue view <n> --repo hmislk/hmis --json author --jq '.author.login'`.
+   If this fails or returns an empty login, stop here — do not post the
+   comment, edit the assignee, or touch the project board with a broken or
+   missing `@mention`. Record this issue's outcome as "stopped — could not
+   resolve issue creator" for the batch summary (step 15) and continue to
+   the next issue.
+2. Post a comment on the issue that opens with `@<creator-login>` and asks
+   **only** for what actually stalled this run — drawn from, not a fixed
+   template dumped every time:
+   - the exact page/screen: URL or menu breadcrumb (`Menu > Submenu >
+     Page`)
+   - a clear description of current vs. expected behavior
+   - for report/analytics requests: desired filters, columns, grouping
+   - repro steps that pin down the scenario without a real record
+     identifier — ask for a redacted/synthetic example (e.g. "a BHT like
+     the one in this scenario, with any real patient/bill numbers replaced")
+     rather than a real BHT or bill number, same "no patient-linked
+     identifiers in a GitHub comment" rule as the hard limits above
+   - screenshot(s) of the current behavior or desired layout
+
+   Ground the ask in what was actually tried, e.g. "Searched for a page
+   matching this description under Inward and Reports; couldn't identify
+   which screen this refers to. Could you share the URL or navigation
+   path?" — not a bare template.
+3. `gh issue edit <n> --repo hmislk/hmis --add-assignee <creator-login>` —
+   **added alongside** `buddhika75`, never replacing them.
+4. Set the project-board (#11) Status field back to **Backlog** (same
+   GraphQL mutation pattern `start-issue` step 5 uses to set it forward to
+   "In Progress" — same field, different target option).
+5. Check each of steps 2–4 actually succeeded (non-error `gh`/API output)
+   before calling this "needs info" — if one failed partway (e.g. the
+   comment posted but the assignee edit errored), don't silently record it
+   as fully done; note exactly which parts succeeded in the batch summary
+   (step 15) so it's clear what still needs finishing by hand.
+6. Record this issue's outcome as "needs info" for the batch summary (step
+   15), then continue to the next issue in the batch (step 0).
+
+### Cannot reproduce with adequate information — close and invite discussion
+
+The second special-cased flavor: step 2a's bug genuinely does not reproduce
+under a reasonable, documented attempt, **and** the issue already gave
+enough to work with — this is distinct from the missing-specifics case
+above, which stays on the "ask for more info, keep open" path. Here, more
+async back-and-forth isn't likely to help; close the issue instead of
+leaving it open indefinitely with just a blocker comment, and let the
+reporter bring it back with a live discussion if it's still happening.
+
+1. Look up the issue's creator first, same as the Insufficient issue
+   description flow above — including its failure guard: if the lookup
+   fails or returns an empty login, stop here without posting or closing.
+   Record "stopped — could not resolve issue creator" for the batch summary
+   (step 15) and continue to the next issue.
+2. Post a comment that opens with `@<creator-login>`: what was tried, what
+   didn't reproduce, and an explicit invite to discuss rather than reopen
+   async — e.g. "Attempted to reproduce via <what was tried>; did not
+   observe the described behavior. Closing for now — if this is still
+   occurring, let's discuss and file a fresh issue with updated repro
+   details."
+3. `gh issue close <n> --repo hmislk/hmis --reason "not planned"`.
+4. Check that both the comment and the close actually succeeded before
+   calling this outcome final — if the close command errors after the
+   comment posted, note that in the batch summary rather than assuming the
+   issue is closed.
+5. Record this issue's outcome as "closed — could not reproduce" for the
+   batch summary (step 15), then continue to the next issue.
 
 ## 1. Setup
 
@@ -79,6 +219,11 @@ root cause by reading code — git archaeology (`git log -p -S<term>`,
 `git blame`, related closed issues/PRs) is often decisive here and costs
 nothing to try before falling back to live reproduction.
 
+If this investigation — including the git archaeology above — cannot
+identify which entities/services/pages are even involved, that's the
+**Insufficient issue description** case from the Hard limits section, not
+a reason to guess. Route there instead of continuing to step 2a/3.
+
 ## 2a. Reproduce the bug (bug issues only, root cause still unconfirmed)
 
 Skip for feature/enhancement issues and for bugs where step 2 already found a
@@ -90,11 +235,17 @@ confirmed root cause from code + history alone.
   not** ask which one to use — auto-discover the closest real match with a
   read-only query, and only fall back to generating one through the app (see
   step 4) if nothing suitable exists.
-- If it still doesn't reproduce under a reasonable, documented attempt: stop,
-  post the finding to the issue (what was tried, what didn't reproduce), and
-  end the run rather than guessing at a fix for a bug you couldn't observe.
-  This is a hard limit, not a style preference — an unverified fix for an
-  unreproduced bug is worse than no fix.
+- If it still doesn't reproduce under a reasonable, documented attempt: stop
+  rather than guessing at a fix for a bug you couldn't observe. If the reason
+  it didn't reproduce is missing specifics from the issue itself (no concrete
+  example record, no repro steps, an ambiguous "sometimes it fails" with no
+  stated conditions), that's the **Insufficient issue description** case —
+  route there. If instead the issue gave enough to try and it genuinely
+  doesn't reproduce, that's the **Cannot reproduce with adequate
+  information** case — close it and invite a discussion instead of leaving
+  a blocker comment open indefinitely. This is a hard limit either way, not
+  a style preference — an unverified fix for an unreproduced bug is worse
+  than no fix.
 
 ## 3. Decide the approach (no Plan Mode pause)
 
@@ -106,8 +257,13 @@ Where `dev-issue` enters Plan Mode and waits for approval, instead:
    the original #19963 design instead of guessing at a new one).
 2. Pick the option best supported by that evidence. When two options are
    both plausible and the evidence doesn't clearly favor one, that is
-   "genuinely ambiguous" — stop per the hard limits above instead of
-   flipping a coin.
+   "genuinely ambiguous" — stop, but which stop depends on *why* it's
+   ambiguous: if the codebase itself gives conflicting signals (two
+   existing patterns both plausible), use the plain hard limit above (post
+   a blocker comment and stop). If the ambiguity is instead about *what
+   the reporter wants* — e.g. a report request with no filters/columns/grouping
+   specified, a feature request with no acceptance criteria — that's the
+   **Insufficient issue description** case; route there instead.
 3. Write the reasoning down **now**, in a form that survives to the PR
    description (step 13) and, for any non-obvious interpretation, an issue
    comment — not just in conversation. The user is reviewing this after the
@@ -125,20 +281,23 @@ SELECT ... FROM <entity-table> WHERE <feature-relevant condition>
 ORDER BY <recency> LIMIT 5;
 ```
 
-- Prefer an existing record over creating one — it's already representative
-  and needs no cleanup.
+- Prefer an existing record over creating one — it's already representative.
 - If nothing suitable exists, **generate it through the app** (per
   `playwright-e2e`
   [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
   create a purchase before a return, a shift-start before a shift-end, etc.)
-  instead of asking which record to use.
-- If the app itself can't produce what's needed either (e.g. the only path
-  to the required state is blocked by unrelated broken data, or requires a
-  second user session you don't have credentials for): this is a hard-limit
-  stop, same as an unreproducible bug in step 2a — post what was tried and
-  why it didn't work, and end the run. Do not paper over it with a direct
-  database write; a fixture that skips the app's own validation/business
-  logic can pass a test while proving nothing real.
+  instead of asking which record to use. Going through the app is preferred
+  because it exercises the same validation and business logic the fix has to
+  survive.
+- If the app can't get you there (the path is blocked by unrelated broken
+  data, or needs a second user session you don't have credentials for),
+  **write the local database directly** — `INSERT`/`UPDATE` is fine on a
+  local DB. Say so in the PR, and be aware of what a hand-built fixture
+  skips: if it bypasses the very validation the fix depends on, the test
+  proves less, so prefer the app route when the difference matters.
+- **Never** do any of this against a remote/tunnelled database (see Hard
+  limits). Locally, don't revert or clean up test data afterwards — a local
+  DB is disposable and the next run can reset it.
 - Environment is local Payara unless the issue explicitly requires otherwise
   — never assume a remote/production environment unattended (hard limit).
 
@@ -176,18 +335,82 @@ If 3+ fix attempts don't converge, that's the systematic-debugging
 architecture-question trigger, not a reason to keep guessing: stop, post
 findings, end the run.
 
+## 8a. Claude self-review before first push
+
+The only review this skill otherwise gets is step 14's CodeRabbit/Codex loop
+— and both bots can be unavailable at once (rate-limited, usage-exhausted)
+with no fallback, leaving a PR that ships with zero substantive review. This
+step adds an earlier, Claude-driven pass so a caught bug becomes part of the
+initial push instead of a second commit reacting to a bot (or a human) after
+the fact. It runs once step 8's Iterate loop passes end-to-end, before
+step 9/11.
+
+1. **Pick an effort level.** Default `medium`. Bump to `high` if the diff
+   touches billing, pharmacy, API (`ws/`), or security/privilege code — the
+   same shared/core risk areas `merge-gate` already flags ("touches
+   shared/core code (API, billing, pharmacy) where a regression could
+   silently break unrelated functions"), extended here to security/privilege
+   code given this skill's existing hard limit against writing such changes
+   at all.
+2. **Run `/code-review`** at that effort level against the working diff —
+   the uncommitted changes on the branch, before the first commit/push, not
+   against an already-open PR.
+3. **Triage each finding into one of three buckets:**
+   - **In-scope, confirmed bug** → fix it, rebuild/redeploy, re-run the
+     relevant Playwright/DB verification from step 7, and fold the fix into
+     the same commit as the original change.
+   - **Valid but outside the issue's named files/screens** → leave this PR's
+     diff alone; file a separate GitHub issue describing the pattern (same
+     shape as issue #23385, filed from this exact gap), and reference it in
+     this PR's description under a short "Follow-up" note. This is filing an
+     issue, which step 0's blanket authorization already covers — no
+     separate confirmation needed.
+   - **Low-confidence / stylistic / reuse-nitpick** → no fix, no new issue;
+     note it under the PR's "Decisions made without approval" section (step
+     13) so a human can look later.
+4. **Document the pass** in that same PR section — which findings came up,
+   which bucket each landed in, and why — the same judgment-call-logging
+   convention already used for steps 3 and 13.
+
+Step 14's CodeRabbit/Codex loop is unchanged by this step — this is an
+earlier, additional layer, not a replacement.
+
 ## 9. Record learnings
 
 Same as `dev-issue` step 9 — append new Playwright/dev gotchas to
 `developer_docs/testing/playwright-e2e-workflow.md` if any surfaced.
 
-## 10. Publish evidence (wiki, issue, PR)
+## 10. Publish evidence and update the wiki
 
-Same as `dev-issue` step 10 (screenshots to `../hmis.wiki/images/`, wiki
-commit/push, issue comment with embedded raw wiki-image URLs, clean up
-`tmp/`) — with extra weight on redaction since no human reviews the
-screenshots before they're published: when in doubt about a screenshot,
-crop tighter or drop it rather than publish it uncertain.
+Same as `dev-issue` step 10 — including its **required** wiki-page update
+(find the page, embed the screenshots, replace outdated images, correct any
+text the change makes wrong, or create/skip the page with the reason stated),
+and linking the updated page(s) in the issue comment. Publishing an image
+without wiring it into a page leaves it orphaned; that is not a completed
+step 10.
+
+Two additions for unattended runs:
+
+- **Extra weight on redaction**, since no human reviews the screenshots
+  before they're published: when in doubt about a screenshot, crop tighter or
+  drop it rather than publish it uncertain. This applies to the wiki page too
+  — a page edit is as public as an issue comment.
+- **Wiki prose: only publish what you can verify.** A wrong page edit is
+  public the moment it's pushed, and noting it in the PR afterwards doesn't
+  unpublish it. So the test is not "am I confident?" but **"can I point at the
+  code, or at evidence from this run, that shows the current text is wrong?"**
+  - **Publish** — inserting verified screenshots, and correcting text that
+    demonstrably contradicts the code or the behaviour you just verified.
+    Cite the evidence in the PR (e.g. *"page documented room discharge via
+    `roomDischargeDateTime`; `hasActiveRoom()` deliberately stopped using
+    that field in #21935"*).
+  - **Leave it and flag it** — anything you'd be *inferring*: prose that
+    merely reads as unclear or outdated, claims about behaviour outside what
+    this run touched, or restructuring a page's scope. Note it in the PR as a
+    documentation issue for a human, rather than rewriting it unattended.
+
+  Record every prose change either way in the "Decisions made without
+  approval" section of the PR (step 13).
 
 ## 11. Pre-push check
 
@@ -205,10 +428,13 @@ limit above before writing it, same as an issue or PR body.
 
 ## 13. Create the PR
 
-Same as `dev-issue` step 13, plus a **"Decisions made without approval"**
-section up front listing every step-3 judgment call in one place, so the
-user can scan exactly what to double-check first. Redact this body per the
-hard limit above too — same as every other publication point.
+Same as `dev-issue` step 13 — including its required **Documentation**
+section linking the wiki page(s) updated in step 10 (or stating that none was
+needed, and why) — plus a **"Decisions made without approval"** section up
+front listing every step-3 judgment call in one place, so the user can scan
+exactly what to double-check first. Any wiki prose you rewrote belongs in
+that list. Redact this body per the hard limit above too — same as every
+other publication point.
 
 ## 14. Review loop (until mergeable) — waiting without the user present
 
@@ -237,6 +463,18 @@ run (same as `dev-issue`).
 
 ## 15. Notify
 
-Produce one skimmable summary the user can catch up on in a single read:
-what was found, every decision made and why (from step 3/13), what was
-verified and how, links to issue/PR/wiki. **Never merge.**
+Produce one skimmable summary covering **every issue in the batch** (a
+single issue is just a batch of one), one line each:
+
+- `#N — shipped as PR #M` (link to the PR)
+- `#N — needs info from reporter` (link to the comment posted in the
+  Insufficient issue description flow)
+- `#N — closed, could not reproduce` (link to the closing comment)
+- `#N — stopped: <short reason>` (link to the blocker comment)
+- `#N — could not resolve issue number/URL`
+
+For issues that shipped, include what was found, every decision made and
+why (from step 3/13), what was verified and how, and links to the
+issue/PR/wiki — same depth as a solo run. For issues that didn't ship, the
+link to the comment is enough; don't re-summarize what's already written
+there. **Never merge.**

@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="value" required="true" />
+        <cc:attribute name="completeMethod" required="true"
+                      method-signature="java.util.List completeMethod(java.lang.String)" />
+        <!-- The ALREADY-RESOLVED, real rendered client id (e.g. "bill:btnSelect") of the page's
+             existing "Continue" button. This composite will document.getElementById(...) and
+             .click() it when auto-advancing on an exact single-match. Optional: some pages have
+             no separate Continue step (selecting the item itself, via itemSelectUpdate, is the
+             whole "advance" action) - leave unset/blank in that case, and no click is attempted. -->
+        <cc:attribute name="continueClientId" type="java.lang.String" default="" />
+        <cc:attribute name="widgetVar" type="java.lang.String" default="acAdmissionSearch" />
+        <cc:attribute name="inputId" type="java.lang.String" default="acAdmissionSearch" />
+        <!-- Passed straight through to the inner p:ajax event="itemSelect" update="...".
+             Since this composite is itself a NamingContainer, if the calling page needs to
+             update components OUTSIDE the composite, it must pass ABSOLUTE search expressions
+             (leading ':', e.g. ":frmBhtEdit:pnlPatientPreview :frmBhtEdit:btnSelect"). -->
+        <cc:attribute name="itemSelectUpdate" type="java.lang.String" default="" />
+        <!-- Optional business logic to run when an admission is selected (by click or by the
+             barcode auto-select below) - e.g. a page that must populate a due amount or load
+             related tables the moment a BHT is picked, not only when its own Continue button is
+             clicked. Defaults to a no-op so pages that don't need one (the majority) are
+             unaffected. Runs before itemSelectUpdate's components are re-rendered, same as any
+             p:ajax listener. -->
+        <cc:attribute name="itemSelectListener" method-signature="void listener()"
+                      default="#{admissionSearchSupportController.noop}" />
+        <cc:attribute name="placeholder" type="java.lang.String"
+                      default="Type patient name, BHT number, MRN, or PHN..." />
+        <cc:attribute name="required" type="java.lang.Boolean" default="false" />
+        <cc:attribute name="requiredMessage" type="java.lang.String" default="Please select a patient" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputScript library="js" name="admission-search.js" target="head" />
+
+        <p:autoComplete
+            widgetVar="#{cc.attrs.widgetVar}"
+            id="#{cc.attrs.inputId}"
+            forceSelection="true"
+            autoHighlight="true"
+            value="#{cc.attrs.value}"
+            completeMethod="#{cc.attrs.completeMethod}"
+            var="myItem"
+            itemValue="#{myItem}"
+            itemLabel="#{myItem.bhtNo}"
+            placeholder="#{cc.attrs.placeholder}"
+            required="#{cc.attrs.required}"
+            requiredMessage="#{cc.attrs.requiredMessage}"
+            minQueryLength="2"
+            style="width: 100%;"
+            inputStyleClass="form-control form-control-lg">
+            <p:ajax event="query" oncomplete="HmisAdmissionSearch.onQueryComplete('#{cc.attrs.widgetVar}', '#{cc.attrs.continueClientId}')" />
+            <p:ajax event="itemSelect" listener="#{cc.attrs.itemSelectListener}" update="#{cc.attrs.itemSelectUpdate}" oncomplete="HmisAdmissionSearch.onItemSelectComplete('#{cc.attrs.continueClientId}')" />
+            <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-id-card me-2 text-info"></i>
+                    <strong class="hmis-adm-phn">#{myItem.patient.phn}</strong>
+                </div>
+            </p:column>
+            <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-hospital me-2 text-warning"></i>
+                    <strong class="text-primary hmis-adm-bht">#{myItem.bhtNo}</strong>
+                </div>
+            </p:column>
+            <p:column headerText="MRN" style="padding: 8px; min-width: 100px;">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-hashtag me-2 text-secondary"></i>
+                    <strong class="hmis-adm-mrn">#{myItem.patient.code}</strong>
+                </div>
+            </p:column>
+            <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-user me-2 text-success"></i>
+                    <span class="fw-medium">#{myItem.patient.person.nameWithTitle}</span>
+                </div>
+            </p:column>
+            <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
+                <h:panelGroup rendered="#{myItem.currentPatientRoom ne null}">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                        <span>#{myItem.currentPatientRoom.roomFacilityCharge.name}</span>
+                    </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{myItem.currentPatientRoom eq null}">
+                    <span class="text-muted">
+                        <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                    </span>
+                </h:panelGroup>
+            </p:column>
+            <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
+                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!myItem.discharged}" />
+            </p:column>
+        </p:autoComplete>
+    </cc:implementation>
+</html>

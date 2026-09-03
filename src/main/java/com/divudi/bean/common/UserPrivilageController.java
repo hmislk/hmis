@@ -261,6 +261,17 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment, "By Current Department - Logged Department"), admissionSearchScopeNode);
 
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReport, "Inward Reports"), inwardNode);
+
+        TreeNode inwardDashboardReportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inpatient Dashboard - Reports Panel Buttons"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPharmacyIssueSummary, "Pharmacy Issue Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportServiceSummary, "Service Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportServiceBills, "All Inward Service Bills"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPaymentsAndCancellations, "Payments & Cancellations"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPharmacyAndServiceSummary, "Pharmacy & Services Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportLabBillSummary, "Lab Bill Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportLabResultSummary, "Lab Result Summary"), inwardDashboardReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReportPharmacyIssueSummaryLegacy, "Pharmacy Issue Summary (Legacy)"), inwardDashboardReportsNode);
+
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPostDischargeReports, "Inward Post-Discharge Reports"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdministration, "Administration"), inwardNode);
 
@@ -309,6 +320,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillSetConfirmed, "Inward Final Bill Set As Confirmed"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillRetire, "Inward Final Bill Retire"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillEmail, "Inward Final Bill Email"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillApprove, "Inward Final Bill Approve"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSaveProvisionalFinalBill, "Inward Save Provisional Final Bill"), additionalPrivilegesNode);
 
         // Theatre Privileges
@@ -838,6 +850,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacySearchInpatientDirectIssueReturnsbyBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssueReturnsbyBill, "Pharmacy Search Inpatient Direct Issue Returns by Bill"), InpatientMedicationManagementNode);
         TreeNode PharmacysSearchInpatientDirectIssueReturnsbyItem = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacysSearchInpatientDirectIssueReturnsbyItem, "Pharmacy Search Inpatient Direct Issue Returns by Item"), InpatientMedicationManagementNode);
         TreeNode NursingIPBillingViewRates = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingIPBillingViewRates, "Nursing IP Billing View Rates"), InpatientMedicationManagementNode);
+        TreeNode IPBillingViewDiscount = new DefaultTreeNode(new PrivilegeHolder(Privileges.IPBillingViewDiscount, "IP Billing View Discount"), InpatientMedicationManagementNode);
         TreeNode IPRequestViewRates = new DefaultTreeNode(new PrivilegeHolder(Privileges.IPRequestViewRates, "IP Request View Rates"), InpatientMedicationManagementNode);
 
         TreeNode ProcumentNode = new DefaultTreeNode("Pharmacy Procument", pharmacyNode);

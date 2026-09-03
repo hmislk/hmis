@@ -1,4 +1,3 @@
-
 package com.divudi.bean.common;
 
 // <editor-fold defaultstate="collapsed" desc="Template">
@@ -1113,7 +1112,7 @@ public class SearchController implements Serializable {
         transferRequestApprovalSearchDtos = (List<PharmacyTransferRequestListDTO>)
                 getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-    
+
     public String navigateToApproveRequests() {
         setBills(null);
         fillPharmacyTransferRequestsToApprove();
@@ -1505,6 +1504,16 @@ public class SearchController implements Serializable {
         settledBillType = null;
         total = 0.0;
         pharmacyBillSearch.setSaleBillDtos(null);
+        // Transfer Receive list (pharmacy_transfer_issued_list.xhtml) — was never cleared here,
+        // so the previous search results stayed on screen until the user searched again on
+        // every navigation into the page (menu.xhtml, disbursement_index.xhtml, home.xhtml all
+        // call makeListNull() as their actionListener before navigating here). See issue #23117.
+        transferIssuedListDtos = new ArrayList<>();
+        // Transfer Issue list (pharmacy_transfer_request_list.xhtml) — the "Issue for Requests"
+        // navigation button fires this as its actionListener before navigating, but this field
+        // was never included, so the previous search's results stayed on screen until the user
+        // searched again. See issue #23115.
+        transferRequestDtos = null;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -3794,40 +3803,40 @@ public class SearchController implements Serializable {
         Map<String, Object> params = new HashMap<>();
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO("
-                + "b.id, "                                           // 1  id
-                + "b.deptId, "                                       // 2  deptId
-                + "b.department.name, "                              // 3  departmentName
-                + "b.createdAt, "                                    // 4  createdAt
-                + "COALESCE(creatorPerson.name, ''), "               // 5  creatorName
-                + "b.refunded, "                                     // 6  refunded
-                + "refBill.createdAt, "                              // 7  refundedBillCreatedAt
-                + "COALESCE(refCreatorPerson.name, ''), "            // 8  refundedBillCreatorName
-                + "COALESCE(refBill.comments, ''), "                 // 9  refundedBillComments
-                + "b.retired, "                                      // 10 retired
-                + "b.retiredAt, "                                    // 11 retiredAt
-                + "b.cancelled, "                                    // 12 cancelled
-                + "canBill.createdAt, "                              // 13 cancelledBillCreatedAt
-                + "COALESCE(canCreatorPerson.name, ''), "            // 14 cancelledBillCreatorName
-                + "COALESCE(canBill.comments, ''), "                 // 15 cancelledBillComments
-                + "b.total, "                                        // 16 total
-                + "b.discount, "                                     // 17 discount
-                + "b.netTotal, "                                     // 18 netTotal
-                + "b.paymentMethod, "                                // 19 paymentMethod
-                + "COALESCE(scheme.name, ''), "                      // 20 paymentSchemeName
-                + "COALESCE(patientPerson.name, ''), "               // 21 patientName
-                + "COALESCE(toStaffPerson.name, ''), "               // 22 toStaffName
-                + "COALESCE(toDept.name, ''), "                      // 23 toDepartmentName
-                + "COALESCE(toInst.name, ''), "                      // 24 toInstitutionName
-                + "paymentBill.id, "                                 // 25 referenceBillId
-                + "COALESCE(paymentBill.deptId, ''), "               // 26 referenceBillDeptId
-                + "paymentBill.createdAt, "                          // 27 referenceBillCreatedAt
-                + "COALESCE(refBillCreatorPerson.name, ''), "        // 28 referenceBillCreatorName
-                + "paymentBill.cancelled, "                          // 29 referenceBillCancelled
-                + "refBillCanBill.createdAt, "                       // 30 referenceBillCancelledBillCreatedAt
-                + "COALESCE(refBillCanCreatorPerson.name, ''), "     // 31 referenceBillCancelledBillCreatorName
-                + "paymentBill.refunded, "                           // 32 referenceBillRefunded
-                + "refBillRefBill.createdAt, "                       // 33 referenceBillRefundedBillCreatedAt
-                + "COALESCE(refBillRefCreatorPerson.name, '')) "     // 34 referenceBillRefundedBillCreatorName
+                + "b.id, " // 1  id
+                + "b.deptId, " // 2  deptId
+                + "b.department.name, " // 3  departmentName
+                + "b.createdAt, " // 4  createdAt
+                + "COALESCE(creatorPerson.name, ''), " // 5  creatorName
+                + "b.refunded, " // 6  refunded
+                + "refBill.createdAt, " // 7  refundedBillCreatedAt
+                + "COALESCE(refCreatorPerson.name, ''), " // 8  refundedBillCreatorName
+                + "COALESCE(refBill.comments, ''), " // 9  refundedBillComments
+                + "b.retired, " // 10 retired
+                + "b.retiredAt, " // 11 retiredAt
+                + "b.cancelled, " // 12 cancelled
+                + "canBill.createdAt, " // 13 cancelledBillCreatedAt
+                + "COALESCE(canCreatorPerson.name, ''), " // 14 cancelledBillCreatorName
+                + "COALESCE(canBill.comments, ''), " // 15 cancelledBillComments
+                + "b.total, " // 16 total
+                + "b.discount, " // 17 discount
+                + "b.netTotal, " // 18 netTotal
+                + "b.paymentMethod, " // 19 paymentMethod
+                + "COALESCE(scheme.name, ''), " // 20 paymentSchemeName
+                + "COALESCE(patientPerson.name, ''), " // 21 patientName
+                + "COALESCE(toStaffPerson.name, ''), " // 22 toStaffName
+                + "COALESCE(toDept.name, ''), " // 23 toDepartmentName
+                + "COALESCE(toInst.name, ''), " // 24 toInstitutionName
+                + "paymentBill.id, " // 25 referenceBillId
+                + "COALESCE(paymentBill.deptId, ''), " // 26 referenceBillDeptId
+                + "paymentBill.createdAt, " // 27 referenceBillCreatedAt
+                + "COALESCE(refBillCreatorPerson.name, ''), " // 28 referenceBillCreatorName
+                + "paymentBill.cancelled, " // 29 referenceBillCancelled
+                + "refBillCanBill.createdAt, " // 30 referenceBillCancelledBillCreatedAt
+                + "COALESCE(refBillCanCreatorPerson.name, ''), " // 31 referenceBillCancelledBillCreatorName
+                + "paymentBill.refunded, " // 32 referenceBillRefunded
+                + "refBillRefBill.createdAt, " // 33 referenceBillRefundedBillCreatedAt
+                + "COALESCE(refBillRefCreatorPerson.name, '')) " // 34 referenceBillRefundedBillCreatorName
                 + "FROM PreBill b "
                 + "LEFT JOIN b.patient p "
                 + "LEFT JOIN p.person patientPerson "
@@ -4277,6 +4286,26 @@ public class SearchController implements Serializable {
         fetchTransferIssuedListDtos(Boolean.FALSE);
     }
 
+    public long getPendingTransferReceiveCountForLoggedDepartment() {
+        if (getSessionController().getDepartment() == null) {
+            return 0;
+        }
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_ISSUE);
+        Map<String, Object> params = new HashMap<>();
+        params.put("toDep", getSessionController().getDepartment());
+        params.put("bTp", btas);
+        params.put("fromDate", CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -3L)));
+        String jpql = "SELECT COUNT(b) FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.toDepartment = :toDep "
+                + "AND b.billTypeAtomic IN :bTp "
+                + "AND b.cancelled = false "
+                + "AND b.fullyIssued = false "
+                + "AND b.createdAt >= :fromDate ";
+        return getBillFacade().findLongByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     private void fetchTransferIssuedListDtos(Boolean fullyIssuedFilter) {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_ISSUE);
@@ -4389,12 +4418,18 @@ public class SearchController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE);
         params.put("issuedBillIds", issuedBillIds);
+        // Receive bills link back to the issued bill via backwardReferenceBill -
+        // both the deprecated TransferReceiveController and the current
+        // TransferReceiveNativeSqlController set it on every receive. referenceBill
+        // is only set by one legacy code path, so filtering on it here silently
+        // dropped every native-path receive from the issued list's "Received"
+        // column (issue #20717).
         String jpql = "SELECT NEW com.divudi.core.data.dto.PharmacyTransferReceivedListDTO("
-                + "b.id, b.referenceBill.id, b.deptId, b.cancelled) "
+                + "b.id, b.backwardReferenceBill.id, b.deptId, b.cancelled) "
                 + "FROM Bill b "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :btp "
-                + "AND b.referenceBill.id IN :issuedBillIds";
+                + "AND b.backwardReferenceBill.id IN :issuedBillIds";
         List<PharmacyTransferReceivedListDTO> result = (List<PharmacyTransferReceivedListDTO>)
                 getBillFacade().findDTOsByJpql(jpql, params);
         return result != null ? result : new ArrayList<>();
@@ -4672,6 +4707,11 @@ public class SearchController implements Serializable {
         billedDepartment = null;
         visitType = null;
         methodType = null;
+        // Transfer Requests to Approve list (pharmacy_transfer_request_list_to_approve.xhtml) —
+        // navigateToTransferRequestApprove() calls makeNull() before navigating here, but this
+        // field was never included, so the previous search's results stayed on screen until the
+        // user searched again. See issue #23116.
+        transferRequestsToApproveDtos = null;
     }
 
     public void resetTotals() {
@@ -7882,11 +7922,10 @@ public class SearchController implements Serializable {
     }
 
     /**
-     * Bulk-loads GRNs for every PO in the list using 2 queries instead of
-     * 2×N per-PO queries, then assigns the results to each Bill.listOfBill.
-     * Two query paths match the original getGrns() logic:
-     *   1. g.referenceBill = po
-     *   2. g.billedBill.referenceBill = po
+     * Bulk-loads GRNs for every PO in the list using 2 queries instead of 2×N
+     * per-PO queries, then assigns the results to each Bill.listOfBill. Two
+     * query paths match the original getGrns() logic: 1. g.referenceBill = po
+     * 2. g.billedBill.referenceBill = po
      */
     /**
      * Legacy-page counterpart of fillGrnDtosByBulkQuery. Both methods check
@@ -11715,8 +11754,12 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+                    System.out.println(billTypesAtomics.get(1));
+
             bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
             bundle.calculateTotalByBills();
+            bundle.setName("OPD Professional Payments Report");
+            bundle.setBundleType("opdProfessionalPayments");
         }, ProfessionalPaymentReport.OPD_PROFESSIONAL_PAYMENTS_REPORT, sessionController.getLoggedUser());
     }
 
@@ -11730,6 +11773,7 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        System.out.println(billTypesAtomics.get(1));
         bundle = billService.createBundleByKeywordForBills(billTypesAtomics,
                 institution,
                 department,
@@ -22271,7 +22315,7 @@ public class SearchController implements Serializable {
             parameters.put("fdAppt", appointmentFromDate);
             parameters.put("tdAppt", appointmentToDate);
         }
-        
+
         // Ensure proper grouping
         jpql += "GROUP BY bill";
 
@@ -23821,7 +23865,7 @@ public class SearchController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
-    
+
     public Date getAppointmentToDate() {
         if (appointmentToDate == null) {
             appointmentToDate = CommonFunctions.getEndOfDay(new Date());
@@ -24687,6 +24731,29 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
+    // PDF Export: OPD Professional Payments
+    public StreamedContent getOpdProfessionalPaymentsAsPdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Professional Payments report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "OPD_Professional_Payments_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForOpdProfessionalPaymentsReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getOpdProfessionalPaymentsAsPdf: Error creating pdfSc via pdfController.createPdfForReportTemplateRows", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate OPD Professional Payments PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
     // PDF Export: Shift End Summary Report (shift_start_and_ends)
     public StreamedContent getShiftEndSummaryReportAsPdf() {
         if (bills == null || bills.isEmpty()) {
@@ -24700,13 +24767,13 @@ public class SearchController implements Serializable {
             String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
             if (dates != null && !dates.isEmpty()) {
                 fileName += "_" + dates;
-            }   
+            }
             pdfSc = pdfController.createPdfForShiftEndSummary(bills, PageSize.A4.rotate(), true, getFiltersForShiftEndSummaryReport(), fileName);
         } catch (IOException e) {
             logger.error("getShiftEndSummaryReportAsPdf: Error creating pdfSc via pdfController.createPdfForShiftEndSummary", e);
             pdfSc = null;
             JsfUtil.addErrorMessage("Failed to generate Shift End Summary Report PDF file. Please try again.");
-        } 
+        }
         return pdfSc;
     }
 
@@ -24765,6 +24832,28 @@ public class SearchController implements Serializable {
             logger.error("getOpdProfessionalFeePaymentsAsExcel: Error creating downloadingExcel via excelController.createExcelForOpdProfessionalFeePayments", e);
             downloadingExcel = null;
             JsfUtil.addErrorMessage("Failed to generate OPD Professional Fee Payments Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // Excel Export: OPD Professional Payments
+    public StreamedContent getOpdProfessionalPaymentsAsExcel() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Professional Payments report before exporting.");
+            return null;
+        }
+
+        try {
+            String fileName = "OPD_Professional_Payments_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForOpdProfessionalPaymentsReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getOpdProfessionalPaymentsAsExcel: Error creating downloadingExcel via excelController.createExcelForReportTemplateRows", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate OPD Professional Payments Excel file. Please try again.");
         }
         return downloadingExcel;
     }
@@ -25004,6 +25093,26 @@ public class SearchController implements Serializable {
         return params;
     }
 
+    // Filters for OPD Professional Payments Report
+    private Map<String, Object> getFiltersForOpdProfessionalPaymentsReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Site", site != null ? site.getName() : "All Sites");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+        params.put("Category", category != null ? category.getName() : "All");
+        params.put("Item", item != null && item.getName() != null ? item.getName() : "All");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+        params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+
+        return params;
+    }
+
     // Filters for Shift End Summary report
     public Map<String, Object> getFiltersForShiftEndSummaryReport() {
         Map<String, Object> params = new LinkedHashMap<>();
@@ -25029,7 +25138,6 @@ public class SearchController implements Serializable {
         this.dateBasis = dateBasis;
     }
 
-
     // Filters for Channel Income Report
     private Map<String, Object> getFiltersForChannelIncomeReport() {
         Map<String, Object> params = new LinkedHashMap<>();
@@ -25043,7 +25151,7 @@ public class SearchController implements Serializable {
             params.put("Appointment From", appointmentFromDate);
             params.put("Appointment To", appointmentToDate);
         }
-        
+
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Department", department != null ? department.getName() : "All Departments");
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
@@ -25097,7 +25205,7 @@ public class SearchController implements Serializable {
             params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
             params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
             params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
-            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Total", searchKeyword.getTotal() != null ? searchKeyword.getTotal() : "All");
             params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
         }
         params.put("Consultant", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
@@ -25118,7 +25226,7 @@ public class SearchController implements Serializable {
             params.put("MRN No", searchKeyword.getCode() != null && !searchKeyword.getCode().trim().isEmpty() ? searchKeyword.getCode() : "All");
             params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
             params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
-            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Total", searchKeyword.getTotal() != null ? searchKeyword.getTotal() : "All");
             params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
         }
         params.put("From Institution", fromInstitution != null ? fromInstitution.getName() : "All Institutions");
@@ -25200,28 +25308,54 @@ public class SearchController implements Serializable {
         pmFlags.setFlagsReportTemplateRowBundle(bundle);
 
         ChannelIncomeReport incomeReport = new ChannelIncomeReport(fileName, institutionName, channelIncomeReportSC != null ? channelIncomeReportSC : getFiltersForChannelIncomeReport(), bundle.getReportTemplateRows(), configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false), pmFlags, userName);
-        incomeReport.setColumnFooter(bundle.getHospitalTotal() != null ?  bundle.getHospitalTotal().doubleValue() : 0.0, "Hospital Fee");
-        incomeReport.setColumnFooter(bundle.getStaffTotal() != null ?  bundle.getStaffTotal().doubleValue() : 0.0, "Staff Fee");
-        incomeReport.setColumnFooter(bundle.getGrossTotal() != null ?  bundle.getGrossTotal().doubleValue() : 0.0, "Gross Total");
+        incomeReport.setColumnFooter(bundle.getHospitalTotal() != null ? bundle.getHospitalTotal().doubleValue() : 0.0, "Hospital Fee");
+        incomeReport.setColumnFooter(bundle.getStaffTotal() != null ? bundle.getStaffTotal().doubleValue() : 0.0, "Staff Fee");
+        incomeReport.setColumnFooter(bundle.getGrossTotal() != null ? bundle.getGrossTotal().doubleValue() : 0.0, "Gross Total");
 
         if (configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false)) {
-            incomeReport.setColumnFooter(bundle.getDiscount() != null ?  bundle.getDiscount().doubleValue() : 0.0, "Discount");
-            incomeReport.setColumnFooter(bundle.getTotal() != null ?  bundle.getTotal().doubleValue() : 0.0, "Net Total");
+            incomeReport.setColumnFooter(bundle.getDiscount() != null ? bundle.getDiscount().doubleValue() : 0.0, "Discount");
+            incomeReport.setColumnFooter(bundle.getTotal() != null ? bundle.getTotal().doubleValue() : 0.0, "Net Total");
         }
 
-        if (pmFlags.hasCash) {incomeReport.setColumnFooter(bundle.getCashValue(), "Cash");}
-        if (pmFlags.hasCard) {incomeReport.setColumnFooter(bundle.getCardValue(), "Card");}
-        if (pmFlags.hasCredit) {incomeReport.setColumnFooter(bundle.getCreditValue(), "Credit");}
-        if (pmFlags.hasStaffWelfare) {incomeReport.setColumnFooter(bundle.getStaffWelfareValue(), "Staff Welfare");}
-        if (pmFlags.hasVoucher) {incomeReport.setColumnFooter(bundle.getVoucherValue(), "Voucher");}
-        if (pmFlags.hasIou) {incomeReport.setColumnFooter(bundle.getIouValue(), "IOU");}
-        if (pmFlags.hasAgent) {incomeReport.setColumnFooter(bundle.getAgentValue(), "Agent");}
-        if (pmFlags.hasCheque) {incomeReport.setColumnFooter(bundle.getChequeValue(), "Cheque");}
-        if (pmFlags.hasSlip) {incomeReport.setColumnFooter(bundle.getSlipValue(), "Slip");}
-        if (pmFlags.hasEWallet) {incomeReport.setColumnFooter(bundle.getEWalletValue(), "eWallet");}
-        if (pmFlags.hasPatientDeposit) {incomeReport.setColumnFooter(bundle.getPatientDepositValue(), "Patient Deposit");}
-        if (pmFlags.hasPatientPoints) {incomeReport.setColumnFooter(bundle.getPatientPointsValue(), "Patient Points");}
-        if (pmFlags.hasOnlineSettlement) {incomeReport.setColumnFooter(bundle.getOnlineSettlementValue(), "Online Settlement");}
+        if (pmFlags.hasCash) {
+            incomeReport.setColumnFooter(bundle.getCashValue(), "Cash");
+        }
+        if (pmFlags.hasCard) {
+            incomeReport.setColumnFooter(bundle.getCardValue(), "Card");
+        }
+        if (pmFlags.hasCredit) {
+            incomeReport.setColumnFooter(bundle.getCreditValue(), "Credit");
+        }
+        if (pmFlags.hasStaffWelfare) {
+            incomeReport.setColumnFooter(bundle.getStaffWelfareValue(), "Staff Welfare");
+        }
+        if (pmFlags.hasVoucher) {
+            incomeReport.setColumnFooter(bundle.getVoucherValue(), "Voucher");
+        }
+        if (pmFlags.hasIou) {
+            incomeReport.setColumnFooter(bundle.getIouValue(), "IOU");
+        }
+        if (pmFlags.hasAgent) {
+            incomeReport.setColumnFooter(bundle.getAgentValue(), "Agent");
+        }
+        if (pmFlags.hasCheque) {
+            incomeReport.setColumnFooter(bundle.getChequeValue(), "Cheque");
+        }
+        if (pmFlags.hasSlip) {
+            incomeReport.setColumnFooter(bundle.getSlipValue(), "Slip");
+        }
+        if (pmFlags.hasEWallet) {
+            incomeReport.setColumnFooter(bundle.getEWalletValue(), "eWallet");
+        }
+        if (pmFlags.hasPatientDeposit) {
+            incomeReport.setColumnFooter(bundle.getPatientDepositValue(), "Patient Deposit");
+        }
+        if (pmFlags.hasPatientPoints) {
+            incomeReport.setColumnFooter(bundle.getPatientPointsValue(), "Patient Points");
+        }
+        if (pmFlags.hasOnlineSettlement) {
+            incomeReport.setColumnFooter(bundle.getOnlineSettlementValue(), "Online Settlement");
+        }
 
         return incomeReport;
     }
@@ -25288,25 +25422,31 @@ public class SearchController implements Serializable {
     }
 
     public boolean filterBySingleDate(Object value, Object filter, Locale locale) {
-        if (filter == null) return true;
-        if (value == null) return false;
+        if (filter == null) {
+            return true;
+        }
+        if (value == null) {
+            return false;
+        }
 
-        if (!(value instanceof Date)) return false;
+        if (!(value instanceof Date)) {
+            return false;
+        }
 
         java.time.LocalDate filterDate;
         if (filter instanceof java.time.LocalDate) {
             filterDate = (java.time.LocalDate) filter;
         } else if (filter instanceof Date) {
             filterDate = ((Date) filter).toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
         } else {
             return false;
         }
 
         java.time.LocalDate rowDate = ((Date) value).toInstant()
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
 
         return rowDate.equals(filterDate);
     }

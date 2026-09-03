@@ -8,8 +8,9 @@
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
-                
-                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
+
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
 
@@ -19,38 +20,22 @@
             <h:form  >
                 <p:panel  >
                     <f:facet name="header">
-                        <p:inputText value="Inward Payment Bill"/>                                      
-                        <p:commandButton ajax="false"  value="Clear" style="float:right;" action="#{bhtSummeryFinalizedController.makeNull()}"  />                                                                        
+                        <p:inputText value="Inward Payment Bill"/>
+                        <p:commandButton ajax="false"  value="Clear" style="float:right;" action="#{bhtSummeryFinalizedController.makeNull()}"  />
                     </f:facet>
                     <h:panelGrid columns="2">
-                        <p:panel header="BHT">
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                            value="#{bhtSummeryFinalizedController.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientAll}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  >
-                                <p:ajax event="itemSelect" 
-                                        process="@this" 
-                                        update="@all" 
-                                        listener="#{bhtSummeryFinalizedController.createTablesFinalized()}"/>
-                                <p:column>
-                                    <p:outputLabel value="#{myItem.bhtNo}" />
-                                </p:column>
-                                <p:column>
-                                    <p:outputLabel value="#{myItem.patient.person.nameWithTitle}" />
-
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
-                                </p:column>
-                            </p:autoComplete>   
+                        <p:panel header="BHT" style="min-width: 350px;">
+                            <!-- No continueClientId: this page has no separate "Display"/"Continue"
+                                 button - selecting a BHT must load its finalized bill tables
+                                 immediately (itemSelectListener), same as the original itemSelect
+                                 listener this replaces. -->
+                            <admcc:admission_search
+                                widgetVar="aPt"
+                                inputId="acPt"
+                                value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                completeMethod="#{admissionController.completePatientAll}"
+                                itemSelectListener="#{bhtSummeryFinalizedController.createTablesFinalized}"
+                                itemSelectUpdate="@all" />
 
                         </p:panel>
                         <in:finalTable bill="#{bhtSummeryFinalizedController.patientEncounter.finalBill}"/>
@@ -291,12 +276,12 @@
 
                             <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                          sortBy="#{iss.bill.deptId}">
-                                <p:column headerText="ID">
+                                <p:column headerText="ID" style="width: 3em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="ID"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{iss.id}"/>                                    
-                                </p:column>                  
+                                    <h:outputLabel value="#{iss.id}"/>
+                                </p:column>
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>

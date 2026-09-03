@@ -1545,7 +1545,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         HashMap hm = new HashMap();
         sql = "select c from Admission c"
                 + " where ((c.bhtNo) like :q or"
-                + " (c.patient.person.name) like :q ) "
+                + " (c.patient.person.name) like :q or"
+                + " (c.patient.code) like :q ) "
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findByJpql(sql, hm);
@@ -1559,7 +1560,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         HashMap hm = new HashMap();
         sql = "select c from Admission c"
                 + " where ((c.bhtNo) like :q or"
-                + " (c.patient.person.name) like :q ) "
+                + " (c.patient.person.name) like :q or"
+                + " (c.patient.code) like :q ) "
                 + " and c.paymentFinalized=true"
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
@@ -1593,7 +1595,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
                     + " and ( ((c.bhtNo) like :q )"
                     + " or ((c.patient.person.name) like :q ) "
-                    + " or ((c.patient.phn =:phn ))) order by c.bhtNo";
+                    + " or ((c.patient.phn =:phn )) "
+                    + " or ((c.patient.code) like :q )) order by c.bhtNo";
 
             h.put("q", "%" + query.toUpperCase() + "%");
             h.put("phn", query.toUpperCase());
@@ -1614,6 +1617,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and ( ((c.bhtNo) like :q ) "
                 + " or ((c.patient.person.name) like :q ) "
                 + " or ((c.patient.phn =:phn )) "
+                + " or ((c.patient.code) like :q ) "
                 + " or ((c.patient.person.phone) like :q ) "
                 + " or ((c.patient.person.mobile) like :q ) ) ";
         HashMap h = new HashMap();
@@ -1727,7 +1731,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " where c.retired=false "
                     + " and c.paymentFinalized=true "
                     + " and ((c.bhtNo) like :q "
-                    + " or (c.patient.person.name) like :q)"
+                    + " or (c.patient.person.name) like :q "
+                    + " or (c.patient.code) like :q)"
                     + "  order by c.bhtNo";
             ////// // System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
@@ -2969,13 +2974,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // getRoomFacilityCharge() may be null; attempting to save it would NPE. (Issue #21183)
         if (getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = new PatientRoom();
-            if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
-                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
-                getCurrent().setRoomAdmitted(true);
-            } else {
-                getCurrent().setRoomAdmitted(false);
-                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), getCurrent(), getSessionController().getLoggedUser());
-            }
+            // Room is always fully set up (charges, admittedAt, admitted=true) at admission
+            // time, regardless of the "simultaneous processes" config — that config only
+            // controls whether a nurse handover request is also created below (Issue #23145).
+            currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
+            getCurrent().setRoomAdmitted(true);
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
 
@@ -3011,7 +3014,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 }
             }
 
-            if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)
+                    && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
                 handoverRequest.setAdmission(getCurrent());
                 handoverRequest.setFromPatientRoom(null);
