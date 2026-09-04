@@ -117,10 +117,12 @@ public class StoreVtmController implements Serializable {
             return;
         }
 
-        // A new record must carry this page's department type before the duplicate
-        // check runs - the check is scoped by it, and relying on prepareAdd() alone
-        // leaves it null on any other entry path (issue #23484).
-        if (current.getId() == null && current.getDepartmentType() == null) {
+        // A new record must carry this page's department type before the duplicate check
+        // runs - the check is scoped by it, and relying on prepareAdd() alone leaves the
+        // field unset on any other entry path. Set unconditionally: a getter-based null
+        // check cannot work here, because Item.getDepartmentType() reports a null field as
+        // Pharmacy on any PharmaceuticalItem (issue #23484).
+        if (current.getId() == null) {
             current.setDepartmentType(DepartmentType.Store);
         }
 
@@ -641,7 +643,9 @@ public class StoreVtmController implements Serializable {
      * the legacy `vtm.xhtml` screen exposes a free `DepartmentType` dropdown, so a record
      * edited here can legitimately carry another type, and scoping the check to
      * Store would then miss a real duplicate in that other type's namespace.
-     * A null type is a legacy row, which the whole codebase treats as Pharmacy.
+     * A legacy row with a null type scopes to Pharmacy: Item.getDepartmentType() already
+     * substitutes Pharmacy for a null field on any PharmaceuticalItem, so the explicit
+     * fallback below only covers a null argument.
      */
     private DepartmentType scopeDepartmentTypeOf(Vtm savingVtm) {
         DepartmentType dt = savingVtm == null ? null : savingVtm.getDepartmentType();

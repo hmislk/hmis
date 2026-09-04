@@ -174,6 +174,14 @@ public class VtmController implements Serializable {
         return vtmList;
     }
 
+    /**
+     * Pharmacy-scoped: the only callers are the pharmacy-side Excel imports on this
+     * controller (DataUploadController.uploadVtms, and the ATM/VMP imports), so an
+     * imported row must resolve against - and be created in - the Pharmacy namespace.
+     * Without the scope an import could silently reuse a Lab or Store VTM of the same
+     * name, and without the explicit type it would create the null-departmentType rows
+     * that the strict pharmacy queries then refuse to load (issue #23484).
+     */
     public Vtm findAndSaveVtmByNameAndCode(Vtm vtm) {
         String jpql;
         Map m = new HashMap();
@@ -184,11 +192,13 @@ public class VtmController implements Serializable {
             m.put("retired", false);
             m.put("name", vtm.getName());
             m.put("code", vtm.getCode());
+            m.put("dep", DepartmentType.Pharmacy);
             jpql = "select c "
                     + " from Vtm c "
                     + " where c.retired=:retired "
                     + " and c.name=:name"
-                    + " and c.code=:code";
+                    + " and c.code=:code"
+                    + " and " + departmentTypeScopePredicate(DepartmentType.Pharmacy);
             List<Vtm> vtms = getFacade().findByJpql(jpql, m);
             if (vtms != null) {
                 if (!vtms.isEmpty()) {
@@ -200,6 +210,10 @@ public class VtmController implements Serializable {
             return nvtm;
         }
         if (vtm.getId() == null) {
+            // Set unconditionally: Item.getDepartmentType() substitutes Pharmacy for a null
+            // field on any PharmaceuticalItem, so a getter-based null check never fires and
+            // the row would be persisted with departmentType still NULL.
+            vtm.setDepartmentType(DepartmentType.Pharmacy);
             getFacade().create(vtm);
         }
         return vtm;
@@ -214,16 +228,19 @@ public class VtmController implements Serializable {
         } else {
             m.put("ret", false);
             m.put("name", name);
+            m.put("dep", DepartmentType.Pharmacy);
             jpql = "select c "
                     + " from Vtm c "
                     + " where c.retired=:ret "
-                    + " and c.name=:name";
+                    + " and c.name=:name"
+                    + " and " + departmentTypeScopePredicate(DepartmentType.Pharmacy);
             nvtm = getFacade().findFirstByJpql(jpql, m);
         }
         if (nvtm == null) {
             nvtm = new Vtm();
             nvtm.setName(name);
             nvtm.setCode(CommonFunctions.nameToCode("vtm_" + name));
+            nvtm.setDepartmentType(DepartmentType.Pharmacy);
             getFacade().create(nvtm);
         }
         return nvtm;
@@ -408,13 +425,9 @@ public class VtmController implements Serializable {
             return;
         }
 
-        // A new record must carry this page's department type before the duplicate
-        // check runs - the check is scoped by it, and relying on prepareAdd() alone
-        // leaves it null on any other entry path (issue #23484).
-        if (current.getId() == null && current.getDepartmentType() == null) {
-            current.setDepartmentType(DepartmentType.Pharmacy);
-        }
-
+        // No department-type defaulting here on purpose: vtm.xhtml lets the user choose
+        // the Type, prepareAdd() sets Pharmacy for new records, and Item.getDepartmentType()
+        // already reports a null field as Pharmacy for scoping (issue #23484).
         // Validate before saving
         if (!validateVtm()) {
             return;
@@ -1010,7 +1023,9 @@ public class VtmController implements Serializable {
      * the legacy `vtm.xhtml` screen exposes a free `DepartmentType` dropdown, so a record
      * edited here can legitimately carry another type, and scoping the check to
      * Pharmacy would then miss a real duplicate in that other type's namespace.
-     * A null type is a legacy row, which the whole codebase treats as Pharmacy.
+     * A legacy row with a null type scopes to Pharmacy: Item.getDepartmentType() already
+     * substitutes Pharmacy for a null field on any PharmaceuticalItem, so the explicit
+     * fallback below only covers a null argument.
      */
     private DepartmentType scopeDepartmentTypeOf(Vtm savingVtm) {
         DepartmentType dt = savingVtm == null ? null : savingVtm.getDepartmentType();
