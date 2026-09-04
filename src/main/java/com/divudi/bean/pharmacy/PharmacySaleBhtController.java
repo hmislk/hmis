@@ -2017,8 +2017,8 @@ public class PharmacySaleBhtController implements Serializable {
     }
     
     private BillItem itemForSubstitution;
-    private Stock selectedSubstituteStock;
-    private List<Stock> substituteStocks;
+    private StockDTO selectedSubstituteStock;
+    private List<StockDTO> substituteStocks;
     // Per-row selection state for the "Issuing Bill Item" autocomplete on each BHT Issue
     // row, keyed by BillItem instance identity. A single shared field doesn't work here —
     // every row's p:autoComplete is bound to the same @SessionScoped controller instance,
@@ -2041,7 +2041,9 @@ public class PharmacySaleBhtController implements Serializable {
     VmpController vmpController;
     @EJB
     PharmacyCostingService pharmacyCostingService;
-    
+    @EJB
+    private com.divudi.service.pharmacy.PharmacySubstituteService pharmacySubstituteService;
+
     public void prepareSubstitute(BillItem bi) {
         itemForSubstitution = bi;
         selectedSubstituteStock = null;
@@ -2049,74 +2051,22 @@ public class PharmacySaleBhtController implements Serializable {
         if (bi == null || bi.getItem() == null) {
             return;
         }
-        List<Amp> amps = pharmacyBean.resolveAmps(bi.getItem());
-        Date currentDate = new Date();
-        for (Amp substituteAmp : amps) {
-            List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
-            if (stocks != null) {
-                for (Stock stock : stocks) {
-                    if (stock.getStock() > 0
-                            && stock.getItemBatch() != null
-                            && stock.getItemBatch().getDateOfExpire() != null
-                            && stock.getItemBatch().getDateOfExpire().after(currentDate)) {
-                        substituteStocks.add(stock);
-                    }
-                }
-            }
-        }
+        double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
     }
-    
+
     public void replaceSelectedSubstitute() {
         if (itemForSubstitution == null || selectedSubstituteStock == null) {
             JsfUtil.addErrorMessage("Please select a substitute stock.");
             return;
         }
-
-        // Update the bill item with selected stock details
-        itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
-
-        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
-        if (phItem == null) {
-            phItem = new PharmaceuticalBillItem();
-            phItem.setBillItem(itemForSubstitution);
-            itemForSubstitution.setPharmaceuticalBillItem(phItem);
+        if (pharmacySubstituteService.swapStockIntoBillItem(itemForSubstitution, selectedSubstituteStock)) {
+            calculateRates(itemForSubstitution);
+            calCurrentBillItemTotal(getBillItems());
+            JsfUtil.addSuccessMessage("Stock replaced successfully.");
+        } else {
+            JsfUtil.addErrorMessage("Could not replace the stock — the selected substitute may no longer be available. Please try again.");
         }
-
-        // Set stock and batch details
-        phItem.setStock(selectedSubstituteStock);
-        phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
-        phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
-        phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
-        phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
-
-        // Update rates in pharmaceutical bill item
-        phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
-        phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
-        phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
-        phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
-
-        // Update financials
-        BillItemFinanceDetails financeDetails = itemForSubstitution.getBillItemFinanceDetails();
-        if (financeDetails != null) {
-            BigDecimal transferRate = determineTransferRate(selectedSubstituteStock.getItemBatch());
-            financeDetails.setLineGrossRate(transferRate);
-            financeDetails.setLineNetRate(transferRate);
-
-            // Update cost and retail rates
-            financeDetails.setLineCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()));
-            financeDetails.setRetailSaleRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()));
-
-            // Update values at different rates
-            BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
-            financeDetails.setValueAtCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()).multiply(qty));
-            financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getPurcahseRate()).multiply(qty));
-            financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
-        }
-
-        calculateRates(itemForSubstitution);
-        calCurrentBillItemTotal(getBillItems());
-
-        JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
 
     /**
@@ -2158,10 +2108,33 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         itemForSubstitution = bi;
-        selectedSubstituteStock = issuingSelections.get(bi);
+        selectedSubstituteStock = toSubstituteStockDto(issuingSelections.get(bi));
         replaceSelectedSubstitute();
         // Leave the map entry as-is (don't null it out) so the row keeps showing what
         // was just picked instead of reverting to blank on the next render.
+    }
+
+    /**
+     * Adapts a {@link Stock} entity (as picked by the "Issuing Bill Item"
+     * autocomplete, which searches {@link Stock} directly rather than going
+     * through {@link com.divudi.service.pharmacy.PharmacySubstituteService})
+     * into the minimal {@link StockDTO} that
+     * {@link com.divudi.service.pharmacy.PharmacySubstituteService#swapStockIntoBillItem}
+     * actually reads: {@code stockId} (to reload the managed {@link Stock})
+     * and {@code costRate} (read raw here rather than persisted, matching
+     * that method's contract of never mutating the {@link com.divudi.core.entity.pharmacy.ItemBatch}
+     * via its mutating {@code getCostRate()} getter). Issue #23470.
+     */
+    private StockDTO toSubstituteStockDto(Stock stock) {
+        if (stock == null || stock.getId() == null) {
+            return null;
+        }
+        StockDTO dto = new StockDTO();
+        dto.setStockId(stock.getId());
+        if (stock.getItemBatch() != null) {
+            dto.setCostRate(stock.getItemBatch().getCostRate());
+        }
+        return dto;
     }
 
     /**
@@ -2262,25 +2235,6 @@ public class PharmacySaleBhtController implements Serializable {
         return true;
     }
 
-
-    private BigDecimal determineTransferRate(ItemBatch itemBatch) {
-        if (itemBatch == null) {
-            return BigDecimal.ZERO;
-        }
-
-        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
-        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
-        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
-
-        if (pharmacyTransferIsByPurchaseRate) {
-            return BigDecimal.valueOf(itemBatch.getPurcahseRate());
-        } else if (pharmacyTransferIsByCostRate) {
-            return BigDecimal.valueOf(itemBatch.getCostRate());
-        } else {
-            return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
-        }
-    }
-    
     private boolean settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
@@ -4161,19 +4115,19 @@ public class PharmacySaleBhtController implements Serializable {
         this.itemForSubstitution = itemForSubstitution;
     }
 
-    public Stock getSelectedSubstituteStock() {
+    public StockDTO getSelectedSubstituteStock() {
         return selectedSubstituteStock;
     }
 
-    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+    public void setSelectedSubstituteStock(StockDTO selectedSubstituteStock) {
         this.selectedSubstituteStock = selectedSubstituteStock;
     }
 
-    public List<Stock> getSubstituteStocks() {
+    public List<StockDTO> getSubstituteStocks() {
         return substituteStocks;
     }
 
-    public void setSubstituteStocks(List<Stock> substituteStocks) {
+    public void setSubstituteStocks(List<StockDTO> substituteStocks) {
         this.substituteStocks = substituteStocks;
     }
 

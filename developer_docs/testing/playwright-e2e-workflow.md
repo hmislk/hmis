@@ -2366,6 +2366,34 @@ and auto-advances; an exact query matching multiple admissions (e.g. several
 active admissions sharing one PHN) shows the dropdown and does not
 auto-advance.
 
+## 91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" silently no-ops until a Porter/Staff is picked
+
+Found verifying issue #23470 (BHT substitute suggestions). On the ward-side
+request page, the toolbar has both **"New Bill"** and **"Settle Request"**
+next to each other. "New Bill" looks like a generic submit/save action but
+it actually **discards the in-progress request and resets the form** to a
+blank "Start Pharmacy Request for Inpatients" screen — no `BILL` row is
+written, no error is shown. Only **"Settle Request"** (which fires a native
+`confirm()` — handle it with `browser_handle_dialog`) persists the request
+as a `REQUEST_MEDICINE_INWARD` bill.
+
+On the pharmacy-side issue page (`ward_pharmacy_bht_issue.xhtml`), the
+**"Issue to BHT"** button (`PharmacySaleBhtController.settlePharmacyBhtIssueAccept`)
+also fires a `confirm()`, but silently returns via `JsfUtil.addErrorMessage`
+if `getPreBill().getToStaff() == null` — i.e. the **"Porter / Staff Carrying
+Medicines to Ward"** autocomplete near the top of the page must be filled
+first. No exception is logged server-side and no new `BILL` row is created;
+the only symptom is that a DB check for a fresh `ISSUE_MEDICINE_ON_REQUEST_INWARD`
+row comes back empty after a seemingly-successful click-and-confirm. Always
+fill the Porter field (any active `STAFF` row works for local testing) before
+clicking "Issue to BHT", and verify success by querying `BILL` for a new row
+rather than trusting the confirm dialog alone.
+
+Also: that Porter/Staff autocomplete searches the `STAFF`/`PERSON` tables,
+not `WEBUSER` — a logged-in user's own username (e.g. "Lawan") will not
+resolve; search by an actual staff member's name from `STAFF` joined to
+`PERSON`.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
