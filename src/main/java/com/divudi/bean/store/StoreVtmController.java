@@ -117,6 +117,13 @@ public class StoreVtmController implements Serializable {
             return;
         }
 
+        // A new record must carry this page's department type before the duplicate
+        // check runs - the check is scoped by it, and relying on prepareAdd() alone
+        // leaves it null on any other entry path (issue #23484).
+        if (current.getId() == null && current.getDepartmentType() == null) {
+            current.setDepartmentType(DepartmentType.Store);
+        }
+
         if (!validateVtm()) {
             return;
         }
@@ -612,13 +619,15 @@ public class StoreVtmController implements Serializable {
         }
 
         if (checkVtmName(current.getName(), current)) {
-            JsfUtil.addErrorMessage("A VTM with this name already exists");
+            JsfUtil.addErrorMessage("A VTM with this name already exists in the "
+                    + scopeDepartmentTypeOf(current) + " department");
             return false;
         }
 
         if (current.getCode() != null && !current.getCode().trim().isEmpty()) {
             if (checkVtmCode(current.getCode(), current)) {
-                JsfUtil.addErrorMessage("A VTM with this code already exists");
+                JsfUtil.addErrorMessage("A VTM with this code already exists in the "
+                        + scopeDepartmentTypeOf(current) + " department");
                 return false;
             }
         }
@@ -626,17 +635,50 @@ public class StoreVtmController implements Serializable {
         return true;
     }
 
+    /**
+     * The department type whose namespace a VTM's name/code must be unique within.
+     * Taken from the record being saved rather than hardcoded to this page's own type:
+     * the legacy `vtm.xhtml` screen exposes a free `DepartmentType` dropdown, so a record
+     * edited here can legitimately carry another type, and scoping the check to
+     * Store would then miss a real duplicate in that other type's namespace.
+     * A null type is a legacy row, which the whole codebase treats as Pharmacy.
+     */
+    private DepartmentType scopeDepartmentTypeOf(Vtm savingVtm) {
+        DepartmentType dt = savingVtm == null ? null : savingVtm.getDepartmentType();
+        return dt != null ? dt : DepartmentType.Pharmacy;
+    }
+
+    /**
+     * Legacy VTMs carry a null department type and are listed as Pharmacy VTMs, so the
+     * Pharmacy namespace has to include them - otherwise a name already visible in the
+     * Pharmacy list could be saved a second time. Every other type matches strictly.
+     */
+    private String departmentTypeScopePredicate(DepartmentType dep) {
+        return dep == DepartmentType.Pharmacy
+                ? "(c.departmentType IS NULL OR c.departmentType=:dep)"
+                : "c.departmentType=:dep";
+    }
+
+    /**
+     * VTM names are unique per department type, not globally - the same name may
+     * legitimately exist as a Store VTM and as a VTM of another department type
+     * (issue #23484), so the duplicate check is scoped to one department type's
+     * namespace instead of searching every VTM in the system.
+     */
     public boolean checkVtmName(String name, Vtm savingVtm) {
         if (savingVtm == null || name == null || name.trim().isEmpty()) {
             return false;
         }
+        DepartmentType dep = scopeDepartmentTypeOf(savingVtm);
         Map<String, Object> params = new HashMap<>();
-        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.name)=:name";
+        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.name)=:name "
+                + "AND " + departmentTypeScopePredicate(dep);
         if (savingVtm.getId() != null) {
             jpql += " AND c.id <> :id";
             params.put("id", savingVtm.getId());
         }
         params.put("retired", false);
+        params.put("dep", dep);
         params.put("name", name.toUpperCase().trim());
         Vtm vtm = getFacade().findFirstByJpql(jpql, params);
         return vtm != null;
@@ -646,13 +688,16 @@ public class StoreVtmController implements Serializable {
         if (savingVtm == null || code == null || code.trim().isEmpty()) {
             return false;
         }
+        DepartmentType dep = scopeDepartmentTypeOf(savingVtm);
         Map<String, Object> params = new HashMap<>();
-        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.code)=:code";
+        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.code)=:code "
+                + "AND " + departmentTypeScopePredicate(dep);
         if (savingVtm.getId() != null) {
             jpql += " AND c.id <> :id";
             params.put("id", savingVtm.getId());
         }
         params.put("retired", false);
+        params.put("dep", dep);
         params.put("code", code.toUpperCase().trim());
         Vtm vtm = getFacade().findFirstByJpql(jpql, params);
         return vtm != null;
