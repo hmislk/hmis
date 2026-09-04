@@ -2121,9 +2121,12 @@ public class PharmacySaleBhtController implements Serializable {
      * into the minimal {@link StockDTO} that
      * {@link com.divudi.service.pharmacy.PharmacySubstituteService#swapStockIntoBillItem}
      * actually reads: {@code stockId} (to reload the managed {@link Stock})
-     * and {@code costRate} (read raw here rather than persisted, matching
-     * that method's contract of never mutating the {@link com.divudi.core.entity.pharmacy.ItemBatch}
-     * via its mutating {@code getCostRate()} getter). Issue #23470.
+     * and {@code costRate}. The cost rate is read via a scalar JPQL query
+     * rather than {@code ItemBatch.getCostRate()} — that getter derives and
+     * ASSIGNS {@code costRate = purcahseRate} when the stored cost is null,
+     * which would both dirty the managed {@link com.divudi.core.entity.pharmacy.ItemBatch}
+     * and hide the null from {@code swapStockIntoBillItem}'s own
+     * null-as-zero handling. Issue #23470.
      */
     private StockDTO toSubstituteStockDto(Stock stock) {
         if (stock == null || stock.getId() == null) {
@@ -2131,8 +2134,12 @@ public class PharmacySaleBhtController implements Serializable {
         }
         StockDTO dto = new StockDTO();
         dto.setStockId(stock.getId());
-        if (stock.getItemBatch() != null) {
-            dto.setCostRate(stock.getItemBatch().getCostRate());
+        if (stock.getItemBatch() != null && stock.getItemBatch().getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", stock.getItemBatch().getId());
+            Double rawCostRate = itemBatchFacade.findSingleResultByJpql(
+                    "SELECT ib.costRate FROM ItemBatch ib WHERE ib.id = :id", params, TemporalType.DATE);
+            dto.setCostRate(rawCostRate);
         }
         return dto;
     }

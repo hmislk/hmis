@@ -2366,7 +2366,7 @@ and auto-advances; an exact query matching multiple admissions (e.g. several
 active admissions sharing one PHN) shows the dropdown and does not
 auto-advance.
 
-## 91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" silently no-ops until a Porter/Staff is picked
+## 91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" rejects (with a growl message, easy to miss in a scripted run) until a Porter/Staff is picked
 
 Found verifying issue #23470 (BHT substitute suggestions). On the ward-side
 request page, the toolbar has both **"New Bill"** and **"Settle Request"**
@@ -2379,14 +2379,19 @@ as a `REQUEST_MEDICINE_INWARD` bill.
 
 On the pharmacy-side issue page (`ward_pharmacy_bht_issue.xhtml`), the
 **"Issue to BHT"** button (`PharmacySaleBhtController.settlePharmacyBhtIssueAccept`)
-also fires a `confirm()`, but silently returns via `JsfUtil.addErrorMessage`
-if `getPreBill().getToStaff() == null` — i.e. the **"Porter / Staff Carrying
-Medicines to Ward"** autocomplete near the top of the page must be filled
-first. No exception is logged server-side and no new `BILL` row is created;
-the only symptom is that a DB check for a fresh `ISSUE_MEDICINE_ON_REQUEST_INWARD`
-row comes back empty after a seemingly-successful click-and-confirm. Always
-fill the Porter field (any active `STAFF` row works for local testing) before
-clicking "Issue to BHT", and verify success by querying `BILL` for a new row
+also fires a `confirm()`, but if `getPreBill().getToStaff() == null` it
+rejects the attempt with the growl message **"Please select the staff
+member (porter) who will carry the medicines to the ward."** and returns —
+i.e. the **"Porter / Staff Carrying Medicines to Ward"** autocomplete near
+the top of the page must be filled first. It's not a silent no-op (the
+message is real), but it's easy to miss when driving the page via
+Playwright without checking for growl text after every action, and no
+exception is logged server-side either way. A DB check for a fresh
+`ISSUE_MEDICINE_ON_REQUEST_INWARD` row is the reliable way to catch this in
+a script: it comes back empty after a seemingly-successful click-and-confirm
+if the Porter field was skipped. Always fill the Porter field (any active
+`STAFF` row works for local testing) before clicking "Issue to BHT", and
+verify success by querying `BILL` for a new row
 rather than trusting the confirm dialog alone.
 
 Also: that Porter/Staff autocomplete searches the `STAFF`/`PERSON` tables,
