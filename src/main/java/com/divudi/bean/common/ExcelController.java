@@ -4235,7 +4235,7 @@ public class ExcelController {
             excelRow.createCell(cellIndex++).setCellValue(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "");
-            excelRow.createCell(cellIndex++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null  ? bill.getStaff().getPerson().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null  ? bill.getToStaff().getPerson().getName() : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getTotal());
             excelRow.createCell(cellIndex++).setCellValue(bill.getTax());
             excelRow.createCell(cellIndex++).setCellValue(bill.getNetTotal());
