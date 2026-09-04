@@ -892,55 +892,117 @@ public class InvestigationItemController implements Serializable {
         this.file = file;
     }
 
+    /**
+     * Migrates report items from the legacy String css* layout fields to the
+     * numeric ri* fields the current report rendering reads.
+     *
+     * Safe to re-run: a row that already carries new format coordinates keeps
+     * them, so a partially converted database is not overwritten.
+     */
     public void convertCssValuesToRiValues() {
         String j = "select ri from ReportItem ri";
         List<ReportItem> ris = riFacade.findByJpql(j);
+        int layoutMigrated = 0;
+        int textMigrated = 0;
+        int alreadyConverted = 0;
+        int failed = 0;
+
         for (ReportItem ri : ris) {
-
             try {
+                boolean changed = false;
 
-                ri.setCssTop(ri.getCssTop().replace("%", ""));
-                ri.setCssLeft(ri.getCssLeft().replace("%", ""));
-                ri.setCssHeight(ri.getCssHeight().replace("%", ""));
-                ri.setCssWidth(ri.getCssWidth().replace("%", ""));
+                // getRiTop() and getRiLeft() return the stored value as is. Do not use
+                // getRiWidth(), getRiHeight() or getRiFontSize() for this test - they
+                // apply a lazy default and write it back to the entity when read.
+                if (ri.getRiTop() == 0 && ri.getRiLeft() == 0) {
+                    Double top = parseLegacyCssLength(ri.getCssTop());
+                    Double left = parseLegacyCssLength(ri.getCssLeft());
+                    Double width = parseLegacyCssLength(ri.getCssWidth());
+                    Double height = parseLegacyCssLength(ri.getCssHeight());
 
-                try {
-                    ri.setRiTop(Double.parseDouble(ri.getCssTop()));
-                } catch (Exception e) {
-                    ri.setRiTop(11.11);
-                }
-
-                try {
-                    ri.setRiLeft(Double.parseDouble(ri.getCssLeft()));
-                } catch (Exception e) {
-                    ri.setRiTop(22.22);
-                }
-
-                try {
-                    ri.setRiHeight(Double.parseDouble(ri.getCssHeight()));
-                } catch (Exception e) {
-                    ri.setRiHeight(2);
-                }
-
-                try {
-                    ri.setRiWidth(Double.parseDouble(ri.getCssWidth()));
-                    if (ri.getRiWidth() < 20) {
-                        ri.setRiWidth(20);
+                    if (top != null) {
+                        ri.setRiTop(top);
+                        changed = true;
                     }
-                } catch (Exception e) {
-                    ri.setRiWidth(40);
+                    if (left != null) {
+                        ri.setRiLeft(left);
+                        changed = true;
+                    }
+                    if (width != null) {
+                        ri.setRiWidth(width);
+                        changed = true;
+                    }
+                    if (height != null) {
+                        ri.setRiHeight(height);
+                        changed = true;
+                    }
+                    if (changed) {
+                        layoutMigrated++;
+                    }
+                } else {
+                    alreadyConverted++;
                 }
 
-                if (ri.getHtmltext() == null || ri.getHtmltext().trim().equals("")) {
-                    ri.setHtmltext(ri.getName());
+                // The new format renders label content from htmltext. This is migrated
+                // independently of the layout - a row with no usable legacy coordinates
+                // still needs its text, or it renders blank.
+                // Image items are skipped: for those htmltext holds the image URL, not
+                // display text, so seeding it from the name would produce a broken src.
+                if (!isImageItem(ri)
+                        && (ri.getHtmltext() == null || ri.getHtmltext().trim().equals(""))) {
+                    if (ri.getName() != null && !ri.getName().trim().equals("")) {
+                        ri.setHtmltext(ri.getName());
+                        textMigrated++;
+                        changed = true;
+                    }
                 }
 
-                riFacade.edit(ri);
+                if (changed) {
+                    riFacade.edit(ri);
+                }
 
             } catch (Exception e) {
+                failed++;
             }
         }
 
+        JsfUtil.addSuccessMessage("Report items checked: " + ris.size()
+                + ". Layout migrated: " + layoutMigrated
+                + ". Text migrated: " + textMigrated
+                + ". Already in new format: " + alreadyConverted
+                + ". Failed: " + failed + ".");
+    }
+
+    /**
+     * Image items hold the image URL in htmltext rather than display text.
+     */
+    private boolean isImageItem(ReportItem ri) {
+        return ri.getIxItemType() == InvestigationItemType.ExternalImage
+                || ri.getIxItemType() == InvestigationItemType.Image
+                || ri.getIxItemType() == InvestigationItemType.ReportImage;
+    }
+
+    /**
+     * Parses a legacy css length such as "47", "10%" or " 30 " into the plain
+     * number the ri* fields hold.
+     *
+     * Returns null when there is nothing usable to migrate - null, blank, or a
+     * unit this percentage based layout never supported such as "25px" - so the
+     * caller leaves the field untouched instead of inventing a position.
+     */
+    private Double parseLegacyCssLength(String cssValue) {
+        if (cssValue == null) {
+            return null;
+        }
+        String cleaned = cssValue.replace("%", "").trim();
+        if (cleaned.isEmpty()) {
+            return null;
+        }
+        try {
+            return Double.valueOf(cleaned);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public String uploadJsonToCreateAnInvestigation() {
