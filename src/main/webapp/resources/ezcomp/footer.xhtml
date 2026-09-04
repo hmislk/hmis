@@ -18,7 +18,7 @@
             <p:outputLabel rendered="false" value="#{sessionController.userPreference.id}" ></p:outputLabel>
         </div>-->
 
-        <h:panelGroup rendered="#{applicationController.databaseMigrationPending}">
+<h:panelGroup rendered="#{applicationController.databaseMigrationPending and configOptionApplicationController.getBooleanValueByKey('Display pending Database Migration warning on the login page',true)}">
             <div style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999;
                         background-color: #dc3545; color: #fff; text-align: center;
                         padding: 10px 15px; font-size: 14px; font-weight: bold;"

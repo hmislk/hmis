@@ -15,8 +15,8 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel rendered="#{inwardSearch.patient.person ne null}">
-                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null}" class="">
+                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt ne null}">
+                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt ne null}" class="">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
                                     <div class="d-flex">
@@ -761,6 +761,57 @@
                                     </div>
                                     </h:panelGroup>
 
+                                    <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Bundled Custom 1 Format', false)}">
+                                    <div class="row mt-3">
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Bundled Custom 1"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="originalBundledCustom1BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="originalBundledCustom1BillPriview">
+                                                    <bi:finalBillBundledCustom1 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Bundled Custom 1"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="duplicateBundledCustom1BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="duplicateBundledCustom1BillPriview">
+                                                    <bi:finalBillBundledCustom1 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                    </div>
+                                    </h:panelGroup>
+
                                     <p:dialog id="custom2ConfigDialog"
                                               header="Custom Bills Printer Configuration"
                                               widgetVar="custom2ConfigDialog"
@@ -785,6 +836,10 @@
                                                 <div class="mb-3">
                                                     <h:selectBooleanCheckbox id="showCustomBill4Format" value="#{bhtSummeryController.showCustomBill4Format}" />
                                                     <h:outputLabel for="showCustomBill4Format" value="Show &quot;Custom Bill 3 (Letterhead)&quot; format" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="showBundledCustom1Format" value="#{bhtSummeryController.showBundledCustom1Format}" />
+                                                    <h:outputLabel for="showBundledCustom1Format" value="Show &quot;Bundled Custom 1&quot; format" class="ms-2" />
                                                 </div>
                                                 <hr/>
                                                 <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 2 Format', true)}">
@@ -1043,6 +1098,10 @@
 
                         <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
 
+                    </p:panel>
+
+                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt eq null}">
+                        <h:outputText value="This final bill has not been approved yet and cannot be viewed or printed." styleClass="text-danger" />
                     </p:panel>
                 </h:form>
             </ui:define>

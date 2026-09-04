@@ -87,10 +87,23 @@ documented here, and warrants stopping and asking rather than guessing.
   evidence-backed part of the approved fix. Applying that DDL to any
   database — even local — stays a human's call via the admin UI's "Add
   Missing..." page, same as it always is; this skill never runs it.
-- Never create test data with a direct database write (`INSERT`/`UPDATE`).
-  Same rule as `playwright-e2e`
-  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
-  generate it through the app, or stop — see step 4.
+- Never write to a **remote** database — production, staging, or anything
+  reached over an SSH tunnel. Read-only there, always, no exceptions.
+  A **local** database (localhost, no tunnel) is a disposable test
+  environment: no development environment is ever set up on a hosting
+  server, so "the database is local" is a reliable proxy for "this is safe
+  to modify freely". Confirm it genuinely is local before the first write —
+  the JNDI name in `persistence.xml` plus a `localhost` host with no active
+  tunnel on the DB port. If a datasource points anywhere else, treat it as
+  remote and stop. Create, mutate, and abandon local test data as needed —
+  do **not** revert it afterwards or treat local rows as precious.
+  Preferring to generate data *through the app* still applies as guidance
+  (`playwright-e2e`
+  [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification)),
+  because a fixture that bypasses the app's own validation can pass a test
+  while proving nothing — but locally that is a judgement call, not a hard
+  limit, and direct SQL is fine when it is simply the faster route. See
+  step 4.
 - Never put institution names, patient/doctor names, or credentials in any
   GitHub issue, PR, or comment (same rule as `dev-issue`, non-negotiable here
   too since there's no human proofreading before it posts).
@@ -268,20 +281,23 @@ SELECT ... FROM <entity-table> WHERE <feature-relevant condition>
 ORDER BY <recency> LIMIT 5;
 ```
 
-- Prefer an existing record over creating one — it's already representative
-  and needs no cleanup.
+- Prefer an existing record over creating one — it's already representative.
 - If nothing suitable exists, **generate it through the app** (per
   `playwright-e2e`
   [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification):
   create a purchase before a return, a shift-start before a shift-end, etc.)
-  instead of asking which record to use.
-- If the app itself can't produce what's needed either (e.g. the only path
-  to the required state is blocked by unrelated broken data, or requires a
-  second user session you don't have credentials for): this is a hard-limit
-  stop, same as an unreproducible bug in step 2a — post what was tried and
-  why it didn't work, and end the run. Do not paper over it with a direct
-  database write; a fixture that skips the app's own validation/business
-  logic can pass a test while proving nothing real.
+  instead of asking which record to use. Going through the app is preferred
+  because it exercises the same validation and business logic the fix has to
+  survive.
+- If the app can't get you there (the path is blocked by unrelated broken
+  data, or needs a second user session you don't have credentials for),
+  **write the local database directly** — `INSERT`/`UPDATE` is fine on a
+  local DB. Say so in the PR, and be aware of what a hand-built fixture
+  skips: if it bypasses the very validation the fix depends on, the test
+  proves less, so prefer the app route when the difference matters.
+- **Never** do any of this against a remote/tunnelled database (see Hard
+  limits). Locally, don't revert or clean up test data afterwards — a local
+  DB is disposable and the next run can reset it.
 - Environment is local Payara unless the issue explicitly requires otherwise
   — never assume a remote/production environment unattended (hard limit).
 
@@ -319,18 +335,82 @@ If 3+ fix attempts don't converge, that's the systematic-debugging
 architecture-question trigger, not a reason to keep guessing: stop, post
 findings, end the run.
 
+## 8a. Claude self-review before first push
+
+The only review this skill otherwise gets is step 14's CodeRabbit/Codex loop
+— and both bots can be unavailable at once (rate-limited, usage-exhausted)
+with no fallback, leaving a PR that ships with zero substantive review. This
+step adds an earlier, Claude-driven pass so a caught bug becomes part of the
+initial push instead of a second commit reacting to a bot (or a human) after
+the fact. It runs once step 8's Iterate loop passes end-to-end, before
+step 9/11.
+
+1. **Pick an effort level.** Default `medium`. Bump to `high` if the diff
+   touches billing, pharmacy, API (`ws/`), or security/privilege code — the
+   same shared/core risk areas `merge-gate` already flags ("touches
+   shared/core code (API, billing, pharmacy) where a regression could
+   silently break unrelated functions"), extended here to security/privilege
+   code given this skill's existing hard limit against writing such changes
+   at all.
+2. **Run `/code-review`** at that effort level against the working diff —
+   the uncommitted changes on the branch, before the first commit/push, not
+   against an already-open PR.
+3. **Triage each finding into one of three buckets:**
+   - **In-scope, confirmed bug** → fix it, rebuild/redeploy, re-run the
+     relevant Playwright/DB verification from step 7, and fold the fix into
+     the same commit as the original change.
+   - **Valid but outside the issue's named files/screens** → leave this PR's
+     diff alone; file a separate GitHub issue describing the pattern (same
+     shape as issue #23385, filed from this exact gap), and reference it in
+     this PR's description under a short "Follow-up" note. This is filing an
+     issue, which step 0's blanket authorization already covers — no
+     separate confirmation needed.
+   - **Low-confidence / stylistic / reuse-nitpick** → no fix, no new issue;
+     note it under the PR's "Decisions made without approval" section (step
+     13) so a human can look later.
+4. **Document the pass** in that same PR section — which findings came up,
+   which bucket each landed in, and why — the same judgment-call-logging
+   convention already used for steps 3 and 13.
+
+Step 14's CodeRabbit/Codex loop is unchanged by this step — this is an
+earlier, additional layer, not a replacement.
+
 ## 9. Record learnings
 
 Same as `dev-issue` step 9 — append new Playwright/dev gotchas to
 `developer_docs/testing/playwright-e2e-workflow.md` if any surfaced.
 
-## 10. Publish evidence (wiki, issue, PR)
+## 10. Publish evidence and update the wiki
 
-Same as `dev-issue` step 10 (screenshots to `../hmis.wiki/images/`, wiki
-commit/push, issue comment with embedded raw wiki-image URLs, clean up
-`tmp/`) — with extra weight on redaction since no human reviews the
-screenshots before they're published: when in doubt about a screenshot,
-crop tighter or drop it rather than publish it uncertain.
+Same as `dev-issue` step 10 — including its **required** wiki-page update
+(find the page, embed the screenshots, replace outdated images, correct any
+text the change makes wrong, or create/skip the page with the reason stated),
+and linking the updated page(s) in the issue comment. Publishing an image
+without wiring it into a page leaves it orphaned; that is not a completed
+step 10.
+
+Two additions for unattended runs:
+
+- **Extra weight on redaction**, since no human reviews the screenshots
+  before they're published: when in doubt about a screenshot, crop tighter or
+  drop it rather than publish it uncertain. This applies to the wiki page too
+  — a page edit is as public as an issue comment.
+- **Wiki prose: only publish what you can verify.** A wrong page edit is
+  public the moment it's pushed, and noting it in the PR afterwards doesn't
+  unpublish it. So the test is not "am I confident?" but **"can I point at the
+  code, or at evidence from this run, that shows the current text is wrong?"**
+  - **Publish** — inserting verified screenshots, and correcting text that
+    demonstrably contradicts the code or the behaviour you just verified.
+    Cite the evidence in the PR (e.g. *"page documented room discharge via
+    `roomDischargeDateTime`; `hasActiveRoom()` deliberately stopped using
+    that field in #21935"*).
+  - **Leave it and flag it** — anything you'd be *inferring*: prose that
+    merely reads as unclear or outdated, claims about behaviour outside what
+    this run touched, or restructuring a page's scope. Note it in the PR as a
+    documentation issue for a human, rather than rewriting it unattended.
+
+  Record every prose change either way in the "Decisions made without
+  approval" section of the PR (step 13).
 
 ## 11. Pre-push check
 
@@ -348,10 +428,13 @@ limit above before writing it, same as an issue or PR body.
 
 ## 13. Create the PR
 
-Same as `dev-issue` step 13, plus a **"Decisions made without approval"**
-section up front listing every step-3 judgment call in one place, so the
-user can scan exactly what to double-check first. Redact this body per the
-hard limit above too — same as every other publication point.
+Same as `dev-issue` step 13 — including its required **Documentation**
+section linking the wiki page(s) updated in step 10 (or stating that none was
+needed, and why) — plus a **"Decisions made without approval"** section up
+front listing every step-3 judgment call in one place, so the user can scan
+exactly what to double-check first. Any wiki prose you rewrote belongs in
+that list. Redact this body per the hard limit above too — same as every
+other publication point.
 
 ## 14. Review loop (until mergeable) — waiting without the user present
 

@@ -13,6 +13,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ChargeItemTotal;
 import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.inward.InwardChargeType;
 
@@ -67,6 +68,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.EnumMap;
 import java.util.Map;
@@ -1866,6 +1868,63 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * The specific Outside Charge items (name + amount, summed per item
+     * name) contributing to each charge type's total, so the Interim Bill
+     * can list the actual items instead of only the category label
+     * (issue #22989) — the InwardChargeType a charge belongs to is already
+     * derivable from the item, so callers can show the item directly rather
+     * than the shared category row. Companion to
+     * {@link #caltValueFromAdditionalChargeBulk} — same filter, broken out
+     * per item instead of summed into one value.
+     */
+    public Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> caltAdditionalChargeItemDetailsBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT i.inwardChargeType, i.item.name, i.netValue"
+                + " FROM BillItem i "
+                + " WHERE i.retired=false "
+                + " AND i.bill.billType=:btp "
+                + " AND i.bill.patientEncounter IN :pe "
+                + " AND i.item IS NOT NULL";
+
+        HashMap m = new HashMap();
+        m.put("btp", BillType.InwardOutSideBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        m.put("pe", pts);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, m, TemporalType.DATE);
+
+        // Group by charge type, then merge same-named items within a type
+        // (e.g. the same Outside Charge item added twice) into one summed row.
+        Map<InwardChargeType, Map<String, Double>> amountsByTypeAndName = new EnumMap<>(InwardChargeType.class);
+        if (results != null) {
+            for (Object[] row : results) {
+                InwardChargeType chargeType = (InwardChargeType) row[0];
+                String itemName = (String) row[1];
+                double amount = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                if (chargeType == null || itemName == null || itemName.isEmpty()) {
+                    continue;
+                }
+                amountsByTypeAndName.computeIfAbsent(chargeType, k -> new LinkedHashMap<>())
+                        .merge(itemName, amount, Double::sum);
+            }
+        }
+
+        Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> itemsMap = new EnumMap<>(InwardChargeType.class);
+        for (Map.Entry<InwardChargeType, Map<String, Double>> byType : amountsByTypeAndName.entrySet()) {
+            List<ChargeItemTotal.AdditionalChargeItem> items = new ArrayList<>();
+            for (Map.Entry<String, Double> byName : byType.getValue().entrySet()) {
+                items.add(new ChargeItemTotal.AdditionalChargeItem(byName.getKey(), byName.getValue()));
+            }
+            itemsMap.put(byType.getKey(), items);
+        }
+
+        return itemsMap;
+    }
+
     public List<PatientEncounter> fetchChildPatientEncounter(PatientEncounter patientEncounter) {
         List<PatientEncounter> cpt = new ArrayList<>();
 
@@ -2119,6 +2178,8 @@ public class InwardBeanController implements Serializable {
 
                 itm.setTransCheckedCount(calCheckedBillItemCount(itm, patientEncounter));
                 itm.setTransBillItemCount(billed - (cancelld + refund));
+                itm.setTransCancelledBillItemCount(cancelld);
+                itm.setTransRefundedBillItemCount(refund);
 
                 long itemTime = System.currentTimeMillis() - itemStartTime;
                 if (itemTime > 100) {
@@ -2204,6 +2265,8 @@ public class InwardBeanController implements Serializable {
 
                     itm.setTransCheckedCount(checked);
                     itm.setTransBillItemCount(billed - (cancelled + refund));
+                    itm.setTransCancelledBillItemCount(cancelled);
+                    itm.setTransRefundedBillItemCount(refund);
                     itm.setTransGrossValue(values[0]);
                     itm.setTransDiscount(values[1]);
                     itm.setTransMarginValue(values[2]);
@@ -3301,7 +3364,11 @@ public class InwardBeanController implements Serializable {
         }
         HashMap hm = new HashMap();
         hm.put("id", ti.getId());
-        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC";
+        // The id tiebreak matters: getFeeForBlock() indexes into this list positionally,
+        // so any two fees sharing a sortOrder would otherwise order arbitrarily and the
+        // same stay could be billed at a different tier on different runs. New fees can
+        // no longer collide (TimedItemFeeRules), but rows saved before that still can.
+        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC, tif.id ASC";
         List<TimedItemFee> fees = getTimedItemFeeFacade().findByJpql(sql, hm);
         return fees != null ? fees : new ArrayList<>();
     }
@@ -3380,7 +3447,28 @@ public class InwardBeanController implements Serializable {
 
     public double calCountWithoutOverShoot(TimedItemFee tif, Date admittedAt, Date dischargedAt) {
 
-        double duration = tif.getDurationHours() * 60;
+        // No fee configured at all counts the same as a fee with no duration set:
+        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
+        // so this is reachable from the room paths, and a missing configuration
+        // should not break the page that is rendering the bill.
+        if (tif == null) {
+            return 0;
+        }
+
+        // A one-time fee is charged once for the whole service, however long it ran.
+        if (tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
+
+        // Same guard calCount already applies. Persisted data can still carry a
+        // time-based fee with no duration set, and dividing by it below yields
+        // Infinity — which casts to a huge block count and overcharges the bill.
+        if (duration <= 0) {
+            return 0;
+        }
+
         double consumeTimeM = 0L;
 
         if (admittedAt == null) {
@@ -3424,7 +3512,10 @@ public class InwardBeanController implements Serializable {
         BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+        // Porter-based ward return flow (#21466/#21470) - see issue #22990.
+        BillTypeAtomic.RETURN_MEDICINE_INWARD,
+        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION
     );
     public double calculateInwardTotal(PatientEncounter patientEncounter) {
         if (patientEncounter == null) {
@@ -3476,8 +3567,22 @@ public class InwardBeanController implements Serializable {
 
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
-        double duration = tif.getDurationHours() * 60;
-        double overShoot = tif.getOverShootHours() * 60;
+        // No fee configured at all counts the same as a fee with no duration set:
+        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
+        // so this is reachable from the room paths, and a missing configuration
+        // should not break the page that is rendering the bill.
+        if (tif == null) {
+            return 0;
+        }
+
+        // A one-time fee is charged once for the whole service, however long it
+        // ran — no block counting, and no dependency on elapsed time at all.
+        if (tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
+        double overShoot = tif.getOverShootMinutes();
         //  double tempFee = tif.getFee();
         double consumeTime = 0;
 

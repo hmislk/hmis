@@ -23,6 +23,7 @@ import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.data.dto.pharmacy.BhtIssueReturnItemStatusDto;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -53,7 +54,8 @@ public class BhtIssueReturnController implements Serializable {
     private List<BillItem> billItems;
     private String returnComment = "";
     private double discountTotal = 0.0;
-    
+    private List<BhtIssueReturnItemStatusDto> runningStatusRows;
+
     
     ///////
     @EJB
@@ -104,8 +106,9 @@ public class BhtIssueReturnController implements Serializable {
         }
         printPreview = false;
         billItems = null;
+        runningStatusRows = null;
         returnComment = "";
-        
+
         if (bill.getDepartment() == null) {
             JsfUtil.addErrorMessage("No Department for the Bill");
             return null;
@@ -203,6 +206,7 @@ public class BhtIssueReturnController implements Serializable {
         returnBill = null;
         printPreview = false;
         billItems = null;
+        runningStatusRows = null;
         returnComment = "";
     }
 
@@ -218,6 +222,13 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setBilledBill(getBill());
         getReturnBill().setComments(returnComment);
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
+        // copy() is deliberately not used here (it also overwrites department/institution,
+        // set explicitly below to the returning department), but patientEncounter/patient
+        // still need to be carried over - without them this return bill is invisible to every
+        // patientEncounter-scoped query (Interim Bill Medicine total, Medicine Issue tab), so
+        // the returned value silently never gets deducted (issue #22990).
+        getReturnBill().setPatientEncounter(getBill().getPatientEncounter());
+        getReturnBill().setPatient(getBill().getPatient());
 
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
@@ -246,6 +257,10 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setBillType(getBill().getBillType());
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         getReturnBill().setBilledBill(getBill());
+        // See saveReturnBill() above - patientEncounter/patient must be carried over
+        // explicitly since copy() is not used here (issue #22990).
+        getReturnBill().setPatientEncounter(getBill().getPatientEncounter());
+        getReturnBill().setPatient(getBill().getPatient());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
         getReturnBill().setComments(returnComment);
@@ -457,12 +472,70 @@ public class BhtIssueReturnController implements Serializable {
         getBillFacade().edit(getBill());
 
         /// setOnlyReturnValue();
+        buildRunningStatusRows();
         printPreview = true;
         returnComment = "";
         JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 
+    /**
+     * Builds the per-item quantity reconciliation rows shown on the "Running
+     * Update Status" tab after a return is settled (issue #23338).
+     * <p>
+     * Iterates the ORIGINAL bill's pharmaceutical items rather than
+     * {@link #billItems}: {@link #generateBillComponent()} skips lines whose
+     * balance already reached zero (the {@code if (tmpQty <= 0) { continue; }}
+     * at ~line 549), so a table built from {@code billItems} would silently
+     * omit fully-returned items - exactly the lines a reconciliation view
+     * needs to show (with Balance 0).
+     * <p>
+     * Must run after persistence: {@link PharmacyCalculation#getTotalQty}
+     * is an aggregate over saved return bill items, so it only includes this
+     * settlement once {@link #saveComponent()} has committed.
+     * <p>
+     * {@code getTotalQty(BillItem, BillType)} is deliberately the same call
+     * {@link #generateBillComponent()} (~line 546) and {@link #settle()}'s
+     * validation loop (~line 411) already use, so this table cannot disagree
+     * with the "Balance Qty in Unit" the pre-settle grid shows.
+     */
+    private void buildRunningStatusRows() {
+        runningStatusRows = new ArrayList<>();
+        if (bill == null) {
+            return;
+        }
+        for (PharmaceuticalBillItem originalPbi : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
+            BillItem originalBillItem = originalPbi.getBillItem();
+            if (originalBillItem == null) {
+                continue;
+            }
+
+            double saleQty = Math.abs(originalPbi.getQty());
+
+            // Total returned across ALL returns of this line, including the one just settled.
+            double totalReturnedQty = Math.abs(
+                    getPharmacyRecieveBean().getTotalQty(originalBillItem, getBill().getBillType()));
+
+            // The slice of that total contributed by this settlement.
+            double thisTimeReturnedQty = 0.0;
+            if (returnBill != null && returnBill.getBillItems() != null) {
+                for (BillItem rbi : returnBill.getBillItems()) {
+                    if (rbi.getReferanceBillItem() != null
+                            && rbi.getReferanceBillItem().equals(originalBillItem)) {
+                        thisTimeReturnedQty += Math.abs(rbi.getQty());
+                    }
+                }
+            }
+
+            double previouslyReturnedQty = totalReturnedQty - thisTimeReturnedQty;
+            double balanceQty = saleQty - totalReturnedQty;
+
+            String itemName = originalBillItem.getItem() == null ? "" : originalBillItem.getItem().getName();
+
+            runningStatusRows.add(new BhtIssueReturnItemStatusDto(
+                    itemName, saleQty, previouslyReturnedQty, thisTimeReturnedQty, totalReturnedQty, balanceQty));
+        }
+    }
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
@@ -519,7 +592,13 @@ public class BhtIssueReturnController implements Serializable {
             bi.setReferenceBill(getBill());
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
-            bi.setMarginRate(bi.getNetRate() - bi.getRate());
+            // marginRate is never persisted at issue time (only marginValue is - see
+            // InpatientDirectIssueNativeSqlService.settle()'s BILLITEM insert column list),
+            // so it must be reconstructed here. netRate = rate + marginRate - discountRate,
+            // so marginRate = netRate - rate + discountRate. Omitting "+ discountRate"
+            // (the previous formula) understates margin by the discount amount whenever
+            // the original item had a nonzero discount (issue #23334).
+            bi.setMarginRate(bi.getNetRate() - bi.getRate() + bi.getDiscountRate());
             bi.setQty(0.0);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
@@ -642,6 +721,17 @@ public class BhtIssueReturnController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public List<BhtIssueReturnItemStatusDto> getRunningStatusRows() {
+        if (runningStatusRows == null) {
+            runningStatusRows = new ArrayList<>();
+        }
+        return runningStatusRows;
+    }
+
+    public void setRunningStatusRows(List<BhtIssueReturnItemStatusDto> runningStatusRows) {
+        this.runningStatusRows = runningStatusRows;
     }
 
     public BillFeeFacade getBillFeeFacade() {
