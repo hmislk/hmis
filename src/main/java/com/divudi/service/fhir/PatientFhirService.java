@@ -110,10 +110,21 @@ public class PatientFhirService {
     // -------------------------------------------------------------------------
 
     public Patient createPatient(org.hl7.fhir.r5.model.Patient fhirPt, WebUser creator) {
+        // Only acts when the caller explicitly sent "active" -- absent means "don't care",
+        // not "make active" (a new Patient/Person already defaults to non-retired).
+        boolean explicitlyInactive = fhirPt.hasActive() && !fhirPt.getActive();
+
         Person person = new Person();
         mapFhirToPerson(fhirPt, person);
         person.setCreatedAt(new Date());
         person.setCreater(creator);
+        if (explicitlyInactive) {
+            // Kept in sync with Patient.retired below, same as the canonical
+            // PatientController.activePatient/deActivePatient retire path, which
+            // always retires Patient and its Person together.
+            person.setRetired(true);
+            person.setRetireComments("De-Activated");
+        }
         personFacade.create(person);
 
         Patient patient = new Patient();
@@ -135,6 +146,14 @@ public class PatientFhirService {
         String phn = extractIdentifierValue(fhirPt, "urn:lk:phn");
         if (phn != null && !phn.trim().isEmpty()) {
             patient.setPhn(phn);
+        }
+
+        // active -> retired (inverse), same field toFhirPatient() reads back from.
+        if (explicitlyInactive) {
+            patient.setRetired(true);
+            patient.setRetirer(creator);
+            patient.setRetiredAt(new Date());
+            patient.setRetireComments("De-Activated");
         }
 
         patientFacade.createAndFlush(patient);
@@ -166,6 +185,29 @@ public class PatientFhirService {
         String phn = extractIdentifierValue(fhirPt, "urn:lk:phn");
         if (phn != null && !phn.trim().isEmpty()) {
             patient.setPhn(phn);
+        }
+
+        // active -> retired (inverse), symmetric with createPatient(). Only acts when the
+        // caller explicitly sent "active" and it actually flips current status. Kept in
+        // sync on both Patient and Person, same as the canonical
+        // PatientController.activePatient/deActivePatient retire path.
+        if (fhirPt.hasActive()) {
+            boolean shouldBeActive = fhirPt.getActive();
+            if (shouldBeActive && patient.isRetired()) {
+                patient.setRetired(false);
+                patient.setRetirer(null);
+                patient.setRetiredAt(null);
+                patient.setRetireComments("Re-Activated");
+                person.setRetired(false);
+                person.setRetireComments("Re-Activated");
+            } else if (!shouldBeActive && !patient.isRetired()) {
+                patient.setRetired(true);
+                patient.setRetirer(editor);
+                patient.setRetiredAt(new Date());
+                patient.setRetireComments("De-Activated");
+                person.setRetired(true);
+                person.setRetireComments("De-Activated");
+            }
         }
 
         patient.setEditer(editor);
