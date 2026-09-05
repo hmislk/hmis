@@ -8,6 +8,7 @@ package com.divudi.ws.pharmacy;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
+import com.divudi.service.pharmacy.DuplicateItemException;
 import com.divudi.service.pharmacy.PharmaceuticalItemApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -165,6 +166,8 @@ public class PharmaceuticalItemApi {
 
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+        } catch (DuplicateItemException e) {
+            return alreadyExistsResponse(e.getExistingId(), e.getExistingDto());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && (msg.contains("not found") || msg.contains("is required") || msg.contains("Invalid"))) {
@@ -172,6 +175,22 @@ public class PharmaceuticalItemApi {
             }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
+    }
+
+    /**
+     * Builds the already_exists/409 response for a duplicate-by-name create,
+     * same convention as ClinicalMetadataApi / InvestigationApi. Built directly
+     * from the DTO the service already loaded (see DuplicateItemException) rather
+     * than re-fetching by ID, so a concurrent retire of that row in between can't
+     * turn this into a spurious 500.
+     */
+    private Response alreadyExistsResponse(Long existingId, Object existingDto) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "already_exists");
+        response.put("code", 409);
+        response.put("id", existingId);
+        response.put("data", existingDto);
+        return Response.status(409).entity(gson.toJson(response)).build();
     }
 
     /**
