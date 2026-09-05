@@ -41,10 +41,10 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="OPD / ETU"   />
+                <h:outputLabel value="RECEIPT" />
 
-                 <h:outputLabel value="Duplicate" style="font-weight:bold;" rendered="#{cc.attrs.duplicate eq true}" />
-                 <h:outputLabel value="Cancelled" style="font-weight:bold;" rendered="#{cc.attrs.cancelled}" />
+                <h:outputLabel value="**Duplicate**" style="font-weight:bold;" rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**" style="font-weight:bold;" rendered="#{cc.attrs.cancelled}" />
 
             </div>
 
@@ -155,7 +155,7 @@
 
                     <tr>
                         <td style="text-align: left;" >
-                            <h:outputLabel value="BHT No : " class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="BHT No" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td style="width: 10px;"></td>
                         <td >:</td>
@@ -168,7 +168,7 @@
                         <td style="width: 50px;"></td>
 
                         <td>
-                            <h:outputLabel value="Room No :" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="Room No" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
                             <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
