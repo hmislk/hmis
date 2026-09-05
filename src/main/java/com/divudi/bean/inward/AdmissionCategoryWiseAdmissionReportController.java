@@ -340,8 +340,8 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
             dto.setPatientAmount(patientAmount);
             dto.setDiscount(discount);
             dto.setInvoiceAmount(invoiceAmount);
-            dto.setBillBalance(Math.max(0.0, invoiceAmount - (sponsorAmount + patientAmount)));
-            dto.setPatientBalance(Math.max(0.0, patientAmount - paidByPatient));
+            dto.setBillBalance(invoiceAmount - (sponsorAmount + patientAmount));
+            dto.setPatientBalance(patientAmount - paidByPatient);
         }
     }
 
