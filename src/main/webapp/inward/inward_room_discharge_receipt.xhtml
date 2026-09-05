@@ -29,7 +29,7 @@
                     <h:panelGroup rendered="#{roomChangeController.roomForReceipt ne null}" layout="block">
 
                         <!-- Action Buttons (hidden when printing) -->
-                        <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+                        <div class="d-flex justify-content-between align-items-center mb-3 mt-2 mx-2 no-print">
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                     type="button"
@@ -38,13 +38,13 @@
                                     class="ui-button-info"
                                     onclick="window.print();">
                                 </p:commandButton>
-                                <p:commandButton
+<!--                                <p:commandButton
                                     type="button"
                                     value="Print Copy"
                                     icon="fa fa-copy"
                                     class="ui-button-secondary"
                                     onclick="window.print();">
-                                </p:commandButton>
+                                </p:commandButton>-->
                             </div>
                             <p:commandButton
                                 value="Inpatient Dashboard"
@@ -59,7 +59,7 @@
                         </div>
 
                         <!-- Receipt Content -->
-                        <div class="border p-4" style="max-width:800px; margin:0 auto; background:#fff;">
+                        <div class="print-area border p-4" style="max-width:800px; margin:0 auto; background:#f0f2f5;">
                             <!-- Hospital Header -->
                             <div class="text-center mb-4">
                                 <h4 class="mb-0 fw-bold">
@@ -160,7 +160,7 @@
 
                 </h:form>
 
-                <!-- Auto-print on load when receipt is present -->
+<!--                 Auto-print on load when receipt is present 
                 <h:panelGroup rendered="#{roomChangeController.roomForReceipt ne null}">
                     <script type="text/javascript">
                         //<![CDATA[
@@ -171,20 +171,37 @@
                         };
                         //]]>
                     </script>
-                </h:panelGroup>
+                </h:panelGroup>-->
 
                 <!-- Print styling -->
                 <style type="text/css">
                     @media print {
-                        .no-print, .no-print * {
-                            display: none !important;
+                        /* Hide everything */
+                        body * {
+                            visibility: hidden !important;
                         }
+
+                        /* Show only the receipt */
+                        .print-area,
+                        .print-area * {
+                            visibility: visible !important;
+                        }
+
+                        /* Position receipt at top-left */
+                        .print-area {
+                            position: absolute !important;
+                            left: 0 !important;
+                            top: 0 !important;
+                            width: 100% !important;
+                            margin: 0 !important;
+                            border: none !important;
+                            padding: 10mm !important;
+                            background: white !important;
+                        }
+
                         body {
                             margin: 0;
-                            padding: 10mm;
-                        }
-                        .border {
-                            border: none !important;
+                            padding: 0;
                         }
                     }
                 </style>
