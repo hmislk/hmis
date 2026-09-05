@@ -994,12 +994,25 @@ public class InvestigationItemController implements Serializable {
         if (cssValue == null) {
             return null;
         }
-        String cleaned = cssValue.replace("%", "").trim();
+        String cleaned = cssValue.trim();
+        if (cleaned.endsWith("%")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
+        }
+        // Anything with a percent sign left in it is malformed, such as "10%%".
+        if (cleaned.contains("%")) {
+            return null;
+        }
         if (cleaned.isEmpty()) {
             return null;
         }
         try {
-            return Double.valueOf(cleaned);
+            // Double.valueOf accepts "NaN" and "Infinity". Those cannot be stored in
+            // the double ri* columns, so treat them as nothing usable to migrate.
+            Double value = Double.valueOf(cleaned);
+            if (value.isNaN() || value.isInfinite()) {
+                return null;
+            }
+            return value;
         } catch (NumberFormatException e) {
             return null;
         }
