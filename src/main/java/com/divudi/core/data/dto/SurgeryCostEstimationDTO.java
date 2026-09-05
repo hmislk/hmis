@@ -41,8 +41,7 @@ public class SurgeryCostEstimationDTO implements Serializable {
     // New constructor matching optimized JPQL projection
     public SurgeryCostEstimationDTO(Long surgeryBillId, Long procedureId, String phn, String patientName,
                                     String admissionNo, Date admissionDate, String bedNo,
-                                    String serviceName, String surgeryTypeName, Long admissionId,
-                                    com.divudi.core.data.Title billStaffTitle, String billStaffName) {
+                                    String serviceName, String surgeryTypeName, Long admissionId) {
         this.surgeryBillId = surgeryBillId;
         this.procedureId = procedureId;
         this.phn = phn;
@@ -53,7 +52,6 @@ public class SurgeryCostEstimationDTO implements Serializable {
         this.serviceName = serviceName;
         this.surgeryTypeName = surgeryTypeName;
         this.admissionId = admissionId;
-        this.surgeonName = billStaffTitle != null ? billStaffTitle.toString() : billStaffName;
     }
 
     // Constructor matching JPQL projection

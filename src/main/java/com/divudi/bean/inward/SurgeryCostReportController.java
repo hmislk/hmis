@@ -129,29 +129,13 @@ public class SurgeryCostReportController implements Serializable {
     }
 
     public String getTheatreOccupancyStatusLabel(TheatreOccupancyStatus status) {
-        if (status == null) {
-            return "";
-        }
-        switch (status) {
-            case SCHEDULED:
-                return "Scheduled";
-            case SENT_TO_THEATRE:
-                return "Sent to Theatre";
-            case RECEIVED_IN_THEATRE:
-                return "Received in Theatre";
-            case IN_THEATRE:
-                return "In Theatre";
-            case PROCEDURE_COMPLETED:
-                return "Procedure Completed";
-            case IN_RECOVERY:
-                return "In Recovery";
-            case RETURNED_TO_WARD:
-                return "Returned to Ward";
-            case CANCELLED:
-                return "Cancelled";
-            default:
-                return status.name();
-        }
+        return status == null ? "" : status.getLabel();
+    }
+
+    private boolean isSummaryMode() {
+        return surgeryCostEstimationReportType != null
+                && !surgeryCostEstimationReportType.isEmpty()
+                && !"detail".equals(surgeryCostEstimationReportType);
     }
 
     private String getSurgeryCostEstimationReportTypeLabel() {
@@ -190,9 +174,7 @@ public class SurgeryCostReportController implements Serializable {
             return;
         }
 
-        boolean isSummaryMode = surgeryCostEstimationReportType != null
-                && !surgeryCostEstimationReportType.isEmpty()
-                && !"detail".equals(surgeryCostEstimationReportType);
+        boolean isSummaryMode = isSummaryMode();
 
         if (isSummaryMode) {
             fetchSurgeryCostSummary(surgeryCostEstimationReportType);
@@ -225,17 +207,22 @@ public class SurgeryCostReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder(1024);
 
+        // bedNo sources from room.roomFacilityCharge.room.name (the actual bed/room
+        // number, e.g. "Room 103") - the same path NursingWorkBenchController uses
+        // for its bed display. PatientRoom.name (the pre-refactor field) is never
+        // populated in practice (verified: NULL on all 64 currently-admitted
+        // patients locally); RoomFacilityCharge.name is a compound facility label
+        // (e.g. "Room 103 wom"), not a bed number.
         jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostEstimationDTO( ")
                 .append("sb.id, proc.id, admission.patient.phn, admission.patient.person.name, ")
-                .append("admission.bhtNo, admission.dateOfAdmission, room.roomFacilityCharge.name, ")
-                .append("item.name, cat.name, admission.id, billPerson.title, billPerson.name) ")
+                .append("admission.bhtNo, admission.dateOfAdmission, room.roomFacilityCharge.room.name, ")
+                .append("item.name, cat.name, admission.id) ")
                 .append("FROM BilledBill sb ")
                 .append("JOIN sb.procedure proc ")
                 .append("JOIN proc.item item ")
                 .append("LEFT JOIN item.category cat ")
                 .append("JOIN sb.patientEncounter admission ")
                 .append("LEFT JOIN admission.currentPatientRoom room ")
-                .append("LEFT JOIN sb.staff billStaff LEFT JOIN billStaff.person billPerson ")
                 .append("WHERE sb.retired = false ")
                 .append("AND sb.cancelled = false ")
                 .append("AND sb.billType = :surgeryBillType ")
@@ -362,11 +349,17 @@ public class SurgeryCostReportController implements Serializable {
             return;
         }
 
+        // Resolves via the staff's linked person only. The pre-refactor
+        // resolveStaffName(ec) had a second fallback to ec.getStaff().getName(),
+        // but Staff.name is @Transient (never mapped to a column, and never
+        // populated anywhere in this codebase - confirmed via grep and via a
+        // live JPQL failure: "st.name cannot be resolved to a valid type"),
+        // so that fallback was always a no-op producing "" in practice. Does
+        // NOT fall back to the bill fee's (possibly different) staff.
         String ecJpql = "SELECT ec.patientEncounter.id, ec.patientEncounterComponentType, "
-                + " stp.title, stp.name, bfstp.title, bfstp.name "
+                + " stp.title, stp.name "
                 + "FROM EncounterComponent ec "
                 + "LEFT JOIN ec.staff st LEFT JOIN st.person stp "
-                + "LEFT JOIN ec.billFee bf LEFT JOIN bf.staff bfst LEFT JOIN bfst.person bfstp "
                 + "WHERE ec.retired = false AND ec.patientEncounter.id IN :procIds "
                 + "AND ec.patientEncounterComponentType IN (:perfType, :asstType)";
 
@@ -384,18 +377,12 @@ public class SurgeryCostReportController implements Serializable {
             for (Object[] row : rows) {
                 Long procId = (Long) row[0];
                 PatientEncounterComponentType type = (PatientEncounterComponentType) row[1];
-                com.divudi.core.data.Title title1 = (com.divudi.core.data.Title) row[2];
-                String name1 = (String) row[3];
-                com.divudi.core.data.Title title2 = (com.divudi.core.data.Title) row[4];
-                String name2 = (String) row[5];
+                com.divudi.core.data.Title personTitle = (com.divudi.core.data.Title) row[2];
+                String personName = (String) row[3];
 
-                String name = (name1 != null && !name1.trim().isEmpty()) ? name1.trim()
-                        : (name2 != null ? name2.trim() : null);
-                if (name == null || name.isEmpty()) {
-                    continue;
-                }
-                com.divudi.core.data.Title title = title1 != null ? title1 : title2;
-                String fullName = (title != null ? title + " " : "") + name;
+                String fullName = (personName != null && !personName.trim().isEmpty())
+                        ? (personTitle != null ? personTitle.getLabel() : "") + personName.trim()
+                        : "";
 
                 List<SurgeryCostEstimationDTO> targetDtos = dtosByProcId.get(procId);
                 if (targetDtos == null) {
@@ -421,12 +408,16 @@ public class SurgeryCostReportController implements Serializable {
             return;
         }
 
+        // Room name and status must come from the SAME PatientTransferRequest
+        // row (the single latest one per bill, by id) - independently
+        // overwriting each field from every row (regardless of status) let a
+        // stale room pair with a newer status or vice versa.
         String ptrJpql = "SELECT ptr.surgeryBill.id, ptr.theatreOccupancyStatus, ptr.toRoomFacilityCharge.name "
                 + "FROM PatientTransferRequest ptr "
                 + "WHERE ptr.retired = false "
                 + "AND ptr.surgeryBill.id IN :billIds "
-                + "AND ptr.theatreOccupancyStatus IS NOT NULL "
-                + "ORDER BY ptr.createdAt ASC";
+                + "AND ptr.id = (SELECT MAX(ptr2.id) FROM PatientTransferRequest ptr2 "
+                + "  WHERE ptr2.surgeryBill.id = ptr.surgeryBill.id AND ptr2.retired = false)";
 
         for (List<Long> batch : partition(billIds, IN_CLAUSE_BATCH_SIZE)) {
             Map<String, Object> params = new HashMap<>();
@@ -446,12 +437,8 @@ public class SurgeryCostReportController implements Serializable {
                 if (dto == null) {
                     continue;
                 }
-                if (roomName != null) {
-                    dto.setOtRoomName(roomName);
-                }
-                if (status != null) {
-                    dto.setSurgeryStatusLabel(getTheatreOccupancyStatusLabel(status));
-                }
+                dto.setOtRoomName(roomName);
+                dto.setSurgeryStatusLabel(status != null ? getTheatreOccupancyStatusLabel(status) : null);
             }
         }
     }
@@ -684,9 +671,7 @@ public class SurgeryCostReportController implements Serializable {
         BarChart barChart = new BarChart();
         BarData barData = new BarData();
 
-        boolean isSummary = surgeryCostEstimationReportType != null
-                && !surgeryCostEstimationReportType.isEmpty()
-                && !"detail".equals(surgeryCostEstimationReportType);
+        boolean isSummary = isSummaryMode();
 
         if (isSummary) {
             BarDataset dataset = new BarDataset()
@@ -744,9 +729,7 @@ public class SurgeryCostReportController implements Serializable {
     }
 
     public void downloadSurgeryCostEstimationExcel() {
-        boolean isSummary = surgeryCostEstimationReportType != null
-                && !surgeryCostEstimationReportType.isEmpty()
-                && !"detail".equals(surgeryCostEstimationReportType);
+        boolean isSummary = isSummaryMode();
 
         if (isSummary) {
             if (surgeryCostSummaryList == null || surgeryCostSummaryList.isEmpty()) {
@@ -1077,9 +1060,7 @@ public class SurgeryCostReportController implements Serializable {
     }
 
     public void downloadSurgeryCostEstimationPdf() {
-        boolean isSummary = surgeryCostEstimationReportType != null
-                && !surgeryCostEstimationReportType.isEmpty()
-                && !"detail".equals(surgeryCostEstimationReportType);
+        boolean isSummary = isSummaryMode();
 
         if (isSummary) {
             if (surgeryCostSummaryList == null || surgeryCostSummaryList.isEmpty()) {
