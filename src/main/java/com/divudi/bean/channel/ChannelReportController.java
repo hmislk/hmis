@@ -1294,8 +1294,6 @@ public class ChannelReportController implements Serializable {
         for (SessionInstance s : sessioninstances) {
             if (s.isCancelled()) {
                 canceledSessionInstances.add(s);
-            }else{
-            channelService.fillBillSessionsAndUpdateBookingsCountInSessionInstance(s);
             }
         }
 
