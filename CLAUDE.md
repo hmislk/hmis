@@ -45,6 +45,7 @@
 - [Persistence Configuration Guide](developer_docs/deployment/persistence-verification.md) - JNDI settings for dev vs production
 - [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md) - How to recover when root-owned files break CI/CD deployment
 - [Windows Remote Access Tips](developer_docs/deployment/windows-remote-access-tips.md) - SSH agent gotchas, Payara admin console over a tunnel, driving remote `asadmin` from a Windows dev machine
+- [Migrating a Stale Hospital DB to `development` HEAD](developer_docs/deployment/migrating-a-stale-hospital-to-development.md) - Bringing a hospital that has run a very old build for months/years up to current: why `mf.xhtml` DDL is not enough, `eclipselink.deploy-on-startup` for migrated deployments, column-type drift, stripped `AUTO_INCREMENT`, illegal legacy `TIMESTAMP` defaults, jasypt-encrypted usernames, privilege bootstrap. **Always end-to-end test a real workflow (an OPD bill *settle*), not just page render.**
 
 ### When Working on Database
 - [Migration Development Guide § Cross-deployment case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must) - Migration scripts must detect actual table-name case via `INFORMATION_SCHEMA` + prepared statements; hardcoding either `UPPER` or `lower` breaks half the customer DBs. Reference: `v2.1.12/migration-universal.sql`, `v2.1.17/migration.sql`.

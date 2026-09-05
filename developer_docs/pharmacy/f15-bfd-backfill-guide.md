@@ -20,11 +20,24 @@ silently treats that bill's stock value as **zero**, producing a discrepancy in 
 
 ---
 
+> **Adjustment bills: read the runbook first.**
+> For `PHARMACY_STOCK_ADJUSTMENT` and `PHARMACY_RETAIL_RATE_ADJUSTMENT`, follow
+> [F15 adjustment BFD backfill runbook](f15-adjustment-bfd-backfill-runbook.md) instead of the
+> steps below. Two writers stored `beforeAdjustmentValue` / `afterAdjustmentValue` with
+> different meanings, so the old unconditional formula overstated some bills by a factor of the
+> line quantity (on coop production, one bill by 1085x). Since #23411 the backfill resolves the
+> convention per line, refuses lines it cannot read, and has a preview mode — use it. The rest
+> of this guide remains correct for the other bill types and for GRN BIFD.
+
 ## When to Use This Guide
 
-- **Adjustment bill discrepancies**: If the F15 `adjustments` section shows 0.00 for
-  `PHARMACY_STOCK_ADJUSTMENT` or `PHARMACY_RETAIL_RATE_ADJUSTMENT` bills, use the
-  `POST /api/pharmacy/backfill_bfd` endpoint described below.
+- **Adjustment bill discrepancies**: If the F15 `adjustments` section shows values that are
+  missing, zero, or otherwise not what the underlying adjustments imply — for
+  `PHARMACY_STOCK_ADJUSTMENT`, `PHARMACY_RETAIL_RATE_ADJUSTMENT` or
+  `PHARMACY_PURCHASE_RATE_ADJUSTMENT` bills — follow the
+  [adjustment runbook](f15-adjustment-bfd-backfill-runbook.md). A non-zero figure can still
+  be wrong if the bill's stored before/after values were written in the other convention;
+  preview before applying.
 
 - **Pre-bill / cancelled-pre discrepancies**: If the F15 `sales` section is missing values for
   pre-bills or cancelled pre-bills, use the `PATCH /api/bill_data_correction` endpoint (see
@@ -55,7 +68,8 @@ FROM bill b
 LEFT JOIN billfinancedetails bfd ON bfd.ID = b.BILLFINANCEDETAILS_ID
 WHERE b.BILLTYPEATOMIC IN (
         'PHARMACY_STOCK_ADJUSTMENT',
-        'PHARMACY_RETAIL_RATE_ADJUSTMENT'
+        'PHARMACY_RETAIL_RATE_ADJUSTMENT',
+        'PHARMACY_PURCHASE_RATE_ADJUSTMENT'
       )
   AND b.CREATEDAT BETWEEN '2020-01-01' AND '2026-02-22'
   AND b.RETIRED = 0

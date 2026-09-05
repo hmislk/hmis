@@ -4191,7 +4191,19 @@ public class PharmacyController implements Serializable {
             String catName = dto.getCategoryName();
             if (deptName == null || deptName.trim().isEmpty()) continue;
             if (catName == null || catName.trim().isEmpty()) continue;
-            if (dto.getQty() == 0.0) continue;
+            // Skip only genuinely empty rows. A row whose quantities net to zero
+            // (e.g. an item issued and then fully returned within the period) still
+            // carries real value and MUST be shown here, otherwise this tab silently
+            // under-reports versus the Consumption Summary / By Bill Item tabs, which
+            // have no such filter. (Issue #23448: a 2025-05-28 sign regression on
+            // BillItem.qty made ~74 Operation-Theatre-style groups net to zero.)
+            if (dto.getQty() == 0.0
+                    && dto.getTotalPurchaseValue() == 0.0
+                    && dto.getTotalCostValue() == 0.0
+                    && dto.getTotalRetailValue() == 0.0
+                    && dto.getNetTotal() == 0.0) {
+                continue;
+            }
 
             // Category map: consumptionDept -> category -> items
             catMap.computeIfAbsent(deptName, k -> new TreeMap<>())
@@ -5181,6 +5193,10 @@ public class PharmacyController implements Serializable {
         return new ArrayList<>(aggregatedMap.values());
     }
 
+    private static boolean zeroOrNull(Double v) {
+        return v == null || v == 0.0;
+    }
+
     public void generateConsumptionReportTableAsCategoryWise(final List<DepartmentCategoryWiseItems> list) {
         totalSaleValue = 0.0;
         totalCostValue = 0.0;
@@ -5197,7 +5213,15 @@ public class PharmacyController implements Serializable {
             String departmentName = item.getConsumptionDepartment() != null ? item.getConsumptionDepartment().getName() : null;
             String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
 
-            if (item.getQty() == 0) {
+            // Skip only genuinely empty rows. A row whose quantities net to zero
+            // (e.g. an item issued and then fully returned within the period) still
+            // carries real value and MUST be shown here, otherwise this tab silently
+            // under-reports versus the Consumption Summary / By Bill Item tabs. (#23448)
+            if (item.getQty() == 0
+                    && zeroOrNull(item.getTotalPurchaseValue())
+                    && zeroOrNull(item.getTotalCostValue())
+                    && zeroOrNull(item.getTotalRetailValue())
+                    && zeroOrNull(item.getNetTotal())) {
                 continue;
             }
 
