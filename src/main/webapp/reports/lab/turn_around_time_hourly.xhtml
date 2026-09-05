@@ -158,7 +158,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdCCName"
-                                                     value="#{reportsController.collectingCentre}"
+                                                     value="#{tatHourlyReport.collectingCentre}"
                                                      filter="true"
                                                      style="width:100%"
                                                      title="Filter by CCName">
@@ -179,7 +179,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdCCRoute"
-                                                     value="#{reportsController.route}"
+                                                     value="#{tatHourlyReport.route}"
                                                      filter="true"
                                                      style="width:100%"
                                                      title="Filter by CC Route">
@@ -235,7 +235,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdReferingDoctor"
-                                                     value="#{reportController.referingDoctor}"
+                                                     value="#{tatHourlyReport.referingDoctor}"
                                                      style="width:100%"
                                                      title="Filter by referring doctor"
                                                      filter="true">
@@ -293,7 +293,7 @@
                                         style="width: 100px"
                                         action="#{tatHourlyReport.process}"
                                         process="@form"
-                                        update="messages reportPanel"
+                                        update=":growl reportPanel"
                                         ajax="true"
                                         value="Process"
                                         icon="fas fa-cogs"/>
@@ -341,29 +341,27 @@
                                      styleClass="table table-bordered table-sm table-striped w-50"
                                      columnClasses="font-weight-bold w-25,w-75">
                             <h:outputLabel value="Institution"/>
-                            <h:outputLabel value="#{reportController.institution}"></h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.institution.name}"/>
 
                             <h:outputLabel value="Site"/>
-                            <h:outputLabel value="#{reportController.site}"></h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.site.name}"/>
 
                             <h:outputLabel value="Department"/>
-                            <h:outputLabel value="#{reportController.department}"></h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.department.name}"/>
 
                             <h:outputLabel value="Investigation"/>
-                            <h:outputLabel value="">
-                            </h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.investigation.name}"/>
 
                             <h:outputLabel value="Service Center"/>
-                            <h:outputLabel value="">
-                            </h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.collectingCentre.name}"/>
 
                             <h:outputLabel value="From Date"/>
-                            <h:outputLabel value="#{reportController.fromDate}">
+                            <h:outputLabel value="#{tatHourlyReport.fromDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
                             <h:outputLabel value="To Date"/>
-                            <h:outputLabel value="#{reportController.toDate}">
+                            <h:outputLabel value="#{tatHourlyReport.toDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
@@ -391,7 +389,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.investigationName}" />
                             </p:column>
 
                             <p:column>
@@ -400,16 +398,16 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.departmentName}" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hr)"
+                                    <h:outputText value="0 - 1(hr)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket0_1}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -418,7 +416,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket1_2}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -427,7 +425,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket2_3}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -436,7 +434,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket3_4}" style="text-align:right;" />
                             </p:column>
 
 
@@ -446,7 +444,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket4_5}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -455,7 +453,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket5_6}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -464,34 +462,34 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket6_7}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hrs)"
+                                    <h:outputText value="7 - 8(hrs)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket7_8}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hrs)"
+                                    <h:outputText value="8 - 9(hrs)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket8_9}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hrs)"
+                                    <h:outputText value="9 - 10(hrs)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket9_10}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -500,7 +498,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket10Plus}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -509,7 +507,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.processedCount}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -518,7 +516,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.pendingCount}" style="text-align:right;" />
                             </p:column>
 
                             <f:facet name="footer">
@@ -529,7 +527,7 @@
                                     </div>
                                     <div>
                                         <span class="font-weight-bold mr-1">Generated On : </span>
-                                        <h:outputText value="#{reportController.toDate}">
+                                        <h:outputText value="#{tatHourlyReport.currentDate}">
                                             <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputText>
@@ -545,15 +543,6 @@
 
                 <h:outputScript target="body">
                     function printTatHourlyReport() {
-                    var reportPanel = document.getElementById(
-                    'tatHourlyReportForm:reportPanel'
-                    );
-
-                    if (!reportPanel) {
-                    console.error('Report panel was not found.');
-                    return false;
-                    }
-
                     window.print();
                     return false;
                     }

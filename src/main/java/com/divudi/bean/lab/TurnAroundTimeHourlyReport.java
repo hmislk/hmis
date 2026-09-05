@@ -1,9 +1,8 @@
 package com.divudi.bean.lab;
 
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Route;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -11,7 +10,6 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-// ASSUMPTION: confirm your actual iText/OpenPDF package (com.itextpdf.text.* vs com.lowagie.text.*)
 import com.itextpdf.text.Document;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
@@ -71,6 +68,7 @@ public class TurnAroundTimeHourlyReport implements Serializable {
     private Department department;
     private Department laboratoryDepartment;
     private Institution collectingCentre;
+    private Route route;
     private Investigation investigation;
     private Staff referingDoctor;
 
@@ -112,9 +110,7 @@ public class TurnAroundTimeHourlyReport implements Serializable {
                 .append("where pi.retired = false ")
                 .append("and bi.retired = false ")
                 .append("and b.retired = false ")
-                // NOTE: filtering on the *bill* date, matching the "(Billed) Date"
-                // labels in the UI. If you actually want to filter on pi.createdAt
-                // instead, swap b.createdAt below for pi.createdAt.
+                // Filtered on the bill date, matching the "(Billed) Date" labels in the UI.
                 .append("and b.createdAt between :fromDate and :toDate ");
 
         Map<String, Object> parameters = new HashMap<>();
@@ -142,10 +138,13 @@ public class TurnAroundTimeHourlyReport implements Serializable {
         }
 
         if (collectingCentre != null) {
-            // ASSUMPTION: Bill has a "collectingCentre" property. Adjust if the
-            // real property is named differently (e.g. b.creditCompany).
             jpql.append("and b.collectingCentre = :collectingCentre ");
             parameters.put("collectingCentre", collectingCentre);
+        }
+
+        if (route != null) {
+            jpql.append("and b.collectingCentre.route = :route ");
+            parameters.put("route", route);
         }
 
         if (investigation != null) {
@@ -154,14 +153,26 @@ public class TurnAroundTimeHourlyReport implements Serializable {
         }
 
         if (referingDoctor != null) {
-            // ASSUMPTION: Bill has a "referredBy" (or similar) doctor property.
             jpql.append("and b.referredBy = :referingDoctor ");
             parameters.put("referingDoctor", referingDoctor);
         }
 
+        // Bill.getIpOpOrCc() derives the visit type from patientEncounter /
+        // collectingCentre rather than reading the persisted column, which is
+        // null on a large share of historical bills. Mirror that derivation here
+        // so the filter agrees with what the rest of the application shows.
         if (!isBlank(visitType) && !"All".equalsIgnoreCase(visitType)) {
-            jpql.append("and upper(b.ipOpOrCc) = :visitType ");
-            parameters.put("visitType", visitType.trim().toUpperCase());
+            String normalisedVisitType = visitType.trim().toUpperCase();
+
+            if ("IP".equals(normalisedVisitType)) {
+                jpql.append("and b.patientEncounter is not null ");
+            } else if ("CC".equals(normalisedVisitType)) {
+                jpql.append("and b.patientEncounter is null ")
+                        .append("and b.collectingCentre is not null ");
+            } else if ("OP".equals(normalisedVisitType)) {
+                jpql.append("and b.patientEncounter is null ")
+                        .append("and b.collectingCentre is null ");
+            }
         }
 
         jpql.append("order by pi.investigation.name, bi.item.department.name");
@@ -224,7 +235,7 @@ public class TurnAroundTimeHourlyReport implements Serializable {
 
                 row.setProcessedCount(row.getProcessedCount() + 1);
 
-                long hours = elapsedHours(pi.getCreatedAt(), completionDate);
+                long hours = elapsedHours(resolveStartDate(pi), completionDate);
                 applyToBucket(row, hours);
             }
 
@@ -237,16 +248,16 @@ public class TurnAroundTimeHourlyReport implements Serializable {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             reportData = new ArrayList<>();
             JsfUtil.addErrorMessage("Error generating report: " + e.getMessage());
         }
     }
 
     /**
-     * TODO: point this at the real "result completed / certified" timestamp on
-     * PatientInvestigation. Common candidates in similar codebases:
-     * getReportPrintedAt(), getApprovedAt(), getCertifiedAt(), or a status enum
-     * check instead of a raw date.
+     * The timestamp at which the result is considered certified. {@code approveAt}
+     * is the point the result is authorised for release, which is what the
+     * "Result Certified" filter means on this page.
      *
      * Returning null means "still pending" for this record.
      */
@@ -254,9 +265,19 @@ public class TurnAroundTimeHourlyReport implements Serializable {
         if (pi == null) {
             return null;
         }
-        // Placeholder — replace with the real field, e.g.:
-        // return pi.getReportPrintedAt();
-        return null;
+        return pi.getApproveAt();
+    }
+
+    /**
+     * The timestamp the turn around time is measured from. {@code orderedAt} is
+     * when the investigation was requested; older records that predate that
+     * field fall back to the row's creation time.
+     */
+    private Date resolveStartDate(PatientInvestigation pi) {
+        if (pi == null) {
+            return null;
+        }
+        return pi.getOrderedAt() != null ? pi.getOrderedAt() : pi.getCreatedAt();
     }
 
     private long elapsedHours(Date start, Date end) {
@@ -305,6 +326,7 @@ public class TurnAroundTimeHourlyReport implements Serializable {
         department = null;
         laboratoryDepartment = null;
         collectingCentre = null;
+        route = null;
         investigation = null;
         referingDoctor = null;
         resultStatus = null;
@@ -629,6 +651,14 @@ public class TurnAroundTimeHourlyReport implements Serializable {
 
     public void setCollectingCentre(Institution collectingCentre) {
         this.collectingCentre = collectingCentre;
+    }
+
+    public Route getRoute() {
+        return route;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
     }
 
     public Investigation getInvestigation() {
