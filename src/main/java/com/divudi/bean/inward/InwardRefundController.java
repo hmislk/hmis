@@ -10,7 +10,9 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.*;
@@ -18,15 +20,18 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -55,6 +60,10 @@ public class InwardRefundController implements Serializable {
     private SessionController sessionController;
     @Inject
     private FinancialTransactionController financialTransactionController;
+    @Inject
+    private AdmissionController admissionController;
+    @Inject
+    private BhtSummeryController bhtSummeryController;
     private double paidAmount;
     double netTotal;
     private Bill current;
@@ -64,11 +73,19 @@ public class InwardRefundController implements Serializable {
     private boolean printPreview;
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    private List<Bill> eligiblePaymentBills;
+    private Bill originalBillToRefund;
+    private Map<Long, Double> remainingRefundableAmountCache;
 
     public void makeNull() {
         current = null;
         paidAmount = 0.0;
         printPreview = false;
+        eligiblePaymentBills = null;
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = null;
     }
 
     /**
@@ -87,8 +104,79 @@ public class InwardRefundController implements Serializable {
         return "/inward/inward_bill_refund?faces-redirect=true";
     }
 
+    /**
+     * Navigate to the inward deposit refund page with a specific payment bill
+     * pre-selected, for the "Refund" button on the Payment Reprint view page
+     * (issue #22820). Reuses the same eligibility filtering as the manual
+     * bill picker (loadEligiblePaymentBills()) so this can't be tricked into
+     * pre-selecting an ineligible (cancelled / fully refunded) bill.
+     */
+    public String navigateToRefundFromPaymentBill(Bill originPaymentBill) {
+        makeNull();
+        if (originPaymentBill == null || originPaymentBill.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        getCurrent().setPatientEncounter(originPaymentBill.getPatientEncounter());
+        loadEligiblePaymentBills();
+        if (!getEligiblePaymentBills().contains(originPaymentBill)) {
+            JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
+            return "";
+        }
+        originalBillToRefund = originPaymentBill;
+        selectBillToRefundListener();
+        return "/inward/inward_bill_refund?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the inward deposit refund page with a specific deposit bill
+     * pre-selected, for the "Refund" button on the Deposit Reprint view page
+     * (issue #22826). Reuses the same eligibility filtering as the manual
+     * bill picker (loadEligiblePaymentBills()) so this can't be tricked into
+     * pre-selecting an ineligible (cancelled / fully refunded) bill.
+     */
+    public String navigateToRefundFromDepositBill(Bill originDepositBill) {
+        makeNull();
+        if (originDepositBill == null || originDepositBill.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        getCurrent().setPatientEncounter(originDepositBill.getPatientEncounter());
+        loadEligiblePaymentBills();
+        if (!getEligiblePaymentBills().contains(originDepositBill)) {
+            JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
+            return "";
+        }
+        originalBillToRefund = originDepositBill;
+        selectBillToRefundListener();
+        return "/inward/inward_bill_refund?faces-redirect=true";
+    }
+
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
+    }
+
+    public String navigateToInpationDashbord() {
+        if (getCurrent() == null || getCurrent().getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        PatientEncounter pe = getCurrent().getPatientEncounter();
+        bhtSummeryController.setPatientEncounter(pe);
+        if (pe instanceof Admission) {
+            admissionController.setCurrent((Admission) pe);
+        }
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     @Inject
@@ -99,6 +187,17 @@ public class InwardRefundController implements Serializable {
             JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
+
+        if (getOriginalBillToRefund() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return true;
+        }
+
+        if (getOriginalBillToRefund().isCancelled()) {
+            JsfUtil.addErrorMessage("This bill has been cancelled and cannot be refunded.");
+            return true;
+        }
+
         if (getCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return true;
@@ -108,8 +207,10 @@ public class InwardRefundController implements Serializable {
             return true;
         }
 
-        if ((Math.abs(getPaidAmount()) < getCurrent().getTotal())) {
-            double different = Math.abs(Math.abs((getPaidAmount()) - Math.abs(getCurrent().getTotal())));
+        double remaining = getRemainingRefundableAmount(getOriginalBillToRefund());
+
+        if (Math.abs(remaining) < getCurrent().getTotal()) {
+            double different = Math.abs(Math.abs(remaining) - Math.abs(getCurrent().getTotal()));
 
             if (different > 0.1) {
                 JsfUtil.addErrorMessage("Check Refuning Amount");
@@ -129,9 +230,13 @@ public class InwardRefundController implements Serializable {
         }
 
         saveBill();
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         getBillFacade().edit(getCurrent());
         saveBillItem();
+
+        getOriginalBillToRefund().setRefunded(true);
+        getOriginalBillToRefund().setRefundedBill(getCurrent());
+        getBillFacade().edit(getOriginalBillToRefund());
+
         printPreview = true;
 
         List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
@@ -161,9 +266,25 @@ public class InwardRefundController implements Serializable {
         getCurrent().setBillTime(new Date());
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
-        // getCurrent().setForwardReferenceBill(getCurrent().getPatientEncounter().getFinalBill());
-        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
+        getCurrent().setReferenceBill(getOriginalBillToRefund());
+
+        BillTypeAtomic refundAtomic = getOriginalBillToRefund().getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT
+                ? BillTypeAtomic.INWARD_DEPOSIT_REFUND
+                : BillTypeAtomic.INWARD_PAYMENT_REFUND;
+        getCurrent().setBillTypeAtomic(refundAtomic);
+
+        AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
+                ? getCurrent().getPatientEncounter().getAdmissionType() : null;
+        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        if (uniqueSerialPerAdmissionType) {
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), refundAtomic, admissionTypeForBillNumber));
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), refundAtomic, admissionTypeForBillNumber));
+        } else {
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), refundAtomic));
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), refundAtomic));
+        }
 
         double dbl = Math.abs(getCurrent().getTotal());
 
@@ -270,7 +391,106 @@ public class InwardRefundController implements Serializable {
         } else {
             calculatePaidAmount();
         }
+        loadEligiblePaymentBills();
+    }
 
+    /**
+     * Loads the encounter's payment bills that still have a nonzero
+     * remaining refundable amount (issue #22627 - refund must be linked to
+     * one specific original bill, not an encounter-wide aggregate).
+     */
+    private void loadEligiblePaymentBills() {
+        eligiblePaymentBills = new ArrayList<>();
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = new HashMap<>();
+        for (Bill b : getInwardBean().fetchPaymentBill(getCurrent().getPatientEncounter(), null)) {
+            if (b instanceof BilledBill && !b.isCancelled() && computeRemainingRefundableAmount(b) > 0.01) {
+                eligiblePaymentBills.add(b);
+            }
+        }
+    }
+
+    /**
+     * Cached per-bill remaining-refundable amount, populated once per bill
+     * by loadEligiblePaymentBills(). The bill picker table calls this once
+     * per row through EL on every render/postback, so without the cache it
+     * would re-run computeRemainingRefundableAmount()'s JPQL SUM query for
+     * every row on every render, on top of the same query already run for
+     * every bill while building eligiblePaymentBills.
+     */
+    public double getRemainingRefundableAmount(Bill originalBill) {
+        if (originalBill == null) {
+            return 0.0;
+        }
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            Double cached = remainingRefundableAmountCache.get(originalBill.getId());
+            if (cached != null) {
+                return cached;
+            }
+        }
+        return computeRemainingRefundableAmount(originalBill);
+    }
+
+    /**
+     * Sum of netTotal of every RefundBill already linked to originalBill via
+     * referenceBill (always <= 0), added to the bill's own netTotal. Do NOT
+     * use Bill.refundBills/getRefundBills() here - that collection is
+     * mappedBy="billedBill", which no refund flow in this codebase populates,
+     * so it never reflects referenceBill-linked refunds.
+     */
+    private double computeRemainingRefundableAmount(Bill originalBill) {
+        String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
+        HashMap hm = new HashMap();
+        hm.put("orig", originalBill);
+        double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm);
+        double remaining = originalBill.getNetTotal() + refundedSoFar;
+        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+            remainingRefundableAmountCache.put(originalBill.getId(), remaining);
+        }
+        return remaining;
+    }
+
+    public void selectBillToRefundListener() {
+        if (getOriginalBillToRefund() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return;
+        }
+        getCurrent().setTotal(getRemainingRefundableAmount(getOriginalBillToRefund()));
+    }
+
+    /**
+     * Lets the cashier pick a different bill without losing the BHT
+     * selection or re-querying eligiblePaymentBills.
+     */
+    public void clearSelectedBillToRefund() {
+        originalBillToRefund = null;
+        getCurrent().setTotal(0);
+    }
+
+    public List<Bill> getEligiblePaymentBills() {
+        if (eligiblePaymentBills == null) {
+            eligiblePaymentBills = new ArrayList<>();
+        }
+        return eligiblePaymentBills;
+    }
+
+    public void setEligiblePaymentBills(List<Bill> eligiblePaymentBills) {
+        this.eligiblePaymentBills = eligiblePaymentBills;
+    }
+
+    public Bill getOriginalBillToRefund() {
+        return originalBillToRefund;
+    }
+
+    public void setOriginalBillToRefund(Bill originalBillToRefund) {
+        this.originalBillToRefund = originalBillToRefund;
+    }
+
+    public String getFeatureLabel(Bill b) {
+        if (b == null || b.getBillTypeAtomic() == null) {
+            return "";
+        }
+        return b.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT ? "Deposit" : "Payment";
     }
 
     public void calculteFinalBillMax() {
@@ -278,6 +498,7 @@ public class InwardRefundController implements Serializable {
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter=:pe"
                 + " order by b.id desc";
         HashMap hm = new HashMap();

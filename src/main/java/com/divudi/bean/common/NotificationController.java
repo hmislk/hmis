@@ -93,6 +93,14 @@ public class NotificationController implements Serializable {
             case PHARMACY_TRANSFER_REQUEST:
                 createPharmacyTransferRequestNotifications(bill);
                 break;
+            // The approval (PRE) flow is what pharmacy_transfer_request.xhtml actually
+            // uses: the ward saves a PHARMACY_TRANSFER_REQUEST_PRE bill and only some of
+            // those ever get finalized/approved into a PHARMACY_TRANSFER_REQUEST. Without
+            // this case the PRE bill fell through to the default AssertionError below, so
+            // subscribers were never notified of a request when it was raised.
+            case PHARMACY_TRANSFER_REQUEST_PRE:
+                createPharmacyTransferRequestNotifications(bill);
+                break;
             case PHARMACY_ORDER:
                 createPharmacyOrderRequest(bill);
                 break;
@@ -383,7 +391,7 @@ public class NotificationController implements Serializable {
             return null;
         }
 
-        if (bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST) {
+        if (bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST || bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE) {
             message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
         }
 

@@ -159,7 +159,7 @@
                         </td>
 
                     </tr>
-                    <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                         <tr>
                             <td colspan="4" style="overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock1" style="text-transform: capitalize!important;"  >
@@ -302,8 +302,13 @@
                     printWindow.close();
                 };
 
-                // Trigger the print functionality for the print window
-                printWindow.print();
+                // Wait for the popup (including the linked stylesheet) to finish loading
+                // before printing - printing immediately after document.close() races the
+                // browser's rendering of the popup and can produce a blank page.
+                printWindow.onload = function () {
+                    printWindow.focus();
+                    printWindow.print();
+                };
             }
         </script>
     </cc:implementation>

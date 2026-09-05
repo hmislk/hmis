@@ -36,7 +36,8 @@
                                 <h:outputText value="#{w.staffCode}" ></h:outputText>
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueDirectController.settleDirectIssue}" ajax="false" class="ui-button-success mx-2" >
+                        <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueDirectController.settleDirectIssue}" ajax="false" class="ui-button-success mx-2"
+                                         disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" >
                         </p:commandButton>
                     </h:panelGrid>
                 </f:facet>

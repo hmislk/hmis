@@ -148,7 +148,12 @@
                                     resizableColumns="true"
                                     reflow="true"
                                     stripedRows="true"
+                                    rowExpandMode="multiple"
+                                    rowKey="#{p.billId}"
                                     size="small">
+                                    <p:column width="30" exportable="false">
+                                        <p:rowToggler />
+                                    </p:column>
                                     <p:column headerText="Request Details" sortBy="#{p.createdAt}" styleClass="text-nowrap" width="200">
                                         <div class="d-flex flex-column">
                                             <div class="d-flex align-items-center mb-1">
@@ -204,6 +209,15 @@
                                         </h:outputLabel>
                                     </p:column>
 
+                                    <p:column headerText="GRNs" styleClass="text-center" exportable="false" width="60">
+                                        <h:panelGroup rendered="#{not empty p.listOfGrnDtos}">
+                                            <span class="badge bg-success">#{p.listOfGrnDtos.size()}</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{empty p.listOfGrnDtos}">
+                                            <span class="badge bg-secondary">0</span>
+                                        </h:panelGroup>
+                                    </p:column>
+
                                     <p:column headerText="Actions" styleClass="text-center" exportable="false" width="160">
                                         <div class="d-flex flex-column align-items-center gap-2">
                                             <p:commandButton
@@ -226,7 +240,7 @@
                                                 icon="fas fa-plus-circle"
                                                 title="Create a GRN for Selected Approved PO with costing"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
-                                                action="#{grnCostingController.navigateToResiveCostingWithSaveApprove()}"
+                                                action="#{grnCostingNativeSqlController.navigateToResiveCostingWithSaveApprove()}"
                                                 disabled="#{p.cancelled or p.billClosed or p.fullyIssued}">
                                                 <f:param name="billId" value="#{p.billId}"/>
                                             </p:commandButton>
@@ -273,6 +287,80 @@
                                             </p:commandButton>
                                         </div>
                                     </p:column>
+                                    <p:rowExpansion>
+                                        <div class="p-2">
+                                            <p:dataTable
+                                                var="g"
+                                                value="#{p.listOfGrnDtos}"
+                                                styleClass="ui-datatable-borderless table-sm border"
+                                                emptyMessage="No GRNs created yet"
+                                                size="small">
+                                                <f:facet name="header">
+                                                    <span class="fw-bold text-secondary">Goods Received Notes for PO #{p.deptId}</span>
+                                                </f:facet>
+
+                                                <p:column headerText="GRN Number">
+                                                    <h:outputText
+                                                        value="#{g.deptId}"
+                                                        styleClass="#{g.cancelled ? 'text-danger' :
+                                                                      g.refunded ? 'text-warning' : 'text-success'}" />
+                                                    <h:panelGroup rendered="#{g.cancelled}">
+                                                        <span class="ui-icon ui-icon-circle-close" title="Cancelled" style="margin-left:5px;"></span>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{g.refunded}">
+                                                        <span class="ui-icon ui-icon-arrowreturnthick-1-w" title="Refunded" style="margin-left:5px;"></span>
+                                                    </h:panelGroup>
+                                                </p:column>
+
+                                                <p:column headerText="GRN Date" width="8em">
+                                                    <h:outputText
+                                                        value="#{g.createdAt}"
+                                                        styleClass="#{g.cancelled ? 'text-danger' :
+                                                                      g.refunded ? 'text-warning' : 'text-success'}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </p:column>
+
+                                                <p:column headerText="Value" width="8em" styleClass="text-end">
+                                                    <h:outputText
+                                                        value="#{g.netTotal lt 0 ? g.netTotal * -1 : g.netTotal}"
+                                                        styleClass="fw-bold #{g.cancelled ? 'text-danger' :
+                                                                              g.refunded ? 'text-warning' : 'text-success'}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+
+                                                <p:column headerText="Actions" width="6em">
+                                                    <h:panelGroup layout="block" styleClass="d-flex gap-1">
+                                                        <p:commandButton
+                                                            class="ui-button-info"
+                                                            icon="fas fa-eye"
+                                                            title="View Finalized GRN"
+                                                            ajax="false"
+                                                            rendered="#{g.billTypeAtomic eq 'PHARMACY_GRN'}"
+                                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(g.billId)}">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            class="ui-button-warning"
+                                                            icon="fas fa-edit"
+                                                            title="Edit Saved GRN"
+                                                            ajax="false"
+                                                            rendered="#{g.billTypeAtomic eq 'PHARMACY_GRN_PRE' and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                            action="#{pharmacyBillSearch.navigateToEditSavedGrnByBillId(g.billId)}">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            class="ui-button-warning"
+                                                            icon="fas fa-edit"
+                                                            title="Edit Saved GRN with Costing"
+                                                            ajax="false"
+                                                            rendered="#{g.billTypeAtomic eq 'PHARMACY_GRN_PRE' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                                            action="#{pharmacyBillSearch.navigateToEditSavedGrnCostingNativeByBillId(g.billId)}">
+                                                        </p:commandButton>
+                                                    </h:panelGroup>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                    </p:rowExpansion>
                                 </p:dataTable>
                             </p:panel>
                         </div>

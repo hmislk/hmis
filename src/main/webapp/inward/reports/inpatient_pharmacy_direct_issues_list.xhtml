@@ -215,13 +215,21 @@
                                         <h:outputLabel value="Action" />
                                     </f:facet>
                                     <p:commandButton
+                                        id="btnManageBill"
+                                        value="Manage Bill"
+                                        icon="fa fa-edit"
+                                        ajax="false"
+                                        class="ui-button-warning"
+                                        action="#{pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill()}">
+                                        <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
+                                    </p:commandButton>
+                                    <p:commandButton
                                         id="btnViewBill"
                                         value="View Bill"
                                         icon="fa fa-eye"
                                         ajax="false"
                                         class="ui-button-info"
-                                        action="#{pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill()}">
-                                        <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.billId)}">
                                     </p:commandButton>
                                 </p:column>
 

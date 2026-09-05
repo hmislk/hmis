@@ -22,6 +22,8 @@ public class BillItemData implements Serializable {
     // ---- BillItem fields ----
     private Long itemId;
     private String itemName;
+    // Item.code — printed alongside the name on the cashier bill formats.
+    private String itemCode;
     private double qty;
     private double netValue;
     private double grossValue;
@@ -64,6 +66,11 @@ public class BillItemData implements Serializable {
     // ---- Linkage back to an originating ItemRequest line (issue #21793 redesign) ----
     private Long sourceRequestBillItemId;
 
+    // ---- Package rate override (Task 16d — inpatient package pricing) ----
+    private Double overriddenRate;
+    private boolean fromPackage;
+    private Long sourcePackageItemId;
+
     public BillItemData() {
     }
 
@@ -81,6 +88,14 @@ public class BillItemData implements Serializable {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public String getItemCode() {
+        return itemCode;
+    }
+
+    public void setItemCode(String itemCode) {
+        this.itemCode = itemCode;
     }
 
     public double getQty() {
@@ -329,5 +344,29 @@ public class BillItemData implements Serializable {
 
     public void setSourceRequestBillItemId(Long sourceRequestBillItemId) {
         this.sourceRequestBillItemId = sourceRequestBillItemId;
+    }
+
+    public Double getOverriddenRate() {
+        return overriddenRate;
+    }
+
+    public void setOverriddenRate(Double overriddenRate) {
+        this.overriddenRate = overriddenRate;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public Long getSourcePackageItemId() {
+        return sourcePackageItemId;
+    }
+
+    public void setSourcePackageItemId(Long sourcePackageItemId) {
+        this.sourcePackageItemId = sourcePackageItemId;
     }
 }

@@ -84,6 +84,8 @@ public class PharmacyAdjustmentController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
+    private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
+    @EJB
     private ItemFacade itemFacade;
     @EJB
     private StockFacade stockFacade;
@@ -684,7 +686,11 @@ public class PharmacyAdjustmentController implements Serializable {
 
         // Create BillFinanceDetails for the stock adjustment so the F15 report
         // can display stock value changes in the Stock Value columns.
-        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+        // hasBillFinanceDetails() (unlike getBillFinanceDetails()) does NOT
+        // auto-vivify, so this only attaches a fresh BFD when one is genuinely
+        // absent. See Bill.getBillFinanceDetails() javadoc — the old
+        // `getBillFinanceDetails() == null` check here was always false.
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
@@ -775,7 +781,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
 
         // Create BillFinanceDetails for the adjustment
-        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
@@ -810,7 +816,7 @@ public class PharmacyAdjustmentController implements Serializable {
             applyOrValidateDepartmentType(stock.getItemBatch().getItem());
         }
 
-        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
@@ -845,7 +851,7 @@ public class PharmacyAdjustmentController implements Serializable {
             applyOrValidateDepartmentType(stock.getItemBatch().getItem());
         }
 
-        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
             BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
@@ -1539,11 +1545,22 @@ public class PharmacyAdjustmentController implements Serializable {
         PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
         ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
 
+        double oldRetailRate = getStock().getItemBatch().getRetailsaleRate();
+        double stockQty = getStock().getStock();
+        double changeValue = (rsr - oldRetailRate) * stockQty;
+
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(rsr);
-        tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
-        tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
-        tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
+        // qty, and gross/net as the VALUE CHANGE this adjustment causes - matching the
+        // bulk retail-rate page. This method used to leave qty unset (persisting 0.0) and
+        // store the before/after stock totals in gross/net rather than the delta, which
+        // made bills from this page impossible to value after the fact: every backfill
+        // computes the line change as (newRate - oldRate) * qty, which is 0 when qty is 0.
+        // Issue #23411.
+        tbi.setQty(stockQty);
+        tbi.setGrossValue(Math.abs(changeValue));
+        tbi.setNetValue(changeValue);
+        tbi.setDiscount(0.0);
         tbi.setInwardChargeType(InwardChargeType.Medicine);
         tbi.setBill(getDeptAdjustmentPreBill());
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
@@ -1551,11 +1568,11 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setCreater(getSessionController().getLoggedUser());
 
         ph.setPurchaseRate(itemBatch.getPurcahseRate());
-        ph.setBeforeAdjustmentValue(itemBatch.getRetailsaleRate());
+        ph.setBeforeAdjustmentValue(oldRetailRate);
         ph.setAfterAdjustmentValue(rsr);
         ph.setRetailRate(rsr);
         ph.setStock(stock);
-        ph.setQty(stock.getStock());
+        ph.setQty(stockQty);
 
         ph.setBillItem(tbi);
         tbi.setPharmaceuticalBillItem(ph);
@@ -1566,7 +1583,44 @@ public class PharmacyAdjustmentController implements Serializable {
                 getStock(), Math.abs(getStock().getStock()), ph, getDeptAdjustmentPreBill().getDepartment());
 
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
-        getBillFacade().edit(getDeptAdjustmentPreBill());
+
+        // Bill totals and BillFinanceDetails, without which F15's Adjustment Transactions
+        // section shows this bill as Rs. 0.00. The bulk page has done this since #22580;
+        // this single-item page never did. Issue #23411.
+        Double currentTotal = getDeptAdjustmentPreBill().getTotal();
+        Double currentNetTotal = getDeptAdjustmentPreBill().getNetTotal();
+        getDeptAdjustmentPreBill().setTotal((currentTotal != null ? currentTotal : 0.0) + Math.abs(changeValue));
+        getDeptAdjustmentPreBill().setNetTotal((currentNetTotal != null ? currentNetTotal : 0.0) + changeValue);
+
+        BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
+            getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
+        }
+        java.math.BigDecimal changeVal = java.math.BigDecimal.valueOf(changeValue);
+        bfd.setTotalRetailSaleValue(nullSafe(bfd.getTotalRetailSaleValue()).add(changeVal));
+        bfd.setGrossTotal(nullSafe(bfd.getGrossTotal()).add(java.math.BigDecimal.valueOf(Math.abs(changeValue))));
+        bfd.setNetTotal(nullSafe(bfd.getNetTotal()).add(changeVal));
+        bfd.setTotalQuantity(nullSafe(bfd.getTotalQuantity()).add(java.math.BigDecimal.valueOf(stockQty)));
+        bfd.setTotalBeforeAdjustmentValue(nullSafe(bfd.getTotalBeforeAdjustmentValue())
+                .add(java.math.BigDecimal.valueOf(oldRetailRate * stockQty)));
+        bfd.setTotalAfterAdjustmentValue(nullSafe(bfd.getTotalAfterAdjustmentValue())
+                .add(java.math.BigDecimal.valueOf(rsr * stockQty)));
+        if (bfd.getTotalPurchaseValue() == null) {
+            bfd.setTotalPurchaseValue(java.math.BigDecimal.ZERO);
+        }
+        if (bfd.getTotalCostValue() == null) {
+            bfd.setTotalCostValue(java.math.BigDecimal.ZERO);
+        }
+        if (bfd.getTotalWholesaleValue() == null) {
+            bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
+        }
+
+        getBillFacade().editAndFlush(getDeptAdjustmentPreBill());
+    }
+
+    private java.math.BigDecimal nullSafe(java.math.BigDecimal value) {
+        return value == null ? java.math.BigDecimal.ZERO : value;
     }
 
     private void saveWsrAdjustmentBillItems() {
@@ -1886,12 +1940,43 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        double stockQtyBeforeAdjustmentForBfd = getStockFacade().find(stock.getId()).getStock();
+        double changingQtyForBfd = qty - stockQtyBeforeAdjustmentForBfd;
+        double retailRateForBfd = stock.getItemBatch().getRetailsaleRate();
+        Double costRateObjForBfd = stock.getItemBatch().getCostRate();
+        double costRateForBfd = (costRateObjForBfd != null && costRateObjForBfd > 0) ? costRateObjForBfd : stock.getItemBatch().getPurcahseRate();
+
         saveDeptStockAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
 
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
+
+        // Self-heal: saveDeptStockAdjustmentBill()/saveDeptAdjustmentBillItems() mutate
+        // BillFinanceDetails via edit()/merge(), whose return value (the actual managed
+        // entity) is discarded by BillFacade.edit(). This intermittently leaves the
+        // reloaded bill with billFinanceDetails == null even though the save "succeeded"
+        // (issue #22580). Verify against the freshly-reloaded, guaranteed-managed bill
+        // and persist directly if still missing, rather than trust the mutation above.
+        if (!deptAdjustmentPreBill.hasBillFinanceDetails()) {
+            BillFinanceDetails bfd = new BillFinanceDetails(deptAdjustmentPreBill);
+            java.math.BigDecimal retailChangeValue = java.math.BigDecimal.valueOf(changingQtyForBfd * retailRateForBfd);
+            bfd.setTotalRetailSaleValue(retailChangeValue);
+            bfd.setTotalCostValue(java.math.BigDecimal.valueOf(changingQtyForBfd * costRateForBfd));
+            bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changingQtyForBfd * retailRateForBfd)));
+            bfd.setNetTotal(retailChangeValue);
+            bfd.setTotalQuantity(java.math.BigDecimal.valueOf(Math.abs(changingQtyForBfd)));
+            bfd.setTotalBeforeAdjustmentValue(java.math.BigDecimal.valueOf(stockQtyBeforeAdjustmentForBfd * retailRateForBfd));
+            bfd.setTotalAfterAdjustmentValue(java.math.BigDecimal.valueOf(qty * retailRateForBfd));
+            bfd.setTotalPurchaseValue(java.math.BigDecimal.ZERO);
+            bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
+            billFinanceDetailsFacade.create(bfd);
+            deptAdjustmentPreBill.setBillFinanceDetails(bfd);
+            billFacade.edit(deptAdjustmentPreBill);
+            deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
+        }
+
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;

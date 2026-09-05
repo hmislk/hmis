@@ -920,36 +920,68 @@ public class PatientReport implements Serializable, RetirableEntity {
 
         @Override
         public int compare(PatientReportItemValue o1, PatientReportItemValue o2) {
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
             if (o1 == null) {
-                return 1;
-            }
-            if (o1.getInvestigationItem() == null) {
-                return 1;
-            }
-            if (o1.getInvestigationItem().getRiTop() == 0.0) {
                 return 1;
             }
             if (o2 == null) {
                 return -1;
             }
-            if (o2.getInvestigationItem() == null) {
-                return -1;
+            InvestigationItem ii1 = o1.getInvestigationItem();
+            InvestigationItem ii2 = o2.getInvestigationItem();
+            if (ii1 == null && ii2 == null) {
+                return compareByIdNullSafe(o1, o2);
             }
-            if (o2.getInvestigationItem().getRiTop() == 0.0) {
-                return -1;
-            }
-            if (o1.getInvestigationItem().getRiTop() == o2.getInvestigationItem().getRiTop()) {
-                if (o1.getId() > o2.getId()) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-
-            }
-            if (o1.getInvestigationItem().getRiTop() > o2.getInvestigationItem().getRiTop()) {
+            if (ii1 == null) {
                 return 1;
             }
-            return -1;
+            if (ii2 == null) {
+                return -1;
+            }
+            boolean top1Unset = ii1.getRiTop() == 0.0;
+            boolean top2Unset = ii2.getRiTop() == 0.0;
+            if (top1Unset && top2Unset) {
+                // riTop is never configured for items such as antibiotics, so
+                // fall back to a stable, alphabetical order instead of an
+                // unconditional "greater than", which is not a valid
+                // comparator (violates antisymmetry and breaks
+                // Collections.sort with an IllegalArgumentException).
+                String n1 = ii1.getName() == null ? "" : ii1.getName();
+                String n2 = ii2.getName() == null ? "" : ii2.getName();
+                int nameCompare = n1.compareToIgnoreCase(n2);
+                if (nameCompare != 0) {
+                    return nameCompare;
+                }
+                return compareByIdNullSafe(o1, o2);
+            }
+            if (top1Unset) {
+                return 1;
+            }
+            if (top2Unset) {
+                return -1;
+            }
+            int topCompare = Double.compare(ii1.getRiTop(), ii2.getRiTop());
+            if (topCompare != 0) {
+                return topCompare;
+            }
+            return compareByIdNullSafe(o1, o2);
+        }
+
+        private int compareByIdNullSafe(PatientReportItemValue o1, PatientReportItemValue o2) {
+            Long id1 = o1.getId();
+            Long id2 = o2.getId();
+            if (id1 == null && id2 == null) {
+                return 0;
+            }
+            if (id1 == null) {
+                return 1;
+            }
+            if (id2 == null) {
+                return -1;
+            }
+            return id1.compareTo(id2);
         }
     }
 

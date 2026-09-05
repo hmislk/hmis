@@ -54,7 +54,7 @@ Then update `src/main/resources/META-INF/persistence.xml`:
 
 **Do NOT commit this change.** It stays local only. Before any push, revert to placeholders.
 **Remember these JNDI names** — after every push they must be restored immediately so the
-developer can test without any manual step. See the `verify-persistence` skill.
+developer can test without any manual step.
 
 ## Step 4 — Assign Issue on GitHub
 
@@ -113,7 +113,7 @@ Report what was done:
 - Project board status (automated or manual instruction given)
 
 Remind the user: **persistence.xml must be reverted to `${JDBC_DATASOURCE}` before any git push.**
-The `verify-persistence` skill or `commit-code` skill will catch this automatically.
+Check it directly (or let `commit-code` catch it — it verifies persistence.xml when staged).
 
 ## Reference
 

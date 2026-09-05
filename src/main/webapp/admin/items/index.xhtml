@@ -23,11 +23,18 @@
                                         action="#{itemMappingController.navigateToManageDepartmentItemMappings}" />
 
                                     <!-- Button to navigate to Manage Institution Item Mappings -->
-                                    <p:commandButton 
-                                        class="w-100"  
-                                        ajax="false" 
-                                        value="Manage Institution Item Mappings" 
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Manage Institution Item Mappings"
                                         action="#{itemMappingController.navigateToManageInstitutionItemMappings}" />
+
+                                    <!-- Button to navigate to Manage Outside Charge Item Mappings (issue #23250) -->
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Manage Outside Charge Item Mappings"
+                                        action="#{itemMappingController.navigateToManageOutsideChargeItemMappings}" />
                                 </div>
 
                             </p:tab>

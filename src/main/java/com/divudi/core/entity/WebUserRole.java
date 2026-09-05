@@ -7,10 +7,13 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.data.LoginPage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -62,6 +65,10 @@ public class WebUserRole implements Serializable {
     Date activatedAt;
     @JsonIgnore
     String activateComments;
+
+    // Template login page for this role (admin-time only; never read at runtime).
+    @Enumerated(EnumType.STRING)
+    private LoginPage loginPage;
 
     public Long getId() {
         return id;
@@ -165,6 +172,14 @@ public class WebUserRole implements Serializable {
 
     public void setRetirer(WebUser retirer) {
         this.retirer = retirer;
+    }
+
+    public LoginPage getLoginPage() {
+        return loginPage;
+    }
+
+    public void setLoginPage(LoginPage loginPage) {
+        this.loginPage = loginPage;
     }
 
     @Override

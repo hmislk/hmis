@@ -852,6 +852,7 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO(")
                 .append("TYPE(b), ")
+                .append("b.id, ")
                 .append("b.deptId, b.createdAt, it.name, it.code,")
                 .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
                 .append(" p.retailRate, bfd.valueAtRetailRate,")
@@ -932,6 +933,7 @@ public class ReportsTransfer implements Serializable {
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO(")
+                .append("b.id, ")
                 .append("TYPE(b), ")  // ADDED: Bill class discriminator to identify CancelledBill
                 .append("b.deptId, b.createdAt, it.name, it.code,")
                 .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")

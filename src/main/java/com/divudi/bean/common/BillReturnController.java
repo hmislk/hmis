@@ -270,7 +270,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                         ewalletInstitution = institutionFacade.find(ewalletInstitution.getId());
                     }
 
-
                     // Get reference to ewallet once to avoid multiple getter calls creating new objects
                     ComponentDetail ewalletDetail = getPaymentMethodData().getEwallet();
                     ewalletDetail.setInstitution(ewalletInstitution);
@@ -690,6 +689,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
                             if (currentPatientSample == null) {
                                 //can Refund Item
+                            } else if (configOptionApplicationController.getBooleanValueByKey("OPD Refund - Can Refund Item in any Status", false)) {
+                                //can Refund Item
                             } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
                                 returningStarted.set(false);
                                 JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to an external lab.");
@@ -711,12 +712,15 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         calculateRefundingAmount();
 
-        Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+        if (!configOptionApplicationController.getBooleanValueByKey("OPD Refund - Bypass the Drawer to Refund", false)) {
 
-        if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
-            JsfUtil.addErrorMessage("Your Draver does not have enough Money");
-            returningStarted.set(false);
-            return null;
+            Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+
+            if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
+                JsfUtil.addErrorMessage("Your Draver does not have enough Money");
+                returningStarted.set(false);
+                return null;
+            }
         }
 
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
@@ -1132,7 +1136,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
 // Print the original values
-
 // Convert all values to negative absolute amounts
         returningTotal = -Math.abs(returningTotal);
         returningNetTotal = -Math.abs(returningNetTotal);
@@ -1143,7 +1146,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 // Print the adjusted values
 
 // Print the adjusted values
-
 // Assign the adjusted values to newlyReturnedBill
         newlyReturnedBill.setGrantTotal(returningTotal);
         newlyReturnedBill.setNetTotal(returningNetTotal);
@@ -1155,7 +1157,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 // Print the values before setting
 
 // Print the values before setting
-
 // Assign the values
         newlyReturnedBill.setTotalHospitalFee(returningHospitalTotal);
         newlyReturnedBill.setTotalCenterFee(returningCCTotal);
@@ -1321,15 +1322,15 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         if (paymentMethodData != null) {
             if (paymentMethodData.getPaymentMethod() != null) {
-                if(paymentMethodData.getPaymentMethod()==PaymentMethod.ewallet){
-                    if(paymentMethodData.getEwallet()!=null){
+                if (paymentMethodData.getPaymentMethod() == PaymentMethod.ewallet) {
+                    if (paymentMethodData.getEwallet() != null) {
                     }
                 }
             }
         }
         // Allow setting payment method data for form binding
         // This is needed for JSF to properly bind form values during submission
-        
+
         this.paymentMethodData = paymentMethodData;
     }
 
@@ -1446,7 +1447,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         try {
             // Save the updated bill
             billFacade.edit(batchBill);
-
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());

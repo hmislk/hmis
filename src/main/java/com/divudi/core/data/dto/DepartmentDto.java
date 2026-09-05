@@ -25,6 +25,7 @@ public class DepartmentDto implements Serializable {
     /**
      * Constructor for JPQL queries
      */
+    
     public DepartmentDto(Long id, String name, String code, String departmentCode,
             Boolean retired, Boolean inactive) {
         this.id = id;
@@ -33,6 +34,10 @@ public class DepartmentDto implements Serializable {
         this.departmentCode = departmentCode;
         this.retired = retired != null ? retired : false;
         this.inactive = inactive != null ? inactive : false;
+    }
+    public DepartmentDto(Long id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     public Long getId() {

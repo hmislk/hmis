@@ -26,6 +26,10 @@ public class VmppDto implements Serializable {
     private Long vmpId;
     private String vmpName;
 
+    // Pack information
+    private Double dblValue; // Pack size
+    private String packUnitName;
+
     /**
      * Default constructor
      */
@@ -73,6 +77,27 @@ public class VmppDto implements Serializable {
         this.inactive = inactive != null ? inactive : false;
         this.vmpId = vmpId;
         this.vmpName = vmpName;
+    }
+
+    /**
+     * Constructor for JPQL query - list page use case with pack information
+     *
+     * @param id VMPP ID
+     * @param name VMPP name
+     * @param code VMPP code (can be null)
+     * @param retired Whether VMPP is retired/deleted
+     * @param inactive Whether VMPP is inactive
+     * @param dblValue Pack size value
+     * @param packUnitName Pack unit name
+     * @param vmpId VMP ID (can be null)
+     * @param vmpName VMP name for display (can be null)
+     */
+    public VmppDto(Long id, String name, String code,
+            Boolean retired, Boolean inactive, Double dblValue, String packUnitName,
+            Long vmpId, String vmpName) {
+        this(id, name, code, retired, inactive, vmpId, vmpName);
+        this.dblValue = dblValue;
+        this.packUnitName = packUnitName;
     }
 
     // Getters and Setters
@@ -138,6 +163,22 @@ public class VmppDto implements Serializable {
 
     public void setVmpName(String vmpName) {
         this.vmpName = vmpName;
+    }
+
+    public Double getDblValue() {
+        return dblValue;
+    }
+
+    public void setDblValue(Double dblValue) {
+        this.dblValue = dblValue;
+    }
+
+    public String getPackUnitName() {
+        return packUnitName;
+    }
+
+    public void setPackUnitName(String packUnitName) {
+        this.packUnitName = packUnitName;
     }
 
     // Utility methods for display

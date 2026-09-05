@@ -366,7 +366,7 @@
                                                 id="comment">
                                             </p:inputText>
                                             <div class="d-flex">
-                                                <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Mark Foreigner and Mark Local Buttons in Billing', true)}">
                                                     <p:commandButton 
                                                         value="Mark Foreigner" 
                                                         class="mx-1"

@@ -72,7 +72,7 @@ public class StaffApi {
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     // -------------------------------------------------------------------------
-    // GET /api/staff?query=&departmentId=&size=
+    // GET /api/staff?query=&nic=&departmentId=&size=
     // -------------------------------------------------------------------------
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -82,6 +82,7 @@ public class StaffApi {
             if (apiUser == null) return errorResponse("Not a valid key", 401);
 
             String q = value("query");
+            String nic = value("nic");
             int size = Math.min(Math.max(parseInt(value("size"), 50), 1), 200);
             String departmentIdStr = value("departmentId");
 
@@ -105,6 +106,10 @@ public class StaffApi {
                     jpql += " and (upper(s.person.name) like :q or upper(s.code) like :q)";
                     params.put("q", "%" + q.trim().toUpperCase() + "%");
                 }
+            }
+            if (nic != null && !nic.trim().isEmpty()) {
+                jpql += " and upper(s.person.nic) = :nic";
+                params.put("nic", nic.trim().toUpperCase());
             }
             jpql += " order by s.person.name";
 
@@ -195,7 +200,7 @@ public class StaffApi {
 
     // -------------------------------------------------------------------------
     // PUT /api/staff/{id}
-    // Partial update — only supplied fields change (name, code, designation)
+    // Partial update — only supplied fields change (name, code, staffCode, designation)
     // -------------------------------------------------------------------------
     @PUT
     @Path("/{id}")
@@ -224,6 +229,10 @@ public class StaffApi {
             if (req.containsKey("code")) {
                 String code = (String) req.get("code");
                 staff.setCode(code != null ? code.trim() : null);
+            }
+            if (req.containsKey("staffCode")) {
+                String staffCode = (String) req.get("staffCode");
+                staff.setStaffCode(staffCode != null ? staffCode.trim() : null);
             }
             if (req.containsKey("designation")) {
                 String designation = (String) req.get("designation");
@@ -287,6 +296,7 @@ public class StaffApi {
         Map<String, Object> m = new HashMap<>();
         m.put("id", s.getId());
         m.put("code", s.getCodeRaw());
+        m.put("staffCode", s.getStaffCode());
         m.put("designation", s.getDescription());
         m.put("retired", s.isRetired());
         m.put("personId", s.getPerson() != null ? s.getPerson().getId() : null);

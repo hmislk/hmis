@@ -215,6 +215,13 @@
                                         target="#{surgeryBillController.surgeryBill}"/>
                                 </p:commandButton>
                                 <p:commandButton
+                                    value="Bill Summary / Validate"
+                                    icon="fa fa-clipboard-check"
+                                    class="ui-button-success"
+                                    ajax="false"
+                                    action="#{surgeryBillController.navigateToSurgeryBillSummary(surg)}">
+                                </p:commandButton>
+                                <p:commandButton
                                     value="Delete"
                                     icon="fa fa-trash"
                                     class="ui-button-danger"

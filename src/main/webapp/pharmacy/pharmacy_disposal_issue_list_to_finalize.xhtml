@@ -6,7 +6,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <h:head>
-    <title>Disposal Issues — List to Finalize</title>
+    <title>Consumption Issues — List to Finalize</title>
 </h:head>
 <h:body>
     <ui:composition template="/resources/template/template.xhtml">
@@ -20,7 +20,7 @@
                 <f:facet name="header">
                     <div class="d-flex align-items-center">
                         <h:outputText styleClass="fas fa-tasks text-warning me-2"/>
-                        <h:outputText value="Disposal Issues — List to Finalize" styleClass="mb-0 text-warning"/>
+                        <h:outputText value="Consumption Issues — List to Finalize" styleClass="mb-0 text-warning"/>
                     </div>
                 </f:facet>
                 <h:form>
@@ -64,7 +64,7 @@
                                 paginatorPosition="both"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="10,15,25,50"
-                                emptyMessage="No saved disposal issues found matching your criteria"
+                                emptyMessage="No saved consumption issues found matching your criteria"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true"
@@ -92,18 +92,18 @@
                                         styleClass="ui-button-stage-finalize"
                                         icon="fas fa-lock"
                                         value="View / Finalize"
-                                        title="View and Finalize Disposal Issue #{g.id}"
+                                        title="View and Finalize Consumption Issue #{g.id}"
                                         ajax="false"
-                                        onclick="return confirm('Open disposal issue ##{g.id} for finalization?');"
+                                        onclick="return confirm('Open consumption issue ##{g.id} for finalization?');"
                                         action="#{pharmacyIssueController.loadDraftForEdit(g.id)}"/>
                                     <p:commandButton
                                         id="btnCancel"
                                         styleClass="ui-button-danger ui-button-outlined ms-1"
                                         icon="fas fa-times"
                                         value="Cancel"
-                                        title="Cancel this saved disposal issue"
+                                        title="Cancel this saved consumption issue"
                                         ajax="false"
-                                        onclick="return confirm('Cancel this disposal issue draft? This cannot be undone.');"
+                                        onclick="return confirm('Cancel this consumption issue draft? This cannot be undone.');"
                                         action="#{pharmacyIssueController.cancelPendingDisposalIssue(g.id)}"/>
                                 </p:column>
                             </p:dataTable>

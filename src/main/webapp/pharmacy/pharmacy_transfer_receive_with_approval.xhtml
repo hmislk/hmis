@@ -36,7 +36,7 @@
                             styleClass="ui-button-stage-finalize mx-1"
                             icon="fas fa-lock"
                             ajax="false"
-                            disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
+                            disabled="#{transferReceiveController.receivedBill.checkedBy ne null or not webUserController.hasPrivilege('PharmacyReceiveFinalize')}"
                             onclick="return confirm('Are you sure you want to finalize this receive? This cannot be undone.');"
                             style="float: right;">
                         </p:commandButton>
@@ -45,7 +45,7 @@
                             action="#{transferReceiveController.saveRequest()}"
                             styleClass="ui-button-stage-save mx-1"
                             icon="fas fa-floppy-disk"
-                            disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
+                            disabled="#{transferReceiveController.receivedBill.checkedBy ne null or not webUserController.hasPrivilege('PharmacyReceiveSave')}"
                             ajax="false"
                             style="float: right;">
                         </p:commandButton>

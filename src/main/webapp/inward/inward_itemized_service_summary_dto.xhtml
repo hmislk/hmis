@@ -129,13 +129,27 @@
                              rows="20"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="10,20,50"
-                             rowKey="#{row.itemId}_#{row.staffName}">
+                             rowKey="#{row.billItemId}">
                     <f:facet name="header">
                         <h:outputText value="Itemized Service Summary - OPD and Inward (DTO - Optimized)" />
                     </f:facet>
                     <p:column>
-                        <f:facet name="header"><h:outputText value="Category" /></f:facet>
+                        <f:facet name="header"><h:outputText value="Billed Date" /></f:facet>
                         <f:facet name="footer"><h:outputText value="Grand Total" style="font-weight: bold;" /></f:facet>
+                        <h:outputText value="#{row.billedDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header"><h:outputText value="BHT" /></f:facet>
+                        <h:outputText value="#{row.bhtNo}" />
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header"><h:outputText value="Patient" /></f:facet>
+                        <h:outputText value="#{row.patientName}" />
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header"><h:outputText value="Category" /></f:facet>
                         <h:outputText value="#{row.categoryName}" />
                     </p:column>
                     <p:column>
@@ -182,6 +196,17 @@
                             </h:outputText>
                         </f:facet>
                         <h:outputText value="#{row.grossAmount}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column class="text-end">
+                        <f:facet name="header"><h:outputText value="Service Charge" /></f:facet>
+                        <f:facet name="footer">
+                            <h:outputText value="#{searchController.opdSaleSummaryServiceChargeTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                        <h:outputText value="#{row.serviceCharge}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
                     </p:column>

@@ -30,6 +30,16 @@
                         </div>
                         <div class="d-flex gap-2">
                             <p:commandButton
+                                id="btnRefresh"
+                                title="Reload the latest pharmacy requests for this admission"
+                                value="Refresh"
+                                action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestsList()}"
+                                ajax="false"
+                                icon="fa fa-sync-alt"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnDownload"
                                 value="Download"
                                 ajax="false"
                                 icon="fa fa-download"
@@ -37,6 +47,7 @@
                                 <p:dataExporter fileName="Inpatient Pharmacy Requests" target="tbl1" type="xlsx"></p:dataExporter>
                             </p:commandButton>
                             <p:commandButton
+                                id="btnPrint"
                                 value="Print"
                                 ajax="false"
                                 icon="fa fa-print"
@@ -149,13 +160,17 @@
                                         <h:outputLabel value="Status" />
                                     </f:facet>
                                     <p:tag
+                                        value="Cancelled"
+                                        severity="danger"
+                                        rendered="#{b.cancelled}" />
+                                    <p:tag
                                         value="Issued"
                                         severity="success"
-                                        rendered="#{inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id)}" />
+                                        rendered="#{not b.cancelled and inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id)}" />
                                     <p:tag
                                         value="Not Issued"
                                         severity="warning"
-                                        rendered="#{not inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id)}" />
+                                        rendered="#{not b.cancelled and not inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id)}" />
                                 </p:column>
 
                                 <p:column width="10em" style="padding: 2px" exportable="false">
@@ -170,6 +185,7 @@
                                         icon="fa fa-eye"
                                         action="/ward/ward_pharmacy_reprint_bht_issue_request?faces-redirect=true">
                                         <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener value="/inward/reports/inpatient_pharmacy_requests_list?faces-redirect=true" target="#{pharmacyBillSearch.returnPage}"/>
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -178,7 +194,7 @@
                                         class="ui-button-success m-1"
                                         ajax="false"
                                         icon="fa fa-prescription-bottle-alt"
-                                        rendered="#{not inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id) and webUserController.hasPrivilege('PharmacyBHTIssueAccept')}"
+                                        rendered="#{not b.cancelled and not inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id) and webUserController.hasPrivilege('PharmacyBHTIssueAccept')}"
                                         action="#{pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest()}">
                                         <f:setPropertyActionListener value="#{b}" target="#{pharmacySaleBhtController.bhtRequestBill}" />
                                     </p:commandButton>

@@ -36,6 +36,7 @@ public class DocumentTemplate implements Serializable {
     @ManyToOne
     private Item item;
     private String name;
+    private String subject;
     @Lob
     private String contents;
     private DocumentTemplateType type;
@@ -92,6 +93,14 @@ public class DocumentTemplate implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     public Institution getInstitution() {

@@ -22,8 +22,8 @@
                             styleClass="w-100 form-grid ui-fluid" 
                             style="table-layout: fixed;"
                             columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
-                                        fp-col-label2,fp-col-input2,fp-col-space2,
-                                        fp-col-label3,fp-col-input3">
+                            fp-col-label2,fp-col-input2,fp-col-space2,
+                            fp-col-label3,fp-col-input3">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -151,12 +151,12 @@
                             <p:spacer width="50" ></p:spacer>
                             <p:spacer width="50" ></p:spacer>
 
-<!--                            <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                        <h:outputLabel value="MRN" for="scMRN" class="mx-3" />
-                                    </h:panelGroup>
-                                    
-                                    <p:inputText value="#{searchController.mrnNo}" class="w-100"/>-->
+                            <!--                            <h:panelGroup layout="block" styleClass="form-group">
+                                                                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                                                    <h:outputLabel value="MRN" for="scMRN" class="mx-3" />
+                                                                </h:panelGroup>
+                                                                
+                                                                <p:inputText value="#{searchController.mrnNo}" class="w-100"/>-->
 
                             <!-- New Speciality Field with Icon -->
                             <h:panelGroup layout="block" styleClass="form-group fp-label">
@@ -202,21 +202,32 @@
                         <div class="mt-3 mb-2">
                             <p:commandButton 
                                 id="btnSearch" 
-                                class="m-1 ui-button-danger"
+                                class="m-1 ui-button-warning"
                                 icon="fas fa-list"
                                 ajax="false" 
                                 value="View List"
                                 action="#{searchController.searchOpdProfessionalPaymentBills()}"/>
                             <p:commandButton 
-                                id="btnPrint" 
-                                class="m-1 ui-button-primary"
+                                class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print Table">
-                                <p:printer target="tbl" />
+                                action="professional_payments_opd_print?faces-redirect=true"
+                                value="To Print">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="OPD Professional Payment Bills" type="xlsx" target="tbl" ></p:dataExporter>
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel"
+                                id="btnExcel" 
+                                ajax="false" 
+                                value="Excel" >
+                                <p:fileDownload value="#{searchController.opdProfessionalPaymentsAsExcel}" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="PDF"
+                                ajax="false"
+                                icon="fas fa-file-pdf"
+                                class="ui-button-danger mx-1">
+                                <p:fileDownload value="#{searchController.opdProfessionalPaymentsAsPdf}" />
                             </p:commandButton>
                         </div>
 
@@ -329,13 +340,13 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column style="text-align: right;" headerText="WHT" width="100" sortBy="#{row.bill.tax}" filterBy="#{row.bill.tax}" >                              
                                 <h:outputLabel value="#{row.bill.tax}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column style="text-align: right;" headerText="Value" width="100" sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}" >                              
                                 <h:outputLabel value="#{row.bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

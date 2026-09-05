@@ -9,13 +9,17 @@
 
 
     <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}" >
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}" >
         <h:form>
 
             <p:growl id="msg"/>
             <p:focus id="selectFocus" for="lstSelect" />
             <p:focus id="detailFocus" for="gpDetail" />
 
-            <p:panel header="Manage Discard Category" >
+            <p:panel header="Manage Issue Category" >
                 <div class="row">
                     <div class="col-5">
                         <p:commandButton id="btnAdd" value="Add"
@@ -26,13 +30,14 @@
                                          action="#{discardCategoryController.prepareAdd()}" >
 
                         </p:commandButton>
-                        <p:commandButton id="btnDelete" 
+                        <p:commandButton id="btnDelete"
                                          onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                      return false;"
-                                         action="#{discardCategoryController.delete()}" 
+                                         action="#{discardCategoryController.delete()}"
                                          icon="fas fa-trash"
                                          update="lstSelect gpDetail msg" process="btnDelete"
                                          class=" m-1 ui-button-danger w-25"
+                                         disabled="#{not webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}"
                                          value="Delete"  >
                         </p:commandButton>
                         <p:selectOneListbox  id="lstSelect" value="#{discardCategoryController.current}" 
@@ -44,18 +49,19 @@
                         </p:selectOneListbox>
                     </div>
                     <div class="col-7">
-                        <p:panel header="Discard Category Details">
+                        <p:panel header="Issue Category Details">
                             <h:panelGrid id="gpDetail" columns="2" class="w-100">
                                 <h:outputText id="lblName" value="Name" ></h:outputText>
                                 <p:inputText autocomplete="off" id="txtName" value="#{discardCategoryController.current.name}" class="w-100"></p:inputText>
 
                             </h:panelGrid>
 
-                            <p:commandButton ajax="false" id="btnSave" value="Save" 
-                                             action="#{discardCategoryController.saveSelected()}" 
-                                             process="btnSave gpDetail" 
-                                             update="lstSelect msg" 
+                            <p:commandButton ajax="false" id="btnSave" value="Save"
+                                             action="#{discardCategoryController.saveSelected()}"
+                                             process="btnSave gpDetail"
+                                             update="lstSelect msg"
                                              class=" m-1 ui-button-warning w-25"
+                                             disabled="#{not webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}"
                                              icon="fas fa-save">
                             </p:commandButton>
                             <p:defaultCommand target="btnSave"/>
@@ -68,6 +74,7 @@
 
 
         </h:form>
+        </h:panelGroup>
 
     </ui:define>
 

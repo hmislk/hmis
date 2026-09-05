@@ -4,9 +4,12 @@
  */
 package com.divudi.core.facade;
 
+import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.entity.Bill;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -27,6 +30,76 @@ public class BillFacade extends AbstractFacade<Bill> {
 
     public BillFacade() {
         super(Bill.class);
+    }
+
+    /**
+     * Fetches the print DTO used by the Appointment Deposit Conversion
+     * receipts (Issue #22783, Part A) for a single bill — either the
+     * INWARD_APPOINTMENT_CANCEL_BILL or the INWARD_DEPOSIT bill created by
+     * {@code AdmissionController.convertAppointmentDepositToInwardDeposit()}.
+     *
+     * LEFT JOINs are used throughout because the appointment bill's
+     * {@code patientEncounter} is never populated on the {@code Bill} itself
+     * (only on {@code Appointment.patientEncounter}, set at admission time by
+     * {@code AdmissionController.updateAppointment()}) — so the cloned
+     * INWARD_APPOINTMENT_CANCEL_BILL also has a null {@code patientEncounter}.
+     * An inner (dot-path) navigation there would silently drop that bill from
+     * the result set. {@code referenceBill} is likewise only present on the
+     * cancel bill, not on the deposit bill.
+     *
+     * Patient name is resolved two ways and COALESCEd: via
+     * {@code Bill.patientEncounter.patient} (populated for INWARD_DEPOSIT
+     * bills) and via {@code Bill.patient} directly (the only path populated
+     * on appointment bills, per {@code AppointmentController.saveBill()} —
+     * without this fallback, appointment-bill receipts render "Name: null").
+     * Title/DOB/sex are read only from the encounter-based path (EclipseLink
+     * fails the DTO constructor's reflective binding with
+     * "argument type mismatch" when an enum- or Date-typed field is wrapped
+     * in COALESCE across two different join paths in the same SELECT NEW —
+     * confirmed by temporarily logging the swallowed exception from
+     * findLightsByJpql's catch block) — so on an appointment bill's receipt,
+     * name resolves correctly but Age/Sex render blank, same as fields the
+     * bill genuinely has no data for (Admission Type, BHT No).
+     *
+     * Bill.netTotal is a primitive double and is projected directly (not
+     * COALESCEd) to avoid EclipseLink DTO-constructor binding mismatches.
+     *
+     * @param billId the Bill id
+     * @return the populated DTO, or null if not found
+     */
+    public InwardBillReceiptDTO findInwardBillReceiptDTO(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        String jpql = "SELECT NEW com.divudi.core.data.dto.InwardBillReceiptDTO("
+                + "b.id, b.deptId, b.billDate, b.paymentMethod, b.netTotal, b.comments, "
+                + "rb.deptId, "
+                + "dept.printingName, dept.address, dept.telephone1, dept.telephone2, dept.fax, dept.email, "
+                + "per.title, COALESCE(per.name, per2.name), per.dob, per.sex, "
+                + "at.name, "
+                + "pe.bhtNo, "
+                + "cp.title, cp.name) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.referenceBill rb "
+                + "LEFT JOIN b.department dept "
+                + "LEFT JOIN b.patientEncounter pe "
+                + "LEFT JOIN pe.patient pat "
+                + "LEFT JOIN pat.person per "
+                + "LEFT JOIN b.patient pat2 "
+                + "LEFT JOIN pat2.person per2 "
+                + "LEFT JOIN pe.admissionType at "
+                + "LEFT JOIN b.creater cr "
+                + "LEFT JOIN cr.webUserPerson cp "
+                + "WHERE b.id = :billId";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+
+        List<?> results = findLightsByJpql(jpql, params);
+        if (results == null || results.isEmpty()) {
+            return null;
+        }
+        return (InwardBillReceiptDTO) results.get(0);
     }
 
     /**

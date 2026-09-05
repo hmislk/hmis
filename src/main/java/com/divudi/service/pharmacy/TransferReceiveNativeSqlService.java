@@ -100,7 +100,8 @@ public class TransferReceiveNativeSqlService {
                 + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire, ib.purcahseRate, ib.retailsaleRate,"
                 + " ib.wholesaleRate, COALESCE(ib.costRate, 0) AS costRate,"
                 + " i.ID AS itemId, i.name AS itemName, COALESCE(i.code, '') AS itemCode,"
-                + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue"
+                + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue,"
+                + " i.departmentType AS departmentType"
                 + " FROM " + billItemTable() + " bi"
                 + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
                 + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
@@ -148,7 +149,8 @@ public class TransferReceiveNativeSqlService {
             // row[6]=pbi.staffStock_ID, row[7]=pbi.itemBatch_ID, row[8]=pbi.qty(units in stock),
             // row[9]=ib.batchNo, row[10]=COALESCE(ib.dateOfExpire,pbi.doe), row[11]=ib.purcahseRate,
             // row[12]=ib.retailsaleRate, row[13]=ib.wholesaleRate, row[14]=ib.costRate,
-            // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue
+            // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue,
+            // row[20]=i.departmentType
 
             long biId = ((Number) row[0]).longValue();
 
@@ -196,6 +198,7 @@ public class TransferReceiveNativeSqlService {
             dto.setAmpItemId(((Number) row[15]).longValue()); // may be refined by controller for Ampp items
             dto.setItemName(row[16] != null ? row[16].toString() : "");
             dto.setItemCode(row[17] != null ? row[17].toString() : "");
+            dto.setDepartmentType(row[20] != null ? row[20].toString() : null);
             dto.setBatchNo(row[9] != null ? row[9].toString() : "");
             dto.setDateOfExpire(toDate(row[10]));
             dto.setUnitsPerPack(unitsPerPack);
@@ -236,10 +239,20 @@ public class TransferReceiveNativeSqlService {
 
     /**
      * Checks that each item's source stock (staffStockId) holds at least the
-     * units being requested before settlement begins.
+     * units being requested before settlement begins, and flags any line
+     * whose staffStockId is missing entirely.
+     *
+     * A null staffStockId on a positive-qty line means the issue-side line
+     * never actually moved stock to a porter (see #22938) - previously this
+     * was silently skipped here, which let settle() credit the receiving
+     * department with stock while deducting nothing from anywhere, since
+     * settle() only guards the deduction step, not the dept-stock credit
+     * (see #22951). Flag it instead so the user gets a clear error before
+     * any phantom stock is created.
      *
      * Returns a list of human-readable error strings — one per stock row that
-     * would go negative. An empty list means all stocks are sufficient.
+     * would go negative, plus one per line with a missing staffStockId. An
+     * empty list means all stocks are sufficient and correctly linked.
      *
      * Call this before settle() so the user gets a clear message rather than
      * a mid-transaction RuntimeException.
@@ -257,8 +270,15 @@ public class TransferReceiveNativeSqlService {
         Map<Long, String> labelByStock = new HashMap<>();
         for (TransferReceiveItemRowDto item : items) {
             if (item.getReceivingQty() == null
-                    || item.getReceivingQty().compareTo(BigDecimal.ZERO) <= 0
-                    || item.getStaffStockId() == null) {
+                    || item.getReceivingQty().compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+            if (item.getStaffStockId() == null) {
+                errors.add(item.getItemName() + " (batch " + item.getBatchNo() + "): "
+                        + "was never actually transferred out by the issuing department "
+                        + "(no stock movement found for it), even though the transfer note "
+                        + "lists it. Please check the original Transfer Issue before retrying "
+                        + "this receive.");
                 continue;
             }
             double units = item.getReceivingQty().doubleValue() * item.getUnitsPerPack();
@@ -272,7 +292,7 @@ public class TransferReceiveNativeSqlService {
             double required = entry.getValue();
             double available = fetchStockQty(stockId);
             if (available < required - 0.001) {
-                errors.add(labelByStock.get(stockId)
+                errors.add("Insufficient source stock — " + labelByStock.get(stockId)
                         + ": needs " + required
                         + " units, only " + available + " available in source stock");
             }
@@ -297,7 +317,12 @@ public class TransferReceiveNativeSqlService {
      * 10. Build and return TransferReceivePrintDto (caller enriches dept/institution fields)
      *
      * @param bill              pre-populated BilledBill with type, dates, parties set by controller
-     * @param items             row DTOs from the UI; items with zero or null receivingQty are skipped
+     * @param items             row DTOs from the UI; items with zero or null receivingQty, or a
+     *                          missing staffStockId, are skipped (the controller should already
+     *                          have blocked a missing staffStockId via
+     *                          {@link #checkSourceStockSufficiency} — this filter is
+     *                          defense-in-depth so a bypassed pre-check can never result in
+     *                          phantom stock at the destination, see #22951)
      * @param receivingDeptId   ID of the receiving department (for stock creation)
      * @param receivingInstId   ID of the receiving institution (for stock history aggregates)
      * @return partial print DTO populated with financial totals and line items
@@ -311,11 +336,14 @@ public class TransferReceiveNativeSqlService {
 
         long t0 = System.currentTimeMillis();
 
-        // Filter to items with positive receivingQty before persisting anything
+        // Filter to items with positive receivingQty and a real staffStockId before
+        // persisting anything. A null staffStockId here means the deduction step
+        // below would be silently skipped while the dept-stock credit step still ran
+        // unconditionally, fabricating stock at the destination (see #22951).
         List<TransferReceiveItemRowDto> itemsToProcess = new ArrayList<>();
         for (TransferReceiveItemRowDto item : items) {
             BigDecimal rqty = item.getReceivingQty();
-            if (rqty != null && rqty.compareTo(BigDecimal.ZERO) > 0) {
+            if (rqty != null && rqty.compareTo(BigDecimal.ZERO) > 0 && item.getStaffStockId() != null) {
                 itemsToProcess.add(item);
             }
         }
@@ -399,8 +427,10 @@ public class TransferReceiveNativeSqlService {
             double packs = item.getReceivingQty().doubleValue();
             double units = packs * item.getUnitsPerPack();
 
-            // 3a. Deduct from staff stock (atomic — throws if insufficient)
-            // staffStockId is null when the issue had no toStaff; skip deduction in that case.
+            // 3a. Deduct from staff stock (atomic — throws if insufficient).
+            // itemsToProcess is already filtered to staffStockId != null above; the null
+            // check here is just defense-in-depth against a future caller of this method
+            // that skips that filter.
             if (item.getStaffStockId() != null) {
                 deductStock(item.getStaffStockId(), units);
             }
@@ -488,6 +518,15 @@ public class TransferReceiveNativeSqlService {
                     (bill.getCreater() != null && bill.getCreater().getId() != null)
                             ? bill.getCreater().getId() : null);
         }
+
+        // The bill was persisted with billItems nulled because the items are inserted
+        // natively, so the in-memory entity claims it has none — and Bill.getBillItems()
+        // hands out an empty list rather than a lazy one. Anything that later merges this
+        // instance writes that empty collection into the shared cache, so every subsequent
+        // read of the bill shows a bill with no items. Issue #22511, same cause as #22506.
+        // Refreshing rebuilds the lazy collection from the rows just written, and also picks
+        // up the totals and reference links updated above.
+        em.refresh(bill);
 
         LOGGER.log(Level.INFO, "[TRNativeSettle] DONE items={0} ms={1}",
                 new Object[]{itemsToProcess.size(), System.currentTimeMillis() - t0});

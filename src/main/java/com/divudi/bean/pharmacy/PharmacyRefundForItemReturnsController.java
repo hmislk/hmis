@@ -760,6 +760,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         Bill originalSaleBill = this.itemReturnBill.getReferenceBill();
+        // Day-limit/approval gate is enforced at the item-return step (SaleReturnController/PreReturnController), not here — intentional, see issue #22055.
 
         if (originalSaleBill == null) {
             JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");

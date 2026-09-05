@@ -43,11 +43,20 @@
 
                                         <hr/>
 
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="User Roles" 
+                                        <p:commandButton
+                                            id="btnUserRoles"
+                                            ajax="false"
+                                            value="User Roles"
                                             icon="fa fa-user-tag"
                                             action="#{webUserRoleController.navigateToManageWebUserRoles()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnBulkRoleOperations"
+                                            ajax="false"
+                                            value="Bulk Role Operations"
+                                            icon="fa fa-users-cog"
+                                            action="#{userRoleManagementController.navigateToBulkRoleOperations()}" >
                                         </p:commandButton>
 
 <!--                                    <p:commandButton

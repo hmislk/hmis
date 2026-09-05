@@ -42,7 +42,9 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100 my-1"/>
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100 my-1"/>
-                                <h:outputLabel value="Speciality"/> 
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100 my-1"/>
+                                <h:outputLabel value="Speciality"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" class="w-100 my-1"/>
                                 <h:outputLabel value="Doctor Name"/> 
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" class="w-100 my-1"/>
@@ -61,8 +63,9 @@
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50">
                                     <f:facet name="header">
-                                        <h:outputLabel value=" #{searchController.total}"/>
-
+                                        <h:outputLabel value="Payable: #{searchController.total}"/>
+                                        <h:outputLabel value=" | On Hold: #{searchController.totalOnHold}" styleClass="text-danger"
+                                                       rendered="#{searchController.totalOnHold gt 0}"/>
                                     </f:facet>
                                     <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
@@ -140,6 +143,20 @@
                                             <h:outputLabel value="Charge"  />
                                         </f:facet>
                                         <h:outputLabel value="#{bf.feeValue}" />
+                                    </p:column>
+                                    <!-- Hold status, so this list agrees with the payment pages
+                                         and the Professional Payments Report (#22483) -->
+                                    <p:column headerText="Hold Status">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Hold Status"  />
+                                        </f:facet>
+                                        <h:panelGroup layout="block" rendered="#{bf.professionalPaymentHeld}">
+                                            <span class="ui-tag ui-tag-danger"
+                                                  title="#{bf.professionalPaymentHoldDetails}">#{bf.professionalPaymentHoldStatus}</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" rendered="#{not bf.professionalPaymentHeld}">
+                                            <span class="ui-tag ui-tag-success">Payable</span>
+                                        </h:panelGroup>
                                     </p:column>
                                     <p:column headerText="Action">
                                         <p:commandButton ajax="false" icon="fas fa-eye" value="Pay" action="#{inwardStaffPaymentBillController.calculateDueFees()}"  >

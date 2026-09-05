@@ -97,6 +97,12 @@
                                     <f:setPropertyActionListener value="#{p.billId}" target="#{pharmacyBillSearch.billId}"/>
                                 </p:commandButton>
 
+                                <!--
+                                    Old entity-based Issue button, replaced by the native-SQL
+                                    "Fast Issue" button below (kept as btnToIssue's styling/id).
+                                    Re-enable this if the native-SQL issue path
+                                    (transferIssueNativeSqlController) is found to have data
+                                    correctness issues that the entity-based path does not have.
                                 <p:commandButton
                                     id="btnToIssue"
                                     ajax="false"
@@ -109,13 +115,14 @@
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
                                     <f:setPropertyActionListener target="#{transferIssueForRequestsController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
+                                -->
 
                                 <p:commandButton
                                     id="btnToIssueFast"
                                     ajax="false"
-                                    value="Fast Issue"
-                                    icon="fas fa-bolt"
-                                    class="ui-button-warning mx-1"
+                                    icon="fas fa-check"
+                                    title="Issue"
+                                    class="ui-button-success mx-1"
                                     action="#{transferIssueNativeSqlController.navigateToIssueRequestNative()}"
                                     onclick="if(#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false)} &amp;&amp; !confirm('Start issuing for this request? A pending draft will block this if one already exists.')) return false;"
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">

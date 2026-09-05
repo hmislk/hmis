@@ -212,7 +212,23 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     @Transient
     private double transBillItemCount;
     @Transient
+    private double transCancelledBillItemCount;
+    @Transient
+    private double transRefundedBillItemCount;
+    @Transient
     double transCheckedCount;
+    @Transient
+    private long transPendingCheckBillCount;
+    @Transient
+    private double transGrossValue;
+    @Transient
+    private double transDiscount;
+    @Transient
+    private double transMarginValue;
+    @Transient
+    private double transNetValue;
+    @Transient
+    private double transVat;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date effectiveFrom;
@@ -326,7 +342,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
 
     public double getVatPercentage() {
-        return 0;
+        return vatPercentage;
     }
 
     public void setVatPercentage(double vatPercentage) {
@@ -387,6 +403,54 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setTransCheckedCount(double transCheckedCount) {
         this.transCheckedCount = transCheckedCount;
+    }
+
+    public long getTransPendingCheckBillCount() {
+        return transPendingCheckBillCount;
+    }
+
+    public void setTransPendingCheckBillCount(long transPendingCheckBillCount) {
+        this.transPendingCheckBillCount = transPendingCheckBillCount;
+    }
+
+    public double getTransGrossValue() {
+        return transGrossValue;
+    }
+
+    public void setTransGrossValue(double transGrossValue) {
+        this.transGrossValue = transGrossValue;
+    }
+
+    public double getTransDiscount() {
+        return transDiscount;
+    }
+
+    public void setTransDiscount(double transDiscount) {
+        this.transDiscount = transDiscount;
+    }
+
+    public double getTransMarginValue() {
+        return transMarginValue;
+    }
+
+    public void setTransMarginValue(double transMarginValue) {
+        this.transMarginValue = transMarginValue;
+    }
+
+    public double getTransNetValue() {
+        return transNetValue;
+    }
+
+    public void setTransNetValue(double transNetValue) {
+        this.transNetValue = transNetValue;
+    }
+
+    public double getTransVat() {
+        return transVat;
+    }
+
+    public void setTransVat(double transVat) {
+        this.transVat = transVat;
     }
 
     public boolean isMarginNotAllowed() {
@@ -979,6 +1043,22 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setTransBillItemCount(double transBillItemCount) {
         this.transBillItemCount = transBillItemCount;
+    }
+
+    public double getTransCancelledBillItemCount() {
+        return transCancelledBillItemCount;
+    }
+
+    public void setTransCancelledBillItemCount(double transCancelledBillItemCount) {
+        this.transCancelledBillItemCount = transCancelledBillItemCount;
+    }
+
+    public double getTransRefundedBillItemCount() {
+        return transRefundedBillItemCount;
+    }
+
+    public void setTransRefundedBillItemCount(double transRefundedBillItemCount) {
+        this.transRefundedBillItemCount = transRefundedBillItemCount;
     }
 
     public boolean isChargesVisibleForInward() {

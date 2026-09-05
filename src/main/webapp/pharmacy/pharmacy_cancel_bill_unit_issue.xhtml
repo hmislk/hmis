@@ -94,7 +94,7 @@
 
                     <p:panel rendered="#{pharmacyBillSearch.printPreview}">
                         <f:facet name="header" >
-                            <h:outputLabel value="Disposal Issue Cancel" ></h:outputLabel>
+                            <h:outputLabel value="Consumption Issue Cancel" ></h:outputLabel>
                             <p:commandButton value="Print" ajax="false" style="float:right;" class="ui-button-info" icon="fas fa-print">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -118,7 +118,7 @@
 
                     <!-- Disposal Issue Configuration Dialog -->
                     <p:dialog id="disposalCancelConfigDialog"
-                              header="Disposal Cancel Printer Configuration"
+                              header="Consumption Cancel Printer Configuration"
                               widgetVar="disposalCancelConfigDialog"
                               modal="true"
                               width="600"
@@ -134,7 +134,7 @@
                                 <div class="col-12">
                                     <div class="card config-section">
                                         <div class="card-header">
-                                            <h6><i class="fas fa-file-alt"></i> Disposal Cancel Paper Settings</h6>
+                                            <h6><i class="fas fa-file-alt"></i> Consumption Cancel Paper Settings</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
@@ -142,21 +142,21 @@
                                                     id="disposalCancelA4Paper"
                                                     value="#{pharmacyConfigController.disposalCancelA4Paper}" />
                                                 <p:outputLabel for="disposalCancelA4Paper" value="A4 Paper Format" class="ms-2" />
-                                                <small class="form-text text-muted d-block">Standard A4 paper format for disposal cancel receipts</small>
+                                                <small class="form-text text-muted d-block">Standard A4 paper format for consumption cancel receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="disposalCancelCustom1"
                                                     value="#{pharmacyConfigController.disposalCancelCustom1}" />
                                                 <p:outputLabel for="disposalCancelCustom1" value="Custom Format 1" class="ms-2" />
-                                                <small class="form-text text-muted d-block">Custom format 1 for disposal issue receipts</small>
+                                                <small class="form-text text-muted d-block">Custom format 1 for consumption issue receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="disposalCancelCustom2"
                                                     value="#{pharmacyConfigController.disposalCancelCustom2}" />
                                                 <p:outputLabel for="disposalCancelCustom2" value="Custom Format 2" class="ms-2" />
-                                                <small class="form-text text-muted d-block">Custom format 2 for disposal issue receipts</small>
+                                                <small class="form-text text-muted d-block">Custom format 2 for consumption issue receipts</small>
                                             </div>
                                         </div>
                                     </div>
