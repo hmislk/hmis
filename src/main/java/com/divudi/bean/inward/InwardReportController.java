@@ -4631,11 +4631,11 @@ public class InwardReportController implements Serializable {
     }
 
     private String formatAmount(Double v) {
-        return String.format("%,.2f", v != null ? v : 0.0);
+        return CommonFunctions.formatMoneyAmount(v);
     }
 
     private String nullSafe(String value) {
-        return value != null ? value : "";
+        return CommonFunctions.nullSafeString(value);
     }
 
     public StreamedContent getIpUnsettledInvoicesExcel() {

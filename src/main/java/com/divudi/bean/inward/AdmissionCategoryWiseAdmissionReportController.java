@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -14,8 +15,10 @@ import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 
@@ -67,10 +70,10 @@ import com.lowagie.text.pdf.PdfPTable;
  * per-admission via 2 batched lookups regardless of result size - no
  * per-row queries, no entity/lazy-loading traversal.
  *
- * TODO(perf): for very large date ranges this still materializes the entire
- * result set in memory. Add pagination or a configurable row cap (see
- * SearchController.getMaxResult()) before exposing this on high-volume
- * deployments - confirm with the requester before adding any UI for it.
+ * Row count is capped at searchController.getMaxResult() (same
+ * config-driven default used across other reports) so a very large date
+ * range cannot materialize an unbounded result set in this session-scoped
+ * bean's memory.
  */
 @Named
 @SessionScoped
@@ -78,8 +81,14 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
     @EJB
     private BillFacade billFacade;
+    @EJB
+    private PatientEncounterFacade peFacade;
+    @Inject
+    private InwardBeanController inwardBeanController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private SearchController searchController;
 
     private Date fromDate;
     private Date toDate;
@@ -149,7 +158,7 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
         try {
             admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) billFacade.findLightsByJpql(
-                    jpql.toString(), params, TemporalType.TIMESTAMP);
+                    jpql.toString(), params, TemporalType.TIMESTAMP, searchController.getMaxResult());
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading admission category wise report: " + e.getMessage());
             admissionCategoryWiseAdmissionList = new ArrayList<>();
@@ -231,11 +240,19 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
     }
 
     /**
-     * Enriches each row using exactly 2 batched DB round trips, regardless of
-     * result size: deposit/advance totals and the confirmed final bill's
-     * charge summary.
+     * Enriches each row using 3 batched DB round trips for admissions that
+     * already have a confirmed final bill, regardless of result size:
+     * deposit/advance totals, the independent paidByPatient total, and the
+     * confirmed final bill's charge summary. Admissions with no confirmed
+     * final bill yet (chargeSummary == null - "Admitted But Not Discharged" /
+     * "Discharged But Final Bill Not Completed") fall back to a running total
+     * via InwardBeanController.calculateInwardTotal(), one PatientEncounter
+     * fetch per such admission - matching the pre-refactor behaviour in
+     * InwardReportController before this report was split out.
      * billBalance = invoiceAmount - (sponsorAmount + patientAmount)
-     * patientBalance = patientAmount - advance
+     * patientBalance = patientAmount - paidByPatient (see
+     * batchFetchPaidByPatientByEncounterIds for why this is independent of
+     * the advance/deposit total rather than reusing it)
      */
     private void enrichAdmissionCategoryWiseFinancialsFast(List<AdmissionCategoryWiseAdmissionDTO> rows) {
         List<Long> encounterIds = rows.stream()
@@ -250,6 +267,13 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
         Map<Long, FinalBillChargeSummary> chargeSummaryByEncounterId = batchFetchFinalBillChargeSummaryByEncounterIds(encounterIds);
         Map<Long, Double> depositByEncounterId = batchFetchDepositTotalsByEncounterIds(encounterIds);
+        Map<Long, Double> paidByPatientByEncounterId = batchFetchPaidByPatientByEncounterIds(encounterIds);
+
+        List<Long> idsWithoutFinalBill = encounterIds.stream()
+                .filter(id -> !chargeSummaryByEncounterId.containsKey(id))
+                .collect(Collectors.toList());
+        Map<Long, PatientEncounter> encounterById = batchFetchPatientEncountersByIds(idsWithoutFinalBill);
+        Map<Long, List<PatientEncounter>> childrenByParentId = batchFetchChildEncountersByParentIds(idsWithoutFinalBill);
 
         for (AdmissionCategoryWiseAdmissionDTO dto : rows) {
             if (dto == null || dto.getAdmissionId() == null) {
@@ -259,13 +283,44 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
             Long id = dto.getAdmissionId();
             FinalBillChargeSummary chargeSummary = chargeSummaryByEncounterId.get(id);
             double advance = depositByEncounterId.getOrDefault(id, 0.0);
+            double paidByPatient = paidByPatientByEncounterId.getOrDefault(id, 0.0);
 
-            double invoiceAmount = chargeSummary != null ? chargeSummary.netTotal : 0.0;
-            double discount = chargeSummary != null ? chargeSummary.discount : 0.0;
-            double sponsorAmount = chargeSummary != null ? chargeSummary.sponsorAmount : 0.0;
-            double patientAmount = chargeSummary != null ? chargeSummary.patientAmount : 0.0;
-            double professionalFees = chargeSummary != null ? chargeSummary.professionalFee : 0.0;
-            double hospitalAmount = chargeSummary != null ? chargeSummary.hospitalFee : 0.0;
+            double invoiceAmount;
+            double discount;
+            double sponsorAmount;
+            double patientAmount;
+            double professionalFees;
+            double hospitalAmount;
+
+            if (chargeSummary != null) {
+                invoiceAmount = chargeSummary.netTotal;
+                discount = chargeSummary.discount;
+                sponsorAmount = chargeSummary.sponsorAmount;
+                patientAmount = chargeSummary.patientAmount;
+                professionalFees = chargeSummary.professionalFee;
+                hospitalAmount = chargeSummary.hospitalFee;
+            } else {
+                // No confirmed final bill yet - fall back to a running total
+                // over the encounter's own charge sources, same as the
+                // pre-refactor InwardReportController behaviour.
+                PatientEncounter pe = encounterById.get(id);
+                invoiceAmount = pe != null
+                        ? inwardBeanController.calculateInwardTotal(pe, childrenByParentId.getOrDefault(id, Collections.emptyList()))
+                        : 0.0;
+                discount = pe != null ? pe.getDiscount() : 0.0;
+                sponsorAmount = 0.0;
+                patientAmount = 0.0;
+                professionalFees = 0.0;
+                hospitalAmount = 0.0;
+            }
+
+            if (sponsorAmount == 0.0 && patientAmount == 0.0 && invoiceAmount > 0.0) {
+                if (dto.getPaymentMethod() == PaymentMethod.Credit) {
+                    sponsorAmount = invoiceAmount;
+                } else {
+                    patientAmount = invoiceAmount;
+                }
+            }
 
             dto.setAdvance(advance);
             dto.setProfessionalFees(professionalFees);
@@ -275,8 +330,36 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
             dto.setDiscount(discount);
             dto.setInvoiceAmount(invoiceAmount);
             dto.setBillBalance(Math.max(0.0, invoiceAmount - (sponsorAmount + patientAmount)));
-            dto.setPatientBalance(Math.max(0.0, patientAmount - advance));
+            dto.setPatientBalance(Math.max(0.0, patientAmount - paidByPatient));
         }
+    }
+
+    private Map<Long, PatientEncounter> batchFetchPatientEncountersByIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<PatientEncounter> encounters = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
+                Collections.singletonMap("ids", encounterIds));
+        if (encounters == null) {
+            return Collections.emptyMap();
+        }
+        return encounters.stream().collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
+    }
+
+    private Map<Long, List<PatientEncounter>> batchFetchChildEncountersByParentIds(List<Long> parentEncounterIds) {
+        if (parentEncounterIds == null || parentEncounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<PatientEncounter> children = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter.id IN :ids AND pe.retired = false",
+                Collections.singletonMap("ids", parentEncounterIds));
+        if (children == null) {
+            return Collections.emptyMap();
+        }
+        return children.stream()
+                .filter(pe -> pe.getParentEncounter() != null)
+                .collect(Collectors.groupingBy(pe -> pe.getParentEncounter().getId()));
     }
 
     /**
@@ -378,6 +461,40 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
         Map<String, Object> params = new HashMap<>();
         params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("ids", encounterIds);
+
+        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
+    }
+
+    /**
+     * Independent of {@link #batchFetchDepositTotalsByEncounterIds} on
+     * purpose: this is the exact query InwardBeanController.getPaidByPatientValue()
+     * uses to seed a final bill's settledAmountByPatient at finalization, and
+     * the pre-refactor InwardReportController used it (not the deposit total)
+     * for patientBalance. settledAmountByPatient is a running total that
+     * already folds in every patient payment/deposit made after finalization
+     * (BillBeanController.updateInwardDipositList), so re-subtracting the
+     * deposit total here would double count those - this query counts each
+     * bill exactly once, independently of what's already inside
+     * settledAmountByPatient.
+     */
+    private Map<Long, Double> batchFetchPaidByPatientByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :btp "
+                + "AND b.paymentMethod <> :pm "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardPaymentBill);
+        params.put("pm", PaymentMethod.Credit);
         params.put("ids", encounterIds);
 
         return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
@@ -658,11 +775,11 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
     }
 
     private String formatAmount(Double v) {
-        return String.format("%,.2f", v != null ? v : 0.0);
+        return CommonFunctions.formatMoneyAmount(v);
     }
 
     private String nullSafe(String value) {
-        return value != null ? value : "";
+        return CommonFunctions.nullSafeString(value);
     }
 
     public Date getFromDate() {

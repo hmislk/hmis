@@ -552,6 +552,14 @@ public class CommonFunctions {
         return decimalFormat.format(number);
     }
 
+    public static String formatMoneyAmount(Double amount) {
+        return String.format("%,.2f", amount != null ? amount : 0.0);
+    }
+
+    public static String nullSafeString(String value) {
+        return value != null ? value : "";
+    }
+
     /**
      * Formats a Double value according to the given format string and returns
      * it as a double.

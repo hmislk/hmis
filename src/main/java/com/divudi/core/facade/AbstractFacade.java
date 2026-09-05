@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.persistence.CacheRetrieveMode;
 import javax.persistence.CacheStoreMode;
@@ -34,6 +36,8 @@ import org.eclipse.persistence.jpa.JpaHelper;
  * @param <T>
  */
 public abstract class AbstractFacade<T> {
+
+    private static final Logger logger = Logger.getLogger(AbstractFacade.class.getName());
 
     private Class<T> entityClass;
 
@@ -652,6 +656,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -681,6 +686,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -1626,6 +1632,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findAggregates failed for JPQL: " + jpql, e);
             return null;
         }
     }
