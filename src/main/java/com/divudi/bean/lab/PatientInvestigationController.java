@@ -351,13 +351,11 @@ public class PatientInvestigationController implements Serializable {
             return "";
         }
 
-        if (currentPatientSample.getSampleSent() || currentPatientSample.getOutsourced()) {
-            JsfUtil.addErrorMessage("This Sample Already Sent to Laboratory !. ");
-            return "";
-        }
-
         if (!configOptionApplicationController.getBooleanValueByKey("Allow a sample to be separated in any Status. ", true)) {
-
+            if (currentPatientSample.getSampleSent() || currentPatientSample.getOutsourced()) {
+                JsfUtil.addErrorMessage("This Sample Already Sent to Laboratory !. ");
+                return "";
+            }
         }
 
         if (getPatientSampleComponents(currentPatientSample).size() == 1) {
@@ -776,10 +774,10 @@ public class PatientInvestigationController implements Serializable {
         } else {
             listingEntity = ListingEntity.BILLS;
             bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-            
+
             if ((configOptionApplicationController.getBooleanValueByKey("Use the Nursing Laboratory Dashboard for inward laboratory process.", false)) && bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_SERVICE_BILL) {
                 return "/inward/inward_lab_dashboard?faces-redirect=true";
-            }else{
+            } else {
                 return "/lab/generate_barcode_p?faces-redirect=true";
             }
         }
@@ -5275,7 +5273,7 @@ public class PatientInvestigationController implements Serializable {
         // Sort the antibiotics that have a result alphabetically (A-Z) by name.
         antibioticItems.sort(Comparator.comparing(
                 ptiv -> ptiv.getInvestigationItem().getName() == null
-                        ? "" : ptiv.getInvestigationItem().getName(),
+                ? "" : ptiv.getInvestigationItem().getName(),
                 String.CASE_INSENSITIVE_ORDER));
 
         // Fill the first column top-to-bottom with the first half (rounded up)
@@ -5294,9 +5292,9 @@ public class PatientInvestigationController implements Serializable {
 
     /**
      * Rebuilds the antibiotic sensitivity test columns from the currently
-     * viewed patient report. Called lazily from the column getters so the
-     * lists are always populated for the current report even on a page
-     * refresh (a GET that does not re-run the navigation action).
+     * viewed patient report. Called lazily from the column getters so the lists
+     * are always populated for the current report even on a page refresh (a GET
+     * that does not re-run the navigation action).
      */
     private void populateAntibioticListsFromCurrentReport() {
         if (patientReportController == null
@@ -6508,12 +6506,12 @@ public class PatientInvestigationController implements Serializable {
                 + " from PatientInvestigation pi "
                 + " where pi.cancelled=:can "
                 + " and pi.billItem.bill=:bill";
-        
+
         List<PatientInvestigation> pis = ejbFacade.findByJpql(j, m);
         if (pis == null) {
             return null;
         }
-        
+
         for (PatientInvestigation ptix : pis) {
             Investigation ix = ptix.getInvestigation();
             if (ix.getReportedAs() != null) {
@@ -6524,7 +6522,7 @@ public class PatientInvestigationController implements Serializable {
             if (ix == null) {
                 continue;
             }
-            
+
             ptix.setSampleGenerated(true);
             ptix.setSampleGeneratedBy(wu);
             ptix.setSampleGeneratedAt(new Date());
@@ -6621,9 +6619,9 @@ public class PatientInvestigationController implements Serializable {
                         pts.setReceivedFromAnalyzer(false);
                         pts.setRetired(false);
                         patientSampleFacade.createAndFlush(pts);
-                        
+
                     }
-                    
+
                     rPatientSamplesMap.put(pts.getId(), pts);
 
                     PatientSampleComponant ptsc;
@@ -6676,7 +6674,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         billFacade.edit(barcodeBill);
-        
+
         List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesMap.values());
         return rPatientSamples;
     }

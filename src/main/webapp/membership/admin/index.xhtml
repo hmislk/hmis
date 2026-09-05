@@ -65,9 +65,9 @@
                                     </p:tab>
                                     <p:tab title="Set Up" >
                                         <div class="d-grid gap-2">
-                                            <p:commandButton action="#{pharmacyUpdateBulkController.makeAllPharmaceuticalsToAllowDiscount()}" 
-                                                             value="Make All Pharmacy Items Discountable" onclick="if (!confirm('Are you sure?'))
-                                                                         return false"
+                                            <p:commandButton action="/membership/membership_pharmacy_items_discountable_bulk"
+                                                             actionListener="#{pharmacyUpdateBulkController.calerAll()}"
+                                                             value="Make All Pharmacy Items Discountable"
                                                              ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>
 
                                         </div>

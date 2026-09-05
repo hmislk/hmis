@@ -593,6 +593,22 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+**Before inserting a row, check whether some *other* department already has it** — picking
+that department on the login screen needs no DB write at all and is the faster route:
+
+```sql
+SELECT PRIVILEGE, DEPARTMENT_ID FROM webuserprivilege
+WHERE WEBUSER_ID = <id> AND RETIRED = 0 AND PRIVILEGE = 'SomePrivilege';
+```
+
+Testing issue #23484's pharmacy-admin pages, `PharmacyItemNameEdit` existed for `Inward`
+only, so every **Add New**/**Edit** button on `vtm_dto.xhtml`, `store_vtm.xhtml` and
+`lab_vtm.xhtml` rendered `disabled` under the default `Main Pharmacy` department — nothing
+to do with those pages, and no privilege row needed. Logging out and reselecting `Inward`
+enabled all of them. A `disabled` (rather than absent) admin button is the tell: per this
+project's convention, privilege-gated controls are disabled, not hidden, so a greyed-out
+button means "wrong department", not "broken page".
+
 **`WebUser.department` is not a fixed "home department" — `SessionController.selectDepartment()`
 overwrites and persists it (`loggedUser.setDepartment(department); getFacede().edit(loggedUser)`)
 every time the department-selection screen is submitted, which is why it pre-fills with
@@ -2339,6 +2355,105 @@ open a fresh tab, and navigate to
 into an inner page (bypassing a menu click) needs the `/faces/` segment
 regardless of which of the two symptoms it would otherwise hit.
 
+## 90. Simulating a barcode scan with `browser_type(..., submit: true)` on a `p:autoComplete` can submit the wrong button — use `slowly: true` and wait, don't press Enter
+
+Found while verifying issue #23165's barcode auto-select/auto-advance
+composite (`admcc:admission_search`) on `inward_room_change.xhtml`. Filling
+the autocomplete in one shot and pressing Enter immediately
+(`browser_type(..., submit: true)`, which does `fill()` then
+`press('Enter')`) fires the Enter keypress **before** PrimeFaces' debounced
+`query` AJAX call has completed, so the autocomplete's own suggestion list is
+still empty and doesn't intercept the key. The Enter falls through to the
+browser's native implicit-form-submission behavior, which submits via the
+**first** submit-type button in the form — not the intended "Continue"
+button, and not whatever the composite's own auto-advance JS would have
+clicked. On this page that meant landing on the unrelated "Nursing
+WorkBench" page instead of the admission's detail view, silently, with no
+error in `server.log` or the browser console.
+
+This is a test-methodology artifact, not evidence of a real bug — a real
+scanner still just types characters via keyboard events, and the auto-select
+JS runs off the `query` AJAX `oncomplete` callback, not off Enter. Simulate
+it correctly instead: `browser_type` with `slowly: true` (fires per-character
+keyup events, which is what triggers PrimeFaces' query debounce), no
+`submit`, then `browser_wait_for` a second or two before asserting on the
+result. Confirmed working this way: an exact single-match query auto-selects
+and auto-advances; an exact query matching multiple admissions (e.g. several
+active admissions sharing one PHN) shows the dropdown and does not
+auto-advance.
+
+## 91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" rejects (with a growl message, easy to miss in a scripted run) until a Porter/Staff is picked
+
+Found verifying issue #23470 (BHT substitute suggestions). On the ward-side
+request page, the toolbar has both **"New Bill"** and **"Settle Request"**
+next to each other. "New Bill" looks like a generic submit/save action but
+it actually **discards the in-progress request and resets the form** to a
+blank "Start Pharmacy Request for Inpatients" screen — no `BILL` row is
+written, no error is shown. Only **"Settle Request"** (which fires a native
+`confirm()` — handle it with `browser_handle_dialog`) persists the request
+as a `REQUEST_MEDICINE_INWARD` bill.
+
+On the pharmacy-side issue page (`ward_pharmacy_bht_issue.xhtml`), the
+**"Issue to BHT"** button (`PharmacySaleBhtController.settlePharmacyBhtIssueAccept`)
+also fires a `confirm()`, but if `getPreBill().getToStaff() == null` it
+rejects the attempt with the growl message **"Please select the staff
+member (porter) who will carry the medicines to the ward."** and returns —
+i.e. the **"Porter / Staff Carrying Medicines to Ward"** autocomplete near
+the top of the page must be filled first. It's not a silent no-op (the
+message is real), but it's easy to miss when driving the page via
+Playwright without checking for growl text after every action, and no
+exception is logged server-side either way. A DB check for a fresh
+`ISSUE_MEDICINE_ON_REQUEST_INWARD` row is the reliable way to catch this in
+a script: it comes back empty after a seemingly-successful click-and-confirm
+if the Porter field was skipped. Always fill the Porter field (any active
+`STAFF` row works for local testing) before clicking "Issue to BHT", and
+verify success by querying `BILL` for a new row
+rather than trusting the confirm dialog alone.
+
+Also: that Porter/Staff autocomplete searches the `STAFF`/`PERSON` tables,
+not `WEBUSER` — a logged-in user's own username (e.g. "Lawan") will not
+resolve; search by an actual staff member's name from `STAFF` joined to
+`PERSON`.
+
+## 92. A `p:commandButton` save that does nothing — no growl, no error, no DB row, a clean `server.log` — is usually a required field whose message went to a `<p:messages>` you never looked at
+
+Seen on `pharmacy/admin/lab_amp.xhtml` and `store_amp.xhtml` while verifying
+issue #23484. Clicking **Save** with Name, Code and VMP filled produced: no
+growl, nothing under `.ui-message*`, no new `Amp` row, and not a single new
+line in `server.log`. The form still held every value, so it looked like the
+action method had run and silently returned.
+
+It had not run at all. Both pages mark **Dosage Form** (`selDosageForm`) and
+**Category** (`ampCat`) `required="true"`, and the Save button uses
+`process="@form"` with `update="form:msg ..."` — so JSF failed validation in
+the Process Validations phase, never invoked `labAmpController.save()`, and
+routed both `requiredMessage`s into the `form:msg` `<p:messages>` component.
+That component contributes no accessible name when its own re-render is what
+populated it, so it does not show up in `browser_snapshot`, in
+`browser_find` for `/error|required/i`, or in a `.ui-growl-item` query.
+
+**Diagnose it this way** — the three symptoms together (form still populated
++ DB unchanged + `server.log` clean) mean the action method never fired, which
+narrows it to client-side or validation-phase rejection, not business logic:
+
+```js
+// enumerate every required input in the form and which ones are still empty
+() => Array.from(document.querySelectorAll('#form [aria-required="true"], #form .ui-state-error'))
+        .map(e => ({ id: e.id, cls: e.className, val: e.value }))
+```
+
+and read the message panel by id rather than by class:
+
+```js
+() => document.querySelector('#form\:msg')?.textContent.trim()
+```
+
+Cheaper still: `grep -n 'required="true"' <page>.xhtml` and fill every one of
+them before the first Save attempt. Note that a `required` `p:autoComplete`
+(Category here) is only satisfied by **clicking a suggestion** — typing the
+exact label and leaving it is an empty model value as far as JSF is
+concerned, even though the textbox looks filled.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
@@ -2467,4 +2582,6 @@ Verified while testing issue #23377.
 - [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
 - [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
 - [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
+- [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
