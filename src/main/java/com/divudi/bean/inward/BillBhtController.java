@@ -1358,8 +1358,11 @@ public class BillBhtController implements Serializable {
         }
 
         // Room is optional for baby admissions (they stay in the mother's room), so
-        // skip the room-required check entirely for a room-less baby. (Issue #23509)
-        if ((!isBabyAdmission() || getPatientEncounter().getCurrentPatientRoom() != null) && errorCheckForPatientRoomDepartment()) {
+        // skip the room-required check entirely for a room-less baby — same gate as
+        // addToBill()/settleBill()/errorCheck() use. (Issue #23509)
+        if (((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission())
+                || getPatientEncounter().getCurrentPatientRoom() != null)
+                && errorCheckForPatientRoomDepartment()) {
             return;
         }
 
