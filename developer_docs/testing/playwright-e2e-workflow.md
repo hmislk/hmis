@@ -2454,6 +2454,68 @@ them before the first Save attempt. Note that a `required` `p:autoComplete`
 exact label and leaving it is an empty model value as far as JSF is
 concerned, even though the textbox looks filled.
 
+## 93. Privileges are scoped per-department — a rendered button check can fail under the "wrong" department even though the user genuinely has the privilege
+
+Seen verifying issue #23510 (Surgery Dashboard "Remove" a validated timed
+service). `theater/surgery_bill_summary.xhtml`'s **Validate Surgery** button
+is gated by `webUserController.hasPrivilege('InwardSurgeryValidate')`. The
+test user held that privilege (`WEBUSERPRIVILEGE` row, `PRIVILEGE =
+'InwardSurgeryValidate'`) — but the row's `DEPARTMENT_ID` pointed at "Inward",
+not the "THEATRE" department selected at login. Under THEATRE the button
+simply didn't render (no error, no disabled state — just absent), which looks
+identical to "user lacks the privilege" from the UI alone.
+
+**Diagnose it this way**: don't stop at confirming a `WEBUSERPRIVILEGE` row
+exists for the user — check its `DEPARTMENT_ID` against the department
+actually selected for the session:
+
+```sql
+SELECT ID, PRIVILEGE, DEPARTMENT_ID FROM WEBUSERPRIVILEGE
+WHERE WEBUSER_ID = <id> AND PRIVILEGE = '<PrivilegeName>';
+```
+
+If the department differs from the one under test, log out and reselect the
+department that matches the privilege row — per §1 there is no in-session
+department switch. Never grant a new `WEBUSERPRIVILEGE` row yourself to route
+around this; that is a privilege/access-control change, out of bounds for
+verifying a fix.
+
+## 94. PrimeFaces `p:datePicker` popups don't always close on their own — the previous field's panel can intercept clicks meant for the next field
+
+Seen adding a timed service on
+`theater/inward_timed_service_consume_surgery.xhtml` (Start Time / End Time,
+both `p:datePicker` with `showTime="true"`). Clicking the End Time input right
+after picking a Start Time did not open a new calendar — it silently reused
+the Start Time picker that was still open underneath, so time-spinner clicks
+kept editing the wrong field. A later click on the real End Time input then
+timed out with `<div class="ui-datepicker-header">... intercepts pointer
+events` because the stale panel from the previous field was still on top.
+
+**Fix**: click a neutral, non-input element on the page (e.g. a panel header)
+to dismiss the open picker before clicking the next date field — `Escape`
+alone was not reliable here. Re-`browser_snapshot` after opening a picker to
+confirm which field's `_panel` id is actually active before interacting with
+its spinners.
+
+## 95. Theatre's "+ Add New Surgery" briefly lands on a generic, blank-looking `admission_profile.xhtml` — the surgery Bill is already created; go through "Surgeries for BHT" to reach it
+
+Seen creating test data for issue #23510. Clicking **+ Add New Surgery** on
+`theater/patient_surgery.xhtml` navigates to `inward/admission_profile.xhtml`
+showing empty Name/Gender/DOB fields and a *different*, just-now Date of
+Admission — which looks like the action failed or created a stray blank
+encounter. It did not: the surgery `Bill` (`BILLTYPE = 'SurgeryBill'`) was
+created against the *original* BHT encounter, and a second, child
+`PatientEncounter` (the "procedure" record, `PARENTENCOUNTER_ID` = the BHT's
+id) was also created — `admission_profile.xhtml` is just rendering that new,
+still-mostly-empty child encounter, which is a separate, likely
+pre-existing display gap and not something this fix touched.
+
+**To get back to the surgery you just created**, don't fight that page —
+navigate to `theater/inward_bill_surgery_list.xhtml` ("Surgeries for BHT"),
+which lists every `SurgeryBill` for the current `patientEncounter` and has a
+**Surgery Dashboard** button per row that loads it into
+`surgeryBillController.surgeryBill` correctly.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including

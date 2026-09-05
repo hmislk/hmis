@@ -327,6 +327,10 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void updateTimedService(BillFee bf) {
+        if (batchBill != null && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
         if (generalChecking()) {
             return;
         }
@@ -353,6 +357,10 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void removeTimedEncFromDbase(EncounterComponent encounterComponent) {
+        if (batchBill != null && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
         if (generalChecking()) {
             return;
         }
