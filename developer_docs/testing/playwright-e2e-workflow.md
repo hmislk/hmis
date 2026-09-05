@@ -2625,6 +2625,28 @@ brand new login/HTTP session is used. A plain redeploy is not enough; use
 
 Verified while testing issue #23377.
 
+## A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API
+
+On `inward_admission_child.xhtml`'s "Admit a Baby" form, the DOB field (`dpDob`, a `p:calendar`
+with `timeInput="true"`) rejected even a real slow-typed keystroke sequence
+(`click` → `Control+a` → `pressSequentially('05/09/2026 00:00:00 am')` → `Escape`): the input
+stayed visually blank and the server still reported "Patient Age is Required" (the DOB-backed
+check) on submit. This is a step further than §3's "JS-set values are silently discarded" note —
+that one only warns about `page.evaluate`/`fill()`, but here the *keyboard* path documented
+elsewhere in this guide as the fix for datepickers also silently failed to commit.
+
+**Fix:** call the widget's own API directly instead of trying to type into it:
+
+```js
+() => { PrimeFaces.widgets['widget_<formId>_<fieldId>_dpDob'].setDate(new Date()); }
+```
+
+Find the exact widget variable name first with
+`Object.keys(PrimeFaces.widgets).filter(k => k.toLowerCase().includes('dob'))` — it's generated
+from the component's full client id, not the plain `id` attribute, so don't guess it. Confirm the
+commit by reading `document.getElementById('<formId>:<fieldId>:dpDob_input').value` before
+submitting. Verified while testing issue #23509 (baby admission with no NIC/phone).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
