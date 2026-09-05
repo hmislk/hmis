@@ -96,8 +96,6 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
     private Date dischargeToDate;
     private Date invoiceApprovedFromDate;
     private Date invoiceApprovedToDate;
-    private String dischargeType;
-    private String patientCategory;
     private Institution institution;
     private Institution site;
     private Department department;
@@ -142,6 +140,7 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
                 .append("LEFT JOIN pe.finalBill b ")
                 .append("LEFT JOIN pe.patient pt ")
                 .append("LEFT JOIN pt.person per ")
+                .append("LEFT JOIN pe.admissionType at ")
                 .append("WHERE pe.id IS NOT NULL ")
                 .append("AND (b IS NULL OR (b.billType = :billType AND b.retired = :ret AND b.cancelled = :can)) ")
                 .append("AND pe.dateOfAdmission BETWEEN :fromDate AND :toDate ");
@@ -154,7 +153,7 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
         buildAdmissionCategoryFilterJpqlNew(jpql, params);
 
-        jpql.append("ORDER BY pe.admissionType.name, pe.bhtNo ");
+        jpql.append("ORDER BY at.name, pe.bhtNo ");
 
         try {
             admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) billFacade.findLightsByJpql(
@@ -171,6 +170,18 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
         }
 
         enrichAdmissionCategoryWiseFinancialsFast(admissionCategoryWiseAdmissionList);
+    }
+
+    /**
+     * Re-runs the query against the just-submitted filter values before
+     * navigating to the print view, so the criteria header and the row data
+     * on that page always agree - clicking "To Print" without clicking
+     * "Process" first previously showed the new filter values against the
+     * previous query's rows.
+     */
+    public String navigateToPrintView() {
+        processAdmissionCategoryWiseAdmissionReportNew();
+        return "admission_category_wise_admission_print_view?faces-redirect=true";
     }
 
     private void buildAdmissionCategoryFilterJpqlNew(StringBuilder jpql, Map<String, Object> params) {
@@ -517,6 +528,8 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
     }
 
     public StreamedContent getAdmissionCategoryWiseAdmissionExcel() {
+        processAdmissionCategoryWiseAdmissionReportNew();
+
         if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
             JsfUtil.addErrorMessage("No data available to export.");
             return null;
@@ -613,6 +626,8 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
     }
 
     public void downloadAdmissionCategoryWiseAdmissionPdf() {
+        processAdmissionCategoryWiseAdmissionReportNew();
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -640,10 +655,8 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
             document.add(new Paragraph(" "));
 
             if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
-                document.add(new Paragraph("No admissions for the selected criteria.",
-                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
                 document.close();
-                context.responseComplete();
+                JsfUtil.addErrorMessage("No admissions for the selected criteria.");
                 return;
             }
 
@@ -834,22 +847,6 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
     public void setInvoiceApprovedToDate(Date invoiceApprovedToDate) {
         this.invoiceApprovedToDate = invoiceApprovedToDate;
-    }
-
-    public String getDischargeType() {
-        return dischargeType;
-    }
-
-    public void setDischargeType(String dischargeType) {
-        this.dischargeType = dischargeType;
-    }
-
-    public String getPatientCategory() {
-        return patientCategory;
-    }
-
-    public void setPatientCategory(String patientCategory) {
-        this.patientCategory = patientCategory;
     }
 
     public Institution getInstitution() {
