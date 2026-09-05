@@ -172,32 +172,7 @@
 
                                     </p:selectOneMenu>
                                 </div>
-                                <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-bug me-2"/>
-                                    <p:outputLabel value="Organism" for="cmdOrganism"/>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu
-                                        id="cmdOrganism"
-                                        value="#{organismAntibioticSensitivityReport.organism}"
-                                        style="width:100%"
-                                        filter="true"
-                                        filterMatchMode="contains">
-
-                                        <f:selectItem
-                                            itemLabel="All Organisms"
-                                            itemValue="#{null}"
-                                            noSelectionOption="true"/>
-
-                                        <f:selectItems
-                                            value="#{investigationController.items}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"/>
-
-                                    </p:selectOneMenu>
-                                </div>
-                            </div>
+</div>
 
                             <div class="row align-items-center mb-3">
                                 <div class="col-md-2 text-right font-weight-bold">
@@ -236,12 +211,12 @@
                                         style="width:100%"
                                         title="Filter by sensitivity result"
                                         filter="true">
-                                        <f:selectItem itemLabel="Select Sensitivity"/>
-                                        <f:selectItem itemValue="I" itemLabel="I"/>
-                                        <f:selectItem itemValue="R" itemLabel="R"/>
-                                        <f:selectItem itemValue="S" itemLabel="S"/>
-
-                                        <f:selectItems value="" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                        <!-- Values must match what patient_report.xhtml writes,
+                                             otherwise this filter never matches a stored result. -->
+                                        <f:selectItem itemLabel="All Sensitivities" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItem itemValue="SENSITIVE" itemLabel="SENSITIVE"/>
+                                        <f:selectItem itemValue="Resistant" itemLabel="RESISTANT"/>
+                                        <f:selectItem itemValue="Intermediate" itemLabel="INTERMEDIATE"/>
                                     </p:selectOneMenu>
                                 </div>
                             </div>
@@ -258,7 +233,7 @@
                                         process="@form"
                                         ajax="false"
                                         icon="fas fa-cogs"
-                                        update="messages reportPanel"/>
+                                        update=":growl reportPanel"/>
 
                                     <p:commandButton
                                         id="btnPrint"
@@ -328,21 +303,21 @@
                                      styleClass="table table-bordered table-sm table-striped w-50"
                                      columnClasses="font-weight-bold w-25,w-75">
                             <h:outputLabel value="Institution"/>
-                            <h:outputLabel value="#{reportController.institution}"></h:outputLabel>
+                            <h:outputLabel value="#{organismAntibioticSensitivityReport.institution.name}"/>
 
                             <h:outputLabel value="Site"/>
-                            <h:outputLabel value="#{reportController.site}"></h:outputLabel>
+                            <h:outputLabel value="#{organismAntibioticSensitivityReport.site.name}"/>
 
                             <h:outputLabel value="Department"/>
-                            <h:outputLabel value="#{reportController.department}"></h:outputLabel>
+                            <h:outputLabel value="#{organismAntibioticSensitivityReport.department.name}"/>
 
                             <h:outputLabel value="From Date"/>
-                            <h:outputLabel value="#{reportController.fromDate}">
+                            <h:outputLabel value="#{organismAntibioticSensitivityReport.fromDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
                             <h:outputLabel value="To Date"/>
-                            <h:outputLabel value="#{reportController.toDate}">
+                            <h:outputLabel value="#{organismAntibioticSensitivityReport.toDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
@@ -385,7 +360,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.mrn}" />
                             </p:column>
                            
                             <p:column>
@@ -394,7 +369,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.sampleId}" />
                             </p:column>
                             
                             <p:column>
@@ -403,7 +378,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.investigationName}" />
                             </p:column>
                             
                             <p:column>
@@ -412,7 +387,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.specimen}" />
                             </p:column>
                             
                             <p:column>
@@ -421,7 +396,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.visitType}" />
                             </p:column>
                             
                             <p:column>
@@ -430,7 +405,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.patientName}" />
                             </p:column>
                             
                             
@@ -440,17 +415,9 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.patientLocation}" />
                             </p:column>
                             
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Organism"
-                                                  style="font-weight:bold;" />
-                                </f:facet>
-
-                                <h:outputText value="" />
-                            </p:column>
                             
                             <p:column>
                                 <f:facet name="header">
@@ -458,7 +425,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.antibiotic}" />
                             </p:column>
                             
                             <p:column>
@@ -467,7 +434,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.sensitivity}" />
                             </p:column>
                             
                             <p:column>
@@ -476,7 +443,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.remarks}" />
                             </p:column>
 
                             <f:facet name="footer">
@@ -487,7 +454,7 @@
                                     </div>
                                     <div>
                                         <span class="font-weight-bold mr-1">Generated On : </span>
-                                        <h:outputText value="#{reportController.toDate}">
+                                        <h:outputText value="#{organismAntibioticSensitivityReport.currentDate}">
                                             <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputText>

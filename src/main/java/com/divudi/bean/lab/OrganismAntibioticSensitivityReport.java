@@ -5,6 +5,7 @@ package com.divudi.bean.lab;
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
  */
 import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
@@ -39,6 +40,12 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Upper bound on the rows one Process run may load, so a wide date range
+     * cannot exhaust the heap of this session-scoped bean.
+     */
+    private static final int MAX_REPORT_ROWS = 10000;
+
     @EJB
     private PatientReportItemValueFacade patientReportItemValueFacade;
 
@@ -53,11 +60,10 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
     private Doctor referringDoctor;
 
     private String visitType;
-    private Item organism;
     private Item antibiotic;
     private String sensitivity;
 
-    private List<PatientReportItemValue> reportData;
+    private List<SensitivityRow> reportData;
 
     public OrganismAntibioticSensitivityReport() {
     }
@@ -65,7 +71,7 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
     public void process() {
         reportData = new ArrayList<>();
 
-        if (getFromDate() == null || getToDate() == null) {
+        if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select the from date and to date.");
             return;
         }
@@ -79,19 +85,36 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
 
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("select priv ")
+        // Only the displayed columns are selected. PatientReportItemValue
+        // reaches PatientReport -> PatientInvestigation, which maps 56 to-one
+        // associations with none declared LAZY, so selecting the entity would
+        // drag that whole graph in for every antibiotic result.
+        jpql.append("select ")
+                .append("patient.phn, ")
+                .append("(select max(ps.sampleId) from PatientSampleComponant psc ")
+                .append("  join psc.patientSample ps ")
+                .append("  where psc.patientInvestigation = pi and psc.retired = false), ")
+                .append("inv.name, specimen.name, b.ipOpOrCc, ")
+                .append("person.title, person.name, dept.name, ")
+                .append("ii.name, priv.strValue, pr.approveComments ")
                 .append("from PatientReportItemValue priv ")
                 .append("join priv.patientReport pr ")
                 .append("join pr.patientInvestigation pi ")
                 .append("join pi.billItem bi ")
                 .append("join bi.bill b ")
+                .append("join priv.investigationItem ii ")
+                .append("left join pi.investigation inv ")
+                .append("left join inv.sample specimen ")
+                .append("left join b.patient patient ")
+                .append("left join patient.person person ")
+                .append("left join b.department dept ")
                 .append("where priv.retired = false ")
                 .append("and pr.retired = false ")
                 .append("and pi.retired = false ")
                 .append("and bi.retired = false ")
                 .append("and b.retired = false ")
                 .append("and b.createdAt between :fromDate and :toDate ")
-                .append("and priv.investigationItem.ixItemType = :itemType ");
+                .append("and ii.ixItemType = :itemType ");
 
         Map<String, Object> parameters = new HashMap<>();
 
@@ -100,17 +123,17 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
         parameters.put("itemType", InvestigationItemType.Antibiotic);
 
         if (institution != null) {
-            jpql.append("and b.department.institution = :institution ");
+            jpql.append("and dept.institution = :institution ");
             parameters.put("institution", institution);
         }
 
         if (site != null) {
-            jpql.append("and b.department.site = :site ");
+            jpql.append("and dept.site = :site ");
             parameters.put("site", site);
         }
 
         if (department != null) {
-            jpql.append("and b.department = :department ");
+            jpql.append("and dept = :department ");
             parameters.put("department", department);
         }
 
@@ -118,7 +141,7 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
                 && patient.getPhn() != null
                 && !patient.getPhn().trim().isEmpty()) {
 
-            jpql.append("and upper(b.patient.phn) like :phn ");
+            jpql.append("and upper(patient.phn) like :phn ");
 
             parameters.put(
                     "phn",
@@ -132,7 +155,7 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
         }
 
         if (antibiotic != null) {
-            jpql.append("and priv.investigationItem = :antibiotic ");
+            jpql.append("and ii = :antibiotic ");
             parameters.put("antibiotic", antibiotic);
         }
 
@@ -143,22 +166,11 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
             jpql.append("and b.ipOpOrCc = :visitType ");
             parameters.put("visitType", visitType);
         }
-        
-        if (visitType != null
-                && !visitType.trim().isEmpty()
-                && !"All".equalsIgnoreCase(visitType)) {
 
-            jpql.append("and b.ipOpOrCc = :visitType ");
-            parameters.put("visitType", visitType);
-        }
-
-        if (organism != null) {
-            jpql.append("and pi.organism = :organism ");
-            parameters.put("organism", organism);
-        }
-
+        // Sensitivity is held in strValue; PatientReportItemValue.value is
+        // @Transient and cannot be queried.
         if (sensitivity != null && !sensitivity.trim().isEmpty()) {
-            jpql.append("and priv.value = :sensitivity ");
+            jpql.append("and priv.strValue = :sensitivity ");
             parameters.put("sensitivity", sensitivity);
         }
 
@@ -169,27 +181,98 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
 
         jpql.append("order by pi.id desc");
 
-        jpql.append("order by pi.id desc");
+        try {
+            // One row past the cap separates a truncated result from one that
+            // is exactly MAX_REPORT_ROWS long.
+            List<Object[]> rows = patientReportItemValueFacade
+                    .findObjectsArrayByJpql(
+                            jpql.toString(),
+                            parameters,
+                            TemporalType.TIMESTAMP,
+                            MAX_REPORT_ROWS + 1
+                    );
 
-        reportData = patientReportItemValueFacade.findByJpql(
-                jpql.toString(),
-                parameters,
-                TemporalType.TIMESTAMP
+            if (rows == null) {
+                rows = new ArrayList<>();
+            }
+
+            boolean truncated = rows.size() > MAX_REPORT_ROWS;
+
+            if (truncated) {
+                rows = rows.subList(0, MAX_REPORT_ROWS);
+            }
+
+            for (Object[] columns : rows) {
+                reportData.add(createReportRow(columns));
+            }
+
+            if (reportData.isEmpty()) {
+                JsfUtil.addErrorMessage(
+                        "No antibiotic sensitivity records were found."
+                );
+            } else if (truncated) {
+                JsfUtil.addErrorMessage(
+                        "Showing the first " + MAX_REPORT_ROWS
+                        + " records only. Narrow the date range or filters"
+                        + " to see the rest."
+                );
+            } else {
+                JsfUtil.addSuccessMessage(
+                        reportData.size() + " records found."
+                );
+            }
+
+        } catch (Exception e) {
+            // Detail stays in the server log; a query fragment in the growl
+            // would leak schema information to the user.
+            e.printStackTrace();
+
+            reportData = new ArrayList<>();
+
+            JsfUtil.addErrorMessage(
+                    "Error generating the report. Please check the server log."
+            );
+        }
+    }
+
+    /**
+     * Builds a report row from one projected tuple. The column order must match
+     * the select clause in process().
+     */
+    private SensitivityRow createReportRow(Object[] columns) {
+
+        SensitivityRow row = new SensitivityRow();
+
+        if (columns == null) {
+            return row;
+        }
+
+        row.setMrn(safeString((String) columns[0]));
+
+        Long sampleId = (Long) columns[1];
+        row.setSampleId(sampleId == null ? "" : String.valueOf(sampleId));
+
+        row.setInvestigationName(safeString((String) columns[2]));
+        row.setSpecimen(safeString((String) columns[3]));
+        row.setVisitType(safeString((String) columns[4]));
+
+        Title title = (Title) columns[5];
+        String name = safeString((String) columns[6]);
+
+        row.setPatientName(
+                title == null ? name : (title.getLabel() + " " + name).trim()
         );
 
-        if (reportData == null) {
-            reportData = new ArrayList<>();
-        }
+        row.setPatientLocation(safeString((String) columns[7]));
+        row.setAntibiotic(safeString((String) columns[8]));
+        row.setSensitivity(safeString((String) columns[9]));
+        row.setRemarks(safeString((String) columns[10]));
 
-        if (reportData.isEmpty()) {
-            JsfUtil.addErrorMessage(
-                    "No antibiotic sensitivity records were found."
-            );
-        } else {
-            JsfUtil.addSuccessMessage(
-                    reportData.size() + " records found."
-            );
-        }
+        return row;
+    }
+
+    private String safeString(String value) {
+        return value == null ? "" : value;
     }
 
     public void clear() {
@@ -201,7 +284,6 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
         referringDoctor = null;
 
         visitType = null;
-        organism = null;
         antibiotic = null;
         sensitivity = null;
 
@@ -209,6 +291,10 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
 
         fromDate = CommonFunctions.getStartOfDay(new Date());
         toDate = CommonFunctions.getEndOfDay(new Date());
+    }
+
+    public Date getCurrentDate() {
+        return new Date();
     }
 
     public Date getFromDate() {
@@ -233,15 +319,14 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
         this.toDate = toDate;
     }
 
-    public List<PatientReportItemValue> getReportData() {
+    public List<SensitivityRow> getReportData() {
         if (reportData == null) {
             reportData = new ArrayList<>();
         }
         return reportData;
     }
 
-    public void setReportData(
-            List<PatientReportItemValue> reportData) {
+    public void setReportData(List<SensitivityRow> reportData) {
         this.reportData = reportData;
     }
 
@@ -304,14 +389,6 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
         this.visitType = visitType;
     }
 
-    public Item getOrganism() {
-        return organism;
-    }
-
-    public void setOrganism(Item organism) {
-        this.organism = organism;
-    }
-
     public Item getAntibiotic() {
         return antibiotic;
     }
@@ -326,5 +403,104 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
 
     public void setSensitivity(String sensitivity) {
         this.sensitivity = sensitivity;
+    }
+
+    /**
+     * One antibiotic sensitivity result, flattened for display.
+     */
+    public static class SensitivityRow implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private String mrn = "";
+        private String sampleId = "";
+        private String investigationName = "";
+        private String specimen = "";
+        private String visitType = "";
+        private String patientName = "";
+        private String patientLocation = "";
+        private String antibiotic = "";
+        private String sensitivity = "";
+        private String remarks = "";
+
+        public String getMrn() {
+            return mrn;
+        }
+
+        public void setMrn(String mrn) {
+            this.mrn = mrn;
+        }
+
+        public String getSampleId() {
+            return sampleId;
+        }
+
+        public void setSampleId(String sampleId) {
+            this.sampleId = sampleId;
+        }
+
+        public String getInvestigationName() {
+            return investigationName;
+        }
+
+        public void setInvestigationName(String investigationName) {
+            this.investigationName = investigationName;
+        }
+
+        public String getSpecimen() {
+            return specimen;
+        }
+
+        public void setSpecimen(String specimen) {
+            this.specimen = specimen;
+        }
+
+        public String getVisitType() {
+            return visitType;
+        }
+
+        public void setVisitType(String visitType) {
+            this.visitType = visitType;
+        }
+
+        public String getPatientName() {
+            return patientName;
+        }
+
+        public void setPatientName(String patientName) {
+            this.patientName = patientName;
+        }
+
+        public String getPatientLocation() {
+            return patientLocation;
+        }
+
+        public void setPatientLocation(String patientLocation) {
+            this.patientLocation = patientLocation;
+        }
+
+        public String getAntibiotic() {
+            return antibiotic;
+        }
+
+        public void setAntibiotic(String antibiotic) {
+            this.antibiotic = antibiotic;
+        }
+
+        public String getSensitivity() {
+            return sensitivity;
+        }
+
+        public void setSensitivity(String sensitivity) {
+            this.sensitivity = sensitivity;
+        }
+
+        public String getRemarks() {
+            return remarks;
+        }
+
+        public void setRemarks(String remarks) {
+            this.remarks = remarks;
+        }
     }
 }
