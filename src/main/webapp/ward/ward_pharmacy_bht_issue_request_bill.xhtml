@@ -18,7 +18,17 @@
             <ui:define name="content">
 
                 <h:form id="bill" >
-                    <p:defaultCommand target="#{configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true) ? 'btnCalcAdd' : 'btnAddNoRx'}" />
+                    <!-- btnCalcAdd/btnAddNoRx/btnProceed all live inside the h:panelGroup below,
+                         which is hidden entirely once billPreview is true (settle/save actions set
+                         billPreview=true without clearing patientEncounter/department - see
+                         clearBill()/clearBillItem() in the controller). Within that panelGroup,
+                         btnCalcAdd/btnAddNoRx only render once patient+department are both selected
+                         (the "sale" panel); before that only the search panel (with btnProceed) is
+                         rendered. Fall back to nullButtonBill in every state where none of those
+                         targets exist, so PrimeFaces' client-side defaultCommand init doesn't throw
+                         on a not-yet-rendered target (issue #23490). -->
+                    <p:commandButton id="nullButtonBill" value="No Action" action="#" style="display: none;" ></p:commandButton>
+                    <p:defaultCommand target="#{pharmacyRequestForBhtController.billPreview ? 'nullButtonBill' : (pharmacyRequestForBhtController.patientEncounter ne null and pharmacyRequestForBhtController.department ne null ? (configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true) ? 'btnCalcAdd' : 'btnAddNoRx') : 'btnProceed')}" />
                     <h:panelGroup
                         rendered="#{!pharmacyRequestForBhtController.billPreview}"
                         style="width: fit-content;" >

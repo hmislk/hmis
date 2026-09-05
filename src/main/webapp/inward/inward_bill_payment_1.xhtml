@@ -8,7 +8,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
-                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
 
@@ -18,30 +19,17 @@
             <h:form  >
                 <p:panel header="Inward Payment Bill" rendered="#{!inwardPaymentController.printPreview}">
                     <h:panelGrid columns="2">
-                        <p:panel header="BHT">
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                            value="#{inwardPaymentController.current.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientAll}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  style="width: 400px;">
-                                <p:ajax event="itemSelect" process="@this" update="@all" listener="#{inwardPaymentController.bhtListener}"/>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.bhtNo}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                                </p:column>
-                            </p:autoComplete>   
+                        <p:panel header="BHT" style="min-width: 350px;">
+                            <!-- No continueClientId: selecting a BHT here must NOT auto-click
+                                 "Pay" - it only populates the due amount (itemSelectListener)
+                                 so staff can review/adjust before actually submitting payment. -->
+                            <admcc:admission_search
+                                widgetVar="aPt"
+                                inputId="acPt"
+                                value="#{inwardPaymentController.current.patientEncounter}"
+                                completeMethod="#{admissionController.completePatientAll}"
+                                itemSelectListener="#{inwardPaymentController.bhtListener}"
+                                itemSelectUpdate="@all" />
                             <h:panelGroup id="panSearch2">
                                 <in:bhtDetail admission="#{inwardPaymentController.current.patientEncounter}"/>
                             </h:panelGroup>
