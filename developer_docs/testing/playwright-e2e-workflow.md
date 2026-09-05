@@ -593,6 +593,22 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+**Before inserting a row, check whether some *other* department already has it** — picking
+that department on the login screen needs no DB write at all and is the faster route:
+
+```sql
+SELECT PRIVILEGE, DEPARTMENT_ID FROM webuserprivilege
+WHERE WEBUSER_ID = <id> AND RETIRED = 0 AND PRIVILEGE = 'SomePrivilege';
+```
+
+Testing issue #23484's pharmacy-admin pages, `PharmacyItemNameEdit` existed for `Inward`
+only, so every **Add New**/**Edit** button on `vtm_dto.xhtml`, `store_vtm.xhtml` and
+`lab_vtm.xhtml` rendered `disabled` under the default `Main Pharmacy` department — nothing
+to do with those pages, and no privilege row needed. Logging out and reselecting `Inward`
+enabled all of them. A `disabled` (rather than absent) admin button is the tell: per this
+project's convention, privilege-gated controls are disabled, not hidden, so a greyed-out
+button means "wrong department", not "broken page".
+
 **`WebUser.department` is not a fixed "home department" — `SessionController.selectDepartment()`
 overwrites and persists it (`loggedUser.setDepartment(department); getFacede().edit(loggedUser)`)
 every time the department-selection screen is submitted, which is why it pre-fills with
@@ -2366,6 +2382,45 @@ and auto-advances; an exact query matching multiple admissions (e.g. several
 active admissions sharing one PHN) shows the dropdown and does not
 auto-advance.
 
+## 91. A `p:commandButton` save that does nothing — no growl, no error, no DB row, a clean `server.log` — is usually a required field whose message went to a `<p:messages>` you never looked at
+
+Seen on `pharmacy/admin/lab_amp.xhtml` and `store_amp.xhtml` while verifying
+issue #23484. Clicking **Save** with Name, Code and VMP filled produced: no
+growl, nothing under `.ui-message*`, no new `Amp` row, and not a single new
+line in `server.log`. The form still held every value, so it looked like the
+action method had run and silently returned.
+
+It had not run at all. Both pages mark **Dosage Form** (`selDosageForm`) and
+**Category** (`ampCat`) `required="true"`, and the Save button uses
+`process="@form"` with `update="form:msg ..."` — so JSF failed validation in
+the Process Validations phase, never invoked `labAmpController.save()`, and
+routed both `requiredMessage`s into the `form:msg` `<p:messages>` component.
+That component contributes no accessible name when its own re-render is what
+populated it, so it does not show up in `browser_snapshot`, in
+`browser_find` for `/error|required/i`, or in a `.ui-growl-item` query.
+
+**Diagnose it this way** — the three symptoms together (form still populated
++ DB unchanged + `server.log` clean) mean the action method never fired, which
+narrows it to client-side or validation-phase rejection, not business logic:
+
+```js
+// enumerate every required input in the form and which ones are still empty
+() => Array.from(document.querySelectorAll('#form [aria-required="true"], #form .ui-state-error'))
+        .map(e => ({ id: e.id, cls: e.className, val: e.value }))
+```
+
+and read the message panel by id rather than by class:
+
+```js
+() => document.querySelector('#form\:msg')?.textContent.trim()
+```
+
+Cheaper still: `grep -n 'required="true"' <page>.xhtml` and fill every one of
+them before the first Save attempt. Note that a `required` `p:autoComplete`
+(Category here) is only satisfied by **clicking a suggestion** — typing the
+exact label and leaving it is an empty model value as far as JSF is
+concerned, even though the textbox looks filled.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
@@ -2494,4 +2549,6 @@ Verified while testing issue #23377.
 - [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
 - [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
 - [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
+- [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
