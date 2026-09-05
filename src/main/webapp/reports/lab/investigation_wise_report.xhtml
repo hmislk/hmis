@@ -56,7 +56,7 @@
 
                 </style>
 
-                <!-- NOTE: id added so update="messages reportPanel" and the
+                <!-- NOTE: id added so update=":growl reportPanel" and the
                      print script (which looks up
                      'investigationReportForm:reportPanel') actually work -->
                 <h:form id="investigationReportForm" class="w-100">
@@ -125,7 +125,7 @@
                                     itemLabel="#{ins.name}"
                                     itemValue="#{ins}"/>
                                 <!-- NOTE: added — cascades down to site/department/lab -->
-                                <p:ajax process="@this" update="phmSite sto sLab"/>
+                                <p:ajax update="phmSite sto sLab"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
@@ -150,9 +150,7 @@
                                                var="siteItem"
                                                itemLabel="#{siteItem.name}"
                                                itemValue="#{siteItem}"/>
-                                <p:ajax
-                                    process="@this"
-                                    update="sto sLab"/>
+                                <p:ajax update="sto sLab"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -172,7 +170,7 @@
                                 <!-- NOTE: fixed — var was "d" but itemLabel/itemValue
                                      referenced "departmentItem" -->
                                 <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(investigationWiseReport.institution, investigationWiseReport.site)}"
                                     var="departmentItem"
                                     itemLabel="#{departmentItem.name}"
                                     itemValue="#{departmentItem}"/>
@@ -195,7 +193,7 @@
                                     itemValue="#{null}"
                                     noSelectionOption="true"/>
                                 <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(investigationWiseReport.institution, investigationWiseReport.site)}"
                                     var="laboratoryItem"
                                     itemLabel="#{laboratoryItem.name}"
                                     itemValue="#{laboratoryItem}"/>
@@ -328,7 +326,7 @@
                                     value="Process"
                                     icon="fas fa-cogs"
                                     process="@form"
-                                    update="messages reportPanel"/>
+                                    update=":growl reportPanel"/>
 
                                 <p:commandButton
                                     id="btnPrint"
@@ -357,6 +355,8 @@
                                     icon="fas fa-file-pdf"
                                     ajax="false"
                                     value="PDF"
+                                    process="@this"
+                                    immediate="true"
                                     action="#{investigationWiseReport.exportPdf}"/>
 
                             </div>
@@ -365,7 +365,7 @@
                     </p:panel>
 
                     <!-- NOTE: id="reportPanel" added — this is what
-                         update="messages reportPanel" targets, and what the
+                         update=":growl reportPanel" targets, and what the
                          print CSS/JS expects. styleClass now includes
                          investigation-wise-print so the @media print rules apply. -->
                     <p:panel id="reportPanel"
@@ -414,6 +414,7 @@
 
                         <p:dataTable
                             id="invesWiseTable"
+                            widgetVar="invesWiseTable"
                             value="#{investigationWiseReport.reportData}"
                             var="reportRow"
                             rowIndexVar="rowIndex"
@@ -507,16 +508,27 @@
 
                     function printInvestigationReport() {
 
-                    var reportPanel = document.getElementById(
-                    'investigationReportForm:reportPanel'
+                    var table = window.PF ? PF('invesWiseTable') : null;
+
+                    if (table &amp;&amp; table.paginator) {
+
+                    var total = table.paginator.cfg.rowCount;
+                    var shown = table.paginator.cfg.rows;
+
+                    // Only the current page exists in the DOM, so printing now
+                    // would drop the rest without saying so.
+                    if (total > shown) {
+                    var proceed = confirm(
+                    'Only the ' + shown + ' rows on this page will be printed, '
+                    + 'out of ' + total + '. Use the page-size dropdown below '
+                    + 'the table to show them all, then print. '
+                    + 'Print this page anyway?'
                     );
 
-                    if (!reportPanel) {
-                    console.error(
-                    'Investigation report panel was not found.'
-                    );
-
+                    if (!proceed) {
                     return false;
+                    }
+                    }
                     }
 
                     window.print();

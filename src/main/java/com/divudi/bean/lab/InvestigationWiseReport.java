@@ -1,19 +1,15 @@
 package com.divudi.bean.lab;
 
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.lab.Investigation;
-import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,6 +54,15 @@ public class InvestigationWiseReport implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Upper bound on the rows one Process run may load. PatientInvestigation
+     * maps 56 to-one associations and none of them declare LAZY, so every row
+     * drags its whole entity graph into the persistence context — and this bean
+     * is @SessionScoped, so whatever is loaded stays resident. An unbounded
+     * range (a year is ~143,000 rows locally) is enough to exhaust the heap.
+     */
+    private static final int MAX_REPORT_ROWS = 10000;
+
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
 
@@ -81,7 +86,7 @@ public class InvestigationWiseReport implements Serializable {
     public void process() {
         reportData = new ArrayList<>();
 
-        if (getFromDate() == null || getToDate() == null) {
+        if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage(
                     "Please select both From Date and To Date."
             );
@@ -97,10 +102,21 @@ public class InvestigationWiseReport implements Serializable {
 
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("select pi ")
+        // Only the columns the report shows are selected. Loading whole
+        // PatientInvestigation entities pulls 56 to-one associations per row
+        // (none of them declare LAZY), which made a month-wide range take
+        // minutes; the projection reads the nine displayed values instead.
+        jpql.append("select pi.id, pi.createdAt, patient.phn, ")
+                .append("person.title, person.name, person.sex, person.dob, ")
+                .append("inv.name, b.ipOpOrCc, itemDept.name ")
                 .append("from PatientInvestigation pi ")
                 .append("join pi.billItem bi ")
                 .append("join bi.bill b ")
+                .append("left join pi.investigation inv ")
+                .append("left join pi.patient patient ")
+                .append("left join patient.person person ")
+                .append("left join bi.item item ")
+                .append("left join item.department itemDept ")
                 .append("where pi.retired = false ")
                 .append("and bi.retired = false ")
                 .append("and b.retired = false ")
@@ -130,13 +146,20 @@ public class InvestigationWiseReport implements Serializable {
          * The laboratory department belongs to the investigation Item.
          */
         if (laboratory != null) {
-            jpql.append("and bi.item.department = :laboratory ");
+            jpql.append("and itemDept = :laboratory ");
             parameters.put("laboratory", laboratory);
         }
 
         if (investigation != null) {
             jpql.append("and pi.investigation = :investigation ");
             parameters.put("investigation", investigation);
+        }
+
+        Sex selectedSex = resolveSex(gender);
+
+        if (selectedSex != null) {
+            jpql.append("and person.sex = :sex ");
+            parameters.put("sex", selectedSex);
         }
 
         if (!isBlank(visitType)) {
@@ -150,38 +173,31 @@ public class InvestigationWiseReport implements Serializable {
         jpql.append("order by pi.createdAt desc");
 
         try {
-            List<PatientInvestigation> investigations
-                    = patientInvestigationFacade.findByJpql(
+            List<Object[]> rows
+                    = patientInvestigationFacade.findObjectsArrayByJpql(
                             jpql.toString(),
                             parameters,
-                            TemporalType.TIMESTAMP
+                            TemporalType.TIMESTAMP,
+                            MAX_REPORT_ROWS
                     );
 
-            if (investigations == null) {
-                investigations = new ArrayList<>();
+            if (rows == null) {
+                rows = new ArrayList<>();
             }
 
-            for (PatientInvestigation patientInvestigation
-                    : investigations) {
-
-                InvestigationWiseRow row
-                        = createReportRow(patientInvestigation);
-
-                /*
-                 * Gender is filtered after querying because Person.sex is an
-                 * enum and its exact enum type is not required in this bean.
-                 */
-                if (!isBlank(gender)
-                        && !genderMatches(row.getGender(), gender)) {
-                    continue;
-                }
-
-                reportData.add(row);
+            for (Object[] columns : rows) {
+                reportData.add(createReportRow(columns));
             }
 
             if (reportData.isEmpty()) {
                 JsfUtil.addErrorMessage(
                         "No investigation records were found."
+                );
+            } else if (reportData.size() >= MAX_REPORT_ROWS) {
+                JsfUtil.addErrorMessage(
+                        "Showing the first " + MAX_REPORT_ROWS
+                        + " records only. Narrow the date range or filters"
+                        + " to see the rest."
                 );
             } else {
                 JsfUtil.addSuccessMessage(
@@ -190,97 +206,85 @@ public class InvestigationWiseReport implements Serializable {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
+
             reportData = new ArrayList<>();
 
             JsfUtil.addErrorMessage(
-                    "Error generating report: " + e.getMessage()
+                    "Error generating report: " + e
             );
         }
     }
 
-    private InvestigationWiseRow createReportRow(
-            PatientInvestigation patientInvestigation) {
+    /**
+     * Builds a report row from one projected result tuple. The column order
+     * must match the select clause in {@link #process()}.
+     */
+    private InvestigationWiseRow createReportRow(Object[] columns) {
 
         InvestigationWiseRow row = new InvestigationWiseRow();
 
-        if (patientInvestigation == null) {
+        if (columns == null) {
             return row;
         }
 
-        row.setId(patientInvestigation.getId());
-        row.setCreatedAt(patientInvestigation.getCreatedAt());
+        row.setId((Long) columns[0]);
+        row.setCreatedAt((Date) columns[1]);
+        row.setMrn(safeString((String) columns[2]));
 
-        Patient patient = patientInvestigation.getPatient();
+        Title title = (Title) columns[3];
+        String name = safeString((String) columns[4]);
 
-        if (patient != null) {
-            row.setMrn(safeString(patient.getPhn()));
+        row.setPatientName(
+                title == null ? name : (title.getLabel() + " " + name).trim()
+        );
 
-            Person person = patient.getPerson();
+        Sex sex = (Sex) columns[5];
 
-            if (person != null) {
-                row.setPatientName(
-                        safeString(person.getNameWithTitle())
-                );
-
-                if (person.getSex() != null) {
-                    row.setGender(
-                            safeString(person.getSex().getLabel())
-                    );
-                }
-
-                row.setAge(
-                        safeString(person.getAgeAsString())
-                );
-            }
+        if (sex != null) {
+            row.setGender(safeString(sex.getLabel()));
         }
 
-        Investigation selectedInvestigation
-                = patientInvestigation.getInvestigation();
-
-        if (selectedInvestigation != null) {
-            row.setInvestigationName(
-                    safeString(selectedInvestigation.getName())
-            );
-        }
-
-        BillItem billItem = patientInvestigation.getBillItem();
-
-        if (billItem != null) {
-            Bill bill = billItem.getBill();
-
-            if (bill != null) {
-                row.setVisitType(
-                        safeString(bill.getIpOpOrCc())
-                );
-            }
-
-            Item item = billItem.getItem();
-
-            if (item != null && item.getDepartment() != null) {
-                row.setLaboratoryName(
-                        safeString(item.getDepartment().getName())
-                );
-            }
-        }
+        row.setAge(formatAge((Date) columns[6]));
+        row.setInvestigationName(safeString((String) columns[7]));
+        row.setVisitType(safeString((String) columns[8]));
+        row.setLaboratoryName(safeString((String) columns[9]));
 
         return row;
     }
 
-    private boolean genderMatches(
-            String reportGender,
-            String selectedGender) {
+    /**
+     * Formats a date of birth the same way the patient screens do, by reusing
+     * Person's own age calculation rather than duplicating it here.
+     */
+    private String formatAge(Date dateOfBirth) {
+        if (dateOfBirth == null) {
+            return "";
+        }
 
+        Person person = new Person();
+        person.setDob(dateOfBirth);
+
+        return safeString(person.getAgeAsString());
+    }
+
+    /**
+     * Maps the Gender dropdown value onto the Sex enum so the filter can run in
+     * the query. Returns null for "All" or anything unrecognised, which leaves
+     * the filter off rather than silently matching nothing.
+     */
+    private Sex resolveSex(String selectedGender) {
         if (isBlank(selectedGender)) {
-            return true;
+            return null;
         }
 
-        if (isBlank(reportGender)) {
-            return false;
+        for (Sex sex : Sex.values()) {
+            if (sex.getLabel().equalsIgnoreCase(selectedGender.trim())) {
+                return sex;
+            }
         }
 
-        return reportGender.trim().equalsIgnoreCase(
-                selectedGender.trim()
-        );
+        return null;
     }
 
     public void clear() {
