@@ -173,16 +173,24 @@ public class InvestigationWiseReport implements Serializable {
         jpql.append("order by pi.createdAt desc");
 
         try {
+            // One row beyond the cap tells truncation apart from a result that
+            // happens to be exactly MAX_REPORT_ROWS long.
             List<Object[]> rows
                     = patientInvestigationFacade.findObjectsArrayByJpql(
                             jpql.toString(),
                             parameters,
                             TemporalType.TIMESTAMP,
-                            MAX_REPORT_ROWS
+                            MAX_REPORT_ROWS + 1
                     );
 
             if (rows == null) {
                 rows = new ArrayList<>();
+            }
+
+            boolean truncated = rows.size() > MAX_REPORT_ROWS;
+
+            if (truncated) {
+                rows = rows.subList(0, MAX_REPORT_ROWS);
             }
 
             for (Object[] columns : rows) {
@@ -193,7 +201,7 @@ public class InvestigationWiseReport implements Serializable {
                 JsfUtil.addErrorMessage(
                         "No investigation records were found."
                 );
-            } else if (reportData.size() >= MAX_REPORT_ROWS) {
+            } else if (truncated) {
                 JsfUtil.addErrorMessage(
                         "Showing the first " + MAX_REPORT_ROWS
                         + " records only. Narrow the date range or filters"
@@ -206,14 +214,32 @@ public class InvestigationWiseReport implements Serializable {
             }
 
         } catch (Exception e) {
+            // The detail stays in the server log; a query or schema fragment in
+            // the growl would leak infrastructure information to the user.
             e.printStackTrace();
 
             reportData = new ArrayList<>();
 
             JsfUtil.addErrorMessage(
-                    "Error generating report: " + e
+                    "Error generating the report. Please check the server log."
             );
         }
+    }
+
+    /**
+     * A department or laboratory chosen under the previous institution is no
+     * longer in the refreshed lists, but would otherwise stay set on this
+     * session-scoped bean and silently filter the report down to nothing.
+     */
+    public void institutionChanged() {
+        site = null;
+        department = null;
+        laboratory = null;
+    }
+
+    public void siteChanged() {
+        department = null;
+        laboratory = null;
     }
 
     /**

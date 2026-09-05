@@ -125,7 +125,7 @@
                                     itemLabel="#{ins.name}"
                                     itemValue="#{ins}"/>
                                 <!-- NOTE: added — cascades down to site/department/lab -->
-                                <p:ajax update="phmSite sto sLab"/>
+                                <p:ajax listener="#{investigationWiseReport.institutionChanged}" update="phmSite sto sLab"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
@@ -150,7 +150,7 @@
                                                var="siteItem"
                                                itemLabel="#{siteItem.name}"
                                                itemValue="#{siteItem}"/>
-                                <p:ajax update="sto sLab"/>
+                                <p:ajax listener="#{investigationWiseReport.siteChanged}" update="sto sLab"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
