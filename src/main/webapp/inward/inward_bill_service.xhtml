@@ -1159,7 +1159,7 @@
             <h:form id="inwardServiceBillPrintConfigForm"
                     rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
                 <div class="card-body">
-                    <h6>Which formats print</h6>
+                    <h:outputText value="Which formats print" styleClass="fw-bold d-block mb-2" />
                     <small class="form-text text-muted d-block mb-3">
                         Every format switched on here is printed, in addition to the
                         format chosen in the Paper Format list on the page.
@@ -1174,7 +1174,7 @@
                     </div>
 
                     <hr/>
-                    <h6>Application-wide formats</h6>
+                    <h:outputText value="Application-wide formats" styleClass="fw-bold d-block mb-2" />
                     <small class="form-text text-muted d-block mb-3">
                         These settings already existed for this page and apply to
                         every department in the application, not just this one.

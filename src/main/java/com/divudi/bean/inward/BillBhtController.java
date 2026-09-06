@@ -242,6 +242,16 @@ public class BillBhtController implements Serializable {
             JsfUtil.addErrorMessage("You do not have privilege to change print format settings");
             return;
         }
+        // The Custom 1 key is meant to be department-scoped. With no department
+        // selected (SessionController.loginActionWithoutDepartment()),
+        // ConfigOptionController.setBooleanValueByKey falls back to the plain
+        // application key, which every department without an override inherits
+        // - so one unscoped save would silently change the format for the whole
+        // application. Refuse rather than write the wrong scope.
+        if (sessionController.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Select a department before changing print format settings");
+            return;
+        }
         try {
             configOptionApplicationController.setBooleanValueByKey(KEY_FIVE_FIVE_PRINTED, printFormatFiveFivePrinted);
             configOptionApplicationController.setBooleanValueByKey(KEY_POS, printFormatPos);
