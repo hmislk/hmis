@@ -18991,7 +18991,16 @@ public class SearchController implements Serializable {
             netCashForTheDayBundle.setTotal(netCashCollection);
 
             bundle.getBundles().add(netCashForTheDayBundle);
-            bundle.setName("Cashier_Summary");
+            bundle.setName("Cashier Summary Report");
+            // Snapshot the filters the report was actually generated with, so
+            // the PDF and Excel headers describe this run rather than whatever
+            // the form happens to hold when the download button is pressed.
+            bundle.setFromDate(fromDate);
+            bundle.setToDate(toDate);
+            bundle.setFilterInstitution(institution);
+            bundle.setFilterSite(site);
+            bundle.setFilterDepartment(department);
+            bundle.setFilterWebUser(webUser);
             bundle.calculateTotalsByAllChildBundles();
         }, CashierReports.CASHIER_SUMMARY, sessionController.getLoggedUser());
     }
@@ -24709,8 +24718,24 @@ public class SearchController implements Serializable {
 
     public StreamedContent getBundleAsPdf() {
         StreamedContent pdfSc = null;
+        // Shared by six report pages - cashier summary/detailed, income
+        // breakdown, service category wise bill detail and the two lab daily
+        // summaries. It must not rename the bundle or overwrite its filters:
+        // SearchController is @SessionScoped, so anything written here would
+        // stick to the report the user actually generated and follow it into
+        // the Excel export too. Each generator sets its own name and filters.
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Please generate the report before exporting it to PDF.");
+            return null;
+        }
         try {
-            pdfSc = pdfController.createPdfForBundle(bundle);
+            // Header/footer only for a bundle that snapshotted its filters -
+            // i.e. the cashier summary. The other five pages sharing this
+            // getter have no child bundles, so their own populateTableFor...
+            // already prints the report name; adding the header there would
+            // print it twice. Keeping them on the old path leaves their
+            // output byte-for-byte unchanged.
+            pdfSc = pdfController.createPdfForBundle(bundle, PageSize.A4, bundle.hasFilterSummary());
         } catch (IOException e) {
             logger.error("getBundleAsPdf: Error creating pdfSc via pdfController.createPdfForBundle", e);
             pdfSc = null;
@@ -24931,6 +24956,10 @@ public class SearchController implements Serializable {
     }
 
     public StreamedContent getBundleAsExcel() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Please generate the report before exporting it to Excel.");
+            return null;
+        }
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
         } catch (IOException e) {
