@@ -52,10 +52,14 @@ Run it when the issue is a bug and step 2 left the cause unconfirmed or
 unfound:
 
 - Prefer reproducing against existing data first (read-only navigation or
-  API `GET`s). If reproduction requires creating or modifying a record, pick
-  the target department/record yourself (same approach as step 4) — query
-  the local DB for something real and relevant, and state what you picked
-  and why rather than asking.
+  API `GET`s) — picking which department/record to *read* is the same
+  no-need-to-ask judgment call as step 4. If reproduction requires a
+  state-changing step (creating, modifying, or deleting a record, or running
+  direct SQL), that's a different risk category: create a disposable record
+  through the application and clean it up in the same session where
+  possible, and confirm with the user first (`AskUserQuestion`) before
+  modifying/deleting an existing record or running direct SQL — don't
+  extend the "don't ask" judgment call to writes.
 - Reproduce live against local Payara — the `playwright-e2e` skill for
   UI-facing bugs, or direct REST calls (per `api-development`) for API-only
   ones.
