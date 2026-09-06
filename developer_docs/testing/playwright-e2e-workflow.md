@@ -113,6 +113,51 @@ switch for these flows.
 
 ## 2. Navigating menus
 
+### 🚨 NEVER navigate by typing a page URL
+
+**Real users never reach an inner page by its URL.** Many terminals are kiosks
+with no address bar; the rest reach every page through the menus. If a page has
+no menu path to it, that page is not reachable in production and the correct
+finding is "this page has no navigation path", not "this page is broken".
+
+**Only ever type a URL for the application root / login page.** Everything after
+that must be reached by clicking through the menus, exactly as a user would.
+
+This is not a style preference. It changes what the page does:
+
+- **Session-scoped controllers are populated by the navigation method, not by
+  the page.** `sessionController.toManageDepartmentPreferences()`,
+  `inwardSearch.toSearchServiceBill()` and friends set the entity the page then
+  renders. Skipping the navigation method leaves that entity null, or leaves a
+  lazily-created transient placeholder in its place.
+- **What you observe afterwards is therefore not the real behaviour.** A
+  URL-loaded page can 500 (`Target Unreachable, 'null' returned null`), render
+  blank, render against an empty entity, or run pathologically slowly — none of
+  which any user can ever hit.
+- **Getters that lazily instantiate are the usual trap.** e.g.
+  `InwardSearch.getBill()` returns `new BilledBill()` when nothing is selected,
+  so a URL-loaded page renders every print component against an id-less entity
+  and every `WHERE bill = :bl` query against a transient parameter.
+
+Two live examples of this producing a false bug report:
+
+| Page | Symptom when opened by URL | Reality via the menus |
+|---|---|---|
+| `inward_reprint_bill_service.xhtml` | appeared to hang indefinitely, JVM into the GB range, no exception logged | loads in 0.7-5.3 s (issue #23519, retracted) |
+| `admin_mange_department_preferences.xhtml` | HTTP 500, `Target Unreachable, 'null' returned null` | works normally |
+
+**Before testing a page, establish its menu path first** and record it in the
+issue/PR, in the form the user can follow:
+
+> Menu → Inpatient → Search → Service Bill → set From Date → Search Bill
+> → click Bill No → Return
+
+If you cannot find a menu path, search `menu.xhtml` for the page name and check
+the privileges gating it — see §20. Do **not** fall back to the URL to "get on
+with the test".
+
+### Menu mechanics
+
 - The Pharmacy top menu is a PrimeFaces menubar. **Hover** the parent
   (`smPharmacy`) to expand it, then **click** the submenu link
   (e.g. `a:has-text("Disbursement")`). A direct click on the parent without the
@@ -2454,6 +2499,68 @@ them before the first Save attempt. Note that a `required` `p:autoComplete`
 exact label and leaving it is an empty model value as far as JSF is
 concerned, even though the textbox looks filled.
 
+## 93. Privileges are scoped per-department — a rendered button check can fail under the "wrong" department even though the user genuinely has the privilege
+
+Seen verifying issue #23510 (Surgery Dashboard "Remove" a validated timed
+service). `theater/surgery_bill_summary.xhtml`'s **Validate Surgery** button
+is gated by `webUserController.hasPrivilege('InwardSurgeryValidate')`. The
+test user held that privilege (`WEBUSERPRIVILEGE` row, `PRIVILEGE =
+'InwardSurgeryValidate'`) — but the row's `DEPARTMENT_ID` pointed at "Inward",
+not the "THEATRE" department selected at login. Under THEATRE the button
+simply didn't render (no error, no disabled state — just absent), which looks
+identical to "user lacks the privilege" from the UI alone.
+
+**Diagnose it this way**: don't stop at confirming a `WEBUSERPRIVILEGE` row
+exists for the user — check its `DEPARTMENT_ID` against the department
+actually selected for the session:
+
+```sql
+SELECT ID, PRIVILEGE, DEPARTMENT_ID FROM WEBUSERPRIVILEGE
+WHERE WEBUSER_ID = <id> AND PRIVILEGE = '<PrivilegeName>';
+```
+
+If the department differs from the one under test, log out and reselect the
+department that matches the privilege row — per §1 there is no in-session
+department switch. Never grant a new `WEBUSERPRIVILEGE` row yourself to route
+around this; that is a privilege/access-control change, out of bounds for
+verifying a fix.
+
+## 94. PrimeFaces `p:datePicker` popups don't always close on their own — the previous field's panel can intercept clicks meant for the next field
+
+Seen adding a timed service on
+`theater/inward_timed_service_consume_surgery.xhtml` (Start Time / End Time,
+both `p:datePicker` with `showTime="true"`). Clicking the End Time input right
+after picking a Start Time did not open a new calendar — it silently reused
+the Start Time picker that was still open underneath, so time-spinner clicks
+kept editing the wrong field. A later click on the real End Time input then
+timed out with `<div class="ui-datepicker-header">... intercepts pointer
+events` because the stale panel from the previous field was still on top.
+
+**Fix**: click a neutral, non-input element on the page (e.g. a panel header)
+to dismiss the open picker before clicking the next date field — `Escape`
+alone was not reliable here. Re-`browser_snapshot` after opening a picker to
+confirm which field's `_panel` id is actually active before interacting with
+its spinners.
+
+## 95. Theatre's "+ Add New Surgery" briefly lands on a generic, blank-looking `admission_profile.xhtml` — the surgery Bill is already created; go through "Surgeries for BHT" to reach it
+
+Seen creating test data for issue #23510. Clicking **+ Add New Surgery** on
+`theater/patient_surgery.xhtml` navigates to `inward/admission_profile.xhtml`
+showing empty Name/Gender/DOB fields and a *different*, just-now Date of
+Admission — which looks like the action failed or created a stray blank
+encounter. It did not: the surgery `Bill` (`BILLTYPE = 'SurgeryBill'`) was
+created against the *original* BHT encounter, and a second, child
+`PatientEncounter` (the "procedure" record, `PARENTENCOUNTER_ID` = the BHT's
+id) was also created — `admission_profile.xhtml` is just rendering that new,
+still-mostly-empty child encounter, which is a separate, likely
+pre-existing display gap and not something this fix touched.
+
+**To get back to the surgery you just created**, don't fight that page —
+navigate to `theater/inward_bill_surgery_list.xhtml` ("Surgeries for BHT"),
+which lists every `SurgeryBill` for the current `patientEncounter` and has a
+**Surgery Dashboard** button per row that loads it into
+`surgeryBillController.surgeryBill` correctly.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
@@ -2562,6 +2669,28 @@ brand new login/HTTP session is used. A plain redeploy is not enough; use
 `asadmin stop-domain && asadmin start-domain`.
 
 Verified while testing issue #23377.
+
+## A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API
+
+On `inward_admission_child.xhtml`'s "Admit a Baby" form, the DOB field (`dpDob`, a `p:calendar`
+with `timeInput="true"`) rejected even a real slow-typed keystroke sequence
+(`click` → `Control+a` → `pressSequentially('05/09/2026 00:00:00 am')` → `Escape`): the input
+stayed visually blank and the server still reported "Patient Age is Required" (the DOB-backed
+check) on submit. This is a step further than §3's "JS-set values are silently discarded" note —
+that one only warns about `page.evaluate`/`fill()`, but here the *keyboard* path documented
+elsewhere in this guide as the fix for datepickers also silently failed to commit.
+
+**Fix:** call the widget's own API directly instead of trying to type into it:
+
+```js
+() => { PrimeFaces.widgets['widget_<formId>_<fieldId>_dpDob'].setDate(new Date()); }
+```
+
+Find the exact widget variable name first with
+`Object.keys(PrimeFaces.widgets).filter(k => k.toLowerCase().includes('dob'))` — it's generated
+from the component's full client id, not the plain `id` attribute, so don't guess it. Confirm the
+commit by reading `document.getElementById('<formId>:<fieldId>:dpDob_input').value` before
+submitting. Verified while testing issue #23509 (baby admission with no NIC/phone).
 
 ## Quick checklist
 

@@ -59,6 +59,10 @@ public class InwardInvoiceJournalController implements Serializable {
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
     @EJB
     private InwardBhtChargeAggregationService chargeAggregationService;
+    @EJB
+    private com.divudi.core.facade.BillFacade billFacade;
+    @EJB
+    private com.divudi.ejb.CreditBean creditBean;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
 
@@ -105,7 +109,9 @@ public class InwardInvoiceJournalController implements Serializable {
     private double grandTotalDiscount;
     private double grandTotalServiceCharge;
     private double grandTotalCharges;
-    private double grandTotalDeposits;
+    private double grandTotalFinalPayment;
+    private double grandTotalDeposit;
+    private double grandTotalCreditCompanyDue;
     private double grandTotalCreditSettlement;
 
     // -------------------------------------------------------------------------
@@ -126,7 +132,9 @@ public class InwardInvoiceJournalController implements Serializable {
         grandTotalDiscount       = 0;
         grandTotalServiceCharge  = 0;
         grandTotalCharges        = 0;
-        grandTotalDeposits       = 0;
+        grandTotalFinalPayment   = 0;
+        grandTotalDeposit        = 0;
+        grandTotalCreditCompanyDue = 0;
         grandTotalCreditSettlement = 0;
 
         List<PatientEncounter> encounters = chargeAggregationService.fetchEncounters(buildEncounterFilter());
@@ -140,8 +148,14 @@ public class InwardInvoiceJournalController implements Serializable {
         // --- bulk fetch discount / service-charge totals per encounter ---
         Map<Long, double[]> discountMarginMap = chargeAggregationService.fetchDiscountAndMarginByEncounter(encounters);
 
-        // --- bulk fetch deposit totals for all encounters at once ---
+        // --- bulk fetch "Make a Payment" (final payment) totals for all encounters at once ---
+        Map<Long, Double> finalPaymentMap = fetchFinalPaymentTotalsByEncounter(encounters);
+
+        // --- bulk fetch genuine deposit totals for all encounters at once ---
         Map<Long, Double> depositMap = fetchDepositTotalsByEncounter(encounters);
+
+        // --- bulk fetch credit company outstanding due totals ---
+        Map<Long, Double> creditCompanyDueMap = fetchCreditCompanyDueByEncounter(encounters);
 
         // --- bulk fetch credit settlement totals ---
         Map<Long, double[]> creditMap = fetchCreditSettlementByEncounter(encounters);
@@ -151,8 +165,8 @@ public class InwardInvoiceJournalController implements Serializable {
 
         // --- build one row per encounter ---
         for (PatientEncounter enc : encounters) {
-            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, discountMarginMap, depositMap, creditMap,
-                    creditCompanyNamesMap);
+            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, discountMarginMap, finalPaymentMap, depositMap,
+                    creditCompanyDueMap, creditMap, creditCompanyNamesMap);
             reportRows.add(row);
 
             // accumulate column totals and active types
@@ -167,7 +181,9 @@ public class InwardInvoiceJournalController implements Serializable {
             grandTotalDiscount         += row.getTotalDiscount();
             grandTotalServiceCharge    += row.getTotalServiceCharge();
             grandTotalCharges          += row.getGrandTotal();
-            grandTotalDeposits         += row.getTotalDeposits();
+            grandTotalFinalPayment     += row.getTotalFinalPayment();
+            grandTotalDeposit          += row.getTotalDeposit();
+            grandTotalCreditCompanyDue += row.getCreditCompanyDue();
             grandTotalCreditSettlement += row.getCreditSettlementTotal();
         }
     }
@@ -192,10 +208,14 @@ public class InwardInvoiceJournalController implements Serializable {
     // -------------------------------------------------------------------------
 
     /**
-     * Single bulk query: sum of deposit payments grouped by encounter.
-     * Returns Map< encounterId, totalDeposits >.
+     * Single bulk query: sum of "Make a Payment" totals grouped by encounter.
+     * Despite the BillTypeAtomic name (INWARD_PAYMENT) this is the final-payment
+     * total, NOT a deposit — a naming bug from before issue #22804 split Payment
+     * and Deposit into separate BillTypeAtomic families. See
+     * {@link #fetchDepositTotalsByEncounter(List)} for the genuine deposit total.
+     * Returns Map< encounterId, totalFinalPayment >.
      */
-    private Map<Long, Double> fetchDepositTotalsByEncounter(List<PatientEncounter> encounters) {
+    private Map<Long, Double> fetchFinalPaymentTotalsByEncounter(List<PatientEncounter> encounters) {
         Map<Long, Double> result = new HashMap<>();
 
         String jpql = "select p.bill.patientEncounter.id, sum(p.paidValue)"
@@ -217,6 +237,85 @@ public class InwardInvoiceJournalController implements Serializable {
                 Long   encId = (Long) r[0];
                 double total = ((Number) r[1]).doubleValue();
                 result.put(encId, total);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Single bulk query: sum of genuine deposit payments ("Make a Deposit",
+     * BillTypeAtomic.INWARD_DEPOSIT) grouped by encounter. Added by issue
+     * #23518 alongside {@link #fetchFinalPaymentTotalsByEncounter(List)} once
+     * Payment and Deposit were confirmed to be separate BillTypeAtomic families.
+     * Returns Map< encounterId, totalDeposit >.
+     */
+    private Map<Long, Double> fetchDepositTotalsByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, Double> result = new HashMap<>();
+
+        String jpql = "select p.bill.patientEncounter.id, sum(p.paidValue)"
+                + " from Payment p"
+                + " where p.retired = false"
+                + " and p.bill.retired = false"
+                + " and p.bill.cancelled = false"
+                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.patientEncounter in :encs"
+                + " group by p.bill.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta",  BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("encs", encounters);
+
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long   encId = (Long) r[0];
+                double total = ((Number) r[1]).doubleValue();
+                result.put(encId, total);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Single bulk query: outstanding amount still owed by credit company/companies
+     * against their INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY "CC commitment"
+     * bill(s), summed per encounter (an admission may have more than one
+     * commitment bill for multi-company cases).
+     *
+     * Reuses the same due-calculation pattern as
+     * {@code InwardReportController1.inwardCreditCompanyDebtors()} and
+     * {@link com.divudi.ejb.CreditBean#getSettledAmountByCompany(com.divudi.core.entity.Bill)} —
+     * see developer_docs/billing/inward-cc-settlement-tracking.md. The commitment
+     * bill's patientEncounter field is set directly at creation time (see
+     * {@code BhtSummeryController.saveCCBillForAllocation()}/{@code saveCCBill()}/
+     * {@code saveCCBillByInstitution()}), so it can be queried without a
+     * BillItem join.
+     *
+     * Returns Map< encounterId, totalDue >.
+     */
+    private Map<Long, Double> fetchCreditCompanyDueByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, Double> result = new HashMap<>();
+
+        String jpql = "select b from Bill b"
+                + " where b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic = :bta"
+                + " and b.patientEncounter in :encs";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta",  BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("encs", encounters);
+
+        List<com.divudi.core.entity.Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (bills != null) {
+            for (com.divudi.core.entity.Bill b : bills) {
+                if (b.getPatientEncounter() == null) {
+                    continue;
+                }
+                double settled = creditBean.getSettledAmountByCompany(b);
+                double due = b.getNetTotal() - settled;
+                Long encId = b.getPatientEncounter().getId();
+                result.merge(encId, due, Double::sum);
             }
         }
         return result;
@@ -296,7 +395,9 @@ public class InwardInvoiceJournalController implements Serializable {
             PatientEncounter enc,
             Map<Long, Map<InwardChargeType, Double>> chargeMap,
             Map<Long, double[]> discountMarginMap,
+            Map<Long, Double> finalPaymentMap,
             Map<Long, Double> depositMap,
+            Map<Long, Double> creditCompanyDueMap,
             Map<Long, double[]> creditMap,
             Map<Long, List<String>> creditCompanyNamesMap) {
 
@@ -326,8 +427,10 @@ public class InwardInvoiceJournalController implements Serializable {
             row.setTotalServiceCharge(dm[1]);
         }
 
-        // deposits
-        row.setTotalDeposits(depositMap.getOrDefault(enc.getId(), 0.0));
+        // final payment / deposit / credit company due
+        row.setTotalFinalPayment(finalPaymentMap.getOrDefault(enc.getId(), 0.0));
+        row.setTotalDeposit(depositMap.getOrDefault(enc.getId(), 0.0));
+        row.setCreditCompanyDue(creditCompanyDueMap.getOrDefault(enc.getId(), 0.0));
 
         // credit settlement
         double[] credit = creditMap.get(enc.getId());
@@ -396,7 +499,8 @@ public class InwardInvoiceJournalController implements Serializable {
         columnTotals     = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes = EnumSet.noneOf(InwardChargeType.class);
         grandTotalGross = grandTotalDiscount = grandTotalServiceCharge = 0;
-        grandTotalCharges = grandTotalDeposits = grandTotalCreditSettlement = 0;
+        grandTotalCharges = grandTotalCreditSettlement = 0;
+        grandTotalFinalPayment = grandTotalDeposit = grandTotalCreditCompanyDue = 0;
     }
 
     private static Date startOfCurrentMonth() {
@@ -450,6 +554,8 @@ public class InwardInvoiceJournalController implements Serializable {
     public double getGrandTotalDiscount() { return grandTotalDiscount; }
     public double getGrandTotalServiceCharge() { return grandTotalServiceCharge; }
     public double getGrandTotalCharges() { return grandTotalCharges; }
-    public double getGrandTotalDeposits() { return grandTotalDeposits; }
+    public double getGrandTotalFinalPayment() { return grandTotalFinalPayment; }
+    public double getGrandTotalDeposit() { return grandTotalDeposit; }
+    public double getGrandTotalCreditCompanyDue() { return grandTotalCreditCompanyDue; }
     public double getGrandTotalCreditSettlement() { return grandTotalCreditSettlement; }
 }

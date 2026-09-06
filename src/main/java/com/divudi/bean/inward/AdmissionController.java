@@ -2214,7 +2214,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
+            // Baby admissions typically have no phone number of their own yet either
+            // (staff use the "Copy Address & Phone to Baby" button when one is needed),
+            // so this admission-specific phone-required check is skipped for them too,
+            // matching the NIC exemption above. (Issue #23509)
+            if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getPhone() == null || getCurrent().getPatient().getPerson().getPhone().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Phone Number is Required");
                     return true;
