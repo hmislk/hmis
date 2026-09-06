@@ -363,14 +363,27 @@
                                 </f:facet>
                             </p:column>
 
-                            <!-- ===== Deposit total ===== -->
-                            <p:column headerText="Total Deposits"
+                            <!-- ===== Final payment total (formerly mislabeled "Total Deposits") ===== -->
+                            <p:column headerText="Total Final Payment"
                                       style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.totalDeposits}">
+                                <h:outputText value="#{row.totalFinalPayment}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposits}">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalFinalPayment}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- ===== Deposit total (genuine "Make a Deposit" totals) ===== -->
+                            <p:column headerText="Total Deposit"
+                                      style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.totalDeposit}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposit}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
@@ -384,6 +397,19 @@
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditSettlement}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- ===== Credit company outstanding due ===== -->
+                            <p:column headerText="Credit Company Due"
+                                      style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{row.creditCompanyDue}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditCompanyDue}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
@@ -417,13 +443,23 @@
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Deposits: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposits}">
+                                    <strong>Grand Total Final Payment: </strong>
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalFinalPayment}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <strong>Grand Total Deposit: </strong>
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposit}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
                                     <strong>Grand Total Credit Settlements: </strong>
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditSettlement}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <strong>Grand Total Credit Company Due: </strong>
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditCompanyDue}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </div>
