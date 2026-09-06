@@ -220,15 +220,16 @@ ALTER TABLE item DROP COLUMN consumption_allowed;
 #### Local Testing
 
 ```bash
-# Backup database
-mysqldump -u root -p hmis_dev > backup_before_v2.2.0.sql
+# Backup database (substitute your local DB name — see
+# database/mysql-developer-guide.md § Local Development Databases)
+mysqldump -u root -p <local_db> > backup_before_v2.2.0.sql
 
 # Test migration execution through admin UI
 # Verify data integrity
 # Test rollback functionality
 
 # Restore from backup if needed
-mysql -u root -p hmis_dev < backup_before_v2.2.0.sql
+mysql -u root -p <local_db> < backup_before_v2.2.0.sql
 ```
 
 #### Automated Testing

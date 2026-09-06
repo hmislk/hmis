@@ -28,6 +28,7 @@
                         class="ui-button-warning mx-1"
                         icon="fas fa-check"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}"
                         style="float: right;">
                     </p:commandButton>
                     <p:commandButton
@@ -36,6 +37,7 @@
                         class="ui-button-success"
                         icon="fas fa-floppy-disk"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnSave')}"
                         style="float: right;">
                     </p:commandButton>
 
@@ -313,7 +315,7 @@
                         <div class="d-flex gap-2">
                             <p:commandButton
                                 ajax="false"
-                                action="pharmacy_purchase_order_list_for_recieve"
+                                action="pharmacy_purchase_order_list_for_recieve_dto"
                                 rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
                                 class="ui-button-warning"
                                 icon="fa fa-arrow-left"

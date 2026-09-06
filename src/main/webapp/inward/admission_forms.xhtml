@@ -164,7 +164,8 @@
                                            var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />
                         </p:selectOneMenu>
 
-                        <p:selectOneRadio value="#{cc.shortTextValue}" layout="grid" columns="2"
+                        <p:selectOneRadio value="#{cc.shortTextValue}" layout="grid"
+                                          columns="#{inwardFormController.getRadioColumns(cc)}"
                                           rendered="#{cc.componentPresentationType eq 'SelectOneRadio'}">
                             <f:selectItems value="#{inwardFormController.getChoicesFor(cc)}"
                                            var="ch" itemLabel="#{ch.label}" itemValue="#{ch.value}" />

@@ -265,6 +265,17 @@ public class WholesaleSaleNativeSqlService {
         // for ordinary methods; one Payment per component for MultiplePaymentMethods.
         List<Payment> payments = insertPayment(saleBill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
 
+        // Both bills were persisted with billItems nulled (steps 1a/1b) because the items are
+        // inserted natively, so the in-memory entities claim they have none — and
+        // Bill.getBillItems() hands out an empty list rather than a lazy one. Anything that
+        // later merges these instances writes that empty collection into the shared cache, so
+        // every subsequent read of the bill shows a bill with no items (a reprint printing
+        // "No of Items: 0" while the total is correct). Issue #22511, same cause as #22506.
+        // Refreshing rebuilds the lazy collections from the rows just written, and also picks
+        // up the totals updated above.
+        em.refresh(preBill);
+        em.refresh(saleBill);
+
         LOGGER.log(Level.INFO, "[WholesaleNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
 

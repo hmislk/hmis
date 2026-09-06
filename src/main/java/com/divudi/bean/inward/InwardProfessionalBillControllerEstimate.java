@@ -65,6 +65,8 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
     AdmissionController admissionController;
     ////////////////////
     @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
     private BillFacade ejbFacade;
     @EJB
     private BillItemFacade billItemFacade;
@@ -184,7 +186,36 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
     }
 
     public void updateProFee(BillFee bf) {
+        // Persisted value for the audit before-snapshot; the session entity
+        // already carries the newly entered fee
+        java.util.Map<String, Object> before = null;
+        if (bf != null && bf.getId() != null) {
+            BillFee persisted = getBillFeeFacade().findWithoutCache(bf.getId());
+            if (persisted != null) {
+                before = professionalFeeAuditMap(persisted);
+            }
+        }
         updateBillFee(bf);
+        auditService.logEncounterAudit(
+                getBatchBill() != null ? getBatchBill().getPatientEncounter() : null,
+                "Professional Fee Estimate Changed",
+                before, professionalFeeAuditMap(bf), getSessionController().getLoggedUser(),
+                "BillFee", bf != null ? bf.getId() : null);
+    }
+
+    /**
+     * Snapshot of a professional-fee estimate for audit events (#22238).
+     */
+    private java.util.Map<String, Object> professionalFeeAuditMap(BillFee bf) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (bf == null) {
+            return m;
+        }
+        m.put("staff", bf.getStaff() != null && bf.getStaff().getPerson() != null
+                ? bf.getStaff().getPerson().getName() : null);
+        m.put("feeValue", bf.getFeeValue());
+        m.put("retired", bf.isRetired());
+        return m;
     }
 
     private void updateBillItem(BillItem billItem) {
@@ -224,6 +255,8 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
             return;
         }
 
+        java.util.Map<String, Object> before = professionalFeeAuditMap(encounterComponent.getBillFee());
+
         retiredEncounterComponent(encounterComponent);
         retiredBillFee(encounterComponent.getBillFee());
 
@@ -231,6 +264,13 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
         updateBill(encounterComponent.getBillItem().getBill());
         getBillBean().updateBatchBill(getBatchBill());
 
+        auditService.logEncounterAudit(
+                getBatchBill() != null ? getBatchBill().getPatientEncounter() : null,
+                "Professional Fee Estimate Removed",
+                before, professionalFeeAuditMap(encounterComponent.getBillFee()),
+                getSessionController().getLoggedUser(),
+                "BillFee",
+                encounterComponent.getBillFee() != null ? encounterComponent.getBillFee().getId() : null);
     }
 
     private void retiredEncounterComponent(EncounterComponent encounterComponent) {
@@ -389,6 +429,13 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
         getProEncounterComponents().add(proEncounterComponent);
 
         saveSurgeryProfessional();
+
+        auditService.logEncounterAudit(getBatchBill().getPatientEncounter(),
+                "Professional Fee Estimate Added",
+                null, professionalFeeAuditMap(proEncounterComponent.getBillFee()),
+                getSessionController().getLoggedUser(),
+                "BillFee",
+                proEncounterComponent.getBillFee() != null ? proEncounterComponent.getBillFee().getId() : null);
 
         proEncounterComponent = null;
     }

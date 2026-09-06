@@ -1,0 +1,609 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!--
+        "Bundled Custom 1" Final Bill format — configurable charge-type
+        grouping (design doc 2026-08-31-inward-final-bill-charge-type-
+        grouping-design.md). Header / patient-info / payment / signature
+        blocks below are copied verbatim from finalBill.xhtml so this format
+        looks identical to the default one except for the charge-lines table,
+        which is driven by bhtSummeryController.getBundledFinalBillRows(bill)
+        instead of a per-charge-type ui:repeat chain.
+
+        Opt-in only: this file is never touched by any existing hospital's
+        print flow. It is only reachable via the "Bundled Custom 1" panel in
+        the Custom Bills tab, itself gated by the
+        'Inward Final Bill - Show Bundled Custom 1 Format' ConfigOption
+        (default false). See inward_reprint_bill_final.xhtml.
+    -->
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="hosCopy" />
+        <cc:attribute name="showProfessional" type="java.lang.Boolean" default="true"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="printing.css"/>
+
+        <h:panelGroup id="gpBillPreview" >
+            <div  class="container-fluid" style="width: 214mm!important; margin-bottom: 2.5cm!important">
+                <div  style="margin-top: #{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Margin-Top Space','4cm')}"></div>
+
+                <div style="font-family: verdana ">
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
+                        <div class="row">
+                            <div class="col-12">
+                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}"
+                                              escape="false"
+                                              >
+                                </h:outputText>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Final bill header with institution details',false)}">
+                            <div>
+                                <div class="col-12 text-center">
+                                    <h1 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
+                                    <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
+                                    <h3>#{cc.attrs.bill.institution.phone}</h3>
+                                    <h4>#{cc.attrs.bill.institution.fax}</h4>
+                                    <h4>#{cc.attrs.bill.institution.email}</h4>
+                                    <h4>#{cc.attrs.bill.institution.web}</h4>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <table class="headingPrinting" >
+                        <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
+                            <tr >
+                                <td colspan="4">
+                                    <h:graphicImage
+                                        style="width: 100%;"
+                                        class="mb-4"
+                                        url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
+                                        >
+                                    </h:graphicImage>
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+
+                        <tr>
+                            <td colspan="4">
+                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Hospital Bill**" rendered="#{cc.attrs.hosCopy eq true }"/>
+                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Original Bill**" rendered="#{cc.attrs.duplicate ne true }"/>
+                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Duplicate Bill**" rendered="#{cc.attrs.duplicate eq true}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <h:outputLabel style="font-size: 17px;" value="#{configOptionApplicationController.getLongTextValueByKey('Final Bill Title','Tax Invoice')}"/>
+                            </td>
+                        </tr>
+
+                    </table>
+
+
+                    <!-- ===== A4 Bill Header (BHT, Name, ...) - auto-wrapping 2-column grid ===== -->
+                    <div style="font-size: 13px; width: 90%; margin-left: 5%; margin-right: 5%" class="mt-4 mb-4">
+                        <div class="row gx-0">
+
+                            <!-- BHT No -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">BHT No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
+                                </span>
+                            </div>
+
+                            <!-- Bill No -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Bill No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.deptId}" />
+                                </span>
+                            </div>
+
+                            <!-- Patient Name -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Patient Name</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
+                                </span>
+                            </div>
+
+                            <!-- Address -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Address on Final Bill',true)}">
+                                <span style="width: 130px;">Address</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Patient Age/Sex -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Gender/Age on Final Bill',false)}">
+                                <span style="width: 130px;">Patient Age/Sex</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.ageAsShortString} / #{cc.attrs.bill.patientEncounter.patient.person.sex}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- NIC No -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill',false) or (cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals(''))}">
+                                <span style="width: 130px;">NIC No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('') ? cc.attrs.bill.patientEncounter.patient.person.nic : 'N/A'}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Phone No -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Phone Number on Final Bill',false)}">
+                                <span style="width: 130px;">Phone No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Admission At -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Admission At</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingAdmissionTime ne null and !cc.attrs.bill.patientEncounter.printingAdmissionTime.equals('') ? cc.attrs.bill.patientEncounter.printingAdmissionTime : cc.attrs.bill.patientEncounter.dateOfAdmission}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </span>
+                            </div>
+
+                            <!-- Discharged At -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Discharged At</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime ne null and !cc.attrs.bill.patientEncounter.printingDischargeTime.equals('') ? cc.attrs.bill.patientEncounter.printingDischargeTime : cc.attrs.bill.patientEncounter.dateOfDischarge}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </span>
+                            </div>
+
+                            <!-- Guardian -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Guardian on Final Bill',true)}">
+                                <span style="width: 130px;">Guardian</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Room -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Room</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" />
+                                </span>
+                            </div>
+
+                            <!-- Credit Company -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
+                                <span style="width: 130px;">Credit Company</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                                </span>
+                            </h:panelGroup>
+
+                        </div>
+                    </div>
+
+                    <div style="width: 90%; margin-left: 5%; margin-right: 5%">
+                        <table class=" w-100"  >
+                            <tr style="t">
+                                <td style="text-align: left; font-weight: bold; font-size: 14px;">
+                                    <h:outputLabel value="Description" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="" />
+                                </td>
+                                <td style="text-align: right; font-weight: bold; font-size: 14px;">
+                                    <h:outputLabel value="Charge (Rs.)" />
+                                </td>
+                            </tr>
+
+                            <!-- Every non-Professional/DoctorAndNurses charge type, individually or
+                                 summed into its configured group — see
+                                 BhtSummeryController#getBundledFinalBillRows. -->
+                            <ui:repeat value="#{bhtSummeryController.getBundledFinalBillRows(cc.attrs.bill)}" var="row">
+                                <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                    <td style="text-align: left;font-size: 13px!important; margin-top: -10px;">
+                                        <h:outputLabel value="#{row.label}" />
+                                    </td>
+                                    <td style="margin-top: -10px;">
+                                        &nbsp;
+                                    </td>
+                                    <td  style="width: 30%;text-align: right;font-size: 13px!important;">
+                                        <h:outputLabel  value="#{row.amount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+
+                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
+                                <!-- Doctor and Nurse assisting charges: always shown individually with
+                                     their per-staff fee breakdown, never folded into a group. -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'DoctorAndNurses' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeLabel(bip.inwardChargeType)}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                                <table>
+                                                    <ui:repeat value="#{bip.billFees}" var="fe" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Doctor and Nurse Charges Details in Final Bill', false)}">
+                                                        <h:panelGroup>
+                                                            <tr>
+                                                                <td>
+                                                                    <h:outputLabel value="#{fe.referencePatientRoom.name}" style="text-align: center; font-size: 9px!important;" />
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
+                                                    </ui:repeat>
+                                                </table>
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Professional Charge: same, per-staff breakdown, only when
+                                     showProfessional is true (Hospital Copy without professional
+                                     fees passes showProfessional=false). -->
+                                <h:panelGroup rendered="#{cc.attrs.showProfessional}">
+                                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                            <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                    <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeLabel(bip.inwardChargeType)}" />
+                                                </td>
+                                                <td style="margin-top: -10px;">
+                                                    <table>
+                                                        <ui:repeat value="#{bip.proFees}" var="fe">
+                                                            <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                                                <tr>
+                                                                    <td style="text-align: left; font-size: 10px!important;">
+                                                                        <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
+                                                                    </td>
+                                                                    <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
+                                                                        <h:outputLabel value="#{fe.feeAdjusted}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputLabel>
+                                                                    </td>
+                                                                </tr>
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </table>
+                                                </td>
+                                                <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                    <h:outputLabel value="#{bip.adjustedValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                            </tr>
+                                        </h:panelGroup>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                            <!-- Alternate rendering when the hospital wants every doctor's fees
+                                 (DoctorAndNurses + ProfessionalCharge) summed into one row per
+                                 doctor instead of one row per fee. Passes showProfessional through
+                                 so the Hospital Copy (showProfessional=false) excludes
+                                 ProfessionalCharge from the aggregate — its printed Total uses
+                                 bill.hospitalFee, which itself excludes ProfessionalCharge; without
+                                 this the printed rows would sum to more than the printed Total
+                                 (found in review). DoctorAndNurses is always included regardless. -->
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
+                                <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter,cc.attrs.showProfessional)}" var="bip">
+                                    <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeLabel(bip.inwardChargeType)}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                                <table>
+                                                    <ui:repeat value="#{bip.proFees}" var="fe">
+                                                        <h:panelGroup rendered="#{fe.feeAdjusted gt 0 or fe.feeValue gt 0}">
+                                                            <tr>
+                                                                <td style="text-align: left; font-size: 10px!important;">
+                                                                    <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
+                                                                </td>
+                                                                <td>&emsp;</td>
+                                                                <td style="text-align: right; font-size: 10px!important;">
+                                                                    <h:outputLabel value="#{fe.feeAdjusted ne 0 ? fe.feeAdjusted : fe.feeValue}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
+                                                    </ui:repeat>
+                                                </table>
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup>
+                                <!--GRANT TOTAL-->
+                                <tr style="margin-top: -10px;">
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td style="text-align: right;"><h:outputLabel value="-------------------" /></td>
+                                </tr>
+
+
+                                <h:panelGroup >
+                                    <tr style="width: 100%;">
+                                        <td style="text-align: left; font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="Total"/>
+                                        </td>
+                                        <td>&nbsp;</td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+
+                                            <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.grantTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                            <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+
+                            <!--DISCOUNT-->
+                            <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
+                                <tr>
+                                    <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                        <h:outputLabel value="Discount"/>
+                                    </td>
+                                    <td>&nbsp;</td>
+                                    <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                        <h:outputLabel  value="#{cc.attrs.bill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+
+                            <h:panelGroup >
+                                <tr>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td style="text-align: right;"><h:outputLabel value="-------------------" /></td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                        <h:outputLabel  value="Net Total"/>
+                                    </td>
+                                    <td>&nbsp;</td>
+                                    <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                        <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td style="text-align: right;"><h:outputLabel value="============"/></td>
+                                </tr>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{cc.attrs.showProfessional}">
+                                <h:panelGroup
+                                    rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }">
+
+                                    <tr>
+                                        <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="Paid By Patient "
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }"/>
+                                        </td>
+                                        <td>
+                                            <table>
+                                                <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
+                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 )
+                                                                              and
+                                                                              ((b.cancelled eq false
+                                                                              and b.billClass eq 'class com.divudi.core.entity.BilledBill')
+                                                                              or
+                                                                              (b.cancelled eq false
+                                                                              and b.refundedBill eq null
+                                                                              and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                        <div class="d-flex gap-3" style="font-size: 11px;">
+                                                            <h:outputLabel value="#{b.deptId}"/>
+                                                            <h:outputLabel value="#{b.paymentMethod}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Method on Payments on Final Bill On Final Bill Print',false)}"/>
+                                                            <h:outputLabel value="#{b.netTotal}"
+                                                                           style="text-align: right;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputLabel>
+                                                            <h:outputLabel value="(#{b.comments})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comments of Payments on Final Bill On Final Bill Print',false) and b.comments ne null and b.comments ne ''}"/>
+
+                                                        </div>
+
+                                                    </h:panelGroup>
+                                                </ui:repeat>
+                                            </table>
+                                        </td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.settledAmountByPatient}"
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup
+                                    rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0 }">
+                                    <tr>
+                                        <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="Paid By Company "
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0 }"/>
+                                        </td>
+                                        <td>
+                                            <table>
+                                                <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
+                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 )
+                                                                              and
+                                                                              ((b.cancelled eq false
+                                                                              and b.billClass eq 'class com.divudi.core.entity.BilledBill')
+                                                                              or
+                                                                              (b.cancelled eq false
+                                                                              and b.refundedBill eq null
+                                                                              and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                        <div class="d-flex gap-3" style="font-size: 11px;">
+                                                            <h:outputLabel  value="#{b.deptId}"/>
+                                                            <h:outputLabel value="#{b.netTotal}" style="width: 30px; text-align: right;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </div>
+
+                                                    </h:panelGroup>
+                                                </ui:repeat>
+                                            </table>
+                                        </td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.settledAmountBySponsor}"
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td style="text-align: right;"><h:outputLabel value="-------------------"/></td>
+                                    </tr>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup>
+                                    <tr>
+                                        <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="Total Paid "
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0}"/>
+                                        </td>
+                                        <td></td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.paidAmount}"
+                                                           rendered="#{cc.attrs.bill.paidAmount !=0}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup >
+                                    <tr>
+                                        <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel   value="Due Amount" />
+                                        </td>
+                                        <td>
+                                            &nbsp;
+                                        </td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount)}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                        </table>
+                    </div>
+
+                    <p:spacer></p:spacer>
+
+                    <div class="row mt-4" style="font-size: 12px;">
+                        <div class="col-4">
+                            <div class="d-grid justify-content-center">
+                                <h:outputLabel value="-----------------------------" />
+                                <h:outputLabel value="Patient/Guardian" class="w-100 d-flex justify-content-center"/>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="d-grid justify-content-center">
+                                <h:outputLabel value="-----------------------------" />
+                                <h:outputLabel value="Prepared by : #{cc.attrs.bill.creater.name}"  class="w-100 d-flex justify-content-center"/>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="d-grid justify-content-center">
+                                <h:outputLabel value="-----------------------------" />
+                                <h:outputLabel value="Cashier"  class="w-100 d-flex justify-content-center"/>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>

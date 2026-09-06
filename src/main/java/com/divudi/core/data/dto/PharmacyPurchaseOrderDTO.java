@@ -1,7 +1,9 @@
 package com.divudi.core.data.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * DTO for Pharmacy Purchase Order list display optimization
@@ -56,6 +58,10 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
     // Bill status fields (for GRN page actions)
     private Boolean billClosed;
     private Boolean fullyIssued;
+
+    // GRNs already raised against this PO (issue #22612), populated separately
+    // via a bulk query after the main DTO list query, mirrors Bill.listOfBill
+    private List<PharmacyGrnSummaryDTO> listOfGrnDtos;
 
     // Default constructor required for JPA
     public PharmacyPurchaseOrderDTO() {
@@ -656,6 +662,17 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
 
     public void setFullyIssued(Boolean fullyIssued) {
         this.fullyIssued = fullyIssued;
+    }
+
+    public List<PharmacyGrnSummaryDTO> getListOfGrnDtos() {
+        if (listOfGrnDtos == null) {
+            listOfGrnDtos = new ArrayList<>();
+        }
+        return listOfGrnDtos;
+    }
+
+    public void setListOfGrnDtos(List<PharmacyGrnSummaryDTO> listOfGrnDtos) {
+        this.listOfGrnDtos = listOfGrnDtos;
     }
 
     @Override

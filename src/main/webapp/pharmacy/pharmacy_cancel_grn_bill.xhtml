@@ -10,6 +10,13 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyGrnCancel')}" >
+                    You are NOT authorized
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyGrnCancel')}" >
+
                 <h:form>
 <!--                    <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
@@ -176,7 +183,10 @@
                         </h:panelGroup>
                         
                     </p:panel>
-                </h:form>                
+                </h:form>
+
+                </h:panelGroup>
+
             </ui:define>
         </ui:composition>
     </h:body>

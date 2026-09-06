@@ -5,6 +5,8 @@
  */
 package com.divudi.core.data.dto.timeditem;
 
+import com.divudi.core.data.inward.TimedItemDurationUnit;
+
 /**
  * DTO for updating an existing TimedItemFee. All fields optional — only non-null/non-sentinel values are applied.
  *
@@ -20,6 +22,7 @@ public class TimedItemFeeUpdateRequestDTO {
     private Long durationDaysForMoCharge;
     private Integer sortOrder;
     private Boolean repeating;
+    private TimedItemDurationUnit durationUnit;
 
     public TimedItemFeeUpdateRequestDTO() {
     }
@@ -28,7 +31,7 @@ public class TimedItemFeeUpdateRequestDTO {
         boolean hasValidName = name != null && !name.trim().isEmpty();
         return hasValidName || fee != null || ffee != null || durationHours != null
                 || overShootHours != null || durationDaysForMoCharge != null
-                || sortOrder != null || repeating != null;
+                || sortOrder != null || repeating != null || durationUnit != null;
     }
 
     public String getName() {
@@ -93,5 +96,13 @@ public class TimedItemFeeUpdateRequestDTO {
 
     public void setRepeating(Boolean repeating) {
         this.repeating = repeating;
+    }
+
+    public TimedItemDurationUnit getDurationUnit() {
+        return durationUnit;
+    }
+
+    public void setDurationUnit(TimedItemDurationUnit durationUnit) {
+        this.durationUnit = durationUnit;
     }
 }

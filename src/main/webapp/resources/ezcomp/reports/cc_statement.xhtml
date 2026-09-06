@@ -287,7 +287,7 @@
                     sortBy="#{agentHx.bill.totalHospitalFee}" 
                     filterBy="#{agentHx.bill.totalHospitalFee}">
                     <h:outputText value="#{agentHx.companyTransactionValue}" style="text-align: right; display: block;"
-                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT'}">
+                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT_CANCELLATION'}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
@@ -299,7 +299,7 @@
                     sortBy="#{agentHx.bill.totalStaffFee}" 
                     filterBy="#{agentHx.bill.totalStaffFee}">
                     <h:outputText value="#{agentHx.staffTrasnactionValue}" style="text-align: right; display: block;"
-                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT'}">
+                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT_CANCELLATION'}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
@@ -311,7 +311,7 @@
                     sortBy="#{agentHx.bill.totalCenterFee}" 
                     filterBy="#{agentHx.bill.totalCenterFee}">
                     <h:outputText value="#{agentHx.agentTransactionValue}" style="text-align: right; display: block;"
-                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT'}">
+                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT_CANCELLATION'}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>

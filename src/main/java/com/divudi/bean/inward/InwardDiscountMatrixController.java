@@ -119,11 +119,6 @@ public class InwardDiscountMatrixController implements Serializable {
             return;
         }
 
-        if (department == null) {
-            JsfUtil.addErrorMessage("Please select a Department");
-            return;
-        }
-
         if (category == null) {
             JsfUtil.addErrorMessage("Please select a category");
             return;
@@ -190,13 +185,16 @@ public class InwardDiscountMatrixController implements Serializable {
         filterItems = null;
         HashMap<String, Object> hm = new HashMap<>();
         String sql = "select a from InwardDiscountMatrix a"
+                + " left join a.paymentScheme ps"
+                + " left join a.department dept"
+                + " left join a.category cat"
                 + " where a.retired = false"
                 + " and a.inwardChargeType is null"
                 + " and (type(a.category) = :svc"
                 + "   or type(a.category) = :sub"
                 + "   or type(a.category) = :inv"
                 + "   or a.category is null)"
-                + " order by a.paymentScheme.name, a.department.name, a.category.name";
+                + " order by ps.name, dept.name, cat.name";
         hm.put("svc", ServiceCategory.class);
         hm.put("sub", ServiceSubCategory.class);
         hm.put("inv", InvestigationCategory.class);
@@ -207,11 +205,14 @@ public class InwardDiscountMatrixController implements Serializable {
         filterItems = null;
         HashMap<String, Object> hm = new HashMap<>();
         String sql = "select a from InwardDiscountMatrix a"
+                + " left join a.paymentScheme ps"
+                + " left join a.department dept"
+                + " left join a.category cat"
                 + " where a.retired = false"
                 + " and a.inwardChargeType is null"
                 + " and (type(a.category) = :pharm"
                 + "   or a.category is null)"
-                + " order by a.paymentScheme.name, a.department.name, a.category.name";
+                + " order by ps.name, dept.name, cat.name";
         hm.put("pharm", PharmaceuticalItemCategory.class);
         items = ejbFacade.findByJpql(sql, hm);
     }

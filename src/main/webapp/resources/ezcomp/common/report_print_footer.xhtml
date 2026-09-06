@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <cc:interface>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:panelGroup layout="block" styleClass="d-flex justify-content-between" style="font-size: 11px; font-weight: 400;">
+            <h:outputLabel value="Printed By: #{sessionController.loggedUser.webUserPerson.name}" />
+            <h:panelGroup layout="block">
+                <h:outputLabel value="Printed At: " />
+                <h:outputLabel value="#{sessionController.currentDate}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                </h:outputLabel>
+            </h:panelGroup>
+        </h:panelGroup>
+    </cc:implementation>
+
+</html>

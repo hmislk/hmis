@@ -28,11 +28,13 @@
                                         actionListener="#{reportsStock.fillDepartmentViceStockDtos()}" />
 
                                     <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false">
-                                        <p:dataExporter type="pdf" target="tbl" fileName="department_vice_stock_report" />
+                                        <p:dataExporter type="pdf" target="tbl" fileName="department_vice_stock_report"
+                                                         preProcessor="#{reportsStock.preProcessPdfDepartmentViceStock}"
+                                                         postProcessor="#{reportsStock.postProcessPdfDepartmentViceStock}"/>
                                     </p:commandButton>
 
                                     <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="department_vice_stock_report" />
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="department_vice_stock_report" postProcessor="#{reportsStock.postProcessXLSDepartmentViceStock}"/>
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Print" icon="fas fa-print"
@@ -59,6 +61,9 @@
 
                                 <f:facet name="header">
                                     <h:outputLabel value="Department Vice Stock Report" />
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
                                 </f:facet>
 
                                 <p:column headerText="Serial No" style="text-align: right;" styleClass="averageNumericColumn"

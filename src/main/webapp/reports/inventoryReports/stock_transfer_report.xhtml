@@ -345,6 +345,7 @@
                                     id="departmentTypeFilter"
                                     value="#{pharmacyController.selectedDepartmentTypes}"
                                     label="Select Department Types"
+                                    updateLabel="true"
                                     class="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
@@ -785,7 +786,7 @@
                                     <p:column headerText="Ref Bill No" width="6em">
                                         <p:commandLink ajax="false" value="#{i.billItem.bill.backwardReferenceBill.deptId}"
                                                        action="/pharmacy/pharmacy_reprint_transfer_request">
-                                            <f:setPropertyActionListener value="#{i.billItem.bill}"
+                                            <f:setPropertyActionListener value="#{i.billItem.bill.backwardReferenceBill}"
                                                                          target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>

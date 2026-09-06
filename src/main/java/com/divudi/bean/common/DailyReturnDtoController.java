@@ -61,6 +61,7 @@ public class DailyReturnDtoController implements Serializable {
     private List<DailyReturnDetailDTO> ccBillDtos;
     private List<PaymentDetailDTO> cardPaymentDtos;
     private List<PaymentDetailDTO> patientDepositPaymentDtos;
+    private List<PaymentDetailDTO> inwardPaymentDtos;
     
     private ReportTemplateRowBundle bundle;
     private DailyReturnBundleDTO dtoBundle;
@@ -82,7 +83,8 @@ public class DailyReturnDtoController implements Serializable {
         ccBillDtos = dailyReturnDtoService.fetchCcCollectionBillsForDailyReturn(fromDate, toDate);
         cardPaymentDtos = dailyReturnDtoService.fetchCreditCardPaymentsForDailyReturn(fromDate, toDate);
         patientDepositPaymentDtos = dailyReturnDtoService.fetchPatientDepositPaymentsForDailyReturn(fromDate, toDate);
-        
+        inwardPaymentDtos = dailyReturnDtoService.fetchInwardPaymentsForDailyReturn(fromDate, toDate);
+
         // Create both bundle structures
         createBundle();  // Keep original for compatibility
         createDtoBundle();  // New DTO-specific bundle
@@ -388,6 +390,11 @@ public class DailyReturnDtoController implements Serializable {
         DailyReturnBundleDTO patientDepositPayments = createPatientDepositPaymentsDtoBundle();
         dtoBundle.getBundles().add(patientDepositPayments);
         collectionForTheDay += getSafeDtoTotal(patientDepositPayments);
+
+        // 4b. Inward Payments (pre-final "Inward Deposit" + post-final-bill inward payments, netted) - add to collection
+        DailyReturnBundleDTO inwardPayments = createInwardPaymentsDtoBundle();
+        dtoBundle.getBundles().add(inwardPayments);
+        collectionForTheDay += getSafeDtoTotal(inwardPayments);
 
         // 5. Collection for the day summary
         DailyReturnBundleDTO collectionForTheDayBundle = new DailyReturnBundleDTO();
@@ -984,10 +991,66 @@ public class DailyReturnDtoController implements Serializable {
         bundle.setStaffTotal(0.0);
         bundle.setDiscount(0.0);
         bundle.setCount(totalCount);
-        
+
         return bundle;
     }
-    
+
+    private DailyReturnBundleDTO createInwardPaymentsDtoBundle() {
+        DailyReturnBundleDTO bundle = new DailyReturnBundleDTO();
+        bundle.setName("Inward Payment");
+        bundle.setBundleType("inwardPaymentCollection");
+
+        List<DailyReturnRowDTO> allRows = new ArrayList<>();
+        double totalInwardPayments = 0.0;
+        long totalCount = 0L;
+
+        if (inwardPaymentDtos != null) {
+            for (PaymentDetailDTO payment : inwardPaymentDtos) {
+
+                // Create a row for each inward payment (deposit or post-final-bill payment,
+                // including cancellations and refunds, netted together)
+                DailyReturnRowDTO row = new DailyReturnRowDTO();
+
+                // Set bill information
+                row.setBillNumber(payment.getBillNumber()); // Bill number
+                row.setBillType(payment.getBillType()); // Bill type
+                row.setPaymentMethod(payment.getPaymentMethod()); // Payment method
+                row.setCreatedAt(payment.getCreatedAt()); // Date/time
+                row.setDepartmentName(payment.getDepartmentName()); // Department
+
+                // Set display values for Inward Payment table
+                // Following the pattern: Bill No | Patient | Payment Method | Value
+                row.setItemName(payment.getBillNumber()); // Bill No
+                row.setCategoryName(payment.getBankName()); // Patient name (stored in bankName field)
+                row.setFeeName(payment.getPaymentMethod() != null ? payment.getPaymentMethod().toString() : ""); // Payment Method
+                row.setPaymentName(""); // Not used for inward payments
+                row.setFromDepartmentName(""); // Not used for inward payments
+
+                // Set financial values
+                Double paidValue = payment.getPaidValue(); // Keep original value (positive for payments, negative for cancellations/refunds)
+                row.setItemNetTotal(paidValue);
+                row.setItemHospitalFee(paidValue); // For inward payments, hospital fee = total
+                row.setItemProfessionalFee(0.0); // No professional fee for inward payments
+                row.setItemDiscountAmount(0.0); // No discount for inward payments
+                row.setItemCount(1L); // Each payment is one count
+                row.setTotal(paidValue);
+
+                allRows.add(row);
+                totalInwardPayments += paidValue;
+                totalCount++;
+            }
+        }
+
+        bundle.setRows(allRows);
+        bundle.setTotal(totalInwardPayments);
+        bundle.setHospitalTotal(totalInwardPayments);
+        bundle.setStaffTotal(0.0);
+        bundle.setDiscount(0.0);
+        bundle.setCount(totalCount);
+
+        return bundle;
+    }
+
     private DailyReturnBundleDTO createEmptyDtoBundle(String bundleType, String name) {
         DailyReturnBundleDTO bundle = new DailyReturnBundleDTO();
         bundle.setName(name);
@@ -1247,5 +1310,13 @@ public class DailyReturnDtoController implements Serializable {
     
     public void setPatientDepositPaymentDtos(List<PaymentDetailDTO> patientDepositPaymentDtos) {
         this.patientDepositPaymentDtos = patientDepositPaymentDtos;
+    }
+
+    public List<PaymentDetailDTO> getInwardPaymentDtos() {
+        return inwardPaymentDtos;
+    }
+
+    public void setInwardPaymentDtos(List<PaymentDetailDTO> inwardPaymentDtos) {
+        this.inwardPaymentDtos = inwardPaymentDtos;
     }
 }

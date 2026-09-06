@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -61,6 +62,8 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private BillBeanController billBeanController;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -711,8 +714,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 if (enc.getBhtNo() == null) {
                     continue;
                 }
-                double fee = (enc.getAdmissionType() != null)
-                        ? enc.getAdmissionType().getAdmissionFee() : 0.0;
+                double fee = resolveBilledAdmissionFee(enc);
                 if (fee == 0.0) {
                     continue;
                 }
@@ -738,6 +740,27 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         }
         grandTotal = colSum;
         columnTotals = Arrays.asList(colSum);
+    }
+
+    /**
+     * Resolves the Admission Fee actually billed for an encounter, instead of
+     * recomputing it from the current (mutable) AdmissionType master fee.
+     * Prefers the persisted Final Bill admission-fee BillItem (post-discount,
+     * for discharged/finalised encounters), falling back to the persisted
+     * Interim Bill admission-fee BillItem (for admitted-but-not-discharged
+     * encounters with a saved interim bill). If neither has ever been billed
+     * for this encounter, falls back to the live AdmissionType fee as a
+     * projected value, matching prior behaviour for not-yet-billed cases.
+     */
+    private double resolveBilledAdmissionFee(PatientEncounter enc) {
+        BillItem billed = billBeanController.fetchBillItem(enc, BillType.InwardFinalBill, InwardChargeType.AdmissionFee);
+        if (billed == null) {
+            billed = billBeanController.fetchBillItem(enc, BillType.InwardIntrimBill, InwardChargeType.AdmissionFee);
+        }
+        if (billed != null) {
+            return billed.getAdjustedValue();
+        }
+        return (enc.getAdmissionType() != null) ? enc.getAdmissionType().getAdmissionFee() : 0.0;
     }
 
     // -------------------------------------------------------------------------

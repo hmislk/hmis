@@ -2219,7 +2219,11 @@ public class MdInwardReportController implements Serializable {
         }
         if (dept != null) {
             if (itemPath != null) {
-                sql.append(" AND ").append(itemPath).append(".department=:dept ");
+                // Filter by the patient's ward department (patientEncounter.department),
+                // not the service item's owning/pricing department (itemPath.department).
+                // Item-level department rarely matches the ward, so the old itemPath-based
+                // filter always returned zero rows (issue #20822).
+                sql.append(" AND ").append(encounterPath).append(".department=:dept ");
             } else {
                 sql.append(" AND ").append(billPath).append(".toDepartment=:dept ");
             }

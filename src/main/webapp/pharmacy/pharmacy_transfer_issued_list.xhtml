@@ -91,6 +91,9 @@
                             <p:column headerText="From Department">
                                 <h:outputLabel value="#{p.fromDepartmentName}"/>
                             </p:column>
+                            <p:column headerText="Issue Type">
+                                <p:tag value="#{p.issueTypeLabel}" severity="#{p.directIssue ? 'info' : 'success'}"/>
+                            </p:column>
                             <p:column headerText="Department Type">
                                 <h:outputText value="#{p.departmentTypeLabel}"
                                               rendered="#{p.departmentType != null}"/>

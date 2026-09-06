@@ -30,6 +30,8 @@ public class TimedItemResponseDTO {
     private String departmentName;
     private Long institutionId;
     private String institutionName;
+    private Long categoryId;
+    private String categoryName;
     private Date createdAt;
     private List<TimedItemFeeDTO> fees;
     private String message;
@@ -155,6 +157,22 @@ public class TimedItemResponseDTO {
 
     public void setInstitutionName(String institutionName) {
         this.institutionName = institutionName;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public Date getCreatedAt() {

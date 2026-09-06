@@ -21,6 +21,7 @@ import com.divudi.core.entity.BillComponent;
 import com.divudi.core.entity.BillEntry;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.RefundBill;
@@ -873,6 +874,14 @@ public class StoreBillSearch implements Serializable {
             b.setBill(can);
             b.copy(nB);
             b.invertValue(nB);
+
+            if (nB.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails invertedFinanceDetails = new BillItemFinanceDetails();
+                invertedFinanceDetails.invertValue(nB.getBillItemFinanceDetails());
+                invertedFinanceDetails.setBillItem(b);
+                invertedFinanceDetails.setCreatedAt(new Date());
+                b.setBillItemFinanceDetails(invertedFinanceDetails);
+            }
 
             b.setReferanceBillItem(nB);
 

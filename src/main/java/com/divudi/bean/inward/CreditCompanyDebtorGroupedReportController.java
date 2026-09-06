@@ -14,6 +14,17 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -98,6 +109,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
                 + " where b.retired=false"
                 + " and (b.cancelled=false or b.cancelled is null)"
                 + " and b.billTypeAtomic=:bta"
+                + " and b.referenceBill.confirmedFinalBill=true"
                 + " and " + dateField + " between :frm and :to";
 
         if (institution != null) {
@@ -174,7 +186,11 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
                 BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED,
                 BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
         );
-        List<BillTypeAtomic> depositTypes = Arrays.asList(
+        List<BillTypeAtomic> paymentAndDepositTypes = Arrays.asList(
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION,
                 BillTypeAtomic.INWARD_DEPOSIT,
                 BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
                 BillTypeAtomic.INWARD_DEPOSIT_REFUND,
@@ -235,7 +251,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
 
             HashMap<String, Object> depositParams = new HashMap<>();
             depositParams.put("pe", pe);
-            depositParams.put("depositTypes", depositTypes);
+            depositParams.put("depositTypes", paymentAndDepositTypes);
             double deposited = billFacade.findDoubleByJpql(
                     "Select sum(b.netTotal) from Bill b where b.retired=false and b.patientEncounter=:pe and b.billTypeAtomic in :depositTypes",
                     depositParams);
@@ -547,6 +563,229 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void downloadPdf() {
+        if (groups == null || groups.isEmpty()) {
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response =
+                (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat dtf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+        final int COL_COUNT = 11;
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate(), 18, 18, 24, 18);
+            PdfWriter.getInstance(document, baos);
+            document.open();
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE);
+            Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            Font groupFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            Font subtotalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            Font grandTotalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE);
+
+            Color headerBg = new Color(89, 89, 89);
+            Color groupBg = new Color(217, 217, 217);
+            Color subtotalBg = new Color(255, 242, 204);
+            Color grandTotalBg = new Color(0, 77, 64);
+
+            // --- Title / subtitle / printed-by ---
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName() : "Institution";
+
+            Paragraph p1 = new Paragraph(institutionName, titleFont);
+            p1.setAlignment(Element.ALIGN_CENTER);
+            document.add(p1);
+
+            Paragraph p2 = new Paragraph("Inpatient Credit Company Debtor Report (Grouped)",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12));
+            p2.setAlignment(Element.ALIGN_CENTER);
+            document.add(p2);
+
+            Paragraph p3 = new Paragraph(
+                    "Printed By: "
+                    + (sessionController.getLoggedUser() != null
+                       && sessionController.getLoggedUser().getWebUserPerson() != null
+                            ? sessionController.getLoggedUser().getWebUserPerson().getName() : "-")
+                    + "   at " + dtf.format(new Date()),
+                    subtitleFont);
+            p3.setAlignment(Element.ALIGN_CENTER);
+            document.add(p3);
+
+            document.add(new Paragraph(" "));
+
+            // --- Filter details ---
+            String dateBasisLabel;
+            switch (dateBasis) {
+                case "dischargeDate": dateBasisLabel = "Discharge Date"; break;
+                case "admissionDate": dateBasisLabel = "Admission Date"; break;
+                default:              dateBasisLabel = "Payment / Bill Date"; break;
+            }
+
+            PdfPTable filterTable = new PdfPTable(2);
+            filterTable.setWidthPercentage(65);
+            filterTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            filterTable.setSpacingBefore(4);
+            filterTable.setSpacingAfter(10);
+            filterTable.setWidths(new float[]{1f, 2f});
+
+            addPdfInfoRow(filterTable, "Date Basis", dateBasisLabel, labelFont, valueFont);
+            addPdfInfoRow(filterTable, "From", fromDate != null ? dtf.format(fromDate) : "-", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "To", toDate != null ? dtf.format(toDate) : "-", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Credit Company",
+                    institution != null ? institution.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Institution",
+                    admittingInstitution != null ? admittingInstitution.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Site",
+                    site != null ? site.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Department",
+                    department != null ? department.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Admission Type",
+                    admissionType != null ? admissionType.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Payment Method",
+                    paymentMethod != null ? paymentMethod.toString() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Outstanding Only",
+                    outstandingOnly ? "Yes" : "No", labelFont, valueFont);
+
+            document.add(filterTable);
+
+            // --- Main data table ---
+            PdfPTable table = new PdfPTable(COL_COUNT);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(6);
+            table.setWidths(new float[]{1.1f, 0.9f, 1.6f, 1f, 1f, 1f, 1f, 1.1f, 1.1f, 1f, 1.1f});
+
+            String[] headers = {
+                "Bill No", "BHT No", "Patient Name", "Bill Date",
+                "Admitted", "Discharged",
+                "Bill Total", "Settled by Company", "Settled by Patient",
+                "Total Paid", "Outstanding"
+            };
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setBackgroundColor(headerBg);
+                cell.setPadding(4f);
+                table.addCell(cell);
+            }
+
+            // --- Data rows ---
+            for (CreditCompanyDebtorGroupDTO group : groups) {
+                // Company group header (spans all columns)
+                PdfPCell groupCell = new PdfPCell(new Phrase(group.getCreditCompanyName(), groupFont));
+                groupCell.setColspan(COL_COUNT);
+                groupCell.setBackgroundColor(groupBg);
+                groupCell.setPadding(4f);
+                table.addCell(groupCell);
+
+                // Bill rows
+                for (Bill b : group.getBills()) {
+                    addPdfCell(table, b.getDeptId(), cellFont, Element.ALIGN_LEFT, null);
+                    addPdfCell(table,
+                            b.getPatientEncounter() != null ? b.getPatientEncounter().getBhtNo() : "",
+                            cellFont, Element.ALIGN_LEFT, null);
+                    addPdfCell(table,
+                            b.getPatient() != null && b.getPatient().getPerson() != null
+                                    ? b.getPatient().getPerson().getName() : "",
+                            cellFont, Element.ALIGN_LEFT, null);
+                    addPdfCell(table,
+                            b.getBillDate() != null ? sdf.format(b.getBillDate()) : "",
+                            cellFont, Element.ALIGN_CENTER, null);
+                    addPdfCell(table,
+                            b.getPatientEncounter() != null && b.getPatientEncounter().getDateOfAdmission() != null
+                                    ? sdf.format(b.getPatientEncounter().getDateOfAdmission()) : "",
+                            cellFont, Element.ALIGN_CENTER, null);
+                    addPdfCell(table,
+                            b.getPatientEncounter() != null && b.getPatientEncounter().getDateOfDischarge() != null
+                                    ? sdf.format(b.getPatientEncounter().getDateOfDischarge()) : "",
+                            cellFont, Element.ALIGN_CENTER, null);
+                    addPdfCell(table, String.format("%,.2f", b.getNetTotal()), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", b.getSettledAmountBySponsor()), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", b.getSettledAmountByPatient()), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", b.getPaidAmount()), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", b.getNetTotal() - b.getPaidAmount()), cellFont, Element.ALIGN_RIGHT, null);
+                }
+
+                // Subtotal row (label spans first 6 columns, matching the Excel layout)
+                PdfPCell subLabelCell = new PdfPCell(
+                        new Phrase(group.getCreditCompanyName() + " Subtotal", subtotalFont));
+                subLabelCell.setColspan(6);
+                subLabelCell.setBackgroundColor(subtotalBg);
+                subLabelCell.setPadding(4f);
+                table.addCell(subLabelCell);
+                addPdfCell(table, String.format("%,.2f", group.getSubBillTotal()), subtotalFont, Element.ALIGN_RIGHT, subtotalBg);
+                addPdfCell(table, String.format("%,.2f", group.getSubSettledByCompany()), subtotalFont, Element.ALIGN_RIGHT, subtotalBg);
+                addPdfCell(table, String.format("%,.2f", group.getSubSettledByPatient()), subtotalFont, Element.ALIGN_RIGHT, subtotalBg);
+                addPdfCell(table, String.format("%,.2f", group.getSubTotalPaid()), subtotalFont, Element.ALIGN_RIGHT, subtotalBg);
+                addPdfCell(table, String.format("%,.2f", group.getSubOutstandingTotal()), subtotalFont, Element.ALIGN_RIGHT, subtotalBg);
+            }
+
+            // --- Grand total row ---
+            PdfPCell grandLabelCell = new PdfPCell(new Phrase("Grand Total", grandTotalFont));
+            grandLabelCell.setColspan(6);
+            grandLabelCell.setBackgroundColor(grandTotalBg);
+            grandLabelCell.setPadding(4f);
+            table.addCell(grandLabelCell);
+            addPdfCell(table, String.format("%,.2f", grandBillTotal), grandTotalFont, Element.ALIGN_RIGHT, grandTotalBg);
+            addPdfCell(table, String.format("%,.2f", grandSettledByCompany), grandTotalFont, Element.ALIGN_RIGHT, grandTotalBg);
+            addPdfCell(table, String.format("%,.2f", grandSettledByPatient), grandTotalFont, Element.ALIGN_RIGHT, grandTotalBg);
+            addPdfCell(table, String.format("%,.2f", grandPaidTotal), grandTotalFont, Element.ALIGN_RIGHT, grandTotalBg);
+            addPdfCell(table, String.format("%,.2f", grandOutstandingTotal), grandTotalFont, Element.ALIGN_RIGHT, grandTotalBg);
+
+            document.add(table);
+            document.close();
+
+            byte[] fileBytes = baos.toByteArray();
+
+            // --- Write response atomically ---
+            String filename = "CC_Debtor_Grouped_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            response.setContentLength(fileBytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(fileBytes);
+                out.flush();
+            }
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addPdfCell(PdfPTable table, String text, Font font, int alignment, Color backgroundColor) {
+        PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(4f);
+        if (backgroundColor != null) {
+            cell.setBackgroundColor(backgroundColor);
+        }
+        table.addCell(cell);
+    }
+
+    private void addPdfInfoRow(PdfPTable table, String label, String value, Font labelFont, Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(PdfPCell.NO_BORDER);
+        labelCell.setPadding(3f);
+        PdfPCell valueCell = new PdfPCell(new Phrase(value != null ? value : "", valueFont));
+        valueCell.setBorder(PdfPCell.NO_BORDER);
+        valueCell.setPadding(3f);
+        table.addCell(labelCell);
+        table.addCell(valueCell);
     }
 
     private int createFilterRow(XSSFSheet sheet, int rowIdx, String label, String value,

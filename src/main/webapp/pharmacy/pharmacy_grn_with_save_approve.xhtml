@@ -17,7 +17,7 @@
                     <h:outputLabel value="GRN Receive with Save/Approve" />
                     <p:commandButton
                         ajax="false"
-                        action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                        action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                         actionListener="#{searchController.makeListNull()}"
                         class="ui-button-warning"
                         icon="fa fa-arrow-left"
@@ -30,6 +30,7 @@
                         class="ui-button-success"
                         icon="fas fa-check"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnApprove')}"
                         style="float: right; margin-right: 0.5em;">
                     </p:commandButton>
                     <p:commandButton
@@ -38,6 +39,7 @@
                         class="ui-button-info"
                         icon="pi pi-save"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnSave')}"
                         style="float: right; margin-right: 0.5em;">
                     </p:commandButton>
                 </f:facet>
@@ -404,7 +406,7 @@
                         <div class="d-flex gap-2">
                             <p:commandButton
                                 ajax="false"
-                                action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                                 actionListener="#{searchController.makeListNull()}"
                                 class="ui-button-warning"
                                 icon="fa fa-arrow-left"

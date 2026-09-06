@@ -14,6 +14,10 @@ user-invocable: true
 
 Any time a new `@Path` class is created under `com.divudi.ws.*`, or an existing API gets new endpoints.
 
+If you instead need to **call** an existing endpoint (verify data via API, write a debug script,
+check a request/response shape), use the `api-usage` skill instead — this one has no consumer-facing
+reference.
+
 ---
 
 ## Mandatory Checklist — Every New API
@@ -58,7 +62,7 @@ Both are required every time:
 ```java
 appendModule(sb, "My Module", "/my_module",
     "Description of what this module manages.",
-    null,  // or githubUrl(branch, "developer_docs/API_MY_MODULE.md")
+    null,  // or githubUrl(branch, "developer_docs/api/using-apis/API_MY_MODULE.md")
     new String[][]{
         {"GET",    "/my_module",      "List entries. Supports query, page, size"},
         {"POST",   "/my_module",      "Create a new entry. Body: {name, code}"},
@@ -76,8 +80,8 @@ appendModule(sb, "My Module", "/my_module",
 See `ClinicalMetadataApi` + `manage_clinical_metadata` tool in `AnthropicApiService` as a reference implementation.
 
 ### 8. Write a developer_docs API file (optional but recommended)
-`developer_docs/API_<MODULE>.md` — list all endpoints, params, example request/response.
-Reference it in the `appendModule(...)` call via `githubUrl(branch, "developer_docs/API_<MODULE>.md")`.
+`developer_docs/api/using-apis/API_<MODULE>.md` — list all endpoints, params, example request/response.
+Reference it in the `appendModule(...)` call via `githubUrl(branch, "developer_docs/api/using-apis/API_<MODULE>.md")`.
 
 ---
 
@@ -149,4 +153,4 @@ curl -s -H "Finance: <key>" -X DELETE "http://localhost:9090/rh/api/<path>/<id>"
 curl -s http://localhost:9090/rh/api/capabilities | python -m json.tool
 ```
 
-For complete reference: [developer_docs/api/rest-api-development-guide.md](../../developer_docs/api/rest-api-development-guide.md)
+For complete reference: [developer_docs/api/building-apis/rest-api-development-guide.md](../../../developer_docs/api/building-apis/rest-api-development-guide.md)

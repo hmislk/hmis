@@ -21,6 +21,7 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
     private Double purchaseValue;
     private Double transferRate;
     private Double transferValue;
+    private Long billId;
 
     public PharmacyTransferIssueBillItemDTO() {
     }
@@ -79,19 +80,57 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
                                             Double purchaseRate, java.math.BigDecimal purchaseValue,
                                             java.math.BigDecimal transferRate, java.math.BigDecimal transferValue) {
         this.billClassSimpleName = extractSimpleClassName(billClass);
+        boolean isCancellation = "CancelledBill".equals(this.billClassSimpleName);
         this.deptId = deptId;
         this.createdAt = createdAt;
         this.itemName = itemName;
         this.itemCode = itemCode;
         this.qty = qty;
         this.costRate = costRate;
-        this.costValue = costValue != null ? costValue.doubleValue() : null;
+        this.costValue = normalizeStockValuationSign(costValue, isCancellation);
         this.retailRate = retailRate;
-        this.retailValue = retailValue != null ? retailValue.doubleValue() : null;
+        this.retailValue = normalizeStockValuationSign(retailValue, isCancellation);
         this.purchaseRate = purchaseRate;
-        this.purchaseValue = purchaseValue != null ? purchaseValue.doubleValue() : null;
+        this.purchaseValue = normalizeStockValuationSign(purchaseValue, isCancellation);
         this.transferRate = transferRate != null ? transferRate.doubleValue() : null;
         this.transferValue = transferValue != null ? transferValue.doubleValue() : null;
+    }
+
+    public PharmacyTransferIssueBillItemDTO(
+            Object billClass,
+            Long billId,
+            String deptId,
+            Date createdAt,
+            String itemName,
+            String itemCode,
+            Double qty,
+            Double costRate,
+            java.math.BigDecimal costValue,
+            Double retailRate,
+            java.math.BigDecimal retailValue,
+            Double purchaseRate,
+            java.math.BigDecimal purchaseValue,
+            java.math.BigDecimal transferRate,
+            java.math.BigDecimal transferValue) {
+
+        this.billClassSimpleName = extractSimpleClassName(billClass);
+        boolean isCancellation = "CancelledBill".equals(this.billClassSimpleName);
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.itemName = itemName;
+        this.itemCode = itemCode;
+        this.qty = qty;
+        this.costRate = costRate;
+        this.costValue = normalizeStockValuationSign(costValue, isCancellation);
+        this.retailRate = retailRate;
+        this.retailValue = normalizeStockValuationSign(retailValue, isCancellation);
+        this.purchaseRate = purchaseRate;
+        this.purchaseValue = normalizeStockValuationSign(purchaseValue, isCancellation);
+        this.transferRate = transferRate != null
+                ? transferRate.doubleValue() : null;
+        this.transferValue = transferValue != null
+                ? transferValue.doubleValue() : null;
     }
 
     public String getDeptId() {
@@ -200,6 +239,32 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
 
     public String getBillClassSimpleName() {
         return billClassSimpleName;
+    }
+    
+    public Long getBillId() {
+        return billId;
+    }
+     
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+
+    /**
+     * Normalizes inventory-valuation sign for display regardless of what's actually
+     * persisted in BillItemFinanceDetails. Some historical data (issue #21438) has
+     * valueAtCostRate/valueAtPurchaseRate/valueAtRetailRate stored with the wrong sign
+     * for bills created via TransferIssueForRequestsController (~Dec 2025 onward);
+     * rather than trusting the stored sign or correcting historical data, this derives
+     * the correct sign from the documented convention at report time: original issues
+     * are NEGATIVE (stock-out reduces inventory value), cancellations are POSITIVE
+     * (stock returns). Magnitude is always preserved.
+     */
+    private static Double normalizeStockValuationSign(java.math.BigDecimal value, boolean isCancellation) {
+        if (value == null) {
+            return null;
+        }
+        double abs = Math.abs(value.doubleValue());
+        return isCancellation ? abs : -abs;
     }
 
     private String extractSimpleClassName(Object billClass) {

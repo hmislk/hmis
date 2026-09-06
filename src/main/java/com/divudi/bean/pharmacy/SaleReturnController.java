@@ -24,6 +24,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.PharmacyRetailSaleReturnPolicyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.BillFee;
@@ -104,6 +105,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     PaymentService paymentService;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    private PharmacyRetailSaleReturnPolicyService pharmacyRetailSaleReturnPolicyService;
 
     PaymentMethodData paymentMethodData;
 
@@ -204,6 +207,20 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return - Days Allowed Without Approval",
+            "Number of days after the original sale a return is allowed without needing an approval request (default 3)",
+            "PharmacyRetailSaleReturnPolicyService.getNoApprovalDayLimit()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return - Days Allowed With Approval",
+            "Number of days after the original sale a return remains possible with an approved request, beyond which it is hard-blocked (default 7)",
+            "PharmacyRetailSaleReturnPolicyService.getWithApprovalDayLimit()",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -215,6 +232,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             "ChangeReceiptPrintingPaperTypes",
             "Ability to change receipt printing paper format settings",
             "Lines 332, 392 (XHTML): Settings button visibility for paper format configuration"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyRetailSaleReturnApproval",
+            "Ability to approve or reject a pharmacy retail sale return approval request",
+            "RequestController.approvePharmacyRetailSaleReturnRequest() / navigateToApproveRequest()"
         ));
 
         // Register the metadata
@@ -230,14 +253,28 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             JsfUtil.addErrorMessage("Cancelled Bills CAN NOT BE returned");
             return null;
         }
-        // Check if credit has been partially or fully settled
-        if (bill.getPaymentMethod() == PaymentMethod.Credit){
-            if (bill.getPaidAmount() > 0) {
-                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
-                return null;
-            }
+
+        // Resolve the actual sale/settlement bill regardless of whether the
+        // loaded bill is a PreBill or the completed sale bill, so validation
+        // below is consistent no matter which navigation path was used.
+        Bill paymentBill = getOriginalPaymentBill();
+        if (paymentBill == null) {
+            JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
+            return null;
         }
-        
+
+        // Check if credit has been partially or fully settled
+        if (isCreditSettled(paymentBill)) {
+            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+            return null;
+        }
+
+        String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
+        if (returnBlockReason != null) {
+            JsfUtil.addErrorMessage(returnBlockReason);
+            return null;
+        }
+
         returnBill = null;
         finalReturnBill = null;
         printPreview = false;
@@ -249,52 +286,15 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         generateBillComponent();
 
-        List<Payment> originalPayments;
-        Bill paymentBill = null;
-
-        //PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-        if (bill.getBillTypeAtomic() == null) {
-            JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-            return null;
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE) {
-            paymentBill = bill;
-            bill.getReferenceBill();
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE) {
-            paymentBill = bill.getReferenceBill();
-            if (paymentBill.getBillTypeAtomic() == null) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
-            paymentBill = bill.getReferenceBill();
-            if (paymentBill.getBillTypeAtomic() == null) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER) {
-            paymentBill = bill;
-        } else {
-            JsfUtil.addErrorMessage("Programming Error. Not a suitable bill type atomic. Inform the system administrator.");
-            return null;
-        }
-
         // Fetch and initialize payment data from original bill
-        originalPayments = billService.fetchBillPayments(paymentBill);
+        List<Payment> originalPayments = billService.fetchBillPayments(paymentBill);
 
         if (originalPayments != null && !originalPayments.isEmpty()) {
             // Initialize payment method data based on original payments
             initializeRefundPaymentFromOriginalPayments(originalPayments);
         } else {
             // Fallback: just set payment method enum if no payment details found
-            returnPaymentMethod = bill.getPaymentMethod();
+            returnPaymentMethod = paymentBill.getPaymentMethod();
         }
 
         return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
@@ -343,6 +343,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
+        if (tmp.getQty() < 0) {
+            tmp.setQty(0.0);
+            JsfUtil.addErrorMessage("Returning quantity cannot be negative. The returning quantity was set to 0.");
+        }
+
         double remainingQty = getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem());
         if (tmp.getQty() > remainingQty) {
             tmp.setQty(0.0);
@@ -665,27 +670,32 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     /**
-     * Validates if the credit bill has been fully or partially settled.
+     * Validates if a bill has been fully or partially settled as credit.
      * Prevents returns for bills where credit companies have already made payments.
+     * The entry bill loaded into this controller can be either a PreBill or the
+     * actual completed sale/settlement bill depending on which navigation path
+     * was used, and the settlement fields are only ever populated on the actual
+     * sale/settlement bill — so callers must pass the bill resolved via
+     * {@link #getOriginalPaymentBill()}, not necessarily {@code getBill()}.
      *
      * @return true if credit is settled (validation fails), false if not settled (validation passes)
      */
-    private boolean isCreditSettled() {
-        if (getBill() == null) {
+    private boolean isCreditSettled(Bill billToCheck) {
+        if (billToCheck == null) {
             return false; // No bill to validate
         }
 
         // Check if this is a credit bill
-        if (getBill().getPaymentMethod() != PaymentMethod.Credit) {
+        if (billToCheck.getPaymentMethod() != PaymentMethod.Credit) {
             return false; // Not a credit bill, allow return
         }
 
         // Check if credit has been settled (fully or partially)
         // Any positive value in these fields indicates settlement has occurred
         boolean hasSettlement =
-            (getBill().getPaidAmount() > 0.01) ||
-            (getBill().getSettledAmountByPatient() > 0.01) ||
-            (getBill().getSettledAmountBySponsor() > 0.01);
+            (billToCheck.getPaidAmount() > 0.01) ||
+            (billToCheck.getSettledAmountByPatient() > 0.01) ||
+            (billToCheck.getSettledAmountBySponsor() > 0.01);
 
         return hasSettlement;
     }
@@ -758,12 +768,19 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     public void settle() {
-        // Check if credit has been partially or fully settled
-        if (bill.getPaymentMethod() == PaymentMethod.Credit){
-            if (bill != null && bill.getPaidAmount() > 0) {
-                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+        // Reject negative returning quantities before any other check, so a
+        // negative-qty row can never be masked by a coincidental zero total
+        for (BillItem bi : getBillItems()) {
+            if (bi.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning quantity cannot be negative.");
                 return;
             }
+        }
+
+        String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
+        if (returnBlockReason != null) {
+            JsfUtil.addErrorMessage(returnBlockReason);
+            return;
         }
 
         if (getReturnBill().getTotal() == 0) {
@@ -785,7 +802,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         }
 
         // Check if credit bill has been settled (fully or partially)
-        if (isCreditSettled()) {
+        if (isCreditSettled(getOriginalPaymentBill())) {
             JsfUtil.addErrorMessage("Cannot return this bill. The credit has been fully or partially settled by the credit company.");
             return;
         }
@@ -1200,15 +1217,17 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     private void calTotal() {
         double grossTotal = 0.0;
         double discount = 0;
+        double netTotal = 0;
 
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getNetRate() * p.getQty();
+            grossTotal += p.getRate() * p.getQty();
             discount += p.getDiscountRate() * p.getQty();
+            netTotal += p.getNetRate() * p.getQty();
 
         }
         getReturnBill().setDiscount(discount);
         getReturnBill().setTotal(grossTotal);
-        getReturnBill().setNetTotal(grossTotal - discount);
+        getReturnBill().setNetTotal(netTotal);
 
         //  return grossTotal;
     }
@@ -1405,6 +1424,27 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             return false;
         }
         return paymentBill.getPaymentMethod() == PaymentMethod.Credit;
+    }
+
+    /**
+     * @param saleBill the original retail sale bill being returned
+     * @return true if the return is hard-blocked because the bill is older
+     * than the "with approval" day limit, with no possible override
+     */
+    public boolean isReturnBlockedByDayLimit(Bill saleBill) {
+        return pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(saleBill) != null
+                && pharmacyRetailSaleReturnPolicyService.daysSinceBillCreation(saleBill) > pharmacyRetailSaleReturnPolicyService.getWithApprovalDayLimit();
+    }
+
+    /**
+     * @param saleBill the original retail sale bill being returned
+     * @return true if the return is still possible but requires an approved
+     * Request because the bill is older than the "no approval" day limit
+     */
+    public boolean needsReturnApproval(Bill saleBill) {
+        return pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(saleBill) != null
+                && !isReturnBlockedByDayLimit(saleBill)
+                && !pharmacyRetailSaleReturnPolicyService.hasActiveReturnRequest(saleBill);
     }
 
     /**

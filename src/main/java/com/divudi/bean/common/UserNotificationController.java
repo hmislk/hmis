@@ -20,7 +20,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.Notification;
-import com.divudi.bean.inward.BhtSummeryController;
+import com.divudi.bean.inward.AdmissionController;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Sms;
@@ -84,7 +85,7 @@ public class UserNotificationController implements Serializable {
     @Inject
     NotificationPushService notificationPushService;
     @Inject
-    BhtSummeryController bhtSummeryController;
+    AdmissionController admissionController;
     private Date date;
     // Notification list filters
     private boolean todayNotification;
@@ -398,16 +399,14 @@ public class UserNotificationController implements Serializable {
         if (un.getNotification().getPatientRoom() != null) {
             PatientRoom pr = un.getNotification().getPatientRoom();
             if (pr.getPatientEncounter() != null) {
-                bhtSummeryController.setPatientEncounter(pr.getPatientEncounter());
-                return bhtSummeryController.navigateToInpatientProfile();
+                return navigateToAdmissionProfileFor(pr.getPatientEncounter());
             }
             return "";
         }
 
         // Handle PatientEncounter-based notifications
         if (un.getNotification().getPatientEncounter() != null) {
-            bhtSummeryController.setPatientEncounter(un.getNotification().getPatientEncounter());
-            return bhtSummeryController.navigateToInpatientProfile();
+            return navigateToAdmissionProfileFor(un.getNotification().getPatientEncounter());
         }
 
         if (un.getNotification().getBill() == null) {
@@ -464,6 +463,23 @@ public class UserNotificationController implements Serializable {
                 return "";
         }
 
+    }
+
+    /**
+     * admission_profile.xhtml reads admissionController.current (an
+     * Admission), not bhtSummeryController.patientEncounter. The normal
+     * "Inpatient Dashboard" button sets both together via
+     * AdmissionController.navigateToAdmissionProfilePage(); this mirrors
+     * that so a notification click doesn't leave admissionController.current
+     * pointing at whichever admission was last viewed through the normal
+     * flow (issue #21538).
+     */
+    private String navigateToAdmissionProfileFor(PatientEncounter patientEncounter) {
+        if (!(patientEncounter instanceof Admission)) {
+            return "";
+        }
+        admissionController.setCurrent((Admission) patientEncounter);
+        return admissionController.navigateToAdmissionProfilePage();
     }
 
     public void createUserNotifications(Notification notification) {
@@ -527,18 +543,36 @@ public class UserNotificationController implements Serializable {
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     String number = u.getWebUserPerson().getMobile();
                     //TODo
                 }
                 break;
             case SMS:
                 for (WebUser u : notificationUsers) {
+                    if (u == null || u.getWebUserPerson() == null) {
+                        continue;
+                    }
                     String number = u.getWebUserPerson().getMobile();
-                    sendSmsForUserSubscriptions(number);
+                    // A subscriber with no mobile number on file would otherwise create an
+                    // Sms row with a null recipient and hand it to the gateway.
+                    if (number == null || number.trim().isEmpty()) {
+                        continue;
+                    }
+                    sendSmsForUserSubscriptions(number, n);
                 }
                 break;
             case SYSTEM_NOTIFICATION:
+                // Defensive null-check kept as a second line of defense: even though
+                // fillSubscribedUsersByDepartment now resolves role-based subscriptions
+                // to real users, a future gap of this kind should degrade to "one user
+                // doesn't get notified" instead of crashing the whole action (issue #22791).
                 for (WebUser u : notificationUsers) {
+                    if (u == null) {
+                        continue;
+                    }
                     UserNotification nun = new UserNotification();
                     nun.setNotification(n);
                     nun.setWebUser(u);
@@ -551,11 +585,15 @@ public class UserNotificationController implements Serializable {
     }
 
     public void sendSmsForUserSubscriptions(String userMobNumber) {
+        sendSmsForUserSubscriptions(userMobNumber, null);
+    }
+
+    public void sendSmsForUserSubscriptions(String userMobNumber, Notification notification) {
         Sms e = new Sms();
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(userMobNumber);
-        e.setSendingMessage(createSmsForUserNotification());
+        e.setSendingMessage(createSmsForUserNotification(notification));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
         e.setPending(false);
@@ -571,21 +609,69 @@ public class UserNotificationController implements Serializable {
     }
 
     public String createSmsForUserNotification() {
-        String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
-        if (template == null || template.isEmpty()) {
-            template = "{patient_name} {appointment_time}";
+        return createSmsForUserNotification(null);
+    }
+
+    /**
+     * Builds the text body of a subscription SMS.
+     *
+     * This used to build a template and then unconditionally {@code return ""},
+     * so every subscription SMS went to the gateway with an empty body. Bill-backed
+     * notifications now describe the bill that triggered them; anything else falls
+     * back to the notification's own message.
+     */
+    public String createSmsForUserNotification(Notification notification) {
+        if (notification != null && notification.getBill() != null) {
+            String billMessage = createSmsBodyForBillNotification(notification.getBill());
+            if (billMessage != null && !billMessage.trim().isEmpty()) {
+                return billMessage;
+            }
         }
-        //TODO: Replace placeholders with actual values
-        template = template.replace("{patient_name}", "")
-                .replace("{doctor}", "")
-                .replace("{appointment_time}", "")
-                .replace("{appointment_date}", "")
-                .replace("{serial_no}", "")
-                .replace("{doc}", "")
-                .replace("{time}", "")
-                .replace("{date}", "")
-                .replace("{No}", "");
-        return "";
+        if (notification != null && notification.getMessage() != null
+                && !notification.getMessage().trim().isEmpty()) {
+            return notification.getMessage().trim();
+        }
+        String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.trim().isEmpty()) {
+            return "";
+        }
+        return template.trim();
+    }
+
+    /**
+     * "New transfer request PHTRQ-PRE/26/000002 from WARD 4TH FLOOR (7 items) to PHARMACY."
+     * The bill number is what the receiving department needs to find the request, so it
+     * leads; department names and item count let the recipient judge urgency without
+     * logging in.
+     */
+    private String createSmsBodyForBillNotification(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return null;
+        }
+        String subject;
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_TRANSFER_REQUEST:
+            case PHARMACY_TRANSFER_REQUEST_PRE:
+                subject = "New transfer request";
+                break;
+            default:
+                return null;
+        }
+        StringBuilder sb = new StringBuilder(subject);
+        if (bill.getDeptId() != null && !bill.getDeptId().trim().isEmpty()) {
+            sb.append(" ").append(bill.getDeptId().trim());
+        }
+        if (bill.getFromDepartment() != null && bill.getFromDepartment().getName() != null) {
+            sb.append(" from ").append(bill.getFromDepartment().getName().trim());
+        }
+        int itemCount = bill.getBillItems() == null ? 0 : bill.getBillItems().size();
+        if (itemCount > 0) {
+            sb.append(" (").append(itemCount).append(itemCount == 1 ? " item)" : " items)");
+        }
+        if (bill.getToDepartment() != null && bill.getToDepartment().getName() != null) {
+            sb.append(" to ").append(bill.getToDepartment().getName().trim());
+        }
+        return sb.append(".").toString();
     }
 
     public void createAllertMessage(Notification n) {

@@ -16,4 +16,5 @@ public enum DocumentTemplateType {
     Referral,
     InpatientDiagnosisCard,
     InpatientLetter,
+    InpatientEmail,
 }

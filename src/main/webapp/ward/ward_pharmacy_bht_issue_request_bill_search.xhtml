@@ -104,6 +104,7 @@
                                 <p:column>
                                     <p:commandButton ajax="false" value="View Request" action="/ward/ward_pharmacy_reprint_bht_issue_request?faces-redirect=true" class="ui-button-success">
                                         <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener value="/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true" target="#{pharmacyBillSearch.returnPage}"/>
                                     </p:commandButton>
                                 </p:column>
                                 <p:column headerText="Issued" width="39%">                   

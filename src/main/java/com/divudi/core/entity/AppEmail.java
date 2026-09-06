@@ -10,6 +10,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -63,9 +64,16 @@ public class AppEmail implements Serializable {
     private boolean pending;
 
     private String receipientEmail;
+    @Column(length = 2000)
+    private String ccEmails;
+    @Column(length = 2000)
+    private String bccEmails;
+    @Column(length = 2000)
+    private String attachmentNames;
     private String messageSubject;
     @Lob
     private String messageBody;
+    private String otp;
 
     @Deprecated
     private String senderUsername;
@@ -217,6 +225,30 @@ public class AppEmail implements Serializable {
         this.receipientEmail = receipientEmail;
     }
 
+    public String getCcEmails() {
+        return ccEmails;
+    }
+
+    public void setCcEmails(String ccEmails) {
+        this.ccEmails = ccEmails;
+    }
+
+    public String getBccEmails() {
+        return bccEmails;
+    }
+
+    public void setBccEmails(String bccEmails) {
+        this.bccEmails = bccEmails;
+    }
+
+    public String getAttachmentNames() {
+        return attachmentNames;
+    }
+
+    public void setAttachmentNames(String attachmentNames) {
+        this.attachmentNames = attachmentNames;
+    }
+
     public String getMessageSubject() {
         return messageSubject;
     }
@@ -231,6 +263,14 @@ public class AppEmail implements Serializable {
 
     public void setMessageBody(String messageBody) {
         this.messageBody = messageBody;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 
     public Boolean getSentSuccessfully() {

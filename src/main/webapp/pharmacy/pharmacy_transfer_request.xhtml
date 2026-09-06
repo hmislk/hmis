@@ -120,6 +120,7 @@
                                         ajax="false"
                                         icon="fas fa-floppy-disk"
                                         styleClass="mx-1 ui-button-stage-save"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
                                         />
                                     <p:commandButton
                                         id="btnFinalize"
@@ -129,6 +130,7 @@
                                         icon="fas fa-lock"
                                         styleClass="mx-1 ui-button-stage-finalize"
                                         onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                         />
                                 </div>
                             </div>

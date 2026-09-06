@@ -66,7 +66,7 @@ Specifically verify:
 
 ### 5. Pre-Push Checklist
 
-- **persistence.xml** — must use `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}`, not hardcoded JNDI names. See [Persistence Configuration Guide](../deployment/persistence-verification.md)
+- **persistence.xml** — must be reverted to CI/CD placeholders before pushing. See [Start Issue Workflow § Persistence.xml Swap](start-issue-workflow.md#persistencexml-swap) and [Persistence Configuration Guide](../deployment/persistence-verification.md)
 - No credentials or `.env` files staged
 - JSF-only changes (XHTML, no Java) do not require compilation
 
@@ -180,8 +180,14 @@ gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
 
 ## Notes
 
-- All PRs target `development`, never `master`
+- All PRs target `development`, never `master` — see [Commit Conventions § Feature Branches](commit-conventions.md#feature-branches)
 - "Re-request review" is distinct from just pushing — always click it once, at the end
 - Replying ONLY UNDER existing reviewer threads maintains a clean audit trail without creating new manual-resolve chores
 - Self-review items go in commit messages, not as new inline comments
 - The `/review-pr` skill automates the investigation and fix steps of this workflow
+- The `/review-and-fix` skill goes further: it runs a fresh deep `code-review` on
+  a PR, applies the fixes, verifies each one live (build → local redeploy →
+  Playwright + DB), drives CI to green, then calls `/review-pr` for the thread
+  replies. Use it on a PR that needs correcting rather than just triaging
+  existing comments — e.g. one a `/merge-gate` run left `BLOCKED-REVIEW`. Its
+  full workflow and rationale are in `.claude/skills/review-and-fix/SKILL.md`.

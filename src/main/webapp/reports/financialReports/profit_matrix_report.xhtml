@@ -280,7 +280,7 @@
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Referring Doctor Name"/></f:facet>
-                                        <h:outputText value="#{row.referringDoctorName}"/>
+                                        <h:outputText value="#{row.title}. #{row.referringDoctorName}"/>
                                     </p:column>
 
                                     <p:column width="8em">
@@ -289,7 +289,7 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">
-                                            <h:outputText>
+                                            <h:outputText value="#{reportController.totalInvoiceAmount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </f:facet>
@@ -301,7 +301,7 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">
-                                            <h:outputText>
+                                            <h:outputText value="#{reportController.totalProfitMargin}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </f:facet>
@@ -387,14 +387,14 @@
                                         <f:facet name="header">
                                             <h:outputText value="Referring Doctor Name" />
                                         </f:facet>
-                                        <h:outputText value="#{row.referringDoctorName}"/>
+                                        <h:outputText value="#{row.title}. #{row.referringDoctorName}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Service Name" />
                                         </f:facet>
-                                        <h:outputText value="#{row.serviceName}"/>
+                                        <h:outputText value="#{not empty row.serviceName ? row.serviceName : row.inwardChargeType.name}"/>
                                     </p:column>
 
                                     <p:column width="8em">
@@ -411,6 +411,11 @@
                                         <h:outputText value="#{row.invoiceAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{reportController.totalInvoiceAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
 
                                     <p:column width="8em">
@@ -429,6 +434,11 @@
                                         <h:outputText value="#{row.profitMargin}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{reportController.totalProfitMargin}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
 
                                     <p:column width="8em">

@@ -42,6 +42,7 @@
                             styleClass="ui-button-stage-finalize mx-1"
                             icon="fas fa-lock"
                             ajax="false"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyReceiveFinalize')}"
                             onclick="return confirm('Are you sure you want to finalize this receive? This cannot be undone.');"
                             style="float: right;">
                         </p:commandButton>
@@ -50,6 +51,7 @@
                             action="#{transferReceiveNativeSqlController.saveRequest()}"
                             styleClass="ui-button-stage-save mx-1"
                             icon="fas fa-floppy-disk"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyReceiveSave')}"
                             ajax="false"
                             style="float: right;">
                         </p:commandButton>

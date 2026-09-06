@@ -6,7 +6,8 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
     <ui:define name="content">
         <h:panelGroup id="panChangePatient">
@@ -53,67 +54,25 @@
                                                                        var="ins"
                                                                        itemLabel="#{ins.name}"
                                                                        itemValue="#{ins}" />
-                                                        <p:ajax listener="#{admissionPatientChangeController.onInstitutionChange}" update="acAdmission pnlPatientPreview" />
+                                                        <p:ajax listener="#{admissionPatientChangeController.onInstitutionChange}" update="admissionSearch pnlPatientPreview" />
                                                     </p:selectOneMenu>
                                                 </div>
                                             </div>
 
                                             <div class="row mb-3">
                                                 <div class="col-12">
-                                                    <h:outputLabel for="acAdmission" styleClass="form-label fw-bold text-dark mb-2">
-                                                        <i class="fa-solid fa-user me-2 text-primary"></i>
-                                                        Patient Search
-                                                    </h:outputLabel>
-                                                    <p:autoComplete
+                                                    <h:panelGroup layout="block" styleClass="form-label fw-bold text-dark mb-2">
+                                                        <h:outputText styleClass="fa-solid fa-user me-2 text-primary" />
+                                                        <h:outputText value="Patient Search" />
+                                                    </h:panelGroup>
+                                                    <admcc:admission_search
+                                                        id="admissionSearch"
                                                         widgetVar="acAdmission"
-                                                        id="acAdmission"
-                                                        forceSelection="true"
+                                                        inputId="acAdmission"
                                                         value="#{admissionPatientChangeController.current}"
                                                         completeMethod="#{admissionPatientChangeController.completeAdmissionByInstitution}"
-                                                        var="adm"
-                                                        itemValue="#{adm}"
-                                                        itemLabel="#{adm.bhtNo}"
-                                                        placeholder="Type patient name, BHT number, or PHN..."
-                                                        minQueryLength="2"
-                                                        style="width: 100%;"
-                                                        inputStyleClass="form-control form-control-lg">
-                                                        <p:ajax event="itemSelect" update="pnlPatientPreview" />
-                                                        <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fa-solid fa-id-card me-2 text-info"></i>
-                                                                <strong>#{adm.patient.phn}</strong>
-                                                            </div>
-                                                        </p:column>
-                                                        <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fa-solid fa-hospital me-2 text-warning"></i>
-                                                                <strong class="text-primary">#{adm.bhtNo}</strong>
-                                                            </div>
-                                                        </p:column>
-                                                        <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fa-solid fa-user me-2 text-success"></i>
-                                                                <span class="fw-medium">#{adm.patient.person.nameWithTitle}</span>
-                                                            </div>
-                                                        </p:column>
-                                                        <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
-                                                            <h:panelGroup rendered="#{adm.currentPatientRoom ne null}">
-                                                                <div class="d-flex align-items-center">
-                                                                    <i class="fa-solid fa-bed me-2 text-secondary"></i>
-                                                                    <span>#{adm.currentPatientRoom.roomFacilityCharge.name}</span>
-                                                                </div>
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{adm.currentPatientRoom eq null}">
-                                                                <span class="text-muted">
-                                                                    <i class="fa-solid fa-question-circle me-1"></i>No room assigned
-                                                                </span>
-                                                            </h:panelGroup>
-                                                        </p:column>
-                                                        <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
-                                                            <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{adm.discharged}" />
-                                                            <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!adm.discharged}" />
-                                                        </p:column>
-                                                    </p:autoComplete>
+                                                        continueClientId="formChangePatient:btnLoadAdmission"
+                                                        itemSelectUpdate=":formChangePatient:pnlPatientPreview" />
                                                 </div>
                                             </div>
 

@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_administration.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardPackageAdministration')}">
+            <na:not_authorize />
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}" layout="block">
+
+        <h:form id="formPackageItems">
+            <p:growl/>
+
+            <p:panel class="mx-1">
+                <f:facet name="header">
+                    <i class="fa-solid fa-list"></i>
+                    <p:outputLabel value="Package Components: #{inpatientPackageItemController.currentPackage.name}" class="mx-2"/>
+                </f:facet>
+
+                <p:dataTable id="tblComponents" var="row" value="#{inpatientPackageItemController.items}" widgetVar="wTblComponents" rowKey="#{row.id}" styleClass="p-datatable-sm" stickyHeader="true">
+                    <p:column headerText="Type">#{row.componentType}</p:column>
+                    <p:column headerText="Item / Role">#{row.item != null ? row.item.name : row.roleLabel}</p:column>
+                    <p:column headerText="Qty">#{row.qty}</p:column>
+                    <p:column headerText="Fixed Price">#{row.fixedPrice}</p:column>
+                    <p:column headerText="Action">
+                        <p:commandButton
+                            id="btnEditComponent"
+                            title="Edit component #{row.id}"
+                            icon="fa fa-pen"
+                            actionListener="#{inpatientPackageItemController.setCurrent(row)}"
+                            update=":formPackageItems:gpComponentDetail"
+                            process="@this">
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+
+                <p:panel id="gpComponentDetail" class="mt-3">
+                    <f:facet name="header">
+                        <p:outputLabel value="Add / Edit Component"/>
+                        <p:commandButton
+                            id="btnSaveComponent"
+                            value="Save"
+                            icon="fa fa-save"
+                            action="#{inpatientPackageItemController.saveSelected()}"
+                            process="btnSaveComponent gpComponentDetail"
+                            update="tblComponents gpComponentDetail"
+                            style="float: right">
+                        </p:commandButton>
+                        <p:commandButton
+                            id="btnAddComponent"
+                            value="New"
+                            icon="fa fa-plus"
+                            action="#{inpatientPackageItemController.prepareAdd()}"
+                            process="btnAddComponent"
+                            update="gpComponentDetail"
+                            style="float: right"
+                            class="mx-2">
+                        </p:commandButton>
+                        <p:commandButton
+                            id="btnDeleteComponent"
+                            value="Delete"
+                            icon="fa fa-trash"
+                            onclick="if (!confirm('Remove this component?')) return false;"
+                            action="#{inpatientPackageItemController.delete()}"
+                            process="btnDeleteComponent"
+                            update="tblComponents gpComponentDetail"
+                            style="float: right"
+                            class="mx-2 ui-button-danger">
+                        </p:commandButton>
+                    </f:facet>
+
+                    <h:panelGrid columns="3" class="w-100">
+                        <h:outputText value="Component Type"/>
+                        <p:outputLabel value=": "/>
+                        <p:selectOneMenu id="selComponentType" value="#{inpatientPackageItemController.current.componentType}" class="w-100">
+                            <f:selectItem itemLabel="Select One" itemValue="#{null}"/>
+                            <f:selectItems value="#{inpatientPackageItemController.componentTypes}" var="ct" itemValue="#{ct}" itemLabel="#{ct}"/>
+                        </p:selectOneMenu>
+
+                        <h:outputText value="Item (Service / Timed Item / Pharmacy Item)"/>
+                        <p:outputLabel value=": "/>
+                        <p:autoComplete id="acComponentItem" value="#{inpatientPackageItemController.current.item}" completeMethod="#{itemController.completeItem}" var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" forceSelection="true" maxResults="20" class="w-100"/>
+
+                        <h:outputText value="Speciality (for Professional Fee Role)"/>
+                        <p:outputLabel value=": "/>
+                        <p:selectOneMenu id="selComponentSpeciality" value="#{inpatientPackageItemController.current.speciality}" class="w-100">
+                            <f:selectItem itemLabel="None" itemValue="#{null}"/>
+                            <f:selectItems value="#{specialityController.items}" var="sp" itemValue="#{sp}" itemLabel="#{sp.name}"/>
+                        </p:selectOneMenu>
+
+                        <h:outputText value="Role Label (if no Speciality)"/>
+                        <p:outputLabel value=": "/>
+                        <p:inputText id="txtRoleLabel" value="#{inpatientPackageItemController.current.roleLabel}" class="w-100"/>
+
+                        <h:outputText value="Qty"/>
+                        <p:outputLabel value=": "/>
+                        <p:inputNumber id="txtComponentQty" value="#{inpatientPackageItemController.current.qty}" class="w-100"/>
+
+                        <h:outputText value="Fixed Price"/>
+                        <p:outputLabel value=": "/>
+                        <p:inputNumber id="txtComponentFixedPrice" value="#{inpatientPackageItemController.current.fixedPrice}" class="w-100"/>
+                    </h:panelGrid>
+                </p:panel>
+            </p:panel>
+        </h:form>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

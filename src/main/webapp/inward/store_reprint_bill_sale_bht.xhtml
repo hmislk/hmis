@@ -54,6 +54,11 @@
                                              icon="fa fa-backward"
                                              class="m-2"
                                              action="/inward/inward_bill_intrim"  />
+                            <p:commandButton ajax="false" value="Back to Surgery Summary"
+                                             action="#{surgeryBillController.navigateToSurgeryBillSummary(storeBillSearch.bill.forwardReferenceBill)}"
+                                             rendered="#{storeBillSearch.bill.forwardReferenceBill ne null and storeBillSearch.bill.forwardReferenceBill.billType eq 'SurgeryBill'}"
+                                             icon="fa fa-backward"
+                                             class="m-2"/>
                         </div>
                     </div>
 

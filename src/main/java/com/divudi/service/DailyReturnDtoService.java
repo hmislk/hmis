@@ -272,7 +272,45 @@ public class DailyReturnDtoService {
         params.put("bts", patientDepositBillTypes);
         
         List<PaymentDetailDTO> result = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
-        
+
         return result;
+    }
+
+    public List<PaymentDetailDTO> fetchInwardPaymentsForDailyReturn(Date fromDate, Date toDate) {
+        String jpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
+                + "b.deptId, b.billType, b.paymentMethod, b.netTotal, b.createdAt, "
+                + "'', "  // creditCardRefNo - not applicable for inward payments
+                + "coalesce(p.name, ''), "  // bankName field used for patient name
+                + "'', "  // institutionName - not applicable
+                + "coalesce(d.name, '')) "  // departmentName
+                + "from Bill b "
+                + "left join b.patient pt "
+                + "left join pt.person p "
+                + "left join b.department d "
+                + "where b.retired = false "
+                + "and b.createdAt between :fd and :td "
+                + "and b.billTypeAtomic in :bts "
+                + "order by b.createdAt";
+
+        // Inward Payment specific BillTypeAtomic values - covers pre-final inward payments,
+        // inward deposits, and post-final-bill inward payments (and their cancellations/refunds),
+        // reported together as a single unified "Inward Payment" bucket in Daily Return.
+        List<BillTypeAtomic> inwardPaymentBillTypes = new ArrayList<>();
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        inwardPaymentBillTypes.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+        inwardPaymentBillTypes.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION);
+        inwardPaymentBillTypes.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("bts", inwardPaymentBillTypes);
+
+        return (List<PaymentDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
 }

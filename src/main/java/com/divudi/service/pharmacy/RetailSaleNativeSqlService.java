@@ -118,19 +118,24 @@ public class RetailSaleNativeSqlService {
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
-                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, Rate, netRate,"
+                + " discount, discountRate, marginValue,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
                 .setParameter(1, preBillId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
                 .setParameter(4, d.getDescription())
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
-                .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
+                .setParameter(7, d.getRate())
+                .setParameter(8, netRate)
+                .setParameter(9, d.getDiscountValue())
+                .setParameter(10, absQty > 0 ? (d.getDiscountValue() / absQty) : 0.0)
+                .setParameter(11, d.getMarginValue())
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
                 .executeUpdate();
             biPreIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -171,19 +176,24 @@ public class RetailSaleNativeSqlService {
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
-                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, Rate, netRate,"
+                + " discount, discountRate, marginValue,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
                 .setParameter(4, d.getDescription())
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
-                .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
+                .setParameter(7, d.getRate())
+                .setParameter(8, netRate)
+                .setParameter(9, d.getDiscountValue())
+                .setParameter(10, absQty > 0 ? (d.getDiscountValue() / absQty) : 0.0)
+                .setParameter(11, d.getMarginValue())
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -259,6 +269,17 @@ public class RetailSaleNativeSqlService {
         // Step 6: Insert Payment record(s) against BilledBill. A single payment
         // for ordinary methods; one Payment per component for MultiplePaymentMethods.
         List<Payment> payments = insertPayment(saleBill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
+
+        // Both bills were persisted with billItems nulled (steps 1a/1b) because the items are
+        // inserted natively, so the in-memory entities claim they have none — and
+        // Bill.getBillItems() hands out an empty list rather than a lazy one. Anything that
+        // later merges these instances writes that empty collection into the shared cache, so
+        // every subsequent read of the bill shows a bill with no items (a reprint printing
+        // "No of Items: 0" while the total is correct). Issue #22511, same cause as #22506.
+        // Refreshing rebuilds the lazy collections from the rows just written, and also picks
+        // up the totals updated above.
+        em.refresh(preBill);
+        em.refresh(saleBill);
 
         LOGGER.log(Level.INFO, "[RetailNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});

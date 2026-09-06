@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Staff Assisted Client Portal Registration</title>
+    </h:head>
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form id="staffRegForm" rendered="#{webUserController.hasPrivilege('ClientPortalCreateAccount')}">
+
+                    <p:panel header="Find Patient">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h:outputLabel for="txtSearchPhone" value="Phone Number" class="form-label" />
+                                <p:inputText id="txtSearchPhone"
+                                             class="form-control"
+                                             autocomplete="off"
+                                             placeholder="Phone Number"
+                                             value="#{clientPortalStaffRegistrationController.searchPhone}" />
+                            </div>
+                            <div class="col-md-3">
+                                <h:outputLabel for="txtSearchPhn" value="PHN" class="form-label" />
+                                <p:inputText id="txtSearchPhn"
+                                             class="form-control"
+                                             autocomplete="off"
+                                             placeholder="PHN"
+                                             value="#{clientPortalStaffRegistrationController.searchPhn}" />
+                            </div>
+                            <div class="col-md-3">
+                                <h:outputLabel for="txtSearchName" value="Name" class="form-label" />
+                                <p:inputText id="txtSearchName"
+                                             class="form-control"
+                                             autocomplete="off"
+                                             placeholder="Name"
+                                             value="#{clientPortalStaffRegistrationController.searchName}" />
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <p:commandButton id="btnSearch"
+                                                  value="Search"
+                                                  icon="fa fa-search"
+                                                  action="#{clientPortalStaffRegistrationController.search()}"
+                                                  update="staffRegForm:resultsPanel"
+                                                  styleClass="ui-button-warning"
+                                                  title="Search for patient" />
+                                <p:defaultCommand target="btnSearch" />
+                            </div>
+                        </div>
+                    </p:panel>
+
+                    <p:spacer height="10" />
+
+                    <h:panelGroup id="resultsPanel" layout="block">
+
+                        <p:dataTable id="dtResults"
+                                     widgetVar="dtResultsWv"
+                                     value="#{clientPortalStaffRegistrationController.searchResults}"
+                                     var="row"
+                                     rowKey="#{row.id}"
+                                     paginator="true"
+                                     rows="10"
+                                     rendered="#{not empty clientPortalStaffRegistrationController.searchResults}"
+                                     class="w-100 table table-sm table-striped">
+
+                            <p:column headerText="PHN">
+                                <h:outputText value="#{row.phn}" />
+                            </p:column>
+
+                            <p:column headerText="Name">
+                                <h:outputText value="#{row.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Phone">
+                                <h:outputText value="#{row.patientPhoneNumber}" />
+                            </p:column>
+
+                            <p:column headerText="Action">
+                                <p:commandButton value="Select"
+                                                  icon="fa fa-check"
+                                                  title="Select patient #{row.phn}"
+                                                  action="#{clientPortalStaffRegistrationController.selectPatient(row)}"
+                                                  update="staffRegForm:actionPanel"
+                                                  styleClass="ui-button-info" />
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <h:panelGroup layout="block"
+                                      rendered="#{clientPortalStaffRegistrationController.searchAttempted and empty clientPortalStaffRegistrationController.searchResults}">
+                            <h:outputText value="No patients matched your search." />
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+
+                    <p:spacer height="10" />
+
+                    <h:panelGroup id="actionPanel" layout="block">
+
+                        <p:panel header="Duplicate Account" rendered="#{clientPortalStaffRegistrationController.duplicateAccountBlocked}">
+                            <h:outputText value="A Client Portal account already exists for #{clientPortalStaffRegistrationController.selectedPatient.person.nameWithTitle}. Direct them to log in or use password reset instead." />
+                        </p:panel>
+
+                        <p:panel header="Create Portal Account"
+                                 rendered="#{clientPortalStaffRegistrationController.selectedPatient ne null and not clientPortalStaffRegistrationController.duplicateAccountBlocked and not clientPortalStaffRegistrationController.registrationComplete}">
+
+                            <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                <h:outputLabel value="Patient" />
+                                <h:outputText value="#{clientPortalStaffRegistrationController.selectedPatient.person.nameWithTitle}" />
+
+                                <h:outputLabel value="PHN" />
+                                <h:outputText value="#{clientPortalStaffRegistrationController.selectedPatient.phn}" />
+
+                                <h:outputLabel value="Phone" />
+                                <h:outputText value="#{clientPortalStaffRegistrationController.selectedPatient.patientPhoneNumber}" />
+
+                                <h:outputLabel for="txtPassword" value="Password" />
+                                <p:password id="txtPassword"
+                                            value="#{clientPortalStaffRegistrationController.password}"
+                                            toggleMask="true"
+                                            class="form-control" />
+
+                                <h:outputLabel for="txtPasswordConfirm" value="Confirm Password" />
+                                <p:password id="txtPasswordConfirm"
+                                            value="#{clientPortalStaffRegistrationController.passwordConfirm}"
+                                            toggleMask="true"
+                                            class="form-control" />
+                            </p:panelGrid>
+
+                            <p:spacer height="10" />
+
+                            <p:commandButton id="btnRegister"
+                                              value="Create Portal Account"
+                                              icon="fa fa-user-plus"
+                                              action="#{clientPortalStaffRegistrationController.register()}"
+                                              update="staffRegForm:actionPanel"
+                                              styleClass="ui-button-success"
+                                              title="Create Client Portal account" />
+
+                        </p:panel>
+
+                        <p:panel header="Success" rendered="#{clientPortalStaffRegistrationController.registrationComplete}">
+                            <h:outputText value="Client Portal account created successfully for #{clientPortalStaffRegistrationController.selectedPatient.person.nameWithTitle}." />
+                        </p:panel>
+
+                    </h:panelGroup>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

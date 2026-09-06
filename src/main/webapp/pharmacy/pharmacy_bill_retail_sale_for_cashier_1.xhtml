@@ -79,7 +79,7 @@
                                     <!-- RIGHT SECTION: Counter Selection and Action Buttons -->
                                     <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
                                         <!-- Counter Selection (moved from center) -->
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}"
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                                       style="display: flex; align-items: center; gap: 8px;">
                                             <p:outputLabel value="Counter" style="font-weight: 500;"></p:outputLabel>
                                             <p:selectOneMenu value="#{pharmacySaleForCashierController1.counter}"
@@ -782,10 +782,10 @@
                                                     icon="fas fa-arrow-left"
                                                     action="#{tokenController.navigateToManagePharmacyTokens()}" >
                                                 </p:commandButton>
-                                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController1.pharmacyRetailSale()}" />
-                                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController11.pharmacyRetailSale()}" />
-                                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController12.pharmacyRetailSale()}" />
-                                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController13.pharmacyRetailSale()}" />
+                                                <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 1" ajax="false" action="#{pharmacySaleForCashierController.toPharmacyRetailSaleForCashier()}" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                                <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 2" disabled="true" ajax="false" action="#{pharmacySaleForCashierController1.toPharmacyRetailSaleForCashier()}" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                                <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 3" ajax="false" action="#{pharmacySaleForCashierController2.toPharmacyRetailSaleForCashier()}" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                                <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 4" ajax="false" action="#{pharmacySaleForCashierController3.toPharmacyRetailSaleForCashier()}" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
                 
                                             </div>
                 

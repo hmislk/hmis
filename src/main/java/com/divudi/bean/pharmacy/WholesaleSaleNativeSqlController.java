@@ -10,6 +10,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.PriceMatrixController;
@@ -17,7 +18,11 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
@@ -104,6 +109,8 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
     private PriceMatrixController priceMatrixController;
     @Inject
     private PatientDepositController patientDepositController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     // ---- EJB ----
     @EJB
@@ -155,7 +162,88 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         resetAll();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_bill_wholesale_sale_native",
+                "Pharmacy Wholesale Sale (Native)",
+                "Pharmacy wholesale sale billing interface using the native SQL workflow",
+                "WholesaleSaleNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Medicine Identification Codes Used",
+                "Enables medicine identification code lookup during item search",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Bill Support for Native Printers",
+                "Enables native printer support for pharmacy bill printing",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill is PosHeaderPaper",
+                "Prints the wholesale sale bill on POS paper with a header section",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 2",
+                "Prints the wholesale sale bill using custom paper format 2",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 3",
+                "Prints the wholesale sale bill using custom paper format 3",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header",
+                "Prints the wholesale sale bill on Five-Five paper without a blank header space",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper",
+                "Prints the wholesale sale bill on standard POS paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper Custom 1",
+                "Prints the wholesale sale bill on POS paper using custom format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS paper with header",
+                "Prints the wholesale sale bill on POS paper with a header line",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show alternative medicines available during retail sale",
+                "Displays alternative/substitute medicines available while entering a wholesale sale",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------
@@ -785,9 +873,15 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setFreeQty(0.0);
         // For wholesale sale, retailRate/batchRetailRate are kept as bookkeeping metadata
         // (from the batch lookup); the actual charged rate comes from wholesaleRate.
+        // The charged rate is rounded to currency precision (2dp) so the displayed Rate
+        // and the calculated Value always agree (ItemBatch.wholesaleRate is frequently
+        // stored with more than 2 decimal places, e.g. 8.4564 - issue #21912).
+        double lineWholesaleRate = CommonFunctions.round(
+                stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
+
         bid.setRetailRate(batchRetailRate);
         bid.setPurchaseRate(batchPurchaseRate);
-        bid.setWholesaleRate(stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
+        bid.setWholesaleRate(lineWholesaleRate);
         bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
         bid.setBatchRetailRate(batchRetailRate);
         bid.setBatchPurchaseRate(batchPurchaseRate);
@@ -798,7 +892,6 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setCreatedAt(new Date());
         bid.setCreaterId(sessionController.getLoggedUser().getId());
 
-        double lineWholesaleRate = stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0;
         double grossValue = lineWholesaleRate * qty;
         double discountPct = 0.0;
         double discountValue = 0.0;
@@ -1081,10 +1174,13 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setItemBatchId(sub.getItemBatchId());
         bid.setPbiQty(-Math.abs(qty));
         // For wholesale sale, retailRate/batchRetailRate are kept as bookkeeping metadata;
-        // the actual charged rate comes from the substitute's wholesaleRate.
+        // the actual charged rate comes from the substitute's wholesaleRate, rounded to
+        // currency precision so the displayed Rate and calculated Value agree (#21912).
+        double lineWholesaleRate = CommonFunctions.round(batchWholesaleRate);
+
         bid.setRetailRate(batchRetailRate);
         bid.setPurchaseRate(batchPurchaseRate);
-        bid.setWholesaleRate(batchWholesaleRate);
+        bid.setWholesaleRate(lineWholesaleRate);
         bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
         bid.setBatchRetailRate(batchRetailRate);
         bid.setBatchPurchaseRate(batchPurchaseRate);
@@ -1093,7 +1189,6 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setDoe(sub.getDateOfExpire());
         bid.setDescription(sub.getItemName());
 
-        double lineWholesaleRate = batchWholesaleRate;
         double grossValue = lineWholesaleRate * qty;
         double discountPct = 0.0;
         double discountValue = 0.0;
@@ -1189,7 +1284,8 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
 
     public void calculateBillItemListner() {
         if (stockDto != null && intQty != null) {
-            double rate = stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0;
+            double rate = CommonFunctions.round(
+                    stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
             getBillItem().setRate(rate);
             getBillItem().setNetRate(rate);
             getBillItem().setNetValue(rate * intQty);
@@ -1641,12 +1737,13 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
 
     public Double getPreviewRate() {
         if (stockDto == null) return null;
-        return stockDto.getWholesaleRate();
+        return stockDto.getWholesaleRate() != null ? CommonFunctions.round(stockDto.getWholesaleRate()) : null;
     }
 
     public Double getPreviewNetValue() {
         if (stockDto == null || intQty == null) return null;
-        double rate = stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0;
+        double rate = CommonFunctions.round(
+                stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
         return rate * intQty;
     }
 

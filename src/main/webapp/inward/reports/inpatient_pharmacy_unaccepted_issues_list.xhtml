@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="inpatientPharmacyUnacceptedIssuesGrowl"></p:growl>
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div class="d-flex align-items-center gap-2">
+                            <h:outputText styleClass="fa fa-triangle-exclamation"></h:outputText>
+                            <p:outputLabel value="Pharmacy Issues Awaiting Ward Acceptance"></p:outputLabel>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                id="btnBackToProfile"
+                                value="Inpatient Dashboard"
+                                action="#{inwardPharmacyEncounterReportController.navigateToAdmissionProfile()}"
+                                ajax="false"
+                                icon="fa fa-arrow-circle-left"
+                                styleClass="ui-button-info ui-button-outlined">
+                            </p:commandButton>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                id="btnRefresh"
+                                title="Reload the latest unaccepted pharmacy issues for this admission"
+                                value="Refresh"
+                                action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyUnacceptedIssuesList()}"
+                                ajax="false"
+                                icon="fa fa-sync-alt"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnDownload"
+                                value="Download"
+                                ajax="false"
+                                icon="fa fa-download"
+                                styleClass="ui-button-secondary">
+                                <p:dataExporter fileName="Inpatient Pharmacy Unaccepted Issues" target="tbl1" type="xlsx"></p:dataExporter>
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnPrint"
+                                value="Print"
+                                ajax="false"
+                                icon="fa fa-print"
+                                styleClass="ui-button-secondary">
+                                <p:printer target="tbl1"></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <style>
+                    @media print {
+                        body {
+                            margin: 0px 5px;
+                        }
+                    }
+                </style>
+
+                <div class="row">
+                    <div class="col-3">
+                        <div class="m-1">
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user"></h:outputText>
+                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-5"><p:outputLabel value="Name" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{inwardPharmacyEncounterReportController.patientEncounter.patient.person.nameWithTitle}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Gender" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{inwardPharmacyEncounterReportController.patientEncounter.patient.person.sex}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Age" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{inwardPharmacyEncounterReportController.patientEncounter.patient.person.ageAsString}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Mobile No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{inwardPharmacyEncounterReportController.patientEncounter.patient.person.mobile}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Phone No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{inwardPharmacyEncounterReportController.patientEncounter.patient.person.phone}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="NIC" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{empty inwardPharmacyEncounterReportController.patientEncounter.patient.person.nic ? 'N/A' : inwardPharmacyEncounterReportController.patientEncounter.patient.person.nic}" /></div>
+                                </div>
+                            </p:panel>
+                        </div>
+                        <div class="m-1">
+                            <common:admission_details admission="#{inwardPharmacyEncounterReportController.patientEncounter}" class="w-100 m-1"></common:admission_details>
+                        </div>
+                    </div>
+                    <div class="col-9">
+                        <p:panel>
+                            <f:facet name="header">
+                                <p:outputLabel value="Pharmacy Issues Awaiting Ward Acceptance" style="font-weight: bold"></p:outputLabel>
+                            </f:facet>
+
+                            <p:dataTable
+                                id="tbl1"
+                                rowIndexVar="rowIndex"
+                                rowKey="#{b.id}"
+                                value="#{inwardPharmacyEncounterReportController.unacceptedIssueBillsToPatientEncounter}"
+                                var="b">
+
+                                <p:column width="2em" style="padding: 2px">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column width="8em" style="padding: 2px">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.deptId}" />
+                                </p:column>
+
+                                <p:column width="12em" style="padding: 2px">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Issued At" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column width="10em" style="padding: 2px">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Issued By" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.creater.webUserPerson.name}" />
+                                </p:column>
+
+                                <p:column width="10em" style="padding: 2px">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="To Staff" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.toStaff.person.nameWithTitle}" />
+                                </p:column>
+
+                                <p:column width="8em" style="padding: 2px; text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Total" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column width="10em" style="padding: 2px" exportable="false">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Actions" />
+                                    </f:facet>
+                                    <p:commandButton
+                                        id="btnViewBill"
+                                        value="View Bill"
+                                        class="ui-button-primary m-1"
+                                        ajax="false"
+                                        icon="fa fa-eye"
+                                        action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint?faces-redirect=true">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                    </p:commandButton>
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <div class="d-flex justify-content-end p-2">
+                                <h:outputLabel value="Total Net: " style="font-weight: bold;" />
+                                <h:outputLabel value="#{inwardPharmacyEncounterReportController.unacceptedIssueBillsToPatientEncounterNetTotal}" style="font-weight: bold; margin-left: 6px;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </div>
+
+                        </p:panel>
+
+                    </div>
+                </div>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

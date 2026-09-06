@@ -34,13 +34,13 @@
                                         class="ui-button-warning mx-1" 
                                         icon="fas fa-arrow-left">
                                     </p:commandButton>
-                                    <p:commandButton  
-                                        value="Cancel" 
-                                        action="pharmacy_cancel_po_request" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.referenceBill.creater ne null}" 
+                                    <p:commandButton
+                                        value="Cancel"
+                                        action="pharmacy_cancel_po_request"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.referenceBill.creater ne null or not webUserController.hasPrivilege('PharmacyOrderCancellation')}"
                                         ajax="false"
-                                        class="ui-button-danger mx-1" icon="fas fa-ban">                           
-                                    </p:commandButton> 
+                                        class="ui-button-danger mx-1" icon="fas fa-ban">
+                                    </p:commandButton>
                                     <p:commandButton
                                         rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                         value="Settings"
