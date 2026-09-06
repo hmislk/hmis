@@ -190,7 +190,9 @@ PR — don't attempt Phase 3 against a stale or undeployed build.
 ### Phase 3 — End-to-end verification
 
 Run via the `playwright-e2e` skill (login, department selection, AJAX-aware
-waits, DB verification per its workflow doc). For **every** PR that reaches
+waits, DB verification per its workflow doc). **Reach every page through the
+menus, never by URL** — a URL-loaded page renders against uninitialised
+session state and can fail in ways no user can reach (`playwright-e2e` §2). For **every** PR that reaches
 this phase, run all three of the following — the two baseline checks are
 fixed and always run, regardless of what the PR touches, because the
 motivating incident broke core flows unrelated to the changed code:

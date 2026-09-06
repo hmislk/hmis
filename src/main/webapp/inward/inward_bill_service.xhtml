@@ -928,6 +928,15 @@
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrintFormatSettings"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary"
+                                        type="button"
+                                        title="Choose which print formats this bill produces"
+                                        disabled="#{!webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        onclick="PF('inwardServiceBillPrintConfigDialog').show();" />
+                                    <p:commandButton
                                         value="To Print Labels"
                                         class="ui-button-info"
                                         ajax="false"
@@ -1029,6 +1038,20 @@
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
+                                                    
+                                                    <!-- Custom 1: department preference match, or switched on from the page's Settings dialog -->
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'
+                                                                              or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill - Show Custom 1 Format', false)}">
+                                                        <ui:repeat value="#{billBhtController.bills}" var="ffb">
+                                                            <div style="page-break-after: always;">
+                                                                <print:five_five_paper_custom_1_inward_bill_service
+                                                                    bill="#{ffb}"
+                                                                    duplicate="false"
+                                                                    cancelled="false" />
+                                                            </div>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
 
                                                 </h:panelGroup>
                                             </p:panel>
@@ -1114,5 +1137,103 @@
             </h:panelGroup>
 
         </h:form>
+
+        <!--
+            Print format settings for this page. Lets a department switch print
+            formats on/off here instead of going to Config Options.
+            See developer_docs/configuration/printer-configuration-system.md.
+            Kept outside the page form - JSF forbids nested forms.
+        -->
+        <p:dialog id="inwardServiceBillPrintConfigDialog"
+                  header="Inward Service Bill - Print Format Settings"
+                  widgetVar="inwardServiceBillPrintConfigDialog"
+                  modal="true"
+                  width="620"
+                  resizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open"
+                    listener="#{billBhtController.loadInwardServiceBillPrintConfig}"
+                    update="inwardServiceBillPrintConfigForm" />
+
+            <h:form id="inwardServiceBillPrintConfigForm"
+                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                <div class="card-body">
+                    <h:outputText value="Which formats print" styleClass="fw-bold d-block mb-2" />
+                    <small class="form-text text-muted d-block mb-3">
+                        Every format switched on here is printed, in addition to the
+                        format chosen in the Paper Format list on the page.
+                    </small>
+
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="printFormatFiveFiveCustom1"
+                                                 value="#{billBhtController.printFormatFiveFiveCustom1}" />
+                        <h:outputLabel for="printFormatFiveFiveCustom1"
+                                       value="5x5 Custom 1" class="ms-2" />
+                        <small class="form-text text-muted d-block">Applies to this department only.</small>
+                    </div>
+
+                    <hr/>
+                    <h:outputText value="Application-wide formats" styleClass="fw-bold d-block mb-2" />
+                    <small class="form-text text-muted d-block mb-3">
+                        These settings already existed for this page and apply to
+                        every department in the application, not just this one.
+                    </small>
+
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="printFormatFiveFivePrinted"
+                                                 value="#{billBhtController.printFormatFiveFivePrinted}" />
+                        <h:outputLabel for="printFormatFiveFivePrinted"
+                                       value="5x5 Pre-printed Paper" class="ms-2" />
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="printFormatPos"
+                                                 value="#{billBhtController.printFormatPos}" />
+                        <h:outputLabel for="printFormatPos" value="POS Paper" class="ms-2" />
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="printFormatA4"
+                                                 value="#{billBhtController.printFormatA4}" />
+                        <h:outputLabel for="printFormatA4" value="A4 Paper" class="ms-2" />
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="printFormatA4Printed"
+                                                 value="#{billBhtController.printFormatA4Printed}" />
+                        <h:outputLabel for="printFormatA4Printed"
+                                       value="A4 Pre-printed Paper" class="ms-2" />
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="printFormatFiveFiveCustom3"
+                                                 value="#{billBhtController.printFormatFiveFiveCustom3}" />
+                        <h:outputLabel for="printFormatFiveFiveCustom3"
+                                       value="5x5 Custom 3" class="ms-2" />
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox id="printFormatFiveEightInch"
+                                                 value="#{billBhtController.printFormatFiveEightInch}" />
+                        <h:outputLabel for="printFormatFiveEightInch"
+                                       value="5x8 inch Paper" class="ms-2" />
+                    </div>
+
+                    <p:messages id="inwardServiceBillPrintConfigMessages" showDetail="true" closable="true" />
+
+                    <div class="d-flex gap-2">
+                        <p:commandButton
+                            value="Apply &amp; Close"
+                            icon="fas fa-save"
+                            class="ui-button-success"
+                            ajax="false"
+                            action="#{billBhtController.saveInwardServiceBillPrintConfig}" />
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fas fa-times"
+                            class="ui-button-secondary"
+                            type="button"
+                            onclick="PF('inwardServiceBillPrintConfigDialog').hide();
+                                    return false;" />
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
     </ui:define>
 </ui:composition>

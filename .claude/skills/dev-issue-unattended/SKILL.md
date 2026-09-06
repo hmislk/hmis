@@ -324,6 +324,11 @@ Check the server log for deploy errors before moving on.
 
 Same as `dev-issue` step 7: exercise the feature with the department/records
 from step 4, screenshot each meaningful stage into `tmp/`, verify in the DB.
+**Reach every page through the menus, never by URL** — a URL-loaded page renders
+against uninitialised session state and produces false findings
+(`playwright-e2e` §2). Record the menu path in the PR. With no user to correct
+you, an unreachable-by-menu page is itself the finding — do not work around it
+with a URL.
 If step 4 generated new records through the app, this is also where you
 confirm the fix's actual effect on them (e.g. confirm a bypassed guard left
 a pending record untouched rather than silently resolving it).

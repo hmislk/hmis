@@ -32,6 +32,7 @@
 
 ### Testing
 - **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+- **🚨 NEVER NAVIGATE TO A PAGE BY ITS URL**: When driving the app (Playwright, Claude-in-Chrome, or by hand), only ever type the URL of the application root / login page. Reach every inner page by clicking through the menus, exactly as a user does — many terminals are kiosks with no address bar. HMIS page state is populated by the `@SessionScoped` **navigation method** (`toSearchServiceBill()`, `toManageDepartmentPreferences()`, …), not by the page, so a URL-loaded page renders against null or transient placeholder state and can 500, render blank, or run pathologically slowly in ways no user can reach. **Anything observed that way is a testing artifact, not a defect** — it has produced false bug reports (issue #23519, retracted). If a page has no menu path, *that* is the finding: it is unreachable in production. Record the menu path (e.g. *Menu → Inpatient → Search → Service Bill → …*) in the issue/PR. See [Playwright E2E Workflow §2](developer_docs/testing/playwright-e2e-workflow.md#-never-navigate-by-typing-a-page-url).
 
 ### Git & Branching
 - **Include issue closing keywords** (`Closes #N`) in commit messages
