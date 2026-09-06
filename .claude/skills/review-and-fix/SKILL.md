@@ -200,7 +200,10 @@ next request, so a full `mvn package` / `redeploy` is usually unnecessary.
 the page and check the changed markup is present in the DOM; if it isn't
 (stale facelet cache, WAR not exploded), redeploy per §5b first. Then drive
 the affected page via the `playwright-e2e` skill: login, select a relevant
-department, reproduce the exact scenario the finding was about, and confirm
+department, **navigate to the page through the menus — never by URL** (see
+`playwright-e2e` §2; a URL-loaded page renders against uninitialised
+session state and produces false findings), reproduce the exact scenario the
+finding was about, and confirm
 the new behaviour with DOM assertions or a screenshot. Column-alignment,
 `rendered` guards, AJAX-update targets, dialog wiring — all observable this
 way once the edit is confirmed live.

@@ -33,6 +33,26 @@ patterns, common errors) see the companion
 [Playwright MCP Guide](../../../developer_docs/tools/playwright-mcp-guide.md) —
 the workflow doc above is HMIS-specific; the guide is generic Playwright MCP usage.
 
+## 🚨 Never navigate by URL
+
+**Only ever type a URL for the application root / login page.** Every inner page
+must be reached by clicking through the menus, exactly as a user would. Real
+users have no other way in — some terminals are kiosks with no address bar.
+
+This is not cosmetic. HMIS pages are backed by `@SessionScoped` controllers whose
+state is set by the **navigation method** (`toSearchServiceBill()`,
+`toManageDepartmentPreferences()`, …), not by the page. Load the page by URL and
+that state is null, or a lazily-created transient placeholder — so the page can
+500, render blank, or run pathologically slowly in a way no user can ever hit.
+Anything you observe that way is an artifact, not a defect.
+
+Establish the menu path **before** testing and record it in the issue/PR in the
+form the user can follow, e.g. *Menu → Inpatient → Search → Service Bill → set
+From Date → Search Bill → click Bill No → Return*. If no menu path exists, that
+is the finding — the page is unreachable in production. Do not fall back to the
+URL to get on with the test. See
+[§2](../../../developer_docs/testing/playwright-e2e-workflow.md#-never-navigate-by-typing-a-page-url).
+
 ## Workflow
 
 1. **Confirm the target** with the user: which feature/page, which local
@@ -42,7 +62,8 @@ the workflow doc above is HMIS-specific; the guide is generic Playwright MCP usa
    A redeploy invalidates the session, so this must happen *before* login.
 3. **Login + department selection** — see
    [§1](../../../developer_docs/testing/playwright-e2e-workflow.md#1-login-and-department-selection).
-   Never hit an inner page URL directly before department selection.
+   Then reach the page under test **through the menus only** — never by URL
+   (see above).
 4. **Drive the feature** using accessibility snapshots (`browser_snapshot`)
    to locate elements, real key events for PrimeFaces inputs (§3), and
    `browser_handle_dialog` for `confirm()` guards (§4). Wait on the expected
