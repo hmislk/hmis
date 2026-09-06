@@ -132,6 +132,10 @@ errors before moving on.
 
 Run the `playwright-e2e` skill workflow:
 - Login, select the department from step 4
+- **Navigate to the page through the menus, never by URL** — HMIS page state is
+  set by the `@SessionScoped` navigation method, so a URL-loaded page renders
+  against uninitialised state and produces false findings (`playwright-e2e` §2).
+  Record the menu path in the issue/PR.
 - Exercise the feature using the records chosen in step 4
 - **Take screenshots** (`browser_take_screenshot`) into the project `tmp/`
   folder at each meaningful stage (before/after states, confirmation dialogs,
