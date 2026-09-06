@@ -15,7 +15,8 @@ argument-hint: "<issue-number>"
 
 Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
-non-repro case, 3, 4, 14) are the points where you pause for the user.
+non-repro case, 3, 4's environment choice only, 14) are the points where you
+pause for the user.
 
 This authorization also covers `superpowers:writing-plans`' Execution
 Handoff question, if that chain gets invoked anywhere in this flow (e.g.
@@ -80,18 +81,27 @@ Exit Plan Mode only once the user approves or adjusts the plan.
 
 ## 4. Gather test context
 
-Before writing code, ask the user (via `AskUserQuestion`):
-- **Department** to use for Playwright testing (must match a real department
-  in the local DB the feature touches — e.g. Pharmacy, Inward, OPD)
+Local Payara / local DB is a testing environment — pick department and
+records yourself rather than gating on the user for them:
+- **Department**: query the local DB for one that's real and relevant to the
+  feature (e.g. Pharmacy, Inward, OPD), and say which one you picked before
+  testing.
 - **Specific records** to exercise (e.g. an admission ID, bill number, item
-  code) — pick something that exists in the local DB and is relevant to the
-  feature
+  code): query the local DB for existing records that fit the feature and
+  use those — report exactly which ones you used (BHT no, bill no, etc.) in
+  the PR/issue evidence. Only ask the user if the local DB has no suitable
+  record at all (e.g. the feature needs a state nothing local is in) — that
+  is a real blocker, not a preference question.
 - **Environment**: local Payara (default) unless the issue specifically
-  requires testing against a remote env, in which case confirm which one.
-  Credentials live outside the repo in `C:\Credentials\` — never inlined
+  requires testing against a remote env, in which case confirm which one
+  with the user (this one *is* a real decision — remote envs carry real
+  data/credentials risk that local doesn't). Credentials live outside the
+  repo in `C:\Credentials\` — never inlined.
 
-Don't guess these — wrong department/record selection wastes the whole
-Playwright pass later.
+Only the environment choice is a discussion gate here. Department/record
+selection against local test data is not — deciding it yourself and moving
+straight to step 5 keeps this step from wasting a round-trip on a question
+that has no wrong answer in a disposable local DB.
 
 ## 5. Develop
 
