@@ -14,6 +14,11 @@ import java.util.Map;
  * Charge totals are keyed by InwardChargeType — one column per type.
  * Credit and deposit settlement details are included for the reconciliation
  * section (CA–CI in the reference spreadsheet).
+ *
+ * totalFinalPayment / totalDeposit / creditCompanyDue were added by issue
+ * #23518 to distinguish the "Make a Payment" total (BillTypeAtomic.INWARD_PAYMENT)
+ * from the genuine deposit total (BillTypeAtomic.INWARD_DEPOSIT) and the
+ * outstanding amount still owed by a credit company against its commitment bill.
  */
 public class InwardInvoiceJournalRowDto implements Serializable {
 
@@ -43,7 +48,12 @@ public class InwardInvoiceJournalRowDto implements Serializable {
     // -------------------------------------------------------------------------
     // Deposit / settlement summary
     // -------------------------------------------------------------------------
-    private double totalDeposits;
+    /** "Make a Payment" total (BillTypeAtomic.INWARD_PAYMENT) — despite the old name, not a deposit. */
+    private double totalFinalPayment;
+    /** Genuine deposit total (BillTypeAtomic.INWARD_DEPOSIT). */
+    private double totalDeposit;
+    /** Outstanding amount still owed by credit company/companies against their commitment bill(s). */
+    private double creditCompanyDue;
     private double creditSettlementTotal;
     private String creditCompanyName;
 
@@ -103,8 +113,14 @@ public class InwardInvoiceJournalRowDto implements Serializable {
     public double getTotalServiceCharge() { return totalServiceCharge; }
     public void setTotalServiceCharge(double totalServiceCharge) { this.totalServiceCharge = totalServiceCharge; }
 
-    public double getTotalDeposits() { return totalDeposits; }
-    public void setTotalDeposits(double totalDeposits) { this.totalDeposits = totalDeposits; }
+    public double getTotalFinalPayment() { return totalFinalPayment; }
+    public void setTotalFinalPayment(double totalFinalPayment) { this.totalFinalPayment = totalFinalPayment; }
+
+    public double getTotalDeposit() { return totalDeposit; }
+    public void setTotalDeposit(double totalDeposit) { this.totalDeposit = totalDeposit; }
+
+    public double getCreditCompanyDue() { return creditCompanyDue; }
+    public void setCreditCompanyDue(double creditCompanyDue) { this.creditCompanyDue = creditCompanyDue; }
 
     public double getCreditSettlementTotal() { return creditSettlementTotal; }
     public void setCreditSettlementTotal(double creditSettlementTotal) { this.creditSettlementTotal = creditSettlementTotal; }

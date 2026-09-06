@@ -24,6 +24,14 @@
              update components OUTSIDE the composite, it must pass ABSOLUTE search expressions
              (leading ':', e.g. ":frmBhtEdit:pnlPatientPreview :frmBhtEdit:btnSelect"). -->
         <cc:attribute name="itemSelectUpdate" type="java.lang.String" default="" />
+        <!-- Optional business logic to run when an admission is selected (by click or by the
+             barcode auto-select below) - e.g. a page that must populate a due amount or load
+             related tables the moment a BHT is picked, not only when its own Continue button is
+             clicked. Defaults to a no-op so pages that don't need one (the majority) are
+             unaffected. Runs before itemSelectUpdate's components are re-rendered, same as any
+             p:ajax listener. -->
+        <cc:attribute name="itemSelectListener" method-signature="void listener()"
+                      default="#{admissionSearchSupportController.noop}" />
         <cc:attribute name="placeholder" type="java.lang.String"
                       default="Type patient name, BHT number, MRN, or PHN..." />
         <cc:attribute name="required" type="java.lang.Boolean" default="false" />
@@ -51,7 +59,7 @@
             style="width: 100%;"
             inputStyleClass="form-control form-control-lg">
             <p:ajax event="query" oncomplete="HmisAdmissionSearch.onQueryComplete('#{cc.attrs.widgetVar}', '#{cc.attrs.continueClientId}')" />
-            <p:ajax event="itemSelect" update="#{cc.attrs.itemSelectUpdate}" oncomplete="HmisAdmissionSearch.onItemSelectComplete('#{cc.attrs.continueClientId}')" />
+            <p:ajax event="itemSelect" listener="#{cc.attrs.itemSelectListener}" update="#{cc.attrs.itemSelectUpdate}" oncomplete="HmisAdmissionSearch.onItemSelectComplete('#{cc.attrs.continueClientId}')" />
             <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
                 <div class="d-flex align-items-center">
                     <i class="fa-solid fa-id-card me-2 text-info"></i>

@@ -113,6 +113,51 @@ switch for these flows.
 
 ## 2. Navigating menus
 
+### 🚨 NEVER navigate by typing a page URL
+
+**Real users never reach an inner page by its URL.** Many terminals are kiosks
+with no address bar; the rest reach every page through the menus. If a page has
+no menu path to it, that page is not reachable in production and the correct
+finding is "this page has no navigation path", not "this page is broken".
+
+**Only ever type a URL for the application root / login page.** Everything after
+that must be reached by clicking through the menus, exactly as a user would.
+
+This is not a style preference. It changes what the page does:
+
+- **Session-scoped controllers are populated by the navigation method, not by
+  the page.** `sessionController.toManageDepartmentPreferences()`,
+  `inwardSearch.toSearchServiceBill()` and friends set the entity the page then
+  renders. Skipping the navigation method leaves that entity null, or leaves a
+  lazily-created transient placeholder in its place.
+- **What you observe afterwards is therefore not the real behaviour.** A
+  URL-loaded page can 500 (`Target Unreachable, 'null' returned null`), render
+  blank, render against an empty entity, or run pathologically slowly — none of
+  which any user can ever hit.
+- **Getters that lazily instantiate are the usual trap.** e.g.
+  `InwardSearch.getBill()` returns `new BilledBill()` when nothing is selected,
+  so a URL-loaded page renders every print component against an id-less entity
+  and every `WHERE bill = :bl` query against a transient parameter.
+
+Two live examples of this producing a false bug report:
+
+| Page | Symptom when opened by URL | Reality via the menus |
+|---|---|---|
+| `inward_reprint_bill_service.xhtml` | appeared to hang indefinitely, JVM into the GB range, no exception logged | loads in 0.7-5.3 s (issue #23519, retracted) |
+| `admin_mange_department_preferences.xhtml` | HTTP 500, `Target Unreachable, 'null' returned null` | works normally |
+
+**Before testing a page, establish its menu path first** and record it in the
+issue/PR, in the form the user can follow:
+
+> Menu → Inpatient → Search → Service Bill → set From Date → Search Bill
+> → click Bill No → Return
+
+If you cannot find a menu path, search `menu.xhtml` for the page name and check
+the privileges gating it — see §20. Do **not** fall back to the URL to "get on
+with the test".
+
+### Menu mechanics
+
 - The Pharmacy top menu is a PrimeFaces menubar. **Hover** the parent
   (`smPharmacy`) to expand it, then **click** the submenu link
   (e.g. `a:has-text("Disbursement")`). A direct click on the parent without the
@@ -592,6 +637,22 @@ to force `SessionController.fillUserPrivileges()` to re-read it — the privileg
 cached per session at login and won't pick up a new row otherwise. This came up testing
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
+
+**Before inserting a row, check whether some *other* department already has it** — picking
+that department on the login screen needs no DB write at all and is the faster route:
+
+```sql
+SELECT PRIVILEGE, DEPARTMENT_ID FROM webuserprivilege
+WHERE WEBUSER_ID = <id> AND RETIRED = 0 AND PRIVILEGE = 'SomePrivilege';
+```
+
+Testing issue #23484's pharmacy-admin pages, `PharmacyItemNameEdit` existed for `Inward`
+only, so every **Add New**/**Edit** button on `vtm_dto.xhtml`, `store_vtm.xhtml` and
+`lab_vtm.xhtml` rendered `disabled` under the default `Main Pharmacy` department — nothing
+to do with those pages, and no privilege row needed. Logging out and reselecting `Inward`
+enabled all of them. A `disabled` (rather than absent) admin button is the tell: per this
+project's convention, privilege-gated controls are disabled, not hidden, so a greyed-out
+button means "wrong department", not "broken page".
 
 **`WebUser.department` is not a fixed "home department" — `SessionController.selectDepartment()`
 overwrites and persists it (`loggedUser.setDepartment(department); getFacede().edit(loggedUser)`)
@@ -2339,6 +2400,167 @@ open a fresh tab, and navigate to
 into an inner page (bypassing a menu click) needs the `/faces/` segment
 regardless of which of the two symptoms it would otherwise hit.
 
+## 90. Simulating a barcode scan with `browser_type(..., submit: true)` on a `p:autoComplete` can submit the wrong button — use `slowly: true` and wait, don't press Enter
+
+Found while verifying issue #23165's barcode auto-select/auto-advance
+composite (`admcc:admission_search`) on `inward_room_change.xhtml`. Filling
+the autocomplete in one shot and pressing Enter immediately
+(`browser_type(..., submit: true)`, which does `fill()` then
+`press('Enter')`) fires the Enter keypress **before** PrimeFaces' debounced
+`query` AJAX call has completed, so the autocomplete's own suggestion list is
+still empty and doesn't intercept the key. The Enter falls through to the
+browser's native implicit-form-submission behavior, which submits via the
+**first** submit-type button in the form — not the intended "Continue"
+button, and not whatever the composite's own auto-advance JS would have
+clicked. On this page that meant landing on the unrelated "Nursing
+WorkBench" page instead of the admission's detail view, silently, with no
+error in `server.log` or the browser console.
+
+This is a test-methodology artifact, not evidence of a real bug — a real
+scanner still just types characters via keyboard events, and the auto-select
+JS runs off the `query` AJAX `oncomplete` callback, not off Enter. Simulate
+it correctly instead: `browser_type` with `slowly: true` (fires per-character
+keyup events, which is what triggers PrimeFaces' query debounce), no
+`submit`, then `browser_wait_for` a second or two before asserting on the
+result. Confirmed working this way: an exact single-match query auto-selects
+and auto-advances; an exact query matching multiple admissions (e.g. several
+active admissions sharing one PHN) shows the dropdown and does not
+auto-advance.
+
+## 91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" rejects (with a growl message, easy to miss in a scripted run) until a Porter/Staff is picked
+
+Found verifying issue #23470 (BHT substitute suggestions). On the ward-side
+request page, the toolbar has both **"New Bill"** and **"Settle Request"**
+next to each other. "New Bill" looks like a generic submit/save action but
+it actually **discards the in-progress request and resets the form** to a
+blank "Start Pharmacy Request for Inpatients" screen — no `BILL` row is
+written, no error is shown. Only **"Settle Request"** (which fires a native
+`confirm()` — handle it with `browser_handle_dialog`) persists the request
+as a `REQUEST_MEDICINE_INWARD` bill.
+
+On the pharmacy-side issue page (`ward_pharmacy_bht_issue.xhtml`), the
+**"Issue to BHT"** button (`PharmacySaleBhtController.settlePharmacyBhtIssueAccept`)
+also fires a `confirm()`, but if `getPreBill().getToStaff() == null` it
+rejects the attempt with the growl message **"Please select the staff
+member (porter) who will carry the medicines to the ward."** and returns —
+i.e. the **"Porter / Staff Carrying Medicines to Ward"** autocomplete near
+the top of the page must be filled first. It's not a silent no-op (the
+message is real), but it's easy to miss when driving the page via
+Playwright without checking for growl text after every action, and no
+exception is logged server-side either way. A DB check for a fresh
+`ISSUE_MEDICINE_ON_REQUEST_INWARD` row is the reliable way to catch this in
+a script: it comes back empty after a seemingly-successful click-and-confirm
+if the Porter field was skipped. Always fill the Porter field (any active
+`STAFF` row works for local testing) before clicking "Issue to BHT", and
+verify success by querying `BILL` for a new row
+rather than trusting the confirm dialog alone.
+
+Also: that Porter/Staff autocomplete searches the `STAFF`/`PERSON` tables,
+not `WEBUSER` — a logged-in user's own username (e.g. "Lawan") will not
+resolve; search by an actual staff member's name from `STAFF` joined to
+`PERSON`.
+
+## 92. A `p:commandButton` save that does nothing — no growl, no error, no DB row, a clean `server.log` — is usually a required field whose message went to a `<p:messages>` you never looked at
+
+Seen on `pharmacy/admin/lab_amp.xhtml` and `store_amp.xhtml` while verifying
+issue #23484. Clicking **Save** with Name, Code and VMP filled produced: no
+growl, nothing under `.ui-message*`, no new `Amp` row, and not a single new
+line in `server.log`. The form still held every value, so it looked like the
+action method had run and silently returned.
+
+It had not run at all. Both pages mark **Dosage Form** (`selDosageForm`) and
+**Category** (`ampCat`) `required="true"`, and the Save button uses
+`process="@form"` with `update="form:msg ..."` — so JSF failed validation in
+the Process Validations phase, never invoked `labAmpController.save()`, and
+routed both `requiredMessage`s into the `form:msg` `<p:messages>` component.
+That component contributes no accessible name when its own re-render is what
+populated it, so it does not show up in `browser_snapshot`, in
+`browser_find` for `/error|required/i`, or in a `.ui-growl-item` query.
+
+**Diagnose it this way** — the three symptoms together (form still populated
++ DB unchanged + `server.log` clean) mean the action method never fired, which
+narrows it to client-side or validation-phase rejection, not business logic:
+
+```js
+// enumerate every required input in the form and which ones are still empty
+() => Array.from(document.querySelectorAll('#form [aria-required="true"], #form .ui-state-error'))
+        .map(e => ({ id: e.id, cls: e.className, val: e.value }))
+```
+
+and read the message panel by id rather than by class:
+
+```js
+() => document.querySelector('#form\:msg')?.textContent.trim()
+```
+
+Cheaper still: `grep -n 'required="true"' <page>.xhtml` and fill every one of
+them before the first Save attempt. Note that a `required` `p:autoComplete`
+(Category here) is only satisfied by **clicking a suggestion** — typing the
+exact label and leaving it is an empty model value as far as JSF is
+concerned, even though the textbox looks filled.
+
+## 93. Privileges are scoped per-department — a rendered button check can fail under the "wrong" department even though the user genuinely has the privilege
+
+Seen verifying issue #23510 (Surgery Dashboard "Remove" a validated timed
+service). `theater/surgery_bill_summary.xhtml`'s **Validate Surgery** button
+is gated by `webUserController.hasPrivilege('InwardSurgeryValidate')`. The
+test user held that privilege (`WEBUSERPRIVILEGE` row, `PRIVILEGE =
+'InwardSurgeryValidate'`) — but the row's `DEPARTMENT_ID` pointed at "Inward",
+not the "THEATRE" department selected at login. Under THEATRE the button
+simply didn't render (no error, no disabled state — just absent), which looks
+identical to "user lacks the privilege" from the UI alone.
+
+**Diagnose it this way**: don't stop at confirming a `WEBUSERPRIVILEGE` row
+exists for the user — check its `DEPARTMENT_ID` against the department
+actually selected for the session:
+
+```sql
+SELECT ID, PRIVILEGE, DEPARTMENT_ID FROM WEBUSERPRIVILEGE
+WHERE WEBUSER_ID = <id> AND PRIVILEGE = '<PrivilegeName>';
+```
+
+If the department differs from the one under test, log out and reselect the
+department that matches the privilege row — per §1 there is no in-session
+department switch. Never grant a new `WEBUSERPRIVILEGE` row yourself to route
+around this; that is a privilege/access-control change, out of bounds for
+verifying a fix.
+
+## 94. PrimeFaces `p:datePicker` popups don't always close on their own — the previous field's panel can intercept clicks meant for the next field
+
+Seen adding a timed service on
+`theater/inward_timed_service_consume_surgery.xhtml` (Start Time / End Time,
+both `p:datePicker` with `showTime="true"`). Clicking the End Time input right
+after picking a Start Time did not open a new calendar — it silently reused
+the Start Time picker that was still open underneath, so time-spinner clicks
+kept editing the wrong field. A later click on the real End Time input then
+timed out with `<div class="ui-datepicker-header">... intercepts pointer
+events` because the stale panel from the previous field was still on top.
+
+**Fix**: click a neutral, non-input element on the page (e.g. a panel header)
+to dismiss the open picker before clicking the next date field — `Escape`
+alone was not reliable here. Re-`browser_snapshot` after opening a picker to
+confirm which field's `_panel` id is actually active before interacting with
+its spinners.
+
+## 95. Theatre's "+ Add New Surgery" briefly lands on a generic, blank-looking `admission_profile.xhtml` — the surgery Bill is already created; go through "Surgeries for BHT" to reach it
+
+Seen creating test data for issue #23510. Clicking **+ Add New Surgery** on
+`theater/patient_surgery.xhtml` navigates to `inward/admission_profile.xhtml`
+showing empty Name/Gender/DOB fields and a *different*, just-now Date of
+Admission — which looks like the action failed or created a stray blank
+encounter. It did not: the surgery `Bill` (`BILLTYPE = 'SurgeryBill'`) was
+created against the *original* BHT encounter, and a second, child
+`PatientEncounter` (the "procedure" record, `PARENTENCOUNTER_ID` = the BHT's
+id) was also created — `admission_profile.xhtml` is just rendering that new,
+still-mostly-empty child encounter, which is a separate, likely
+pre-existing display gap and not something this fix touched.
+
+**To get back to the surgery you just created**, don't fight that page —
+navigate to `theater/inward_bill_surgery_list.xhtml` ("Surgeries for BHT"),
+which lists every `SurgeryBill` for the current `patientEncounter` and has a
+**Surgery Dashboard** button per row that loads it into
+`surgeryBillController.surgeryBill` correctly.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
@@ -2448,6 +2670,28 @@ brand new login/HTTP session is used. A plain redeploy is not enough; use
 
 Verified while testing issue #23377.
 
+## A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API
+
+On `inward_admission_child.xhtml`'s "Admit a Baby" form, the DOB field (`dpDob`, a `p:calendar`
+with `timeInput="true"`) rejected even a real slow-typed keystroke sequence
+(`click` → `Control+a` → `pressSequentially('05/09/2026 00:00:00 am')` → `Escape`): the input
+stayed visually blank and the server still reported "Patient Age is Required" (the DOB-backed
+check) on submit. This is a step further than §3's "JS-set values are silently discarded" note —
+that one only warns about `page.evaluate`/`fill()`, but here the *keyboard* path documented
+elsewhere in this guide as the fix for datepickers also silently failed to commit.
+
+**Fix:** call the widget's own API directly instead of trying to type into it:
+
+```js
+() => { PrimeFaces.widgets['widget_<formId>_<fieldId>_dpDob'].setDate(new Date()); }
+```
+
+Find the exact widget variable name first with
+`Object.keys(PrimeFaces.widgets).filter(k => k.toLowerCase().includes('dob'))` — it's generated
+from the component's full client id, not the plain `id` attribute, so don't guess it. Confirm the
+commit by reading `document.getElementById('<formId>:<fieldId>:dpDob_input').value` before
+submitting. Verified while testing issue #23509 (baby admission with no NIC/phone).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -2467,4 +2711,6 @@ Verified while testing issue #23377.
 - [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
 - [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
 - [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
+- [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.

@@ -410,14 +410,26 @@
                                     <tr>
                                         <td><strong>Backfill BFD for Stock Adjustment Bills</strong></td>
                                         <td>
-                                            Creates missing BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills
-                                            that have no finance data (billFinanceDetails IS NULL). Required for
-                                            accurate F15 Daily Stock Values report "Adjustment Transactions" section,
-                                            which reads BillFinanceDetails rather than bill.netTotal.
+                                            Rebuilds missing or zeroed BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT
+                                            bills, so the F15 Daily Stock Values report's "Adjustment Transactions"
+                                            section stops showing Rs. 0.00 for real stock movements &#8212; it reads
+                                            BillFinanceDetails, not bill.netTotal.
                                             Use the date range filter above to limit scope.
-                                            Safe to re-run: skips bills that already have a BillFinanceDetails row.
+                                            Safe to re-run: bills that need no correction are skipped.
+                                            <strong>Preview first</strong> &#8212; the preview runs the identical
+                                            calculation and lists every bill it would change, without saving anything.
                                         </td>
                                         <td>
+                                            <p:commandButton
+                                                id="btnPreviewBfdStockAdjustment"
+                                                action="#{dataAdministrationController.previewBackfillBfdForStockAdjustmentBills()}"
+                                                ajax="false"
+                                                value="Preview Stock Adjustment BFDs"
+                                                styleClass="ui-button-secondary m-1"
+                                                icon="pi pi-eye"
+                                                title="Show what the Stock Adjustment BFD backfill would change in the selected period, without saving"
+                                                aria-label="Show what the Stock Adjustment BFD backfill would change in the selected period, without saving"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
                                             <p:commandButton
                                                 id="btnBackfillBfdStockAdjustment"
                                                 action="#{dataAdministrationController.backfillBfdForStockAdjustmentBills()}"
@@ -425,10 +437,51 @@
                                                 value="Backfill Stock Adjustment BFDs"
                                                 styleClass="ui-button-warning m-1"
                                                 icon="pi pi-calculator"
-                                                title="Backfill missing BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills in the selected period"
-                                                aria-label="Backfill missing BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills in the selected period"
+                                                title="Rebuild missing BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills in the selected period"
+                                                aria-label="Rebuild missing BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills in the selected period"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
-                                                onclick="return confirm('This will create BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills missing BFD in the selected period. Proceed?');" />
+                                                onclick="return confirm('This will write BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills in the selected period. Run the Preview first and check the figures. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Backfill BFD for Retail Rate Adjustment Bills</strong></td>
+                                        <td>
+                                            The price-change counterpart of the row above. Rebuilds missing or zeroed
+                                            BillFinanceDetails for PHARMACY_RETAIL_RATE_ADJUSTMENT bills &#8212; the
+                                            bills that record a change to the selling price of stock already on hand
+                                            &#8212; so their value appears in the F15 report instead of Rs. 0.00.
+                                            Use the date range filter above to limit scope.
+                                            Safe to re-run.
+                                            <strong>Preview first.</strong> Any bill whose stored before/after values
+                                            cannot be interpreted with confidence is reported as UNRESOLVED and left
+                                            untouched rather than guessed at.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnPreviewBfdRetailRateAdjustment"
+                                                action="#{dataAdministrationController.previewBackfillBfdForRetailRateAdjustmentBills()}"
+                                                ajax="false"
+                                                value="Preview Retail Rate BFDs"
+                                                styleClass="ui-button-secondary m-1"
+                                                icon="pi pi-eye"
+                                                title="Show what the Retail Rate Adjustment BFD backfill would change in the selected period, without saving"
+                                                aria-label="Show what the Retail Rate Adjustment BFD backfill would change in the selected period, without saving"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                            <p:commandButton
+                                                id="btnBackfillBfdRetailRateAdjustment"
+                                                action="#{dataAdministrationController.backfillBfdForRetailRateAdjustmentBills()}"
+                                                ajax="false"
+                                                value="Backfill Retail Rate Adjustment BFDs"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-calculator"
+                                                title="Rebuild missing BillFinanceDetails for PHARMACY_RETAIL_RATE_ADJUSTMENT bills in the selected period"
+                                                aria-label="Rebuild missing BillFinanceDetails for PHARMACY_RETAIL_RATE_ADJUSTMENT bills in the selected period"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will write BillFinanceDetails for PHARMACY_RETAIL_RATE_ADJUSTMENT bills in the selected period. Run the Preview first and check the figures. Proceed?');" />
                                         </td>
                                         <td>
                                             #{dataAdministrationController.executionFeedback}

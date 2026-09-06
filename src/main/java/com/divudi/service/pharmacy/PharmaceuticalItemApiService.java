@@ -31,6 +31,7 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.AbstractFacade;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
 import com.divudi.core.facade.AtmFacade;
@@ -396,10 +397,13 @@ public class PharmaceuticalItemApiService implements Serializable {
         Vtm item = new Vtm();
         applyBaseFields(item, request);
         item.setInstructions(request.getInstructions());
+        Vtm duplicate = findDuplicateByName(vtmFacade, "Vtm", item.getName());
+        if (duplicate != null) {
+            throw new DuplicateItemException(duplicate.getId(), buildVtmDto(duplicate));
+        }
         setAuditFieldsForCreate(item, user);
         vtmFacade.createAndFlush(item);
-        return new VtmDto(item.getId(), item.getName(), item.getCode(),
-                item.getDescreption(), item.getInstructions(), item.isRetired(), item.isInactive());
+        return buildVtmDto(item);
     }
 
     private AtmDto createAtm(AtmRequestDTO request, WebUser user) throws Exception {
@@ -413,10 +417,13 @@ public class PharmaceuticalItemApiService implements Serializable {
             }
             item.setVtm(vtm);
         }
+        Atm duplicate = findDuplicateByName(atmFacade, "Atm", item.getName());
+        if (duplicate != null) {
+            throw new DuplicateItemException(duplicate.getId(), buildAtmDto(duplicate));
+        }
         setAuditFieldsForCreate(item, user);
         atmFacade.createAndFlush(item);
-        return new AtmDto(item.getId(), item.getName(), item.getCode(),
-                item.getDescreption(), item.isRetired(), item.isInactive());
+        return buildAtmDto(item);
     }
 
     private VmpDto createVmp(VmpRequestDTO request, WebUser user) throws Exception {
@@ -438,6 +445,10 @@ public class PharmaceuticalItemApiService implements Serializable {
             item.setDosageForm(dosageForm);
         }
         applyVmpUnitFields(item, request);
+        Vmp duplicate = findDuplicateByName(vmpFacade, "Vmp", item.getName());
+        if (duplicate != null) {
+            throw new DuplicateItemException(duplicate.getId(), buildVmpDto(duplicate));
+        }
         setAuditFieldsForCreate(item, user);
         vmpFacade.createAndFlush(item);
         return buildVmpDto(item);
@@ -448,6 +459,10 @@ public class PharmaceuticalItemApiService implements Serializable {
         Amp item = new Amp();
         applyBaseFields(item, request);
         applyAmpSpecificFields(item, request);
+        Amp duplicate = findDuplicateByName(ampFacade, "Amp", item.getName());
+        if (duplicate != null) {
+            throw new DuplicateItemException(duplicate.getId(), buildAmpDto(duplicate));
+        }
         setAuditFieldsForCreate(item, user);
         ampFacade.createAndFlush(item);
         return buildAmpDto(item);
@@ -458,12 +473,13 @@ public class PharmaceuticalItemApiService implements Serializable {
         Vmpp item = new Vmpp();
         applyBaseFields(item, request);
         applyPackFields(item, request.getVmpId(), request.getDblValue(), request.getPackUnitId(), "VMP");
+        Vmpp duplicate = findDuplicateByName(vmppFacade, "Vmpp", item.getName());
+        if (duplicate != null) {
+            throw new DuplicateItemException(duplicate.getId(), buildVmppDto(duplicate));
+        }
         setAuditFieldsForCreate(item, user);
         vmppFacade.createAndFlush(item);
-        Long vmpId = item.getVmp() != null ? item.getVmp().getId() : null;
-        String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
-        return new VmppDto(item.getId(), item.getName(), item.getCode(),
-                item.isRetired(), item.isInactive(), vmpId, vmpName);
+        return buildVmppDto(item);
     }
 
     private AmppDto createAmpp(AmppRequestDTO request, WebUser user) throws Exception {
@@ -487,14 +503,13 @@ public class PharmaceuticalItemApiService implements Serializable {
             }
             item.setPackUnit(packUnit);
         }
+        Ampp duplicate = findDuplicateByName(amppFacade, "Ampp", item.getName());
+        if (duplicate != null) {
+            throw new DuplicateItemException(duplicate.getId(), buildAmppDto(duplicate));
+        }
         setAuditFieldsForCreate(item, user);
         amppFacade.createAndFlush(item);
-        Long ampId = item.getAmp() != null ? item.getAmp().getId() : null;
-        String ampName = item.getAmp() != null ? item.getAmp().getName() : null;
-        String packUnitName = item.getPackUnit() != null ? item.getPackUnit().getName() : null;
-        return new AmppDto(item.getId(), item.getName(), item.getCode(),
-                item.isRetired(), item.isInactive(),
-                item.getDblValue(), packUnitName, ampId, ampName);
+        return buildAmppDto(item);
     }
 
     // ==================== UPDATE ====================
@@ -814,6 +829,30 @@ public class PharmaceuticalItemApiService implements Serializable {
 
     // ==================== HELPER METHODS ====================
 
+    /**
+     * Looks up an existing, non-retired row with the same name (case-insensitive),
+     * matching the "already_exists" dedup pattern already used by
+     * ClinicalMetadataApi / InvestigationApi. Called after all other create-time
+     * validation (parent-reference lookups etc.) has already passed, so a request
+     * with both a bad reference and a duplicate name still surfaces the reference
+     * error first -- the duplicate is the last thing checked before persisting.
+     *
+     * <p>Returns the matched entity itself (not just its ID) so the caller can build
+     * its already_exists response DTO directly from data already in hand, instead of
+     * re-fetching by ID afterwards -- a re-fetch would reopen a window where a
+     * concurrent retire of that same row turns the intended 409 into a confusing
+     * 500 "not found" (findItemById excludes retired rows).
+     */
+    private <T extends Item> T findDuplicateByName(AbstractFacade<T> facade, String entityName, String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("n", name.trim().toUpperCase());
+        return facade.findFirstByJpql(
+                "select i from " + entityName + " i where i.retired=false and upper(i.name)=:n", params);
+    }
+
     private void validateBaseRequest(PharmaceuticalItemBaseRequestDTO request) throws Exception {
         if (request == null) {
             throw new Exception("Request body is required");
@@ -994,6 +1033,32 @@ public class PharmaceuticalItemApiService implements Serializable {
             dto.setStrengthUnitName(item.getStrengthUnit().getName());
         }
         return dto;
+    }
+
+    private VtmDto buildVtmDto(Vtm item) {
+        return new VtmDto(item.getId(), item.getName(), item.getCode(),
+                item.getDescreption(), item.getInstructions(), item.isRetired(), item.isInactive());
+    }
+
+    private AtmDto buildAtmDto(Atm item) {
+        return new AtmDto(item.getId(), item.getName(), item.getCode(),
+                item.getDescreption(), item.isRetired(), item.isInactive());
+    }
+
+    private VmppDto buildVmppDto(Vmpp item) {
+        Long vmpId = item.getVmp() != null ? item.getVmp().getId() : null;
+        String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
+        return new VmppDto(item.getId(), item.getName(), item.getCode(),
+                item.isRetired(), item.isInactive(), vmpId, vmpName);
+    }
+
+    private AmppDto buildAmppDto(Ampp item) {
+        Long ampId = item.getAmp() != null ? item.getAmp().getId() : null;
+        String ampName = item.getAmp() != null ? item.getAmp().getName() : null;
+        String packUnitName = item.getPackUnit() != null ? item.getPackUnit().getName() : null;
+        return new AmppDto(item.getId(), item.getName(), item.getCode(),
+                item.isRetired(), item.isInactive(),
+                item.getDblValue(), packUnitName, ampId, ampName);
     }
 
     private void applyPackFields(Item item, Long parentVmpId, Double dblValue, Long packUnitId, String parentType) throws Exception {

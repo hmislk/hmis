@@ -32,6 +32,7 @@
 
 ### Testing
 - **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+- **🚨 NEVER NAVIGATE TO A PAGE BY ITS URL**: When driving the app (Playwright, Claude-in-Chrome, or by hand), only ever type the URL of the application root / login page. Reach every inner page by clicking through the menus, exactly as a user does — many terminals are kiosks with no address bar. HMIS page state is populated by the `@SessionScoped` **navigation method** (`toSearchServiceBill()`, `toManageDepartmentPreferences()`, …), not by the page, so a URL-loaded page renders against null or transient placeholder state and can 500, render blank, or run pathologically slowly in ways no user can reach. **Anything observed that way is a testing artifact, not a defect** — it has produced false bug reports (issue #23519, retracted). If a page has no menu path, *that* is the finding: it is unreachable in production. Record the menu path (e.g. *Menu → Inpatient → Search → Service Bill → …*) in the issue/PR. See [Playwright E2E Workflow §2](developer_docs/testing/playwright-e2e-workflow.md#-never-navigate-by-typing-a-page-url).
 
 ### Git & Branching
 - **Include issue closing keywords** (`Closes #N`) in commit messages
@@ -45,6 +46,7 @@
 - [Persistence Configuration Guide](developer_docs/deployment/persistence-verification.md) - JNDI settings for dev vs production
 - [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md) - How to recover when root-owned files break CI/CD deployment
 - [Windows Remote Access Tips](developer_docs/deployment/windows-remote-access-tips.md) - SSH agent gotchas, Payara admin console over a tunnel, driving remote `asadmin` from a Windows dev machine
+- [Migrating a Stale Hospital DB to `development` HEAD](developer_docs/deployment/migrating-a-stale-hospital-to-development.md) - Bringing a hospital that has run a very old build for months/years up to current: why `mf.xhtml` DDL is not enough, `eclipselink.deploy-on-startup` for migrated deployments, column-type drift, stripped `AUTO_INCREMENT`, illegal legacy `TIMESTAMP` defaults, jasypt-encrypted usernames, privilege bootstrap. **Always end-to-end test a real workflow (an OPD bill *settle*), not just page render.**
 
 ### When Working on Database
 - [Migration Development Guide § Cross-deployment case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must) - Migration scripts must detect actual table-name case via `INFORMATION_SCHEMA` + prepared statements; hardcoding either `UPPER` or `lower` breaks half the customer DBs. Reference: `v2.1.12/migration-universal.sql`, `v2.1.17/migration.sql`.

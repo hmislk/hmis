@@ -206,14 +206,18 @@ Mapped fields:
 - `identifier[system=urn:hmis:mrn].value` → MRN
 - `identifier[system=urn:lk:phn].value` → PHN
 - `identifier[system=urn:lk:nic].value` → NIC
+- `active` → retired status (inverted: `active: false` marks the patient retired;
+  omitting `active` leaves a new patient active, the entity default). Read back
+  the same way on every GET/search/create/update response.
 
-**Example:**
+**Example — retired patient (e.g. migrating a record already marked deleted in a
+source system):**
 
 ```bash
 curl -X POST \
      -H "FHIR: <your-api-key>" \
      -H "Content-Type: application/fhir+json" \
-     -d '{"resourceType":"Patient","name":[{"family":"Silva","given":["Nimal"]}],"gender":"male","birthDate":"1985-06-15"}' \
+     -d '{"resourceType":"Patient","active":false,"name":[{"family":"Silva","given":["Nimal"]}],"gender":"male","birthDate":"1985-06-15"}' \
      http://localhost:8080/api/fhir/Patient
 ```
 
@@ -230,6 +234,9 @@ Partially update an existing patient. Only fields present in the request body ar
 | id | Long | HMIS internal patient ID |
 
 **Request Body:** FHIR R5 `Patient` JSON (`application/fhir+json`) — only include fields to update.
+
+Including `active` toggles retired status in either direction (`true` unretires,
+`false` retires); omitting it leaves the current status untouched.
 
 **Example:**
 

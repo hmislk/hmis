@@ -339,7 +339,7 @@
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </h:panelGrid>
-                                            
+
                                             <hr/>
 
                                             <h:panelGrid columns="3" style="font-weight: bold; font-size: 22px;">
@@ -652,19 +652,24 @@
                                         <p:column headerText="Inward Charge Type" styleClass="text-start">
                                             <h:outputLabel value="#{pt.item.inwardChargeType}"/>
                                         </p:column>
-                                        <p:column >
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Update"
-                                                action="#{bhtSummeryController.updatePatientItem(pt, false)}" >
-                                            </p:commandButton>
-                                        </p:column>
-                                        <p:column>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Remove "
-                                                action="#{surgeryBillController.removeTimeService(pt)}" >
-                                            </p:commandButton>
+                                        <p:column headerText="Action" width="14em;" class="text-center">
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    value="Update"
+                                                    class="ui-button-warning"
+                                                    icon="fa fa-refresh"
+                                                    action="#{bhtSummeryController.updatePatientItem(pt)}" >
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    icon="fa fa-times"
+                                                    class="ui-button-danger"
+                                                    value="Remove "
+                                                    action="#{surgeryBillController.removeTimeService(pt)}" >
+                                                </p:commandButton>
+                                            </div>
+
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
@@ -1009,18 +1014,92 @@
 
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine, Sort by the type of department that issued it.', false)}">
                                         <style>
-                                            .med-issue-tabs.ui-tabs { border: none; background: transparent; width: 100%; }
-                                            .med-issue-tabs .ui-tabs-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 35px; background: linear-gradient(135deg,#f4f6fb,#eef1f8); border: none; border-radius: 14px; padding: 14px; width: 100%; box-sizing: border-box; }
-                                            .med-issue-tabs .ui-tabs-nav li { border: none !important; border-radius: 10px !important; background: transparent !important; margin: 0 !important; padding: 0 !important; width: 13em !important; flex: 0 0 13em !important; box-sizing: border-box !important; }
-                                            .med-issue-tabs .ui-tabs-nav li a { border-radius: 10px; padding: 0 !important; display: block; width: 100%; }
-                                            .med-issue-tabs .ui-tabs-nav li.ui-state-active { box-shadow: 0 3px 10px rgba(0,0,0,.18); }
-                                            .med-issue-tabs .ui-tabs-panels { background: #fff; border: 1px solid #eef1f8; border-radius: 0 0 14px 14px; }
-                                            .med-issue-tabs .med-tab-pill { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 13em; padding: 14px 16px; border-radius: 10px; font-weight: 600; font-size: 1.1em; color: var(--tab-accent); background: color-mix(in srgb, var(--tab-accent) 14%, #fff); border: 1px solid color-mix(in srgb, var(--tab-accent) 35%, #fff); transition: all .2s ease; box-sizing: border-box; }
-                                            .med-issue-tabs .med-tab-pill .med-tab-label { display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-                                            .med-issue-tabs .med-tab-pill .fa { color: var(--tab-accent); flex: 0 0 auto; }
-                                            .med-issue-tabs .ui-tabs-nav li.ui-state-active .med-tab-pill { color: #fff; background: var(--tab-accent); border-color: var(--tab-accent); }
-                                            .med-issue-tabs .ui-tabs-nav li.ui-state-active .med-tab-pill .fa { color: #fff; }
-                                            .med-issue-tabs .med-tab-pill .ui-badge { margin-left: auto; flex: 0 0 auto; min-width: 1.8em; height: 1.8em; line-height: 1.8em; font-size: 1em; border-radius: 50%; }
+                                            .med-issue-tabs.ui-tabs {
+                                                border: none;
+                                                background: transparent;
+                                                width: 100%;
+                                            }
+                                            .med-issue-tabs .ui-tabs-nav {
+                                                display: flex;
+                                                flex-wrap: wrap;
+                                                justify-content: center;
+                                                gap: 35px;
+                                                background: linear-gradient(135deg,#f4f6fb,#eef1f8);
+                                                border: none;
+                                                border-radius: 14px;
+                                                padding: 14px;
+                                                width: 100%;
+                                                box-sizing: border-box;
+                                            }
+                                            .med-issue-tabs .ui-tabs-nav li {
+                                                border: none !important;
+                                                border-radius: 10px !important;
+                                                background: transparent !important;
+                                                margin: 0 !important;
+                                                padding: 0 !important;
+                                                width: 13em !important;
+                                                flex: 0 0 13em !important;
+                                                box-sizing: border-box !important;
+                                            }
+                                            .med-issue-tabs .ui-tabs-nav li a {
+                                                border-radius: 10px;
+                                                padding: 0 !important;
+                                                display: block;
+                                                width: 100%;
+                                            }
+                                            .med-issue-tabs .ui-tabs-nav li.ui-state-active {
+                                                box-shadow: 0 3px 10px rgba(0,0,0,.18);
+                                            }
+                                            .med-issue-tabs .ui-tabs-panels {
+                                                background: #fff;
+                                                border: 1px solid #eef1f8;
+                                                border-radius: 0 0 14px 14px;
+                                            }
+                                            .med-issue-tabs .med-tab-pill {
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: space-between;
+                                                gap: 8px;
+                                                width: 13em;
+                                                padding: 14px 16px;
+                                                border-radius: 10px;
+                                                font-weight: 600;
+                                                font-size: 1.1em;
+                                                color: var(--tab-accent);
+                                                background: color-mix(in srgb, var(--tab-accent) 14%, #fff);
+                                                border: 1px solid color-mix(in srgb, var(--tab-accent) 35%, #fff);
+                                                transition: all .2s ease;
+                                                box-sizing: border-box;
+                                            }
+                                            .med-issue-tabs .med-tab-pill .med-tab-label {
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 8px;
+                                                overflow: hidden;
+                                                text-overflow: ellipsis;
+                                                white-space: nowrap;
+                                            }
+                                            .med-issue-tabs .med-tab-pill .fa {
+                                                color: var(--tab-accent);
+                                                flex: 0 0 auto;
+                                            }
+                                            .med-issue-tabs .ui-tabs-nav li.ui-state-active .med-tab-pill {
+                                                color: #fff;
+                                                background: var(--tab-accent);
+                                                border-color: var(--tab-accent);
+                                            }
+                                            .med-issue-tabs .ui-tabs-nav li.ui-state-active .med-tab-pill .fa {
+                                                color: #fff;
+                                            }
+                                            .med-issue-tabs .med-tab-pill .ui-badge {
+                                                margin-left: auto;
+                                                flex: 0 0 auto;
+                                                min-width: 1.8em;
+                                                height: 1.8em;
+                                                line-height: 1.8em;
+                                                font-size: 1em;
+                                                border-radius: 50%;
+                                            }
                                         </style>
                                         <div class="d-flex justify-content-end mb-2">
                                             <h:outputLabel value="Total Medicine Issue : " style="font-weight: bold;"/>

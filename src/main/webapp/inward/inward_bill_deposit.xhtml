@@ -9,14 +9,15 @@
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
                 xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
-                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
 
     <ui:define name="content">
         <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
         <h:panelGroup rendered="#{inwardDepositController.current.patientEncounter eq null}">
-            <h:form>
+            <h:form id="frmInwardDeposit">
                 <p:panel>
                     <f:facet name="header">
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
@@ -26,42 +27,15 @@
                     <div class="d-flex gap-4">
                         <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
 
-                        <p:autoComplete
+                        <admcc:admission_search
                             widgetVar="aPt"
-                            id="acPt"
-                            forceSelection="true"
+                            inputId="acPt"
                             value="#{inwardDepositController.current.patientEncounter}"
                             completeMethod="#{admissionController.completePatientAll}"
-                            var="myItem"
-                            size="60"
-                            maxResults="20"
-                            itemValue="#{myItem}"
-                            itemLabel="#{myItem.bhtNo}"
-                            style="width: 550px;"
-                            class="mx-2">
-
-                            <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                <h:outputLabel value="#{myItem.bhtNo}"/>
-                            </p:column>
-                            <p:column headerText="Patient" style="padding: 6px; width: 15em;">
-                                <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                            </p:column>
-                            <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                            </p:column>
-                            <p:column headerText="Status" style="padding: 6px; width: 12em;">
-                                <div class="d-flex justify-content-center">
-                                    <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                        #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
-                                    </span>
-                                </div>
-                            </p:column>
-                            <p:column headerText="Payment" style="padding: 6px; width: 12em;">
-                                <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                            </p:column>
-                        </p:autoComplete>
+                            continueClientId="frmInwardDeposit:btnSelect" />
 
                         <p:commandButton
+                            id="btnSelect"
                             value="select"
                             ajax="false"
                             action="#{inwardDepositController.bhtListener}" >

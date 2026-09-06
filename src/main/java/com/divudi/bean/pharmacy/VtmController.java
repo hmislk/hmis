@@ -174,6 +174,14 @@ public class VtmController implements Serializable {
         return vtmList;
     }
 
+    /**
+     * Pharmacy-scoped: the only callers are the pharmacy-side Excel imports on this
+     * controller (DataUploadController.uploadVtms, and the ATM/VMP imports), so an
+     * imported row must resolve against - and be created in - the Pharmacy namespace.
+     * Without the scope an import could silently reuse a Lab or Store VTM of the same
+     * name, and without the explicit type it would create the null-departmentType rows
+     * that the strict pharmacy queries then refuse to load (issue #23484).
+     */
     public Vtm findAndSaveVtmByNameAndCode(Vtm vtm) {
         String jpql;
         Map m = new HashMap();
@@ -184,11 +192,13 @@ public class VtmController implements Serializable {
             m.put("retired", false);
             m.put("name", vtm.getName());
             m.put("code", vtm.getCode());
+            m.put("dep", DepartmentType.Pharmacy);
             jpql = "select c "
                     + " from Vtm c "
                     + " where c.retired=:retired "
                     + " and c.name=:name"
-                    + " and c.code=:code";
+                    + " and c.code=:code"
+                    + " and " + departmentTypeScopePredicate(DepartmentType.Pharmacy);
             List<Vtm> vtms = getFacade().findByJpql(jpql, m);
             if (vtms != null) {
                 if (!vtms.isEmpty()) {
@@ -200,6 +210,10 @@ public class VtmController implements Serializable {
             return nvtm;
         }
         if (vtm.getId() == null) {
+            // Set unconditionally: Item.getDepartmentType() substitutes Pharmacy for a null
+            // field on any PharmaceuticalItem, so a getter-based null check never fires and
+            // the row would be persisted with departmentType still NULL.
+            vtm.setDepartmentType(DepartmentType.Pharmacy);
             getFacade().create(vtm);
         }
         return vtm;
@@ -214,16 +228,19 @@ public class VtmController implements Serializable {
         } else {
             m.put("ret", false);
             m.put("name", name);
+            m.put("dep", DepartmentType.Pharmacy);
             jpql = "select c "
                     + " from Vtm c "
                     + " where c.retired=:ret "
-                    + " and c.name=:name";
+                    + " and c.name=:name"
+                    + " and " + departmentTypeScopePredicate(DepartmentType.Pharmacy);
             nvtm = getFacade().findFirstByJpql(jpql, m);
         }
         if (nvtm == null) {
             nvtm = new Vtm();
             nvtm.setName(name);
             nvtm.setCode(CommonFunctions.nameToCode("vtm_" + name));
+            nvtm.setDepartmentType(DepartmentType.Pharmacy);
             getFacade().create(nvtm);
         }
         return nvtm;
@@ -408,6 +425,9 @@ public class VtmController implements Serializable {
             return;
         }
 
+        // No department-type defaulting here on purpose: vtm.xhtml lets the user choose
+        // the Type, prepareAdd() sets Pharmacy for new records, and Item.getDepartmentType()
+        // already reports a null field as Pharmacy for scoping (issue #23484).
         // Validate before saving
         if (!validateVtm()) {
             return;
@@ -997,17 +1017,52 @@ public class VtmController implements Serializable {
         return auditData;
     }
 
+    /**
+     * The department type whose namespace a VTM's name/code must be unique within.
+     * Taken from the record being saved rather than hardcoded to this page's own type:
+     * the legacy `vtm.xhtml` screen exposes a free `DepartmentType` dropdown, so a record
+     * edited here can legitimately carry another type, and scoping the check to
+     * Pharmacy would then miss a real duplicate in that other type's namespace.
+     * A legacy row with a null type scopes to Pharmacy: Item.getDepartmentType() already
+     * substitutes Pharmacy for a null field on any PharmaceuticalItem, so the explicit
+     * fallback below only covers a null argument.
+     */
+    private DepartmentType scopeDepartmentTypeOf(Vtm savingVtm) {
+        DepartmentType dt = savingVtm == null ? null : savingVtm.getDepartmentType();
+        return dt != null ? dt : DepartmentType.Pharmacy;
+    }
+
+    /**
+     * Legacy VTMs carry a null department type and are listed as Pharmacy VTMs, so the
+     * Pharmacy namespace has to include them - otherwise a name already visible in the
+     * Pharmacy list could be saved a second time. Every other type matches strictly.
+     */
+    private String departmentTypeScopePredicate(DepartmentType dep) {
+        return dep == DepartmentType.Pharmacy
+                ? "(c.departmentType IS NULL OR c.departmentType=:dep)"
+                : "c.departmentType=:dep";
+    }
+
+    /**
+     * VTM names are unique per department type, not globally - the same name may
+     * legitimately exist as a Pharmacy VTM and as a VTM of another department type
+     * (issue #23484), so the duplicate check is scoped to one department type's
+     * namespace instead of searching every VTM in the system.
+     */
     public boolean checkVtmName(String name, Vtm savingVtm) {
         if (savingVtm == null || name == null || name.trim().isEmpty()) {
             return false;
         }
+        DepartmentType dep = scopeDepartmentTypeOf(savingVtm);
         Map<String, Object> params = new HashMap<>();
-        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.name)=:name";
+        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.name)=:name "
+                + "AND " + departmentTypeScopePredicate(dep);
         if (savingVtm.getId() != null) {
             jpql += " AND c.id <> :id";
             params.put("id", savingVtm.getId());
         }
         params.put("retired", false);
+        params.put("dep", dep);
         params.put("name", name.toUpperCase().trim());
         Vtm vtm = getFacade().findFirstByJpql(jpql, params);
         return vtm != null;
@@ -1017,13 +1072,16 @@ public class VtmController implements Serializable {
         if (savingVtm == null || code == null || code.trim().isEmpty()) {
             return false;
         }
+        DepartmentType dep = scopeDepartmentTypeOf(savingVtm);
         Map<String, Object> params = new HashMap<>();
-        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.code)=:code";
+        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.code)=:code "
+                + "AND " + departmentTypeScopePredicate(dep);
         if (savingVtm.getId() != null) {
             jpql += " AND c.id <> :id";
             params.put("id", savingVtm.getId());
         }
         params.put("retired", false);
+        params.put("dep", dep);
         params.put("code", code.toUpperCase().trim());
         Vtm vtm = getFacade().findFirstByJpql(jpql, params);
         return vtm != null;
@@ -1043,14 +1101,16 @@ public class VtmController implements Serializable {
 
         // Check name uniqueness
         if (checkVtmName(current.getName(), current)) {
-            JsfUtil.addErrorMessage("A VTM with this name already exists");
+            JsfUtil.addErrorMessage("A VTM with this name already exists in the "
+                    + scopeDepartmentTypeOf(current) + " department");
             return false;
         }
 
         // Check code uniqueness if provided
         if (current.getCode() != null && !current.getCode().trim().isEmpty()) {
             if (checkVtmCode(current.getCode(), current)) {
-                JsfUtil.addErrorMessage("A VTM with this code already exists");
+                JsfUtil.addErrorMessage("A VTM with this code already exists in the "
+                        + scopeDepartmentTypeOf(current) + " department");
                 return false;
             }
         }
