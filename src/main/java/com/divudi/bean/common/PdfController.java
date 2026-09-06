@@ -2081,7 +2081,7 @@ public class PdfController {
                 .setMarginBottom(2);
         document.add(hospitalPara);
 
-        Paragraph reportTitlePara = new Paragraph(bundle.getName() != null ? bundle.getName() : "Report")
+        Paragraph reportTitlePara = new Paragraph(bundle.getPrintableName() != null ? bundle.getPrintableName() : "Report")
                 .setFontSize(12)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMarginBottom(12);

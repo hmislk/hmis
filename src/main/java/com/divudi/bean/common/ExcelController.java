@@ -249,7 +249,7 @@ public class ExcelController {
         // Row 1 - Report title
         Row reportTitleRow = dataSheet.createRow(currentRow++);
         Cell reportTitleCell = reportTitleRow.createCell(0);
-        reportTitleCell.setCellValue(rootBundle.getName() != null ? rootBundle.getName() : "Report");
+        reportTitleCell.setCellValue(rootBundle.getPrintableName() != null ? rootBundle.getPrintableName() : "Report");
         reportTitleCell.setCellStyle(subTitleStyle);
         dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 

@@ -90,4 +90,31 @@ public class ReportTemplateRowBundleFilterSummaryTest {
     public void testFilterWebUserDisplayNameIsNullWhenNoUserFiltered() {
         assertNull(new ReportTemplateRowBundle().getFilterWebUserDisplayName());
     }
+
+    @Test
+    public void testPrintableNameIsNullForAnUnnamedBundleSoExportersCanFallBack() {
+        ReportTemplateRowBundle unnamed = new ReportTemplateRowBundle();
+        assertNull(unnamed.getPrintableName(),
+                "getName() lazily assigns a BundleName<uuid> placeholder; the exporters must not print that as a title");
+
+        ReportTemplateRowBundle blank = new ReportTemplateRowBundle();
+        blank.setName("   ");
+        assertNull(blank.getPrintableName());
+    }
+
+    @Test
+    public void testPrintableNameReturnsTheNameTheGeneratorSet() {
+        ReportTemplateRowBundle named = new ReportTemplateRowBundle();
+        named.setName("Cashier Summary Report");
+        assertEquals("Cashier Summary Report", named.getPrintableName());
+    }
+
+    @Test
+    public void testPrintableNameDoesNotTriggerTheLazyUuidAssignment() {
+        ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
+        bundle.getPrintableName();
+        // getName() is what assigns the placeholder; reading the printable name
+        // must leave the bundle still unnamed.
+        assertNull(bundle.getPrintableName());
+    }
 }

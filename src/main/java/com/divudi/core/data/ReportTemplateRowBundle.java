@@ -239,6 +239,17 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     /**
+     * The report title to print, or null when no generator ever named this
+     * bundle. Unlike {@link #getName()} this does not lazily assign a
+     * "BundleName&lt;uuid&gt;" placeholder - that placeholder exists to keep
+     * download file names unique, and printing it as a report heading shows
+     * the user a raw UUID.
+     */
+    public String getPrintableName() {
+        return (name == null || name.trim().isEmpty()) ? null : name;
+    }
+
+    /**
      * Name to show for the filtered user. WebUser.getName() is the login name,
      * not the person's name, so prefer the person and fall back to the login.
      */
