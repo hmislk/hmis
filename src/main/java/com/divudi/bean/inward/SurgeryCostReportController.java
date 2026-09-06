@@ -293,12 +293,16 @@ public class SurgeryCostReportController implements Serializable {
         if (selectedOtRoom != null) {
             jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
                     .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                    .append("     AND ptr.id = (SELECT MAX(ptr2.id) FROM PatientTransferRequest ptr2 ")
+                    .append("       WHERE ptr2.surgeryBill = sb AND ptr2.retired = false) ")
                     .append("     AND ptr.toRoomFacilityCharge = :selectedOtRoom) ");
             params.put("selectedOtRoom", selectedOtRoom);
         }
         if (selectedSurgeryStatus != null) {
             jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
                     .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                    .append("     AND ptr.id = (SELECT MAX(ptr2.id) FROM PatientTransferRequest ptr2 ")
+                    .append("       WHERE ptr2.surgeryBill = sb AND ptr2.retired = false) ")
                     .append("     AND ptr.theatreOccupancyStatus = :selectedSurgeryStatus) ");
             params.put("selectedSurgeryStatus", selectedSurgeryStatus);
         }
