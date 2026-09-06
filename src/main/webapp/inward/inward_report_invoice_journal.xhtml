@@ -422,43 +422,43 @@
                             <f:facet name="footer">
                                 <div class="text-end">
                                     <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
-                                        <strong>Grand Total Gross: </strong>
+                                        <h:outputText value="Grand Total Gross: " styleClass="fw-bold" />
                                         <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
-                                        <strong>Grand Total Discount: </strong>
+                                        <h:outputText value="Grand Total Discount: " styleClass="fw-bold" />
                                         <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
-                                        <strong>Grand Total Service Charge: </strong>
+                                        <h:outputText value="Grand Total Service Charge: " styleClass="fw-bold" />
                                         <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
                                     </ui:fragment>
-                                    <strong>Grand Total Net Charges: </strong>
+                                    <h:outputText value="Grand Total Net Charges: " styleClass="fw-bold" />
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCharges}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Final Payment: </strong>
+                                    <h:outputText value="Grand Total Final Payment: " styleClass="fw-bold" />
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalFinalPayment}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Deposit: </strong>
+                                    <h:outputText value="Grand Total Deposit: " styleClass="fw-bold" />
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposit}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Credit Settlements: </strong>
+                                    <h:outputText value="Grand Total Credit Settlements: " styleClass="fw-bold" />
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditSettlement}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Credit Company Due: </strong>
+                                    <h:outputText value="Grand Total Credit Company Due: " styleClass="fw-bold" />
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditCompanyDue}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
