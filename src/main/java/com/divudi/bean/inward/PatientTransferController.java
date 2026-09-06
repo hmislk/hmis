@@ -1000,12 +1000,25 @@ public class PatientTransferController implements Serializable {
         params.put("admission", returnReq.getAdmission());
         params.put("type", TheatreTransferType.SEND_TO_THEATRE);
         params.put("accepted", TransferRequestStatus.ACCEPTED);
+        // Scope by surgery bill, matching returnReq's own surgeryBill (copied
+        // from the SEND_TO_THEATRE request in returnToWard()) - otherwise,
+        // with several surgeries' SEND_TO_THEATRE/RETURN_TO_WARD pairs active
+        // concurrently on one admission, "most recent accepted" could grab a
+        // DIFFERENT surgery's still-in-progress theatre request and wrongly
+        // mark it RETURNED_TO_WARD.
         String jpql = "SELECT r FROM PatientTransferRequest r "
                 + "WHERE r.admission = :admission "
                 + "AND r.theatreTransferType = :type "
                 + "AND r.status = :accepted "
-                + "AND r.retired = false "
-                + "ORDER BY r.createdAt DESC";
+                + "AND r.retired = false ";
+        Bill surgeryBill = returnReq.getSurgeryBill();
+        if (surgeryBill != null) {
+            jpql += "AND r.surgeryBill = :surgeryBill ";
+            params.put("surgeryBill", surgeryBill);
+        } else {
+            jpql += "AND r.surgeryBill IS NULL ";
+        }
+        jpql += "ORDER BY r.createdAt DESC";
         List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
         return (results != null && !results.isEmpty()) ? results.get(0) : null;
     }
