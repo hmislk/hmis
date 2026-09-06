@@ -113,6 +113,51 @@ switch for these flows.
 
 ## 2. Navigating menus
 
+### 🚨 NEVER navigate by typing a page URL
+
+**Real users never reach an inner page by its URL.** Many terminals are kiosks
+with no address bar; the rest reach every page through the menus. If a page has
+no menu path to it, that page is not reachable in production and the correct
+finding is "this page has no navigation path", not "this page is broken".
+
+**Only ever type a URL for the application root / login page.** Everything after
+that must be reached by clicking through the menus, exactly as a user would.
+
+This is not a style preference. It changes what the page does:
+
+- **Session-scoped controllers are populated by the navigation method, not by
+  the page.** `sessionController.toManageDepartmentPreferences()`,
+  `inwardSearch.toSearchServiceBill()` and friends set the entity the page then
+  renders. Skipping the navigation method leaves that entity null, or leaves a
+  lazily-created transient placeholder in its place.
+- **What you observe afterwards is therefore not the real behaviour.** A
+  URL-loaded page can 500 (`Target Unreachable, 'null' returned null`), render
+  blank, render against an empty entity, or run pathologically slowly — none of
+  which any user can ever hit.
+- **Getters that lazily instantiate are the usual trap.** e.g.
+  `InwardSearch.getBill()` returns `new BilledBill()` when nothing is selected,
+  so a URL-loaded page renders every print component against an id-less entity
+  and every `WHERE bill = :bl` query against a transient parameter.
+
+Two live examples of this producing a false bug report:
+
+| Page | Symptom when opened by URL | Reality via the menus |
+|---|---|---|
+| `inward_reprint_bill_service.xhtml` | appeared to hang indefinitely, JVM into the GB range, no exception logged | loads in 0.7-5.3 s (issue #23519, retracted) |
+| `admin_mange_department_preferences.xhtml` | HTTP 500, `Target Unreachable, 'null' returned null` | works normally |
+
+**Before testing a page, establish its menu path first** and record it in the
+issue/PR, in the form the user can follow:
+
+> Menu → Inpatient → Search → Service Bill → set From Date → Search Bill
+> → click Bill No → Return
+
+If you cannot find a menu path, search `menu.xhtml` for the page name and check
+the privileges gating it — see §20. Do **not** fall back to the URL to "get on
+with the test".
+
+### Menu mechanics
+
 - The Pharmacy top menu is a PrimeFaces menubar. **Hover** the parent
   (`smPharmacy`) to expand it, then **click** the submenu link
   (e.g. `a:has-text("Disbursement")`). A direct click on the parent without the
