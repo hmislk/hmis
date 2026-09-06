@@ -975,9 +975,14 @@ public class PatientTransferController implements Serializable {
         params.put("type", TheatreTransferType.SEND_TO_THEATRE);
         params.put("returned", TheatreOccupancyStatus.RETURNED_TO_WARD);
         params.put("cancelled", TransferRequestStatus.CANCELLED);
+        // A generic admission-level transfer (no surgery selected) still means
+        // this physical patient is already in transit/theatre, so it must
+        // conflict with a surgery-specific send too - only a DIFFERENT
+        // non-null surgery bill's active request is allowed to run
+        // concurrently.
         String jpql = "SELECT r FROM PatientTransferRequest r "
                 + "WHERE r.admission = :admission "
-                + "AND r.surgeryBill = :surgeryBill "
+                + "AND (r.surgeryBill = :surgeryBill OR r.surgeryBill IS NULL) "
                 + "AND r.theatreTransferType = :type "
                 + "AND r.status <> :cancelled "
                 + "AND (r.theatreOccupancyStatus IS NULL OR r.theatreOccupancyStatus <> :returned) "
