@@ -137,6 +137,15 @@
                                             <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info mx-2 m-1" icon="fas fa-print">
                                                 <p:printer target="gpBillPreview" ></p:printer>
                                             </p:commandButton>
+                                            <p:commandButton
+                                                id="btnPrintFormatSettings"
+                                                value="Settings"
+                                                icon="fas fa-cog"
+                                                class="ui-button-secondary mx-1 m-1"
+                                                type="button"
+                                                title="Choose which print formats this refund bill produces"
+                                                disabled="#{!webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                onclick="PF('inwardServiceRefundPrintConfigDialog').show();" />
                                             <p:commandButton value="Inpatient Profile" ajax="false" action="#{inwardServiceRefundController.navigateBackToInpatientProfile()}" class="ui-button-secondary mx-1 m-1" icon="fa fa-arrow-circle-left">
                                             </p:commandButton>
                                             <p:commandButton value="Bill" ajax="false" action="#{inwardServiceRefundController.navigateBackToReprint()}" class="ui-button-secondary mx-1 m-1" icon="fa fa-file-invoice">
@@ -152,37 +161,43 @@
                                             <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
                                         </ui:repeat>-->
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show 5x5 Format', false)}" >
 
                                                 <print:five_five_paper_with_headings_inward_service bill="#{inwardServiceRefundController.bill.refundedBill}"/>
 
                                             </h:panelGroup>
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show 5x5 Pre-printed Format', false)}" >
 
                                                 <print:five_five_paper_without_headings_inward_service bill="#{inwardServiceRefundController.bill.refundedBill}" dup="false"/>
 
                                             </h:panelGroup>
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show POS Format', false)}" >
 
                                                 <print:posOpdBill_inward_service bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
 
                                             </h:panelGroup>
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show A4 Format', false)}" >
 
                                                 <print:A4_paper_with_headings bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
 
                                             </h:panelGroup>
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show A4 Pre-printed Format', false)}" >
 
                                                 <print:A4_paper_without_headings bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
 
                                             </h:panelGroup>
                                             
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show Custom 1 Format', false)}" >
                                                 <print:five_five_paper_coustom_1_inward_service_refund bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
                                             </h:panelGroup>
 
@@ -315,6 +330,86 @@
                         </h:panelGroup>
 
                     </h:form>
+
+                    <!--
+                        Print format settings for this page. Lets a department switch
+                        print formats on/off here instead of going to Config Options.
+                        See developer_docs/configuration/printer-configuration-system.md.
+                        Kept outside refundForm - JSF forbids nested forms.
+                    -->
+                    <p:dialog id="inwardServiceRefundPrintConfigDialog"
+                              header="Inward Service Bill Refund - Print Format Settings"
+                              widgetVar="inwardServiceRefundPrintConfigDialog"
+                              modal="true"
+                              width="620"
+                              resizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open"
+                                listener="#{inwardServiceRefundController.loadPrintConfig}"
+                                update="inwardServiceRefundPrintConfigForm" />
+
+                        <h:form id="inwardServiceRefundPrintConfigForm"
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                            <div class="card-body">
+                                <h6>Which formats print</h6>
+                                <small class="form-text text-muted d-block mb-3">
+                                    Every format switched on here is printed, in addition to
+                                    the format chosen in the Paper Type list on the page.
+                                    Settings apply to this department only.
+                                </small>
+
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatCustom1"
+                                                             value="#{inwardServiceRefundController.printFormatCustom1}" />
+                                    <h:outputLabel for="printFormatCustom1" value="5x5 Custom 1" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatFiveFive"
+                                                             value="#{inwardServiceRefundController.printFormatFiveFive}" />
+                                    <h:outputLabel for="printFormatFiveFive" value="5x5 With Headings" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatFiveFivePrinted"
+                                                             value="#{inwardServiceRefundController.printFormatFiveFivePrinted}" />
+                                    <h:outputLabel for="printFormatFiveFivePrinted" value="5x5 Pre-printed Paper" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatPos"
+                                                             value="#{inwardServiceRefundController.printFormatPos}" />
+                                    <h:outputLabel for="printFormatPos" value="POS Paper" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatA4"
+                                                             value="#{inwardServiceRefundController.printFormatA4}" />
+                                    <h:outputLabel for="printFormatA4" value="A4 Paper" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatA4Printed"
+                                                             value="#{inwardServiceRefundController.printFormatA4Printed}" />
+                                    <h:outputLabel for="printFormatA4Printed" value="A4 Pre-printed Paper" class="ms-2" />
+                                </div>
+
+                                <p:messages id="inwardServiceRefundPrintConfigMessages" showDetail="true" closable="true" />
+
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Apply &amp; Close"
+                                        icon="fas fa-save"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        action="#{inwardServiceRefundController.savePrintConfig}" />
+                                    <p:commandButton
+                                        value="Cancel"
+                                        icon="fas fa-times"
+                                        class="ui-button-secondary"
+                                        type="button"
+                                        onclick="PF('inwardServiceRefundPrintConfigDialog').hide();
+                                                return false;" />
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
                 </h:panelGroup>   
 
             </ui:define>
