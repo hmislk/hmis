@@ -390,13 +390,42 @@ public class SurgeryBillController implements Serializable {
     }
 
     public void removeTimeService(PatientItem patientItem) {
-        if (patientItem != null) {
-            patientItem.setRetirer(getSessionController().getLoggedUser());
-            patientItem.setRetiredAt(new Date());
-            patientItem.setRetired(true);
-            getPatientItemFacade().edit(patientItem);
-            refreshTimedEncounterComponents();
+        if (patientItem == null) {
+            return;
         }
+        Bill surgeryBill = findSurgeryBillForTimedServicePatientItem(patientItem);
+        if (isSurgeryLockedForAdditions(surgeryBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+        patientItem.setRetirer(getSessionController().getLoggedUser());
+        patientItem.setRetiredAt(new Date());
+        patientItem.setRetired(true);
+        getPatientItemFacade().edit(patientItem);
+        refreshTimedEncounterComponents();
+    }
+
+    /**
+     * A timed service added from the Surgery Dashboard never gets its own
+     * {@code PatientItem.bill} set (see
+     * {@code InwardTimedItemController#savePatientItem}) — only the BillFee
+     * that wraps it does, and that BillFee's own Bill (the per-surgery
+     * "TimedService" sub-bill) points back to the surgery Bill via
+     * {@code forwardReferenceBill}. Timed services added through the
+     * general, non-surgery inward flow have no such BillFee and this simply
+     * returns null, which is correct — they aren't locked by surgery
+     * validation.
+     */
+    private Bill findSurgeryBillForTimedServicePatientItem(PatientItem patientItem) {
+        // BillFee.patientItem carries no DB uniqueness constraint; order by
+        // most-recently-created so a lock check against a hypothetical
+        // duplicate link can't silently land on the wrong surgery.
+        String jpql = "SELECT bf.bill.forwardReferenceBill FROM BillFee bf "
+                + "WHERE bf.patientItem = :pi AND bf.retired = false "
+                + "ORDER BY bf.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pi", patientItem);
+        return getBillFacade().findFirstByJpql(jpql, params);
     }
 
     public void removeProEncFromList(EncounterComponent encounterComponent) {
