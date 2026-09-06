@@ -184,7 +184,10 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal actualNetValue;
 
     // Adjustment between calculated net total and actual physical net value
-    // netValueAdjustment = actualNetValue - netTotal
+    // netValueAdjustment = |netTotal| - |actualNetValue|
+    // netTotal follows the return sign convention (negative for GRN/purchase
+    // returns); actualNetValue is always entered as a positive physical
+    // magnitude, so the comparison must use absolute values.
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal netValueAdjustment;
 

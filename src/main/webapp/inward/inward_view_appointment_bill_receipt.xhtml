@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment">
+
+    <!-- Issue #22783: view/reprint page for INWARD_APPOINTMENT_BILL and
+         INWARD_APPOINTMENT_CANCEL_BILL, routed from
+         BillSearch.navigateToViewBillByAtomicBillTypeByBillId. Appointment
+         bills never populate Bill.patientEncounter, so this uses the same
+         DTO (InwardBillReceiptDTO, LEFT-JOIN based) and print composites
+         built for the Appointment Deposit Conversion page (Part A) rather
+         than the entity-bound inward_reprint_bill_payment.xhtml. Whether
+         the bill is itself a cancellation is inferred from
+         receipt.referenceBillDeptId being non-null (only cancel bills have
+         a reference bill). -->
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputText value="Appointment Bill Receipt" styleClass="fw-bold"/>
+                                <p:commandButton
+                                    id="btnBackToSearchPayment"
+                                    value="Back to Bill List"
+                                    action="/inward/inward_search_payment?faces-redirect=true"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    icon="fa fa-arrow-left"
+                                    title="Return to the payment bill list"/>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup rendered="#{inwardSearch.appointmentBillReceipt eq null}" layout="block">
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-triangle-exclamation fa-2x text-warning mb-3"></i>
+                                <p class="text-muted">Bill not found.</p>
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{inwardSearch.appointmentBillReceipt ne null}" layout="block">
+                            <div class="d-flex justify-content-end gap-2 mb-3">
+                                <p:commandButton
+                                    id="btnAppointmentReceiptSettings"
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    styleClass="ui-button-secondary"
+                                    type="button"
+                                    title="Configure receipt paper"
+                                    onclick="PF('inwardPaymentConfigDialog').show();"/>
+                                <p:commandButton
+                                    id="btnPrintAppointmentReceipt"
+                                    value="Print"
+                                    styleClass="ui-button-info"
+                                    icon="fas fa-print"
+                                    title="Print receipt">
+                                    <p:printer target="gpAppointmentReceiptPreview"/>
+                                </p:commandButton>
+                            </div>
+
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h:panelGroup id="gpAppointmentReceiptPreview">
+                                    <h:panelGroup rendered="#{inwardSearch.appointmentBillReceipt.referenceBillDeptId ne null}">
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}">
+                                            <bill:FiveFiveCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}">
+                                            <bill:A4PaperCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                            <bill:PosPaperCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{inwardSearch.appointmentBillReceipt.referenceBillDeptId eq null}">
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}">
+                                            <bill:FiveFiveDepositReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}">
+                                            <bill:A4PaperDepositReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                            <bill:PosPaperDepositReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+                <p:dialog id="inwardPaymentConfigDialog"
+                          header="Inward Payment Bill Printer Configuration"
+                          widgetVar="inwardPaymentConfigDialog"
+                          modal="true"
+                          width="560"
+                          resizable="false"
+                          closeOnEscape="true">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
+                    <h:form id="inwardPaymentConfigForm">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <i class="fas fa-file-alt me-2"/>
+                                <h:outputText value="Paper Format Settings"/>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                                    <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                                    <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <p:commandButton value="Apply &amp; Close"
+                                             icon="fas fa-save"
+                                             class="ui-button-success"
+                                             ajax="false"
+                                             action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                            <p:commandButton value="Cancel"
+                                             icon="fas fa-times"
+                                             class="ui-button-secondary"
+                                             type="button"
+                                             onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
+                        </div>
+                    </h:form>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

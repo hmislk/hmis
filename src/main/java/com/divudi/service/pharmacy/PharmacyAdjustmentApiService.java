@@ -11,6 +11,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.adjustment.*;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.WebUser;
@@ -31,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -60,6 +62,9 @@ public class PharmacyAdjustmentApiService implements Serializable {
 
     @EJB
     private DepartmentFacade departmentFacade;
+
+    @EJB
+    private PharmacyBfdBackfillService bfdBackfillService;
 
     @EJB
     private PharmacyBean pharmacyBean;
@@ -242,6 +247,76 @@ public class PharmacyAdjustmentApiService implements Serializable {
         return response;
     }
 
+    /**
+     * Recomputes BillFinanceDetails + bill totals for a single pre-fix adjustment bill.
+     *
+     * <p>The derivation lives in {@link PharmacyBfdBackfillService}, which resolves the
+     * before/after audit-value convention per line instead of assuming one. This method
+     * previously assumed the extended-value convention this service used to write, which
+     * understated bills created through the UI page by a factor of the line quantity.
+     * Issue #23411.</p>
+     */
+    @Transactional
+    public BackfillResultDTO backfillFinanceDetails(Bill bill, boolean apply) {
+        return toDto(bfdBackfillService.applyToBill(bill, apply,
+                "Backfill via the pharmacy adjustment API", "API caller", null));
+    }
+
+    private BackfillResultDTO toDto(PharmacyBfdBackfillService.BillBackfillResult r) {
+        BackfillResultDTO dto = new BackfillResultDTO();
+        dto.setBillId(r.getBillId());
+        dto.setBillTypeAtomic(r.getBillTypeAtomic() != null ? r.getBillTypeAtomic().name() : null);
+        dto.setComputedNetTotal(r.getComputedNetTotal() == null ? 0.0 : r.getComputedNetTotal().doubleValue());
+        dto.setComputedTotal(r.getComputedGrossTotal() == null ? 0.0 : r.getComputedGrossTotal().doubleValue());
+        dto.setApplied(r.getStatus() == PharmacyBfdBackfillService.BackfillStatus.UPDATED);
+        dto.setNote(r.getNote());
+        return dto;
+    }
+
+    /**
+     * Finds adjustment bills for a department in a date range that need a
+     * BillFinanceDetails correction and runs the shared backfill over each, in dry-run
+     * or apply mode. Candidate selection and the value derivation both live in
+     * {@link PharmacyBfdBackfillService} so this endpoint, the admin buttons and
+     * {@code POST /api/pharmacy/backfill_bfd} cannot drift apart again. Issue #23411.
+     */
+    @Transactional
+    public java.util.List<BackfillResultDTO> backfillFinanceDetailsForDepartment(
+            Department department, java.util.Date fromDate, java.util.Date toDate, boolean apply) {
+
+        PharmacyBfdBackfillService.BackfillReport report = bfdBackfillService.backfillAdjustmentBfds(
+                null,
+                department == null ? null : department.getId(),
+                fromDate,
+                toDate,
+                apply,
+                "Backfill via the pharmacy adjustment API",
+                "API caller",
+                null);
+
+        java.util.List<BackfillResultDTO> results = new java.util.ArrayList<>();
+        for (PharmacyBfdBackfillService.BillBackfillResult r : report.getResults()) {
+            results.add(toDto(r));
+        }
+        return results;
+    }
+
+    /**
+     * REST-facing overload: resolves departmentId -> Department and parses
+     * yyyy-MM-dd date strings before delegating to
+     * {@link #backfillFinanceDetailsForDepartment(Department, Date, Date, boolean)}.
+     */
+    public java.util.List<BackfillResultDTO> backfillFinanceDetailsForDepartment(
+            Long departmentId, String fromDateStr, String toDateStr, boolean apply) throws Exception {
+        Department department = loadAndValidateDepartment(departmentId);
+        Date fromDate = parseDate(fromDateStr);
+        // toDate is parsed to midnight (00:00:00) by parseDate; advance it to the end
+        // of that day so bills created later on the same calendar day are not silently
+        // excluded from the JPQL "between :from and :to" range below.
+        Date toDate = endOfDay(parseDate(toDateStr));
+        return backfillFinanceDetailsForDepartment(department, fromDate, toDate, apply);
+    }
+
     // Private helper methods
 
     private void validateStockQuantityRequest(StockQuantityAdjustmentDTO request) throws Exception {
@@ -345,6 +420,21 @@ public class PharmacyAdjustmentApiService implements Serializable {
         return cal.getTime();
     }
 
+    /**
+     * Advances the given date to the last instant of that calendar day
+     * (23:59:59.999), so it can be used as an inclusive upper bound in a
+     * "between" range query without excluding bills created later that day.
+     */
+    Date endOfDay(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+
     private Bill createStockAdjustmentBill(String comment, WebUser user, Department department) {
         Bill bill = new Bill();
         bill.setBillDate(Calendar.getInstance().getTime());
@@ -439,12 +529,21 @@ public class PharmacyAdjustmentApiService implements Serializable {
 
     private PharmaceuticalBillItem createStockAdjustmentBillItem(Bill bill, Stock stock, double quantityChange,
                                                                double beforeQty, double afterQty, WebUser user) {
+        double retailsaleRate = stock.getItemBatch().getRetailsaleRate();
+        Double costRateObj = stock.getItemBatch().getCostRate();
+        double costRate = (costRateObj != null) ? costRateObj : stock.getItemBatch().getPurcahseRate();
+        double purchaseRate = stock.getItemBatch().getPurcahseRate();
+
+        double deltaRetailValue = quantityChange * retailsaleRate;
+        double deltaCostValue = quantityChange * costRate;
+        double deltaPurchaseValue = quantityChange * purchaseRate;
+
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
         billItem.setQty(quantityChange);
-        billItem.setGrossValue(stock.getItemBatch().getRetailsaleRate() * afterQty);
-        billItem.setNetRate(stock.getItemBatch().getRetailsaleRate());
-        billItem.setNetValue(afterQty * billItem.getNetRate());
+        billItem.setGrossValue(Math.abs(deltaRetailValue));
+        billItem.setNetRate(retailsaleRate);
+        billItem.setNetValue(deltaRetailValue);
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(bill);
@@ -465,6 +564,30 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setBillItem(billItem);
 
         billItemFacade.create(billItem);
+
+        // Populate BillFinanceDetails + bill totals so the F15 report's Adjustment
+        // Transactions section reconciles Opening + ... + Adjustments = Closing.
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+        bfd.setTotalRetailSaleValue(BigDecimal.valueOf(deltaRetailValue));
+        bfd.setTotalCostValue(BigDecimal.valueOf(deltaCostValue));
+        bfd.setGrossTotal(BigDecimal.valueOf(Math.abs(deltaRetailValue)));
+        bfd.setNetTotal(BigDecimal.valueOf(deltaRetailValue));
+        bfd.setTotalQuantity(BigDecimal.valueOf(Math.abs(quantityChange)));
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(beforeQty * retailsaleRate));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(afterQty * retailsaleRate));
+        // A quantity change moves stock value at cost, purchase, AND retail rates
+        // simultaneously - populate all three so each F15 report column reconciles.
+        bfd.setTotalPurchaseValue(BigDecimal.valueOf(deltaPurchaseValue));
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+
+        bill.setTotal(Math.abs(deltaRetailValue));
+        bill.setNetTotal(deltaRetailValue);
+        billFacade.edit(bill);
+
         return pharmaceuticalBillItem;
     }
 
@@ -473,7 +596,11 @@ public class PharmacyAdjustmentApiService implements Serializable {
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
         billItem.setQty(stock.getStock());
-        billItem.setGrossValue(changeValue);
+        // Rate, and gross as an absolute with net carrying the sign — matching the UI
+        // page. This path previously left rate unset (persisting 0) and put the signed
+        // change in both gross and net. Issue #23411.
+        billItem.setRate(newRetailRate);
+        billItem.setGrossValue(Math.abs(changeValue));
         billItem.setNetValue(changeValue);
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(bill);
@@ -487,15 +614,42 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setItemBatch(stock.getItemBatch());
         pharmaceuticalBillItem.setQty(stock.getStock());
         pharmaceuticalBillItem.setRetailRate(oldRetailRate);
-        pharmaceuticalBillItem.setLastPurchaseRate(newRetailRate); // Store new rate in this field
-        pharmaceuticalBillItem.setFreeQty((float) rateChange); // Store rate change in this field
-        pharmaceuticalBillItem.setBeforeAdjustmentValue(stock.getStock() * oldRetailRate);
-        pharmaceuticalBillItem.setAfterAdjustmentValue(stock.getStock() * newRetailRate);
+        pharmaceuticalBillItem.setLastPurchaseRate(newRetailRate);
+        pharmaceuticalBillItem.setFreeQty((float) rateChange);
+        // beforeAdjustmentValue/afterAdjustmentValue hold the UNIT RATES, matching the UI
+        // page (PharmacyAdjustmentController.saveRsrAdjustmentBillItems). This service used
+        // to store the extended value (stockQty * rate) here instead, which made the same
+        // two columns mean different things depending on which path wrote the bill and left
+        // every backfill tool unable to value a mixed population correctly. The extended
+        // before/after totals still go on the BillFinanceDetails below, where that is the
+        // documented meaning. Issue #23411.
+        pharmaceuticalBillItem.setBeforeAdjustmentValue(oldRetailRate);
+        pharmaceuticalBillItem.setAfterAdjustmentValue(newRetailRate);
 
         billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
         pharmaceuticalBillItem.setBillItem(billItem);
 
         billItemFacade.create(billItem);
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+        bfd.setTotalRetailSaleValue(BigDecimal.valueOf(changeValue));
+        bfd.setGrossTotal(BigDecimal.valueOf(Math.abs(changeValue)));
+        bfd.setNetTotal(BigDecimal.valueOf(changeValue));
+        bfd.setTotalQuantity(BigDecimal.valueOf(stock.getStock()));
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(stock.getStock() * oldRetailRate));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(stock.getStock() * newRetailRate));
+        bfd.setTotalCostValue(BigDecimal.ZERO);
+        bfd.setTotalPurchaseValue(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+
+        bill.setTotal(Math.abs(changeValue));
+        bill.setNetTotal(changeValue);
+        billFacade.edit(bill);
+
         return pharmaceuticalBillItem;
     }
 
@@ -503,7 +657,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
                                                                     Date newExpiryDate, WebUser user) {
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
-        billItem.setQty(0.0); // No quantity change for expiry adjustment
+        billItem.setQty(0.0);
         billItem.setGrossValue(0.0);
         billItem.setNetValue(0.0);
         billItem.setInwardChargeType(InwardChargeType.Medicine);
@@ -524,6 +678,26 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setBillItem(billItem);
 
         billItemFacade.create(billItem);
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+        bfd.setTotalRetailSaleValue(BigDecimal.ZERO);
+        bfd.setTotalCostValue(BigDecimal.ZERO);
+        bfd.setTotalPurchaseValue(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+        bfd.setGrossTotal(BigDecimal.ZERO);
+        bfd.setNetTotal(BigDecimal.ZERO);
+        bfd.setTotalQuantity(BigDecimal.ZERO);
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.ZERO);
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.ZERO);
+
+        bill.setTotal(0.0);
+        bill.setNetTotal(0.0);
+        billFacade.edit(bill);
+
         return pharmaceuticalBillItem;
     }
 
@@ -532,7 +706,11 @@ public class PharmacyAdjustmentApiService implements Serializable {
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
         billItem.setQty(stock.getStock());
-        billItem.setGrossValue(changeValue);
+        // Rate, and gross as an absolute with net carrying the sign — matching the UI page
+        // and the retail-rate path. This left rate unset (persisting 0) and put the signed
+        // change in both gross and net. Issue #23411.
+        billItem.setRate(newPurchaseRate);
+        billItem.setGrossValue(Math.abs(changeValue));
         billItem.setNetValue(changeValue);
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(bill);
@@ -546,15 +724,36 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setItemBatch(stock.getItemBatch());
         pharmaceuticalBillItem.setQty(stock.getStock());
         pharmaceuticalBillItem.setPurchaseRate(oldPurchaseRate);
-        pharmaceuticalBillItem.setLastPurchaseRate(newPurchaseRate); // Store new rate
-        pharmaceuticalBillItem.setFreeQty((float) rateChange); // Store rate change
-        pharmaceuticalBillItem.setBeforeAdjustmentValue(stock.getStock() * oldPurchaseRate);
-        pharmaceuticalBillItem.setAfterAdjustmentValue(stock.getStock() * newPurchaseRate);
+        pharmaceuticalBillItem.setLastPurchaseRate(newPurchaseRate);
+        pharmaceuticalBillItem.setFreeQty((float) rateChange);
+        // Unit rates, matching the UI page and the retail-rate path above. See #23411.
+        pharmaceuticalBillItem.setBeforeAdjustmentValue(oldPurchaseRate);
+        pharmaceuticalBillItem.setAfterAdjustmentValue(newPurchaseRate);
 
         billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
         pharmaceuticalBillItem.setBillItem(billItem);
 
         billItemFacade.create(billItem);
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+        bfd.setTotalPurchaseValue(BigDecimal.valueOf(changeValue));
+        bfd.setGrossTotal(BigDecimal.valueOf(Math.abs(changeValue)));
+        bfd.setNetTotal(BigDecimal.valueOf(changeValue));
+        bfd.setTotalQuantity(BigDecimal.valueOf(stock.getStock()));
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(stock.getStock() * oldPurchaseRate));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(stock.getStock() * newPurchaseRate));
+        bfd.setTotalCostValue(BigDecimal.ZERO);
+        bfd.setTotalRetailSaleValue(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+
+        bill.setTotal(Math.abs(changeValue));
+        bill.setNetTotal(changeValue);
+        billFacade.edit(bill);
+
         return pharmaceuticalBillItem;
     }
 }

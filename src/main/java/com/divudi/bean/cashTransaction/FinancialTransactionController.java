@@ -287,6 +287,7 @@ public class FinancialTransactionController implements Serializable {
     private List<Payment> fundTransferAvailablePayments;
     private List<Payment> depositableNonCashPayments;
     private CashBook depositCashBook;
+    private CashBook withdrawalCashBook;
 
     // Shortage Bill Cancellation Properties
     private String shortageCancellationComment;
@@ -3066,6 +3067,21 @@ public class FinancialTransactionController implements Serializable {
         selectedFundTransferRequest = null;
     }
 
+    /**
+     * Clears the shift/handover summary state carried by this session-scoped
+     * bean so the next user to log in on the same browser session never sees
+     * the previous user's shift (bundle.user, bundle.startBill, etc.) on the
+     * Shift Handover pages. Call on logout, before a new user logs in.
+     */
+    public void resetForLogout() {
+        resetClassVariables();
+        bundle = null;
+        selectedBundle = null;
+        selectedPaymentMethod = null;
+        nonClosedShiftStartFundBill = null;
+        handoverValuesCreated = false;
+    }
+
     public List<Payment> findPaymentsForBill(Bill b) {
         String jpql = "select p "
                 + " from Payment p "
@@ -3284,6 +3300,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setDepositCashBook(CashBook depositCashBook) {
         this.depositCashBook = depositCashBook;
+    }
+
+    public CashBook getWithdrawalCashBook() {
+        return withdrawalCashBook;
+    }
+
+    public void setWithdrawalCashBook(CashBook withdrawalCashBook) {
+        this.withdrawalCashBook = withdrawalCashBook;
     }
 
     public void addPaymentToShiftEndFundBill() {
@@ -3717,19 +3741,37 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        if (withdrawalCashBook == null) {
+            JsfUtil.addErrorMessage("Please select a cashbook for this withdrawal");
+            return "";
+        }
+        if (getCurrentBillPayments() == null || getCurrentBillPayments().isEmpty()) {
+            JsfUtil.addErrorMessage("At least one withdrawal payment must be added before settlement");
+            return "";
+        }
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_WITHDRAWAL_BILL);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
+        currentBill.setInsId(deptId);
+        currentBill.setDeptId(deptId);
 
+        Double netTotal = currentBill.getNetTotal();
+        currentBill.setNetTotal(Math.abs(netTotal));
+        currentBill.setTotal(Math.abs(netTotal));
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
+            p.setPaidValue(Math.abs(p.getPaidValue()));
             paymentController.save(p);
+            drawerController.updateDrawerForIns(p);
+            cashBookEntryController.writeCashBookEntryAtBankDeposit(p, withdrawalCashBook, currentBill);
         }
         return "/cashier/fund_withdrawal_bill_print?faces-redirect=true";
     }
@@ -3769,20 +3811,30 @@ public class FinancialTransactionController implements Serializable {
             return null; // Early exit if no shift to end
         }
 
-        // Guard: outgoing pending floats — block until recipient accepts or sender cancels
-        if (hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+        // Read once — bypasses every pending-handover / pending-float-transfer guard below
+        // when a hospital does not practice handover/float-transfer acceptance systematically (#22931).
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+
+        // Guard: outgoing pending floats — bypassed when 'Allow Shift End Without Handover Acceptance' is true
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
             JsfUtil.addErrorMessage("You have pending float transfers not yet accepted. Please cancel them or wait for the recipient to accept before closing your shift.");
             return null;
         }
 
-        // Guard: incoming pending floats — block until this user accepts or declines
-        if (hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+        // Guard: incoming pending floats — bypassed when 'Allow Shift End Without Handover Acceptance' is true
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
             JsfUtil.addErrorMessage("You have incoming float transfers awaiting your response. Please accept or decline them before closing your shift.");
             return null;
         }
 
-        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
-                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+        if (allowShiftEndWithoutHandoverAcceptance
+                && (hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)
+                || hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null))) {
+            JsfUtil.addInfoMessage("Warning: You are ending your shift while a float transfer is still pending.");
+        }
 
         // Guard: outgoing pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true
         if (!allowShiftEndWithoutHandoverAcceptance
@@ -3806,8 +3858,10 @@ public class FinancialTransactionController implements Serializable {
         // Validate pending transactions before allowing shift end
         fillFundTransferBillsForMeToReceive();
 
-        // Check for pending fund transfers that must be collected first
-        if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
+        // Check for pending fund transfers that must be collected first — bypassed when
+        // 'Allow Shift End Without Handover Acceptance' is true (#22931)
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
             JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
             return null;
         }
@@ -3822,7 +3876,7 @@ public class FinancialTransactionController implements Serializable {
         boolean mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift = configOptionApplicationController
                 .getBooleanValueByKey("Must Wait Until Other User Accepts All Handovers Before Closing Shift", false);
 
-        if (mustReceiveAllFundTransfersBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustReceiveAllFundTransfersBeforeClosingShift) {
             boolean haveFundTransfersForMeToReceive = hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null);
             if (haveFundTransfersForMeToReceive) {
                 JsfUtil.addErrorMessage("There are Fund Transfers for you to receive. Please accept them before closing the shift.");
@@ -3830,7 +3884,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        if (mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift) {
             boolean haveFundTransfersToBeReceived = hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null);
             if (haveFundTransfersToBeReceived) {
                 JsfUtil.addErrorMessage("There are Fund Transfers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your fund transfers, you can not close your shift.");
@@ -3838,7 +3892,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        if (mustReceiveAllHandoversBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustReceiveAllHandoversBeforeClosingShift) {
             boolean haveHandoversForMeToReceive = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
             if (haveHandoversForMeToReceive) {
                 JsfUtil.addErrorMessage("There are Handovers for you to receive. Please accept them before closing the shift.");
@@ -3846,7 +3900,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        if (mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift) {
             boolean haveHandoversToBeReceived = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
             if (haveHandoversToBeReceived) {
                 JsfUtil.addErrorMessage("There are Handovers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your handovers, you can not close your shift.");
@@ -4031,14 +4085,90 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToRecordShiftEndCash() {
         resetClassVariables();
         Bill startBill = fetchNonClosedShiftStartFundBill();
-        bundle = new ReportTemplateRowBundle();
         if (startBill == null) {
             JsfUtil.addErrorMessage("Shift not yet started.");
             return null;
         }
+
+        // Same payment-gathering steps as navigateToHandoverCreateBillForSelectedShift() —
+        // this is what computes the *HandoverValue figures (cashHandoverValue,
+        // cardHandoverValue, ...) and hasXxxTransaction flags per payment method for the
+        // shift, which this screen shows as the "Expected" reference value next to what
+        // the cashier actually declares.
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        if (shiftPayments != null) {
+            shiftPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
+        }
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+        if (shiftFloats != null) {
+            shiftFloats.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
+        }
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(startBill, sessionController.getLoggedUser());
+        if (othersPayments != null) {
+            othersPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
+        }
+        // Fund transfer payments (float-out / float-in between users) change the cash this
+        // user should physically have, same as navigateToHandoverCreateBillForCurrentShift().
+        List<Payment> fundTransferPayments = fetchFundTransferPaymentsForShift(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+
+        Set<Payment> uniquePaymentSet = new HashSet<>();
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+        if (fundTransferPayments != null) {
+            uniquePaymentSet.addAll(fundTransferPayments);
+        }
+        List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
+
+        bundle = generatePaymentBundleForHandovers(startBill,
+                startBill.getReferenceBill(),
+                allUniquePayments,
+                PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION
+        );
         bundle.setUser(sessionController.getLoggedUser());
         bundle.setStartBill(startBill);
-        bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.setDenominations(sessionController.findDefaultDenominations());
+        bundle.selectAllChildBundles();
+        // Aggregates *Value/*HandoverValue and hasXxxTransaction from the child bundles
+        // without the "zero cashHandoverValue until counted" sync rule that
+        // calculateTotalsByChildBundlesForHandover() applies for the separate handover
+        // flow — here cashHandoverValue is wanted as the system-expected reference figure.
+        bundle.aggregateTotalsFromAllChildBundles();
+        // aggregateTotalsFromAllChildBundles() deliberately skips float rows (isFloatRow()),
+        // so the net fund-transfer cash adjustment above has to be folded in separately —
+        // otherwise a float sent/received mid-shift would silently drop out of the
+        // expected cash figure this screen shows.
+        double netFloatCash = 0.0;
+        if (bundle.getBundles() != null) {
+            for (ReportTemplateRowBundle childBundle : bundle.getBundles()) {
+                if (childBundle.isFloatRow()) {
+                    netFloatCash += childBundle.getCashHandoverValue();
+                }
+            }
+        }
+        if (netFloatCash != 0.0) {
+            bundle.setCashValue(bundle.getCashValue() + netFloatCash);
+            bundle.setCashHandoverValue(bundle.getCashHandoverValue() + netFloatCash);
+        }
+
+        boolean requireDenominationBreakdown = configOptionApplicationController.getBooleanValueByKey(
+                "Shift End Cash Handover - Require Denomination Breakdown", false);
+        if (requireDenominationBreakdown) {
+            bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        } else {
+            bundle.setDenominationTransactions(bundle.createLumpSumCashHandoverTransaction());
+        }
+        bundle.setPaymentMethodHandoverTransactions(bundle.createPaymentMethodHandoverTransactions());
+
         return "/cashier/shift_end_cash_in_hand?faces-redirect=true";
     }
 
@@ -5802,17 +5932,22 @@ public class FinancialTransactionController implements Serializable {
         mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift = configOptionApplicationController
                 .getBooleanValueByKey("Must Wait Until Other User Accepts All Handovers Before Closing Shift", false);
 
+        // Read once — bypasses every pending-handover / pending-float-transfer guard below
+        // when a hospital does not practice handover/float-transfer acceptance systematically (#22931).
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+
         if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
             fundTransferBillTocollect = true;
         }
 
         if (fundTransferBillTocollect) {
-            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
-            return "";
+            if (!allowShiftEndWithoutHandoverAcceptance) {
+                JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
+                return "";
+            }
+            JsfUtil.addInfoMessage("Warning: You are ending your shift while a float transfer is still pending collection.");
         }
-
-        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
-                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
 
         // Guard: outgoing pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true (#19963)
         if (!allowShiftEndWithoutHandoverAcceptance
@@ -5833,7 +5968,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addInfoMessage("Warning: You are ending your shift while a handover is still pending acceptance by the recipient.");
         }
 
-        if (mustReceiveAllFundTransfersBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustReceiveAllFundTransfersBeforeClosingShift) {
             boolean haveFundTransfersForMeToReceive = hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null);
             if (haveFundTransfersForMeToReceive) {
                 JsfUtil.addErrorMessage("There are Fund Transfers for you to receive. Please accept them before closing the shift.");
@@ -5841,7 +5976,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        if (mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift) {
             boolean haveFundTransfersToBeReceived = hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null);
             if (haveFundTransfersToBeReceived) {
                 JsfUtil.addErrorMessage("There are Fund Transfers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your fund transfers, you can not close your shift.");
@@ -5849,7 +5984,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        if (mustReceiveAllHandoversBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustReceiveAllHandoversBeforeClosingShift) {
             boolean haveHandoversForMeToReceive = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
             if (haveHandoversForMeToReceive) {
                 JsfUtil.addErrorMessage("There are Handovers for you to receive. Please accept them before closing the shift.");
@@ -5857,7 +5992,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        if (mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift) {
+        if (!allowShiftEndWithoutHandoverAcceptance && mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift) {
             boolean haveHandoversToBeReceived = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
             if (haveHandoversToBeReceived) {
                 JsfUtil.addErrorMessage("There are Handovers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your handovers, you can not close your shift.");
@@ -5867,7 +6002,7 @@ public class FinancialTransactionController implements Serializable {
 
         boolean requireHandoverBeforeShiftEnd = configOptionApplicationController
                 .getBooleanValueByKey("Require Handover Before Shift End", false);
-        if (requireHandoverBeforeShiftEnd) {
+        if (requireHandoverBeforeShiftEnd && !allowShiftEndWithoutHandoverAcceptance) {
             boolean hasCollections = bundle != null
                     && bundle.getBundles() != null
                     && !bundle.getBundles().isEmpty()
@@ -5884,10 +6019,11 @@ public class FinancialTransactionController implements Serializable {
                     return null;
                 }
             }
-            // Also block if a handover has been created but not yet accepted by the recipient,
-            // unless 'Allow Shift End Without Handover Acceptance' is enabled (#19963).
+            // Also block if a handover has been created but not yet accepted by the recipient.
+            // (The enclosing block is already skipped entirely when 'Allow Shift End Without
+            // Handover Acceptance' is enabled — see condition above, #19963/#22931.)
             boolean hasPendingHandover = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
-            if (hasPendingHandover && !allowShiftEndWithoutHandoverAcceptance) {
+            if (hasPendingHandover) {
                 JsfUtil.addErrorMessage("Handover pending acceptance. Please wait for the recipient to accept your handover before ending your shift.");
                 return null;
             }
@@ -6629,21 +6765,33 @@ public class FinancialTransactionController implements Serializable {
 
         billController.save(currentBill);
 
-        Double cashHandover = 0.0;
+        List<DenominationTransaction> allHandoverTransactions = new ArrayList<>();
         if (bundle.getDenominationTransactions() != null) {
-            for (DenominationTransaction dt : bundle.getDenominationTransactions()) {
-                dt.setBill(currentBill);
-                if (dt.getDenominationValue() != null) {
-                    cashHandover += dt.getDenominationValue();
-                }
-                denominationTransactionController.save(dt);
-            }
+            allHandoverTransactions.addAll(bundle.getDenominationTransactions());
         }
-        currentBill.setTotal(cashHandover);
-        currentBill.setNetTotal(cashHandover);
+        if (bundle.getPaymentMethodHandoverTransactions() != null) {
+            allHandoverTransactions.addAll(bundle.getPaymentMethodHandoverTransactions());
+        }
+
+        Double totalHandover = 0.0;
+        for (DenominationTransaction dt : allHandoverTransactions) {
+            dt.setBill(currentBill);
+            if (dt.getDenominationValue() != null) {
+                totalHandover += dt.getDenominationValue();
+            }
+            denominationTransactionController.save(dt);
+        }
+        currentBill.setTotal(totalHandover);
+        currentBill.setNetTotal(totalHandover);
 
         billController.save(currentBill);
         bundle.setHandoverBill(currentBill);
+        // Combine cash + non-cash rows into one list so the print page — which reads
+        // bundle.denominationTransactions directly, the same field
+        // navigateToViewShiftEndCashInHandBill() re-populates with every
+        // DenominationTransaction row saved against this bill when viewed later —
+        // renders both consistently regardless of entry point.
+        bundle.setDenominationTransactions(allHandoverTransactions);
 
         return "/cashier/shift_end_cash_in_hand_print?faces-redirect=true";
     }
@@ -7436,6 +7584,14 @@ public class FinancialTransactionController implements Serializable {
         if (!requireHandoverBeforeShiftEnd) {
             return false;
         }
+        // 'Allow Shift End Without Handover Acceptance' overrides this check too, so the
+        // 'End the Current Shift' button is not left disabled when the hospital has opted
+        // out of strict handover enforcement (#22931).
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+        if (allowShiftEndWithoutHandoverAcceptance) {
+            return false;
+        }
         if (nonClosedShiftStartFundBill == null) {
             return false;
         }
@@ -7453,6 +7609,23 @@ public class FinancialTransactionController implements Serializable {
                 .getDoubleValueByKey("Maximum Allowed Difference for Shift End Handover", 0.01);
         double tolerance = (configuredTolerance == null) ? 0.01 : Math.max(0.0, configuredTolerance);
         return (totalCollections - totalHandedOver) > tolerance;
+    }
+
+    /**
+     * Non-blocking informational flag for the End Shift page: true when this user has a
+     * pending float transfer (outgoing not yet accepted, or incoming not yet collected) that
+     * would normally block shift end but is being bypassed because 'Allow Shift End Without
+     * Handover Acceptance' is enabled. Used purely to render an awareness banner — never
+     * disables the End Shift button (#22931).
+     */
+    public boolean isPendingFloatTransferBypassedForShiftEnd() {
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+        if (!allowShiftEndWithoutHandoverAcceptance) {
+            return false;
+        }
+        return hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)
+                || hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null);
     }
 
     public void fillHandoverBillsForMeToReceive() {
@@ -9063,6 +9236,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.WithdrawalFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        withdrawalCashBook = null;
     }
 
     //Damith
@@ -10808,7 +10982,7 @@ public class FinancialTransactionController implements Serializable {
 
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Allow Shift End Without Handover Acceptance",
-                "When enabled, a shift can be ended even if a handover has been created but not yet accepted by the recipient. A warning message is shown so the user is aware of the pending handover. Default: false (strict mode — shift end is blocked until all handovers are accepted).",
+                "Master override for hospitals that do not practice handover/float-transfer acceptance systematically. When enabled, a shift can be ended even when: a handover or float transfer has been created but not yet accepted by the recipient; a float transfer sent to this user has not yet been collected; the 'Must Receive/Wait ... Before Closing Shift' options would otherwise block; or the handed-over amount does not yet match collections ('Require Handover Before Shift End'). Informational warning messages are shown so the bypass is auditable. Default: false (strict mode — all of the above guards are enforced).",
                 OptionScope.APPLICATION
         ));
 

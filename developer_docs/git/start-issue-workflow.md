@@ -14,11 +14,7 @@ Use the `/start-issue` skill to automate all of these steps.
 
 ## Branch Naming
 
-Format: `<issueNumber>-<short-kebab-case-description>`
-
-Examples:
-- `20408-fix-cashier-bill-total-calculation`
-- `19887-collection-center-receipt-pdf`
+See [Commit Conventions § Feature Branches](commit-conventions.md#feature-branches) for the naming format. Always branch from `origin/development`, never `master`.
 
 ## Persistence.xml Swap
 
@@ -29,7 +25,7 @@ The `persistence.xml` committed on `development` uses CI/CD placeholders:
 The correct local JNDI names are stored in:
 `src/main/resources/META-INF/persistence_for_local_testing.xml`
 
-**Before pushing to remote**, revert `persistence.xml` back to placeholders (or use `/commit-code` / `verify-persistence` skill which checks this automatically).
+**Before pushing to remote**, revert `persistence.xml` back to placeholders — check it directly, or let `/commit-code` catch it (it verifies persistence.xml whenever it's staged).
 
 Reference: [persistence-workflow.md](../persistence/persistence-workflow.md)
 

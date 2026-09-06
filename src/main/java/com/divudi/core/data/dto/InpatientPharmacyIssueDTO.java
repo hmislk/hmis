@@ -15,6 +15,9 @@ public class InpatientPharmacyIssueDTO implements Serializable {
     private String departmentName;
     private Boolean billCancelled;
     private Long referenceBillItemId;
+    private Double grossValue;
+    private Double discount;
+    private Double marginValue;
 
     public InpatientPharmacyIssueDTO() {
     }
@@ -44,6 +47,22 @@ public class InpatientPharmacyIssueDTO implements Serializable {
         this.billTypeAtomic = billTypeAtomic;
         this.departmentName = departmentName;
         this.referenceBillItemId = referenceBillItemId;
+    }
+
+    public InpatientPharmacyIssueDTO(Long billItemId, String itemName, Double qty, Double netValue,
+            Date billCreatedAt, BillTypeAtomic billTypeAtomic, String departmentName,
+            Long referenceBillItemId, Double grossValue, Double discount, Double marginValue) {
+        this.billItemId = billItemId;
+        this.itemName = itemName;
+        this.qty = qty;
+        this.netValue = netValue;
+        this.billCreatedAt = billCreatedAt;
+        this.billTypeAtomic = billTypeAtomic;
+        this.departmentName = departmentName;
+        this.referenceBillItemId = referenceBillItemId;
+        this.grossValue = grossValue;
+        this.discount = discount;
+        this.marginValue = marginValue;
     }
 
     // Calculated field for rate
@@ -144,5 +163,29 @@ public class InpatientPharmacyIssueDTO implements Serializable {
 
     public void setReferenceBillItemId(Long referenceBillItemId) {
         this.referenceBillItemId = referenceBillItemId;
+    }
+
+    public Double getGrossValue() {
+        return grossValue;
+    }
+
+    public void setGrossValue(Double grossValue) {
+        this.grossValue = grossValue;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public Double getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(Double marginValue) {
+        this.marginValue = marginValue;
     }
 }

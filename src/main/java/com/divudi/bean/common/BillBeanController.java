@@ -2459,7 +2459,8 @@ public class BillBeanController implements Serializable {
                     patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
                     patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
 
-                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
+                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
+                            || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
                         patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
                         patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() + bill.getNetTotal());
@@ -4233,6 +4234,17 @@ public class BillBeanController implements Serializable {
 
         b.setNetTotal(val);
 
+        sql = "SELECT sum(b.feeVat)"
+                + " FROM BillFee b "
+                + " WHERE b.retired=false"
+                + " and b.bill=:bill ";
+        hm = new HashMap();
+        hm.put("bill", b);
+        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+
+        b.setVat(val);
+        b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
+
         getBillFacade().edit(b);
     }
 
@@ -4480,6 +4492,17 @@ public class BillBeanController implements Serializable {
         val = getBillFeeFacade().findDoubleByJpql(sql, hm);
 
         billItem.setDiscount(val);
+
+        sql = "SELECT sum(b.feeVat) "
+                + " FROM BillFee b "
+                + " WHERE b.retired=false "
+                + " and b.billItem=:bItm ";
+        hm = new HashMap();
+        hm.put("bItm", billItem);
+        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+
+        billItem.setVat(val);
+        billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
 //
 //        billItem.setEditedAt(new Date());
 //        billItem.setEditor(webUser);

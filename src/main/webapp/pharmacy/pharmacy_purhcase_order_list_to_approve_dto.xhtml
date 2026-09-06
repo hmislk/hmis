@@ -274,9 +274,8 @@
                                             icon="pi pi-check"
                                             class="ui-button-success ui-button-sm"
                                             title="Approve Purchase Order"
-                                            action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
+                                            action="#{purchaseOrderApprovingNativeSqlController.navigateToPurchaseOrderApproval(dto.billId)}"
                                             disabled="#{dto.checkedById eq null or dto.approved or dto.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
-                                            <f:setPropertyActionListener target="#{purchaseOrderController.requestedBillId}" value="#{dto.billId}"/>
                                         </p:commandButton>
                                         <p:commandButton
                                             id="btnViewApproved"

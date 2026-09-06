@@ -50,6 +50,8 @@ public class DischargeController implements Serializable {
     @Inject
     NotificationController notificationController;
     @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
     private AdmissionFacade ejbFacade;
     @EJB
     private PersonFacade personFacade;
@@ -81,10 +83,20 @@ public class DischargeController implements Serializable {
     public void delete() {
 
         if (getCurrent() != null) {
+            java.util.Map<String, Object> before = new java.util.LinkedHashMap<>();
+            before.put("bhtNo", getCurrent().getBhtNo());
+            before.put("retired", getCurrent().isRetired());
+            before.put("discharged", getCurrent().isDischarged());
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
+            java.util.Map<String, Object> after = new java.util.LinkedHashMap<>();
+            after.put("bhtNo", getCurrent().getBhtNo());
+            after.put("retired", getCurrent().isRetired());
+            after.put("discharged", getCurrent().isDischarged());
+            auditService.logEncounterAudit(getCurrent(), "Admission Deleted",
+                    before, after, getSessionController().getLoggedUser());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");
@@ -119,12 +131,26 @@ public class DischargeController implements Serializable {
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
             JsfUtil.addSuccessMessage("No Patient Data Found");
         } else {
+            // Read the persisted state for the audit before-snapshot; the
+            // session entity may already carry the new discharge date set by
+            // the calling flow (e.g. BhtSummeryController date change).
+            java.util.Map<String, Object> before = new java.util.LinkedHashMap<>();
+            Admission persisted = getEjbFacade().findWithoutCache(getCurrent().getId());
+            if (persisted != null) {
+                before.put("discharged", persisted.isDischarged());
+                before.put("dateOfDischarge", persisted.getDateOfDischarge());
+            }
             //  getCurrent().setLastPatientRoom(getPatientRoom().get(getPatientRoom().size() - 1));
             getCurrent().setDischarged(Boolean.TRUE);
             if (getCurrent().getDateOfDischarge() == null) {
                 getCurrent().setDateOfDischarge(new Date());
             }
             getEjbFacade().edit(getCurrent());
+            java.util.Map<String, Object> after = new java.util.LinkedHashMap<>();
+            after.put("discharged", getCurrent().isDischarged());
+            after.put("dateOfDischarge", getCurrent().getDateOfDischarge());
+            auditService.logEncounterAudit(getCurrent(), "Discharge",
+                    before, after, getSessionController().getLoggedUser());
             notificationController.createNotification(getCurrent(), "FinalDischarge");
             JsfUtil.addSuccessMessage("Discharged");
 

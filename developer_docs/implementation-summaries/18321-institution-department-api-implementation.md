@@ -52,7 +52,7 @@ Created comprehensive REST APIs for managing Institutions, Departments, Sites, a
 - `SiteApi.java` (354 lines) - Site REST endpoints
 
 #### 4. Documentation (1 file)
-- `developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md` (2,498 lines) - Comprehensive API documentation
+- `developer_docs/api/using-apis/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md` (2,498 lines) - Comprehensive API documentation
 
 **Total**: 26 new files, 5,315+ lines of production-ready code
 
@@ -265,7 +265,7 @@ curl -X PUT "http://localhost:8080/hmis/api/departments/456/config" \
 ## Documentation
 
 The complete API documentation is available at:
-`developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md`
+`developer_docs/api/using-apis/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md`
 
 This 2,498-line document includes:
 - Complete endpoint reference

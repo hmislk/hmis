@@ -6,10 +6,12 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.PriceMatrixController;
@@ -17,7 +19,11 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
@@ -55,6 +61,7 @@ import com.divudi.service.pharmacy.RetailSaleNativeSqlService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +109,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     private PriceMatrixController priceMatrixController;
     @Inject
     private PatientDepositController patientDepositController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     // ---- EJB ----
     @EJB
@@ -144,7 +155,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     private String comment = "";
     private double cashPaid;
     private double balance;
-    private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod = PaymentMethod.Cash;
     private PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
     private Staff toStaff;
@@ -153,15 +164,131 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         resetAll();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_bill_retail_sale_native",
+                "Pharmacy Retail Sale (Native)",
+                "Pharmacy retail sale billing interface using the native SQL workflow",
+                "RetailSaleNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Medicine Identification Codes Used",
+                "Enables medicine identification code lookup during item search",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Bill Support for Native Printers",
+                "Enables native printer support for pharmacy bill printing",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill is PosHeaderPaper",
+                "Prints the retail sale bill on POS paper with a header section",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 2",
+                "Prints the retail sale bill using custom paper format 2",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 3",
+                "Prints the retail sale bill using custom paper format 3",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header",
+                "Prints the retail sale bill on Five-Five paper without a blank header space",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper",
+                "Prints the retail sale bill on standard POS paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper Custom 1",
+                "Prints the retail sale bill on POS paper using custom format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS paper with header",
+                "Prints the retail sale bill on POS paper with a header line",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show alternative medicines available during retail sale",
+                "Displays alternative/substitute medicines available while entering a retail sale",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacySale",
+                "Permission to access and perform pharmacy retail sale billing"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------
     // Navigation
     // -----------------------------------------------------------------------
 
+    /**
+     * Shift-start guard ported from PharmacySaleForCashierController.navigateToPharmacyRetailSale()
+     * (:1590-1607). Lost when this page was migrated to native SQL (#20260); without it, users could
+     * open the retail sale page and settle bills even with "Pharmacy billing can be done after shift
+     * start" enabled and no shift actually started.
+     */
     public String pharmacyRetailSaleNative() {
-        resetAll();
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetAll();
+                billSettlingStarted = false;
+                return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            resetAll();
+            billSettlingStarted = false;
+            return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+        }
+    }
+
+    /**
+     * Navigation target of the 4-window switch buttons (Sale 1..4).
+     *
+     * Unlike {@link #pharmacyRetailSaleNative()} this deliberately does <b>not</b>
+     * reset the window: a cart parked in another window must survive a switch. It only
+     * clears the settle-in-progress latch so a window abandoned mid-settle is usable
+     * again. Mirrors PharmacySaleController.pharmacyRetailSale(). Issue #22443.
+     */
+    public String switchToThisSaleWindow() {
         billSettlingStarted = false;
         return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
     }
@@ -749,39 +876,151 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             JsfUtil.addErrorMessage("You are not allowed to select expired items.");
             return;
         }
-        if (stockDto.getStockQty() != null && intQty > stockDto.getStockQty()) {
-            JsfUtil.addErrorMessage("No sufficient stock available.");
-            return;
-        }
-        if (billItemDataList != null) {
-            for (BillItemData existing : billItemDataList) {
-                if (selectedStockId.equals(existing.getStockId())) {
-                    JsfUtil.addErrorMessage("This batch is already added to the bill. Edit the quantity instead.");
-                    return;
-                }
+
+        // Issue #13260: when "Add quantity from multiple batches in pharmacy retail billing" is on,
+        // a requested quantity larger than the selected batch's stock is filled from the next
+        // available batches of the same item (FEFO — earliest expiry first), creating one bill line
+        // per batch consumed. When off, the requested qty must fit within the selected batch.
+        boolean multipleBatches = configOptionApplicationController.getBooleanValueByKey(
+                "Add quantity from multiple batches in pharmacy retail billing", false);
+
+        if (!multipleBatches) {
+            if (stockDto.getStockQty() != null && intQty > stockDto.getStockQty()) {
+                JsfUtil.addErrorMessage("No sufficient stock available.");
+                return;
             }
         }
 
-        double qty = intQty.doubleValue();
+        // Allergy check is per item, not per batch — do it once up front.
+        boolean shouldCheckAllergies = configOptionApplicationController.getBooleanValueByKey(
+                "Check for Allergies during Dispensing", false)
+                && patient != null && patient.getId() != null;
+        try {
+            if (shouldCheckAllergies) {
+                Item itemRef = itemFacade.find(stockDto.getItemId());
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForItem(patient, itemRef, allergyListOfPatient);
+                if (allergyMsg != null && !allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Allergy check failed for item {0}: {1}",
+                    new Object[]{stockDto.getItemId(), e.getMessage()});
+            if (shouldCheckAllergies) {
+                JsfUtil.addErrorMessage("Could not complete allergy check. Please try again.");
+                return;
+            }
+        }
 
-        double[] batchRates = fetchBatchRates(stockDto.getItemBatchId());
+        double requestedQty = intQty.doubleValue();
+        double remainingQty = requestedQty;
+
+        if (!multipleBatches) {
+            // Single-batch behaviour (unchanged): block if already added, then add the full qty.
+            if (isStockAlreadyOnBill(selectedStockId)) {
+                JsfUtil.addErrorMessage("This batch is already added to the bill. Edit the quantity instead.");
+                return;
+            }
+            addBillItemLineForStock(stockDto, requestedQty);
+            calTotal();
+            clearBillItem();
+            return;
+        }
+
+        // Priority allocation: fully satisfy from the batch the user selected (e.g. for its
+        // price) if it has enough stock; only top up the shortfall FEFO from other batches.
+        double addedQty = 0.0;
+
+        // Priority 1: fully satisfy from the batch the user selected, if possible.
+        if (!isStockAlreadyOnBill(selectedStockId)) {
+            double selectedAvailable = stockDto.getStockQty() != null ? stockDto.getStockQty() : 0.0;
+            double takeFromSelected = Math.min(remainingQty, selectedAvailable);
+            if (takeFromSelected > 0) {
+                addBillItemLineForStock(stockDto, takeFromSelected);
+                addedQty += takeFromSelected;
+                remainingQty -= takeFromSelected;
+            }
+        }
+
+        // Priority 2: only the shortfall (if any) is topped up FEFO from other batches.
+        if (remainingQty > 0) {
+            List<StockDTO> others = findNextAvailableStockDtos(stockDto.getItemId(), selectedStockId);
+            others.sort(Comparator.comparing(
+                    StockDTO::getDateOfExpire,
+                    Comparator.nullsLast(Date::compareTo)));
+            for (StockDTO next : others) {
+                if (remainingQty <= 0) {
+                    break;
+                }
+                if (isStockAlreadyOnBill(next.getId())) {
+                    continue;
+                }
+                double available = next.getStockQty() != null ? next.getStockQty() : 0.0;
+                double take = Math.min(remainingQty, available);
+                if (take <= 0) {
+                    continue;
+                }
+                addBillItemLineForStock(next, take);
+                addedQty += take;
+                remainingQty -= take;
+            }
+        }
+
+        if (addedQty <= 0) {
+            JsfUtil.addErrorMessage("No sufficient stock available.");
+            return;
+        }
+        if (remainingQty > 0) {
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty)
+                    + " of the requested " + String.format("%.0f", requestedQty)
+                    + " is available across all batches.");
+        }
+
+        calTotal();
+        clearBillItem();
+    }
+
+    /** True if a bill line already exists for the given stock id. */
+    private boolean isStockAlreadyOnBill(Long stockId) {
+        if (billItemDataList == null || stockId == null) {
+            return false;
+        }
+        for (BillItemData existing : billItemDataList) {
+            if (stockId.equals(existing.getStockId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Build a single bill line for the given stock/batch at the given quantity and append it to
+     * {@link #billItemDataList}. Shared by the single-batch and multi-batch (#13260) paths so the
+     * rate, discount and value calculations stay identical regardless of how the batch was chosen.
+     */
+    private void addBillItemLineForStock(StockDTO stk, double qty) {
+        double[] batchRates = fetchBatchRates(stk.getItemBatchId());
         double batchRetailRate    = batchRates[0];
         double batchPurchaseRate  = batchRates[1];
         double batchWholesaleRate = batchRates[2];
         Double batchCostRate      = batchRates[3] > 0 ? batchRates[3] : null;
 
-        long ampItemId = resolveAmpItemId(stockDto.getItemId());
+        long ampItemId = resolveAmpItemId(stk.getItemId());
 
         BillItemData bid = new BillItemData();
-        bid.setItemId(stockDto.getItemId());
-        bid.setItemName(stockDto.getItemName());
+        bid.setItemId(stk.getItemId());
+        bid.setItemName(stk.getItemName());
         bid.setAmpItemId(ampItemId);
-        bid.setStockId(selectedStockId);
-        bid.setItemBatchId(stockDto.getItemBatchId());
+        bid.setStockId(stk.getId());
+        bid.setItemBatchId(stk.getItemBatchId());
         bid.setQty(qty);
         bid.setPbiQty(-Math.abs(qty));
         bid.setFreeQty(0.0);
-        bid.setRetailRate(stockDto.getRetailRate() != null ? stockDto.getRetailRate() : 0.0);
+        bid.setRetailRate(stk.getRetailRate() != null ? stk.getRetailRate() : 0.0);
         bid.setPurchaseRate(batchPurchaseRate);
         bid.setWholesaleRate(batchWholesaleRate);
         bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
@@ -789,28 +1028,17 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         bid.setBatchPurchaseRate(batchPurchaseRate);
         bid.setBatchWholesaleRate(batchWholesaleRate);
         bid.setBatchCostRate(batchCostRate);
-        bid.setDoe(stockDto.getDateOfExpire());
-        bid.setDescription(stockDto.getItemName());
+        bid.setDoe(stk.getDateOfExpire());
+        bid.setDescription(stk.getItemName());
         bid.setCreatedAt(new Date());
         bid.setCreaterId(sessionController.getLoggedUser().getId());
 
-        double lineRetailRate = stockDto.getRetailRate() != null ? stockDto.getRetailRate() : 0.0;
+        double lineRetailRate = stk.getRetailRate() != null ? stk.getRetailRate() : 0.0;
         double grossValue = lineRetailRate * qty;
         double discountPct = 0.0;
         double discountValue = 0.0;
         try {
-            Item itemRef = itemFacade.find(stockDto.getItemId());
-            if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing", false)
-                    && patient != null && patient.getId() != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
-                }
-                String allergyMsg = pharmacyService.getAllergyMessageForItem(patient, itemRef, allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
+            Item itemRef = itemFacade.find(stk.getItemId());
             if (Boolean.TRUE.equals(itemRef.isDiscountAllowed())) {
                 Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
                         paymentMethod, paymentScheme, sessionController.getDepartment(), itemRef);
@@ -819,7 +1047,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Discount lookup failed for item {0}: {1}",
-                    new Object[]{stockDto.getItemId(), e.getMessage()});
+                    new Object[]{stk.getItemId(), e.getMessage()});
         }
         double netValue = grossValue - discountValue;
         double netRate = qty > 0 ? netValue / qty : lineRetailRate;
@@ -836,9 +1064,38 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             billItemDataList = new ArrayList<>();
         }
         billItemDataList.add(bid);
+    }
 
-        calTotal();
-        clearBillItem();
+    /**
+     * FEFO lookup (#13260): non-expired, in-stock batches of the same item in this department,
+     * excluding the already-picked stock, ordered by earliest expiry first. JPQL DTO projection —
+     * consistent with the rest of this controller (no JPA entity graph / cascade).
+     */
+    private List<StockDTO> findNextAvailableStockDtos(Long itemId, Long excludeStockId) {
+        if (itemId == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", itemId);
+        params.put("department", sessionController.getDepartment());
+        params.put("stockMin", 0.0);
+        params.put("excludeStockId", excludeStockId != null ? excludeStockId : -1L);
+        params.put("now", CommonFunctions.getCurrentDateTime());
+
+        String jpql = "SELECT NEW com.divudi.core.data.dto.StockDTO("
+                + "s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, "
+                + "s.itemBatch.item.name, s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire) "
+                + "FROM Stock s "
+                + "WHERE s.itemBatch.item.id = :itemId "
+                + "AND s.department = :department "
+                + "AND s.stock > :stockMin "
+                + "AND s.id <> :excludeStockId "
+                + "AND s.itemBatch.dateOfExpire > :now "
+                + "ORDER BY s.itemBatch.dateOfExpire";
+
+        List<StockDTO> result = (List<StockDTO>) stockFacade.findLightsByJpql(
+                jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
     }
 
     private double[] fetchBatchRates(Long itemBatchId) {
@@ -954,8 +1211,9 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
         qry = qry.replaceAll("[\\n\\r]", "").trim();
 
+        Department department = sessionController.getLoggedUser().getDepartment();
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", sessionController.getLoggedUser().getDepartment());
+        parameters.put("department", department);
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry + "%");
 
@@ -986,10 +1244,76 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
         }
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+        
+        Integer configuredMaxResult = configOptionApplicationController.getIntegerValueByKey(
+                "Pharmacy Retail Sale - Medicine Autocomplete Max Results", 20);
+        int maxResult = configuredMaxResult == null || configuredMaxResult < 1
+                ? 20
+                : configuredMaxResult;
 
         lastAutocompleteResults = (List<StockDTO>) stockFacade.findLightsByJpql(
-                sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
-        return lastAutocompleteResults != null ? lastAutocompleteResults : new ArrayList<>();
+                sql.toString(), parameters, TemporalType.TIMESTAMP, maxResult);
+        if (lastAutocompleteResults == null) {
+            lastAutocompleteResults = new ArrayList<>();
+        }
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Retail Sale - Show Total AMP Stock in Autocomplete", false)) {
+            populateTotalStockQty(lastAutocompleteResults, department);
+        }
+        return lastAutocompleteResults;
+    }
+
+    /**
+     * Populates the AMP-wide total stock quantity (summed across all batches
+     * of the item in the given department) onto each StockDTO's
+     * totalStockQty field. This is separate from the per-batch "Stocks"
+     * value already present on the DTO (dto.getStock()), which reflects only
+     * the single matched Stock row.
+     * <p>
+     * Gated behind the "Pharmacy Retail Sale - Show Total AMP Stock in
+     * Autocomplete" config key so it never runs unless explicitly enabled.
+     * Runs exactly one aggregate JPQL query regardless of list size (never a
+     * per-row subquery).
+     */
+    private void populateTotalStockQty(List<StockDTO> stocks, Department department) {
+        if (stocks == null || stocks.isEmpty()) {
+            return;
+        }
+        List<Long> itemIds = new ArrayList<>();
+        for (StockDTO dto : stocks) {
+            Long itemId = dto.getItemId();
+            if (itemId != null && !itemIds.contains(itemId)) {
+                itemIds.add(itemId);
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemIds", itemIds);
+        params.put("department", department);
+        String jpql = "SELECT s.itemBatch.item.id, SUM(s.stock) FROM Stock s "
+                + "WHERE s.itemBatch.item.id IN :itemIds AND s.department = :department "
+                + "GROUP BY s.itemBatch.item.id";
+        List<Object[]> rows = stockFacade.findAggregates(jpql, params);
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> totals = new HashMap<>();
+        for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) {
+                continue;
+            }
+            Long itemId = ((Number) row[0]).longValue();
+            Double totalStock = ((Number) row[1]).doubleValue();
+            totals.put(itemId, totalStock);
+        }
+
+        for (StockDTO dto : stocks) {
+            dto.setTotalStockQty(totals.get(dto.getItemId()));
+        }
     }
 
     public void handleSelect(SelectEvent<StockDTO> event) {
@@ -1211,7 +1535,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         comment = "";
         cashPaid = 0.0;
         balance = 0.0;
-        paymentMethod = null;
+        paymentMethod = PaymentMethod.Cash;
         paymentScheme = null;
         paymentMethodData = null;
         toStaff = null;

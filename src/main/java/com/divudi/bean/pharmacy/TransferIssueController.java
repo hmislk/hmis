@@ -785,6 +785,11 @@ public class TransferIssueController implements Serializable {
             return;
         }
 
+        if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
+            getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
+        }
+        stampDepartmentTypeFromItemsIfMissing();
+
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
             BillItem originalOrderItem = billItemsInIssue.getReferanceBillItem();
@@ -1790,6 +1795,30 @@ public class TransferIssueController implements Serializable {
             getBillFacade().create(getIssuedBill());
         } else {
             getBillFacade().edit(getIssuedBill());
+        }
+    }
+
+    // Fallback when neither the request bill nor addToBill stamped a
+    // departmentType: department-type-filtered reports drop NULL bills (#22056).
+    // Stamps only when all non-null item types agree; mixed legacy data is left
+    // unset rather than misclassifying the whole bill.
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getIssuedBill().getDepartmentType() != null) {
+            return;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return;
+            }
+        }
+        if (found != null) {
+            getIssuedBill().setDepartmentType(found);
         }
     }
 

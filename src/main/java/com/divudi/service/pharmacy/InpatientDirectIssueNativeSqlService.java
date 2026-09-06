@@ -98,13 +98,22 @@ public class InpatientDirectIssueNativeSqlService {
             double absNetValue  = Math.abs(d.getNetValue());
             double absGrossValue = Math.abs(d.getGrossValue());
             double netRate      = absQty > 0 ? absNetValue / absQty : 0.0;
+            double rate         = d.getRate();
+            double marginValue  = Math.abs(d.getMarginValue());
+            double discountValue = Math.abs(d.getDiscountValue());
+            // discountRate is a per-unit discount amount throughout this codebase
+            // (see PharmacyFastRetailSaleController.calculateBillItemDiscountRate:
+            // dr = retailRate * discountPercent / 100), NOT the raw percentage.
+            double discountRate = absQty > 0 ? discountValue / absQty : 0.0;
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
                 + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " rate, marginValue, discount, discountRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
-                + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " consideredForCosting, inwardChargeType, referanceBillItem_ID,"
+                + " overriddenRate, fromPackage, sourcePackageItem_ID)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?,?,?,?)")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
@@ -112,8 +121,16 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
                 .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
+                .setParameter(8, rate)
+                .setParameter(9, marginValue)
+                .setParameter(10, discountValue)
+                .setParameter(11, discountRate)
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
+                .setParameter(14, d.getSourceRequestBillItemId())
+                .setParameter(15, d.getOverriddenRate())
+                .setParameter(16, d.isFromPackage() ? 1 : 0)
+                .setParameter(17, d.getSourcePackageItemId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -168,11 +185,7 @@ public class InpatientDirectIssueNativeSqlService {
         LOGGER.log(Level.INFO, "[NativeSettle] Starting finance details ms={0}", System.currentTimeMillis() - t0);
         double[] billTotals = insertFinanceDetails(billId, biIds, pbIds, items);
 
-        // Step 5: Update bill-level totals natively, then refresh the managed entity.
-        // em.refresh(bill) reloads both the updated totals and the natively-written
-        // BILLFINANCEDETAILS_ID FK (set by insertFinanceDetails) into L1. Without the
-        // refresh, L1 retains billFinanceDetails=null and that stale null FK would be
-        // merged into L2 at commit, causing subsequent EAGER loads to return null. (#20435)
+        // Step 5: Update bill-level totals natively.
         em.createNativeQuery(
                 "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=? WHERE ID=?")
                 .setParameter(1, billTotals[0])   // grossTotal
@@ -180,17 +193,35 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(3, billTotals[0])   // grantTotal = grossTotal (intentional naming per Bill entity)
                 .setParameter(4, billId)
                 .executeUpdate();
-        em.refresh(bill);
 
-        // Evict natively-written entity classes from the EclipseLink L2 cache.
-        // Bill is intentionally NOT evicted — em.refresh(bill) loaded the correct full
-        // state (totals + BILLFINANCEDETAILS_ID FK) and the commit merges it into L2.
+        // Reconcile the JPA caches with the natively-written state WITHOUT the
+        // catastrophic full-graph reload that em.refresh(bill) triggers.
+        //
+        // Previously this used em.refresh(bill) to pull the natively-written
+        // BILLFINANCEDETAILS_ID FK + totals back into L1 so a stale null FK would
+        // not be merged into L2 at commit (#20435). But em.refresh reloads the
+        // Bill's entire EAGER graph, and Bill.stockBill (EAGER) ↔ StockBill.bill
+        // (EAGER) form a circular EAGER reference; every Bill pulled in drags its
+        // own EAGER one-to-ones (pharmacyBill/stockBill/billFinanceDetails/
+        // currentRequest). For a batch whose related bill-graph is not yet in the
+        // L2 cache this fanned out into a ~30s recursive load — the "first issue of
+        // a batch is slow, later issues of the same batch are fast" symptom (#21888).
+        //
+        // Instead: detach the managed Bill so its stale (billFinanceDetails=null)
+        // state is NOT merged into L2 at commit, and evict Bill from L2 so the next
+        // read reloads the correct FK straight from the database. Same correctness
+        // guarantee as the refresh, none of the EAGER-graph cost.
+        long tReconcile = System.currentTimeMillis();
+        em.detach(bill);
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
+        cache.evict(Bill.class, billId);
         cache.evict(StockHistory.class);
         cache.evict(Stock.class);
         cache.evict(BillItem.class);
         cache.evict(BillFinanceDetails.class);
         cache.evict(BillItemFinanceDetails.class);
+        LOGGER.log(Level.INFO, "[NativeSettle] cache reconcile done ms={0} reconcileMs={1}",
+                new Object[]{System.currentTimeMillis() - t0, System.currentTimeMillis() - tReconcile});
 
         LOGGER.log(Level.INFO, "[NativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});

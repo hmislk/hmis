@@ -8,11 +8,16 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dto.TransferIssueItemRowDto;
 import com.divudi.core.data.dto.TransferIssuePrintDto;
 import com.divudi.core.entity.Bill;
@@ -31,6 +36,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -55,6 +62,8 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private static final Logger LOGGER = Logger.getLogger(TransferIssueNativeSqlController.class.getName());
+
     // ---- State ----
     private Bill requestedBill;
     private Long requestedBillId;
@@ -67,6 +76,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     // ---- Injected ----
     @Inject
     private SessionController sessionController;
+
+    @Inject
+    private WebUserController webUserController;
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -89,7 +101,59 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         // No heavy initialization — list is loaded on navigation
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_transfer_issue_native",
+                "Pharmacy Transfer Issue (Native)",
+                "Issue stock transfers to another department using the native SQL workflow",
+                "TransferIssueNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Issue A4 Paper",
+                "Controls whether transfer issue receipts print on A4 paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Use Save Finalize Approve Workflow for Issue for Requests",
+                "Enables the multi-step save, finalize, and approve workflow for issuing against transfer requests",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyIssueForRequestApprove",
+                "Permission to approve stock transfer issues raised against requests"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyIssueForRequestFinalize",
+                "Permission to finalize stock transfer issues raised against requests"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyIssueForRequestSave",
+                "Permission to save stock transfer issues raised against requests"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyTransferViewRates",
+                "Permission to view purchase/transfer rates on the transfer issue screen"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------
@@ -166,6 +230,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public void saveDraftNativeIssue() {
+        if (!isAuthorized("SAVE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestSave")) {
+            return;
+        }
         if (issueItems == null || issueItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items to save. Please check the request.");
             return;
@@ -194,8 +261,9 @@ public class TransferIssueNativeSqlController implements Serializable {
         if (issuedBill != null) {
             draft.setToStaff(issuedBill.getToStaff());
         }
-        billFacade.create(draft);
         issuedBill = draft;
+        stampDepartmentTypeIfMissing();
+        billFacade.create(draft);
         draftMode = true;
         JsfUtil.addSuccessMessage("Draft fast issue saved. Please proceed to Finalize.");
     }
@@ -231,6 +299,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public void finalizeDraftNativeIssue() {
+        if (!isAuthorized("FINALIZE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (issuedBill == null || issuedBill.getId() == null) {
             JsfUtil.addErrorMessage("No draft to finalize.");
             return;
@@ -253,6 +324,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public synchronized String approveDraftNativeIssue() {
+        if (!isAuthorized("APPROVE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestApprove")) {
+            return null;
+        }
         if (issueItems == null || issueItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items to issue. Reload the draft and check quantities.");
             return null;
@@ -308,6 +382,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public String cancelPendingNativeIssue() {
+        if (!isAuthorized("CANCEL_PENDING_NATIVE_ISSUE", "PharmacyTransferIssueCancel")) {
+            return "";
+        }
         if (issuedBill == null || issuedBill.getId() == null) {
             JsfUtil.addErrorMessage("No draft to cancel.");
             return null;
@@ -353,6 +430,9 @@ public class TransferIssueNativeSqlController implements Serializable {
      * Mirrors TransferIssueForRequestsController.settle().
      */
     public void settle() {
+        if (!isAuthorized("SETTLE_NATIVE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (issueItems == null || issueItems.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to issue. Please check quantities.");
             return;
@@ -561,6 +641,27 @@ public class TransferIssueNativeSqlController implements Serializable {
         issuedBill.setDepartment(sessionController.getDepartment());
         issuedBill.setCreater(sessionController.getLoggedUser());
         issuedBill.setCreatedAt(new Date());
+        stampDepartmentTypeIfMissing();
+    }
+
+    /**
+     * Department-type-filtered reports drop bills left NULL (#22056). The request bill
+     * normally already carries a departmentType (TransferRequestController stamps it on
+     * first item add); this is the fallback for legacy requests that predate that stamp —
+     * take the first issued item's type, defaulting to Pharmacy (#22146).
+     */
+    private void stampDepartmentTypeIfMissing() {
+        if (issuedBill.getDepartmentType() != null) {
+            return;
+        }
+        if (requestedBill != null && requestedBill.getDepartmentType() != null) {
+            issuedBill.setDepartmentType(requestedBill.getDepartmentType());
+            return;
+        }
+        if (issueItems != null && !issueItems.isEmpty()) {
+            String dt = issueItems.get(0).getDepartmentType();
+            issuedBill.setDepartmentType(dt != null ? DepartmentType.valueOf(dt) : DepartmentType.Pharmacy);
+        }
     }
 
     private void applyBillNumbers(Bill bill) {
@@ -755,5 +856,35 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     public void setDraftMode(boolean draftMode) {
         this.draftMode = draftMode;
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Transfer Issue (native
+     * SQL / fast issue) privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. SAVE_DRAFT_NATIVE_ISSUE, FINALIZE_DRAFT_NATIVE_ISSUE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, issuedBill != null ? issuedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = issuedBill != null ? issuedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Transfer Issue (native) access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " fast transfer issues.");
+            return false;
+        }
+
+        return true;
     }
 }

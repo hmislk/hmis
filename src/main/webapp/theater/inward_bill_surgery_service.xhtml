@@ -199,10 +199,10 @@
                                             <p:column>
                                                 <h:outputLabel value="#{ix.department.name}"/>
                                             </p:column>  
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.total}" 
+                                            <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                <h:outputLabel value="#{ix.total}"
                                                                rendered="#{ix.chargesVisibleForInward}"/>
-                                            </p:column>  
+                                            </p:column>
                                             <p:ajax event="itemSelect" process="acIx" update="@all" />
                                         </p:autoComplete>
 
@@ -261,6 +261,13 @@
 
                                                 </p:column>
 
+                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                    <f:facet name="header">VAT</f:facet>
+                                                    <h:outputLabel value="#{bi.billItem.vat}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </p:column>
+
                                                 <p:column>
                                                     <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem(bi)}" >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
@@ -283,10 +290,7 @@
                                             </p:dataTable>
                                         </p:tab>
                                         <p:tab id="tabBillFee" title="Fees" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif" 
-                                                         rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
-                                                                          or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                          ? '':'noDisplayRow'}">
+                                            <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif">
                                                 <p:column>
                                                     <f:facet name="header">No</f:facet>
                                                     <h:outputLabel value="#{rowIndex+1}"/>
@@ -297,9 +301,9 @@
                                                     <h:outputLabel value="#{bif.billItem.item.name}"/>
                                                 </p:column>
 
-                                                <p:column >
+                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                     <f:facet name="header">Fee Gross Value</f:facet>
-                                                    <h:inputText autocomplete="off" value="#{bif.feeGrossValue}" 
+                                                    <h:inputText autocomplete="off" value="#{bif.feeGrossValue}"
                                                                  disabled="#{!bif.billItem.item.userChangable
                                                                              or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                         <f:convertNumber pattern="#,##0.00" />
@@ -310,16 +314,23 @@
                                                     </h:inputText>
                                                 </p:column>
 
-                                                <p:column>
-                                                    <f:facet name="header">Matrix Value</f:facet>  
+                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                    <f:facet name="header">Matrix Value</f:facet>
                                                     <h:outputLabel id="matrix" value="#{bif.feeMargin}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:column>
 
-                                                <p:column >
+                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                                     <f:facet name="header">Fee Value</f:facet>
                                                     <h:outputLabel id="feeValue"  value="#{bif.feeValue}"  >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </p:column>
+
+                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                    <f:facet name="header">VAT</f:facet>
+                                                    <h:outputLabel value="#{bif.feeVat}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:column>
@@ -350,6 +361,18 @@
                                         <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                             <h:outputLabel value="Total" ></h:outputLabel>
                                             <h:outputLabel id="tot" value="#{billBhtController.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Net Total" ></h:outputLabel>
+                                            <h:outputLabel value="#{billBhtController.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="VAT" ></h:outputLabel>
+                                            <h:outputLabel value="#{billBhtController.vat}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Net Total + VAT" ></h:outputLabel>
+                                            <h:outputLabel value="#{billBhtController.vatPlusNetTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:panelGrid>
@@ -459,7 +482,7 @@
                                                             </h:outputLabel>
                                                         </h:panelGroup>
                                                     </h:column>
-                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee') or webUserController.hasPrivilege('ShowServiceCharges')}">
 
                                                         <h:outputLabel  value="#{bip.billItem.grossValue}"
                                                                         rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
@@ -467,14 +490,14 @@
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </h:column>
-                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">                                                       
+                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee') or webUserController.hasPrivilege('ShowServiceCharges')}">                                                       
                                                         <h:outputLabel  value="#{bip.billItem.marginValue}" 
                                                                         rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
                                                                         style="margin: 4px; font-size: 11px!important;" >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </h:column>
-                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">                                                     
+                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee') or webUserController.hasPrivilege('ShowServiceCharges')}">                                                     
                                                         <h:outputLabel  value="#{bip.billItem.netValue}"  
                                                                         rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
                                                                         style="margin: 4px; font-size: 11px!important;" >

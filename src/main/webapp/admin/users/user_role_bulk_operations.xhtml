@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:p="http://primefaces.org/ui"
+      >
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}">
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" layout="block">
+                    <h:form id="frmBulk">
+
+                        <p:messages id="messages" showDetail="true" closable="true" />
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p:panel class="w-100">
+                                    <f:facet name="header">
+                                        <i class="fa fa-filter" aria-hidden="true" />
+                                        <h:outputLabel value="Filter Users" class="mx-2" />
+                                    </f:facet>
+
+                                    <p:outputLabel value="Role" for="cmbFilterRole" class="d-block" />
+                                    <p:selectOneMenu
+                                        id="cmbFilterRole"
+                                        value="#{userRoleManagementController.filterRole}"
+                                        class="w-100 mb-2"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Any Role" ></f:selectItem>
+                                        <f:selectItems
+                                            value="#{userRoleManagementController.roles}"
+                                            var="r"
+                                            itemLabel="#{r.name}"
+                                            itemValue="#{r}" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Department" for="cmbFilterDepartment" class="d-block" />
+                                    <p:selectOneMenu
+                                        id="cmbFilterDepartment"
+                                        value="#{userRoleManagementController.filterDepartment}"
+                                        class="w-100 mb-2"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Any Department" ></f:selectItem>
+                                        <f:selectItems
+                                            value="#{userRoleManagementController.allDepartments}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Institution" for="cmbFilterInstitution" class="d-block" />
+                                    <p:selectOneMenu
+                                        id="cmbFilterInstitution"
+                                        value="#{userRoleManagementController.filterInstitution}"
+                                        class="w-100 mb-2"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Any Institution" ></f:selectItem>
+                                        <f:selectItems
+                                            value="#{userRoleManagementController.institutions}"
+                                            var="i"
+                                            itemLabel="#{i.name}"
+                                            itemValue="#{i}" />
+                                    </p:selectOneMenu>
+
+                                    <p:commandButton
+                                        id="btnFilterUsers"
+                                        value="List Users"
+                                        icon="fa fa-list"
+                                        class="ui-button-info w-100 mt-2"
+                                        process="@this cmbFilterRole cmbFilterDepartment cmbFilterInstitution"
+                                        update="tblUsers messages"
+                                        action="#{userRoleManagementController.fillUsersByFilter()}" />
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-9">
+                                <p:panel class="w-100">
+                                    <f:facet name="header">
+                                        <i class="fa fa-users" aria-hidden="true" />
+                                        <h:outputLabel value="Matching Users" class="mx-2" />
+                                    </f:facet>
+
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <p:commandButton
+                                            id="btnSelectAll"
+                                            value="Select All"
+                                            icon="fa fa-check-double"
+                                            class="ui-button-secondary"
+                                            process="@this tblUsers"
+                                            update="tblUsers messages"
+                                            action="#{userRoleManagementController.selectAllFilteredUsers()}" />
+                                    </div>
+
+                                    <p:dataTable
+                                        id="tblUsers"
+                                        var="u"
+                                        value="#{userRoleManagementController.filteredUsers}"
+                                        selection="#{userRoleManagementController.selectedUsers}"
+                                        selectionMode="multiple"
+                                        rowKey="#{u.id}"
+                                        paginator="true"
+                                        rows="25"
+                                        paginatorAlwaysVisible="false"
+                                        rowsPerPageTemplate="25,50,100"
+                                        styleClass="p-datatable-sm"
+                                        stickyHeader="true">
+                                        <p:column selectionBox="true" style="width:3rem; text-align:center;" />
+                                        <p:column headerText="Name">
+                                            <h:outputText value="#{u.name}" />
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{u.code}" />
+                                        </p:column>
+                                        <p:column headerText="Role">
+                                            <h:outputText value="#{u.role ne null ? u.role.name : '(none)'}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+
+                                <p:panel class="w-100 mt-3">
+                                    <f:facet name="header">
+                                        <i class="fa fa-user-cog" aria-hidden="true" />
+                                        <h:outputLabel value="Role Operation for Selected Users" class="mx-2" />
+                                    </f:facet>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <p:outputLabel value="Role" for="cmbBulkRole" class="d-block" />
+                                            <p:selectOneMenu
+                                                id="cmbBulkRole"
+                                                value="#{userRoleManagementController.selectedRole}"
+                                                class="w-100"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Role" ></f:selectItem>
+                                                <f:selectItems
+                                                    value="#{userRoleManagementController.roles}"
+                                                    var="r"
+                                                    itemLabel="#{r.name}"
+                                                    itemValue="#{r}" />
+                                            </p:selectOneMenu>
+                                            <h:outputText value="Leave empty on Reset to use each user's own role." class="text-muted" style="font-size:0.85em;" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Departments to Apply Operations In" for="chkBulkDepartments" class="d-block" />
+                                            <p:selectManyCheckbox
+                                                id="chkBulkDepartments"
+                                                value="#{userRoleManagementController.selectedDepartments}"
+                                                converter="userRoleDepartmentConverter"
+                                                layout="grid"
+                                                columns="2"
+                                                class="w-100">
+                                                <f:selectItems
+                                                    value="#{userRoleManagementController.allDepartments}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectManyCheckbox>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Aspects to Apply" class="d-block" />
+                                            <div class="d-flex flex-wrap gap-3 mt-1">
+                                                <p:selectBooleanCheckbox id="chkAspectPrivileges" value="#{userRoleManagementController.aspectPrivileges}" itemLabel="Privileges" />
+                                                <p:selectBooleanCheckbox id="chkAspectIcons" value="#{userRoleManagementController.aspectIcons}" itemLabel="Icons" />
+                                                <p:selectBooleanCheckbox id="chkAspectSubscriptions" value="#{userRoleManagementController.aspectSubscriptions}" itemLabel="Subscriptions" />
+                                                <p:selectBooleanCheckbox id="chkAspectLoginPage" value="#{userRoleManagementController.aspectLoginPage}" itemLabel="Default Login Page" />
+                                            </div>
+                                            <div class="mt-2">
+                                                <p:selectBooleanCheckbox id="chkUpdateUserRole" value="#{userRoleManagementController.updateUserRole}" itemLabel="Also set selected role as each user's role on reset" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-2">
+                                        <div class="col-md-12 d-flex flex-wrap gap-2">
+                                            <p:commandButton
+                                                id="btnBulkPreviewReset"
+                                                value="Preview Reset"
+                                                icon="fa fa-eye"
+                                                class="ui-button-info ui-button-outlined"
+                                                process="@form"
+                                                update="opPreview messages"
+                                                action="#{userRoleManagementController.previewBulk('RESET')}" />
+                                            <p:commandButton
+                                                id="btnBulkPreviewExpand"
+                                                value="Preview Expand"
+                                                icon="fa fa-eye"
+                                                class="ui-button-info ui-button-outlined"
+                                                process="@form"
+                                                update="opPreview messages"
+                                                action="#{userRoleManagementController.previewBulk('EXPAND')}" />
+                                            <p:commandButton
+                                                id="btnBulkPreviewNarrow"
+                                                value="Preview Narrow"
+                                                icon="fa fa-eye"
+                                                class="ui-button-info ui-button-outlined"
+                                                process="@form"
+                                                update="opPreview messages"
+                                                action="#{userRoleManagementController.previewBulk('NARROW')}" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Enter key only ever triggers the harmless "List Users" filter action, never a destructive execute action -->
+                                    <p:defaultCommand target="btnFilterUsers" />
+
+                                    <h:panelGroup id="opPreview" layout="block" class="mb-3">
+                                        <p:outputPanel
+                                            styleClass="ui-g ui-widget ui-state-highlight ui-corner-all p-2"
+                                            rendered="#{userRoleManagementController.previewText ne null}">
+                                            <i class="fa fa-info-circle" aria-hidden="true" />
+                                            <h:outputText value=" #{userRoleManagementController.previewText}" style="font-weight:bold;" />
+                                        </p:outputPanel>
+                                    </h:panelGroup>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-12 d-flex flex-wrap gap-2">
+                                            <p:commandButton
+                                                id="btnBulkReset"
+                                                value="Reset Selected Users"
+                                                icon="fa fa-undo"
+                                                class="ui-button-warning"
+                                                process="@form"
+                                                update="bulkResultsWrap messages opPreview"
+                                                onclick="return confirm('This rewrites the selected aspects for ALL selected users to the role template (their own role if none is selected here) in the selected departments. Existing records outside the template will be retired. Continue?');"
+                                                action="#{userRoleManagementController.executeBulk('RESET')}" />
+                                            <p:commandButton
+                                                id="btnBulkExpand"
+                                                value="Expand Selected Users"
+                                                icon="fa fa-plus-circle"
+                                                class="ui-button-secondary"
+                                                process="@form"
+                                                update="bulkResultsWrap messages opPreview"
+                                                onclick="return confirm('This adds the selected role\'s template records to ALL selected users in the selected departments. Existing extras are left untouched. Continue?');"
+                                                action="#{userRoleManagementController.executeBulk('EXPAND')}" />
+                                            <p:commandButton
+                                                id="btnBulkNarrow"
+                                                value="Narrow Selected Users"
+                                                icon="fa fa-minus-circle"
+                                                class="ui-button-danger"
+                                                process="@form"
+                                                update="bulkResultsWrap messages opPreview"
+                                                onclick="return confirm('This rewrites privileges for ALL selected users: records matching the selected role template will be RETIRED in the selected departments. Non-role records remain. Continue?');"
+                                                action="#{userRoleManagementController.executeBulk('NARROW')}" />
+                                        </div>
+                                    </div>
+
+                                    <h:panelGroup id="bulkResultsWrap" layout="block">
+                                    <p:dataTable
+                                        id="tblBulkResults"
+                                        var="res"
+                                        value="#{userRoleManagementController.results}"
+                                        rendered="#{not empty userRoleManagementController.results}"
+                                        styleClass="p-datatable-sm"
+                                        stickyHeader="true">
+                                        <p:column headerText="User">
+                                            <h:outputText value="#{res.user.name}" />
+                                        </p:column>
+                                        <p:column headerText="Added">
+                                            <h:outputText value="#{res.totalAdded}" />
+                                        </p:column>
+                                        <p:column headerText="Retired">
+                                            <h:outputText value="#{res.totalRetired}" />
+                                        </p:column>
+                                        <p:column headerText="Error">
+                                            <h:outputText value="#{res.errorMessage}" style="color:#d9534f;" />
+                                        </p:column>
+                                    </p:dataTable>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </h:panelGroup>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

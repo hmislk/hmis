@@ -16,154 +16,251 @@
             <h:form id="frm" >
 
 
-                <p:panel header="Investigation Counts">
+                <p:panel styleClass="mb-3">
                     <f:facet name="header" >
-                        <h:outputText styleClass="fa-solid fa-vials" />
-                        <p:outputLabel value="Investigation Counts" 
-                                       styleClass="noPrintButton mx-2"/>
-                    </f:facet> 
+                        <h:outputText styleClass="fa-solid fa-vials mx-2" />
+                        <h:outputText value="Analyzer vise Investigation Counts"
+                                      styleClass="noPrintButton"/>
+                    </f:facet>
 
+                    <!-- Search / Filter section -->
+                    <div class="border rounded p-3 mb-3 bg-body-tertiary noPrintButton">
+                        <div class="d-flex align-items-center mb-3">
+                            <h:outputText styleClass="fa-solid fa-filter me-2 text-primary" />
+                            <h:outputText value="Search Filters" style="font-weight: 600;"/>
+                        </div>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <p:outputLabel for="frmDate" value="From" styleClass="form-label fw-semibold mb-1"/>
+                                <p:calendar styleClass="dateTimePicker w-100" navigator="true" id="frmDate"
+                                            value="#{analyzerInvestigationCountController.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <p:outputLabel for="toDate" value="To" styleClass="form-label fw-semibold mb-1"/>
+                                <p:calendar styleClass="dateTimePicker w-100" navigator="true" id="toDate"
+                                            value="#{analyzerInvestigationCountController.toDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <p:outputLabel for="cmbMachine" value="Analyzer" styleClass="form-label fw-semibold mb-1"/>
+                                <p:selectOneMenu id="cmbMachine" styleClass="w-100" filter="true" filterMatchMode="contains"
+                                                 value="#{analyzerInvestigationCountController.machine}">
+                                    <f:selectItem itemLabel="All Analyzers" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{machineController.items}" var="mac" itemLabel="#{mac.name}" itemValue="#{mac}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <p:commandButton ajax="false"
+                                                 value="Process"
+                                                 icon="fa-solid fa-magnifying-glass"
+                                                 styleClass="ui-button-success"
+                                                 title="Generate the report for the selected date range and analyzer"
+                                                 action="#{analyzerInvestigationCountController.createAnalyzerInvestigationCounts}" />
+                            </div>
+                        </div>
+                    </div>
 
-                    <table class="mt-2">
-                        <tr>
-                            <td>
-                                <div class="row d-flex align-items-center">
-                                    <div class="col-6">
-                                        <h:outputLabel value="From"/>
+                    <!-- Action toolbar -->
+                    <div class="d-flex justify-content-end mb-2 noPrintButton">
+                        <p:commandButton id="print" value="Print"
+                                         icon="fa-solid fa-print"
+                                         styleClass="ui-button-info ui-button-outlined me-2"
+                                         title="Print the report">
+                            <p:printer target="reportPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false"
+                                         icon="fa-solid fa-file-excel"
+                                         styleClass="ui-button-secondary"
+                                         title="Download the report as an Excel file"
+                                         actionListener="#{analyzerInvestigationCountController.downloadExcel}" >
+                        </p:commandButton>
+                    </div>
+
+                    <style>
+                        @media screen {
+                            .paper {
+                                position: static !important;
+                                width: 210mm !important;
+                                zoom: 1.6;
+                            }
+                            .paper table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 13px !important;
+                                margin-top: 3mm !important;
+                            }
+                            .paper th, .paper td {
+                                border: 1px solid #000;
+                                padding: 1px !important;
+                                text-align: left;
+                            }
+                        }
+
+                        @media print {
+                            @page {
+                                @bottom-right {
+                                    content: "Page " counter(page) " of " counter(pages);
+                                    font-family: Arial, sans-serif;
+                                    font-size: 10pt;
+                                }
+                            }
+                            body {
+                                counter-reset: page;
+                            }
+                            .paper {
+                                position: static !important;
+                                width: 210mm !important;
+                                size: A4 portrait !important;
+                            }
+                            .header {
+                                line-height: 1.1;
+                                margin: 0mm !important;
+                            }
+                            .paper table {
+                                border-collapse: collapse;
+                                width: 99.9%;
+                                font-size: 13px !important;
+                                margin-top: 3mm !important;
+                            }
+                            .paper th, .paper td {
+                                border: 1px solid #000;
+                                padding: 1px !important;
+                                text-align: left;
+                            }
+                            .noPrintButton {
+                                display: none !important;
+                            }
+                        }
+                    </style>
+
+                    <h:panelGroup layout="block" id="reportPrint" styleClass="d-flex justify-content-center">
+                        <div class="paper">
+                            <!-- Report header -->
+                            <div class="header">
+                                <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 22px;">
+                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                </div>
+                                <div class="d-flex justify-content-center gap-2" style="font-weight: 700; font-size: 18px;">
+                                    <h:outputText value="Analyzer vise Investigation Counts"/>
+                                    <h:panelGroup rendered="#{analyzerInvestigationCountController.machine ne null}">
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="-" class="text-center" style="width: 1em !important;"/>
+                                            <h:outputText value="#{analyzerInvestigationCountController.machine.name}"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="d-flex justify-content-center mt-2" style="font-size: 12px;">
+                                    <div class="d-flex gap-3">
+                                        <h:outputText value="From Date" style="width: 6em !important; font-weight: 600;"/>
+                                        <h:outputText value="#{analyzerInvestigationCountController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
                                     </div>
-                                    <div class="col-6">
-                                        <p:calendar styleClass="dateTimePicker" navigator="true" id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                        </p:calendar>
+                                    <h:outputText value="" style="width: 5mm !important;"/>
+                                    <div class="d-flex gap-3">
+                                        <h:outputText value="To Date" style="width: 4em !important; font-weight: 600;"/>
+                                        <h:outputText value="#{analyzerInvestigationCountController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
                                     </div>
                                 </div>
-                                <div class="row d-flex align-items-center my-2">
-                                    <div class="col-6">
-                                        <h:outputLabel value="To"/>
-                                    </div>
-                                    <div class="col-6">
-                                        <p:calendar styleClass="dateTimePicker" navigator="true" id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                        </p:calendar>
-                                    </div>
-                                </div>
-                            </td>
-                            <td rowspan="2" >
-                                <p:fieldset styleClass="noPrintButton my-1" style="max-width: 70%; float: right; text-align: justify; height: 25%; overflow-y: scroll; overflow-x: auto; "  >
-                                    <p>
-                                        This report lists the counts of all the investigation performed using the application. It includes results from all institutions and their departments. This also includes OPD requests, inward requests and collecting centre requests. Investigations requested using any payment method is listed here.
-                                    </p>
-                                    <p>
-                                        You can search by Investigation Name. You can sort by Investigation Name and the Count.
-                                    </p>
-                                </p:fieldset>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h:panelGrid columns="6" styleClass="noPrintButton">
-                                    <p:spacer height="1" width="30"/>
-                                    <p:commandButton ajax="false"  value="Process" 
-                                                     icon="fa-solid fa-arrows-rotate"
-                                                     class="ui-button-Warning"
-                                                     action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCounts}"
-                                                     style="float: right;" />
-                                    <p:commandButton id="print" value="Print"
-                                                     icon="fa-solid fa-print"
-                                                     class="mx-1 ui-button-info">
-                                        <p:printer target="reportPrint" />
-                                    </p:commandButton>
-                                    <p:commandButton value="Excel" ajax="false" 
-                                                     icon="fa-solid fa-file-excel"
-                                                     class="mx-1 ui-button-success" style="float: right;" >
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="Investigation Counts"
+                            </div>
 
+                            <!-- Report table -->
+                            <div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 8mm; font-weight: 700;">
+                                                <h:outputText value="No" style="margin-left: 2mm;"/>
+                                            </th>
+                                            <th style="width: 20mm; font-weight: 700;">
+                                                <h:outputText value="Code" style="margin-left: 3mm;"/>
+                                            </th>
+                                            <th style="font-weight: 700;">
+                                                <h:outputText value="Test" style="margin-left: 3mm;"/>
+                                            </th>
+                                            <th style="font-weight: 700;">
+                                                <h:outputText value="Department" style="margin-left: 3mm;"/>
+                                            </th>
+                                            <th style="font-weight: 700;">
+                                                <h:outputText value="Analyzer" style="margin-left: 3mm;"/>
+                                            </th>
+                                            <th style="width: 20mm; font-weight: 700; text-align: right;">
+                                                <h:outputText value="Count" style="margin-right: 3mm;"/>
+                                            </th>
+                                            <th class="noPrintButton" style="width: 20mm; font-weight: 700; text-align: center;">
+                                                <h:outputText value="Bills"/>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{analyzerInvestigationCountController.items}" var="c" varStatus="i">
+                                            <tr>
+                                                <td style="width: 8mm;">
+                                                    <h:outputText value="#{i.index + 1}" style="margin-left: 2mm;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{c.code}" style="margin-left: 3mm;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{c.testName}" style="margin-left: 3mm;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{c.departmentName}" style="margin-left: 3mm;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{c.analyzerName}" style="margin-left: 3mm;"/>
+                                                </td>
+                                                <td style="width: 20mm; text-align: right;">
+                                                    <h:outputText value="#{c.count}" style="margin-right: 3mm;">
+                                                        <f:convertNumber pattern="#,##0" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="noPrintButton" style="width: 22mm; text-align: center; white-space: nowrap;">
+                                                    <p:commandButton
+                                                        ajax="false"
+                                                        icon="fa-solid fa-file-invoice"
+                                                        value="View"
+                                                        title="View bills for this test"
+                                                        class="ui-button-info"
+                                                        style="width: auto; display: inline-flex; padding: 1px 1px; font-size: 11px;"
+                                                        action="#{analyzerInvestigationCountController.navigateToBillItemList(c.investigationId)}" >
+                                                    </p:commandButton>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td style="width: 8mm;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th style="font-weight: 700; text-align: right;">
+                                                <h:outputText value="Total" style="margin-right: 3mm;"/>
+                                            </th>
+                                            <th style="width: 20mm; font-weight: 700; text-align: right;">
+                                                <h:outputText value="#{analyzerInvestigationCountController.totalCount}" style="margin-right: 3mm;">
+                                                    <f:convertNumber pattern="#,##0" />
+                                                </h:outputText>
+                                            </th>
+                                            <td class="noPrintButton"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </h:panelGroup>
 
-                                                        />
-                                    </p:commandButton> 
+                    <h:panelGroup rendered="#{empty analyzerInvestigationCountController.items}">
+                        <div class="text-center text-muted p-3">
+                            <h:outputText value="No investigations found. Adjust the filters and click Process." />
+                        </div>
+                    </h:panelGroup>
 
-                                </h:panelGrid>
-                            </td>
-                        </tr>
-                    </table>
-
-
-                    <p:panel id="reportPrint">
-                        <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c"
-                                     rowKey="#{c.investigation}"
-                                     rowIndexVar="i"
-                                     class="w-100">
-                            <f:facet name="header" >
-                                <h:outputLabel value="Investigation Counts"/>
-                                <br></br>
-                                <h:outputLabel value="From  "/>                     
-                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
-                                </h:outputLabel>
-                                <h:outputLabel value="- To "/>                       
-                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.toDate}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
-                                </h:outputLabel>
-                            </f:facet>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputLabel value="No"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i+1}"  />
-                            </p:column>
-
-                            <p:column headerText="Test" 
-                                      sortBy="#{c.investigation.name}" 
-                                      filterBy="#{c.investigation.name}"
-                                      filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Test"/>
-                                </f:facet>
-                                <h:outputLabel value="#{c.investigation.name}"  />
-                                <f:facet name="footer">
-                                    <h:outputLabel value="Total">
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Analyzer" rendered="#{webUserController.hasPrivilege('Developers')}"
-                                      sortBy="#{c.investigation.machine.name}" 
-                                      filterBy="#{c.investigation.machine.name}"
-                                      filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Analyzer"/>
-                                </f:facet>
-                                <h:outputLabel value="#{c.investigation.machine.name}"  />
-                            </p:column>
-                            <p:column headerText="Count" style="text-align:center" 
-                                      sortBy="#{c.count}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Count"/>
-                                </f:facet>
-                                <h:outputLabel value="#{c.count}" />
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-<!--                            <p:column exportable="false" headerText="Test ID" rendered="#{webUserController.hasPrivilege('Developers')}"
-                                      sortBy="#{c.investigation.id}"
-                                      filterBy="#{c.investigation.id}"
-                                      filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Test ID"/>
-                                </f:facet>
-                                <p:commandButton value="Edit" ajax="false" 
-                                                 action="/lab/investigation"
-                                                 icon="fa-solid fa-pen"
-                                                 class="mx-1 ui-button-success"
-                                                 onclick="this.form.target = '_blank'">
-                                    <f:setPropertyActionListener value="#{c.investigation}" target="#{investigationController.current}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                            </p:column>-->
-
-                        </p:dataTable>
-                    </p:panel>
-
-
-                </p:panel>        
+                </p:panel>
             </h:form>
         </h:panelGroup>
     </ui:define>

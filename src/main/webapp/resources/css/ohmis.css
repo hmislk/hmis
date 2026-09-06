@@ -3,6 +3,13 @@
     font-size: xx-large ;
 }
 
+/* Remove the browser's default <form> bottom margin on the top menu bar.
+   Without this, every page shows a ~16px gap between the menu and the
+   page's content panel (issue #21837). */
+form[id$=":menuForm"] {
+    margin-bottom: 0;
+}
+
 /* Custom styles for PrimeFaces panels */
 
 /* Cancelled Panel - header */
@@ -306,12 +313,6 @@ th.align-right-header .ui-column-title {
     padding: 2px !important;
     border: none !important; /* optional, if you want minimal borders */
 }
-
-/* Example: set a background to verify it’s applied */
-.compact-panelgrid.ui-panelgrid {
-    background-color: #eef !important;
-}
-
 
 
 .compact-column-borders {
@@ -894,6 +895,38 @@ th.align-right-header .ui-column-title {
 .ui-state-default.ui-button-stage-approve:hover {
     background-color: #1e7e34 !important;
     border-color: #155724 !important;
+}
+
+
+/* ============================================================
+   Data-dense page patterns — sticky action areas
+   Standard classes for keeping page actions reachable while the
+   user scrolls long data-entry pages. Usage documented in
+   developer_docs/ui/data-dense-page-patterns.md:
+     .sticky-panel-header  → on the main transaction p:panel; keeps
+                             the three-zone header (Save/Finalize/
+                             Approve) pinned to the viewport top.
+     .sticky-action-bar    → on a block h:panelGroup wrapping the
+                             action buttons below a form; pins them
+                             to the viewport bottom.
+   Both degrade gracefully to normal flow if an ancestor container
+   prevents position:sticky from engaging.
+   ============================================================ */
+
+.sticky-panel-header > .ui-panel-titlebar {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.sticky-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 900;
+    background-color: #ffffff;
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
+    padding: 0.5rem 0.75rem;
 }
 
 

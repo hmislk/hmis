@@ -91,7 +91,9 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}">
-                        <pharmacy:purhcase bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                        <pharmacy:purhcase 
+                            bill="#{pharmacyBillSearch.bill.cancelledBill}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}"/>
                     </h:panelGroup>
 
                 </h:form>

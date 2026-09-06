@@ -23,13 +23,15 @@
 
         <div class="row">
             <div class="col-md-12">
-                <div class="row">
-                    <div class="col-md-3"><p:outputLabel value="BHT No"/></div>
-                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
-                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
-                </div>
-              
-                <h:panelGroup rendered="#{cc.attrs.admission.referringConsultant ne null 
+                <h:panelGroup rendered="#{not empty cc.attrs.admission.bhtNo}">
+                    <div class="row">
+                        <div class="col-md-3"><p:outputLabel value="BHT No"/></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                        <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.admission.referringConsultant ne null
                                          and cc.attrs.admission.referringConsultant.person ne null}">
                     <div class="row">
                         <div class="col-md-3"><p:outputLabel value="Consultant Name"/></div>
@@ -40,35 +42,43 @@
                     </div>
               </h:panelGroup>
 
-                <div class="row">
-                    <div class="col-md-3"><p:outputLabel value="Admission Type"  /></div>
-                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
-                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" /></div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-3"><p:outputLabel value="Payment Method"  /></div>
-                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
-                    <div class="col-md-8"> <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="Room"  /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":"/></div>
-                    <div class="col-md-8">
-                        <h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
+                <h:panelGroup rendered="#{not empty cc.attrs.admission.admissionType.name}">
+                    <div class="row">
+                        <div class="col-md-3"><p:outputLabel value="Admission Type"  /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                        <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" /></div>
                     </div>
-                </div>
+                </h:panelGroup>
 
-                <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="Admission Date"  /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
-                    <div class="col-md-8">
-                        <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                        </h:outputLabel>
+                <h:panelGroup rendered="#{not empty cc.attrs.admission.paymentMethod}">
+                    <div class="row">
+                        <div class="col-md-3"><p:outputLabel value="Payment Method"  /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                        <div class="col-md-8"> <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
                     </div>
-                </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{not empty cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}">
+                    <div class="row">
+                        <div class="col-md-2"><p:outputLabel value="Room"  /></div>
+                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                        <div class="col-md-8">
+                            <h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.admission.dateOfAdmission ne null}">
+                    <div class="row">
+                        <div class="col-md-2"><p:outputLabel value="Admission Date"  /></div>
+                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                        <div class="col-md-8">
+                            <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                            </h:outputLabel>
+                        </div>
+                    </div>
+                </h:panelGroup>
 
                 <div class="row">
                     <div class="col-md-2"><p:outputLabel value="Nationality"  /></div>

@@ -17,8 +17,16 @@
                             <div class="d-flex align-items-center justify-content-between">
                                 <div></div>
                                 <div>
-                                    <p:commandButton 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        value="Print to Original Bill"
+                                        class="ui-button-info m-1"
+                                        icon="fa fa-print"
+                                        action="#{billSearch.navigateToCcOriginalBillPrint()}"
+                                        rendered="#{webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}"
+                                        ajax="false">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
                                         value="To Cancel"
                                         action="#{billSearch.navigateToCancelCollectingCentreBill}" 
                                         disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 

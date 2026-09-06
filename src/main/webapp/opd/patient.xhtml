@@ -508,6 +508,26 @@
                                             title="Manage inward appointments">
                                         </p:commandButton>
                                         <p:commandButton
+                                            value="Package Admissions"
+                                            action="#{patientController.navigateToPackageAdmitFromPatientProfile()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-box"
+                                            title="Admit patient to an inpatient package"
+                                            rendered="#{webUserController.hasPrivilege('InwardPackageAdmission')}">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Room Reservation"
+                                            action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-calendar-plus"
+                                            title="Reserve a room for this patient"
+                                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}">
+                                        </p:commandButton>
+                                        <p:commandButton
                                             value="Blacklist Patient"
                                             ajax="true"
                                             rendered="#{!patientController.current.blacklisted and webUserController.hasPrivilege('ClinicalPatientBlacklist')}"

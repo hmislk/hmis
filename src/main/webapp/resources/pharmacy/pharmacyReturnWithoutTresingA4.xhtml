@@ -272,8 +272,12 @@
             </div>
 
             <div class="mb-4">
-                <h:outputLabel value="Approved By : #{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}" style="text-align: right!important;" rendered="#{!empty cc.attrs.bill.approveAt}"/>
-                <h:outputLabel value="Printed At : #{sessionController.currentDate}" style="text-align: right!important;"/>
+                <div>
+                    <h:outputLabel value="Approved By : #{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}" style="text-align: right!important;" rendered="#{!empty cc.attrs.bill.approveAt}"/>
+                </div>
+                <div>
+                    <h:outputLabel value="Printed At : #{sessionController.currentDate}" style="text-align: right!important;"/>
+                </div>
             </div>
 
 

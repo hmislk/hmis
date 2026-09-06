@@ -22,144 +22,185 @@
                         <p:ajax event="tabChange" process="@this"/>
 
                         <p:tab title="Purchase Orders">
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
+                                    id="btnCreatePO"
                                     value="Create PO"
                                     ajax="false"
-                                    action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
-                                    class="ui-button-success w-100"
+                                    action="#{purchaseOrderRequestNativeSqlController.navigateToCreateNewPurchaseOrder()}"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-plus-circle"
                                     rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" />
                                 <p:commandButton
+                                    id="btnAutoOrderPModel"
                                     value="Auto Ordering - P Model"
                                     ajax="false"
                                     action="#{reorderController.autoOrderByDistributor()}"
-                                    class="ui-button-info w-100"
+                                    styleClass="ui-button-info w-100"
+                                    style="text-align: left"
                                     icon="fas fa-sync-alt"
                                     rendered="#{webUserController.hasPrivilege('AutoOrderPModel')}" />
                                 <p:commandButton
+                                    id="btnAutoOrderQModel"
                                     value="Auto Ordering - Q Model"
                                     ajax="false"
                                     action="#{reorderController.autoOrderByDistributor()}"
-                                    class="ui-button-info w-100"
+                                    styleClass="ui-button-info w-100"
+                                    style="text-align: left"
                                     icon="fas fa-retweet"
                                     rendered="#{webUserController.hasPrivilege('AutoOrderQModal')}" />
                                 <p:commandButton
+                                    id="btnFinalizePOs"
                                     value="Finalize POs"
                                     ajax="false"
                                     action="#{searchController.navigateToPurchaseOrderFinalize}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-tasks"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" />
                                 <p:commandButton
+                                    id="btnPoApproval"
                                     value="PO Approval"
                                     ajax="false"
                                     action="#{searchController.navigateToPurchaseOrderApprove}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-clipboard-check"
+                                    styleClass="ui-button-stage-approve w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
 
                         <p:tab title="Direct Purchase">
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
+                                    id="btnDirectPurchaseWithCosting"
                                     value="Direct Purchase"
                                     ajax="false"
                                     action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"
-                                    class="ui-button-success w-100"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-hand-holding-usd"
                                     rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" />
                                 <p:commandButton
+                                    id="btnDirectPurchaseNoCosting"
                                     value="Direct Purchase"
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase?faces-redirect=true"
                                     actionListener="#{pharmacyPurchaseController.makeNull()}"
-                                    class="ui-button-success w-100"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-hand-holding-usd"
                                     rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" />
                                 <p:commandButton
+                                    id="btnFinalizeDirectPurchase"
                                     value="Finalize Direct Purchase"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToFinalize()}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-clipboard-check"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}" />
                                 <p:commandButton
+                                    id="btnApproveDirectPurchase"
                                     value="Approve Direct Purchase"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToApprove()}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-check-circle"
+                                    styleClass="ui-button-stage-approve w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
 
                         <p:tab title="GRN">
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
-                                    value="GRN"
+                                    id="btnGrn"
+                                    value="Create GRN from PO (Legacy)"
                                     ajax="false"
                                     action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
-                                    class="ui-button-success w-100"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-dolly-flatbed"
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" />
                                 <p:commandButton
-                                    value="Approved POs to Create GRN"
+                                    id="btnApprovedPOsToGrn"
+                                    value="Create GRN from PO"
                                     ajax="false"
                                     action="#{searchController.navigateToListPurchaseOrdersToReceiveDto()}"
-                                    class="ui-button-success w-100"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-rocket"
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" />
                                 <p:commandButton
+                                    id="btnGrnFinalize"
                                     value="GRN Finalize"
                                     ajax="false"
                                     action="#{searchController.navigateToGrnListToFinalize()}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-clipboard-check"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" />
                                 <p:commandButton
+                                    id="btnGrnApproval"
                                     value="GRN Approval"
                                     ajax="false"
                                     action="#{searchController.navigateToGrnListToApprove()}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-check-circle"
+                                    styleClass="ui-button-stage-approve w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" />
+                                <!-- Goods Receipt With Approval: deprecated, issue #21289.
+                                     Routed into the legacy GrnController approval flow, whose
+                                     settle() always fails with "Please select a payment
+                                     method" (never assigns grnBill). The "GRN Finalize" /
+                                     "GRN Approval" buttons above already cover the same
+                                     receive/approve separation via GrnCostingController's
+                                     Save/Finalize/Approve pipeline, making this button a
+                                     redundant, broken duplicate. -->
+                                <!--
                                 <p:commandButton
+                                    id="btnGoodsReceiptWithApproval"
                                     value="Goods Receipt With Approval"
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
-                                    class="ui-button-info w-100"
+                                    styleClass="ui-button-info w-100"
+                                    style="text-align: left"
                                     icon="fas fa-dolly-flatbed"
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" />
-                            </p:panelGrid>
+                                -->
+                            </div>
                         </p:tab>
 
                         <p:tab title="Donations">
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
+                                    id="btnPharmacyDonations"
                                     value="Pharmacy Donations"
                                     ajax="false"
                                     action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
-                                    class="ui-button-success w-100"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-donate"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDonation')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
 
                         <p:tab title="Admin">
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
                                     id="procurementConfigButton"
                                     value="Config"
                                     icon="fa fa-cog"
                                     title="Procurement Return Configuration"
                                     type="button"
-                                    class="ui-button-secondary w-100"
+                                    styleClass="ui-button-secondary w-100"
+                                    style="text-align: left"
                                     onclick="PF('procurementReturnConfigDialog').show();"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove') or webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
 
                     </p:accordionPanel>
@@ -169,9 +210,9 @@
                 <ui:insert name="subcontent">
                     <p:panel header="Procurement Management">
                         <div class="text-center p-5">
-                            <h3>Welcome to Procurement Management</h3>
+                            <h3><h:outputText value="Welcome to Procurement Management"/></h3>
                             <p class="mt-3">
-                                Please select a function from the left menu to get started.
+                                <h:outputText value="Please select a function from the left menu to get started."/>
                             </p>
                             <div class="mt-4">
                                 <p:panelGrid columns="2" styleClass="mx-auto" style="max-width: 600px;">
@@ -249,15 +290,17 @@
                                 <p:messages id="procurementReturnConfigMessages" showDetail="true" closable="true" />
                                 <div class="d-flex gap-2">
                                     <p:commandButton
+                                        id="btnProcurementReturnConfigSave"
                                         value="Apply &amp; Close"
                                         icon="fas fa-save"
-                                        class="ui-button-success"
+                                        styleClass="ui-button-success"
                                         ajax="false"
                                         action="#{pharmacyReturnApprovalConfigController.saveConfig}" />
                                     <p:commandButton
+                                        id="btnProcurementReturnConfigCancel"
                                         value="Cancel"
                                         icon="fas fa-times"
-                                        class="ui-button-secondary"
+                                        styleClass="ui-button-secondary"
                                         onclick="PF('procurementReturnConfigDialog').hide(); return false;"
                                         type="button" />
                                 </div>

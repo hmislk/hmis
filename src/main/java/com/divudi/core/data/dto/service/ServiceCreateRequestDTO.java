@@ -28,6 +28,8 @@ public class ServiceCreateRequestDTO {
     private boolean marginNotAllowed;
     private boolean requestForQuentity;
     private boolean patientNotRequired;
+    private boolean vatable;
+    private double vatPercentage;
 
     public ServiceCreateRequestDTO() {
     }
@@ -175,5 +177,21 @@ public class ServiceCreateRequestDTO {
 
     public void setPatientNotRequired(boolean patientNotRequired) {
         this.patientNotRequired = patientNotRequired;
+    }
+
+    public boolean isVatable() {
+        return vatable;
+    }
+
+    public void setVatable(boolean vatable) {
+        this.vatable = vatable;
+    }
+
+    public double getVatPercentage() {
+        return vatPercentage;
+    }
+
+    public void setVatPercentage(double vatPercentage) {
+        this.vatPercentage = vatPercentage;
     }
 }

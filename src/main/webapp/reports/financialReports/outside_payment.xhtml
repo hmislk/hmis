@@ -16,7 +16,7 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission From Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
+                            <p:datePicker value="#{outsideChargeReportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
@@ -26,16 +26,16 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Admission To Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
+                            <p:datePicker value="#{outsideChargeReportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100" ></p:datePicker>
-                                          <p:spacer width="20"/> 
+                            <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Discharge From Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
+                            <p:datePicker value="#{outsideChargeReportController.dischargeFromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" inputStyleClass="w-100"></p:datePicker>
 
@@ -45,16 +45,16 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Discharge To Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
+                            <p:datePicker value="#{outsideChargeReportController.dischargeToDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
-                                          <p:spacer width="20"/> 
-                                          
+                            <p:spacer width="20"/> 
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Invoice Approved From Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
+                            <p:datePicker value="#{outsideChargeReportController.invoiceApprovedFromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" inputStyleClass="w-100"></p:datePicker>
 
@@ -64,23 +64,20 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Invoice Approved To Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
+                            <p:datePicker value="#{outsideChargeReportController.invoiceApprovedToDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
-                                          
+
                             <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Institution" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{outsideChargeReportController.institution}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Institutions" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -89,54 +86,50 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Site" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{outsideChargeReportController.site}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Sites" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+
                             </p:selectOneMenu>
                             <p:spacer width="20"/> 
-  
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Department" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{outsideChargeReportController.department}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Deparments" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(outsideChargeReportController.institution, outsideChargeReportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Referring Doctor (Admit Doctor)" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                            <p:selectOneMenu value="#{outsideChargeReportController.referringDoctor}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems  value="#{doctorController.items}" 
+                                                var="myItem" 
+                                                itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.person.nameWithTitle}"  
+                                                > </f:selectItems>
+
                             </p:selectOneMenu>
+
                             <p:spacer width="20"/> 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Credit Company" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                            <p:selectOneMenu value="#{outsideChargeReportController.creditCompany}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
+                                <f:selectItems value="#{creditCompanyController.creditCompanies}"
                                                var="i"
-                                               itemLabel=""
-                                               itemValue=""
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
@@ -146,9 +139,9 @@
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Admission Type" class="mx-3"/>
                             </h:panelGroup>
-                            
+
                             <p:selectCheckboxMenu class="w-100"
-                                                  value="#{admissionTypeController.selectedItems}"
+                                                  value="#{outsideChargeReportController.admissionType}"
                                                   label="Select Admission Types">
                                 <f:selectItems value="#{admissionTypeController.items}" var="item" itemLabel="#{item.name}" itemValue="#{item}" ></f:selectItems>
                             </p:selectCheckboxMenu>
@@ -159,7 +152,7 @@
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Paid Type" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                            <p:selectOneMenu value="#{outsideChargeReportController.paidType}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{['Paid', 'Not Paid']}"
                                                var="i"
@@ -167,147 +160,241 @@
                                                itemValue="#{i}"
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
+
 
                         </h:panelGrid><br/>
 
+                        <!--action buttons--> 
+                        
+                        <div class="row mb-2 my-3">
+                            <div class="col-md-2">
+                                <p:commandButton ajax="false" 
+                                                 value="Process" 
+                                                 style="width: 150px"
+                                                 action="#{outsideChargeReportController.processOutsidePaymentReport()}" 
+                                                 class="mx-2 ui-button-warning"
+                                                 icon="fas fa-cogs">
+                                </p:commandButton>
+                            </div>
+                            <div  class="col-md-2">
+                                <p:commandButton id="btnPrint" class="mx-2 ui-button-info"
+                                                 icon="fas fa-print"
+                                                 style="width: 150px"
+                                                 type="button"
+                                                 value="Print"
+                                                 onclick="printOutsidePaymentReport()">
+                                </p:commandButton>
 
+                            </div>
 
-                        <div class="d-flex align-items-center my-3">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
-                            </p:commandButton>
-                            <p:commandButton class="mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                            </p:commandButton>
+                            <div  class="col-md-2">
+                                <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                                 style="width: 150px"
+                                                 icon="fas fa-file-excel"
+                                                 ajax="false" value="Export Excel">
+                                    <p:dataExporter
+                                        type="xlsx"
+                                        fileName="#{outsideChargeReportController.outsidePaymentReportFileName}"
+                                        target="tblobs"
+                                        postProcessor="#{outsideChargeReportController.postProcessOutsidePaymentReportExcel}"/>
+                                </p:commandButton>
+
+                            </div>
+                            <div  class="col-md-2">
+                                <p:commandButton
+                                    class="mx-2 ui-button-danger"
+                                    style="width: 150px"
+                                    value="Export PDF"
+                                    icon="pi pi-file-pdf"
+                                    ajax="false"
+                                    action="#{outsideChargeReportController.exportOutsidePaymentReportToPDF()}">
+                                </p:commandButton>
+                            </div>
+
                         </div>
 
+
                         <h:panelGroup>
+                          <div id="printPanel">
                             <p:dataTable
-                                    id="tblobs"
-                                    value="#"
-                                    var="var"
-                                    rowIndexVar="n"
-                                    paginator="false"
-                                    paginatorPosition="bottom"
-                                    rows="10"
-                                    rendered="true"
-                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                    rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
-                                    styleClass="table-sm">
-                                    
-                                <p:column headerText="Item"  style="width: 100px" >
+                                id="tblobs"
+                                value="#{outsideChargeReportController.reportRows}"
+                                var="row"
+                                rowIndexVar="n"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rows="10"
+                                rendered="true"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                styleClass="table-sm">
+
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Invoice No"/>
                                     </f:facet>
-                                        <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.invoiceNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="MRN"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.mrn}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient Name"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.patientName}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.bhtNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Description"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.description}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharged On"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.dischargedOn}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 150px" >
+                                <p:column style="width: 150px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Cancelled/Refunded"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.cancelledOrRefundedLabel}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Inward Charge Type"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{outsideChargeReportController.getChargeTypeLabel(row.inwardChargeType)}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Creater Name"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.createrName}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Created Date"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.createdDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Invoice Added Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.invoiceAddedAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid Date"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.paidDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <p:inputNumber value="#{row.paidAmount}"
+                                                   decimalPlaces="2"
+                                                   thousandSeparator=","
+                                                   style="width:100%; box-sizing:border-box;"
+                                                   inputStyle="width:100%; box-sizing:border-box;"/>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 200px" >
+                                <p:column style="width: 200px">
                                     <f:facet name="header">
-                                         <h:outputLabel value="Memo"/>
+                                        <h:outputLabel value="Memo"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <p:inputText value="#{row.memo}" style="width:100%; box-sizing:border-box;"/>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.dueAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid"/>
                                     </f:facet>
-                                    <h:outputLabel value="" >
-                                        <p:selectBooleanCheckbox value=""/>
-                                    </h:outputLabel>
+                                    <p:selectBooleanCheckbox value="#{row.paid}"/>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+
+                                <p:column style="width: 100px" exportable="false">
                                     <f:facet name="header">
                                         <h:outputLabel value="Update"/>
                                     </f:facet>
-                                    <h:outputLabel value="" >
-                                        <p:commandButton type="button" value="Update" styleClass="ui-button-info" />
-                                    </h:outputLabel>
+                                    <p:commandButton value="Update"
+                                                      icon="fas fa-save"
+                                                      action="#{outsideChargeReportController.updateOutsidePaymentRow(row)}"
+                                                      update="tblobs :growl">
+                                        <p:confirm header="Confirm Update" message="Save changes for this row?" icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
                                 </p:column>
-                                    
+
                             </p:dataTable>
+                          </div>
+
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times" />
+                                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            </p:confirmDialog>
                         </h:panelGroup>
+
+                        <style type="text/css" media="print">
+                            body * {
+                                visibility: hidden;
+                            }
+                            #printPanel, #printPanel * {
+                                visibility: visible;
+                            }
+                            #printPanel {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                            }
+                            #printPanel table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 9pt;
+                            }
+                            #printPanel th, #printPanel td {
+                                border: 1px solid #333;
+                                padding: 4px 6px;
+                            }
+                            @page {
+                                size: landscape;
+                                margin: 10mm;
+                            }
+                        </style>
+
+                        <script type="text/javascript">
+                            function printOutsidePaymentReport() {
+                                window.print();
+                            }
+                        </script>
                     </p:panel>                          
                 </h:form>
 

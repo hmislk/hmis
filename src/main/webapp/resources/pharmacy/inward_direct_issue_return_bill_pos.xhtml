@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <cc:interface>
+        <cc:attribute name="bill"      required="true"  type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" required="false" />
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacypos_header.css"/>
+        <div id="printAllScPos" class="posbillheader" style="page-break-after: always!important; max-width: 72mm; width: 72mm;">
+            <div style="text-align: center; font-size: 12px;">
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/><br/>
+                <h:outputLabel style="font-size: 10px!important;" value="#{cc.attrs.bill.institution.address}"/><br/>
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/><br/>
+            </div>
+            <div style="text-align: center; font-weight: bold;">
+                RETURN BILL
+                <h:outputLabel value=" **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
+                <h:outputLabel value=" **Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}"/>
+            </div>
+            <div style="font-size: 11px;">
+                <div>Bill No : #{cc.attrs.bill.deptId}</div>
+                <div>Date : <h:outputLabel value="#{cc.attrs.bill.createdAt}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm"/></h:outputLabel></div>
+                <h:panelGroup rendered="#{cc.attrs.bill.patient.person.nameWithTitle ne null}"><div>Patient : #{cc.attrs.bill.patient.person.nameWithTitle}</div></h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"><div>BHT : #{cc.attrs.bill.patientEncounter.bhtNo}</div></h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"><div>Room : #{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}</div></h:panelGroup>
+            </div>
+            <hr/>
+
+            <table width="100%" style="width: 100%; font-size: 10px;">
+                <tr>
+                    <td style="text-align:left;">Item</td>
+                    <td style="text-align:right;">Qty</td>
+                    <td style="text-align:right;">Gross</td>
+                    <td style="text-align:right;">S.Chg</td>
+                    <td style="text-align:right;">Disc</td>
+                    <td style="text-align:right;">Net</td>
+                </tr>
+                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                    <tr><td colspan="6" style="text-transform: capitalize;">#{bip.item.name}</td></tr>
+                    <tr>
+                        <td></td>
+                        <td style="text-align:right;"><h:outputLabel value="#{bip.qty}"><f:convertNumber integerOnly="true"/></h:outputLabel></td>
+                        <td style="text-align:right;"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{bip.grossValue lt 0 ? -bip.grossValue : bip.grossValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
+                        <td style="text-align:right;"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{bip.marginValue lt 0 ? -bip.marginValue : bip.marginValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
+                        <td style="text-align:right;"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{bip.discount lt 0 ? -bip.discount : bip.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
+                        <td style="text-align:right;"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{bip.netValue lt 0 ? -bip.netValue : bip.netValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
+                    </tr>
+                </ui:repeat>
+            </table>
+            <hr/>
+
+            <table style="width: 100%; font-size: 11px;">
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                    <tr><td style="text-align:left;">Gross</td><td style="text-align:right;"><h:outputLabel value="#{cc.attrs.bill.total lt 0 ? -cc.attrs.bill.total : cc.attrs.bill.total}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
+                    <tr><td style="text-align:left;">Service Charge</td><td style="text-align:right;"><h:outputLabel value="#{cc.attrs.bill.margin lt 0 ? -cc.attrs.bill.margin : cc.attrs.bill.margin}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
+                    <tr><td style="text-align:left;">Discount</td><td style="text-align:right;"><h:outputLabel value="#{cc.attrs.bill.discount lt 0 ? -cc.attrs.bill.discount : cc.attrs.bill.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
+                    <tr><td style="text-align:left; font-weight:bold;">Net Total</td><td style="text-align:right; font-weight:bold;"><h:outputLabel value="#{cc.attrs.bill.netTotal lt 0 ? -cc.attrs.bill.netTotal : cc.attrs.bill.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
+                </h:panelGroup>
+                <tr><td style="text-align:left;">No of Items</td><td style="text-align:right;"><h:outputLabel value="#{cc.attrs.bill.billItems.size()}"><f:convertNumber integerOnly="true"/></h:outputLabel></td></tr>
+            </table>
+
+            <div style="text-align:center; margin-top:6px;">
+                THANK YOU !<br/>
+                <h:outputLabel style="font-size: 9px" value="Powered by CareCode (Pvt) Ltd."/>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

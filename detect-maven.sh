@@ -30,6 +30,11 @@ case "$HOSTNAME" in
         /usr/lib/apache-netbeans/java/maven/bin/mvn "$@"
         exit $?
         ;;
+    "Damith"|"damith")
+        echo "Using NetBeans bundled Maven for Damith machine"
+        "/c/Program Files/NetBeans-16/netbeans/java/maven/bin/mvn.cmd" "$@"
+        exit $?
+        ;;
     # Add other machines here as they are documented
     # "OTHER-MACHINE"|"other-machine")
     #     echo "Using Maven for other machine"

@@ -62,6 +62,7 @@ public enum BillNumberSuffix {
     ADJ,//Adjustment
     //Inward
     INWPAY,//Payment Bill
+    INWPFP,//Post Final Bill Inward Payment
     INWFINAL,//Inward Final
     INWFINALORG,//Inward Original Final
     INWINTRIM,//Inward Interim

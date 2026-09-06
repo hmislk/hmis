@@ -103,6 +103,18 @@
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.fromInstitution.name}" />
                         </p:column>
+                        <p:column headerText="Site">
+                            <f:facet name="header">
+                                <p:outputLabel value="Site" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.institution.name}" />
+                        </p:column>
+                        <p:column headerText="Department">
+                            <f:facet name="header">
+                                <p:outputLabel value="Department" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.department.name}" />
+                        </p:column>
                         <p:column headerText="Discription">
                             <f:facet name="header">
                                 <p:outputLabel value="Discription" />

@@ -1,0 +1,177 @@
+/*
+    Paper: hospital-specific pre-printed continuous (pin-feed) stationery.
+    Confirmed physical sheet size: 22.5cm wide x 28cm tall. Logo block is
+    pre-printed at the top-left, an address/contact footer band is pre-printed at
+    the bottom of every sheet.
+
+    finalBillCustom4.xhtml's .container-fluid has a fixed inline width of 214mm
+    (21.4cm), which cannot be changed here (content is off-limits) - that leaves
+    only 1.1cm of total slack on a 22.5cm-wide sheet, so the left/right margin is
+    centered ("margin: auto") rather than a fixed cm value: a fixed value bigger
+    than the available slack (as tried before) pushed the content past the right
+    edge of the page, which is what was showing up as extra space on the left.
+
+    finalBillCustom4.xhtml's markup is a copy of finalBill.xhtml's structure
+    (.container-fluid / .headingPrinting / .mark), not a dedicated wrapper class.
+    Because that same markup/classes are also used by the plain "Final Bill" tab
+    (bi:finalBill, styled via printing.css) on the very same pages this composite
+    is placed on (inward_reprint_bill_final.xhtml, inward_bill_final.xhtml), every
+    rule below is scoped to this paper's own panelGroup ids via an attribute
+    "ends with" selector - matching regardless of the JSF NamingContainer prefix
+    (e.g. "...:originalCustom4BillPriview") - so it never bleeds onto the other
+    bill previews rendered alongside it.
+
+    No page-break-after is set anywhere on purpose: content must flow as ONE
+    continuous document so a bill that overflows the first sheet continues onto a
+    second sheet of the same stationery, reusing the same reserved top/bottom
+    blank margins (which repeat on every physical sheet).
+
+    PRINTING: the "Custom Bill 3" buttons no longer use <p:printer target="..."/>.
+    Chrome's native print engine does not reliably apply @page margin-top to
+    naturally-overflowing (not explicitly paginated) content past the first page,
+    so page 2+ was never getting its reserved header space no matter what value
+    was set here. Printing instead goes through printCustom4Bill() (resources/
+    js/custom4-paged-print.js), which opens a dedicated print window and runs
+    Paged.js (resources/js/paged.polyfill.js) to do real CSS Paged Media
+    pagination before calling window.print() - that's what makes @page margins,
+    "@page :first", and the page-number margin box below actually work per page.
+*/
+
+/* Measured from the physical letterhead paper: the usable printable strip is
+   ~23cm tall on the 28cm sheet. With the 4cm top reserve (matches the
+   content's own inline top-margin div), that leaves 28 - 4 - 23 = 1cm for
+   margin-bottom. Earlier attempts to grow this value (up to 8.5cm) were
+   chasing a bug where the popup's stylesheet wasn't loading at all (see
+   custom4-paged-print.js) - none of those numbers were ever actually
+   reflected in the print output, so they should not be treated as real
+   measurements. */
+@page {
+    size: 22.5cm 28cm;
+    margin-top: 4cm;
+    margin-bottom: 1cm;
+    margin-left: 0;
+    margin-right: 0;
+
+    /* Page number, top-right of every page, "Page X of Y" format - only
+       rendered by Paged.js, not by native browser printing.
+       @top-right is right-aligned by default. margin-right on @page is 0,
+       so its right edge is literally the page's physical right edge - the
+       text was sitting flush in the corner with no breathing room.
+       padding-right/padding-top nudge it inward instead; padding-right is
+       larger than the theoretical 0.55cm content-edge match (see note
+       below) because that value clipped too close to the physically
+       unprintable edge on a real print. */
+    @top-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 11px;
+        padding-top: 3.0cm;
+        /* Started from the content's own right inset - .container-fluid is
+           a fixed 214mm (21.4cm) wide, centered on the 22.5cm page via
+           margin:auto, which leaves (22.5 - 21.4) / 2 = 0.55cm on each
+           side - then increased to 1.5cm after a real print showed 0.55cm
+           printing too close to the paper's physically unprintable edge. */
+        padding-right: 1.5cm;
+    }
+}
+
+/* Page 1's header space mostly comes from finalBillCustom4.xhtml's own inline
+   top-margin div (config key "Inward Final Bill Header Margin-Top Space",
+   default "4cm") - so this is NOT the full 4cm from the general @page rule
+   above (that would double-reserve it). It is not 0 either, unlike before:
+   margin boxes like @top-right only render inside the page's OWN margin area,
+   not inside an ordinary content div, so page 1 needs a small margin-top of
+   its own for the page number to have anywhere to sit - this adds a little
+   under 1cm of extra top space on page 1 only (~4.8cm total instead of 4cm)
+   purely to make room for that single line of text. */
+@page :first {
+    margin-top: 0.8cm;
+
+    /* The general @top-right above has padding-top: 3.0cm, which fits the
+       4cm margin-top most pages get - but this page's margin-top is only
+       0.8cm, so that padding alone would overflow/clip the page-number text.
+       Override with a padding that actually fits this page's smaller margin
+       box; keep padding-right the same since the page width doesn't change. */
+    @top-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 11px;
+        padding-top: 0.1cm;
+        padding-right: 1.5cm;
+    }
+}
+
+[id$="originalCustom4BillPriview"] .container-fluid,
+[id$="duplicateCustom4BillPriview"] .container-fluid,
+[id$="custom4BillOnly"] .container-fluid,
+[id$="custom4BillOnlyDuplicate"] .container-fluid {
+    font-family: Arial, "Liberation Sans", sans-serif;
+}
+
+/* Header title block ("Original Bill" / "Duplicate Bill" / "Tax Invoice" ...). The
+   generic printing.css version of this class reserves a large padding-top for an
+   institution header image; that space is already reserved separately by this
+   composite's own top-margin div (config key "Inward Final Bill Header
+   Margin-Top Space"), so no extra padding-top is added here to avoid double
+   reserving vertical space on the letterhead. */
+[id$="originalCustom4BillPriview"] .headingPrinting,
+[id$="duplicateCustom4BillPriview"] .headingPrinting,
+[id$="custom4BillOnly"] .headingPrinting,
+[id$="custom4BillOnlyDuplicate"] .headingPrinting {
+    text-align: center !important;
+    width: 100% !important;
+    margin: auto !important;
+    font-size: 13px !important;
+    font-weight: bold;
+}
+
+[id$="originalCustom4BillPriview"] .mark,
+[id$="duplicateCustom4BillPriview"] .mark,
+[id$="custom4BillOnly"] .mark,
+[id$="custom4BillOnlyDuplicate"] .mark {
+    font-weight: bold;
+}
+
+/* On-screen only: tint the printable area so it's visually distinguishable from
+   the blank letterhead margins while checking alignment in the browser preview.
+   Deliberately left out of @media print - printing a background tint would waste
+   ink/toner and looks wrong on the real pre-printed stationery. */
+@media screen {
+    [id$="originalCustom4BillPriview"] .container-fluid,
+    [id$="duplicateCustom4BillPriview"] .container-fluid,
+    [id$="custom4BillOnly"] .container-fluid,
+    [id$="custom4BillOnlyDuplicate"] .container-fluid {
+        background-color: #fff9db;
+    }
+}
+
+@media print {
+    [id$="originalCustom4BillPriview"] .container-fluid,
+    [id$="duplicateCustom4BillPriview"] .container-fluid,
+    [id$="custom4BillOnly"] .container-fluid,
+    [id$="custom4BillOnlyDuplicate"] .container-fluid {
+        /* Bootstrap's own .container-fluid gutter padding stacks on top of the
+           margin below - zero it out here so only the margin controls the
+           reserved space. */
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        /* Center the fixed 214mm-wide content within the 22.5cm page rather than
+           a fixed cm value, which only has ~1.1cm of total slack to work with */
+        margin-left: auto !important;
+        margin-right: auto !important;
+        /* Top/bottom spacing per page is handled by the @page rule above, not
+           here - element-level margin-top/margin-bottom would only apply once
+           (start/end of the whole flow), not repeat on every page like @page's
+           margin box does. The composite's own inline margin-bottom: 2.5cm is
+           separate again: it's trailing space after the very last page's
+           content ends, not a per-page reservation. */
+    }
+
+    /* Keep a single line item / doctor-fee row from being split across a page
+       boundary when a long bill overflows onto a second sheet */
+    [id$="originalCustom4BillPriview"] tr,
+    [id$="duplicateCustom4BillPriview"] tr,
+    [id$="custom4BillOnly"] tr,
+    [id$="custom4BillOnlyDuplicate"] tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+}

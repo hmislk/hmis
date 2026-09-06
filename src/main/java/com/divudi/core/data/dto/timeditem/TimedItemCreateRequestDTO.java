@@ -20,6 +20,7 @@ public class TimedItemCreateRequestDTO {
     private String inwardChargeType; // required
     private Long departmentId; // optional
     private Long institutionId; // optional
+    private Long categoryId; // optional (TimedItemCategory / Service Group)
     private boolean inactive = false;
 
     public TimedItemCreateRequestDTO() {
@@ -100,6 +101,14 @@ public class TimedItemCreateRequestDTO {
 
     public void setInstitutionId(Long institutionId) {
         this.institutionId = institutionId;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public boolean isInactive() {

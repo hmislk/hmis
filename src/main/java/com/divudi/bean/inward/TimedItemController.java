@@ -382,9 +382,7 @@ public class TimedItemController implements Serializable {
     }
 
     public List<TimedItem> getItems() {
-        if (items == null) {
-            fillItems();
-        }
+        fillItems();
         return items;
     }
 

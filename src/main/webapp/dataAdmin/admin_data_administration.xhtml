@@ -273,59 +273,6 @@
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="System Administrator Functions" disabled="false" >
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton
-                                                ajax="false" 
-                                                action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
-                                                value="Update Database Structure"  
-                                                class="w-100 m-1"
-                                                />
-                                            
-                                            <p:commandButton
-                                                ajax="false" 
-                                                action="#{databaseMigrationController.navigateToDatabaseMigration()}" 
-                                                value="Database Migration"  
-                                                class="w-100 m-1"
-                                                />
-
-                                            <p:commandButton
-                                                ajax="false" 
-                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}"
-                                            value="To Download Log Files"
-                                            class="w-100 m-1"
-                                            />
-
-                                            <p:commandButton
-                                                ajax="false"
-                                                action="#{dataAdministrationController.navigateToReportExecutionLogs()}"
-                                                value="Process Execution Logs"
-                                                class="w-100 m-1"
-                                                />
-
-                                            <p:commandButton
-                                                ajax="false" 
-                                                action="#{dataAdministrationController.navigateToNameToCode()}" 
-                                                value="Name To Code"  
-                                                class="w-100 m-1"
-                                                />
-                                            <p:commandButton
-                                                ajax="false" 
-                                                action="admin_functions?faces-redirect=true" 
-                                                value="Admin Functions"  
-                                                class="m-1 w-100"
-                                                />
-
-                                            <p:commandButton 
-                                                value="Test Error Handling"
-                                                action="#{dataAdministrationController.causeError}"
-                                                ajax="false"
-                                                styleClass="ui-button-danger w-100 m-1" />
-
-                                        </div>
-                                    </p:tab>
-
-
                                     <p:tab title="Patient Data Management"
                                            rendered="#{webUserController.hasPrivilege('MergePatients') or webUserController.hasPrivilege('AdminInactivePatients')}">
                                         <div class="d-grid gap-2">
@@ -343,6 +290,59 @@
                                                 action="#{patientController.navigateToInactivePatients()}"
                                                 icon="fa fa-user-slash"
                                                 rendered="#{webUserController.hasPrivilege('AdminInactivePatients')}" />
+                                        </div>
+                                    </p:tab>
+
+                                    <!-- Keep System Administrator Functions as the last tab; add new tabs above this one. -->
+                                    <p:tab title="System Administrator Functions" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToCheckMissingFields()}"
+                                                value="Update Database Structure"
+                                                class="w-100 m-1"
+                                                />
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{databaseMigrationController.navigateToDatabaseMigration()}"
+                                                value="Database Migration"
+                                                class="w-100 m-1"
+                                                />
+
+                                            <p:commandButton
+                                                ajax="false"
+                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}"
+                                            value="To Download Log Files"
+                                            class="w-100 m-1"
+                                            />
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToReportExecutionLogs()}"
+                                                value="Process Execution Logs"
+                                                class="w-100 m-1"
+                                                />
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToNameToCode()}"
+                                                value="Name To Code"
+                                                class="w-100 m-1"
+                                                />
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="admin_functions?faces-redirect=true"
+                                                value="Admin Functions"
+                                                class="m-1 w-100"
+                                                />
+
+                                            <p:commandButton
+                                                value="Test Error Handling"
+                                                action="#{dataAdministrationController.causeError}"
+                                                ajax="false"
+                                                styleClass="ui-button-danger w-100 m-1" />
+
                                         </div>
                                     </p:tab>
 

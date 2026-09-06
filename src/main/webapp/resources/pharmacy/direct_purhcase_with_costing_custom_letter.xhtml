@@ -109,7 +109,7 @@
 
             <div>
                 
-                <h:panelGroup rendered="#{not empty cc.attrs.bill.billItems}">
+                <h:panelGroup rendered="#{not empty cc.attrs.bill.activeBillItems}">
                     <table style="width: 94%; margin: 0 auto; border-collapse: collapse; font-size: 15px;" >
                         <thead >
                             <tr>
@@ -136,7 +136,7 @@
                         </thead>
 
                         <tbody>
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                            <ui:repeat value="#{cc.attrs.bill.activeBillItems}" var="bip">
                                 <tr>
                                     <td style="padding: 4px; border: 1px solid black;">
                                         <h:outputText value="#{bip.item.name}" />

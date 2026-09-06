@@ -54,6 +54,9 @@ public class TransferReceiveItemRowDto implements Serializable {
     /** Resolved AMP item ID for StockHistory (same as itemId unless the item is Ampp). */
     private Long ampItemId;
 
+    /** Item.departmentType (enum name as String), used to stamp the received bill when the issued bill lacks one. */
+    private String departmentType;
+
     private double unitsPerPack;
     private double purchaseRate;
     private double retailRate;
@@ -198,6 +201,14 @@ public class TransferReceiveItemRowDto implements Serializable {
 
     public void setAmpItemId(Long ampItemId) {
         this.ampItemId = ampItemId;
+    }
+
+    public String getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(String departmentType) {
+        this.departmentType = departmentType;
     }
 
     public double getUnitsPerPack() {

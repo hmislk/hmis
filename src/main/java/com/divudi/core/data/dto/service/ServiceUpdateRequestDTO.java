@@ -28,6 +28,8 @@ public class ServiceUpdateRequestDTO {
     private Boolean marginNotAllowed;
     private Boolean requestForQuentity;
     private Boolean patientNotRequired;
+    private Boolean vatable;
+    private Double vatPercentage;
 
     public ServiceUpdateRequestDTO() {
     }
@@ -39,7 +41,7 @@ public class ServiceUpdateRequestDTO {
                 || inwardChargeType != null || inactive != null || discountAllowed != null
                 || userChangable != null || chargesVisibleForInward != null
                 || marginNotAllowed != null || requestForQuentity != null
-                || patientNotRequired != null;
+                || patientNotRequired != null || vatable != null || vatPercentage != null;
     }
 
     public String getName() {
@@ -160,5 +162,21 @@ public class ServiceUpdateRequestDTO {
 
     public void setPatientNotRequired(Boolean patientNotRequired) {
         this.patientNotRequired = patientNotRequired;
+    }
+
+    public Boolean getVatable() {
+        return vatable;
+    }
+
+    public void setVatable(Boolean vatable) {
+        this.vatable = vatable;
+    }
+
+    public Double getVatPercentage() {
+        return vatPercentage;
+    }
+
+    public void setVatPercentage(Double vatPercentage) {
+        this.vatPercentage = vatPercentage;
     }
 }

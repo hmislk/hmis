@@ -20,6 +20,10 @@ public class ItemRequestLineResponseDTO implements Serializable {
     private String itemType;
     private double qty;
     private double netValue;
+    private String status;
+    private Long fulfillingBillId;
+    private String fulfillingBillType;
+    private String rejectionReason;
 
     public ItemRequestLineResponseDTO() {
     }
@@ -70,5 +74,37 @@ public class ItemRequestLineResponseDTO implements Serializable {
 
     public void setNetValue(double netValue) {
         this.netValue = netValue;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Long getFulfillingBillId() {
+        return fulfillingBillId;
+    }
+
+    public void setFulfillingBillId(Long fulfillingBillId) {
+        this.fulfillingBillId = fulfillingBillId;
+    }
+
+    public String getFulfillingBillType() {
+        return fulfillingBillType;
+    }
+
+    public void setFulfillingBillType(String fulfillingBillType) {
+        this.fulfillingBillType = fulfillingBillType;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

@@ -203,7 +203,14 @@
                 printWindow.document.write('<body>' + billContent + '</body></html>');
                 printWindow.document.close();
                 printWindow.onafterprint = function() { printWindow.close(); };
-                printWindow.print();
+
+                // Wait for the popup (including the linked stylesheet) to finish loading
+                // before printing - printing immediately after document.close() races the
+                // browser's rendering of the popup and can produce a blank page.
+                printWindow.onload = function() {
+                    printWindow.focus();
+                    printWindow.print();
+                };
             }
         </script>
 

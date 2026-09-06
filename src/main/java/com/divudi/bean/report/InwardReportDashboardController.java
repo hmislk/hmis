@@ -10,11 +10,8 @@ import com.divudi.core.data.reports.CommonReports;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.inward.Room;
-import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.RoomFacade;
-import com.divudi.core.facade.RoomFacilityChargeFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.inject.Named;
@@ -28,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.persistence.TemporalType;
 import org.primefaces.model.charts.ChartData;
 import org.primefaces.model.charts.bar.BarChartDataSet;
 import org.primefaces.model.charts.bar.BarChartModel;
@@ -59,15 +57,41 @@ public class InwardReportDashboardController implements Serializable{
     @EJB
     private PatientRoomFacade patientRoomFacade;
     @EJB
-    private RoomFacilityChargeFacade roomFacilityChargeFacade;
-    @EJB
     private BillService billService;
-    
-    // Bed occupancy 
+
+    // Bed occupancy
     private Long totalRooms;
     private Long occupiedRooms;
-    private Long underConstruction;
-    private Long availableRooms;
+    private Long underConstructionRooms;
+    private Long blockedRooms;
+    private Long pendingDischargeRooms;
+    private List<BedOccupancySummaryDTO> bedOccupancySummary;
+    
+    public static class BedOccupancySummaryDTO {
+        private String status;
+        private Long count;
+        
+        public BedOccupancySummaryDTO(String status, Long count) {
+            this.status = status;
+            this.count = count;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public Long getCount() {
+            return count;
+        }
+
+        public void setCount(Long count) {
+            this.count = count;
+        }
+    }
     
     // Opd revenue
     private final List<String> selectionTypesOpdRevenue = List.of("Department Wise", "Site Wise", "Institution Wise");
@@ -140,84 +164,132 @@ public class InwardReportDashboardController implements Serializable{
     
     public void processBedOccupancy() {
         bedOccupancyChart = new PieChartModel();
-        setOccupiedRooms();
         setTotalRooms();
-        setAvailableRooms();
         setUnderConstructionRooms();
+        setBlockedRooms();
+        setOccupiedRooms();
+        setPendingDischargeRooms();
 
-        if (totalRooms !=  null && occupiedRooms != null && underConstruction != null){
+        if (totalRooms != null && underConstructionRooms != null && blockedRooms != null
+                && occupiedRooms != null && pendingDischargeRooms != null) {
             setBedOccupancyChart();
         }
     }
-    
+
     private void setTotalRooms() {
         String sql = "SELECT COUNT(i) FROM Room i where i.retired=false";
-        totalRooms = getRoomFacade().countByJpql(sql);
+        totalRooms = getRoomFacade().findLongByJpql(sql);
     }
-    
+
+    // "Unavailable" = under construction / out of service for renovation etc.
+    // Tracked on the room master record itself (Room.filled), independent of
+    // any specific patient stay, so — like Blocked — it reflects today's
+    // configuration regardless of the selected date range: there is no
+    // history table for room-level status changes to reconstruct a past
+    // value from.
     private void setUnderConstructionRooms() {
-        String sql = "SELECT COUNT(i) FROM Room i where i.retired=false and i.filled=true";
-        underConstruction = getRoomFacade().countByJpql(sql);
-    }
-    
-    private void setAvailableRooms() {
-        String sql = "SELECT COUNT(DISTINCT rcf.room) FROM RoomFacilityCharge rcf"
-                + " Where rcf.room.filled=false "
-                + " And rcf.retired=false "
-                + " And rcf.room.retired=false";
-        
-        availableRooms = getRoomFacilityChargeFacade().countByJpql(sql);
+        String sql = "SELECT COUNT(i) FROM Room i WHERE i.retired=false AND i.filled=true";
+        underConstructionRooms = getRoomFacade().findLongByJpql(sql);
     }
 
+    // "Blocked" = shut down, no longer usable (Housekeeping/Contaminated/
+    // Isolated/OutOfOrder on the room record) — same bedStatus signal
+    // BedBoardController uses for the live bed board. Excludes rooms already
+    // counted as Unavailable so the two buckets never overlap. Room-level
+    // fact, so — see setUnderConstructionRooms() — not date-scoped.
+    private void setBlockedRooms() {
+        String sql = "SELECT COUNT(r) FROM Room r WHERE r.retired=false AND r.filled=false "
+                + " AND r.bedStatus IS NOT NULL AND r.bedStatus <> com.divudi.core.data.inward.BedStatus.Available";
+        blockedRooms = getRoomFacade().findLongByJpql(sql);
+    }
+
+    // Occupied = distinct physical rooms with a PatientRoom stay overlapping
+    // [fromDate, toDate] — admitted on/before toDate and either still
+    // occupying (discharged=false) or discharged on/after fromDate. With the
+    // default "today" range this reduces to "occupied right now"; a past
+    // range reconstructs which rooms were occupied at any point during it.
+    // DISTINCT keeps this in the same unit as totalRooms. Rooms already
+    // Blocked or Unavailable are excluded so a room is never double-counted.
     private void setOccupiedRooms() {
-        String sql = "SELECT COUNT(pr) FROM PatientRoom pr "
-            + " where pr.retired=false "
-            + " and pr.discharged=false ";
-
-        occupiedRooms = getPatientRoomFacade().countByJpql(sql);
+        String sql = "SELECT COUNT(DISTINCT pr.roomFacilityCharge.room) FROM PatientRoom pr "
+                + " WHERE pr.retired=false "
+                + " AND pr.admittedAt <= :toDate "
+                + " AND (pr.discharged=false OR pr.dischargedAt >= :fromDate) "
+                + " AND pr.roomFacilityCharge.room.id NOT IN ("
+                + "     SELECT r.id FROM Room r WHERE r.retired=false "
+                + "     AND (r.filled=true OR (r.bedStatus IS NOT NULL AND r.bedStatus <> com.divudi.core.data.inward.BedStatus.Available))"
+                + " )";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        occupiedRooms = getPatientRoomFacade().findLongByJpql(sql, params, TemporalType.TIMESTAMP);
     }
-    
-    private void setBedOccupancyChart() {        
+
+    // Marked for Discharge = clinically discharged (PatientEncounter.clinicalDischargeDateTime
+    // set) — a true subset of occupiedRooms, using the same date-range overlap condition.
+    private void setPendingDischargeRooms() {
+        String sql = "SELECT COUNT(DISTINCT pr.roomFacilityCharge.room) FROM PatientRoom pr "
+                + " WHERE pr.retired=false "
+                + " AND pr.admittedAt <= :toDate "
+                + " AND (pr.discharged=false OR pr.dischargedAt >= :fromDate) "
+                + " AND pr.patientEncounter.clinicalDischargeDateTime IS NOT NULL "
+                + " AND pr.roomFacilityCharge.room.id NOT IN ("
+                + "     SELECT r.id FROM Room r WHERE r.retired=false "
+                + "     AND (r.filled=true OR (r.bedStatus IS NOT NULL AND r.bedStatus <> com.divudi.core.data.inward.BedStatus.Available))"
+                + " )";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        pendingDischargeRooms = getPatientRoomFacade().findLongByJpql(sql, params, TemporalType.TIMESTAMP);
+    }
+
+    private void setBedOccupancyChart() {
         PieChartDataSet dataSet = new PieChartDataSet();
-        Long vacantRooms;
-        
-        
-        if (availableRooms != null && occupiedRooms != null) {
-            vacantRooms = availableRooms - occupiedRooms;
-            if (vacantRooms < 0) {
-                vacantRooms = Long.valueOf(0);
-            }
-        } else {
-            vacantRooms = Long.valueOf(0);
-        }
-        
+
+        long blockedSlice = (blockedRooms != null ? blockedRooms : 0);
+        long underConstructionSlice = (underConstructionRooms != null ? underConstructionRooms : 0);
+        long pendingDischargeSlice = (pendingDischargeRooms != null ? pendingDischargeRooms : 0);
+
+        // occupiedRooms already excludes blocked/unavailable rooms and includes
+        // pendingDischargeRooms as a subset, so this can never go negative in
+        // consistent data; the clamp only guards against the counts being read
+        // a moment apart under concurrent admissions.
+        long occupiedSlice = (occupiedRooms != null ? occupiedRooms : 0) - pendingDischargeSlice;
+        if (occupiedSlice < 0) occupiedSlice = 0;
+
+        long vacantSlice = (totalRooms != null ? totalRooms : 0) - (occupiedRooms != null ? occupiedRooms : 0)
+                - blockedSlice - underConstructionSlice;
+        if (vacantSlice < 0) vacantSlice = 0;
+
+        bedOccupancySummary = new ArrayList<>();
+        bedOccupancySummary.add(new BedOccupancySummaryDTO("Occupied Rooms", occupiedSlice));
+        bedOccupancySummary.add(new BedOccupancySummaryDTO("Vacant Rooms", vacantSlice));
+        bedOccupancySummary.add(new BedOccupancySummaryDTO("Blocked Rooms", blockedSlice));
+        bedOccupancySummary.add(new BedOccupancySummaryDTO("Unavailable Rooms", underConstructionSlice));
+        bedOccupancySummary.add(new BedOccupancySummaryDTO("Marked for Discharge", pendingDischargeSlice));
+
         List<Number> rooms = new ArrayList<>();
-        rooms.add((occupiedRooms != null ? occupiedRooms : Long.valueOf(0)));
-        rooms.add((underConstruction != null ? underConstruction : Long.valueOf(0)));
-        rooms.add(vacantRooms);
-        if (totalRooms != null && availableRooms != null && underConstruction != null) {
-            rooms.add(totalRooms - (availableRooms+underConstruction));
-        } else {
-            rooms.add(0);
+        for (BedOccupancySummaryDTO dto : bedOccupancySummary) {
+            rooms.add(dto.getCount());
         }
-        
+
         dataSet.setData(rooms);
-        
+
         List<String> bgColors = new ArrayList<>();
-        bgColors.add("rgb(153, 102, 255)");  // Purple
-        bgColors.add("rgb(255, 159, 64)");   // Orange
-        bgColors.add("rgb(201, 203, 207)");  // Gray
-        bgColors.add("rgb(255, 99, 255)");   // Pink/Magenta
+        bgColors.add("rgb(54, 162, 235)");   // Blue (Occupied)
+        bgColors.add("rgb(144, 238, 144)");  // Green (Vacant)
+        bgColors.add("rgb(255, 205, 86)");   // Orange (Blocked)
+        bgColors.add("rgb(201, 203, 207)");  // Gray (Unavailable)
+        bgColors.add("rgb(255, 99, 132)");   // Pink/Red (Marked for Discharge)
         dataSet.setBackgroundColor(bgColors);
         
         ChartData data = new ChartData();
         data.addChartDataSet(dataSet);
         
         List<String> labels = new ArrayList<>();
-        labels.add("Occupied Rooms");
-        labels.add("Blocked Rooms");
-        labels.add("Vacant Rooms");
-        labels.add("Unavailable Rooms");
+        for (BedOccupancySummaryDTO dto : bedOccupancySummary) {
+            labels.add(dto.getStatus());
+        }
         data.setLabels(labels);
         
         bedOccupancyChart.setData(data);
@@ -294,11 +366,7 @@ public class InwardReportDashboardController implements Serializable{
     public PatientRoomFacade getPatientRoomFacade() {
         return patientRoomFacade;
     }
-    
-    public RoomFacilityChargeFacade getRoomFacilityChargeFacade() {
-        return roomFacilityChargeFacade;
-    }
-    
+
     public PieChartModel getBedOccupancyChart() {
         return bedOccupancyChart;
     }
@@ -398,6 +466,14 @@ public class InwardReportDashboardController implements Serializable{
         this.opdRevenueDashboardDtos = dtos;
     }
     
+    public List<BedOccupancySummaryDTO> getBedOccupancySummary() {
+        return bedOccupancySummary;
+    }
+    
+    public Long getTotalRooms() {
+        return totalRooms;
+    }
+    
     public void generateOpdIncomeReportDto() {
         opdRevenueChart = new BarChartModel();
         List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
@@ -439,7 +515,7 @@ public class InwardReportDashboardController implements Serializable{
     
     public void generateDiscountDashboard() {
         discountChart = new BarChartModel();
-        List<BillTypeAtomic> btas = getOpdAndPharmacyIncomeBillTypes();
+        List<BillTypeAtomic> btas = getDashboardDiscountBillTypes();
         
         discountDashboard = billService.fetchBillDiscounts(getFromDate(), getToDate(), discountDept, btas);
         discountBundle = new IncomeBundle(discountDashboard);
@@ -464,6 +540,29 @@ public class InwardReportDashboardController implements Serializable{
             
          return billTypeAtomics;
         
+    }
+    
+    public List<BillTypeAtomic> getDashboardDiscountBillTypes() {
+        List<BillTypeAtomic> billTypeAtomics = getOpdAndPharmacyIncomeBillTypes();
+        
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+        
+        billTypeAtomics.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+        
+        billTypeAtomics.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
+        
+        billTypeAtomics.add(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION);
+        
+        return billTypeAtomics;
     }
     
     public List<BillTypeAtomic> getOpdAndPharmacyIncomeBillTypes() {

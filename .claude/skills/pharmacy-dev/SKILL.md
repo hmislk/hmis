@@ -13,7 +13,7 @@ user-invocable: true
 
 For detailed pharmacy development, refer to these files:
 
-- [Pharmaceutical Management API](../../developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md) - REST API for managing VTM, ATM, VMP, AMP, VMPP, AMPP, categories, dosage forms, and measurement units
+- [Pharmaceutical Management API](../../../developer_docs/api/using-apis/API_PHARMACEUTICAL_MANAGEMENT.md) - REST API for managing VTM, ATM, VMP, AMP, VMPP, AMPP, categories, dosage forms, and measurement units
 - [GRN Fixes](../../developer_docs/pharmacy/grn-fully-issued-fix.md) - GRN completion patterns
 - [Multi-Window Sales](../../developer_docs/pharmacy/PHARMACY_RETAIL_SALE_MULTI_WINDOW_GUIDE.md.md) - Multi-window handling
 - [Cost Accounting Signs](../../developer_docs/pharmacy/cost-accounting-sign-conventions.md) - Sign normalization
@@ -21,6 +21,7 @@ For detailed pharmacy development, refer to these files:
 - [Quantity Decimals](../../developer_docs/pharmacy/quantity-decimal-validation-guide.md) - Decimal validation
 - [Transfer Disbursement](../../developer_docs/billing/PHARMACY_TRANSFER_DISBURSEMENT_DOCUMENTATION.md) - Transfer workflow
 - [Purchase Order Workflow](../../developer_docs/po-workflow-documentation.md) - PO workflow
+- [Bulk Stock Verification Adjustment](../../developer_docs/pharmacy/bulk-stock-verification-adjustment-guide.md) - Reconciling a physical stock count spreadsheet against system stock at scale via the adjustment/batch-creation APIs
 
 ## Configuration Options
 
@@ -28,6 +29,7 @@ Pharmacy uses `configOptionApplicationController.getBooleanValueByKey()` for fea
 - `Pharmacy Transfer is by Purchase Rate` / `Cost Rate` / `Retail Rate`
 - `Display Colours for Stock Autocomplete Items`
 - `Pharmacy Disbursement Reports - Display *` (various column visibility)
+- `Pharmacy - Allow Cross-Department PO Receiving` (default `false`) - lets a PO created in one department be received/GRN'd from any other department in the same institution; see [Purchase Order Workflow § Receiving Department Scoping](../../developer_docs/po-workflow-documentation.md#receiving-department-scoping-issue-21848)
 
 ## Common Patterns
 

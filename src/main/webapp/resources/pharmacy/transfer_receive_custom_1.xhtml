@@ -117,7 +117,7 @@
                     rowIndexVar="rowIndex"
                     styleClass="no-border-table compact-table"
                     style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.1 !important;"
-                    value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip">
+                    value="#{cc.attrs.bill.activeBillItems}" sortBy="#{bip.searialNo}" var="bip">
 
                     <p:column
                         width="2em"

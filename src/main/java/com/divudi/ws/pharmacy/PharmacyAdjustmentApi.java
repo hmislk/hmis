@@ -232,6 +232,56 @@ public class PharmacyAdjustmentApi {
     }
 
     /**
+     * Backfill BillFinanceDetails + bill totals for adjustment bills created before
+     * this fix existed, so historical F15 reports reconcile. Idempotent: bills that
+     * already have BillFinanceDetails are skipped.
+     * Endpoint: POST /api/pharmacy_adjustments/backfill_finance_details
+     * Body: {"departmentId": 90094, "fromDate": "2026-07-01", "toDate": "2026-07-04", "apply": false}
+     */
+    @POST
+    @Path("/backfill_finance_details")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response backfillFinanceDetails(String requestBody) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            BackfillRequestDTO request;
+            try {
+                request = gson.fromJson(requestBody, BackfillRequestDTO.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (request == null || request.getDepartmentId() == null) {
+                return errorResponse("departmentId is required", 400);
+            }
+
+            // This backfill's JPQL query (backfillFinanceDetailsForDepartment) touches bills of
+            // THREE distinct types - PHARMACY_STOCK_ADJUSTMENT, PHARMACY_RETAIL_RATE_ADJUSTMENT,
+            // and PHARMACY_PURCHASE_RATE_ADJUSTMENT - each normally gated by its own privilege on
+            // the regular (non-backfill) endpoints. Require all three here so a user privileged
+            // for only one adjustment type cannot use this endpoint to write to bill types they
+            // hold no direct privilege over.
+            if (!webUserService.hasPrivilege("PharmacyAdjustmentDepartmentStockQTY", user, request.getDepartmentId())
+                    || !webUserService.hasPrivilege("PharmacyAdjustmentSaleRate", user, request.getDepartmentId())
+                    || !webUserService.hasPrivilege("PharmacyAdjustmentPurchaseRate", user, request.getDepartmentId())) {
+                return errorResponse("Not authorized", 403);
+            }
+
+            Object response = adjustmentService.backfillFinanceDetailsForDepartment(
+                    request.getDepartmentId(), request.getFromDate(), request.getToDate(), request.isApply());
+            return successResponse(response);
+
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
      * Validate API key and return associated user
      */
     private WebUser validateApiKey(String key) {

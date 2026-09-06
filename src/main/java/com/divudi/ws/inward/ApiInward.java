@@ -657,7 +657,7 @@ public class ApiInward {
             return null;
         }
         b.setBillType(BillType.InwardPaymentBill);
-        b.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT);
+        b.setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT);
         if (temp.getInstitution() != null) {
             b.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(temp.getInstitution(), b.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         }

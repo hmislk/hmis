@@ -68,12 +68,12 @@
                                 </f:facet>
 
                                 <p:commandButton
-                                    value="Direct Issue"
+                                    value="Direct Issue (use Medicine Issue)"
                                     class="w-100"
-                                    action="/store/store_retail_sale_bht?faces-redirect=true"
-                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                    rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtBilling')}"
-                                    icon="pi pi-shopping-cart"
+                                    action="/theater/inward_bill_surgery_issue?faces-redirect=true"
+                                    actionListener="#{pharmacySaleBhtController.makeNull()}"
+                                    rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}"
+                                    icon="pi pi-check"
                                     ajax="false"/>
                                 <p:commandButton
                                     value="Search Issue Bill"

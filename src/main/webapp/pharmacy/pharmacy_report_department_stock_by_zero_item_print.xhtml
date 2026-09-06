@@ -105,6 +105,10 @@
                                         <h:outputText value="Zero Stock Item Report"/>
                                     </div>
                                     <div class="d-flex justify-content-center" style="font-weight: 600; font-size: 15px; margin-bottom: 5px;">
+                                        <h:outputLabel value="#{reportsStock.site.name}" rendered="#{reportsStock.site ne null}"/>
+                                        <h:outputLabel value="All Sites" rendered="#{reportsStock.site eq null}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center" style="font-weight: 600; font-size: 15px; margin-bottom: 5px;">
                                         <h:outputLabel value="#{reportsStock.department.name}" rendered="#{reportsStock.department ne null}"/>
                                         <h:outputLabel value="All Departments" rendered="#{reportsStock.department eq null}"/>
                                     </div>
@@ -146,6 +150,20 @@
                                         </tfoot>
                                     </table>
                                 </div>
+
+                                <div class="d-flex justify-content-between" style="font-weight:400; font-size: 10px; margin-top: 3mm;">
+                                    <span>
+                                        Printed By:
+                                        <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" />
+                                    </span>
+                                    <span>
+                                        Printed At:
+                                        <h:outputText value="#{sessionController.currentDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a"/>
+                                        </h:outputText>
+                                    </span>
+                                </div>
+
                             </div>
                         </h:panelGroup>
 

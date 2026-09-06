@@ -23,6 +23,7 @@ public class AmpRequestDTO extends PharmaceuticalItemBaseRequestDTO implements S
     private Boolean refundsAllowed;
     private Double strengthOfAnIssueUnit;
     private Long strengthUnitId;
+    private Long issueUnitId;
 
     public AmpRequestDTO() {
     }
@@ -113,5 +114,13 @@ public class AmpRequestDTO extends PharmaceuticalItemBaseRequestDTO implements S
 
     public void setStrengthUnitId(Long strengthUnitId) {
         this.strengthUnitId = strengthUnitId;
+    }
+
+    public Long getIssueUnitId() {
+        return issueUnitId;
+    }
+
+    public void setIssueUnitId(Long issueUnitId) {
+        this.issueUnitId = issueUnitId;
     }
 }

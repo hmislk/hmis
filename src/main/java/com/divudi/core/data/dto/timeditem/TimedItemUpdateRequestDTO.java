@@ -20,6 +20,7 @@ public class TimedItemUpdateRequestDTO {
     private String inwardChargeType;
     private Long departmentId;
     private Long institutionId;
+    private Long categoryId;
     private Boolean inactive;
 
     public TimedItemUpdateRequestDTO() {
@@ -28,7 +29,7 @@ public class TimedItemUpdateRequestDTO {
     public boolean isValid() {
         return hasText(name) || hasText(code) || printName != null || fullName != null
                 || hasText(departmentType) || hasText(inwardChargeType)
-                || departmentId != null || institutionId != null || inactive != null;
+                || departmentId != null || institutionId != null || categoryId != null || inactive != null;
     }
 
     private boolean hasText(String value) {
@@ -97,6 +98,14 @@ public class TimedItemUpdateRequestDTO {
 
     public void setInstitutionId(Long institutionId) {
         this.institutionId = institutionId;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public Boolean getInactive() {

@@ -12,11 +12,13 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
@@ -27,7 +29,11 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
@@ -42,6 +48,7 @@ import com.divudi.core.entity.Fee;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.WebUser;
@@ -72,10 +79,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -93,6 +104,17 @@ import org.json.JSONObject;
 public class BillBhtController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // Pre-existing application-wide print format keys for this page. The
+    // "Servise" misspelling is live in customer databases - do not correct it.
+    private static final String KEY_FIVE_FIVE_PRINTED = "Inward Servise Bill size is FiveFivePrinted paper";
+    private static final String KEY_POS = "Inward Servise Bill size is POS Paper";
+    private static final String KEY_A4 = "Inward Servise Bill size is A4 Paper";
+    private static final String KEY_A4_PRINTED = "Inward Servise Bill size is A4Printed Paper";
+    private static final String KEY_FIVE_FIVE_CUSTOM_3 = "Inward Servise Bill size is FiveFiveCustom3 Paper";
+    private static final String KEY_FIVE_EIGHT_INCH = "Inward Servise Bill size is 5x8 inch Paper";
+    // New, department-scoped (ConfigOptionController) - correctly spelled.
+    private static final String KEY_FIVE_FIVE_CUSTOM_1 = "Inward Service Bill - Show Custom 1 Format";
     @Inject
     SessionController sessionController;
     @Inject
@@ -113,6 +135,10 @@ public class BillBhtController implements Serializable {
     DepartmentController departmentController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -145,12 +171,16 @@ public class BillBhtController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @Inject
     BillController billController;
+    @Inject
+    private SurgeryBillController surgeryBillController;
     ///////////////////
 
     private double total;
     private double discount;
     private double marginTotal;
     private double netTotal;
+    private double vat;
+    private double vatPlusNetTotal;
     private double cashPaid;
     private double cashBalance;
     private String creditCardRefNo;
@@ -167,6 +197,132 @@ public class BillBhtController implements Serializable {
     private List<BillItem> lstBillItems;
     private List<BillEntry> lstBillEntries;
     private boolean printPreview;
+
+    // <editor-fold defaultstate="collapsed" desc="Print format settings dialog (inward_bill_service.xhtml)">
+    /**
+     * Backing values for the Print Settings dialog on
+     * {@code inward_bill_service.xhtml}, so a department can switch a print
+     * format on or off from the page itself instead of going to Config
+     * Options. See
+     * developer_docs/configuration/printer-configuration-system.md.
+     *
+     * The first six mirror the pre-existing, APPLICATION-WIDE keys the page
+     * already reads (typo "Servise" and all - the keys are live in customer
+     * databases and must not be renamed). Only the Custom 1 key is new, and
+     * it is department-scoped via {@link ConfigOptionController}, as the
+     * printer-configuration doc prescribes for new print settings.
+     */
+    private boolean printFormatFiveFivePrinted;
+    private boolean printFormatPos;
+    private boolean printFormatA4;
+    private boolean printFormatA4Printed;
+    private boolean printFormatFiveFiveCustom3;
+    private boolean printFormatFiveEightInch;
+    private boolean printFormatFiveFiveCustom1;
+
+    public void loadInwardServiceBillPrintConfig() {
+        printFormatFiveFivePrinted = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_FIVE_PRINTED, true);
+        printFormatPos = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_POS, false);
+        printFormatA4 = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_A4, false);
+        printFormatA4Printed = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_A4_PRINTED, false);
+        printFormatFiveFiveCustom3 = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_FIVE_CUSTOM_3, false);
+        printFormatFiveEightInch = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_EIGHT_INCH, false);
+        printFormatFiveFiveCustom1 = configOptionController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_FIVE_CUSTOM_1, false);
+    }
+
+    public void saveInwardServiceBillPrintConfig() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change print format settings");
+            return;
+        }
+        // The Custom 1 key is meant to be department-scoped. With no department
+        // selected (SessionController.loginActionWithoutDepartment()),
+        // ConfigOptionController.setBooleanValueByKey falls back to the plain
+        // application key, which every department without an override inherits
+        // - so one unscoped save would silently change the format for the whole
+        // application. Refuse rather than write the wrong scope.
+        if (sessionController.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Select a department before changing print format settings");
+            return;
+        }
+        try {
+            configOptionApplicationController.setBooleanValueByKey(KEY_FIVE_FIVE_PRINTED, printFormatFiveFivePrinted);
+            configOptionApplicationController.setBooleanValueByKey(KEY_POS, printFormatPos);
+            configOptionApplicationController.setBooleanValueByKey(KEY_A4, printFormatA4);
+            configOptionApplicationController.setBooleanValueByKey(KEY_A4_PRINTED, printFormatA4Printed);
+            configOptionApplicationController.setBooleanValueByKey(KEY_FIVE_FIVE_CUSTOM_3, printFormatFiveFiveCustom3);
+            configOptionApplicationController.setBooleanValueByKey(KEY_FIVE_EIGHT_INCH, printFormatFiveEightInch);
+            configOptionController.setBooleanValueByKey(KEY_FIVE_FIVE_CUSTOM_1, printFormatFiveFiveCustom1);
+            JsfUtil.addSuccessMessage("Print format settings saved successfully");
+            loadInwardServiceBillPrintConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
+    public boolean isPrintFormatFiveFivePrinted() {
+        return printFormatFiveFivePrinted;
+    }
+
+    public void setPrintFormatFiveFivePrinted(boolean printFormatFiveFivePrinted) {
+        this.printFormatFiveFivePrinted = printFormatFiveFivePrinted;
+    }
+
+    public boolean isPrintFormatPos() {
+        return printFormatPos;
+    }
+
+    public void setPrintFormatPos(boolean printFormatPos) {
+        this.printFormatPos = printFormatPos;
+    }
+
+    public boolean isPrintFormatA4() {
+        return printFormatA4;
+    }
+
+    public void setPrintFormatA4(boolean printFormatA4) {
+        this.printFormatA4 = printFormatA4;
+    }
+
+    public boolean isPrintFormatA4Printed() {
+        return printFormatA4Printed;
+    }
+
+    public void setPrintFormatA4Printed(boolean printFormatA4Printed) {
+        this.printFormatA4Printed = printFormatA4Printed;
+    }
+
+    public boolean isPrintFormatFiveFiveCustom3() {
+        return printFormatFiveFiveCustom3;
+    }
+
+    public void setPrintFormatFiveFiveCustom3(boolean printFormatFiveFiveCustom3) {
+        this.printFormatFiveFiveCustom3 = printFormatFiveFiveCustom3;
+    }
+
+    public boolean isPrintFormatFiveEightInch() {
+        return printFormatFiveEightInch;
+    }
+
+    public void setPrintFormatFiveEightInch(boolean printFormatFiveEightInch) {
+        this.printFormatFiveEightInch = printFormatFiveEightInch;
+    }
+
+    public boolean isPrintFormatFiveFiveCustom1() {
+        return printFormatFiveFiveCustom1;
+    }
+
+    public void setPrintFormatFiveFiveCustom1(boolean printFormatFiveFiveCustom1) {
+        this.printFormatFiveFiveCustom1 = printFormatFiveFiveCustom1;
+    }
+    // </editor-fold>
     private List<Bill> bills;
     private Doctor referredBy;
     Date date;
@@ -182,9 +338,112 @@ public class BillBhtController implements Serializable {
     private Department selectedInwardItemDepartment;
     private List<Department> inwardItemDepartments;
     private List<ItemLight> inwardItem;
-    
+    private PatientEncounter inwardItemCacheKey;
+
     private Priority currentBillItemPriority;
     private Double currentBillItemQty;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("inward/inward_bill_service");
+        metadata.setPageName("Inward Add Services");
+        metadata.setDescription("Adds services, investigations, and their fees to an inpatient's bill");
+        metadata.setControllerClass("BillBhtController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Bill Fees are based on the site for " + sessionController.getDepartment().getName(),
+                "Uses site-specific bill fees (falling back to base fees when none exist for the site) when adding services to the inward bill. Mirrors the equivalent OPD option.",
+                "BillBhtController.java: billFeeFromBillItemWithMatrix() method",
+                OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Use Sample Management for Inward Service and Investigations",
+                "Routes the print-preview 'Manage Samples' action to sample management instead of direct label printing",
+                "inward_bill_service.xhtml: print-preview action buttons",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is POS Paper",
+                "Uses POS paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is A4 Paper",
+                "Uses A4 paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is A4Printed Paper",
+                "Uses A4 pre-printed paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is FiveFiveCustom3 Paper",
+                "Uses the FiveFiveCustom3 paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is 5x8 inch Paper",
+                "Uses the 5x8 inch paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is FiveFivePrinted paper",
+                "Uses the FiveFive pre-printed paper format for the inward service bill print preview (this is also the fallback default when the paper type preference is unset)",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "NursingWorkBench",
+                "Access to the Nursing WorkBench navigation button",
+                "inward_bill_service.xhtml: 'Nursing WorkBench' buttons"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "InwardSearch",
+                "Access to Search Patients, Patient Profile, and Inpatient Dashboard navigation buttons",
+                "inward_bill_service.xhtml: patient navigation button group"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ShowServiceCharges",
+                "View rate, gross value, discount, service charge, VAT, and net value columns/details for inward services and fees",
+                "inward_bill_service.xhtml: Bill Items and Fees tab columns, Bill Details panel"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ShowInwardFee",
+                "Allows editing the Total Gross value of an inward fee directly in the Fees tab",
+                "inward_bill_service.xhtml: Fees tab, Total Gross input"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public String navigateToAddServiceFromMenu() {
         resetBillData();
@@ -195,7 +454,61 @@ public class BillBhtController implements Serializable {
         resetBillData();
         batchBill = surgeryBill;
         patientEncounter = surgeryBill.getPatientEncounter();
+        loadExistingSurgeryServiceEntries(surgeryBill);
         return "/theater/inward_bill_surgery_service?faces-redirect=true";
+    }
+
+    /**
+     * Rebuilds {@link #lstBillEntries} (the "Item Requests" / Bill Items cart
+     * shown in inward_bill_surgery_service.xhtml) from the surgery service
+     * BillItems already saved to the DB against this surgery bill.
+     *
+     * Each time the surgery service cart is settled, settleBillSurgery() ->
+     * saveBill() creates one or more Service sub-bills whose
+     * forwardReferenceBill points back at the surgery bill (see
+     * BillBeanController.setSurgeryData). resetBillData() clears
+     * lstBillEntries on every navigation into this page, so without this,
+     * previously requested/billed items never reappear (issue #20893).
+     */
+    private void loadExistingSurgeryServiceEntries(Bill surgeryBill) {
+        lstBillEntries = new ArrayList<>();
+        if (surgeryBill == null) {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("surgeryBill", surgeryBill);
+        params.put("surgeryBillType", SurgeryBillType.Service);
+        String jpql = "select bi from BillItem bi "
+                + "where bi.bill.forwardReferenceBill = :surgeryBill "
+                + "and bi.bill.surgeryBillType = :surgeryBillType "
+                + "and bi.retired = false "
+                + "and bi.bill.retired = false "
+                + "order by bi.id";
+        List<BillItem> existingBillItems = billItemFacade.findByJpql(jpql, params);
+        if (existingBillItems == null) {
+            return;
+        }
+        for (BillItem bItem : existingBillItems) {
+            BillEntry entry = new BillEntry();
+            entry.setBillItem(bItem);
+            entry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
+            entry.setLstBillFees(existingBillFeesForBillItem(bItem));
+            entry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
+            lstBillEntries.add(entry);
+        }
+    }
+
+    /**
+     * Fetches the BillFees already persisted for a previously-billed BillItem,
+     * so re-displaying the item shows the fees actually charged rather than
+     * recomputing them against the current price matrix.
+     */
+    private List<BillFee> existingBillFeesForBillItem(BillItem bItem) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("billItem", bItem);
+        String jpql = "select bf from BillFee bf where bf.billItem = :billItem and bf.retired = false order by bf.id";
+        List<BillFee> fees = billFeeFacade.findByJpql(jpql, params);
+        return fees != null ? fees : new ArrayList<>();
     }
 
     public String navigateToPrintLabelsForInvestigations() {
@@ -276,6 +589,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -319,6 +634,7 @@ public class BillBhtController implements Serializable {
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
+        loadExistingSurgeryServiceEntries(getBatchBill());
     }
 
     public String navigateToAddServicesFromAdmissionProfile() {
@@ -326,6 +642,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -347,12 +665,46 @@ public class BillBhtController implements Serializable {
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
+    /**
+     * Entry point from the Item/Service Request pending queue (issue #21793
+     * redesign): seeds this controller's cart with the request's still-unfulfilled
+     * lines, exactly as if the user had searched for and added each one manually,
+     * then navigates to the same Add Services page. The user can edit/add/remove
+     * before clicking the page's own Save button.
+     */
+    public String navigateToAddServicesFromItemRequest(Bill itemRequest, List<BillItem> remainingLines) {
+        navigateToAddServicesFromAdmissionProfile();
+        setPatientEncounter(itemRequest.getPatientEncounter());
+        // navigateToAddServicesFromAdmissionProfile() resets lstBillEntries to null; normally
+        // the next page render (via the getter) lazily re-initializes it before addToBill() is
+        // ever invoked. Here we call addToBill() synchronously with no intervening render, so
+        // force the lazy-init now to avoid a NullPointerException on the first entry.
+        getLstBillEntries();
+        for (BillItem requestLine : remainingLines) {
+            BillItem seed = new BillItem();
+            seed.setItem(requestLine.getItem());
+            setCurrentBillItem(seed);
+            setCurrentBillItemQty(requestLine.getQty());
+            if (requestLine.getItem() != null && requestLine.getItem().getClass() == Investigation.class) {
+                seed.setBillTime(new Date());
+            }
+            int sizeBefore = lstBillEntries.size();
+            addToBill();
+            if (lstBillEntries.size() > sizeBefore) {
+                lstBillEntries.get(lstBillEntries.size() - 1).setSourceRequestBillItem(requestLine);
+            }
+        }
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
+
     public String navigateToAddServicesFromMenu() {
         BillBhtController date = null;
         patientEncounter = null;
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -440,6 +792,7 @@ public class BillBhtController implements Serializable {
                     tmp.add(e);
                 }
             }
+            applyItemRequestReference(myBill, tmp);
             List<BillItem> tmpBis = saveBillItems(myBill, tmp, getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             for (int i = 0; i < tmpBis.size(); i++) {
                 tmpBis.get(i).setSearialNo(i);
@@ -451,6 +804,22 @@ public class BillBhtController implements Serializable {
 
     }
 
+    /**
+     * If any of the entries being saved onto this bill originated from an
+     * Item/Service Request line (issue #21793 redesign), set the bill's
+     * referenceBill so the request stays traceable to the bill it produced.
+     * Each such entry's originating request BillItem is threaded onto the
+     * real BillItem in {@link #saveBillItems(Bill, BillItem, BillEntry, List, WebUser, Department)}.
+     */
+    private void applyItemRequestReference(Bill bill, List<BillEntry> entries) {
+        for (BillEntry e : entries) {
+            if (e.getSourceRequestBillItem() != null && e.getSourceRequestBillItem().getBill() != null) {
+                bill.setReferenceBill(e.getSourceRequestBillItem().getBill());
+                return;
+            }
+        }
+    }
+
     public BillItem saveBillItems(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees, WebUser wu, Department matrixDepartment) {
 
         billItem.setCreatedAt(new Date());
@@ -460,6 +829,10 @@ public class BillBhtController implements Serializable {
         if (billItem.getInwardChargeType() == null && billItem.getItem() != null
                 && billItem.getItem().getInwardChargeType() != null) {
             billItem.setInwardChargeType(billItem.getItem().getInwardChargeType());
+        }
+
+        if (billEntry != null && billEntry.getSourceRequestBillItem() != null) {
+            billItem.setReferanceBillItem(billEntry.getSourceRequestBillItem());
         }
 
         if (billItem.getId() == null) {
@@ -489,6 +862,21 @@ public class BillBhtController implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
+    /**
+     * The room category of the patient's current room, or null when the patient
+     * is not yet in a room (or the room has no facility charge / category). Used
+     * as the room-category dimension of the inward service-margin matrix lookup
+     * (issue #21977); null means "wildcard row only", preserving legacy behaviour.
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
     public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment, PaymentMethod paymentMethod) {
         List<BillItem> list = new ArrayList<>();
         for (BillEntry e : billEntries) {
@@ -503,7 +891,7 @@ public class BillBhtController implements Serializable {
             billItem.setSearialNo(list.size());
 
             for (BillFee bf : billItem.getBillFees()) {
-                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null);
+                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod, null, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null, resolveCurrentRoomCategory(bill.getPatientEncounter()));
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, bill.getPatientEncounter());
                 getBillFeeFacade().edit(bf);
 
@@ -562,6 +950,7 @@ public class BillBhtController implements Serializable {
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
+            applyItemRequestReference(b, getLstBillEntries());
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
@@ -597,9 +986,11 @@ public class BillBhtController implements Serializable {
             return;
         }
         paymentMethod = null;
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
         } else {
+            // Baby admissions may have no room of their own (they stay in the
+            // mother's room), so fall back to the encounter's department. (Issue #23509)
             settleBill(getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod());
         }
     }
@@ -610,6 +1001,12 @@ public class BillBhtController implements Serializable {
         Date toDate = null;
 
         if (getBatchBill() == null) {
+            return;
+        }
+
+        if (batchBill.getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
 
@@ -636,6 +1033,10 @@ public class BillBhtController implements Serializable {
 
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
+
+        if (batchBill.getBillType() == BillType.SurgeryBill) {
+            surgeryBillController.refreshSurgeryServiceDepartmentItems();
+        }
 
     }
 
@@ -722,6 +1123,11 @@ public class BillBhtController implements Serializable {
     }
 
     public void logicalDischage() {
+        // A room-less baby admission has nothing to discharge from. (Issue #23509)
+        if (getPatientEncounter().getCurrentPatientRoom() == null) {
+            JsfUtil.addSuccessMessage("No room assigned to discharge");
+            return;
+        }
         getPatientEncounter().getCurrentPatientRoom().setDischarged(true);
         getPatientEncounter().getCurrentPatientRoom().setDischargedBy(getSessionController().getLoggedUser());
         JsfUtil.addSuccessMessage("Logically Dischaged Success");
@@ -757,7 +1163,9 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        // Room is optional for baby admissions (they stay in the mother's room), so
+        // this gate only fires for babies when a room was actually assigned. (Issue #23509)
+        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 return true;
             }
@@ -792,6 +1200,16 @@ public class BillBhtController implements Serializable {
         }
 
         return false;
+    }
+
+    /**
+     * @return {@code true} when the current encounter is a baby admission
+     * (i.e. it has a parent encounter). Babies stay in the mother's room, so
+     * room selection is optional for them, mirroring AdmissionController's
+     * isBabyAdmission(). (Issue #23509)
+     */
+    private boolean isBabyAdmission() {
+        return getPatientEncounter() != null && getPatientEncounter().getParentEncounter() != null;
     }
 
     private boolean errorCheckForPatientRoomDepartment() {
@@ -865,7 +1283,8 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || patientEncounter.getCurrentPatientRoom() != null) {
+        // Room is optional for baby admissions (they stay in the mother's room). (Issue #23509)
+        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || patientEncounter.getCurrentPatientRoom() != null) {
             if (errorCheckForPatientRoomDepartment()) {
                 return;
             }
@@ -915,22 +1334,32 @@ public class BillBhtController implements Serializable {
         }
         addingEntry.setBillItem(bItem);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
         } else {
+            // Room-less baby admissions fall back to the encounter's department. (Issue #23509)
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));
         }
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
         bItem.setMarginValue(getBillBean().calBillItemMargin(addingEntry));
+
+        // Block items with no fee configured (neither site nor base fee) before adding
+        double feeGrossTotal = 0.0;
+        if (addingEntry.getLstBillFees() != null) {
+            for (BillFee bf : addingEntry.getLstBillFees()) {
+                feeGrossTotal += bf.getFeeGrossValue();
+            }
+        }
+        if (feeGrossTotal == 0.0) {
+            JsfUtil.addErrorMessage("This item has no fee configured and cannot be added.");
+            return;
+        }
+
         lstBillEntries.add(addingEntry);
 
         bItem.setRate(getBillBean().billItemRate(addingEntry));
 
         calTotals();
-        if (bItem.getNetValue() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter the rate");
-            return;
-        }
 
         clearBillItemValues();
         //JsfUtil.addSuccessMessage("Item Added");
@@ -939,18 +1368,19 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        // Falls back to the old application-wide key so any pre-existing configuration
+        // (set before this option was made discoverable/per-department) keeps working.
+        boolean legacyGlobalSiteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = sessionController.getDepartment() != null
+                ? configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site for " + sessionController.getDepartment().getName(), legacyGlobalSiteBasedBillFees)
+                : legacyGlobalSiteBasedBillFees;
+        Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
         List<ItemFee> itemFee;
 
-        if (siteBasedBillFees && !addAllBillFees) {
-            if (sessionController.getDepartment() != null
-                    && sessionController.getDepartment().getSite() != null) {
-                itemFee = itemFeeManager.fillFees(
-                        billItem.getItem(),
-                        sessionController.getDepartment().getSite()
-                );
-            } else {
+        if (siteBasedBillFees && site != null) {
+            itemFee = itemFeeManager.fillFees(billItem.getItem(), site);
+            if (itemFee == null || itemFee.isEmpty()) {
+                // Fall back to base fees when the item has no site fee for this site
                 itemFee = itemFeeManager.fillFees(billItem.getItem());
             }
         } else {
@@ -960,9 +1390,11 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod, patientEncounter != null ? patientEncounter.getAdmissionType() : null);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod, null, patientEncounter != null ? patientEncounter.getAdmissionType() : null, resolveCurrentRoomCategory(patientEncounter));
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
+
+            recalculateFeeVat(billFee);
 
             billFeeList.add(billFee);
         }
@@ -1025,6 +1457,7 @@ public class BillBhtController implements Serializable {
         double tot = 0.0;
         double net = 0.0;
         double margin = 0.0;
+        double vatTotal = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
             BillItem bi = be.getBillItem();
@@ -1033,6 +1466,7 @@ public class BillBhtController implements Serializable {
             bi.setGrossValue(0.0);
             bi.setNetValue(0.0);
             bi.setMarginValue(0.0);
+            bi.setVat(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
                 tot += bf.getFeeGrossValue();
@@ -1041,15 +1475,21 @@ public class BillBhtController implements Serializable {
                 bi.setGrossValue(bi.getGrossValue() + bf.getFeeGrossValue());
                 margin += bf.getFeeMargin();
                 bi.setMarginValue(bi.getMarginValue() + bf.getFeeMargin());
+                bi.setVat(bi.getVat() + bf.getFeeVat());
             }
 
             bi.setDiscount(bi.getGrossValue() + bi.getMarginValue() - bi.getNetValue());
+            bi.setVatPercentage(bi.getItem() != null && bi.getItem().isVatable() ? bi.getItem().getVatPercentage() : 0.0);
+            bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+            vatTotal += bi.getVat();
         }
 
         setTotal(tot);
         setMarginTotal(margin);
         setDiscount(tot + margin - net);
         setNetTotal(net);
+        setVat(vatTotal);
+        setVatPlusNetTotal(getNetTotal() + getVat());
     }
 
     public void feeChanged(BillFee bf) {
@@ -1057,7 +1497,12 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (errorCheckForPatientRoomDepartment()) {
+        // Room is optional for baby admissions (they stay in the mother's room), so
+        // skip the room-required check entirely for a room-less baby — same gate as
+        // addToBill()/settleBill()/errorCheck() use. (Issue #23509)
+        if (((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission())
+                || getPatientEncounter().getCurrentPatientRoom() != null)
+                && errorCheckForPatientRoomDepartment()) {
             return;
         }
 
@@ -1070,9 +1515,17 @@ public class BillBhtController implements Serializable {
                 ? bf.getBillItem().getQty() : 1.0;
         bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
+        // Room-less baby admissions fall back to the encounter's department for the
+        // matrix/margin lookups, matching addToBill()'s pattern. (Issue #23509)
+        Department feeDepartment = ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null)
+                ? getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment()
+                : getPatientEncounter().getDepartment();
 
-        getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), feeDepartment, getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
+
+        getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), feeDepartment, priceMatrix);
+
+        recalculateFeeVat(bf);
 
         calTotals();
     }
@@ -1093,11 +1546,23 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 
+        recalculateFeeVat(bf);
+
         calTotals();
+    }
+
+    private void recalculateFeeVat(BillFee bf) {
+        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null
+                && bf.getBillItem().getItem().isVatable() && bf.getBillItem().getItem().getVatPercentage() > 0) {
+            bf.setFeeVat(roundOff(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100));
+        } else {
+            bf.setFeeVat(0.0);
+        }
+        bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
     }
 
     public void prepareNewBill() {
@@ -1170,6 +1635,7 @@ public class BillBhtController implements Serializable {
                 temItems = itemApplicationController.getInvestigationsAndServices();
                 break;
         }
+        temItems = applyInwardFeeTotals(temItems);
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List Inward Items by Department", false);
         if (listItemsByDepartment) {
             fillInwardItemDepartments(temItems);
@@ -1181,6 +1647,58 @@ public class BillBhtController implements Serializable {
         }
 
         return temItems;
+    }
+
+    /**
+     * Overrides the displayed price of each inward item so the list reflects the
+     * fee that will actually be billed. When "Inward Bill Fees are based on the
+     * site" is ON and the logged department has a site, the site fee is shown;
+     * if the item has no site fee, the base fee is shown (matching the
+     * site&rarr;base fallback in {@link #billFeeFromBillItemWithMatrix}). When the
+     * config is OFF, the base fee is shown. Items with no fee show 0.00 and are
+     * blocked from being added in {@link #addToBill()}.
+     */
+    private List<ItemLight> applyInwardFeeTotals(List<ItemLight> items) {
+        if (items == null || items.isEmpty()) {
+            return items;
+        }
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        boolean foreigner = patientEncounter != null && patientEncounter.isForiegner();
+        Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
+
+        List<Long> itemIds = new ArrayList<>();
+        for (ItemLight il : items) {
+            if (il.getId() != null) {
+                itemIds.add(il.getId());
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return items;
+        }
+
+        boolean useSiteFees = siteBasedBillFees && site != null;
+        Map<Long, Double> baseTotals = itemFeeManager.fetchInwardFeeTotalsByItemIds(itemIds, null, foreigner);
+        Map<Long, Double> siteTotals = useSiteFees
+                ? itemFeeManager.fetchInwardFeeTotalsByItemIds(itemIds, site, foreigner)
+                : new HashMap<>();
+
+        // Work on copies: the source lists can be application-scoped cached
+        // ItemLight instances shared across sessions, so mutating them in place
+        // would leak one session's price into another.
+        List<ItemLight> result = new ArrayList<>(items.size());
+        for (ItemLight src : items) {
+            ItemLight il = new ItemLight(src);
+            Double value;
+            if (useSiteFees) {
+                Double s = siteTotals.get(il.getId());
+                value = (s != null && s != 0.0) ? s : baseTotals.get(il.getId());
+            } else {
+                value = baseTotals.get(il.getId());
+            }
+            il.setTotal(value != null ? value : 0.0);
+            result.add(il);
+        }
+        return result;
     }
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
@@ -1326,6 +1844,26 @@ public class BillBhtController implements Serializable {
 
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
+    public double getVatPlusNetTotal() {
+        return vatPlusNetTotal;
+    }
+
+    public void setVatPlusNetTotal(double vatPlusNetTotal) {
+        this.vatPlusNetTotal = vatPlusNetTotal;
+    }
+
+    private double roundOff(double d) {
+        return Math.round(d * 100.0) / 100.0;
     }
 
     public double getCashPaid() {
@@ -1588,7 +2126,9 @@ public class BillBhtController implements Serializable {
     public void reloadItemLights() {
         itemApplicationController.reloadItems();
         itemController.reloadItems();
-        fillInwardItems();
+        // Force the inward item list (with its fee-based prices) to rebuild
+        inwardItem = null;
+        getInwardItem();
     }
 
     public void setInwardItems(List<ItemLight> inwardItems) {
@@ -1604,8 +2144,9 @@ public class BillBhtController implements Serializable {
     }
 
     public List<ItemLight> getInwardItem() {
-        if (inwardItem == null) {
+        if (inwardItem == null || !Objects.equals(inwardItemCacheKey, patientEncounter)) {
             inwardItem = fillInwardItem();
+            inwardItemCacheKey = patientEncounter;
         }
         return inwardItem;
     }

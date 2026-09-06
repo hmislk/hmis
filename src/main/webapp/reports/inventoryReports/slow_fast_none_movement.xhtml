@@ -57,14 +57,14 @@
                         <p:selectOneMenu
                                 id="phmDateRange"
                                 styleClass="w-100"
-                                value="#{pharmacyReportController.dateRange}">
+                                value="#{pharmacyReportController.movementDateRange}">
                             <f:selectItem itemLabel="Select" itemValue=""/>
                             <f:selectItem itemLabel="Within 3 Months" itemValue="within3months"/>
                             <f:selectItem itemLabel="Within 6 Months" itemValue="within6months"/>
                             <f:selectItem itemLabel="Within 12 Months" itemValue="within12months"/>
                             <p:ajax
                                     event="change"
-                                    listener="#{pharmacyReportController.updateDateRange}"
+                                    listener="#{pharmacyReportController.updateMovementDateRange}"
                                     update="fromDate toDate"/>
                         </p:selectOneMenu>
 
@@ -225,6 +225,7 @@
                                 id="departmentTypeFilter"
                                 value="#{pharmacyReportController.selectedDepartmentTypes}"
                                 label="Select Department Types"
+                                updateLabel="true"
                                 class="w-100"
                                 filter="true"
                                 filterMatchMode="contains"
@@ -325,11 +326,13 @@
                                 id="billTypes"
                                 class="w-100"
                                 value="#{pharmacyReportController.billTypes}"
-                                label="Bill Types">
+                                label="All Bill Types"
+                                updateLabel="true"
+                                title="Leave empty to include all bill types">
                             <f:selectItems
                                     value="#{enumController.pharmacyBillTypesForMovementReports}"
                                     var="pbt"
-                                    itemLabel="#{pbt.label}"
+                                    itemLabel="#{pharmacyReportController.getMovementBillTypeLabel(pbt)}"
                                     itemValue="#{pbt}"/>
                         </p:selectCheckboxMenu>
 
@@ -364,7 +367,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
                                 <h:outputText value="Date Range:"/>
-                                <h:outputText value="#{pharmacyReportController.dateRangeAsString}"/>
+                                <h:outputText value="#{pharmacyReportController.movementDateRangeAsString}"/>
                                 <h:outputText value="Institution:"/>
                                 <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
                                 <h:outputText value="Site:"/>
@@ -496,7 +499,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
                                 <h:outputText value="Date Range:"/>
-                                <h:outputText value="#{pharmacyReportController.dateRangeAsString}"/>
+                                <h:outputText value="#{pharmacyReportController.movementDateRangeAsString}"/>
                                 <h:outputText value="Institution:"/>
                                 <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
                                 <h:outputText value="Site:"/>
@@ -630,7 +633,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
                                 <h:outputText value="Date Range:"/>
-                                <h:outputText value="#{pharmacyReportController.dateRangeAsString}"/>
+                                <h:outputText value="#{pharmacyReportController.movementDateRangeAsString}"/>
                                 <h:outputText value="Institution:"/>
                                 <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
                                 <h:outputText value="Site:"/>

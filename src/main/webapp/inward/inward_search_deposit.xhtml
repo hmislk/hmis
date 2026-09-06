@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:se="http://xmlns.jcp.org/jsf/composite/inward/search">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Search Deposit Bills" >
+
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar
+                                    styleClass="dateTimePicker"
+                                    id="fromDate"
+                                    value="#{searchController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"
+                                    inputStyleClass="w-100">
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar
+                                    id="toDate"
+                                    value="#{searchController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"
+                                    inputStyleClass="w-100">
+                                </p:calendar>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    action="#{searchController.createInwardDepositBills()}"
+                                    value="Search"
+                                    class="ui-button-warning w-100 my-1"
+                                    icon="fas fa-search">
+                                </p:commandButton>
+
+                                <hr/>
+
+                                <h:outputLabel value="Bill No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                <h:outputLabel value="BHT No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="Patient Phone"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class="w-100"/>
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
+                                <h:outputLabel value="Total"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" class="w-100"/>
+                                <h:outputLabel value="Net Total"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                            </div>
+
+                            <div class="col-10">
+
+                                <p:dataTable
+                                    id="tblBills"
+                                    rowIndexVar="i"
+                                    paginator="true"
+                                     paginatorPosition="bottom"
+                                     rows="20"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20,50,100"
+                                    value="#{searchController.bills}"
+                                    var="bb">
+
+                                    <p:column headerText="#" width="20px;" style="padding: 12px;">
+                                        <h:outputLabel value="#{i+1}" ></h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" width="10em;" style="padding: 12px;">
+                                        <p:commandLink
+                                            value="#{bb.deptId}"
+                                            ajax="false"
+                                            action="inward_reprint_bill_deposit?faces-redirect=true">
+                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                        </p:commandLink>
+                                        <h:panelGroup rendered="#{bb.cancelled and bb.cancelledBill ne null}" layout="block" class="mt-1">
+                                            <h:outputLabel style="color: red;" value="Cancel Bill : "/>
+                                            <p:commandLink
+                                                style="color: red;"
+                                                value="#{bb.cancelledBill.deptId}"
+                                                ajax="false"
+                                                title="View cancellation bill preview"
+                                                action="#{inwardSearch.navigateToViewDepositBillCancellation(bb)}">
+                                            </p:commandLink>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="BHT No" width="10em;" style="padding: 12px;">
+                                        <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Billed At" width="14em;" style="padding: 12px;">
+                                        <h:outputLabel value="#{bb.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bb.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Billed By" width="12em;" style="padding: 12px;">
+                                        <h:outputLabel value="#{bb.creater.webUserPerson.name}" ></h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bb.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                            <h:outputLabel style="color: red;" value="#{bb.cancelledBill.creater.webUserPerson.name}" ></h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Patient" style="padding: 12px;">
+                                        <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Method" width="12em;" style="padding: 12px;">
+                                        <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Value" width="8em;" style="padding: 12px;" class="text-end">
+                                        <h:outputLabel value="#{bb.netTotal}" class="text-end" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Comments" width="16em;" style="padding: 12px;">
+                                        <h:outputLabel rendered="#{bb.refundedBill ne null}" value="#{bb.refundedBill.comments}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel  rendered="#{bb.cancelledBill ne null}" value="#{bb.cancelledBill.comments}" >
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

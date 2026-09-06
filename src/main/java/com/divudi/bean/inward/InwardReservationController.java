@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.ReservationDTO;
@@ -13,6 +14,7 @@ import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ import org.primefaces.model.DefaultScheduleEvent;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleEvent;
 import org.primefaces.model.ScheduleModel;
+import com.divudi.core.entity.Appointment;
 
 /**
  *
@@ -47,7 +50,9 @@ import org.primefaces.model.ScheduleModel;
 public class InwardReservationController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    
+    @EJB
+    private com.divudi.core.facade.AppointmentFacade appointmentFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
@@ -55,6 +60,8 @@ public class InwardReservationController implements Serializable {
     ////////////////////////////
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -74,30 +81,78 @@ public class InwardReservationController implements Serializable {
     private ScheduleModel theatreScheduleModel;
     private List<Reservation> theatreReservations;
     
-    private ReservationDTO convertToReservationDTO(Reservation r){
-        Reservation reloadReservation = reservationFacade.find(r.getId());
-        if(reloadReservation == null){
+            private ReservationDTO convertToReservationDTO(Appointment apt) {
+        Appointment reloadAppointment = appointmentFacade.find(apt.getId());
+        if (reloadAppointment == null) {
             return null;
         }
+        Reservation res = findReservationForAppointment(reloadAppointment);
+        
+        // 1. Resolve start and end dates first
+        Date start = res != null ? res.getReservedFrom() : combineDateAndTime(reloadAppointment.getAppointmentDate(), reloadAppointment.getAppointmentTimeFrom());
+        Date end = res != null ? res.getReservedTo() : combineDateAndTime(reloadAppointment.getAppointmentDate(), reloadAppointment.getAppointmentTimeTo());
+
+        // 2. Instantiate ReservationDTO with the normalized end date
         currentReservationDTO = new ReservationDTO(
-                reloadReservation.getId(), 
-                reloadReservation.getReservedFrom(), 
-                reloadReservation.getReservedTo(), 
-                reloadReservation.getAppointment().getAppointmentNumber(), 
-                reloadReservation.getCreatedAt(), 
-                reloadReservation.getRoom().getName(), 
-                reloadReservation.getAppointment().getPatient().getPerson().getTitle(), 
-                reloadReservation.getAppointment().getPatient().getPerson().getName(), 
-                reloadReservation.getAppointment().getPatient().getPerson().getDob(), 
-                reloadReservation.getAppointment().getPatient().getPerson().getSex().getLabel(), 
-                reloadReservation.getAppointment().getPatient().getPerson().getMobile(),
-                reloadReservation.getAppointment().getBill().getReferredBy().getPerson().getTitle(),
-                reloadReservation.getAppointment().getBill().getReferredBy().getPerson().getName(),
-                reloadReservation.getAppointment().getStatus()
+                reloadAppointment.getId(), 
+                start, 
+                normalizeEndDate(start, end), // Safely checks for nulls/invalids
+                reloadAppointment.getAppointmentNumber(), 
+                reloadAppointment.getCreatedAt(), 
+                res != null && res.getRoom() != null ? res.getRoom().getName() : "N/A", 
+                reloadAppointment.getPatient().getPerson().getTitle(), 
+                reloadAppointment.getPatient().getPerson().getName(), 
+                reloadAppointment.getPatient().getPerson().getDob(), 
+                reloadAppointment.getPatient().getPerson().getSex() != null ? reloadAppointment.getPatient().getPerson().getSex().getLabel() : "", 
+                reloadAppointment.getPatient().getPerson().getMobile(),
+                reloadAppointment.getBill() != null && reloadAppointment.getBill().getReferredBy() != null && reloadAppointment.getBill().getReferredBy().getPerson() != null ? reloadAppointment.getBill().getReferredBy().getPerson().getTitle() : null,
+                reloadAppointment.getBill() != null && reloadAppointment.getBill().getReferredBy() != null && reloadAppointment.getBill().getReferredBy().getPerson() != null ? reloadAppointment.getBill().getReferredBy().getPerson().getName() : "",
+                reloadAppointment.getStatus()
         );
         return currentReservationDTO;
     }
-
+        
+        private Date normalizeEndDate(Date startDate, Date endDate) {
+        if (startDate == null) {
+            return endDate;
+        }
+        if (endDate == null || !endDate.after(startDate)) {
+            return new Date(startDate.getTime() + 3600000L); // 1-hour fallback duration
+        }
+        return endDate;
+    }   
+        
+ 
+     private Reservation findReservationForAppointment(Appointment apt) {
+        if (apt == null) {
+            return null;
+        }
+        String jpql = "SELECT r FROM Reservation r WHERE r.retired = :ret AND r.appointment = :apt";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("apt", apt);
+        return reservationFacade.findFirstByJpql(jpql, m);
+    }
+     
+    private Date combineDateAndTime(Date date, Date time) {
+        if (date == null) {
+            return time;
+        }
+        if (time == null) {
+            return date;
+        }
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.setTime(date);
+        int year = calendar.get(java.util.Calendar.YEAR);
+        int month = calendar.get(java.util.Calendar.MONTH);
+        int day = calendar.get(java.util.Calendar.DAY_OF_MONTH);
+        calendar.setTime(time);
+        calendar.set(java.util.Calendar.YEAR, year);
+        calendar.set(java.util.Calendar.MONTH, month);
+        calendar.set(java.util.Calendar.DAY_OF_MONTH, day);
+        return calendar.getTime();
+    } 
+    
     public String navigateToReservationCalendarFromMenu() {
         currentReservationDTO = null;
         fromDate = CommonFunctions.getStartOfDay();
@@ -115,9 +170,13 @@ public class InwardReservationController implements Serializable {
      *
      * @param selectEvent
      */
-    public void onEventSelectCal(SelectEvent<ScheduleEvent<?>> selectEvent) {
-        sEvent = selectEvent.getObject();
-        convertToReservationDTO((Reservation) sEvent.getData());
+        public void onEventSelectCal(SelectEvent<ScheduleEvent<?>> selectEvent) {
+            currentReservationDTO = null; // Clear the previous selection first
+            sEvent = selectEvent.getObject();
+            Object data = sEvent.getData();
+                if (data instanceof Appointment) {
+                    convertToReservationDTO((Appointment) data);
+                }
     }
 
     @Deprecated
@@ -151,49 +210,93 @@ public class InwardReservationController implements Serializable {
     private AppointmentStatus calanderStatus = null ;
 
     public void findReservations() {
-        String jpql;
-        Map m = new HashMap();
+            String jpql;
+            Map m = new HashMap();
 
-        jpql = "Select r from Reservation r "
-                + " where r.retired=:ret";
-        m.put("ret", false);
-        
-        if(calanderStatus != null){
-            jpql += " and r.appointment.status =:ststus";
-            m.put("ststus", calanderStatus);
-        }
-        
-        if (fromDate != null) {
-            jpql += " and (r.reservedFrom between :fd and :td or r.reservedTo between :fd and :td )";
-            m.put("fd", fromDate);
-            m.put("td", toDate);
-        }
-        
-        selectedReservations = reservationFacade.findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
-        generateReservationsEvents(selectedReservations);
+            jpql = "Select apt from Appointment apt "
+                    + " where apt.retired=:ret"
+                    + " and apt.appointmentType=:type";
+            m.put("ret", false);
+            m.put("type", com.divudi.core.data.AppointmentType.IP_APPOINTMENT);
+
+            if (calanderStatus != null) {
+                jpql += " and apt.status = :status";
+                m.put("status", calanderStatus);
+            }
+
+            if (fromDate != null && toDate != null) {
+                jpql += " and (apt.appointmentDate between :fd and :td"
+                    + " or exists (select r.id from Reservation r"
+                    + " where r.retired = :ret"
+                    + " and r.appointment = apt"
+                    + " and r.reservedFrom <= :td"
+                    + " and (r.reservedTo is null or r.reservedTo >= :fd)))";
+                    m.put("fd", fromDate);
+                    m.put("td", toDate);
+            }
+
+            List<Appointment> appointments = appointmentFacade.findByJpql(jpql, m, javax.persistence.TemporalType.TIMESTAMP);
+            generateReservationsEvents(appointments);
     }
 
-    public void generateReservationsEvents(List<Reservation> lsi) {
+            public void generateReservationsEvents(List<Appointment> appointments) {
         reservationModel = new DefaultScheduleModel();
-        for (Reservation si : lsi) {
+        for (Appointment apt : appointments) {
+            // Null safety check
+            if (apt.getPatient() == null || apt.getPatient().getPerson() == null) {
+                continue;
+            }
 
-            // Dates
-            Date startDate = si.getReservedFrom();
-            Date endDate = si.getReservedTo();
+            Reservation res = findReservationForAppointment(apt);
+            Date startDate;
+            Date endDate;
+            String title;
+            String roomName;
 
-            // Generate unique colors for each event
-            String uniqueBorderColor = generateColor(si.getRoom().getName());
-            String uniqueBackgroundColor = generateColor(si.getPatient().getPerson().getName());
+            // 1. Safely resolve patientName (never null for generateColor)
+            String patientName = apt.getPatient().getPerson().getName() != null 
+                    ? apt.getPatient().getPerson().getName() 
+                    : "Patient";
 
-            DefaultScheduleEvent tempEvent;
-            tempEvent = new DefaultScheduleEvent<SessionInstance>()
+            if (res != null) {
+                // If a Room Reservation exists (ROOM_ADMISSION type)
+                startDate = res.getReservedFrom();
+                endDate = normalizeEndDate(startDate, res.getReservedTo()); // Normalized via suggestion #2 helper
+                
+                // Safely resolve roomName
+                roomName = res.getRoom() != null && res.getRoom().getName() != null 
+                        ? res.getRoom().getName() 
+                        : "Room";
+                title = roomName + " - " + patientName;
+            } else {
+                // Non-room Appointment (Procedure, Consultant, etc.)
+                startDate = combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeFrom());
+                endDate = normalizeEndDate(startDate, combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeTo())); // Normalized via suggestion #2 helper
+                
+                String categoryLabel = apt.getItem() != null && apt.getItem().getName() != null 
+                        ? apt.getItem().getName() 
+                        : "Appointment";
+                roomName = "Procedure";
+                title = categoryLabel + " - " + patientName;
+            }
+
+            if (startDate == null) {
+                continue;
+            }
+
+            // 2. Generate colors using sanitized, non-null values
+            String uniqueBorderColor = generateColor(roomName);
+            String uniqueBackgroundColor = generateColor(patientName);
+
+            // Build the schedule calendar event using the Appointment object as data binding
+            DefaultScheduleEvent tempEvent = new DefaultScheduleEvent<Appointment>()
                     .builder()
-                    .title(si.getRoom().getName() + " - " + si.getPatient().getPerson().getName())
+                    .title(title)
                     .borderColor(uniqueBorderColor)
                     .backgroundColor(uniqueBackgroundColor)
                     .startDate(CommonFunctions.convertDateToLocalDateTime(startDate))
                     .endDate(CommonFunctions.convertDateToLocalDateTime(endDate))
-                    .data(si)
+                    .data(apt)
                     .build();
 
             reservationModel.addEvent(tempEvent);
@@ -296,6 +399,13 @@ public class InwardReservationController implements Serializable {
     // -----------------------------------------------------------------------
 
     public String navigateToTheatreScheduleCalendar() {
+        // Server-side enforcement to match the rendered guard on the menu/
+        // button entry points — the UI-only check alone doesn't stop a
+        // direct navigation (CodeRabbit #23175).
+        if (!webUserController.hasPrivilege("TheatreAcceptPatient") && !webUserController.hasPrivilege("TheatreSendPatient")) {
+            JsfUtil.addErrorMessage("You are not authorized to view the Theatre Schedule.");
+            return "";
+        }
         currentReservationDTO = null;
         fromDate = CommonFunctions.getStartOfDay();
         Long noOfMonths = configOptionApplicationController.getLongValueByKey(

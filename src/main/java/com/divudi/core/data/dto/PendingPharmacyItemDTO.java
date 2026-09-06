@@ -13,12 +13,17 @@ public class PendingPharmacyItemDTO {
     private String billNumber;
     private Date billDate;
     private BillTypeAtomic billTypeAtomic;
+    private String requestedBy;
+    private String requestedTo;
 
-    public PendingPharmacyItemDTO(Long billId, String billNumber, Date billDate, BillTypeAtomic billTypeAtomic) {
+    public PendingPharmacyItemDTO(Long billId, String billNumber, Date billDate, BillTypeAtomic billTypeAtomic,
+            String requestedBy, String requestedTo) {
         this.billId = billId;
         this.billNumber = billNumber;
         this.billDate = billDate;
         this.billTypeAtomic = billTypeAtomic;
+        this.requestedBy = requestedBy;
+        this.requestedTo = requestedTo;
     }
 
     public String getPendingTypeLabel() {
@@ -54,5 +59,13 @@ public class PendingPharmacyItemDTO {
 
     public BillTypeAtomic getBillTypeAtomic() {
         return billTypeAtomic;
+    }
+
+    public String getRequestedBy() {
+        return requestedBy;
+    }
+
+    public String getRequestedTo() {
+        return requestedTo;
     }
 }

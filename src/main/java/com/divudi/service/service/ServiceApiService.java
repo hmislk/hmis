@@ -15,6 +15,7 @@ import com.divudi.core.data.dto.service.ServiceResponseDTO;
 import com.divudi.core.data.dto.service.ServiceSearchResultDTO;
 import com.divudi.core.data.dto.service.ServiceUpdateRequestDTO;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -25,9 +26,11 @@ import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.InwardServiceFacade;
+import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.facade.ServiceCategoryFacade;
 import com.divudi.core.facade.ServiceFacade;
@@ -65,6 +68,12 @@ public class ServiceApiService implements Serializable {
 
     @EJB
     private ServiceCategoryFacade serviceCategoryFacade;
+
+    @EJB
+    private CategoryFacade categoryFacade;
+
+    @EJB
+    private ItemFacade itemFacade;
 
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -223,12 +232,18 @@ public class ServiceApiService implements Serializable {
         service.setMarginNotAllowed(request.isMarginNotAllowed());
         service.setRequestForQuentity(request.isRequestForQuentity());
         service.setPatientNotRequired(request.isPatientNotRequired());
+        service.setVatable(request.isVatable());
+        validateVatPercentage(request.getVatPercentage());
+        service.setVatPercentage(request.getVatPercentage());
 
         // Resolve optional associations
         if (request.getCategoryId() != null) {
-            ServiceCategory category = serviceCategoryFacade.find(request.getCategoryId());
-            if (category == null) {
-                throw new Exception("ServiceCategory not found with ID: " + request.getCategoryId());
+            // Category (not ServiceCategoryFacade) is used here since a service's category
+            // can be any Category subtype already in use in the system (Category,
+            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+            Category category = categoryFacade.find(request.getCategoryId());
+            if (category == null || category.isRetired()) {
+                throw new Exception("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
         }
@@ -332,11 +347,21 @@ public class ServiceApiService implements Serializable {
         if (request.getPatientNotRequired() != null) {
             service.setPatientNotRequired(request.getPatientNotRequired());
         }
+        if (request.getVatable() != null) {
+            service.setVatable(request.getVatable());
+        }
+        if (request.getVatPercentage() != null) {
+            validateVatPercentage(request.getVatPercentage());
+            service.setVatPercentage(request.getVatPercentage());
+        }
 
         if (request.getCategoryId() != null) {
-            ServiceCategory category = serviceCategoryFacade.find(request.getCategoryId());
-            if (category == null) {
-                throw new Exception("ServiceCategory not found with ID: " + request.getCategoryId());
+            // Category (not ServiceCategoryFacade) is used here since a service's category
+            // can be any Category subtype already in use in the system (Category,
+            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+            Category category = categoryFacade.find(request.getCategoryId());
+            if (category == null || category.isRetired()) {
+                throw new Exception("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
         }
@@ -430,11 +455,11 @@ public class ServiceApiService implements Serializable {
     // =========================================================================
 
     /**
-     * List all non-retired fees for a service.
+     * List all non-retired fees for any Item (Service, InwardService, Investigation, etc.).
      */
     public List<ItemFeeDTO> listFees(Long serviceId) throws Exception {
-        Service service = loadAndValidateService(serviceId);
-        List<ItemFee> fees = fetchFeesForItem(service);
+        Item item = loadAndValidateItem(serviceId);
+        List<ItemFee> fees = fetchFeesForItem(item);
         List<ItemFeeDTO> dtos = new ArrayList<>();
         for (ItemFee fee : fees) {
             dtos.add(buildItemFeeDTO(fee));
@@ -443,7 +468,7 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
-     * Add a new fee to a service and recalculate the service total.
+     * Add a new fee to any Item (Service, InwardService, Investigation, etc.) and recalculate its total.
      */
     public ServiceResponseDTO addFee(Long serviceId, ItemFeeCreateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
@@ -453,7 +478,7 @@ public class ServiceApiService implements Serializable {
             throw new Exception("User is required for adding fee");
         }
 
-        Service service = loadAndValidateService(serviceId);
+        Item item = loadAndValidateItem(serviceId);
 
         FeeType feeType;
         try {
@@ -463,7 +488,7 @@ public class ServiceApiService implements Serializable {
         }
 
         ItemFee itemFee = new ItemFee();
-        itemFee.setItem(service);
+        itemFee.setItem(item);
         itemFee.setName(request.getName().trim());
         itemFee.setFeeType(feeType);
         if (request.getFee() == null || request.getFee() < 0) {
@@ -514,15 +539,16 @@ public class ServiceApiService implements Serializable {
 
         itemFeeFacade.create(itemFee);
 
-        // Recalculate service totals
-        recalculateServiceTotal(service);
+        // Recalculate item totals
+        recalculateItemTotal(item);
 
-        List<ItemFee> fees = fetchFeesForItem(service);
-        return buildServiceResponseDTO(service, fees, "Fee added successfully");
+        List<ItemFee> fees = fetchFeesForItem(item);
+        return buildServiceResponseDTO(item, fees, "Fee added successfully");
     }
 
     /**
-     * Update an existing fee and recalculate the service total.
+     * Update an existing fee and recalculate the parent item's total.
+     * Works for any Item subtype (Service, InwardService, Investigation, etc.).
      */
     public ServiceResponseDTO updateFee(Long serviceId, Long feeId, ItemFeeUpdateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
@@ -532,8 +558,8 @@ public class ServiceApiService implements Serializable {
             throw new Exception("User is required for updating fee");
         }
 
-        Service service = loadAndValidateService(serviceId);
-        ItemFee itemFee = loadAndValidateFee(feeId, service);
+        Item item = loadAndValidateItem(serviceId);
+        ItemFee itemFee = loadAndValidateFee(feeId, item);
 
         // Snapshot before-state for audit
         Map<String, Object> beforeFlags = new HashMap<>();
@@ -610,34 +636,35 @@ public class ServiceApiService implements Serializable {
             auditService.logAudit(beforeFlags, afterFlags, user, "ItemFee", "FEE_FLAG_UPDATED", feeId);
         }
 
-        // Recalculate service totals
-        recalculateServiceTotal(service);
+        // Recalculate item totals
+        recalculateItemTotal(item);
 
-        List<ItemFee> fees = fetchFeesForItem(service);
-        return buildServiceResponseDTO(service, fees, "Fee updated successfully");
+        List<ItemFee> fees = fetchFeesForItem(item);
+        return buildServiceResponseDTO(item, fees, "Fee updated successfully");
     }
 
     /**
-     * Remove a fee (soft-delete) and recalculate the service total.
+     * Remove a fee (soft-delete) and recalculate the parent item's total.
+     * Works for any Item subtype (Service, InwardService, Investigation, etc.).
      */
     public ServiceResponseDTO removeFee(Long serviceId, Long feeId, WebUser user) throws Exception {
         if (user == null) {
             throw new Exception("User is required for removing fee");
         }
 
-        Service service = loadAndValidateService(serviceId);
-        ItemFee itemFee = loadAndValidateFee(feeId, service);
+        Item item = loadAndValidateItem(serviceId);
+        ItemFee itemFee = loadAndValidateFee(feeId, item);
 
         itemFee.setRetired(true);
         itemFee.setRetirer(user);
         itemFee.setRetiredAt(Calendar.getInstance().getTime());
         itemFeeFacade.edit(itemFee);
 
-        // Recalculate service totals
-        recalculateServiceTotal(service);
+        // Recalculate item totals
+        recalculateItemTotal(item);
 
-        List<ItemFee> fees = fetchFeesForItem(service);
-        return buildServiceResponseDTO(service, fees, "Fee removed successfully");
+        List<ItemFee> fees = fetchFeesForItem(item);
+        return buildServiceResponseDTO(item, fees, "Fee removed successfully");
     }
 
     // =========================================================================
@@ -645,13 +672,45 @@ public class ServiceApiService implements Serializable {
     // =========================================================================
 
     /**
+     * Item subtypes selectable by the bulk-flag endpoints below via itemType.
+     * There is no API to enumerate every Category id in the system (e.g. every
+     * InvestigationCategory), so scoping a bulk update to "every item of this
+     * subtype" is the only reliable way to cover something like "all
+     * investigations" without looping over guessed/incomplete category lists.
+     */
+    private Class<? extends Item> resolveItemType(String itemTypeStr) throws Exception {
+        if (itemTypeStr == null || itemTypeStr.trim().isEmpty()) {
+            return null;
+        }
+        switch (itemTypeStr.trim()) {
+            case "Investigation":
+                return com.divudi.core.entity.lab.Investigation.class;
+            case "Service":
+                return Service.class;
+            case "InwardService":
+                return InwardService.class;
+            default:
+                throw new Exception("Invalid itemType: " + itemTypeStr
+                        + ". Use one of: Investigation, Service, InwardService");
+        }
+    }
+
+    /**
      * Bulk-update marginAllowed and/or discountAllowed on all non-retired fees
-     * for items in a given category with a given feeType.
+     * for items in a given category and/or item subtype, with a given feeType.
+     * At least one of categoryId/itemType is required as a safety guard against
+     * an unscoped update of every fee in the system.
      */
     public Map<String, Object> bulkUpdateMargin(Long categoryId, String feeTypeStr,
             Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
-        if (categoryId == null) {
-            throw new Exception("categoryId is required");
+        return bulkUpdateMargin(categoryId, null, feeTypeStr, marginAllowed, discountAllowed, user);
+    }
+
+    public Map<String, Object> bulkUpdateMargin(Long categoryId, String itemTypeStr, String feeTypeStr,
+            Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
+        Class<? extends Item> itemType = resolveItemType(itemTypeStr);
+        if (categoryId == null && itemType == null) {
+            throw new Exception("At least one of categoryId or itemType is required");
         }
         if (user == null) {
             throw new Exception("User is required for bulk update");
@@ -670,10 +729,16 @@ public class ServiceApiService implements Serializable {
         }
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT f FROM ItemFee f "
-                + "WHERE f.item.category.id = :catId "
-                + "AND f.retired = false");
+                + "WHERE f.retired = false");
         Map<String, Object> params = new HashMap<>();
-        params.put("catId", categoryId);
+        if (categoryId != null) {
+            jpqlBuilder.append(" AND f.item.category.id = :catId");
+            params.put("catId", categoryId);
+        }
+        if (itemType != null) {
+            jpqlBuilder.append(" AND TYPE(f.item) = :itype");
+            params.put("itype", itemType);
+        }
         if (feeType != null) {
             jpqlBuilder.append(" AND f.feeType = :ft");
             params.put("ft", feeType);
@@ -683,6 +748,7 @@ public class ServiceApiService implements Serializable {
         int count = 0;
         Map<String, Object> changes = new HashMap<>();
         changes.put("categoryId", categoryId);
+        changes.put("itemType", itemType != null ? itemType.getSimpleName() : "ALL_TYPES");
         changes.put("feeType", feeType != null ? feeType.name() : "ALL_TYPES");
         if (marginAllowed != null) {
             changes.put("marginAllowed", marginAllowed);
@@ -705,6 +771,68 @@ public class ServiceApiService implements Serializable {
         changes.put("count", count);
         auditService.logAudit(null, changes, user, "ItemFee",
                 "FEE_FLAGS_BULK_UPDATED", null);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("count", count);
+        return result;
+    }
+
+    /**
+     * Bulk-update discountAllowed (item-level, not fee-level) on all non-retired
+     * items in a given category and/or item subtype. Distinct from
+     * {@link #bulkUpdateMargin} above, which only touches ItemFee.discountAllowed
+     * — the inward discount calculation
+     * (InwardBeanController.applyInwardDiscountToBillFee) requires BOTH
+     * Item.discountAllowed and ItemFee.discountAllowed to be true, so both bulk
+     * operations are typically needed together. At least one of categoryId/
+     * itemType is required as a safety guard against an unscoped update of
+     * every item in the system; itemType lets a caller target e.g. "every
+     * Investigation" directly, since there is no API to enumerate every
+     * InvestigationCategory id to loop over instead.
+     */
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, Boolean discountAllowed, WebUser user) throws Exception {
+        return bulkUpdateItemDiscountAllowed(categoryId, null, discountAllowed, user);
+    }
+
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, String itemTypeStr,
+            Boolean discountAllowed, WebUser user) throws Exception {
+        Class<? extends Item> itemType = resolveItemType(itemTypeStr);
+        if (categoryId == null && itemType == null) {
+            throw new Exception("At least one of categoryId or itemType is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for bulk update");
+        }
+        if (discountAllowed == null) {
+            throw new Exception("discountAllowed is required");
+        }
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT i FROM Item i WHERE i.retired = false");
+        Map<String, Object> params = new HashMap<>();
+        if (categoryId != null) {
+            jpqlBuilder.append(" AND i.category.id = :catId");
+            params.put("catId", categoryId);
+        }
+        if (itemType != null) {
+            jpqlBuilder.append(" AND TYPE(i) = :itype");
+            params.put("itype", itemType);
+        }
+        String jpql = jpqlBuilder.toString();
+
+        List<Item> items = itemFacade.findByJpql(jpql, params);
+        int count = 0;
+        for (Item item : items) {
+            item.setDiscountAllowed(discountAllowed);
+            itemFacade.edit(item);
+            count++;
+        }
+
+        Map<String, Object> changes = new HashMap<>();
+        changes.put("categoryId", categoryId);
+        changes.put("itemType", itemType != null ? itemType.getSimpleName() : "ALL_TYPES");
+        changes.put("discountAllowed", discountAllowed);
+        changes.put("count", count);
+        auditService.logAudit(null, changes, user, "Item", "ITEM_DISCOUNT_ALLOWED_BULK_UPDATED", null);
 
         Map<String, Object> result = new HashMap<>();
         result.put("count", count);
@@ -896,9 +1024,34 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
-     * Load an ItemFee by ID, ensuring it belongs to the given service and is not retired.
+     * Load any Item by ID (Service, InwardService, Investigation, etc.), ensuring
+     * it is not retired. Used by fee-management methods, which operate on ItemFee
+     * generically since ItemFee.item is typed as Item, not Service.
      */
-    private ItemFee loadAndValidateFee(Long feeId, Service service) throws Exception {
+    private Item loadAndValidateItem(Long id) throws Exception {
+        if (id == null) {
+            throw new Exception("Item ID is required");
+        }
+        Item item = itemFacade.find(id);
+        if (item == null) {
+            throw new Exception("Item not found with ID: " + id);
+        }
+        if (item.isRetired()) {
+            throw new Exception("Item with ID " + id + " is retired");
+        }
+        return item;
+    }
+
+    private void validateVatPercentage(Double vatPercentage) throws Exception {
+        if (vatPercentage != null && (vatPercentage < 0 || vatPercentage > 100)) {
+            throw new Exception("vatPercentage must be between 0 and 100");
+        }
+    }
+
+    /**
+     * Load an ItemFee by ID, ensuring it belongs to the given item and is not retired.
+     */
+    private ItemFee loadAndValidateFee(Long feeId, Item item) throws Exception {
         if (feeId == null) {
             throw new Exception("Fee ID is required");
         }
@@ -909,8 +1062,8 @@ public class ServiceApiService implements Serializable {
         if (fee.isRetired()) {
             throw new Exception("Fee with ID " + feeId + " is already retired");
         }
-        if (fee.getItem() == null || !fee.getItem().getId().equals(service.getId())) {
-            throw new Exception("Fee with ID " + feeId + " does not belong to service with ID " + service.getId());
+        if (fee.getItem() == null || !fee.getItem().getId().equals(item.getId())) {
+            throw new Exception("Fee with ID " + feeId + " does not belong to item with ID " + item.getId());
         }
         return fee;
     }
@@ -937,20 +1090,21 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
-     * Recalculate service total and totalForForeigner by summing non-retired fees.
-     * Mirrors ItemFeeManager.updateFee() logic.
+     * Recalculate an item's total and totalForForeigner by summing non-retired fees.
+     * Mirrors ItemFeeManager.updateFee() logic. Works for any Item subtype
+     * (Service, InwardService, Investigation, etc.) via the generic ItemFacade.
      */
-    private void recalculateServiceTotal(Service service) {
-        List<ItemFee> fees = fetchFeesForItem(service);
+    private void recalculateItemTotal(Item item) {
+        List<ItemFee> fees = fetchFeesForItem(item);
         double total = 0.0;
         double totalForForeigner = 0.0;
         for (ItemFee fee : fees) {
             total += fee.getFee();
             totalForForeigner += fee.getFfee();
         }
-        service.setTotal(total);
-        service.setTotalForForeigner(totalForForeigner);
-        saveService(service);
+        item.setTotal(total);
+        item.setTotalForForeigner(totalForForeigner);
+        itemFacade.edit(item);
     }
 
     /**
@@ -978,42 +1132,46 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
-     * Build a ServiceResponseDTO from a Service entity and its fees.
+     * Build a ServiceResponseDTO from any Item entity and its fees.
+     * Used both by Service/InwardService endpoints and by the generalized fee-management
+     * endpoints, which accept any Item subtype (e.g. Investigation).
      */
-    private ServiceResponseDTO buildServiceResponseDTO(Service service, List<ItemFee> fees, String message) {
+    private ServiceResponseDTO buildServiceResponseDTO(Item item, List<ItemFee> fees, String message) {
         ServiceResponseDTO dto = new ServiceResponseDTO();
-        dto.setId(service.getId());
-        dto.setName(service.getName());
-        dto.setCode(service.getCode());
-        dto.setPrintName(service.getPrintName());
-        dto.setFullName(service.getFullName());
-        dto.setServiceType(service instanceof InwardService ? "Inward" : "OPD");
-        dto.setTotal(service.getTotal());
-        dto.setTotalForForeigner(service.getTotalForForeigner());
-        dto.setInactive(service.isInactive());
-        dto.setRetired(service.isRetired());
-        dto.setDiscountAllowed(service.isDiscountAllowed());
-        dto.setUserChangable(service.isUserChangable());
-        dto.setChargesVisibleForInward(service.isChargesVisibleForInward());
-        dto.setMarginNotAllowed(service.isMarginNotAllowed());
-        dto.setRequestForQuentity(service.isRequestForQuentity());
-        dto.setPatientNotRequired(service.isPatientNotRequired());
-        if (service.getInwardChargeType() != null) {
-            dto.setInwardChargeType(service.getInwardChargeType().name());
+        dto.setId(item.getId());
+        dto.setName(item.getName());
+        dto.setCode(item.getCode());
+        dto.setPrintName(item.getPrintName());
+        dto.setFullName(item.getFullName());
+        dto.setServiceType(deriveServiceType(item));
+        dto.setTotal(item.getTotal());
+        dto.setTotalForForeigner(item.getTotalForForeigner());
+        dto.setInactive(item.isInactive());
+        dto.setRetired(item.isRetired());
+        dto.setDiscountAllowed(item.isDiscountAllowed());
+        dto.setUserChangable(item.isUserChangable());
+        dto.setChargesVisibleForInward(item.isChargesVisibleForInward());
+        dto.setMarginNotAllowed(item.isMarginNotAllowed());
+        dto.setRequestForQuentity(item.isRequestForQuentity());
+        dto.setPatientNotRequired(item.isPatientNotRequired());
+        dto.setVatable(item.isVatable());
+        dto.setVatPercentage(item.getVatPercentage());
+        if (item.getInwardChargeType() != null) {
+            dto.setInwardChargeType(item.getInwardChargeType().name());
         }
-        if (service.getCategory() != null) {
-            dto.setCategoryId(service.getCategory().getId());
-            dto.setCategoryName(service.getCategory().getName());
+        if (item.getCategory() != null) {
+            dto.setCategoryId(item.getCategory().getId());
+            dto.setCategoryName(item.getCategory().getName());
         }
-        if (service.getInstitution() != null) {
-            dto.setInstitutionId(service.getInstitution().getId());
-            dto.setInstitutionName(service.getInstitution().getName());
+        if (item.getInstitution() != null) {
+            dto.setInstitutionId(item.getInstitution().getId());
+            dto.setInstitutionName(item.getInstitution().getName());
         }
-        if (service.getDepartment() != null) {
-            dto.setDepartmentId(service.getDepartment().getId());
-            dto.setDepartmentName(service.getDepartment().getName());
+        if (item.getDepartment() != null) {
+            dto.setDepartmentId(item.getDepartment().getId());
+            dto.setDepartmentName(item.getDepartment().getName());
         }
-        dto.setCreatedAt(service.getCreatedAt());
+        dto.setCreatedAt(item.getCreatedAt());
 
         List<ItemFeeDTO> feeDtos = new ArrayList<>();
         for (ItemFee fee : fees) {
@@ -1022,6 +1180,20 @@ public class ServiceApiService implements Serializable {
         dto.setFees(feeDtos);
         dto.setMessage(message);
         return dto;
+    }
+
+    /**
+     * Derive a human-readable type label for an Item: "Inward" for InwardService,
+     * "OPD" for plain Service, otherwise the entity's simple class name (e.g. "Investigation").
+     */
+    private String deriveServiceType(Item item) {
+        if (item instanceof InwardService) {
+            return "Inward";
+        }
+        if (item.getClass() == Service.class) {
+            return "OPD";
+        }
+        return item.getClass().getSimpleName();
     }
 
     /**

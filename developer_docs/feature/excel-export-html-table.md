@@ -141,6 +141,54 @@ Use `#,##0.00` data format for all monetary cells.
 
 ---
 
+## Pattern: header/footer on top of `<p:dataExporter>` via `postProcessor`
+
+### When to use
+- The report already renders as a `<p:dataTable>` and exports fine with `<p:dataExporter>`
+- You just need to add a report title, active filters, and/or a "Printed by / Printed at" line to the exported file — not restructure the export itself
+
+`<p:dataExporter>` only serializes the table's column headers and row data; it ignores any `<f:facet name="header">`/`name="footer">` set directly on `<p:dataTable>`. To inject extra rows, use the exporter's `postProcessor` attribute, which hands your controller the already-populated POI `Workbook` before it's streamed to the response.
+
+### Shared utility (`ExcelController`)
+Two reusable methods added for issue #17615 do the row-shifting/writing so individual reports don't reimplement it:
+- `insertExcelReportHeader(Sheet sheet, String reportTitle, List<String[]> filterPairs, int mergeCol)` — shifts existing rows down and writes a title row + one row per `{label, value}` filter pair above the table. Always pass every filter the report supports, with an "All"/"No" fallback for unset ones.
+- `appendExcelPrintedByFooter(Sheet sheet, int mergeCol)` — appends a "Printed by: X" / "Printed at: Y" row after the last row.
+
+`mergeCol` is the last exported column's 0-based index (column count − 1). **Both methods guard `mergeCol == 0`/`1` before calling `addMergedRegion`** — POI throws `IllegalStateException: Merged region ... must contain 2 or more cells` if you try to merge a single cell, which happens for narrow reports (2-3 columns) or reports that export zero data rows. Any new caller passing a dynamically-computed `mergeCol` (e.g. `sheet.getRow(0).getLastCellNum() - 1`) should rely on these guards rather than assuming a fixed column count.
+
+### Controller method
+```java
+public void postProcessXLS<ReportName>(Object document) {
+    if (!(document instanceof Workbook)) {
+        return;
+    }
+    Sheet sheet = ((Workbook) document).getSheetAt(0);
+    List<String[]> filterPairs = new ArrayList<>();
+    filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+    // ... one entry per filter this report exposes ...
+    excelController.insertExcelReportHeader(sheet, "<Report Title>", filterPairs, mergeCol);
+    excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+}
+```
+
+### XHTML wiring
+```xml
+<p:dataExporter type="xlsx" target="tbl" fileName="..." postProcessor="#{bean.postProcessXLS<ReportName>}"/>
+```
+For the on-screen/print rendering (not the Excel file), add matching facets directly to `<p:dataTable>` — these two are independent of the exporter:
+```xml
+<f:facet name="header">...report title + filter summary...</f:facet>
+<f:facet name="footer"><common:report_print_footer/></f:facet>
+```
+`report_print_footer` (`resources/ezcomp/common/report_print_footer.xhtml`) is a no-arg composite that prints "Printed By: `#{sessionController.loggedUser.webUserPerson.name}`" / "Printed At: `#{sessionController.currentDate}`" — reuse it instead of duplicating the markup per report.
+
+PrimeFaces also supports the same `preProcessor`/`postProcessor` attributes on `<p:dataExporter type="pdf">`, receiving a `com.lowagie.text.Document` (OpenPDF) — see `ReportsStock.preProcessPdfDepartmentViceStock`/`postProcessPdfDepartmentViceStock` for a working example. Fully-qualify `com.lowagie.text.*` types if the same controller also has iText5 (`com.itextpdf.text.*`) imports for an unrelated export method, since the two libraries share class names.
+
+### Reference implementation
+`ReportsStock.postProcessXLSStockReportByItem` + `pharmacy_report_department_stock_by_item_DTO.xhtml`.
+
+---
+
 ## Reference implementations
 
 | Report | Controller | XHTML |

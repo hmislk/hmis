@@ -381,8 +381,12 @@
                                     </h:panelGroup>
                                 </ui:repeat>
 
-                                <!-- Bed Charges - Display individually if option is off -->
-                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
+                                <!-- Bed Charges - always displayed individually (the broken
+                                     'Group Bed Charges in Bills' mechanism that used to gate this
+                                     was removed — it called a nonexistent method and was never
+                                     actually usable; see finalBillBundledCustom1.xhtml for the
+                                     real, configurable replacement). -->
+                                <h:panelGroup>
                                     <!-- Loop through NursingCharges first -->
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'NursingCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
@@ -472,24 +476,6 @@
                                             </tr>
                                         </h:panelGroup>
                                     </ui:repeat>
-                                </h:panelGroup>
-
-                                <!-- Grouped Bed Charges - Display as single line if option is on -->
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
-                                    <h:panelGroup rendered="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems) > 0}" style="font-size: 12px;">
-                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Bed Charges Label', 'Bed Charges')}" />
-                                            </td>
-                                            <td style="margin-top: -10px;">
-                                            </td>
-                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
-                                                <h:outputLabel value="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems)}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </td>
-                                        </tr>
-                                    </h:panelGroup>
                                 </h:panelGroup>
 
                                 <!-- Loop through all other items excluding RoomCharges and ProfessionalCharge -->

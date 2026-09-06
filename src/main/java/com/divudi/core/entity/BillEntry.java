@@ -36,6 +36,8 @@ public class BillEntry implements Serializable, RetirableEntity  {
     List<BillSession> lstBillSessions;
     @Transient
     List<BillItem> lsyBillItems;
+    @Transient
+    BillItem sourceRequestBillItem;
     Double totDiscount;
     Double totCash;
     Double totCredit;
@@ -101,6 +103,14 @@ public class BillEntry implements Serializable, RetirableEntity  {
 
     public void setLsyBillItems(List<BillItem> lsyBillItems) {
         this.lsyBillItems = lsyBillItems;
+    }
+
+    public BillItem getSourceRequestBillItem() {
+        return sourceRequestBillItem;
+    }
+
+    public void setSourceRequestBillItem(BillItem sourceRequestBillItem) {
+        this.sourceRequestBillItem = sourceRequestBillItem;
     }
 
     public Long getId() {

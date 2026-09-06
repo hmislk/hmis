@@ -135,6 +135,7 @@ public class IncomeBundle implements Serializable {
         double sumOfVoucherValues = 0.0;
         double sumOfIouValues = 0.0;
         double sumOfAgentValues = 0.0;
+        double sumOfCcValues = 0.0;
         double sumOfChequeValues = 0.0;
         double sumOfSlipValues = 0.0;
         double sumOfEWalletValues = 0.0;
@@ -173,6 +174,7 @@ public class IncomeBundle implements Serializable {
             sumOfNoneValues += r.getNoneValue();
             sumOfOpdCreditValues += r.getOpdCreditValue();
             sumOfInpatientCreditValues += r.getInpatientCreditValue();
+            sumOfCcValues += r.getBill().getTotalCenterFee();
 
             sumOfGrossTotal += r.getGrossTotal();
             sumOfDiscount += r.getDiscount();
@@ -202,6 +204,7 @@ public class IncomeBundle implements Serializable {
         getSummaryRow().setNoneValue(sumOfNoneValues);
         getSummaryRow().setOpdCreditValue(sumOfOpdCreditValues);
         getSummaryRow().setInpatientCreditValue(sumOfInpatientCreditValues);
+        getSummaryRow().setCcTotal(sumOfCcValues);
 
         getSummaryRow().setGrossTotal(sumOfGrossTotal);
         getSummaryRow().setDiscount(sumOfDiscount);

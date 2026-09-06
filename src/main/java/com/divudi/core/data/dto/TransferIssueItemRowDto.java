@@ -38,6 +38,9 @@ public class TransferIssueItemRowDto implements Serializable {
 
     private String itemDtype;
 
+    /** Item.departmentType (enum name as String), used to stamp the issued bill when the request bill lacks one. */
+    private String departmentType;
+
     /** Pack size: >1 for Ampp (units per pack), 1.0 for Amp/default. */
     private double unitsPerPack = 1.0;
 
@@ -107,6 +110,9 @@ public class TransferIssueItemRowDto implements Serializable {
 
     public String getItemDtype() { return itemDtype; }
     public void setItemDtype(String itemDtype) { this.itemDtype = itemDtype; }
+
+    public String getDepartmentType() { return departmentType; }
+    public void setDepartmentType(String departmentType) { this.departmentType = departmentType; }
 
     public double getUnitsPerPack() { return unitsPerPack; }
     public void setUnitsPerPack(double unitsPerPack) { this.unitsPerPack = unitsPerPack; }

@@ -8,11 +8,16 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.TransferReceiveItemRowDto;
 import com.divudi.core.data.dto.TransferReceivePrintDto;
 import com.divudi.core.entity.Bill;
@@ -76,6 +81,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
     private SessionController sessionController;
 
     @Inject
+    private WebUserController webUserController;
+
+    @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
@@ -105,7 +113,76 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         // No heavy initialization — list is loaded on navigation
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_transfer_receive_native",
+                "Pharmacy Transfer Receive (Native)",
+                "Receive stock transfers from another department using the native SQL workflow",
+                "TransferReceiveNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Bill is Template",
+                "Controls whether the transfer receive bill is generated as a template bill",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4",
+                "Prints the transfer receive receipt on plain A4 paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4 Custom 1",
+                "Prints the transfer receive receipt using A4 custom format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4 Custom 2",
+                "Prints the transfer receive receipt using A4 custom format 2",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is A4 Detailed",
+                "Prints the transfer receive receipt using the detailed A4 format",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Transfer Receive Receipt is Letter Paper Custom 1",
+                "Prints the transfer receive receipt using Letter paper custom format 1",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyReceiveFinalize",
+                "Permission to finalize a pharmacy transfer receive"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyTransferViewRates",
+                "Permission to view purchase/transfer rates on the transfer receive screen"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------
@@ -246,6 +323,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
     }
 
     public String cancelPendingReceive(Long preBillId) {
+        if (!isAuthorized("CANCEL", "PharmacyTransferReceiveCancel")) {
+            return "";
+        }
         if (preBillId == null) {
             JsfUtil.addErrorMessage("No pending receive selected.");
             return null;
@@ -313,6 +393,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settle().
      */
     public void settle() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
         if (itemRowList == null || itemRowList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Receive, Please check Received Quantity");
             return;
@@ -330,8 +413,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         List<String> stockErrors = transferReceiveNativeSqlService.checkSourceStockSufficiency(itemRowList);
         if (!stockErrors.isEmpty()) {
+            // Each message is already fully worded by checkSourceStockSufficiency() —
+            // it covers both a quantity shortfall and a missing staffStockId link (#22951).
             for (String msg : stockErrors) {
-                JsfUtil.addErrorMessage("Insufficient source stock — " + msg);
+                JsfUtil.addErrorMessage(msg);
             }
             return;
         }
@@ -360,6 +445,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settleApprove().
      */
     public void settleApprove() {
+        if (!isAuthorized("APPROVE", "PharmacyReceiveApprove")) {
+            return;
+        }
         if (receivedBillId == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return;
@@ -377,8 +465,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         List<String> stockErrors = transferReceiveNativeSqlService.checkSourceStockSufficiency(itemRowList);
         if (!stockErrors.isEmpty()) {
+            // Each message is already fully worded by checkSourceStockSufficiency() —
+            // it covers both a quantity shortfall and a missing staffStockId link (#22951).
             for (String msg : stockErrors) {
-                JsfUtil.addErrorMessage("Insufficient source stock — " + msg);
+                JsfUtil.addErrorMessage(msg);
             }
             return;
         }
@@ -421,6 +511,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.saveRequest().
      */
     public void saveRequest() {
+        if (!isAuthorized("SAVE", "PharmacyReceiveSave")) {
+            return;
+        }
         if (issuedBill == null || issuedBill.getId() == null) {
             JsfUtil.addErrorMessage("No issued bill selected");
             return;
@@ -449,6 +542,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.finalizeRequest().
      */
     public void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
         if (receivedBillId == null) {
             JsfUtil.addErrorMessage("No saved request found. Please save first.");
             return;
@@ -759,7 +855,28 @@ public class TransferReceiveNativeSqlController implements Serializable {
         bill.setCreater(sessionController.getLoggedUser());
         bill.setCreatedAt(new Date());
         bill.setComments(comments);
+        stampDepartmentTypeIfMissing(bill);
         return bill;
+    }
+
+    /**
+     * Department-type-filtered reports drop bills left NULL (#22056). The issued bill
+     * normally already carries a departmentType (stamped when it was issued); this is
+     * the fallback for legacy issued bills that predate that stamp — take the first
+     * received item's type, defaulting to Pharmacy (#22146).
+     */
+    private void stampDepartmentTypeIfMissing(Bill bill) {
+        if (bill.getDepartmentType() != null) {
+            return;
+        }
+        if (issuedBill != null && issuedBill.getDepartmentType() != null) {
+            bill.setDepartmentType(issuedBill.getDepartmentType());
+            return;
+        }
+        if (itemRowList != null && !itemRowList.isEmpty()) {
+            String dt = itemRowList.get(0).getDepartmentType();
+            bill.setDepartmentType(dt != null ? DepartmentType.valueOf(dt) : DepartmentType.Pharmacy);
+        }
     }
 
     private void applyBillNumbers(Bill bill) {
@@ -1003,5 +1120,34 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     public void setSelectedItemRow(TransferReceiveItemRowDto selectedItemRow) {
         this.selectedItemRow = selectedItemRow;
+    }
+
+    /**
+     * Authorization helper method to check Transfer Receive privileges and
+     * audit denied access.
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE, CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, receivedBillId});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Receive access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, receivedBillId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer receive requests.");
+            return false;
+        }
+
+        return true;
     }
 }

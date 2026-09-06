@@ -203,13 +203,9 @@ public class GrnReturnWorkflowController implements Serializable {
         ));
 
         // 🔧 BILL NUMBER GENERATION CONFIGURATIONS
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Suffix for GRN Return",
-            "Custom suffix to append to GRN Return bill numbers",
-            OptionScope.APPLICATION
-        ));
-
-        // 🔧 CRITICAL: Bill Number Generation Strategies for PHARMACY_GRN_RETURN
+        // NOTE: BillNumberGenerator's methods read the suffix under this enum-based key
+        // ("Bill Number Suffix for " + BillTypeAtomic), not under a "GRN Return" label -
+        // this is the only key that actually affects generated bill numbers (hmislk/hmis#22639).
         metadata.addConfigOption(new ConfigOptionInfo(
             "Bill Number Suffix for PHARMACY_GRN_RETURN",
             "Custom suffix to append to pharmacy GRN return bill numbers (used by BillNumberGenerator methods)",
@@ -880,14 +876,22 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if the original GRN is fully returned and mark it as fullReturned
+        // Update the original GRN's refundAmount so Supplier Payment screens
+        // (SupplierPaymentController) settle on the net-of-return amount
+        // instead of the full original GRN amount (hmislk/hmis#18280).
+        // Also check if the original GRN is now fully returned.
         Bill originalGrnBill = currentBill.getReferenceBill();
-        if (originalGrnBill != null && isGrnFullyReturned(originalGrnBill)) {
-            originalGrnBill.setFullReturned(true);
-            originalGrnBill.setFullReturnedBy(sessionController.getLoggedUser());
-            originalGrnBill.setFullReturnedAt(new Date());
+        if (originalGrnBill != null) {
+            originalGrnBill.setRefundAmount(Math.abs(originalGrnBill.getRefundAmount()) + Math.abs(currentBill.getNetTotal()));
+            if (isGrnFullyReturned(originalGrnBill)) {
+                originalGrnBill.setFullReturned(true);
+                originalGrnBill.setFullReturnedBy(sessionController.getLoggedUser());
+                originalGrnBill.setFullReturnedAt(new Date());
+            }
             billFacade.edit(originalGrnBill);
-            JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
+            if (originalGrnBill.isFullReturned()) {
+                JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
+            }
         }
 
         // Reload via billService to show items in print preview without
@@ -978,10 +982,24 @@ public class GrnReturnWorkflowController implements Serializable {
         boolean isNewBill = (currentBill.getId() == null);
 
         if (isNewBill) {
-            // Set default suffix for GRN Return if not already set
-            String billNumberSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for GRN Return", "GRNR");
-            if (billNumberSuffix == null || billNumberSuffix.trim().isEmpty()) {
-                billNumberSuffix = "GRNR";
+            // BillNumberGenerator's methods all read the suffix under the enum-based
+            // key "Bill Number Suffix for " + BillTypeAtomic (i.e. "...PHARMACY_GRN_RETURN"),
+            // never under the human-readable "Bill Number Suffix for GRN Return" key this
+            // method used to populate here. That mismatch left the enum-based key empty,
+            // so every generated GRN Return number was missing its suffix segment
+            // (e.g. "MP//26/037972" instead of "MP/GRNR/26/037972") regardless of which
+            // numbering strategy a department has configured, since every strategy branch
+            // below ultimately reads the same enum-based key. Migrate any legacy value
+            // over on first use so existing deployments' configured suffix keeps working
+            // without a manual Settings-UI step. (hmislk/hmis#22639)
+            String correctSuffixKey = "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN_RETURN;
+            String currentSuffix = configOptionApplicationController.getLongTextValueByKey(correctSuffixKey, "");
+            if (currentSuffix == null || currentSuffix.trim().isEmpty()) {
+                String legacySuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for GRN Return", "GRNR");
+                if (legacySuffix == null || legacySuffix.trim().isEmpty()) {
+                    legacySuffix = "GRNR";
+                }
+                configOptionApplicationController.setLongTextValueByKey(correctSuffixKey, legacySuffix);
             }
 
             currentBill.setBillType(BillType.PharmacyGrnReturn);
@@ -2768,7 +2786,11 @@ public class GrnReturnWorkflowController implements Serializable {
 
     /**
      * Calculates the net value adjustment based on actual net value entered by user
-     * Adjustment = Net Total (calculated) - Actual Net Value
+     * Adjustment = |Net Total (calculated)| - |Actual Net Value|
+     * netTotal follows the GRN-return sign convention (negative = value returning to
+     * supplier); actualNetValue is entered by staff as the physical counted amount,
+     * always a positive magnitude. Comparing absolute values keeps the result correct
+     * regardless of netTotal's sign, so equal amounts net to zero.
      * Positive adjustment means calculated is higher than actual
      * Negative adjustment means calculated is lower than actual
      */
@@ -2783,7 +2805,7 @@ public class GrnReturnWorkflowController implements Serializable {
         BigDecimal netTotal = bfd.getNetTotal();
 
         if (actualNetValue != null && netTotal != null) {
-            BigDecimal adjustment = netTotal.subtract(actualNetValue);
+            BigDecimal adjustment = netTotal.abs().subtract(actualNetValue.abs());
             bfd.setNetValueAdjustment(adjustment);
         } else {
             bfd.setNetValueAdjustment(null);
