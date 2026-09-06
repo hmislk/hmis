@@ -205,27 +205,10 @@ public class ExcelController {
         String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
         XSSFSheet dataSheet = workbook.createSheet(safeName);
 
-        // Create cell styles for headers
-        CellStyle centerBoldStyle = workbook.createCellStyle();
-        centerBoldStyle.setAlignment(HorizontalAlignment.CENTER);
-        centerBoldStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
-        boldFont.setBold(true);
-        boldFont.setFontHeightInPoints((short) 14);
-        centerBoldStyle.setFont(boldFont);
-
-        CellStyle centerStyle = workbook.createCellStyle();
-        centerStyle.setAlignment(HorizontalAlignment.CENTER);
-        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
-        normalFont.setFontHeightInPoints((short) 12);
-        centerStyle.setFont(normalFont);
-
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd MMM yyyy hh:mm:ss a");
 
         int currentRow = 0;
 
-        // Date formatter
         // Styles
         CellStyle titleStyle = workbook.createCellStyle();
         titleStyle.setAlignment(HorizontalAlignment.CENTER);
@@ -251,18 +234,6 @@ public class ExcelController {
         CellStyle valueStyle = workbook.createCellStyle();
         valueStyle.setWrapText(true);
 
-        CellStyle leftSmallStyle = workbook.createCellStyle();
-        leftSmallStyle.setAlignment(HorizontalAlignment.LEFT);
-        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
-        smallFont.setFontHeightInPoints((short) 9);
-        leftSmallStyle.setFont(smallFont);
-
-        CellStyle rightSmallStyle = workbook.createCellStyle();
-        rightSmallStyle.setAlignment(HorizontalAlignment.RIGHT);
-        org.apache.poi.ss.usermodel.Font smallFont2 = workbook.createFont();
-        smallFont2.setFontHeightInPoints((short) 9);
-        rightSmallStyle.setFont(smallFont2);
-
         // ===== Header =====
 
         // Row 0 - Institution name
@@ -273,26 +244,31 @@ public class ExcelController {
                 : "Institution";
         institutionCell.setCellValue(institutionName);
         institutionCell.setCellStyle(titleStyle);
-        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
         // Row 1 - Report title
         Row reportTitleRow = dataSheet.createRow(currentRow++);
         Cell reportTitleCell = reportTitleRow.createCell(0);
-        reportTitleCell.setCellValue(rootBundle.getName() != null ? rootBundle.getName() : "Cashier Summary Report");
+        reportTitleCell.setCellValue(rootBundle.getName() != null ? rootBundle.getName() : "Report");
         reportTitleCell.setCellStyle(subTitleStyle);
-        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 
         // Blank row
         currentRow++;
 
-        // Row 3 - From / To
+        // Row 3 - From / To. Prefer the range the bundle was generated with;
+        // fall back to the caller's arguments for bundles that do not snapshot
+        // their filters.
+        Date headerFromDate = rootBundle.getFromDate() != null ? rootBundle.getFromDate() : fromDate;
+        Date headerToDate = rootBundle.getToDate() != null ? rootBundle.getToDate() : toDate;
+
         Row row1 = dataSheet.createRow(currentRow++);
         Cell c00 = row1.createCell(0);
         c00.setCellValue("From Date");
         c00.setCellStyle(labelStyle);
 
         Cell c01 = row1.createCell(1);
-        c01.setCellValue(rootBundle.getFromDate() != null ? dateTimeFormat.format(rootBundle.getFromDate()) : "");
+        c01.setCellValue(headerFromDate != null ? dateTimeFormat.format(headerFromDate) : "");
         c01.setCellStyle(valueStyle);
 
         Cell c03 = row1.createCell(3);
@@ -300,53 +276,59 @@ public class ExcelController {
         c03.setCellStyle(labelStyle);
 
         Cell c04 = row1.createCell(4);
-        c04.setCellValue(rootBundle.getToDate() != null ? dateTimeFormat.format(rootBundle.getToDate()) : "");
+        c04.setCellValue(headerToDate != null ? dateTimeFormat.format(headerToDate) : "");
         c04.setCellStyle(valueStyle);
 
-        // Row 4 - Institution / Site
-        Row row2 = dataSheet.createRow(currentRow++);
-        Cell c10 = row2.createCell(0);
-        c10.setCellValue("Institution");
-        c10.setCellStyle(labelStyle);
+        // This exporter is shared by every bundle report. Only spell out the
+        // institution/site/department/cashier filters for a bundle whose
+        // generator actually snapshotted them - otherwise the sheet would
+        // claim "All Departments / All Users" on a report that never applied
+        // those filters, which misstates the scope of a financial document.
+        if (rootBundle.hasFilterSummary()) {
+            // Row 4 - Institution / Site
+            Row row2 = dataSheet.createRow(currentRow++);
+            Cell c10 = row2.createCell(0);
+            c10.setCellValue("Institution");
+            c10.setCellStyle(labelStyle);
 
-        Cell c11 = row2.createCell(1);
-        c11.setCellValue(rootBundle.getFilterInstitution() != null
-                ? rootBundle.getFilterInstitution().getName()
-                : "All Institutions");
-        c11.setCellStyle(valueStyle);
+            Cell c11 = row2.createCell(1);
+            c11.setCellValue(rootBundle.getFilterInstitution() != null
+                    ? rootBundle.getFilterInstitution().getName()
+                    : "All Institutions");
+            c11.setCellStyle(valueStyle);
 
-        Cell c13 = row2.createCell(3);
-        c13.setCellValue("Site");
-        c13.setCellStyle(labelStyle);
+            Cell c13 = row2.createCell(3);
+            c13.setCellValue("Site");
+            c13.setCellStyle(labelStyle);
 
-        Cell c14 = row2.createCell(4);
-        c14.setCellValue(rootBundle.getFilterSite() != null
-                ? rootBundle.getFilterSite().getName()
-                : "All Sites");
-        c14.setCellStyle(valueStyle);
+            Cell c14 = row2.createCell(4);
+            c14.setCellValue(rootBundle.getFilterSite() != null
+                    ? rootBundle.getFilterSite().getName()
+                    : "All Sites");
+            c14.setCellStyle(valueStyle);
 
-        // Row 5 - Department / Cashier
-        Row row3 = dataSheet.createRow(currentRow++);
-        Cell c20 = row3.createCell(0);
-        c20.setCellValue("Department");
-        c20.setCellStyle(labelStyle);
+            // Row 5 - Department / Cashier
+            Row row3 = dataSheet.createRow(currentRow++);
+            Cell c20 = row3.createCell(0);
+            c20.setCellValue("Department");
+            c20.setCellStyle(labelStyle);
 
-        Cell c21 = row3.createCell(1);
-        c21.setCellValue(rootBundle.getFilterDepartment() != null
-                ? rootBundle.getFilterDepartment().getName()
-                : "All Departments");
-        c21.setCellStyle(valueStyle);
+            Cell c21 = row3.createCell(1);
+            c21.setCellValue(rootBundle.getFilterDepartment() != null
+                    ? rootBundle.getFilterDepartment().getName()
+                    : "All Departments");
+            c21.setCellStyle(valueStyle);
 
-        Cell c23 = row3.createCell(3);
-        c23.setCellValue("Cashier / User");
-        c23.setCellStyle(labelStyle);
+            Cell c23 = row3.createCell(3);
+            c23.setCellValue("Cashier / User");
+            c23.setCellStyle(labelStyle);
 
-        Cell c24 = row3.createCell(4);
-        c24.setCellValue(rootBundle.getFilterWebUser() != null
-                ? rootBundle.getFilterWebUser().getName()
-                : "All Users");
-        c24.setCellStyle(valueStyle);
-
+            Cell c24 = row3.createCell(4);
+            c24.setCellValue(rootBundle.getFilterWebUser() != null
+                    ? rootBundle.getFilterWebUserDisplayName()
+                    : "All Users");
+            c24.setCellStyle(valueStyle);
+        }
         // Blank row before data
         currentRow++;
 

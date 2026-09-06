@@ -223,6 +223,37 @@ public class ReportTemplateRowBundle implements Serializable {
         this.filterWebUser = filterWebUser;
     }
 
+    /**
+     * True once a report generator has snapshotted the filters it actually ran
+     * with. Exporters gate the filter summary block on this: a bundle that
+     * never set them must not get "All Institutions / All Users" printed
+     * against it, because that asserts a scope the report never applied.
+     */
+    public boolean hasFilterSummary() {
+        return fromDate != null
+                || toDate != null
+                || filterInstitution != null
+                || filterSite != null
+                || filterDepartment != null
+                || filterWebUser != null;
+    }
+
+    /**
+     * Name to show for the filtered user. WebUser.getName() is the login name,
+     * not the person's name, so prefer the person and fall back to the login.
+     */
+    public String getFilterWebUserDisplayName() {
+        if (filterWebUser == null) {
+            return null;
+        }
+        if (filterWebUser.getWebUserPerson() != null
+                && filterWebUser.getWebUserPerson().getName() != null
+                && !filterWebUser.getWebUserPerson().getName().trim().isEmpty()) {
+            return filterWebUser.getWebUserPerson().getName();
+        }
+        return filterWebUser.getName();
+    }
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
     }

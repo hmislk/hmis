@@ -2066,7 +2066,7 @@ public class PdfController {
         document.add(lineSeparator);
     }
 
-    private void addReportHeader(Document document, ReportTemplateRowBundle bundle) throws IOException {
+    private void addReportHeader(Document document, ReportTemplateRowBundle bundle) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
         String institutionName = sessionController.getInstitution() != null
@@ -2081,11 +2081,33 @@ public class PdfController {
                 .setMarginBottom(2);
         document.add(hospitalPara);
 
-        Paragraph reportTitlePara = new Paragraph(bundle.getName() != null ? bundle.getName() : "Cashier Summary Report")
+        Paragraph reportTitlePara = new Paragraph(bundle.getName() != null ? bundle.getName() : "Report")
                 .setFontSize(12)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMarginBottom(12);
         document.add(reportTitlePara);
+
+        if (bundle.getDescription() != null && !bundle.getDescription().isEmpty()) {
+            Paragraph descPara = new Paragraph(bundle.getDescription())
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(10);
+            document.add(descPara);
+        }
+
+        // This header is shared by every bundle PDF, not just the cashier
+        // reports. Only draw the filter box for a bundle whose generator
+        // actually snapshotted its filters - otherwise every field reads null
+        // and the box would claim "All Institutions / All Users" on a report
+        // that never had those filters.
+        if (!bundle.hasFilterSummary()) {
+            SolidLine headerLine = new SolidLine(1.5f);
+            LineSeparator headerSeparator = new LineSeparator(headerLine);
+            headerSeparator.setStrokeColor(ColorConstants.BLACK);
+            document.add(headerSeparator);
+            document.add(new Paragraph("").setMarginBottom(5));
+            return;
+        }
 
         // ===== Filter Box (2 columns x 3 rows) =====
         Table filterTable = new Table(UnitValue.createPercentArray(new float[]{50f, 50f}))
@@ -2125,7 +2147,7 @@ public class PdfController {
         filterTable.addCell(createFilterCell(
                 "CASHIER / USER",
                 bundle.getFilterWebUser() != null
-                        ? bundle.getFilterWebUser().getName()
+                        ? bundle.getFilterWebUserDisplayName()
                         : "All Users"
         ));
 
