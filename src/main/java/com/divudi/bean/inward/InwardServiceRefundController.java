@@ -128,6 +128,16 @@ public class InwardServiceRefundController implements Serializable {
             JsfUtil.addErrorMessage("You do not have privilege to change print format settings");
             return;
         }
+        // These keys are meant to be department-scoped. With no department
+        // selected (SessionController.loginActionWithoutDepartment()),
+        // ConfigOptionController.setBooleanValueByKey falls back to the plain
+        // application key, which every department without an override inherits
+        // - so one unscoped save would silently change the format for the whole
+        // application. Refuse rather than write the wrong scope.
+        if (sessionController.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Select a department before changing print format settings");
+            return;
+        }
         try {
             configOptionController.setBooleanValueByKey(KEY_CUSTOM_1, printFormatCustom1);
             configOptionController.setBooleanValueByKey(KEY_FIVE_FIVE, printFormatFiveFive);
