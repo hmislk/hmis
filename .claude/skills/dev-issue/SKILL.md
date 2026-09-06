@@ -15,7 +15,10 @@ argument-hint: "<issue-number>"
 
 Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
-non-repro case, 3, 4, 14) are the points where you pause for the user.
+non-repro case, 3, 14) are the points where you pause for the user. Step 4
+(test context) and 2a's target selection are local-testing-environment
+choices, not product decisions — decide those yourself (see step 4) rather
+than pausing.
 
 This authorization also covers `superpowers:writing-plans`' Execution
 Handoff question, if that chain gets invoked anywhere in this flow (e.g.
@@ -49,10 +52,10 @@ Run it when the issue is a bug and step 2 left the cause unconfirmed or
 unfound:
 
 - Prefer reproducing against existing data first (read-only navigation or
-  API `GET`s). If reproduction requires creating or modifying a record,
-  confirm the target department/record with the user first
-  (`AskUserQuestion`, same pattern as step 4) rather than picking one
-  unilaterally.
+  API `GET`s). If reproduction requires creating or modifying a record, pick
+  the target department/record yourself (same approach as step 4) — query
+  the local DB for something real and relevant, and state what you picked
+  and why rather than asking.
 - Reproduce live against local Payara — the `playwright-e2e` skill for
   UI-facing bugs, or direct REST calls (per `api-development`) for API-only
   ones.
@@ -80,18 +83,27 @@ Exit Plan Mode only once the user approves or adjusts the plan.
 
 ## 4. Gather test context
 
-Before writing code, ask the user (via `AskUserQuestion`):
+Before writing code, decide these yourself by querying the local DB and
+codebase — this is local-testing-environment setup, not a product decision,
+so don't spend a discussion gate on it:
 - **Department** to use for Playwright testing (must match a real department
-  in the local DB the feature touches — e.g. Pharmacy, Inward, OPD)
+  in the local DB the feature touches — e.g. Pharmacy, Inward, OPD). Query
+  the local DB for which department actually has relevant data (e.g. most
+  rows in the table the feature reads) rather than guessing.
 - **Specific records** to exercise (e.g. an admission ID, bill number, item
   code) — pick something that exists in the local DB and is relevant to the
-  feature
+  feature.
 - **Environment**: local Payara (default) unless the issue specifically
-  requires testing against a remote env, in which case confirm which one.
-  Credentials live outside the repo in `C:\Credentials\` — never inlined
+  requires testing against a remote env, in which case confirm which one
+  with the user (this one *is* worth a question — it can mean testing
+  against real/shared data). Credentials live outside the repo in
+  `C:\Credentials\` — never inlined.
 
-Don't guess these — wrong department/record selection wastes the whole
-Playwright pass later.
+State what you picked and the query/reasoning behind it when you report
+progress, so a wrong choice is easy to spot and redirect — but don't block
+on it. Only fall back to `AskUserQuestion` if the local DB genuinely has no
+data the feature could exercise (e.g. an empty table), since no choice you
+could make would let step 7 verify anything.
 
 ## 5. Develop
 
