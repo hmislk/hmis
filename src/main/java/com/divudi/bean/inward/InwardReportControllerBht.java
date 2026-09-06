@@ -1351,6 +1351,13 @@ public class InwardReportControllerBht implements Serializable {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
         }
+        // Issue #23515 review (CodeRabbit) - PdfPTable(int) throws
+        // IllegalArgumentException for a column count <= 0, which happens if
+        // every Configure Columns checkbox is unchecked.
+        if (visibleSummaryColumnKeys().isEmpty()) {
+            JsfUtil.addErrorMessage("Select at least one column in Configure Columns before exporting.");
+            return;
+        }
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -1533,6 +1540,12 @@ public class InwardReportControllerBht implements Serializable {
     public void downloadProfessionalPaymentDetailedPdf() {
         if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        // Issue #23515 review (CodeRabbit) - same empty-selection guard as
+        // downloadProfessionalPaymentSummaryPdf() above.
+        if (visibleDetailedColumnKeys().isEmpty()) {
+            JsfUtil.addErrorMessage("Select at least one column in Configure Columns before exporting.");
             return;
         }
 
