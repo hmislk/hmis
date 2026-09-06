@@ -55,11 +55,11 @@ unfound:
   API `GET`s) — picking which department/record to *read* is the same
   no-need-to-ask judgment call as step 4. If reproduction requires a
   state-changing step (creating, modifying, or deleting a record, or running
-  direct SQL), that's a different risk category: create a disposable record
-  through the application and clean it up in the same session where
-  possible, and confirm with the user first (`AskUserQuestion`) before
-  modifying/deleting an existing record or running direct SQL — don't
-  extend the "don't ask" judgment call to writes.
+  direct SQL), that's a different risk category: confirm with the user
+  first (`AskUserQuestion`) before creating a disposable record,
+  modifying/deleting an existing record, or running direct SQL — don't
+  extend the "don't ask" judgment call to writes. If the user approves a
+  disposable record, clean it up in the same session where possible.
 - Reproduce live against local Payara — the `playwright-e2e` skill for
   UI-facing bugs, or direct REST calls (per `api-development`) for API-only
   ones.
