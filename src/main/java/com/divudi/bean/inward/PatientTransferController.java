@@ -8,6 +8,7 @@ import com.divudi.core.data.inward.TransferRequestStatus;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.TheatreRoom;
@@ -628,9 +629,11 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("Please select a theatre room.");
             return;
         }
-        PatientTransferRequest existing = findActiveSendToTheatreRequest(current);
+        PatientTransferRequest existing = findActiveSendToTheatreRequest(current, selectedSurgeryBill);
         if (existing != null) {
-            JsfUtil.addErrorMessage("This patient already has an active theatre transfer in progress.");
+            JsfUtil.addErrorMessage(selectedSurgeryBill != null
+                    ? "This surgery already has an active theatre transfer in progress."
+                    : "This patient already has an active theatre transfer in progress.");
             return;
         }
         PatientTransferRequest req = new PatientTransferRequest();
@@ -672,12 +675,27 @@ public class PatientTransferController implements Serializable {
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
 
         if (persisted.getTheatreRoom() == null) {
+            // Attribute the theatre stay to the specific surgery's own
+            // procedure encounter (a child of the admission created by
+            // SurgeryBillController) when one was selected on Send to
+            // Theatre, so per-surgery room charges can be computed
+            // (SurgeryCostReportController.enrichRoomCharges). Falls back to
+            // the admission itself when no surgery bill was selected (the
+            // "Surgery (optional)" field on the send-to-theatre form), and
+            // final-bill totals (InwardBeanController.getRoomCharge et al.)
+            // already sum admission + all child encounters via
+            // fetchChildPatientEncounter, so this doesn't change what the
+            // final bill charges - only how it's broken down per surgery.
+            PatientEncounter theatreRoomEncounter = (persisted.getSurgeryBill() != null
+                    && persisted.getSurgeryBill().getProcedure() != null)
+                    ? persisted.getSurgeryBill().getProcedure()
+                    : persisted.getAdmission();
             TheatreRoom theatreRoom = new TheatreRoom();
             theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
                     theatreRoom,
                     null,
                     persisted.getToRoomFacilityCharge(),
-                    persisted.getAdmission(),
+                    theatreRoomEncounter,
                     persisted.getInitiatedAt(),
                     sessionController.getLoggedUser());
             persisted.setTheatreRoom(theatreRoom);
@@ -884,6 +902,41 @@ public class PatientTransferController implements Serializable {
         params.put("cancelled", TransferRequestStatus.CANCELLED);
         String jpql = "SELECT r FROM PatientTransferRequest r "
                 + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status <> :cancelled "
+                + "AND (r.theatreOccupancyStatus IS NULL OR r.theatreOccupancyStatus <> :returned) "
+                + "AND r.retired = false "
+                + "ORDER BY r.createdAt DESC";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    /**
+     * Surgery-bill-aware variant of {@link #findActiveSendToTheatreRequest(Admission)}.
+     * A multi-surgery admission can have several surgeries in flight
+     * concurrently (different theatre rooms), so the duplicate-transfer guard
+     * in {@link #sendToTheatre()} must scope by surgery bill, not just the
+     * admission - otherwise sending the second surgery to theatre is blocked
+     * while the first is still pending/in-theatre. When no surgery bill is
+     * selected (the "Surgery (optional)" field), falls back to the
+     * admission-level check since there is nothing else to disambiguate by.
+     */
+    public PatientTransferRequest findActiveSendToTheatreRequest(Admission admission, Bill surgeryBill) {
+        if (admission == null) {
+            return null;
+        }
+        if (surgeryBill == null) {
+            return findActiveSendToTheatreRequest(admission);
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("surgeryBill", surgeryBill);
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        params.put("returned", TheatreOccupancyStatus.RETURNED_TO_WARD);
+        params.put("cancelled", TransferRequestStatus.CANCELLED);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.surgeryBill = :surgeryBill "
                 + "AND r.theatreTransferType = :type "
                 + "AND r.status <> :cancelled "
                 + "AND (r.theatreOccupancyStatus IS NULL OR r.theatreOccupancyStatus <> :returned) "
