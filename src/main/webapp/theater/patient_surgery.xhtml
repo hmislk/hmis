@@ -545,7 +545,7 @@
                                             <p:column headerText="Action">
                                                 <p:commandButton ajax="false" value="Remove"
                                                                  action="#{surgeryBillController.removeTimeService(ti.billFee.patientItem)}"
-                                                                 disabled="#{ti.billFee.patientItem.retired eq true}"/>
+                                                                 disabled="#{ti.billFee.patientItem.retired eq true or ti.billFee.bill.forwardReferenceBill.completed eq true}"/>
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>

@@ -846,9 +846,11 @@ public class BillBhtController implements Serializable {
             return;
         }
         paymentMethod = null;
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
         } else {
+            // Baby admissions may have no room of their own (they stay in the
+            // mother's room), so fall back to the encounter's department. (Issue #23509)
             settleBill(getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod());
         }
     }
@@ -981,6 +983,11 @@ public class BillBhtController implements Serializable {
     }
 
     public void logicalDischage() {
+        // A room-less baby admission has nothing to discharge from. (Issue #23509)
+        if (getPatientEncounter().getCurrentPatientRoom() == null) {
+            JsfUtil.addSuccessMessage("No room assigned to discharge");
+            return;
+        }
         getPatientEncounter().getCurrentPatientRoom().setDischarged(true);
         getPatientEncounter().getCurrentPatientRoom().setDischargedBy(getSessionController().getLoggedUser());
         JsfUtil.addSuccessMessage("Logically Dischaged Success");
@@ -1016,7 +1023,9 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        // Room is optional for baby admissions (they stay in the mother's room), so
+        // this gate only fires for babies when a room was actually assigned. (Issue #23509)
+        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 return true;
             }
@@ -1051,6 +1060,16 @@ public class BillBhtController implements Serializable {
         }
 
         return false;
+    }
+
+    /**
+     * @return {@code true} when the current encounter is a baby admission
+     * (i.e. it has a parent encounter). Babies stay in the mother's room, so
+     * room selection is optional for them, mirroring AdmissionController's
+     * isBabyAdmission(). (Issue #23509)
+     */
+    private boolean isBabyAdmission() {
+        return getPatientEncounter() != null && getPatientEncounter().getParentEncounter() != null;
     }
 
     private boolean errorCheckForPatientRoomDepartment() {
@@ -1124,7 +1143,8 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || patientEncounter.getCurrentPatientRoom() != null) {
+        // Room is optional for baby admissions (they stay in the mother's room). (Issue #23509)
+        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || patientEncounter.getCurrentPatientRoom() != null) {
             if (errorCheckForPatientRoomDepartment()) {
                 return;
             }
@@ -1174,9 +1194,10 @@ public class BillBhtController implements Serializable {
         }
         addingEntry.setBillItem(bItem);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
         } else {
+            // Room-less baby admissions fall back to the encounter's department. (Issue #23509)
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));
         }
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
@@ -1336,7 +1357,12 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (errorCheckForPatientRoomDepartment()) {
+        // Room is optional for baby admissions (they stay in the mother's room), so
+        // skip the room-required check entirely for a room-less baby — same gate as
+        // addToBill()/settleBill()/errorCheck() use. (Issue #23509)
+        if (((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission())
+                || getPatientEncounter().getCurrentPatientRoom() != null)
+                && errorCheckForPatientRoomDepartment()) {
             return;
         }
 
@@ -1349,9 +1375,15 @@ public class BillBhtController implements Serializable {
                 ? bf.getBillItem().getQty() : 1.0;
         bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
+        // Room-less baby admissions fall back to the encounter's department for the
+        // matrix/margin lookups, matching addToBill()'s pattern. (Issue #23509)
+        Department feeDepartment = ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null)
+                ? getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment()
+                : getPatientEncounter().getDepartment();
 
-        getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), feeDepartment, getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
+
+        getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), feeDepartment, priceMatrix);
 
         recalculateFeeVat(bf);
 

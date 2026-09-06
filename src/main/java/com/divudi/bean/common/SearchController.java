@@ -11754,9 +11754,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-                    System.out.println(billTypesAtomics.get(1));
 
-            bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
+            bundle = createBundleForOpdProfessionalPayments(billTypesAtomics);
             bundle.calculateTotalByBills();
             bundle.setName("OPD Professional Payments Report");
             bundle.setBundleType("opdProfessionalPayments");
@@ -12499,6 +12498,68 @@ public class SearchController implements Serializable {
     @Deprecated
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
         createTableByKeyword(billType, ins, dep, null, null, null, null);
+    }
+
+    // Applies Institution/Site/Department/Category/Item/Speciality/Doctor filters for the OPD
+    // Professional Payments report. The doctor being paid is stored on Bill.toStaff (not Bill.staff) -
+    // see StaffPaymentBillController.createPaymentBill and the toStaff backfill utility below.
+    // Category/Item are matched via BillItem.referanceBillItem.item because BillItem.item is never
+    // populated on these payment bills (see StaffPaymentBillController.saveBillItemForPaymentBill),
+    // and an EXISTS subquery is used rather than a join because one payment bill can have many BillItems.
+    private ReportTemplateRowBundle createBundleForOpdProfessionalPayments(List<BillTypeAtomic> billTypesAtomics) {
+        ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
+        Map<String, Object> params = new HashMap<>();
+
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow(b) "
+                + " from Bill b "
+                + " where b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        params.put("billTypesAtomics", billTypesAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (speciality != null) {
+            jpql += " and b.toStaff.speciality=:speciality ";
+            params.put("speciality", speciality);
+        }
+
+        if (staff != null) {
+            jpql += " and b.toStaff=:staff ";
+            params.put("staff", staff);
+        }
+
+        if (category != null) {
+            jpql += " and exists (select 1 from BillItem bi where bi.bill=b and bi.referanceBillItem.item.category=:cat) ";
+            params.put("cat", category);
+        }
+
+        if (item != null) {
+            jpql += " and exists (select 1 from BillItem bi where bi.bill=b and bi.referanceBillItem.item=:item) ";
+            params.put("item", item);
+        }
+
+        jpql += " order by b.createdAt desc ";
+
+        List<ReportTemplateRow> outputRows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        outputBundle.setReportTemplateRows(outputRows);
+        return outputBundle;
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
