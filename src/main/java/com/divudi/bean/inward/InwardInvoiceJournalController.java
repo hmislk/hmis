@@ -213,6 +213,24 @@ public class InwardInvoiceJournalController implements Serializable {
      * total, NOT a deposit — a naming bug from before issue #22804 split Payment
      * and Deposit into separate BillTypeAtomic families. See
      * {@link #fetchDepositTotalsByEncounter(List)} for the genuine deposit total.
+     *
+     * Matches the full INWARD_PAYMENT family — {@code INWARD_PAYMENT},
+     * {@code INWARD_PAYMENT_CANCELLATION}, {@code INWARD_PAYMENT_REFUND} and
+     * {@code INWARD_PAYMENT_REFUND_CANCELLATION} — and deliberately does NOT
+     * filter on {@code bill.cancelled}: neither cancelling nor refunding a
+     * payment flags the original bill as cancelled. A cancellation sets
+     * {@code cancelled=true} on the original but records the reversal as its
+     * own Payment row under the CANCELLATION billTypeAtomic, while a refund
+     * leaves the original bill untouched (only {@code refunded=true}) and
+     * creates a brand-new RefundBill with its own billTypeAtomic and a
+     * negative {@code netTotal}/{@code paidValue} (see
+     * {@code InwardRefundController.saveBill()}). Filtering to a single
+     * billTypeAtomic and/or excluding cancelled bills would leave a refunded
+     * or cancelled payment at its full, un-deducted value. Including every
+     * row and summing {@code p.paidValue} with its already-correct sign (no
+     * {@code Math.abs()} here or in {@link #buildRow}) nets them out
+     * correctly. Mirrors the same 4-type pattern already used for BHT reports
+     * in {@code InwardReportControllerBht}. Issue #23539.
      * Returns Map< encounterId, totalFinalPayment >.
      */
     private Map<Long, Double> fetchFinalPaymentTotalsByEncounter(List<PatientEncounter> encounters) {
@@ -222,13 +240,18 @@ public class InwardInvoiceJournalController implements Serializable {
                 + " from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter in :encs"
                 + " group by p.bill.patientEncounter.id";
 
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_PAYMENT);
+        btas.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+        btas.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
+
         Map<String, Object> params = new HashMap<>();
-        params.put("bta",  BillTypeAtomic.INWARD_PAYMENT);
+        params.put("btas", btas);
         params.put("encs", encounters);
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -247,6 +270,24 @@ public class InwardInvoiceJournalController implements Serializable {
      * BillTypeAtomic.INWARD_DEPOSIT) grouped by encounter. Added by issue
      * #23518 alongside {@link #fetchFinalPaymentTotalsByEncounter(List)} once
      * Payment and Deposit were confirmed to be separate BillTypeAtomic families.
+     *
+     * Matches the full INWARD_DEPOSIT family — {@code INWARD_DEPOSIT},
+     * {@code INWARD_DEPOSIT_CANCELLATION}, {@code INWARD_DEPOSIT_REFUND} and
+     * {@code INWARD_DEPOSIT_REFUND_CANCELLATION} — and deliberately does NOT
+     * filter on {@code bill.cancelled}: neither cancelling nor refunding a
+     * deposit flags the original bill as cancelled. A cancellation sets
+     * {@code cancelled=true} on the original but records the reversal as its
+     * own Payment row under the CANCELLATION billTypeAtomic, while a refund
+     * leaves the original bill untouched (only {@code refunded=true}) and
+     * creates a brand-new RefundBill with its own billTypeAtomic and a
+     * negative {@code netTotal}/{@code paidValue} (see
+     * {@code InwardRefundController.saveBill()}). Filtering to a single
+     * billTypeAtomic and/or excluding cancelled bills would leave a refunded
+     * or cancelled deposit at its full, un-deducted value. Including every
+     * row and summing {@code p.paidValue} with its already-correct sign (no
+     * {@code Math.abs()} here or in {@link #buildRow}) nets them out
+     * correctly. Mirrors the same 4-type pattern already used for BHT reports
+     * in {@code InwardReportControllerBht}. Issue #23539.
      * Returns Map< encounterId, totalDeposit >.
      */
     private Map<Long, Double> fetchDepositTotalsByEncounter(List<PatientEncounter> encounters) {
@@ -256,13 +297,18 @@ public class InwardInvoiceJournalController implements Serializable {
                 + " from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter in :encs"
                 + " group by p.bill.patientEncounter.id";
 
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT);
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
         Map<String, Object> params = new HashMap<>();
-        params.put("bta",  BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("btas", btas);
         params.put("encs", encounters);
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
