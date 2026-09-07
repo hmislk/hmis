@@ -2788,6 +2788,53 @@ with no name. List them with their index first:
 Verified while testing issue #23529 (common report template API), reaching
 *Administration → Manage Lab Services → Report Templates → Report Format Templates*.
 
+### Scope the anchor lookup to its own submenu — menu labels repeat
+
+The `onclick` recipe above searches every anchor in the menubar for an exact label:
+
+```js
+Array.from(document.querySelectorAll('.ui-menubar a')).find(x => x.textContent.trim() === '…')
+```
+
+That is fine for a label that happens to be unique, but labels are **not** unique within a
+single top-level menu, and `find()` returns the first match with no warning. The Inpatient menu
+alone carries *Admissions* twice — once as the group header at the top, and again under *Search*
+as the admission-search screen. A global lookup for `'Admissions'` silently picks the header,
+which is not a navigable item, so the click does nothing and looks like the flyout problem all
+over again.
+
+Scope the search to the submenu that actually contains the item:
+
+```js
+() => { const top = document.querySelectorAll('.ui-menubar > ul > li')[3];   // Inpatient
+        const sub = top.querySelectorAll('ul')[4];                            // Services & Items
+        const a = Array.from(sub.querySelectorAll('a'))
+                    .find(x => x.textContent.trim().startsWith('Add Services & Investigations'));
+        a.click(); }
+```
+
+Find the submenu index by listing each `<ul>` with its first few children, rather than counting
+them by eye in the markup:
+
+```js
+() => Array.from(document.querySelectorAll('.ui-menubar > ul > li')[3].querySelectorAll('ul'))
+        .map((u,i) => i + ': ' + Array.from(u.children).slice(0,3)
+              .map(c => (c.innerText||'').trim().split('
+')[0]).join(' | '))
+```
+
+Two things that cost time here:
+
+- **Prefer `startsWith` over `===`.** The anchor wraps an icon `<span>` alongside the label span,
+  so its `textContent` is not always just the label.
+- **Every click toggles.** If you mix an in-page `a.click()` with a `browser_click` on the same
+  top-level anchor, the second one closes what the first opened, and the flyout reads as "won't
+  open" when it is simply shut again. Re-check `getComputedStyle(...).display` after *each* click
+  rather than assuming a click opens.
+
+Verified while testing issue #23570 (day-case admissions billed without a room), reaching
+*Inpatient → Services & Items → Add Services & Investigations*.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -2810,7 +2857,7 @@ Verified while testing issue #23529 (common report template API), reaching
 - [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
 - [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
-- [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL.
+- [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
 
 ## 96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade
