@@ -16,6 +16,7 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -241,15 +242,19 @@ public class BhtPaymentSummaryReportController implements Serializable {
         row.setAdmissionType(enc.getAdmissionType());
 
         // --- "Make a Deposit" payments (INWARD_DEPOSIT) ---
+        // No Math.abs() here — see fetchDepositPayments() javadoc: cancellations
+        // arrive as separate negative-amount rows that must net out.
         List<Payment> depositPayments = fetchDepositPayments(enc);
         for (Payment p : depositPayments) {
-            row.addDeposit(p.getPaymentMethod(), Math.abs(p.getPaidValue()));
+            row.addDeposit(p.getPaymentMethod(), p.getPaidValue());
         }
 
         // --- "Make a Payment" payments (INWARD_PAYMENT) ---
+        // No Math.abs() here — see fetchPayments() javadoc: cancellations
+        // arrive as separate negative-amount rows that must net out.
         List<Payment> payments = fetchPayments(enc);
         for (Payment p : payments) {
-            row.addPayment(p.getPaymentMethod(), Math.abs(p.getPaidValue()));
+            row.addPayment(p.getPaymentMethod(), p.getPaidValue());
         }
 
         // --- post-final-bill payments ---
@@ -298,16 +303,29 @@ public class BhtPaymentSummaryReportController implements Serializable {
      * Fetch all Payment records linked to INWARD_DEPOSIT ("Make a Deposit") bills
      * for this encounter. Deposit bills link to the encounter via
      * bill.patientEncounter directly.
+     *
+     * Matches BOTH {@code BillTypeAtomic.INWARD_DEPOSIT} and
+     * {@code BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION}, and deliberately does
+     * NOT filter on {@code bill.cancelled}: when a deposit is cancelled, HMIS
+     * sets {@code cancelled=true} on the original bill and creates a companion
+     * reversal Bill+Payment with an inverted (negative) amount under the
+     * CANCELLATION billTypeAtomic, rather than flagging the original row.
+     * Filtering to a single billTypeAtomic and excluding cancelled bills would
+     * make a cancelled deposit vanish from this report with no trace it ever
+     * happened. Including both rows and summing each with its natural sign
+     * (no {@code Math.abs()} in the caller) nets out correctly. This mirrors
+     * {@link #fetchPostFinalPayments}.
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         String jpql = "select p from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter = :enc";
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("btas", Arrays.asList(
+                BillTypeAtomic.INWARD_DEPOSIT,
+                BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION));
         params.put("enc", enc);
         return paymentFacade.findByJpql(jpql, params);
     }
@@ -317,16 +335,29 @@ public class BhtPaymentSummaryReportController implements Serializable {
      * for this encounter — payments toward the bill made any time during the
      * stay, kept separate from deposits (INWARD_DEPOSIT) and from post-final-bill
      * payments (BillType.PostFinalBillInwardPayment). Issue #23262.
+     *
+     * Matches BOTH {@code BillTypeAtomic.INWARD_PAYMENT} and
+     * {@code BillTypeAtomic.INWARD_PAYMENT_CANCELLATION}, and deliberately does
+     * NOT filter on {@code bill.cancelled}: when a payment is cancelled, HMIS
+     * sets {@code cancelled=true} on the original bill and creates a companion
+     * reversal Bill+Payment with an inverted (negative) amount under the
+     * CANCELLATION billTypeAtomic, rather than flagging the original row.
+     * Filtering to a single billTypeAtomic and excluding cancelled bills would
+     * make a cancelled payment vanish from this report with no trace it ever
+     * happened. Including both rows and summing each with its natural sign
+     * (no {@code Math.abs()} in the caller) nets out correctly. This mirrors
+     * {@link #fetchPostFinalPayments}.
      */
     private List<Payment> fetchPayments(PatientEncounter enc) {
         String jpql = "select p from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter = :enc";
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_PAYMENT);
+        params.put("btas", Arrays.asList(
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_CANCELLATION));
         params.put("enc", enc);
         return paymentFacade.findByJpql(jpql, params);
     }
