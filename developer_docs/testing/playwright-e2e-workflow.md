@@ -132,6 +132,7 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [105. A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API](#105-a-pcalendar-bound-to-date-of-birth-can-ignore-real-keystrokes--use-the-widgets-setdate-api)
 - [106. A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation](#106-a-third-level-menu-item-cant-be-clicked-directly--fire-its-own-onclick-which-is-still-the-menu-path-not-url-navigation)
 - [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
+- [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3013,6 +3014,33 @@ Found while verifying issue #23523.
 
 ---
 
+## 107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong
+
+Issue #23577 ("Cannot navigate to Dashboard for Baby Admission") did not
+reproduce on the first attempt: a baby admission's **Inpatient Dashboard**
+button opened the dashboard exactly as it should. Every local hospital DB copy
+(`coop`, `ruhunu`, `rmh`, `sl`) had *Patient admission and room assignment are
+simultaneous processes.* set to `true`, and `getBooleanValueByKey(key, true)`
+also defaults it to `true` — so the entire `else` branch that contained the bug
+was unreachable locally.
+
+The failing path only exists when that option is **off**. Flipping it (via the
+admin UI — §26, raw SQL is invisible to the running app) reproduced the report
+on the first click, every time.
+
+**Before recording "did not reproduce" on a bug report, read the controller
+method for `configOptionApplicationController.getBooleanValueByKey(...)`
+branches and check the local value of each one against its default.** A
+reporter on a differently-configured hospital is describing a real code path
+you simply are not executing; the option's default is not the only value in
+production. The same check applies in reverse when verifying a fix — exercise
+both settings of any option that gates the code you touched, since the branch
+you did not test is the one someone is running.
+
+Found while fixing issue #23577.
+
+---
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -3036,4 +3064,5 @@ Found while verifying issue #23523.
 - [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
 - [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
+- [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
