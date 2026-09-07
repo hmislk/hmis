@@ -1167,10 +1167,12 @@ public class BillBhtController implements Serializable {
         // this gate only fires for babies when a room was actually assigned. (Issue #23509)
         if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                JsfUtil.addErrorMessage("Cannot settle: this admission has no current room. Assign a room first.");
                 return true;
             }
 
             if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+                JsfUtil.addErrorMessage("Cannot settle: the patient's current room has no room facility charge configured.");
                 return true;
             }
         }
