@@ -34,6 +34,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
 import com.divudi.core.data.admin.PrivilegeInfo;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
@@ -986,13 +987,9 @@ public class BillBhtController implements Serializable {
             return;
         }
         paymentMethod = null;
-        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
-            settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
-        } else {
-            // Baby admissions may have no room of their own (they stay in the
-            // mother's room), so fall back to the encounter's department. (Issue #23509)
-            settleBill(getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod());
-        }
+        // Room-less encounters - day cases, package admissions, babies - bill
+        // against the encounter's own department instead of the room's.
+        settleBill(feeDepartment(getPatientEncounter()), getPatientEncounter().getPaymentMethod());
     }
 
     public void settleBillSurgery() {
@@ -1163,9 +1160,11 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        // Room is optional for baby admissions (they stay in the mother's room), so
-        // this gate only fires for babies when a room was actually assigned. (Issue #23509)
-        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
+        // A room is only required when this encounter is expected to have one, or
+        // when one has actually been assigned. Day cases, package admissions and
+        // baby admissions have no room of their own and still bill services
+        // normally, against the encounter's own department. (Issues #23509, #23570)
+        if (roomRequiredForBilling(getPatientEncounter())) {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 JsfUtil.addErrorMessage("Cannot settle: this admission has no current room. Assign a room first.");
                 return true;
@@ -1205,13 +1204,91 @@ public class BillBhtController implements Serializable {
     }
 
     /**
-     * @return {@code true} when the current encounter is a baby admission
-     * (i.e. it has a parent encounter). Babies stay in the mother's room, so
-     * room selection is optional for them, mirroring AdmissionController's
-     * isBabyAdmission(). (Issue #23509)
+     * @return {@code true} when the encounter is a baby admission (i.e. it has a
+     * parent encounter). Babies stay in the mother's room, so room selection is
+     * optional for them, mirroring AdmissionController's isBabyAdmission().
+     * (Issue #23509)
      */
-    private boolean isBabyAdmission() {
-        return getPatientEncounter() != null && getPatientEncounter().getParentEncounter() != null;
+    private boolean isBabyAdmission(PatientEncounter encounter) {
+        return encounter != null && encounter.getParentEncounter() != null;
+    }
+
+    /**
+     * @return {@code true} when the encounter is a day case - the patient is
+     * admitted and discharged within the same visit and never occupies a bed of
+     * their own. Same test RoomChangeController uses to exempt day cases from
+     * the room-chain rules.
+     */
+    private boolean isDayCase(PatientEncounter encounter) {
+        return encounter != null
+                && encounter.getAdmissionType() != null
+                && encounter.getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.DayCase;
+    }
+
+    /**
+     * Whether this encounter is <b>expected</b> to occupy a room of its own.
+     *
+     * <p>This is the question the billing screen actually needs answered, and it
+     * is deliberately separate from "is the patient in a room right now". A room
+     * is expected for an ordinary inward stay whose admission type takes room
+     * charges. It is <em>not</em> expected when:</p>
+     * <ul>
+     * <li>the admission type does not take room charges at all (e.g. package
+     * admissions where the stay is priced as a whole);</li>
+     * <li>the encounter is a <b>day case</b> - there is no bed to assign, but
+     * there are still services to bill;</li>
+     * <li>the encounter is a <b>baby admission</b> - the baby is billed in its
+     * own right but stays in the mother's room. (Issue #23509)</li>
+     * </ul>
+     *
+     * <p>An encounter that is not expected to have a room still bills services
+     * normally; it just prices them against the encounter's own department
+     * instead of the room's - see {@link #feeDepartment(PatientEncounter)}.</p>
+     */
+    private boolean roomExpected(PatientEncounter encounter) {
+        if (encounter == null || encounter.getAdmissionType() == null) {
+            return false;
+        }
+        return encounter.getAdmissionType().isRoomChargesAllowed()
+                && !isDayCase(encounter)
+                && !isBabyAdmission(encounter);
+    }
+
+    /**
+     * Whether a room has been assigned to this encounter at all. A room that has
+     * been assigned must be fully configured before anything is billed against
+     * it, whatever the admission type - somebody put the patient there on
+     * purpose, so a half-configured room is an error rather than something to
+     * fall back from silently.
+     */
+    private boolean roomAssigned(PatientEncounter encounter) {
+        return encounter != null && encounter.getCurrentPatientRoom() != null;
+    }
+
+    /**
+     * @return {@code true} when this encounter needs a fully configured room
+     * before anything can be billed on it - i.e. a room is expected, or one has
+     * already been assigned.
+     */
+    private boolean roomRequiredForBilling(PatientEncounter encounter) {
+        return roomExpected(encounter) || roomAssigned(encounter);
+    }
+
+    /**
+     * The department that fees and the inward margin matrix are looked up
+     * against: the current room's facility-charge department when the patient is
+     * in a room, and the encounter's own department when there is no room - day
+     * cases, package admissions and babies all take this second path.
+     */
+    private Department feeDepartment(PatientEncounter encounter) {
+        if (encounter == null) {
+            return null;
+        }
+        if (roomAssigned(encounter)
+                && encounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+            return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+        }
+        return encounter.getDepartment();
     }
 
     private boolean errorCheckForPatientRoomDepartment() {
@@ -1285,8 +1362,7 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        // Room is optional for baby admissions (they stay in the mother's room). (Issue #23509)
-        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || patientEncounter.getCurrentPatientRoom() != null) {
+        if (roomRequiredForBilling(patientEncounter)) {
             if (errorCheckForPatientRoomDepartment()) {
                 return;
             }
@@ -1336,12 +1412,7 @@ public class BillBhtController implements Serializable {
         }
         addingEntry.setBillItem(bItem);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
-            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
-        } else {
-            // Room-less baby admissions fall back to the encounter's department. (Issue #23509)
-            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));
-        }
+        addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), feeDepartment(getPatientEncounter()), getPatientEncounter().getPaymentMethod()));
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
         bItem.setMarginValue(getBillBean().calBillItemMargin(addingEntry));
 
@@ -1499,12 +1570,7 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        // Room is optional for baby admissions (they stay in the mother's room), so
-        // skip the room-required check entirely for a room-less baby — same gate as
-        // addToBill()/settleBill()/errorCheck() use. (Issue #23509)
-        if (((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission())
-                || getPatientEncounter().getCurrentPatientRoom() != null)
-                && errorCheckForPatientRoomDepartment()) {
+        if (roomRequiredForBilling(getPatientEncounter()) && errorCheckForPatientRoomDepartment()) {
             return;
         }
 
@@ -1517,11 +1583,7 @@ public class BillBhtController implements Serializable {
                 ? bf.getBillItem().getQty() : 1.0;
         bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
 
-        // Room-less baby admissions fall back to the encounter's department for the
-        // matrix/margin lookups, matching addToBill()'s pattern. (Issue #23509)
-        Department feeDepartment = ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null)
-                ? getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment()
-                : getPatientEncounter().getDepartment();
+        Department feeDepartment = feeDepartment(getPatientEncounter());
 
         PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), feeDepartment, getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
 
