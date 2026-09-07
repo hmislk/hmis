@@ -981,6 +981,14 @@ public class BillBhtController implements Serializable {
 
     }
 
+    /**
+     * Settles the bill currently being built for the selected admission.
+     *
+     * <p>Validates through {@link #errorCheck()} first, then settles against
+     * {@link #feeDepartment(PatientEncounter)} - the current room's
+     * facility-charge department when the patient is in a room, and the
+     * encounter's own department when there is none.</p>
+     */
     public void settleBill() {
         bills = null;
         if (errorCheck()) {
@@ -1130,6 +1138,17 @@ public class BillBhtController implements Serializable {
         JsfUtil.addSuccessMessage("Logically Dischaged Success");
     }
 
+    /**
+     * Validation gate for settling: the bill must have entries, the encounter
+     * must carry the patient details and admission type the fee lookups need,
+     * staff must be named on any staff fee, a room must be present when
+     * {@link #roomRequiredForBilling(PatientEncounter)} says one is required,
+     * and the patient must not already be discharged.
+     *
+     * @return {@code true} when settling must not proceed. Every path that
+     * returns {@code true} also adds a message saying why, so the button is
+     * never a silent no-op.
+     */
     private boolean errorCheck() {
         if (getLstBillEntries().isEmpty()) {
 
@@ -1197,6 +1216,10 @@ public class BillBhtController implements Serializable {
         return false;
     }
 
+    /**
+     * @return {@code true} when some staff fee on the bill carries a non-zero
+     * value but no staff member, which would leave the fee unattributable.
+     */
     public boolean checkStaff() {
         for (BillFee bf : lstBillFees) {
             if (bf.getFee() != null && bf.getFee().getFeeType() != null
@@ -1326,6 +1349,14 @@ public class BillBhtController implements Serializable {
         return false;
     }
 
+    /**
+     * Validation gate for adding one item to the bill: an admission must be
+     * selected and carry an admission type, an item must be picked, and that
+     * item must have the department and category the fee lookups need.
+     *
+     * @return {@code true} when the item must not be added, having added a
+     * message saying why.
+     */
     private boolean errorCheckForAdding() {
         if (getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select BHT");
@@ -1377,6 +1408,15 @@ public class BillBhtController implements Serializable {
         return false;
     }
 
+    /**
+     * Adds the currently selected item to the bill being built.
+     *
+     * <p>Rejects a duplicate item, and requires a fully configured room only
+     * when {@link #roomRequiredForBilling(PatientEncounter)} says so. Fees are
+     * priced against {@link #feeDepartment(PatientEncounter)}, so a day case,
+     * package admission or baby with no room of its own prices against the
+     * encounter's own department.</p>
+     */
     public void addToBill() {
         if (errorCheckForAdding()) {
             return;
@@ -1585,6 +1625,14 @@ public class BillBhtController implements Serializable {
         setVatPlusNetTotal(getNetTotal() + getVat());
     }
 
+    /**
+     * Recalculates one fee after the user edits its gross value: derives the
+     * per-unit rate from the edited total, re-runs the inward margin matrix
+     * against {@link #feeDepartment(PatientEncounter)} and the current room
+     * category, then re-applies VAT and totals.
+     *
+     * @param bf the fee whose gross value was edited
+     */
     public void feeChanged(BillFee bf) {
         if (bf.getFeeGrossValue() == null) {
             return;
