@@ -662,33 +662,46 @@ public class PatientTransferController implements Serializable {
     }
 
     public void sendToTheatre() {
-        if (current == null) {
+        // This bean is @SessionScoped, so two browser tabs sharing one
+        // session can have their requests processed concurrently against
+        // the SAME bean instance. Snapshotting these fields into locals up
+        // front - and using only the locals for the rest of this method -
+        // closes that window: a concurrent request mutating current/
+        // selectedSurgeryBill/etc. after this point can no longer cause the
+        // validated admission/bill/room/notes to diverge from what actually
+        // gets persisted below.
+        Admission admission = current;
+        Bill surgeryBill = selectedSurgeryBill;
+        RoomFacilityCharge targetRoom = targetRoomFacilityCharge;
+        String transferNotes = notes;
+
+        if (admission == null) {
             JsfUtil.addErrorMessage("No patient selected.");
             return;
         }
-        if (targetRoomFacilityCharge == null) {
+        if (targetRoom == null) {
             JsfUtil.addErrorMessage("Please select a theatre room.");
             return;
         }
-        // This bean is @SessionScoped, so a stale postback from a different
-        // browser tab could carry a selectedSurgeryBill left over from a
-        // DIFFERENT admission's send-to-theatre page (current gets reset per
-        // navigation, but two tabs sharing the same session can race). Since
-        // acceptInTheatre() uses selectedSurgeryBill.getProcedure() to
-        // attribute the theatre room (and its charges), a mismatched bill
-        // here would misattribute a totally different patient's surgery -
-        // reject and clear rather than silently trusting client state.
-        if (selectedSurgeryBill != null
-                && (selectedSurgeryBill.getPatientEncounter() == null
-                || selectedSurgeryBill.getPatientEncounter().getId() == null
-                || !selectedSurgeryBill.getPatientEncounter().getId().equals(current.getId()))) {
+        // A stale postback from a different browser tab could carry a
+        // surgeryBill left over from a DIFFERENT admission's send-to-theatre
+        // page (current gets reset per navigation, but two tabs sharing the
+        // same session can race). Since acceptInTheatre() uses
+        // surgeryBill.getProcedure() to attribute the theatre room (and its
+        // charges), a mismatched bill here would misattribute a totally
+        // different patient's surgery - reject and clear rather than
+        // silently trusting client state.
+        if (surgeryBill != null
+                && (surgeryBill.getPatientEncounter() == null
+                || surgeryBill.getPatientEncounter().getId() == null
+                || !surgeryBill.getPatientEncounter().getId().equals(admission.getId()))) {
             JsfUtil.addErrorMessage("Selected surgery does not belong to this admission. Please re-select.");
             selectedSurgeryBill = null;
             return;
         }
-        PatientTransferRequest existing = findActiveSendToTheatreRequest(current, selectedSurgeryBill);
+        PatientTransferRequest existing = findActiveSendToTheatreRequest(admission, surgeryBill);
         if (existing != null) {
-            JsfUtil.addErrorMessage(selectedSurgeryBill != null
+            JsfUtil.addErrorMessage(surgeryBill != null
                     ? "This surgery already has an active theatre transfer in progress."
                     : "This patient already has an active theatre transfer in progress.");
             return;
@@ -701,21 +714,21 @@ public class PatientTransferController implements Serializable {
         // that pending return afterwards could resolve to the wrong (new) row
         // instead of the one it actually belongs to. Block re-sending until
         // the pending return is accepted.
-        if (hasPendingReturnRequest(current, selectedSurgeryBill)) {
-            JsfUtil.addErrorMessage(selectedSurgeryBill != null
+        if (hasPendingReturnRequest(admission, surgeryBill)) {
+            JsfUtil.addErrorMessage(surgeryBill != null
                     ? "This surgery has a return-to-ward request awaiting acceptance. Please accept it before sending to theatre again."
                     : "This patient has a return-to-ward request awaiting acceptance. Please accept it before sending to theatre again.");
             return;
         }
         PatientTransferRequest req = new PatientTransferRequest();
-        req.setAdmission(current);
-        req.setFromPatientRoom(current.getCurrentPatientRoom());
-        req.setToRoomFacilityCharge(targetRoomFacilityCharge);
+        req.setAdmission(admission);
+        req.setFromPatientRoom(admission.getCurrentPatientRoom());
+        req.setToRoomFacilityCharge(targetRoom);
         req.setTheatreTransferType(TheatreTransferType.SEND_TO_THEATRE);
         req.setTheatreOccupancyStatus(TheatreOccupancyStatus.SENT_TO_THEATRE);
-        req.setSurgeryBill(selectedSurgeryBill);
+        req.setSurgeryBill(surgeryBill);
         req.setStatus(TransferRequestStatus.PENDING);
-        req.setNotes(notes);
+        req.setNotes(transferNotes);
         req.setInitiatedAt(new Date());
         req.setInitiatedBy(sessionController.getLoggedUser());
         req.setCreatedAt(new Date());
