@@ -2561,6 +2561,32 @@ which lists every `SurgeryBill` for the current `patientEncounter` and has a
 **Surgery Dashboard** button per row that loads it into
 `surgeryBillController.surgeryBill` correctly.
 
+## 96. `PrimeFaces.current().executeScript(...)` silently no-ops on an `ajax="false"` button — use `p:dialog visible="#{bean.flag}"` instead
+
+Seen fixing issue #23514. `inward_admission.xhtml`'s "Admit" button is
+`ajax="false"` (a full postback, deliberately, per issue #21175's foreigner-
+checkbox fix). The pre-existing "patient already admitted" warning dialog was
+shown via `PrimeFaces.current().executeScript("PF('dlg').show();")` from the
+backing bean — that call only queues JS into an *ajax* partial response, so on
+this button it silently did nothing: no dialog, no error, no admission
+created, no evidence in `server.log` that anything was rejected. It looked
+exactly like the button doing nothing.
+
+The fix: bind the dialog's own `visible` attribute to a session-scoped
+boolean the bean sets before returning (`visible="#{bean.showWarning}"`).
+`p:dialog visible="true"` renders its own show-on-load script regardless of
+whether the surrounding request was ajax or a full page render, so it works
+for both `ajax="false"` and `ajax="true"` buttons — but only if the triggering
+`ajax="true"` request's own `update` actually includes the dialog (or the
+whole form); an ajax caller that updates some narrower region will still
+leave the dialog's old, unrendered markup in the DOM with the stale `visible`
+value baked in. Remember to also clear the flag via a real server round-trip
+on the dialog's "Cancel" button *and* on its header close ("x") icon (`p:dialog
+closable="true"` gives that its own client-side close path via `p:ajax
+event="close"`, separate from any button) — a client-only `PF('dlg').hide()`
+leaves the session-scoped flag `true`, and it will reappear on the next
+unrelated full postback of that form.
+
 ## Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including

@@ -586,13 +586,24 @@
             </h:panelGroup>
 
             <!-- Active Admission Warning Dialog -->
+            <!-- The "Admit" button that opens this is a non-ajax (ajax="false")
+                 full postback (Issue #21175), so visibility is driven by the
+                 server-side "visible" attribute rather than a JS show() queued
+                 into an ajax response — the latter never reaches a full page
+                 render. (Issue #23514) -->
             <p:dialog id="dlgActiveAdmission"
                       widgetVar="dlgActiveAdmission"
                       header="&#9888; Patient Already Admitted Warning"
                       modal="true"
                       resizable="false"
                       closable="true"
+                      visible="#{admissionController.showActiveAdmissionWarning}"
                       style="width:500px">
+                <!-- closable="true" gives the header "x" its own close path, which
+                     bypasses the "Cancel" button's action; without this listener the
+                     server-side flag stays true and the dialog reappears on the next
+                     full postback. (CodeRabbit review on PR #23565) -->
+                <p:ajax event="close" listener="#{admissionController.cancelActiveAdmissionWarning}"/>
                 <div style="padding:12px">
                     <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
                         &#9888; WARNING: This patient already has an active admission.
@@ -609,7 +620,10 @@
                             value="Cancel — Do Not Admit"
                             icon="fa fa-times"
                             class="ui-button-secondary"
-                            onclick="PF('dlgActiveAdmission').hide(); return false;"/>
+                            action="#{admissionController.cancelActiveAdmissionWarning}"
+                            process="@this"
+                            update="dlgActiveAdmission"
+                            onclick="PF('dlgActiveAdmission').hide();"/>
                         <p:commandButton
                             value="Yes, Proceed with Admission"
                             icon="fa fa-exclamation-triangle"
