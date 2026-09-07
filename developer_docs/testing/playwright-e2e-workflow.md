@@ -2819,3 +2819,22 @@ EclipseLink cache has bitten targeted-refresh attempts before (see the
 "Native settle poisons the Bill entity" gotcha).
 
 Found while verifying issue #23523.
+
+## 97. Not every local DB snapshot has inward/ward data — check before planning an IP test, and Mac dev machines use different local build/deploy paths than this doc's PowerShell examples
+
+Two environment gotchas hit together while verifying issue #23210 (Pharmacy Sale (OP/IP) report not netting porter-based ward returns):
+
+1. **A local Payara can have multiple JDBC pools pointing at different local MySQL databases with very different data shape.** One dev machine had `jdbc/ruhunuProd` (a locally-restored copy of a production dump) with **zero** `patientencounter` rows at all — no inward/ward data whatsoever, even though `department`/`item`/pharmacy tables were populated. A sibling pool, `jdbc/ruhunu`, had 37 active encounters and real `ISSUE_MEDICINE_ON_REQUEST_INWARD` bills. Before planning any IP/ward test, run a quick `SELECT COUNT(*) FROM patientencounter` (and a count of the specific `BILLTYPEATOMIC` values the feature under test uses) against whichever local DB `persistence.xml` currently points at — don't assume "a local DB with hospital data" means "a local DB with the *kind* of data this feature needs." Switching `persistence.xml`'s `<jta-data-source>` to the pool with the right data (and matching `asadmin redeploy`) is a normal local-testing-environment choice, not a product decision.
+
+2. **This document's §0a build/deploy commands are PowerShell/Windows examples** (`$env:JAVA_HOME`, `mvn.cmd`, `asadmin.bat`, `D:\...` paths) — on a Mac dev machine the same steps are, e.g.:
+   ```bash
+   export JAVA_HOME=/Users/<user>/.jenv/versions/11.0.26   # or wherever JDK 11 lives
+   /opt/homebrew/bin/mvn clean package -DskipTests
+   /Users/<user>/Payara_Server/bin/asadmin start-domain domain1   # if not already running
+   /Users/<user>/Payara_Server/bin/asadmin redeploy --name rh target/rh-3.0.0.war
+   ```
+   Same JDK-11 requirement and `--name`/`list-applications` caveats from §0a apply unchanged — only the paths/shell syntax differ.
+
+3. **Playwright MCP is not guaranteed to be connected in every session.** When it isn't (`ToolSearch` for `mcp__playwright` returns nothing), the fallback used here — per §15's existing "write the local database directly" allowance — was to INSERT a fully self-contained, realistic bill/billitem/pharmaceuticalbillitem triplet (mirroring the exact field values the real controllers persist, including sign conventions) for a fresh, isolated test case, then run the *exact* JPQL-equivalent SQL the fix touches, before and after, to prove the aggregate nets correctly. This is a legitimate substitute for a pure data/query-layer fix (no UI logic involved) when browser automation genuinely isn't available — but it is not a substitute for UI E2E when the bug/fix involves page behavior, not just query results. Reusing an *existing* historical bill for this kind of synthetic test is riskier than it looks: one such bill in this pass already had an unrelated pre-existing return recorded against it (from a completely different code path), which silently muddied the before/after comparison until a fresh, self-contained triplet was used instead.
+
+Found while verifying issue #23210.

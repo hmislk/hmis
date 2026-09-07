@@ -5119,6 +5119,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            // Porter-based ward return (ward_pharmacy_return_to_pharmacy.xhtml, #21470/#21466)
+            // is a separate return path from ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN and was
+            // missing here, so those returns never netted against the original issue - the
+            // issue kept being counted in full forever (issue #23210).
+            billtypes.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
         } else {
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
@@ -5136,6 +5141,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            billtypes.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
         }
 
         StringBuilder jpql = new StringBuilder();
@@ -5212,6 +5218,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            // Porter-based ward return (ward_pharmacy_return_to_pharmacy.xhtml) - qty is
+            // stored positive at creation (WardPharmacyReturnToPharmacyController.doSettle()),
+            // so it needs forcing negative here like the other return types (issue #23210).
+            BillTypeAtomic.RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
