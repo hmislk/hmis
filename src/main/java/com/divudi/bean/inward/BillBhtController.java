@@ -61,6 +61,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
@@ -157,6 +158,8 @@ public class BillBhtController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private BillComponentFacade billComponentFacade;
     @EJB
@@ -1160,7 +1163,19 @@ public class BillBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please select Bht Number");
             return true;
         }
-        
+
+        // Re-fetch the encounter fresh from the DB instead of trusting this @SessionScoped
+        // bean's cached field. Another tab/session can change the encounter's current room
+        // (e.g. Patient Room Details -> Remove Room) via a different persistence context
+        // after this field was loaded; without this re-fetch, Settle would validate and act
+        // against stale room/discharge state. (Issue #23568)
+        PatientEncounter freshPatientEncounter = patientEncounterFacade.findWithoutCache(patientEncounter.getId());
+        if (freshPatientEncounter == null) {
+            JsfUtil.addErrorMessage("Please select Bht Number");
+            return true;
+        }
+        patientEncounter = freshPatientEncounter;
+
         Patient billPatient = patientFacade.findWithoutCache(patientEncounter.getPatient().getId());
         
         if(billPatient.getPerson().getDob() == null){

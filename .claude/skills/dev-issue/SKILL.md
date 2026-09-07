@@ -15,11 +15,24 @@ argument-hint: "<issue-number>"
 
 Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
-non-repro case and any state-changing reproduction step, 3, 4's environment
-choice only, 14) are the points where you pause for the user. Everything
-else in 2a and 4 (which department/record to use against local test data)
-is a local-testing-environment choice, not a product decision — decide it
-yourself and say what you picked, rather than pausing.
+non-repro case and any state-changing step taken there to prove an
+*unconfirmed* bug, 3, 4's environment choice only, 14) are the points where
+you pause for the user. Everything else in 2a and 4 (which department/record
+to use against local test data) is a local-testing-environment choice, not a
+product decision — decide it yourself and say what you picked, rather than
+pausing.
+
+That 2a gate is narrow and does not extend to step 7. 2a's risk is spending
+effort chasing a bug that might not be real; once step 3 has been through
+Plan Mode and the user has approved a fix, that risk is gone — exercising
+the approved fix in step 7, including any state-changing UI action needed to
+set up the scenario (e.g. removing a room, changing a status, editing a
+record) against local test data, is the same no-need-to-ask
+local-testing-environment judgment call as picking which department/record
+to use. Decide it yourself, do it through the real app UI (never raw SQL for
+setup — see step 7), and report exactly what you did as evidence. Only ask
+first if the action would reach outside local test data (a remote
+environment, or anything step 4's environment-choice gate already covers).
 
 This authorization also covers `superpowers:writing-plans`' Execution
 Handoff question, if that chain gets invoked anywhere in this flow (e.g.
@@ -149,6 +162,15 @@ errors before moving on.
 
 Run the `playwright-e2e` skill workflow:
 - Login, select the department from step 4
+- If verifying the fix requires putting a record into a specific state first
+  (e.g. a race-condition fix needs a room removed, a status changed, a second
+  record created), do that live through the real app UI yourself — this is
+  the same local-testing-environment judgment call as step 4's
+  department/record choice, not a fresh discussion gate. (Unlike step 2a,
+  which gates state-changing actions because it's proving an *unconfirmed*
+  bug, step 7 is exercising a fix the user already approved in step 3.)
+  Report exactly what you did (menu path, record IDs, before/after DB state)
+  as part of the evidence.
 - **Navigate to the page through the menus, never by URL** — HMIS page state is
   set by the `@SessionScoped` navigation method, so a URL-loaded page renders
   against uninitialised state and produces false findings (`playwright-e2e` §2).
