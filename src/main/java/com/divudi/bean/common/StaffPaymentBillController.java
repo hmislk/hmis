@@ -790,17 +790,19 @@ public class StaffPaymentBillController implements Serializable {
         }
         if (paymentMethod == PaymentMethod.Cash) {
             Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
-            if (userDrawer != null) {
-                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
-                double paymentAmount = getTotalPayingWithoutWht();
+            if (userDrawer == null) {
+                JsfUtil.addErrorMessage("Your drawer could not be found. Please contact your administrator.");
+                return;
+            }
+            double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
+            double paymentAmount = getTotalPayingWithoutWht();
 
-                boolean allowNegativeDrawer = configOptionApplicationController.getBooleanValueByKey(
-                        "OPD Professional Payments - Allow Negative Drawer Balance", false);
-                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true) && !allowNegativeDrawer) {
-                    if (drawerBalance < paymentAmount) {
-                        JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                        return;
-                    }
+            boolean allowNegativeDrawer = configOptionApplicationController.getBooleanValueByKey(
+                    "OPD Professional Payments - Allow Negative Drawer Balance", false);
+            if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true) && !allowNegativeDrawer) {
+                if (drawerBalance < paymentAmount) {
+                    JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                    return;
                 }
             }
         }
