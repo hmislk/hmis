@@ -1509,8 +1509,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
             return bhtSummeryController.navigateToInpatientProfile();
         } else {
-            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()
-                    || !current.getAdmissionType().isRoomChargesAllowed()) {
+            // A legacy/converted encounter can still have no admission type. Treat that
+            // as "room charges unknown" and send it to the dashboard rather than NPEing
+            // here, which left the button doing nothing at all. (#23577)
+            boolean roomChargesAllowed = current.getAdmissionType() != null
+                    && current.getAdmissionType().isRoomChargesAllowed();
+            // A baby admission never gets a room of its own - the baby stays in the
+            // mother's room (#9900) - so isRoomAdmitted() is false forever and the
+            // room-assignment diversion below would trap it permanently, leaving the
+            // baby's dashboard unreachable from every entry point. (#23577)
+            if (isBabyAdmission() || current.isRoomAdmitted() || current.isDischarged()
+                    || current.isPaymentFinalized() || !roomChargesAllowed) {
                 current.getPatient().setEditingMode(false);
                 bhtSummeryController.setPatientEncounter(current);
                 bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
