@@ -2576,10 +2576,16 @@ The fix: bind the dialog's own `visible` attribute to a session-scoped
 boolean the bean sets before returning (`visible="#{bean.showWarning}"`).
 `p:dialog visible="true"` renders its own show-on-load script regardless of
 whether the surrounding request was ajax or a full page render, so it works
-for both `ajax="false"` and `ajax="true"` buttons. Remember to also clear the
-flag via a real server round-trip on the dialog's "Cancel" button — a
-client-only `PF('dlg').hide()` leaves the session-scoped flag `true`, and it
-will reappear on the next unrelated full postback of that form.
+for both `ajax="false"` and `ajax="true"` buttons — but only if the triggering
+`ajax="true"` request's own `update` actually includes the dialog (or the
+whole form); an ajax caller that updates some narrower region will still
+leave the dialog's old, unrendered markup in the DOM with the stale `visible`
+value baked in. Remember to also clear the flag via a real server round-trip
+on the dialog's "Cancel" button *and* on its header close ("x") icon (`p:dialog
+closable="true"` gives that its own client-side close path via `p:ajax
+event="close"`, separate from any button) — a client-only `PF('dlg').hide()`
+leaves the session-scoped flag `true`, and it will reappear on the next
+unrelated full postback of that form.
 
 ## Some PrimeFaces buttons need a jQuery-triggered click
 

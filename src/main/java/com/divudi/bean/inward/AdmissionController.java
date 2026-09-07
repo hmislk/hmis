@@ -2950,6 +2950,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveSelected() {
+        // Reached either past the duplicate-admission gate (proceedWithAdmissionCheck)
+        // or via the warning dialog's own "Yes, Proceed" override — either way that
+        // check is settled for this attempt, so clear it now rather than only on
+        // success. Otherwise an unrelated errorCheck() failure below (e.g. missing
+        // Payment Method) leaves the flag true and the dialog reappears on the
+        // update="@form" response, on top of the real validation error. (Issue #23514,
+        // CodeRabbit review on PR #23565)
+        showActiveAdmissionWarning = false;
         if (admittingProcessStarted) {
             JsfUtil.addErrorMessage("Admittin process already started.");
             return;
@@ -3171,7 +3179,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         admittingProcessStarted = false;
         currentReservation = null;
         patientForiegner = false;
-        showActiveAdmissionWarning = false;
         printPreview = true;
     }
 
