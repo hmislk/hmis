@@ -15,6 +15,7 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dataStructure.DepartmentBillItems;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -23,7 +24,6 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
@@ -116,6 +116,8 @@ public class SurgeryBillController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     AuditEventController auditEventController;
+    @Inject
+    com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     @EJB
     private AuditService auditService;
 
@@ -244,15 +246,14 @@ public class SurgeryBillController implements Serializable {
 
     public List<BillFee> getSurgeryProfessionalFees() {
         if (surgeryProfessionalFees == null && getSurgeryBill().getId() != null) {
+            HashMap<String, Object> hm = new HashMap<>();
             String jpql = "SELECT bt FROM BillFee bt WHERE bt.retired=false "
-                    + " and type(bt.staff)=:class "
+                    + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                     + " and bt.fee.feeType=:ftp "
                     + " and bt.bill.billType=:btp "
                     + " and bt.bill.cancelled=false "
                     + " and bt.bill.forwardReferenceBill=:surg "
                     + " order by bt.feeAdjusted desc";
-            HashMap<String, Object> hm = new HashMap<>();
-            hm.put("class", Consultant.class);
             hm.put("ftp", FeeType.Staff);
             hm.put("btp", BillType.InwardProfessional);
             hm.put("surg", getSurgeryBill());
@@ -262,15 +263,18 @@ public class SurgeryBillController implements Serializable {
     }
 
     public List<BillFee> getSurgeryAssistingFees() {
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            // Merged hospital: getSurgeryProfessionalFees() already returns these.
+            return new ArrayList<>();
+        }
         if (surgeryAssistingFees == null && getSurgeryBill().getId() != null) {
+            HashMap<String, Object> hm = new HashMap<>();
             String jpql = "SELECT bt FROM BillFee bt WHERE bt.retired=false "
-                    + " and type(bt.staff)!=:class "
+                    + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.DoctorAndNurses, hm)
                     + " and bt.fee.feeType=:ftp "
                     + " and bt.bill.billType=:btp "
                     + " and bt.bill.cancelled=false "
                     + " and bt.bill.forwardReferenceBill=:surg";
-            HashMap<String, Object> hm = new HashMap<>();
-            hm.put("class", Consultant.class);
             hm.put("ftp", FeeType.Staff);
             hm.put("btp", BillType.InwardProfessional);
             hm.put("surg", getSurgeryBill());

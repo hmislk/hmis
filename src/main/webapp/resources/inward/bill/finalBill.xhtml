@@ -797,29 +797,29 @@
 
                                     <tr>
                                         <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
-                                            <h:outputLabel value="Paid By Patient "
+                                            <h:outputLabel value="Paid By Patient"
                                                            rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }"/>
                                         </td>
                                         <td>
                                             <table>
                                                 <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
-                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 )
-                                                                              and
-                                                                              ((b.cancelled eq false
-                                                                              and b.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                                              or
-                                                                              (b.cancelled eq false
-                                                                              and b.refundedBill eq null
-                                                                              and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                    
+                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 ) and ((b.cancelled eq false and b.billClass eq 'class com.divudi.core.entity.BilledBill')or(b.cancelled eq false and b.refundedBill eq null and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                        
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel value="#{b.deptId}"/>
+                                                            
                                                             <h:outputLabel value="#{b.paymentMethod}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Method on Payments on Final Bill On Final Bill Print',false)}"/>
-                                                            <h:outputLabel value="#{b.netTotal}"
-                                                                           style="text-align: right;">
+                                                            
+                                                            <h:outputLabel value="#{b.netTotal}" style="text-align: right;">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputLabel>
-                                                            <h:outputLabel value="(#{b.comments})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comments of Payments on Final Bill On Final Bill Print',false) and b.comments ne null and b.comments ne ''}"/>
-
+                                                            
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Type on Final Bill On Final Bill Print',false)}">
+                                                                <h:outputLabel value="(#{b.billTypeAtomic.label})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Deposit label on Final Bill Print',false) and b.billTypeAtomic eq 'INWARD_DEPOSIT'}"/>
+                                                                <h:outputLabel value="(#{b.billTypeAtomic.label})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Payment label on Final Bill Print',false) and b.billTypeAtomic eq 'INWARD_PAYMENT'}"/>
+                                                            </h:panelGroup>
+                                                            
                                                         </div>
 
                                                     </h:panelGroup>

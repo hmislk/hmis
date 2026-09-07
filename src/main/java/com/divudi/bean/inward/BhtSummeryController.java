@@ -175,7 +175,6 @@ public class BhtSummeryController implements Serializable {
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
-    private List<BillFee> allDoctorCharges;
     // Holds the doctor whose fee breakdown is shown in the "how the total is calculated" popup.
     private DoctorFeeGroup selectedDoctorFeeGroup;
     List<BillItem> pharmacyItems;
@@ -3421,23 +3420,6 @@ public class BhtSummeryController implements Serializable {
         childPatientEncouters = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         createTables();
 
-        if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
-            // Both lists already have feeAdjusted = feeValue (set by setProfesionallFeeAdjusted /
-            // setAssistingFeeAdjusted in createTables), so the merged list shows matching adjusted values.
-            allDoctorCharges = new ArrayList<>();
-            allDoctorCharges.addAll(profesionallFee);
-            allDoctorCharges.addAll(doctorAndNurseFee);
-
-            profesionallFee.clear();
-            doctorAndNurseFee.clear();
-
-            profesionallFee.addAll(allDoctorCharges);
-
-            allDoctorCharges.clear();
-
-            createChargeItemTotals();
-        }
-
         calculateDiscount();
         updateTotal();
         settleOriginalBill();
@@ -4081,7 +4063,6 @@ public class BhtSummeryController implements Serializable {
         paid = 0.0;
         profesionallFee = null;
         doctorAndNurseFee = null;
-        allDoctorCharges = null;
         patientItems = null;
         paymentBill = null;
         postFinalPaymentBill = null;
@@ -5152,30 +5133,18 @@ public class BhtSummeryController implements Serializable {
             docVat += bf.getFeeVat();
         }
 
-        boolean mergedProAndDoc = configOptionApplicationController.getBooleanValueByKey(
-                "Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false);
-
+        // No merge special case: for a merged hospital getProfesionallFee() already
+        // holds every fee and getDoctorAndNurseFee() is empty, and the assisting
+        // ChargeItemTotal does not exist at all (issue #23543).
         for (ChargeItemTotal cit : chargeItemTotals) {
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                if (mergedProAndDoc) {
-                    cit.setGross(proGross + docGross);
-                    cit.setMargin(proMargin + docMargin);
-                    cit.setVat(proVat + docVat);
-                } else {
-                    cit.setGross(proGross);
-                    cit.setMargin(proMargin);
-                    cit.setVat(proVat);
-                }
+                cit.setGross(proGross);
+                cit.setMargin(proMargin);
+                cit.setVat(proVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
-                if (mergedProAndDoc) {
-                    cit.setGross(0.0);
-                    cit.setMargin(0.0);
-                    cit.setVat(0.0);
-                } else {
-                    cit.setGross(docGross);
-                    cit.setMargin(docMargin);
-                    cit.setVat(docVat);
-                }
+                cit.setGross(docGross);
+                cit.setMargin(docMargin);
+                cit.setVat(docVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
                 cit.setGross(cit.getTotal());
                 cit.setMargin(0.0);
@@ -5403,20 +5372,11 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().calNetCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
                     break;
                 case ProfessionalCharge:
-                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
-                        double professionalFee = getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView);
-                        double assistingFee = getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters);
-                        i.setTotal(professionalFee + assistingFee);
-                    } else {
-                        i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
-                    }
+                    // Already covers assisting fees for a merged hospital.
+                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
                     break;
                 case DoctorAndNurses:
-                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
-                        i.setTotal(0.0);
-                    } else {
-                        i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
-                    }
+                    i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
                     break;
             }
         }
@@ -5901,14 +5861,6 @@ public class BhtSummeryController implements Serializable {
             return null;
         }
         return (pr.getMarginRoomCharge() / slotRate) * 100.0;
-    }
-
-    public List<BillFee> getAllDoctorCharges() {
-        return allDoctorCharges;
-    }
-
-    public void setAllDoctorCharges(List<BillFee> allDoctorCharges) {
-        this.allDoctorCharges = allDoctorCharges;
     }
 
     public static class RoomDurationBreakdown {
