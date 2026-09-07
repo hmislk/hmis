@@ -2380,6 +2380,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     @Inject
     private InwardPaymentController inwardPaymentController;
+    @Inject
+    private InwardDepositController inwardDepositController;
     @EJB
     private AppointmentFacade appointmentFacade;
     @EJB
@@ -2515,15 +2517,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 : getCurrent().getPaymentMethod();
         PaymentMethodData conversionPaymentMethodData = buildPaymentMethodDataFromOriginalPayment(originalBill, appointmentPaymentMethod, amount);
         if (conversionPaymentMethodData != null) {
-            getInwardPaymentController().setPaymentMethodData(conversionPaymentMethodData);
+            getInwardDepositController().setPaymentMethodData(conversionPaymentMethodData);
         }
-        getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
-        getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
-        getInwardPaymentController().getCurrent().setPatientEncounter(current);
-        getInwardPaymentController().getCurrent().setTotal(amount);
-        getInwardPaymentController().pay();
-        lastConversionDepositBillId = getInwardPaymentController().getCurrent().getId();
-        getInwardPaymentController().makeNull();
+        getInwardDepositController().setPaymentMethod(appointmentPaymentMethod);
+        getInwardDepositController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
+        getInwardDepositController().getCurrent().setPatientEncounter(current);
+        getInwardDepositController().getCurrent().setTotal(amount);
+        getInwardDepositController().pay();
+        lastConversionDepositBillId = getInwardDepositController().getCurrent().getId();
+        getInwardDepositController().makeNull();
 
         pendingAppointmentConversion = null;
         printPreview = true;
@@ -3580,6 +3582,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setInwardPaymentController(InwardPaymentController inwardPaymentController) {
         this.inwardPaymentController = inwardPaymentController;
+    }
+
+    public InwardDepositController getInwardDepositController() {
+        return inwardDepositController;
+    }
+
+    public void setInwardDepositController(InwardDepositController inwardDepositController) {
+        this.inwardDepositController = inwardDepositController;
     }
 
     public AppointmentFacade getAppointmentFacade() {
