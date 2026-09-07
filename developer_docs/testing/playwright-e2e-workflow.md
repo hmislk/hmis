@@ -62,6 +62,15 @@ $env:JAVA_HOME="<path-to-jdk>"
   then fails with "not deployed" — recover with a plain
   `deploy --name <name-from-list-applications> --contextroot <its-context-root> <war>`
   (the name/context root you confirmed above, not a hardcoded guess).
+- **Running `asadmin` from Git Bash: set `MSYS_NO_PATHCONV=1`.** MSYS rewrites any
+  argument that looks like a Unix path, so `--contextroot /rh` is handed to Payara
+  as `D:/Program Files/Git/rh`. The deploy then fails deep inside JSF parsing —
+  `Unable to parse document 'jndi:/server/D:/Program%20Files/Git/rh/WEB-INF/faces-config.xml'`
+  — which reads like a broken WAR and is nothing of the sort. Worse, that failed
+  `redeploy` leaves the app *undeployed*, so the retry fails with "not deployed" and
+  you have to `deploy` fresh. Prefix the command:
+  `MSYS_NO_PATHCONV=1 asadmin deploy --name rh --contextroot /rh <war>`. PowerShell
+  is unaffected.
 
 ---
 
@@ -2743,6 +2752,41 @@ anchor's `onclick` attribute first: if it submits the menu form, this is safe; i
 `href` to a page, you are back to URL navigation and must find another route.
 
 Verified while testing issue #23543 (professional/assisting fee merge).
+
+### A *second*-level flyout does open — but only from a CSS-selector click on the top-level anchor
+
+Before reaching for the `onclick` escape hatch above, try this: a two-level menu path
+(`Administration → Manage Lab Services`) opens normally, but only if the top-level item is clicked
+through a **CSS selector**, not through its accessibility `ref`.
+
+Clicking the ref sets `ui-menuitem-active ui-menuitem-highlight` on the `<li>` while the child
+`<ul>` stays `display: none` — the item looks selected and nothing opens. `browser_hover` on either
+the `<li>` or its `<a>` does nothing at all. Clicking the same anchor by selector opens it properly
+(`display: block`, with the inline `z-index/top/left` PrimeFaces sets):
+
+```
+browser_click  .ui-menubar > .ui-menu-list > li:nth-child(20) > a
+browser_click  .ui-menubar > .ui-menu-list > li:nth-child(20) a:has-text("Manage Lab Services")
+```
+
+Confirm it actually opened before clicking the child, rather than eating a 5s timeout:
+
+```js
+() => getComputedStyle(document.querySelectorAll('.ui-menubar > .ui-menu-list > li')[19]
+        .querySelector('ul')).display   // 'block' once open
+```
+
+Finding the right `nth-child` is itself awkward, because most top-level items are icon-only with
+their label in visually-hidden markup — `browser_snapshot` shows them as bare `menuitem` entries
+with no name. List them with their index first:
+
+```js
+() => Array.from(document.querySelectorAll('.ui-menubar > .ui-menu-list > li'))
+        .map((li,i) => ({i, text: (li.innerText||'').trim().split('\n')[0]}))
+```
+
+Verified while testing issue #23529 (common report template API), reaching
+*Administration → Manage Lab Services → Report Templates → Report Format Templates*.
 
 ## Quick checklist
 
