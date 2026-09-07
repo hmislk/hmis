@@ -36,7 +36,8 @@ No parameters. Returns every non-retired `ReportFormat`, ordered by name, with t
 common-template rows each one owns.
 
 ```bash
-curl -s -H "Finance: YOUR_API_KEY" http://localhost:8080/hmis/api/report-formats
+# Set BASE_URL and FINANCE_KEY from user input before running
+curl -s -H "Finance: $FINANCE_KEY" "$BASE_URL/api/report-formats"
 ```
 
 ```json
@@ -111,8 +112,9 @@ Returns `201`.
 was, so a single coordinate can be nudged on its own:
 
 ```bash
-curl -s -H "Finance: YOUR_API_KEY" -H "Content-Type: application/json" \
-  -X PUT http://localhost:8080/hmis/api/report-formats/1194/items/84472 \
+# Set BASE_URL and FINANCE_KEY from user input before running
+curl -s -H "Finance: $FINANCE_KEY" -H "Content-Type: application/json" \
+  -X PUT "$BASE_URL/api/report-formats/1194/items/84472" \
   -d '{"riTop": 16.1}'
 ```
 
