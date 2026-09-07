@@ -1160,6 +1160,13 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
+        // Nothing downstream can be trusted without it: it decides whether a room
+        // is required and feeds the inward margin matrix.
+        if (getPatientEncounter().getAdmissionType() == null) {
+            JsfUtil.addErrorMessage("Cannot settle: this admission has no admission type set.");
+            return true;
+        }
+
         // A room is only required when this encounter is expected to have one, or
         // when one has actually been assigned. Day cases, package admissions and
         // baby admissions have no room of their own and still bill services
@@ -1246,8 +1253,16 @@ public class BillBhtController implements Serializable {
      * instead of the room's - see {@link #feeDepartment(PatientEncounter)}.</p>
      */
     private boolean roomExpected(PatientEncounter encounter) {
-        if (encounter == null || encounter.getAdmissionType() == null) {
+        if (encounter == null) {
             return false;
+        }
+        // An encounter with no admission type is incomplete, not room-less: we
+        // cannot tell whether it should have a room, so assume it should rather
+        // than let it bill against the encounter's department unchecked. The
+        // billing entry points reject it outright with a message that names the
+        // real problem - this is the backstop for any other caller.
+        if (encounter.getAdmissionType() == null) {
+            return true;
         }
         return encounter.getAdmissionType().isRoomChargesAllowed()
                 && !isDayCase(encounter)
@@ -1314,6 +1329,11 @@ public class BillBhtController implements Serializable {
     private boolean errorCheckForAdding() {
         if (getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select BHT");
+            return true;
+        }
+
+        if (getPatientEncounter().getAdmissionType() == null) {
+            JsfUtil.addErrorMessage("Cannot add a service: this admission has no admission type set.");
             return true;
         }
 
