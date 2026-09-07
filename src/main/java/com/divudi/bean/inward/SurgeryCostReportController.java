@@ -15,6 +15,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.entity.inward.SurgeryType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientRoomFacade;
@@ -93,7 +94,7 @@ public class SurgeryCostReportController implements Serializable {
     private Department department;
     private Date fromDate;
     private Date toDate;
-    private Item surgeryType;
+    private SurgeryType surgeryType;
     private Item surgeryItem;
     private PatientEncounterDto selectedPatient;
     private Staff selectedAdmitDoctor;
@@ -193,7 +194,7 @@ public class SurgeryCostReportController implements Serializable {
         enrichSurgeonsAndAssistants(lookups.procIds, lookups.dtosByProcId);
         enrichOtRoomAndStatus(lookups.billIds, lookups.dtoByBillId);
         enrichChildBillCharges(lookups.billIds, lookups.dtoByBillId);
-        enrichRoomCharges(lookups.peIds, lookups.dtosByPeId);
+        enrichRoomCharges(lookups.procIds, lookups.dtosByProcId);
         enrichDrugCharges(lookups.peIds, lookups.dtosByPeId);
 
         computeTotals(list);
@@ -265,11 +266,20 @@ public class SurgeryCostReportController implements Serializable {
             params.put("surgeryItem", surgeryItem);
         }
 
-        String patientSearchTerm = resolvePatientSearchTerm();
-        if (patientSearchTerm != null) {
-            jpql.append(" AND (LOWER(admission.patient.person.name) LIKE :pn ")
-                    .append("     OR LOWER(admission.patient.phn) LIKE :pn) ");
-            params.put("pn", "%" + patientSearchTerm + "%");
+        // Prefer an exact PHN match - selectedPatient comes from a
+        // forceSelection="true" autocomplete, so the user has already picked
+        // one specific patient; a name substring match could silently widen
+        // the filter to other patients sharing part of that name.
+        if (selectedPatient != null && selectedPatient.getPhn() != null && !selectedPatient.getPhn().trim().isEmpty()) {
+            jpql.append(" AND admission.patient.phn = :selectedPatientPhn ");
+            params.put("selectedPatientPhn", selectedPatient.getPhn().trim());
+        } else {
+            String patientSearchTerm = resolvePatientSearchTerm();
+            if (patientSearchTerm != null) {
+                jpql.append(" AND (LOWER(admission.patient.person.name) LIKE :pn ")
+                        .append("     OR LOWER(admission.patient.phn) LIKE :pn) ");
+                params.put("pn", "%" + patientSearchTerm + "%");
+            }
         }
 
         if (selectedAdmitDoctor != null) {
@@ -479,19 +489,33 @@ public class SurgeryCostReportController implements Serializable {
                 }
                 if (sbType == SurgeryBillType.ProfessionalFee) {
                     dto.setProfessionalCharge(dto.getProfessionalCharge() + net);
+                    dto.setBillDiscount(dto.getBillDiscount() + discount);
                 } else if (sbType == SurgeryBillType.Service
                         || sbType == SurgeryBillType.PharmacyItem
                         || sbType == SurgeryBillType.TimedService) {
                     dto.setTotalHospitalCharge(dto.getTotalHospitalCharge() + net);
+                    dto.setBillDiscount(dto.getBillDiscount() + discount);
                 }
-                dto.setBillDiscount(dto.getBillDiscount() + discount);
             }
         }
     }
 
-    private void enrichRoomCharges(Set<Long> peIds,
-            Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId) {
-        if (peIds.isEmpty()) {
+    /**
+     * Attributes room charges to the specific surgery whose theatre stay
+     * generated them, keyed by procedure id (not the admission id) -
+     * PatientTransferController.acceptInTheatre points a theatre
+     * PatientRoom's patientEncounter at the surgery's own procedure
+     * encounter (when one was selected on Send to Theatre) rather than the
+     * admission, so this now sums per-procedure instead of copying the
+     * whole admission's total onto every surgery row. The admission/final
+     * bill total is unaffected: InwardBeanController.getRoomCharge(...) et
+     * al. already sum across the admission plus all of its child
+     * (procedure) encounters via fetchChildPatientEncounter, so it picks up
+     * every surgery's theatre charge automatically.
+     */
+    private void enrichRoomCharges(Set<Long> procIds,
+            Map<Long, List<SurgeryCostEstimationDTO>> dtosByProcId) {
+        if (procIds.isEmpty()) {
             return;
         }
 
@@ -509,12 +533,12 @@ public class SurgeryCostReportController implements Serializable {
                 + "         FROM PatientRoomTimedItemCharge t "
                 + "         WHERE t.patientRoom = p), 0)) "
                 + "FROM PatientRoom p "
-                + "WHERE p.retired = false AND p.patientEncounter.id IN :peIds "
+                + "WHERE p.retired = false AND p.patientEncounter.id IN :procIds "
                 + "GROUP BY p.patientEncounter.id";
 
-        for (List<Long> batch : partition(peIds, IN_CLAUSE_BATCH_SIZE)) {
+        for (List<Long> batch : partition(procIds, IN_CLAUSE_BATCH_SIZE)) {
             Map<String, Object> params = new HashMap<>();
-            params.put("peIds", batch);
+            params.put("procIds", batch);
 
             List<Object[]> roomList = patientRoomFacade.findAggregates(roomJpql, params);
             if (roomList == null) {
@@ -522,10 +546,10 @@ public class SurgeryCostReportController implements Serializable {
             }
 
             for (Object[] row : roomList) {
-                Long peId = (Long) row[0];
+                Long procId = (Long) row[0];
                 double totalRoomCharge = toDouble(row[1]);
 
-                List<SurgeryCostEstimationDTO> dtos = dtosByPeId.get(peId);
+                List<SurgeryCostEstimationDTO> dtos = dtosByProcId.get(procId);
                 if (dtos == null) {
                     continue;
                 }
@@ -591,6 +615,8 @@ public class SurgeryCostReportController implements Serializable {
             case "bySurgeon":
                 jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(p.person.name, COUNT(DISTINCT sb.id)) ")
                         .append("FROM BilledBill sb ")
+                        .append("JOIN sb.procedure proc ")
+                        .append("JOIN proc.item item ")
                         .append("LEFT JOIN sb.staff p ")
                         .append("JOIN sb.patientEncounter admission ");
                 appendSummaryWhereClause(jpql, params);
@@ -685,11 +711,11 @@ public class SurgeryCostReportController implements Serializable {
                     .setBorderWidth(1);
 
             for (SurgeryCostSummaryDTO dto : surgeryCostSummaryList) {
-                String label = dto.getLabel1();
+                String label = dto.getLabel1() != null ? dto.getLabel1() : "Unknown";
                 if (dto.getLabel2() != null && !dto.getLabel2().isEmpty()) {
                     label += " - " + dto.getLabel2();
                 }
-                barData.addLabel(label != null ? label : "Unknown");
+                barData.addLabel(label);
                 dataset.addData(dto.getCount());
             }
             barData.addDataset(dataset);
@@ -839,7 +865,7 @@ public class SurgeryCostReportController implements Serializable {
             Row titleRow = sheet.createRow(rowIdx++);
             titleRow.setHeightInPoints(22);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("Surgery Cost Costing " + (isSummary ? "Summary" : "Detail") + " Report");
+            titleCell.setCellValue("Surgery Cost Estimation " + (isSummary ? "Summary" : "Detail") + " Report");
             titleCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, Math.max(headers.length - 1, 3)));
 
@@ -859,7 +885,7 @@ public class SurgeryCostReportController implements Serializable {
                 activeFilters.add("Department: " + department.getName());
             }
             if (selectedPatient != null) {
-                activeFilters.add("Patient MRN: " + (selectedPatient.getPatientName() != null ? selectedPatient.getPatientName() : selectedPatient.getPhn()));
+                activeFilters.add("Patient: " + (selectedPatient.getPatientName() != null ? selectedPatient.getPatientName() : selectedPatient.getPhn()));
             }
             if (selectedAdmitDoctor != null) {
                 activeFilters.add("Admit Doctor: " + selectedAdmitDoctor.getPerson().getNameWithTitle());
@@ -1096,7 +1122,7 @@ public class SurgeryCostReportController implements Serializable {
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy HH:mm");
 
-            Paragraph titlePara = new Paragraph("Surgery Cost Costing " + (isSummary ? "Summary" : "Detail") + " Report", titleFont);
+            Paragraph titlePara = new Paragraph("Surgery Cost Estimation " + (isSummary ? "Summary" : "Detail") + " Report", titleFont);
             titlePara.setAlignment(Element.ALIGN_CENTER);
             titlePara.setSpacingAfter(10);
             document.add(titlePara);
@@ -1115,7 +1141,7 @@ public class SurgeryCostReportController implements Serializable {
                 activeFilters.add("Department: " + department.getName());
             }
             if (selectedPatient != null) {
-                activeFilters.add("Patient MRN: " + (selectedPatient.getPatientName() != null ? selectedPatient.getPatientName() : selectedPatient.getPhn()));
+                activeFilters.add("Patient: " + (selectedPatient.getPatientName() != null ? selectedPatient.getPatientName() : selectedPatient.getPhn()));
             }
             if (selectedAdmitDoctor != null) {
                 activeFilters.add("Admit Doctor: " + selectedAdmitDoctor.getPerson().getNameWithTitle());
@@ -1453,11 +1479,11 @@ public class SurgeryCostReportController implements Serializable {
         this.selectedSurgeryStatus = selectedSurgeryStatus;
     }
 
-    public Item getSurgeryType() {
+    public SurgeryType getSurgeryType() {
         return surgeryType;
     }
 
-    public void setSurgeryType(Item surgeryType) {
+    public void setSurgeryType(SurgeryType surgeryType) {
         this.surgeryType = surgeryType;
     }
 
