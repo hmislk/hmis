@@ -24,11 +24,14 @@ cancellation anywhere in this codebase, and there must never be one:
 
 **Selective, item-level reversal is a Return (a.k.a. Refund).** A Return
 creates its own bill referencing only the selected items/fees, with their
-values inverted (`invertValue`), while the rest of the original bill stays
-active and billable. This is the *only* supported way to reverse "some but
-not all" of a bill. If a screen needs to let staff pick one or more items and
-reverse just those, it is a Return screen, not a Cancel screen — model it on
-one of the existing ones below rather than extending Cancel.
+values inverted — implementations may use `BillItem.invertValue()` (e.g.
+`InwardServiceRefundController`) or compute explicit negative totals (e.g.
+`WardPharmacyReturnToPharmacyController.doSettle()`) — while the rest of the
+original bill stays active and billable. This is the *only* supported way to
+reverse "some but not all" of a bill. If a screen needs to let staff pick one
+or more items and reverse just those, it is a Return screen, not a Cancel
+screen — model it on one of the existing ones below rather than extending
+Cancel.
 
 ## Why this split, not "smart cancellation"
 
