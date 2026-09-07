@@ -217,8 +217,7 @@ public class InwardInvoiceJournalController implements Serializable {
      * Matches the full INWARD_PAYMENT family — {@code INWARD_PAYMENT},
      * {@code INWARD_PAYMENT_CANCELLATION}, {@code INWARD_PAYMENT_REFUND} and
      * {@code INWARD_PAYMENT_REFUND_CANCELLATION} — and deliberately does NOT
-     * filter on {@code bill.cancelled}: neither cancelling nor refunding a
-     * payment flags the original bill as cancelled. A cancellation sets
+     * filter on {@code bill.cancelled}: a cancellation sets
      * {@code cancelled=true} on the original but records the reversal as its
      * own Payment row under the CANCELLATION billTypeAtomic, while a refund
      * leaves the original bill untouched (only {@code refunded=true}) and
@@ -274,8 +273,7 @@ public class InwardInvoiceJournalController implements Serializable {
      * Matches the full INWARD_DEPOSIT family — {@code INWARD_DEPOSIT},
      * {@code INWARD_DEPOSIT_CANCELLATION}, {@code INWARD_DEPOSIT_REFUND} and
      * {@code INWARD_DEPOSIT_REFUND_CANCELLATION} — and deliberately does NOT
-     * filter on {@code bill.cancelled}: neither cancelling nor refunding a
-     * deposit flags the original bill as cancelled. A cancellation sets
+     * filter on {@code bill.cancelled}: a cancellation sets
      * {@code cancelled=true} on the original but records the reversal as its
      * own Payment row under the CANCELLATION billTypeAtomic, while a refund
      * leaves the original bill untouched (only {@code refunded=true}) and
