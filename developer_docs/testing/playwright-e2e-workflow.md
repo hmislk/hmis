@@ -2767,15 +2767,29 @@ itself was genuinely deployed first (`strings` on the compiled `.class` in
 `applications/<app>/WEB-INF/classes/...` showed the new message text) before
 concluding this was a test-setup limitation, not a dead code path.
 
-**Takeaway:** a same-request-lifecycle race like this cannot be reliably
-staged from outside the request (a second tab, a second session, or raw
-SQL) once the first controller has already loaded and cached the entity —
-only an interruption inside the *same* request/thread (a debugger, a
-breakpoint, or an actual concurrent user hitting the exact same in-flight
-transaction) would show it happening. Don't spend a long session trying to
-force this kind of window through the UI; verify instead via the code
-path itself (confirm the guarded condition and message are correct, and
-that an analogous guard with the identical condition and message idiom
-already fires correctly elsewhere in the same controller/page) and say so
-plainly in the PR rather than claiming a live repro that didn't happen.
+**Takeaway for testing this kind of thing:** a same-request-lifecycle race
+like this cannot be reliably staged from *outside* the request (a second
+tab, a second session, or raw SQL) once the first controller has already
+loaded and cached the entity — only an interruption inside the *same*
+request/thread (a debugger, a breakpoint, or an actual concurrent user
+hitting the exact same in-flight transaction) would show it happening.
+Don't spend a long session trying to force this kind of window through the
+UI; verify instead via the code path itself (confirm the guarded condition
+and message are correct, and that an analogous guard with the identical
+condition and message idiom already fires correctly elsewhere in the same
+controller/page) and say so plainly in the PR rather than claiming a live
+repro that didn't happen.
+
+**This is not only a testing-methodology footnote, though** — CodeRabbit
+correctly flagged on PR #23567 that the same staleness is a real
+production correctness risk, not just a Playwright limitation: any actual
+concurrent use (two staff members on the same admission, or one user in
+two tabs) can hit this exact window, silently letting `settleBill()` go
+through on stale room data instead of hitting the guard added in #23523.
+Tracked separately as issue #23568 rather than fixed inline in #23523's
+PR, since the right fix (refreshing `patientEncounter`/`currentPatientRoom`
+before validation) needs its own design discussion — this codebase's
+EclipseLink cache has bitten targeted-refresh attempts before (see the
+"Native settle poisons the Bill entity" gotcha).
+
 Found while verifying issue #23523.
