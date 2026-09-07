@@ -1298,6 +1298,121 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method").add("investigation_id")))
                 .build();
 
+        JsonObject manageReportFormatsTool = Json.createObjectBuilder()
+                .add("name", "manage_report_formats")
+                .add("description",
+                        "Manage the COMMON report template of a lab report format — the rows that print on every "
+                        + "report of that format: the patient-details block (name, age, gender, referring doctor, "
+                        + "reference no, reported date, specimen), the signature block, and the footer. "
+                        + "This is the counterpart of manage_investigation_format, which only reaches the rows of one "
+                        + "investigation and can never touch these. Use this tool when a hospital needs the whole "
+                        + "header/footer block nudged to clear pre-printed stationery, or a label resized. "
+                        + "resource_type: FORMAT | ITEM. "
+                        + "FORMAT supports LIST only (lists report formats with their template row counts) — start here "
+                        + "to find the category_id. "
+                        + "ITEM supports LIST | GET | POST | PUT | DELETE and requires category_id; GET/PUT/DELETE also "
+                        + "require item_id, and POST requires name. DELETE soft-retires the row. "
+                        + "Geometry is percentage-based: ri_top and ri_left position the row on the page, ri_width and "
+                        + "ri_height size it, ri_font_size is in points. Only the fields you send are changed, so a PUT "
+                        + "carrying just ri_top moves the row vertically and leaves everything else alone. "
+                        + "Moving a whole block means one PUT per row — LIST the items first and confirm the exact list "
+                        + "with the user before changing them. "
+                        + "Always confirm with the user before POST, PUT, or DELETE — these changes affect every printed "
+                        + "report in the format.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("resource_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("FORMAT").add("ITEM"))
+                                        .add("description", "FORMAT to list report formats, ITEM for template rows. Required."))
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("LIST").add("GET").add("POST").add("PUT").add("DELETE"))
+                                        .add("description", "Operation to perform. FORMAT supports LIST only. Required."))
+                                .add("category_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Report format (Category) ID. Required for every ITEM operation."))
+                                .add("item_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Common report item ID. Required for ITEM GET, PUT and DELETE."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Row name as shown on the template screen. Required for ITEM POST."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Auto-generated from name if omitted."))
+                                .add("description", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Free-text description of the row."))
+                                .add("order_no", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Display order number."))
+                                .add("page_no", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Page number the row prints on."))
+                                .add("report_item_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "What the row prints, e.g. PatientName, PatientAge, PatientSex, "
+                                                + "ReferringDoctor, DepartmentBillNo, Speciman, BHT, ApprovedAt, CollectedOn, "
+                                                + "AutherizedSignature, MRN, SampledID. Omit for a static label. Send an empty "
+                                                + "string to clear it."))
+                                .add("ix_item_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "How the row renders: Label (static text), Value (a report_item_type "
+                                                + "value), Css, Barcode, QrCode, Html, Image. Defaults to Label."))
+                                .add("ix_item_value_type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Value shape when ix_item_type is Value: Varchar, Memo, Double, "
+                                                + "Integer, Long, Image, Line, Rectangle, Circle."))
+                                .add("htmltext", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "HTML content for Html-type rows."))
+                                .add("format_prefix", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Text printed before the value."))
+                                .add("format_suffix", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Text printed after the value."))
+                                .add("ri_top", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Distance from the top of the page, in percent."))
+                                .add("ri_left", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Distance from the left of the page, in percent."))
+                                .add("ri_width", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Row width in percent. Reads report 30 when unset."))
+                                .add("ri_height", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Row height in percent. Reads report 2 when unset."))
+                                .add("ri_font_size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Font size in points. Reads report 12 when unset."))
+                                .add("ht_pix", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Image height in pixels (Image-type rows)."))
+                                .add("wt_pix", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Image width in pixels (Image-type rows)."))
+                                .add("css_text_align", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Left, Right, Center, Justify or Inherit."))
+                                .add("css_vertical_align", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Baseline, Sub, Super, Top, TextTop, Middle, Bottom, TextBottom or Inherit."))
+                                .add("css_font_style", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Normal, Italic, Oblique or Inherit."))
+                                .add("css_font_family", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Font family name."))
+                                .add("css_font_weight", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Font weight, e.g. normal or bold.")))
+                        .add("required", Json.createArrayBuilder().add("resource_type").add("method")))
+                .build();
+
         JsonObject manageInvestigationExportTool = Json.createObjectBuilder()
                 .add("name", "manage_investigation_export")
                 .add("description",
@@ -2052,6 +2167,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageInvestigationsTool)
                 .add(manageServicesTool)
                 .add(manageInvestigationFormatTool)
+                .add(manageReportFormatsTool)
                 .add(manageInvestigationComponentsTool)
                 .add(manageInvestigationPricingTool)
                 .add(manageInvestigationValidatorsTool)
@@ -2362,6 +2478,8 @@ public class AnthropicApiService implements Serializable {
                             displayFlagMessage, displayHighMessage, displayLowMessage, displayNormalMessage,
                             hmisBaseUrl, hmisApiKey);
                 }
+                case "manage_report_formats":
+                    return callReportFormatApi(toolInput, hmisBaseUrl, hmisApiKey);
                 case "manage_inward_rooms": {
                     String method         = toolInput.getString("method", "LIST_CATEGORIES");
                     String id             = toolInput.containsKey("id")                             ? toolInput.getString("id", "")                             : "";
@@ -4783,6 +4901,136 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    /**
+     * Backs the {@code manage_report_formats} tool against {@code /api/report-formats}.
+     *
+     * <p>Unlike its {@code manage_investigation_format} neighbour this takes the raw
+     * {@code toolInput} rather than one parameter per field: the common template row
+     * carries roughly twenty-five settable attributes, and threading each through a
+     * positional signature is how a value ends up silently written into the wrong
+     * column. Fields are copied by name instead, and only the ones actually present
+     * are sent — which is also what makes a single-coordinate PUT possible.</p>
+     */
+    private String callReportFormatApi(JsonObject toolInput, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+
+            String resourceType = toolInput.getString("resource_type", "ITEM").toUpperCase();
+            String method = toolInput.getString("method", "LIST").toUpperCase();
+            String basePath = root + "/api/report-formats";
+
+            if ("FORMAT".equals(resourceType)) {
+                if (!"LIST".equals(method)) {
+                    return "Error: FORMAT supports LIST only. Use resource_type=ITEM to change template rows.";
+                }
+                return sendReportFormatRequest(basePath, "GET", null, key);
+            }
+            if (!"ITEM".equals(resourceType)) {
+                return "Error: Unsupported resource_type: " + resourceType + ". Allowed: FORMAT, ITEM.";
+            }
+
+            String categoryId = toolInput.containsKey("category_id") ? toolInput.getString("category_id", "") : "";
+            if (categoryId.isEmpty()) {
+                return "Error: category_id is required for ITEM operations. Use resource_type=FORMAT method=LIST to find it.";
+            }
+            String itemId = toolInput.containsKey("item_id") ? toolInput.getString("item_id", "") : "";
+            String itemsPath = basePath + "/" + requireNumericId(categoryId, "category_id") + "/items";
+
+            switch (method) {
+                case "LIST":
+                    return sendReportFormatRequest(itemsPath, "GET", null, key);
+                case "GET":
+                    if (itemId.isEmpty()) return "Error: item_id is required for ITEM GET.";
+                    return sendReportFormatRequest(itemsPath + "/" + requireNumericId(itemId, "item_id"), "GET", null, key);
+                case "DELETE":
+                    if (itemId.isEmpty()) return "Error: item_id is required for ITEM DELETE.";
+                    return sendReportFormatRequest(itemsPath + "/" + requireNumericId(itemId, "item_id"), "DELETE", null, key);
+                case "POST":
+                case "PUT": {
+                    if ("PUT".equals(method) && itemId.isEmpty()) return "Error: item_id is required for ITEM PUT.";
+                    javax.json.JsonObjectBuilder body = buildCommonReportItemBody(toolInput);
+                    String path = "POST".equals(method)
+                            ? itemsPath
+                            : itemsPath + "/" + requireNumericId(itemId, "item_id");
+                    return sendReportFormatRequest(path, method, body.build().toString(), key);
+                }
+                default:
+                    return "Error: Unsupported method for ITEM: " + method + ". Allowed: LIST, GET, POST, PUT, DELETE.";
+            }
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        } catch (Exception e) {
+            return "Report Format API error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Copies the common-template fields the tool call actually carries into a request
+     * body, translating each snake_case tool parameter to its camelCase API field and
+     * its declared type. Absent fields are left out so the API leaves them untouched.
+     */
+    private javax.json.JsonObjectBuilder buildCommonReportItemBody(JsonObject toolInput) {
+        javax.json.JsonObjectBuilder body = Json.createObjectBuilder();
+        String[][] strings = {
+            {"name", "name"}, {"code", "code"}, {"description", "description"},
+            {"report_item_type", "reportItemType"}, {"ix_item_type", "ixItemType"},
+            {"ix_item_value_type", "ixItemValueType"}, {"htmltext", "htmltext"},
+            {"format_prefix", "formatPrefix"}, {"format_suffix", "formatSuffix"},
+            {"css_text_align", "cssTextAlign"}, {"css_vertical_align", "cssVerticalAlign"},
+            {"css_font_style", "cssFontStyle"}, {"css_font_family", "cssFontFamily"},
+            {"css_font_weight", "cssFontWeight"}
+        };
+        for (String[] field : strings) {
+            if (toolInput.containsKey(field[0])) {
+                body.add(field[1], toolInput.getString(field[0], ""));
+            }
+        }
+        String[][] integers = {{"order_no", "orderNo"}, {"page_no", "pageNo"}};
+        for (String[] field : integers) {
+            String raw = toolInput.containsKey(field[0]) ? toolInput.getString(field[0], "").trim() : "";
+            if (!raw.isEmpty()) {
+                try {
+                    body.add(field[1], Integer.parseInt(raw));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Error: " + field[0] + " must be a whole number, got: " + raw);
+                }
+            }
+        }
+        String[][] doubles = {
+            {"ri_top", "riTop"}, {"ri_left", "riLeft"}, {"ri_width", "riWidth"},
+            {"ri_height", "riHeight"}, {"ri_font_size", "riFontSize"},
+            {"ht_pix", "htPix"}, {"wt_pix", "wtPix"}
+        };
+        for (String[] field : doubles) {
+            String raw = toolInput.containsKey(field[0]) ? toolInput.getString(field[0], "").trim() : "";
+            if (!raw.isEmpty()) {
+                try {
+                    body.add(field[1], Double.parseDouble(raw));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Error: " + field[0] + " must be a number, got: " + raw);
+                }
+            }
+        }
+        return body;
+    }
+
+    private String sendReportFormatRequest(String url, String method, String body, String key) throws Exception {
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+        HttpRequest.Builder rb = HttpRequest.newBuilder().uri(URI.create(url));
+        if ("DELETE".equals(method)) {
+            rb.DELETE();
+        } else if (body != null) {
+            rb.method(method, HttpRequest.BodyPublishers.ofString(body)).header("Content-Type", "application/json");
+        } else {
+            rb.GET();
+        }
+        if (!key.isEmpty()) rb.header("Finance", key);
+        HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
+        return "HTTP " + resp.statusCode() + "\n" + resp.body();
+    }
+
     private String requireNumericId(String value, String fieldName) {
         if (value == null || !value.trim().matches("\\d+")) {
             throw new IllegalArgumentException("Error: " + fieldName + " must be a numeric id.");
@@ -6010,6 +6258,22 @@ public class AnthropicApiService implements Serializable {
           .append("For FLAG POST, investigation_item_of_value_type_id and investigation_item_of_flag_type_id are required. ")
           .append("Always LIST items first to get the item IDs before creating calculations, flags, or dynamic labels. ")
           .append("Always confirm with the user before POST, PUT, or DELETE.\n\n");
+        sb.append("### manage_report_formats\n");
+        sb.append("Manage the COMMON report template of a lab report format — the rows printed on every report ")
+          .append("of that format: the patient-details block (name, age, gender, referring doctor, reference no, ")
+          .append("reported date, specimen), the signature block, and the footer. ")
+          .append("manage_investigation_format cannot reach these rows; they belong to the format, not to any one investigation. ")
+          .append("Reach for this tool whenever a hospital prints onto pre-printed stationery and the header or footer ")
+          .append("block has to move to clear a pre-printed band, or a label is coming out at the wrong size. ")
+          .append("resource_type: FORMAT (LIST only — start here to find the category_id) or ITEM. ")
+          .append("ITEM: LIST, GET, POST, PUT, DELETE; category_id is always required, item_id for GET/PUT/DELETE, ")
+          .append("name for POST. ")
+          .append("Geometry is percentage-based: ri_top/ri_left position the row, ri_width/ri_height size it, ")
+          .append("ri_font_size is in points. Only the fields you send change, so a PUT carrying just ri_top nudges ")
+          .append("a row vertically and leaves the rest alone. ")
+          .append("Moving a whole block is one PUT per row — LIST the items first, show the user exactly which rows ")
+          .append("you intend to move and by how much, and get confirmation before the first PUT. ")
+          .append("Always confirm before POST, PUT, or DELETE — every printed report in the format is affected.\n\n");
         sb.append("### manage_investigation_components\n");
         sb.append("Manage InvestigationComponent groupings that organize an investigation's report items under a heading ")
           .append("(e.g. grouping FBC items under 'White Cell Differential'). ")
@@ -6610,6 +6874,23 @@ public class AnthropicApiService implements Serializable {
                     {"POST", "/limsmw/sysmex",                                          "Receive Sysmex ASTM message (HTTP Basic Auth, WRITE)"},
                     {"POST", "/limsmw/limsProcessAnalyzerMessage",                      "Process HL7 analyzer message (HTTP Basic Auth, WRITE)"},
                     {"POST", "/limsmw/login",                                           "Authenticate a middleware client"}
+                });
+
+        appendModule(sb, "LIMS - Report Formats (Common Template)", "/report-formats",
+                "The rows printed on every lab report of a given format: the patient-details block, "
+                + "the signature block and the footer. The Investigation Format API covers only the rows "
+                + "of one investigation and cannot reach these. Geometry is percentage-based "
+                + "(riTop, riLeft, riWidth, riHeight) with riFontSize in points — these are the fields to "
+                + "nudge when a hospital prints onto pre-printed stationery. A PUT applies only the fields "
+                + "it carries, so one coordinate can be moved on its own.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_REPORT_FORMATS.md"),
+                new String[][]{
+                    {"GET",    "/report-formats",                              "List report formats with their template row counts"},
+                    {"GET",    "/report-formats/{categoryId}/items",           "List a format's common-template rows"},
+                    {"GET",    "/report-formats/{categoryId}/items/{itemId}",  "Read one row"},
+                    {"POST",   "/report-formats/{categoryId}/items",           "Add a row (name required)"},
+                    {"PUT",    "/report-formats/{categoryId}/items/{itemId}",  "Update a row (only the fields sent are applied)"},
+                    {"DELETE", "/report-formats/{categoryId}/items/{itemId}",  "Retire (soft-delete) a row"}
                 });
 
         // ── Membership ────────────────────────────────────────────────────────

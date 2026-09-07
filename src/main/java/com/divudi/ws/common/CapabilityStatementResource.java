@@ -436,6 +436,22 @@ public class CapabilityStatementResource {
                         + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Report Formats (Common Template)", "/api/report-formats",
+                        "Manage the common report template — the CommonReportItem rows (patient-details block, "
+                        + "signature block, footer) that print on every report of a given lab report format. "
+                        + "This is what the Investigation Format API above cannot reach: those rows are keyed on the "
+                        + "report-format Category and carry no investigation. "
+                        + "GET /report-formats lists the non-retired ReportFormat categories with their template row counts. "
+                        + "Sub-resource /{categoryId}/items supports GET (list), GET /{itemId}, POST, PUT /{itemId} and "
+                        + "DELETE /{itemId} (soft-retire). "
+                        + "Geometry is percentage-based (riTop, riLeft, riWidth, riHeight) with riFontSize in points — "
+                        + "the fields to nudge when printing onto pre-printed stationery. Only the fields present in a "
+                        + "PUT body are applied, so a single coordinate can be moved on its own. Reads report the "
+                        + "rendered value, not the stored one: riWidth/riHeight/riFontSize fall back to 30/2/12 when "
+                        + "unset (see #23528). Scoped to ReportFormat categories only — the HR/clinical form templates "
+                        + "that reuse CommonReportItem under other categories are deliberately not reachable here.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
                         "Manage InvestigationComponent groupings used to organize report items within an investigation's format "
                         + "(componentName only). GET lists components for the investigation. POST creates one. "
