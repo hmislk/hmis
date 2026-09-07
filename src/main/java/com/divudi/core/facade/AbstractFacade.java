@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.persistence.CacheRetrieveMode;
 import javax.persistence.CacheStoreMode;
@@ -34,6 +36,8 @@ import org.eclipse.persistence.jpa.JpaHelper;
  * @param <T>
  */
 public abstract class AbstractFacade<T> {
+
+    private static final Logger logger = Logger.getLogger(AbstractFacade.class.getName());
 
     private Class<T> entityClass;
 
@@ -592,6 +596,36 @@ public abstract class AbstractFacade<T> {
                 .getResultList();
     }
 
+    /**
+     * Paginated query with named parameters.
+     *
+     * <p>Prefer this over {@code findByJpql(jpql, params, fromRecord, toRecord)} for paging:
+     * that method takes an inclusive end index and skips {@code setMaxResults} entirely when
+     * it works out to 0, so asking for the single first row (offset 0, one result) silently
+     * returns the whole result set. Here {@code maxResults} is a plain count and is always
+     * applied.
+     */
+    public List<T> findByJpqlWithRange(String jpql, Map<String, Object> parameters,
+            int startPosition, int maxResults) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                if (entry.getValue() instanceof Date) {
+                    qry.setParameter(entry.getKey(), (Date) entry.getValue(), TemporalType.TIMESTAMP);
+                } else {
+                    qry.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        qry.setFirstResult(Math.max(startPosition, 0));
+        qry.setMaxResults(Math.max(maxResults, 1));
+        try {
+            return qry.getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();
@@ -652,6 +686,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -681,6 +716,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -1626,6 +1662,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findAggregates failed for JPQL: " + jpql, e);
             return null;
         }
     }

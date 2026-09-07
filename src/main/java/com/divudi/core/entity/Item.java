@@ -212,7 +212,13 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     @Transient
     private double transBillItemCount;
     @Transient
+    private double transCancelledBillItemCount;
+    @Transient
+    private double transRefundedBillItemCount;
+    @Transient
     double transCheckedCount;
+    @Transient
+    private long transPendingCheckBillCount;
     @Transient
     private double transGrossValue;
     @Transient
@@ -397,6 +403,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setTransCheckedCount(double transCheckedCount) {
         this.transCheckedCount = transCheckedCount;
+    }
+
+    public long getTransPendingCheckBillCount() {
+        return transPendingCheckBillCount;
+    }
+
+    public void setTransPendingCheckBillCount(long transPendingCheckBillCount) {
+        this.transPendingCheckBillCount = transPendingCheckBillCount;
     }
 
     public double getTransGrossValue() {
@@ -1029,6 +1043,22 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setTransBillItemCount(double transBillItemCount) {
         this.transBillItemCount = transBillItemCount;
+    }
+
+    public double getTransCancelledBillItemCount() {
+        return transCancelledBillItemCount;
+    }
+
+    public void setTransCancelledBillItemCount(double transCancelledBillItemCount) {
+        this.transCancelledBillItemCount = transCancelledBillItemCount;
+    }
+
+    public double getTransRefundedBillItemCount() {
+        return transRefundedBillItemCount;
+    }
+
+    public void setTransRefundedBillItemCount(double transRefundedBillItemCount) {
+        this.transRefundedBillItemCount = transRefundedBillItemCount;
     }
 
     public boolean isChargesVisibleForInward() {

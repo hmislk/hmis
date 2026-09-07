@@ -506,7 +506,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             sql = "select c from Admission c where "
                     + " c.retired=false "
                     //                    + " and c.discharged=false "
-                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') "
+                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%' or (c.patient.code) like '%" + query.toUpperCase() + "%') "
                     + " order by c.bhtNo ";
             suggestions = getFacade().findByJpql(sql);
         }

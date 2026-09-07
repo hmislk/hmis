@@ -490,7 +490,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             if (res != null) {
                 // Room Reservation details (ROOM_ADMISSION)
                 dto = new ReservationDTO(
-                    res.getId(),
+                    apt.getId(), // ReservationDTO.id is always the Appointment ID - see ReservationDTO
                     res.getReservedFrom(),
                     res.getReservedTo(),
                     apt.getAppointmentNumber(),
@@ -508,7 +508,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             } else {
                 // Non-room Appointment details (Procedure, Consultant, etc.)
                 dto = new ReservationDTO(
-                    apt.getId(), // Store Appointment ID since there is no Reservation ID
+                    apt.getId(), // ReservationDTO.id is always the Appointment ID - see ReservationDTO
                     combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeFrom()), // Combined date and time
                     combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeTo()), 
                     apt.getAppointmentNumber(),

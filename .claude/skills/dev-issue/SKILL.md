@@ -15,7 +15,11 @@ argument-hint: "<issue-number>"
 
 Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
-non-repro case, 3, 4, 14) are the points where you pause for the user.
+non-repro case and any state-changing reproduction step, 3, 4's environment
+choice only, 14) are the points where you pause for the user. Everything
+else in 2a and 4 (which department/record to use against local test data)
+is a local-testing-environment choice, not a product decision — decide it
+yourself and say what you picked, rather than pausing.
 
 This authorization also covers `superpowers:writing-plans`' Execution
 Handoff question, if that chain gets invoked anywhere in this flow (e.g.
@@ -49,10 +53,14 @@ Run it when the issue is a bug and step 2 left the cause unconfirmed or
 unfound:
 
 - Prefer reproducing against existing data first (read-only navigation or
-  API `GET`s). If reproduction requires creating or modifying a record,
-  confirm the target department/record with the user first
-  (`AskUserQuestion`, same pattern as step 4) rather than picking one
-  unilaterally.
+  API `GET`s) — picking which department/record to *read* is the same
+  no-need-to-ask judgment call as step 4. If reproduction requires a
+  state-changing step (creating, modifying, or deleting a record, or running
+  direct SQL), that's a different risk category: confirm with the user
+  first (`AskUserQuestion`) before creating a disposable record,
+  modifying/deleting an existing record, or running direct SQL — don't
+  extend the "don't ask" judgment call to writes. If the user approves a
+  disposable record, clean it up in the same session where possible.
 - Reproduce live against local Payara — the `playwright-e2e` skill for
   UI-facing bugs, or direct REST calls (per `api-development`) for API-only
   ones.
@@ -80,18 +88,27 @@ Exit Plan Mode only once the user approves or adjusts the plan.
 
 ## 4. Gather test context
 
-Before writing code, ask the user (via `AskUserQuestion`):
-- **Department** to use for Playwright testing (must match a real department
-  in the local DB the feature touches — e.g. Pharmacy, Inward, OPD)
+Local Payara / local DB is a testing environment — pick department and
+records yourself rather than gating on the user for them:
+- **Department**: query the local DB for one that's real and relevant to the
+  feature (e.g. Pharmacy, Inward, OPD), and say which one you picked before
+  testing.
 - **Specific records** to exercise (e.g. an admission ID, bill number, item
-  code) — pick something that exists in the local DB and is relevant to the
-  feature
+  code): query the local DB for existing records that fit the feature and
+  use those — report exactly which ones you used (BHT no, bill no, etc.) in
+  the PR/issue evidence. Only ask the user if the local DB has no suitable
+  record at all (e.g. the feature needs a state nothing local is in) — that
+  is a real blocker, not a preference question.
 - **Environment**: local Payara (default) unless the issue specifically
-  requires testing against a remote env, in which case confirm which one.
-  Credentials live outside the repo in `C:\Credentials\` — never inlined
+  requires testing against a remote env, in which case confirm which one
+  with the user (this one *is* a real decision — remote envs carry real
+  data/credentials risk that local doesn't). Credentials live outside the
+  repo in `C:\Credentials\` — never inlined.
 
-Don't guess these — wrong department/record selection wastes the whole
-Playwright pass later.
+Only the environment choice is a discussion gate here. Department/record
+selection against local test data is not — deciding it yourself and moving
+straight to step 5 keeps this step from wasting a round-trip on a question
+that has no wrong answer in a disposable local DB.
 
 ## 5. Develop
 
@@ -132,6 +149,10 @@ errors before moving on.
 
 Run the `playwright-e2e` skill workflow:
 - Login, select the department from step 4
+- **Navigate to the page through the menus, never by URL** — HMIS page state is
+  set by the `@SessionScoped` navigation method, so a URL-loaded page renders
+  against uninitialised state and produces false findings (`playwright-e2e` §2).
+  Record the menu path in the issue/PR.
 - Exercise the feature using the records chosen in step 4
 - **Take screenshots** (`browser_take_screenshot`) into the project `tmp/`
   folder at each meaningful stage (before/after states, confirmation dialogs,
@@ -160,7 +181,7 @@ quirk, a new accessibility gap, a new verification pattern), append it to
 `developer_docs/testing/playwright-e2e-workflow.md` — same pattern as the
 §0a/§5a additions from issue #21499. Don't force this if nothing new came up.
 
-## 10. Publish evidence (wiki, issue, PR)
+## 10. Publish evidence and update the wiki
 
 Follow playwright-e2e
 [§8 Publishing screenshot evidence](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence)
@@ -172,22 +193,76 @@ Follow playwright-e2e
    evidence, redact patient identifiers, credentials, tokens, cookies, and
    other sensitive fields from the request/response bodies before they leave
    `tmp/`.
-2. Copy the durable, non-sensitive screenshots into `../hmis.wiki/images/`,
-   then commit and push the wiki from `../hmis.wiki`. Redacted API
-   request/response snippets aren't images — post them as fenced code blocks
-   directly in the issue comment/PR instead of adding them to the wiki.
-3. Add a comment (or update the description) on issue `$0`, embedding the
-   wiki images via their raw URLs
-   (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`)
-   or the redacted API snippets as code blocks. For bug issues where step 2a
-   ran, label and pair the step 2a "before" evidence with the step 7 "after"
-   evidence so the fix is visible as a comparison. For bug issues where step
-   2a was skipped (root cause already confirmed by reading code), there is
-   no "before" evidence — publish only the step 7 confirmation, with no
-   comparison implied.
-4. Remove the temporary screenshots/evidence from the project `tmp/` folder.
+2. Copy the durable, non-sensitive screenshots into `../hmis.wiki/images/`.
+   Redacted API request/response snippets aren't images — post them as fenced
+   code blocks in the issue/PR instead of adding them to the wiki.
 
-These wiki image URLs are reused in the PR description in step 13.
+3. **Update the wiki page(s) for the feature you changed.** This is a
+   required part of the work, not an optional extra — publishing an image
+   without wiring it into a page leaves it orphaned, which is why the wiki
+   currently has ~600 images but only ~55 pages that reference any.
+
+   a. **Find the page.** Search the sibling wiki repo for the feature by
+      name, page title, and menu path:
+      ```bash
+      cd ../hmis.wiki && ls *.md | grep -iE "<feature|module keyword>"
+      grep -ril "<feature name>" *.md | head
+      ```
+      Wiki pages are named after the user-facing screen
+      (e.g. `Inpatient-Nursing-Discharge.md`), so the page usually exists
+      even for a narrow bug fix.
+
+   b. **Embed the screenshots** with a relative path, plus a visible caption
+      beneath. Markdown alt text is not a rendered caption — it serves screen
+      readers, while an italic line under the image is what a sighted reader
+      skimming the page actually sees:
+      ```markdown
+      ![Nursing discharge blocked by pending pharmacy items](images/23222-fixed-discharge-blocked.png)
+
+      *Nursing discharge blocked: the pending pharmacy items are listed and Confirm stays disabled.*
+      ```
+
+   c. **Replace outdated images.** If the page already has a screenshot of a
+      screen your change altered — or one that simply looks nothing like the
+      current UI — replace it rather than appending a second, contradictory
+      one. Keeping the wiki current as the UI improves is part of the job.
+
+   d. **Correct any text the change makes wrong.** A page can document
+      intended behaviour that never actually worked. `Inpatient-Nursing-Discharge.md`
+      described the pending-pharmacy block as working while the check had
+      been silently dead since it shipped (issue #23222). If the fix changes
+      what a user sees or can do, reconcile the prose with reality — and if
+      the page described the behaviour correctly all along, say so in the PR
+      so the reviewer knows the page was checked, not skipped.
+
+   e. **If no page exists**, judge which case applies rather than defaulting:
+      - The change is user-visible (a screen, a workflow, a report, a
+        setting) → **create the page**, following the structure and tone of a
+        neighbouring page in the same module.
+      - The change is invisible to end users (an internal query fix with no
+        behavioural difference, a refactor, a build change) → **no page**;
+        the screenshot is evidence for the issue/PR only. Say which you chose
+        and why in the PR.
+
+4. Commit and push the wiki from `../hmis.wiki` — both the images and the
+   page edits, in one commit.
+
+5. Add a comment (or update the description) on issue `$0` that includes:
+   - the evidence — wiki images by raw URL
+     (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`)
+     or redacted API snippets as code blocks. For bug issues where step 2a
+     ran, label and pair the "before" and "after" evidence. Where step 2a was
+     skipped (root cause confirmed by reading code), publish only the step 7
+     confirmation, with no comparison implied.
+   - **a link to the wiki page(s) you updated**
+     (`https://github.com/hmislk/hmis/wiki/<Page-Name>`). The person who
+     raised the issue needs to see how the finished feature works, not just
+     that a fix landed.
+
+6. Remove the temporary screenshots/evidence from the project `tmp/` folder.
+
+The wiki image URLs **and the wiki page links** are both reused in the PR
+description in step 13.
 
 ## 11. Pre-push check
 
@@ -215,6 +290,14 @@ and summarize the Playwright + DB verification performed in steps 7-8
 (concrete enough that a reviewer trusts it was actually tested), and embed
 the same wiki-hosted screenshots from step 10 so reviewers can see the
 verified behavior without redeploying locally.
+
+It must also **link the wiki page(s) updated in step 10**
+(`https://github.com/hmislk/hmis/wiki/<Page-Name>`), under a short
+**Documentation** heading. Reviewers check the change against the documented
+behaviour, so a PR that alters what users see without showing the
+corresponding page edit can't be reviewed properly. If step 10 concluded no
+page was needed (internal-only change), say that explicitly instead — an
+absent Documentation section reads as forgotten, not as deliberate.
 
 ## 14. Review loop (until mergeable)
 

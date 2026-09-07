@@ -17,12 +17,14 @@ public class InvestigationUpdateRequestDTO {
     private String containerName;
     private Long analyzerId;
     private String analyzerName;
+    private Boolean discountAllowed;
 
     public boolean isValid() {
         return name != null || code != null || printName != null || inactive != null || reportType != null
                 || bypassSampleWorkflow != null || vatable != null || vatPercentage != null
                 || categoryId != null || categoryName != null || sampleId != null || sampleName != null
-                || containerId != null || containerName != null || analyzerId != null || analyzerName != null;
+                || containerId != null || containerName != null || analyzerId != null || analyzerName != null
+                || discountAllowed != null;
     }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -56,4 +58,6 @@ public class InvestigationUpdateRequestDTO {
     public void setAnalyzerId(Long analyzerId) { this.analyzerId = analyzerId; }
     public String getAnalyzerName() { return analyzerName; }
     public void setAnalyzerName(String analyzerName) { this.analyzerName = analyzerName; }
+    public Boolean getDiscountAllowed() { return discountAllowed; }
+    public void setDiscountAllowed(Boolean discountAllowed) { this.discountAllowed = discountAllowed; }
 }

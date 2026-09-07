@@ -205,61 +205,131 @@ public class ExcelController {
         String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
         XSSFSheet dataSheet = workbook.createSheet(safeName);
 
-        // Create cell styles for headers
-        CellStyle centerBoldStyle = workbook.createCellStyle();
-        centerBoldStyle.setAlignment(HorizontalAlignment.CENTER);
-        centerBoldStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
-        boldFont.setBold(true);
-        boldFont.setFontHeightInPoints((short) 14);
-        centerBoldStyle.setFont(boldFont);
-
-        CellStyle centerStyle = workbook.createCellStyle();
-        centerStyle.setAlignment(HorizontalAlignment.CENTER);
-        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
-        normalFont.setFontHeightInPoints((short) 12);
-        centerStyle.setFont(normalFont);
-
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd MMM yyyy hh:mm:ss a");
 
         int currentRow = 0;
 
-        // Row 0: Institution Name
+        // Styles
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(titleFont);
+
+        CellStyle subTitleStyle = workbook.createCellStyle();
+        subTitleStyle.setAlignment(HorizontalAlignment.CENTER);
+        subTitleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font subTitleFont = workbook.createFont();
+        subTitleFont.setBold(true);
+        subTitleFont.setFontHeightInPoints((short) 12);
+        subTitleStyle.setFont(subTitleFont);
+
+        CellStyle labelStyle = workbook.createCellStyle();
+        org.apache.poi.ss.usermodel.Font labelFont = workbook.createFont();
+        labelFont.setBold(true);
+        labelStyle.setFont(labelFont);
+
+        CellStyle valueStyle = workbook.createCellStyle();
+        valueStyle.setWrapText(true);
+
+        // ===== Header =====
+
+        // Row 0 - Institution name
         Row institutionRow = dataSheet.createRow(currentRow++);
         Cell institutionCell = institutionRow.createCell(0);
         String institutionName = sessionController.getInstitution() != null
                 ? sessionController.getInstitution().getName()
                 : "Institution";
         institutionCell.setCellValue(institutionName);
-        institutionCell.setCellStyle(centerBoldStyle);
+        institutionCell.setCellStyle(titleStyle);
         dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
-        // Row 1: Report Title (dynamic based on bundle name)
+        // Row 1 - Report title
         Row reportTitleRow = dataSheet.createRow(currentRow++);
         Cell reportTitleCell = reportTitleRow.createCell(0);
-        String reportTitle = "Cashier Report";
-        if (rootBundle.getName() != null) {
-            if (rootBundle.getName().toLowerCase().contains("summary")) {
-                reportTitle = "Cashier Summary Report";
-            } else if (rootBundle.getName().toLowerCase().contains("detail")) {
-                reportTitle = "Cashier Details Report";
-            }
-        }
-        reportTitleCell.setCellValue(reportTitle);
-        reportTitleCell.setCellStyle(centerStyle);
+        reportTitleCell.setCellValue(rootBundle.getPrintableName() != null ? rootBundle.getPrintableName() : "Report");
+        reportTitleCell.setCellStyle(subTitleStyle);
         dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 
-        // Row 2: Date Range
-        Row dateRangeRow = dataSheet.createRow(currentRow++);
-        Cell dateRangeCell = dateRangeRow.createCell(0);
-        String dateRangeText = "From Date - " + dateTimeFormat.format(fromDate)
-                + "     To Date - " + dateTimeFormat.format(toDate);
-        dateRangeCell.setCellValue(dateRangeText);
-        dateRangeCell.setCellStyle(centerStyle);
-        dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 6));
+        // Blank row
+        currentRow++;
 
-        // Leave row 3 blank
+        // Row 3 - From / To. Prefer the range the bundle was generated with;
+        // fall back to the caller's arguments for bundles that do not snapshot
+        // their filters.
+        Date headerFromDate = rootBundle.getFromDate() != null ? rootBundle.getFromDate() : fromDate;
+        Date headerToDate = rootBundle.getToDate() != null ? rootBundle.getToDate() : toDate;
+
+        Row row1 = dataSheet.createRow(currentRow++);
+        Cell c00 = row1.createCell(0);
+        c00.setCellValue("From Date");
+        c00.setCellStyle(labelStyle);
+
+        Cell c01 = row1.createCell(1);
+        c01.setCellValue(headerFromDate != null ? dateTimeFormat.format(headerFromDate) : "");
+        c01.setCellStyle(valueStyle);
+
+        Cell c03 = row1.createCell(3);
+        c03.setCellValue("To Date");
+        c03.setCellStyle(labelStyle);
+
+        Cell c04 = row1.createCell(4);
+        c04.setCellValue(headerToDate != null ? dateTimeFormat.format(headerToDate) : "");
+        c04.setCellStyle(valueStyle);
+
+        // This exporter is shared by every bundle report. Only spell out the
+        // institution/site/department/cashier filters for a bundle whose
+        // generator actually snapshotted them - otherwise the sheet would
+        // claim "All Departments / All Users" on a report that never applied
+        // those filters, which misstates the scope of a financial document.
+        if (rootBundle.hasFilterSummary()) {
+            // Row 4 - Institution / Site
+            Row row2 = dataSheet.createRow(currentRow++);
+            Cell c10 = row2.createCell(0);
+            c10.setCellValue("Institution");
+            c10.setCellStyle(labelStyle);
+
+            Cell c11 = row2.createCell(1);
+            c11.setCellValue(rootBundle.getFilterInstitution() != null
+                    ? rootBundle.getFilterInstitution().getName()
+                    : "All Institutions");
+            c11.setCellStyle(valueStyle);
+
+            Cell c13 = row2.createCell(3);
+            c13.setCellValue("Site");
+            c13.setCellStyle(labelStyle);
+
+            Cell c14 = row2.createCell(4);
+            c14.setCellValue(rootBundle.getFilterSite() != null
+                    ? rootBundle.getFilterSite().getName()
+                    : "All Sites");
+            c14.setCellStyle(valueStyle);
+
+            // Row 5 - Department / Cashier
+            Row row3 = dataSheet.createRow(currentRow++);
+            Cell c20 = row3.createCell(0);
+            c20.setCellValue("Department");
+            c20.setCellStyle(labelStyle);
+
+            Cell c21 = row3.createCell(1);
+            c21.setCellValue(rootBundle.getFilterDepartment() != null
+                    ? rootBundle.getFilterDepartment().getName()
+                    : "All Departments");
+            c21.setCellStyle(valueStyle);
+
+            Cell c23 = row3.createCell(3);
+            c23.setCellValue("Cashier / User");
+            c23.setCellStyle(labelStyle);
+
+            Cell c24 = row3.createCell(4);
+            c24.setCellValue(rootBundle.getFilterWebUser() != null
+                    ? rootBundle.getFilterWebUserDisplayName()
+                    : "All Users");
+            c24.setCellStyle(valueStyle);
+        }
+        // Blank row before data
         currentRow++;
 
         if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
@@ -4151,6 +4221,7 @@ public class ExcelController {
 
         switch (bundle.getBundleType()) {
             case "whtIndividualReceipts":
+            case "opdProfessionalPayments":
                 addDataToWhtIndividualReceipts(dataSheet, currentRow, bundle);
                 break;
             case "whtMonthlySummary":
@@ -4234,7 +4305,7 @@ public class ExcelController {
             excelRow.createCell(cellIndex++).setCellValue(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "");
-            excelRow.createCell(cellIndex++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null  ? bill.getStaff().getPerson().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null  ? bill.getToStaff().getPerson().getName() : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getTotal());
             excelRow.createCell(cellIndex++).setCellValue(bill.getTax());
             excelRow.createCell(cellIndex++).setCellValue(bill.getNetTotal());

@@ -1,6 +1,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.inward.TheatreOccupancyStatus;
 import com.divudi.core.data.inward.TheatreTransferType;
@@ -9,6 +10,7 @@ import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,6 +31,8 @@ public class TheatreDashboardController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
+    private WebUserController webUserController;
+    @Inject
     private PatientTransferController patientTransferController;
 
     @EJB
@@ -43,6 +47,13 @@ public class TheatreDashboardController implements Serializable {
     private List<PatientTransferRequest> todaysList;
 
     public String navigateToTheatreDashboard() {
+        // Server-side enforcement to match the rendered guard on the menu/
+        // button entry points — the UI-only check alone doesn't stop a
+        // direct navigation (CodeRabbit #23175).
+        if (!webUserController.hasPrivilege("TheatreAcceptPatient") && !webUserController.hasPrivilege("TheatreSendPatient")) {
+            JsfUtil.addErrorMessage("You are not authorized to view the Theatre Dashboard.");
+            return "";
+        }
         loadAll();
         return "/theater/theatre_dashboard?faces-redirect=true";
     }

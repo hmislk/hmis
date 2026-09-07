@@ -13,6 +13,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ChargeItemTotal;
 import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.inward.InwardChargeType;
 
@@ -21,7 +22,6 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
-import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Fee;
 import com.divudi.core.entity.Institution;
@@ -67,6 +67,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.EnumMap;
 import java.util.Map;
@@ -132,6 +133,8 @@ public class InwardBeanController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     com.divudi.bean.common.PriceMatrixController priceMatrixController;
+    @Inject
+    com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     private Long lastGeneratedBhtLong;
 
@@ -648,10 +651,9 @@ public class InwardBeanController implements Serializable {
         String sql = "SELECT sum(bt.feeValue)"
                 + " FROM BillFee bt"
                 + " WHERE bt.retired=false"
-                + " and type(bt.staff)=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " and bt.fee.feeType=:ftp  "
                 + " and bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //  hm.put("btp", BillType.InwardBill);
 
@@ -853,15 +855,19 @@ public class InwardBeanController implements Serializable {
     }
 
     public List<BillFee> createDoctorAndNurseFee(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            // Merged hospital: there are no assisting fees — every fee is already
+            // returned by createProfesionallFee().
+            return new ArrayList<>();
+        }
 
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
-                + " and type(bt.staff)!=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.DoctorAndNurses, hm)
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
                 + " and bt.bill.patientEncounter IN :pe ";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         List<PatientEncounter> pts = new ArrayList<>();
@@ -879,12 +885,11 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
-                + " and type(bt.staff)=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
                 + " and bt.bill.patientEncounter IN :pe "
                 + " order by bt.feeAdjusted desc ";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         List<PatientEncounter> pts = new ArrayList<>();
@@ -903,12 +908,11 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
-                + " and type(bt.staff)=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
                 + " and bt.bill.patientEncounter=:pe "
                 + " order by bt.feeAdjusted desc ";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessionalEstimates);
         hm.put("pe", patientEncounter);
@@ -927,11 +931,10 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
                 + " WHERE bt.retired=false"
-                + " AND type(bt.staff)=:class"
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " AND bt.fee.feeType=:ftp"
                 + " AND bt.bill.billType=:btp"
                 + " AND bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
@@ -945,6 +948,10 @@ public class InwardBeanController implements Serializable {
      * Adjusted Fee columns always match - exactly as they do for consultants.
      */
     public void setAssistingFeeAdjusted(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            // Merged hospital: setProfesionallFeeAdjusted() already covers every fee.
+            return;
+        }
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
@@ -953,11 +960,10 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
                 + " WHERE bt.retired=false"
-                + " AND type(bt.staff)!=:class"
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.DoctorAndNurses, hm)
                 + " AND bt.fee.feeType=:ftp"
                 + " AND bt.bill.billType=:btp"
                 + " AND bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
@@ -1334,16 +1340,19 @@ public class InwardBeanController implements Serializable {
     }
 
     public double calculateDoctorAndNurseCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            // Merged hospital: calculateProfessionalCharges() already includes these fees.
+            return 0.0;
+        }
 
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
                 + " FROM BillFee bt"
                 + " WHERE bt.retired=false"
-                + " and type(bt.staff)!=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.DoctorAndNurses, hm)
                 + " and bt.fee.feeType=:ftp  "
                 + " and (bt.bill.billType=:btp2) "
                 + " and bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //     hm.put("btp", BillType.InwardBill);
         hm.put("btp2", BillType.InwardProfessional);
@@ -1866,6 +1875,63 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * The specific Outside Charge items (name + amount, summed per item
+     * name) contributing to each charge type's total, so the Interim Bill
+     * can list the actual items instead of only the category label
+     * (issue #22989) — the InwardChargeType a charge belongs to is already
+     * derivable from the item, so callers can show the item directly rather
+     * than the shared category row. Companion to
+     * {@link #caltValueFromAdditionalChargeBulk} — same filter, broken out
+     * per item instead of summed into one value.
+     */
+    public Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> caltAdditionalChargeItemDetailsBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT i.inwardChargeType, i.item.name, i.netValue"
+                + " FROM BillItem i "
+                + " WHERE i.retired=false "
+                + " AND i.bill.billType=:btp "
+                + " AND i.bill.patientEncounter IN :pe "
+                + " AND i.item IS NOT NULL";
+
+        HashMap m = new HashMap();
+        m.put("btp", BillType.InwardOutSideBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        m.put("pe", pts);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, m, TemporalType.DATE);
+
+        // Group by charge type, then merge same-named items within a type
+        // (e.g. the same Outside Charge item added twice) into one summed row.
+        Map<InwardChargeType, Map<String, Double>> amountsByTypeAndName = new EnumMap<>(InwardChargeType.class);
+        if (results != null) {
+            for (Object[] row : results) {
+                InwardChargeType chargeType = (InwardChargeType) row[0];
+                String itemName = (String) row[1];
+                double amount = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                if (chargeType == null || itemName == null || itemName.isEmpty()) {
+                    continue;
+                }
+                amountsByTypeAndName.computeIfAbsent(chargeType, k -> new LinkedHashMap<>())
+                        .merge(itemName, amount, Double::sum);
+            }
+        }
+
+        Map<InwardChargeType, List<ChargeItemTotal.AdditionalChargeItem>> itemsMap = new EnumMap<>(InwardChargeType.class);
+        for (Map.Entry<InwardChargeType, Map<String, Double>> byType : amountsByTypeAndName.entrySet()) {
+            List<ChargeItemTotal.AdditionalChargeItem> items = new ArrayList<>();
+            for (Map.Entry<String, Double> byName : byType.getValue().entrySet()) {
+                items.add(new ChargeItemTotal.AdditionalChargeItem(byName.getKey(), byName.getValue()));
+            }
+            itemsMap.put(byType.getKey(), items);
+        }
+
+        return itemsMap;
+    }
+
     public List<PatientEncounter> fetchChildPatientEncounter(PatientEncounter patientEncounter) {
         List<PatientEncounter> cpt = new ArrayList<>();
 
@@ -2119,6 +2185,8 @@ public class InwardBeanController implements Serializable {
 
                 itm.setTransCheckedCount(calCheckedBillItemCount(itm, patientEncounter));
                 itm.setTransBillItemCount(billed - (cancelld + refund));
+                itm.setTransCancelledBillItemCount(cancelld);
+                itm.setTransRefundedBillItemCount(refund);
 
                 long itemTime = System.currentTimeMillis() - itemStartTime;
                 if (itemTime > 100) {
@@ -2175,36 +2243,43 @@ public class InwardBeanController implements Serializable {
             System.out.println("Department: " + dep.getName() + " has " + items.size() + " items");
 
             if (!items.isEmpty()) {
-                // BULK QUERY 1: Get all billed counts for all items in one query
-                Map<Long, Long> billedCounts = getBulkBillItemCounts(items, pts, forwardRefBill, BilledBill.class);
+                // BULK QUERY 1: Get all billed quantities for all items in one query
+                Map<Long, Double> billedCounts = getBulkBillItemCounts(items, pts, forwardRefBill, BilledBill.class);
 
-                // BULK QUERY 2: Get all cancelled counts
-                Map<Long, Long> cancelledCounts = getBulkBillItemCounts(items, pts, forwardRefBill, CancelledBill.class);
+                // BULK QUERY 2: Get all cancelled quantities
+                Map<Long, Double> cancelledCounts = getBulkBillItemCounts(items, pts, forwardRefBill, CancelledBill.class);
 
-                // BULK QUERY 3: Get all refund counts
-                Map<Long, Long> refundCounts = getBulkBillItemCounts(items, pts, forwardRefBill, RefundBill.class);
+                // BULK QUERY 3: Get all refund quantities
+                Map<Long, Double> refundCounts = getBulkBillItemCounts(items, pts, forwardRefBill, RefundBill.class);
 
-                // BULK QUERY 4: Get all checked counts
-                Map<Long, Long> checkedCounts = getBulkCheckedBillItemCounts(items, patientEncounter);
+                // BULK QUERY 4: Get all checked quantities
+                Map<Long, Double> checkedCounts = getBulkCheckedBillItemCounts(items, patientEncounter);
 
                 // BULK QUERY 5: Get Gross/Discount/Margin/Net/VAT value breakdown
                 Map<Long, double[]> valueBreakdown = getBulkBillItemValueBreakdown(items, pts);
 
+                // BULK QUERY 6: Get pending-check bill counts (distinct bills, not quantity)
+                Map<Long, Long> pendingCheckBillCounts = getBulkPendingCheckBillCounts(items, pts, forwardRefBill);
+
                 // Apply the counts to items (no more database queries!)
                 for (Item itm : items) {
-                    long billed = billedCounts.getOrDefault(itm.getId(), 0L);
-                    long cancelled = cancelledCounts.getOrDefault(itm.getId(), 0L);
-                    long refund = refundCounts.getOrDefault(itm.getId(), 0L);
-                    long checked = checkedCounts.getOrDefault(itm.getId(), 0L);
+                    double billed = billedCounts.getOrDefault(itm.getId(), 0.0);
+                    double cancelled = cancelledCounts.getOrDefault(itm.getId(), 0.0);
+                    double refund = refundCounts.getOrDefault(itm.getId(), 0.0);
+                    double checked = checkedCounts.getOrDefault(itm.getId(), 0.0);
                     double[] values = valueBreakdown.getOrDefault(itm.getId(), new double[5]);
+                    long pendingCheckBillCount = pendingCheckBillCounts.getOrDefault(itm.getId(), 0L);
 
                     itm.setTransCheckedCount(checked);
                     itm.setTransBillItemCount(billed - (cancelled + refund));
+                    itm.setTransCancelledBillItemCount(cancelled);
+                    itm.setTransRefundedBillItemCount(refund);
                     itm.setTransGrossValue(values[0]);
                     itm.setTransDiscount(values[1]);
                     itm.setTransMarginValue(values[2]);
                     itm.setTransNetValue(values[3]);
                     itm.setTransVat(values[4]);
+                    itm.setTransPendingCheckBillCount(pendingCheckBillCount);
                 }
             }
 
@@ -2222,16 +2297,17 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Bulk query to get bill item counts for multiple items at once
-     * Returns a map of itemId -> count
+     * Bulk query to get bill item quantities for multiple items at once.
+     * Returns a map of itemId -> total quantity (sum of BillItem.qty, not
+     * a row count - a single BillItem can carry qty > 1).
      */
-    private Map<Long, Long> getBulkBillItemCounts(List<Item> items, List<PatientEncounter> pts, Bill forwardBill, Class billClass) {
+    private Map<Long, Double> getBulkBillItemCounts(List<Item> items, List<PatientEncounter> pts, Bill forwardBill, Class billClass) {
         if (items == null || items.isEmpty()) {
             return new HashMap<>();
         }
 
         HashMap hm = new HashMap();
-        String sql = "SELECT b.item.id, count(b) FROM BillItem b "
+        String sql = "SELECT b.item.id, SUM(ABS(b.qty)) FROM BillItem b "
                 + " WHERE b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.bill.patientEncounter IN :pe "
@@ -2252,11 +2328,11 @@ public class InwardBeanController implements Serializable {
 
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIME);
 
-        Map<Long, Long> countMap = new HashMap<>();
+        Map<Long, Double> countMap = new HashMap<>();
         if (results != null) {
             for (Object[] row : results) {
                 Long itemId = (Long) row[0];
-                Long count = (Long) row[1];
+                Double count = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
                 countMap.put(itemId, count);
             }
         }
@@ -2305,15 +2381,18 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Bulk query to get checked bill item counts for multiple items at once
+     * Bulk query to get checked bill item quantities for multiple items at
+     * once. Returns a map of itemId -> total checked quantity (sum of
+     * BillItem.qty), matching the quantity basis of getBulkBillItemCounts so
+     * Pending Check Count (billed - checked) stays in the same unit.
      */
-    private Map<Long, Long> getBulkCheckedBillItemCounts(List<Item> items, PatientEncounter patientEncounter) {
+    private Map<Long, Double> getBulkCheckedBillItemCounts(List<Item> items, PatientEncounter patientEncounter) {
         if (items == null || items.isEmpty()) {
             return new HashMap<>();
         }
 
         HashMap hm = new HashMap();
-        String sql = "SELECT b.item.id, count(b) FROM BillItem b "
+        String sql = "SELECT b.item.id, SUM(ABS(b.qty)) FROM BillItem b "
                 + " WHERE b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.bill.patientEncounter=:pe "
@@ -2329,6 +2408,54 @@ public class InwardBeanController implements Serializable {
         hm.put("cls", BilledBill.class);
 
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> countMap = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                Long itemId = (Long) row[0];
+                Double count = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                countMap.put(itemId, count);
+            }
+        }
+
+        return countMap;
+    }
+
+    /**
+     * Bulk query to get the pending-check bill count for multiple items at
+     * once. Unlike getBulkBillItemCounts/getBulkCheckedBillItemCounts (which
+     * are quantity-based), this counts distinct Bills - not summed qty -
+     * since "Pending Check Count" on the Service Details tab means "how many
+     * bills for this item still need checking", not a quantity.
+     */
+    private Map<Long, Long> getBulkPendingCheckBillCounts(List<Item> items, List<PatientEncounter> pts, Bill forwardBill) {
+        if (items == null || items.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT b.item.id, COUNT(DISTINCT b.bill) FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.bill.patientEncounter IN :pe "
+                + " and b.item IN :items "
+                + " and type(b.bill)=:cls "
+                + " and b.bill.checkedBy is null "
+                + " and b.bill.cancelled=false";
+
+        if (forwardBill != null) {
+            sql += " and b.bill.forwardReferenceBill=:fB";
+            hm.put("fB", forwardBill);
+        }
+
+        sql += " GROUP BY b.item.id";
+
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", pts);
+        hm.put("items", items);
+        hm.put("cls", BilledBill.class);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIME);
 
         Map<Long, Long> countMap = new HashMap<>();
         if (results != null) {
@@ -3244,7 +3371,11 @@ public class InwardBeanController implements Serializable {
         }
         HashMap hm = new HashMap();
         hm.put("id", ti.getId());
-        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC";
+        // The id tiebreak matters: getFeeForBlock() indexes into this list positionally,
+        // so any two fees sharing a sortOrder would otherwise order arbitrarily and the
+        // same stay could be billed at a different tier on different runs. New fees can
+        // no longer collide (TimedItemFeeRules), but rows saved before that still can.
+        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC, tif.id ASC";
         List<TimedItemFee> fees = getTimedItemFeeFacade().findByJpql(sql, hm);
         return fees != null ? fees : new ArrayList<>();
     }
@@ -3323,7 +3454,28 @@ public class InwardBeanController implements Serializable {
 
     public double calCountWithoutOverShoot(TimedItemFee tif, Date admittedAt, Date dischargedAt) {
 
-        double duration = tif.getDurationHours() * 60;
+        // No fee configured at all counts the same as a fee with no duration set:
+        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
+        // so this is reachable from the room paths, and a missing configuration
+        // should not break the page that is rendering the bill.
+        if (tif == null) {
+            return 0;
+        }
+
+        // A one-time fee is charged once for the whole service, however long it ran.
+        if (tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
+
+        // Same guard calCount already applies. Persisted data can still carry a
+        // time-based fee with no duration set, and dividing by it below yields
+        // Infinity — which casts to a huge block count and overcharges the bill.
+        if (duration <= 0) {
+            return 0;
+        }
+
         double consumeTimeM = 0L;
 
         if (admittedAt == null) {
@@ -3367,7 +3519,10 @@ public class InwardBeanController implements Serializable {
         BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+        // Porter-based ward return flow (#21466/#21470) - see issue #22990.
+        BillTypeAtomic.RETURN_MEDICINE_INWARD,
+        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION
     );
     public double calculateInwardTotal(PatientEncounter patientEncounter) {
         if (patientEncounter == null) {
@@ -3419,8 +3574,22 @@ public class InwardBeanController implements Serializable {
 
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
-        double duration = tif.getDurationHours() * 60;
-        double overShoot = tif.getOverShootHours() * 60;
+        // No fee configured at all counts the same as a fee with no duration set:
+        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
+        // so this is reachable from the room paths, and a missing configuration
+        // should not break the page that is rendering the bill.
+        if (tif == null) {
+            return 0;
+        }
+
+        // A one-time fee is charged once for the whole service, however long it
+        // ran — no block counting, and no dependency on elapsed time at all.
+        if (tif.isOneTime()) {
+            return 1;
+        }
+
+        double duration = tif.getDurationMinutes();
+        double overShoot = tif.getOverShootMinutes();
         //  double tempFee = tif.getFee();
         double consumeTime = 0;
 

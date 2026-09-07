@@ -1735,6 +1735,17 @@ public class PriceMatrixController implements Serializable {
      * a.inwardChargeType IS NULL to keep service/pharmacy rows isolated from
      * room-charge-type rows.
      */
+    /**
+     * NOTE (2026-08-31, issue #23237): department now wildcard-matches like
+     * paymentMethod/admissionType do in this same query, mirroring the fix
+     * already applied to the native-SQL path (PriceMatrixNativeSqlService.
+     * fetchDiscountPct) in #23220. This method has a live caller —
+     * InwardBeanController.applyInwardDiscountToBillFee, used by inpatient
+     * service/investigation billing — so the department-exact-match gap was
+     * silently dropping investigation discounts whenever a matrix row was
+     * saved without a department (meant as "any department") against an
+     * investigation that has its own department set. See issue #23308.
+     */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,
             InwardChargeType chargeType, boolean chargeTypeSpecific, Institution creditCompany) {
@@ -1765,7 +1776,7 @@ public class PriceMatrixController implements Serializable {
             jpql.append(" and a.paymentScheme is null");
         }
         if (department != null) {
-            jpql.append(" and a.department = :dep");
+            jpql.append(" and (a.department = :dep or a.department is null)");
             params.put("dep", department);
         } else {
             jpql.append(" and a.department is null");

@@ -462,7 +462,7 @@
                                             <p:outputLabel value="Discount Scheme" styleClass="d-block"/>
                                             <p:selectOneMenu class="w-100" styleClass="form-control w-100" value="#{admissionController.paymentScheme}">
                                                 <f:selectItem itemLabel="No Discount Scheme" itemValue="#{null}"/>
-                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForInward}"
+                                                <f:selectItems value="#{paymentSchemeController.getPaymentSchemesForInward(admissionController.current.paymentMethod)}"
                                                                var="ps" itemLabel="#{ps.name}" itemValue="#{ps}"/>
                                             </p:selectOneMenu>
                                         </div>

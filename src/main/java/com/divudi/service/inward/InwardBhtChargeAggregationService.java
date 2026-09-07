@@ -48,6 +48,8 @@ public class InwardBhtChargeAggregationService implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     /** Filter parameters for fetchEncounters(), mirroring the report filter panels. */
     public static class EncounterFilter {
@@ -322,20 +324,25 @@ public class InwardBhtChargeAggregationService implements Serializable {
         return collectChargeTypeRows(rows);
     }
 
-    /** BILL_FEE — Consultant staff -> ProfessionalCharge. */
+    /** BILL_FEE — professional fees. Covers assisting fees too when the hospital merges them. */
     private Map<Long, Map<InwardChargeType, Double>> fetchProfessionalFeeCharges(List<PatientEncounter> encounters) {
-        return fetchBillFeeCharges(encounters, true, InwardChargeType.ProfessionalCharge);
+        return fetchBillFeeCharges(encounters, InwardChargeType.ProfessionalCharge);
     }
 
-    /** BILL_FEE — non-Consultant staff (assistants/nurses) -> DoctorAndNurses. */
+    /** BILL_FEE — assisting fees (non-Consultant staff). Empty for a merged hospital. */
     private Map<Long, Map<InwardChargeType, Double>> fetchAssistingFeeCharges(List<PatientEncounter> encounters) {
-        return fetchBillFeeCharges(encounters, false, InwardChargeType.DoctorAndNurses);
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            return new HashMap<>();
+        }
+        return fetchBillFeeCharges(encounters, InwardChargeType.DoctorAndNurses);
     }
 
     private Map<Long, Map<InwardChargeType, Double>> fetchBillFeeCharges(
-            List<PatientEncounter> encounters, boolean consultantOnly, InwardChargeType targetType) {
+            List<PatientEncounter> encounters, InwardChargeType targetType) {
 
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
+
+        Map<String, Object> params = new HashMap<>();
 
         String jpql = "select bf.bill.patientEncounter.id, sum(coalesce(bf.feeGrossValue, bf.feeValue))"
                 + " from BillFee bf"
@@ -344,14 +351,12 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " and bf.bill.cancelled = false"
                 + " and bf.bill.billType = :btp"
                 + " and bf.fee.feeType = :ftp"
-                + (consultantOnly ? " and type(bf.staff) = :staffClass" : " and type(bf.staff) != :staffClass")
+                + professionalFeeClassificationService.staffCondition("bf", targetType, params)
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
-        Map<String, Object> params = new HashMap<>();
         params.put("btp", BillType.InwardProfessional);
         params.put("ftp", FeeType.Staff);
-        params.put("staffClass", Consultant.class);
         params.put("encs", encounters);
 
         List<Object[]> rows = billFeeFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -496,15 +501,20 @@ public class InwardBhtChargeAggregationService implements Serializable {
     public Map<Long, double[]> fetchDiscountAndMarginSplitByProfessional(List<PatientEncounter> encounters) {
         Map<Long, double[]> result = new HashMap<>();
 
+        // When the hospital merges assisting fees into professional, "professional"
+        // widens to every staffed professional fee and "other" narrows by exactly the
+        // same rows, so the two buckets stay complementary in both configurations.
+        boolean merged = professionalFeeClassificationService.isMerged();
+
         String professionalJpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
-                + " from BillFee bf"
+                + " from BillFee bf left join bf.staff s"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
                 + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
                 + " and bf.bill.billType = :btp"
                 + " and bf.fee.feeType = :ftp"
-                + " and type(bf.staff) = :staffClass"
+                + (merged ? " and s.id is not null" : " and type(s) = :staffClass")
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
@@ -514,7 +524,8 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " and bf.bill.retired = false"
                 + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
-                + " and (bf.bill.billType != :btp or f.id is null or f.feeType != :ftp or s.id is null or type(s) != :staffClass)"
+                + " and (bf.bill.billType != :btp or f.id is null or f.feeType != :ftp or s.id is null"
+                + (merged ? ")" : " or type(s) != :staffClass)")
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
@@ -524,7 +535,9 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 BillTypeAtomic.INWARD_FINAL_BILL, BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL));
         params.put("btp", BillType.InwardProfessional);
         params.put("ftp", FeeType.Staff);
-        params.put("staffClass", Consultant.class);
+        if (!merged) {
+            params.put("staffClass", Consultant.class);
+        }
 
         List<Object[]> professionalRows = patientEncounterFacade.findObjectArrayByJpql(professionalJpql, params, TemporalType.TIMESTAMP);
         if (professionalRows != null) {

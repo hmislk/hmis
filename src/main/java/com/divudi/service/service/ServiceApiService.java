@@ -15,6 +15,7 @@ import com.divudi.core.data.dto.service.ServiceResponseDTO;
 import com.divudi.core.data.dto.service.ServiceSearchResultDTO;
 import com.divudi.core.data.dto.service.ServiceUpdateRequestDTO;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -25,6 +26,7 @@ import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.InwardServiceFacade;
@@ -66,6 +68,9 @@ public class ServiceApiService implements Serializable {
 
     @EJB
     private ServiceCategoryFacade serviceCategoryFacade;
+
+    @EJB
+    private CategoryFacade categoryFacade;
 
     @EJB
     private ItemFacade itemFacade;
@@ -233,9 +238,12 @@ public class ServiceApiService implements Serializable {
 
         // Resolve optional associations
         if (request.getCategoryId() != null) {
-            ServiceCategory category = serviceCategoryFacade.find(request.getCategoryId());
-            if (category == null) {
-                throw new Exception("ServiceCategory not found with ID: " + request.getCategoryId());
+            // Category (not ServiceCategoryFacade) is used here since a service's category
+            // can be any Category subtype already in use in the system (Category,
+            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+            Category category = categoryFacade.find(request.getCategoryId());
+            if (category == null || category.isRetired()) {
+                throw new Exception("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
         }
@@ -348,9 +356,12 @@ public class ServiceApiService implements Serializable {
         }
 
         if (request.getCategoryId() != null) {
-            ServiceCategory category = serviceCategoryFacade.find(request.getCategoryId());
-            if (category == null) {
-                throw new Exception("ServiceCategory not found with ID: " + request.getCategoryId());
+            // Category (not ServiceCategoryFacade) is used here since a service's category
+            // can be any Category subtype already in use in the system (Category,
+            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+            Category category = categoryFacade.find(request.getCategoryId());
+            if (category == null || category.isRetired()) {
+                throw new Exception("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
         }
@@ -661,13 +672,45 @@ public class ServiceApiService implements Serializable {
     // =========================================================================
 
     /**
+     * Item subtypes selectable by the bulk-flag endpoints below via itemType.
+     * There is no API to enumerate every Category id in the system (e.g. every
+     * InvestigationCategory), so scoping a bulk update to "every item of this
+     * subtype" is the only reliable way to cover something like "all
+     * investigations" without looping over guessed/incomplete category lists.
+     */
+    private Class<? extends Item> resolveItemType(String itemTypeStr) throws Exception {
+        if (itemTypeStr == null || itemTypeStr.trim().isEmpty()) {
+            return null;
+        }
+        switch (itemTypeStr.trim()) {
+            case "Investigation":
+                return com.divudi.core.entity.lab.Investigation.class;
+            case "Service":
+                return Service.class;
+            case "InwardService":
+                return InwardService.class;
+            default:
+                throw new Exception("Invalid itemType: " + itemTypeStr
+                        + ". Use one of: Investigation, Service, InwardService");
+        }
+    }
+
+    /**
      * Bulk-update marginAllowed and/or discountAllowed on all non-retired fees
-     * for items in a given category with a given feeType.
+     * for items in a given category and/or item subtype, with a given feeType.
+     * At least one of categoryId/itemType is required as a safety guard against
+     * an unscoped update of every fee in the system.
      */
     public Map<String, Object> bulkUpdateMargin(Long categoryId, String feeTypeStr,
             Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
-        if (categoryId == null) {
-            throw new Exception("categoryId is required");
+        return bulkUpdateMargin(categoryId, null, feeTypeStr, marginAllowed, discountAllowed, user);
+    }
+
+    public Map<String, Object> bulkUpdateMargin(Long categoryId, String itemTypeStr, String feeTypeStr,
+            Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
+        Class<? extends Item> itemType = resolveItemType(itemTypeStr);
+        if (categoryId == null && itemType == null) {
+            throw new Exception("At least one of categoryId or itemType is required");
         }
         if (user == null) {
             throw new Exception("User is required for bulk update");
@@ -686,10 +729,16 @@ public class ServiceApiService implements Serializable {
         }
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT f FROM ItemFee f "
-                + "WHERE f.item.category.id = :catId "
-                + "AND f.retired = false");
+                + "WHERE f.retired = false");
         Map<String, Object> params = new HashMap<>();
-        params.put("catId", categoryId);
+        if (categoryId != null) {
+            jpqlBuilder.append(" AND f.item.category.id = :catId");
+            params.put("catId", categoryId);
+        }
+        if (itemType != null) {
+            jpqlBuilder.append(" AND TYPE(f.item) = :itype");
+            params.put("itype", itemType);
+        }
         if (feeType != null) {
             jpqlBuilder.append(" AND f.feeType = :ft");
             params.put("ft", feeType);
@@ -699,6 +748,7 @@ public class ServiceApiService implements Serializable {
         int count = 0;
         Map<String, Object> changes = new HashMap<>();
         changes.put("categoryId", categoryId);
+        changes.put("itemType", itemType != null ? itemType.getSimpleName() : "ALL_TYPES");
         changes.put("feeType", feeType != null ? feeType.name() : "ALL_TYPES");
         if (marginAllowed != null) {
             changes.put("marginAllowed", marginAllowed);
@@ -721,6 +771,68 @@ public class ServiceApiService implements Serializable {
         changes.put("count", count);
         auditService.logAudit(null, changes, user, "ItemFee",
                 "FEE_FLAGS_BULK_UPDATED", null);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("count", count);
+        return result;
+    }
+
+    /**
+     * Bulk-update discountAllowed (item-level, not fee-level) on all non-retired
+     * items in a given category and/or item subtype. Distinct from
+     * {@link #bulkUpdateMargin} above, which only touches ItemFee.discountAllowed
+     * — the inward discount calculation
+     * (InwardBeanController.applyInwardDiscountToBillFee) requires BOTH
+     * Item.discountAllowed and ItemFee.discountAllowed to be true, so both bulk
+     * operations are typically needed together. At least one of categoryId/
+     * itemType is required as a safety guard against an unscoped update of
+     * every item in the system; itemType lets a caller target e.g. "every
+     * Investigation" directly, since there is no API to enumerate every
+     * InvestigationCategory id to loop over instead.
+     */
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, Boolean discountAllowed, WebUser user) throws Exception {
+        return bulkUpdateItemDiscountAllowed(categoryId, null, discountAllowed, user);
+    }
+
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, String itemTypeStr,
+            Boolean discountAllowed, WebUser user) throws Exception {
+        Class<? extends Item> itemType = resolveItemType(itemTypeStr);
+        if (categoryId == null && itemType == null) {
+            throw new Exception("At least one of categoryId or itemType is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for bulk update");
+        }
+        if (discountAllowed == null) {
+            throw new Exception("discountAllowed is required");
+        }
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT i FROM Item i WHERE i.retired = false");
+        Map<String, Object> params = new HashMap<>();
+        if (categoryId != null) {
+            jpqlBuilder.append(" AND i.category.id = :catId");
+            params.put("catId", categoryId);
+        }
+        if (itemType != null) {
+            jpqlBuilder.append(" AND TYPE(i) = :itype");
+            params.put("itype", itemType);
+        }
+        String jpql = jpqlBuilder.toString();
+
+        List<Item> items = itemFacade.findByJpql(jpql, params);
+        int count = 0;
+        for (Item item : items) {
+            item.setDiscountAllowed(discountAllowed);
+            itemFacade.edit(item);
+            count++;
+        }
+
+        Map<String, Object> changes = new HashMap<>();
+        changes.put("categoryId", categoryId);
+        changes.put("itemType", itemType != null ? itemType.getSimpleName() : "ALL_TYPES");
+        changes.put("discountAllowed", discountAllowed);
+        changes.put("count", count);
+        auditService.logAudit(null, changes, user, "Item", "ITEM_DISCOUNT_ALLOWED_BULK_UPDATED", null);
 
         Map<String, Object> result = new HashMap<>();
         result.put("count", count);

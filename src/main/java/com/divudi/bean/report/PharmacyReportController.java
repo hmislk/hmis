@@ -14629,7 +14629,9 @@ public class PharmacyReportController implements Serializable {
             PdfPTable table = new PdfPTable(15);
             table.setWidthPercentage(100);
             table.setSpacingBefore(10);
-            float[] columnWidths = {1.2f, 1.8f, 3.5f, 1.5f, 2.2f, 1f, 1.5f, 1.5f, 1.5f, 1.5f, 2f, 3.5f, 1.5f, 2f, 1.5f};
+            // COST VALUE and PURCHASE VALUE carry the grand totals, which wrap onto
+            // two lines at 1.5f, so those two columns are given a little more room.
+            float[] columnWidths = {1.2f, 1.8f, 3.5f, 1.5f, 2.2f, 1f, 1.5f, 1.9f, 1.5f, 1.9f, 2f, 3.5f, 1.5f, 2f, 1.5f};
             table.setWidths(columnWidths);
 
             addHeaderRow(table);
@@ -14684,18 +14686,23 @@ public class PharmacyReportController implements Serializable {
                 addSpanningCell(table, String.format("%.2f", billNetTotal), rowSpan, createNetTotalCell(""));
 
                 // This cell acts as a placeholder for the payment methods that will be added below
-                PdfPCell paymentPlaceholder = createDataCell(billDto.getPaymentMethod().toString());
+                PdfPCell paymentPlaceholder = createDataCell(
+                        billDto.getPaymentMethod() != null ? billDto.getPaymentMethod().toString() : "");
                 paymentPlaceholder.setRowspan(rowSpan);
                 table.addCell(paymentPlaceholder);
 
-                addSpanningCell(table, "", rowSpan, createEmptyCell()); // MRP
-                addSpanningCell(table, "", rowSpan, createEmptyCell()); // MRP Value
+                // MRP and MRP Value are item-level figures, so they are added per
+                // row. iText places them in columns 13/14 because the bill-level
+                // cells on either side are already held by their rowspan.
+                addMrpCells(table, item);
+
                 addSpanningCell(table, String.format("%.2f", billDiscount), rowSpan, createDataCell(""));
 
                 isFirstItem = false;
             } else {
                 // For all subsequent items, only add the item-specific cells.
                 addItemCells(table, item);
+                addMrpCells(table, item);
             }
         }
 
@@ -14707,12 +14714,17 @@ public class PharmacyReportController implements Serializable {
         table.addCell(createItemNameCell(item.getItemName() != null ? item.getItemName() : "-"));
         table.addCell(createDataCell(item.getItemCode() != null ? item.getItemCode().toString() : "-"));
         table.addCell(createDataCell(item.getBatchNo() != null ? item.getBatchNo() : "-"));
-        table.addCell(createDataCell(String.valueOf(item.getQty().intValue())));
-        table.addCell(createDataCell(String.format("%.2f", item.getCostRate())));
+        table.addCell(createDataCell(String.valueOf((long) safeDouble(item.getQty()))));
+        table.addCell(createDataCell(String.format("%.2f", safeDouble(item.getCostRate()))));
         table.addCell(createDataCell(String.format("%.2f", calculateCostValue(item))));
-        table.addCell(createDataCell(String.format("%.2f", item.getRetailRate())));
-        table.addCell(createDataCell(String.format("%.2f", calculateItemValue(item))));
+        table.addCell(createDataCell(String.format("%.2f", safeDouble(item.getPurchaseRate()))));
+        table.addCell(createDataCell(String.format("%.2f", calculatePurchaseValue(item))));
 
+    }
+
+    private void addMrpCells(PdfPTable table, BillItemDTO item) {
+        table.addCell(createDataCell(String.format("%.2f", safeDouble(item.getRetailRate()))));
+        table.addCell(createDataCell(String.format("%.2f", calculateItemValue(item))));
     }
 
 // Individual payment method row
@@ -14749,10 +14761,14 @@ public class PharmacyReportController implements Serializable {
     private void addPaymentBreakdownRows(PdfPTable table, CostOfGoodSoldBillDTO billDto) {
         Map<PaymentMethod, Double> paymentBreakdown = getPaymentBreakdown(billDto);
 
+        // A bill can carry no payment method at all - the export must still
+        // produce its row rather than abort the whole PDF part-written.
+        PaymentMethod billPaymentMethod = billDto.getPaymentMethod();
+
         // Handle single payment method case
-        if (!"MultiplePaymentMethods".equals(billDto.getPaymentMethod().toString())) {
-            String methodName = billDto.getPaymentMethod().toString();
-            double total = billDto.getNetTotal();
+        if (billPaymentMethod != PaymentMethod.MultiplePaymentMethods) {
+            String methodName = billPaymentMethod != null ? billPaymentMethod.toString() : "";
+            double total = billDto.getNetTotal() != null ? billDto.getNetTotal() : 0.0;
             addPaymentMethodRow(table, methodName, total);
         } else {
             for (Map.Entry<PaymentMethod, Double> entry : paymentBreakdown.entrySet()) {
@@ -14815,7 +14831,7 @@ public class PharmacyReportController implements Serializable {
     private void addHeaderRow(PdfPTable table) {
         String[] headers = {
             "Date", "Doc. No", "NAME", "CODE", "BATCH NO", "QTY",
-            "COST RATE", "COST VALUE", "RATE", "VALUE", "Net Total",
+            "COST RATE", "COST VALUE", "PURCHASE RATE", "PURCHASE VALUE", "Net Total",
             "Payment Mode/Modes", "MRP", "MRP Value", "Discount"
         };
 
@@ -14830,20 +14846,40 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    /**
+     * Totals row spanning all 15 columns: the label covers columns 1-7, then
+     * each money total sits under the column it totals (Cost Value, Purchase
+     * Value, Net Total, MRP Value). Values come from the controller totals
+     * accumulated during processing so the PDF matches the on-screen footer -
+     * which, as {@link #createTotalRow} explains, is not necessarily the sum of
+     * the rows printed above.
+     */
     private void addGrandTotalRow(PdfPTable table, double grandTotal) {
         PdfPCell totalLabel = new PdfPCell(new Phrase("Total",
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-        totalLabel.setColspan(14);
+        totalLabel.setColspan(7);
         totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
         totalLabel.setPadding(5);
         totalLabel.setBorder(Rectangle.BOX);
         table.addCell(totalLabel);
 
-        PdfPCell totalValue = new PdfPCell(new Phrase(String.format("%.2f", grandTotal),
+        table.addCell(createTotalCell(String.format("%.2f", totalCostValue)));   // COST VALUE
+        table.addCell(createTotalCell(""));                                      // PURCHASE RATE
+        table.addCell(createTotalCell(String.format("%.2f", totalPurchaseValue))); // PURCHASE VALUE
+        table.addCell(createTotalCell(String.format("%.2f", grandTotal)));        // Net Total
+        table.addCell(createTotalCell(""));                                       // Payment Mode/Modes
+        table.addCell(createTotalCell(""));                                       // MRP
+        table.addCell(createTotalCell(String.format("%.2f", totalRetailValue)));  // MRP Value
+        table.addCell(createTotalCell(""));                                       // Discount
+    }
+
+    private PdfPCell createTotalCell(String content) {
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "",
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-        totalValue.setHorizontalAlignment(Element.ALIGN_CENTER);
-        totalValue.setBorder(Rectangle.BOX);
-        table.addCell(totalValue);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setPadding(5);
+        cell.setBorder(Rectangle.BOX);
+        return cell;
     }
 
     private PdfPCell createDateCell(String content) {
@@ -14932,10 +14968,20 @@ public class PharmacyReportController implements Serializable {
         return 0.0;
     }
 
+    private double calculatePurchaseValue(BillItemDTO item) {
+        if (item.getPurchaseRate() != null && item.getQty() != null) {
+            return item.getPurchaseRate() * item.getQty();
+        }
+        return 0.0;
+    }
+
     private void addSummary(Document document, double grandTotal) throws DocumentException {
         document.add(new Paragraph(" "));
         document.add(new Paragraph("Summary:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
         document.add(new Paragraph("Total Bills: " + (cogsBillDtos != null ? cogsBillDtos.size() : 0)));
+        document.add(new Paragraph("Total Cost Value: " + String.format("%.2f", totalCostValue)));
+        document.add(new Paragraph("Total Purchase Value: " + String.format("%.2f", totalPurchaseValue)));
+        document.add(new Paragraph("Total MRP Value: " + String.format("%.2f", totalRetailValue)));
         document.add(new Paragraph("Grand Total: " + String.format("%.2f", grandTotal)));
     }
 
@@ -16420,6 +16466,13 @@ public class PharmacyReportController implements Serializable {
             dto.setDosageFormName(itm != null && itm.getDosageForm() != null ? itm.getDosageForm().getName() : "");
             String supplierName = itm != null ? supplierMap.getOrDefault(itm.getId(), "") : "";
             dto.setLastSupplierName(supplierName);
+            if (department != null) {
+                dto.setStockQty(getPharmacyBean().getStockByPurchaseValue(itm, department));
+                dto.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(itm, department));
+            } else {
+                dto.setStockQty(getPharmacyBean().getStockByPurchaseValue(itm));
+                dto.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(itm));
+            }
             itemLastSuppliers.add(dto);
         }
 
@@ -16580,7 +16633,8 @@ public class PharmacyReportController implements Serializable {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Pharmacy Sales Report", filters);
             }
             createHeaderRow(sheet, rowIndex);
-            populateDataRows(sheet, bills, rowIndex + 1);
+            int nextRow = populateDataRows(sheet, bills, rowIndex + 1);
+            createTotalRow(sheet, nextRow);
 
             workbook.write(out);
             context.responseComplete();
@@ -16593,7 +16647,7 @@ public class PharmacyReportController implements Serializable {
     private void createHeaderRow(Sheet sheet, int rowIndex) {
         String[] headers = {
             "Date", "Doc. No", "NAME", "CODE", "BATCH NO", "QTY", "COST RATE",
-            "COST VALUE", "RATE", "VALUE", "Net Total", "Payment Mode/Modes",
+            "COST VALUE", "PURCHASE RATE", "PURCHASE VALUE", "Net Total", "Payment Mode/Modes",
             "MRP", "MRP Value", "Discount"
         };
         Row headerRow = sheet.createRow(rowIndex);
@@ -16603,7 +16657,11 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills, int startRow) {
+    /**
+     * Writes one row per bill item and returns the index of the first row after
+     * the data block, so the caller can append the totals row there.
+     */
+    private int populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills, int startRow) {
         AtomicInteger rowNum = new AtomicInteger(startRow);
         for (CostOfGoodSoldBillDTO bill : bills) {
             List<BillItemDTO> billItems = bill.getBillItems();
@@ -16620,23 +16678,61 @@ public class PharmacyReportController implements Serializable {
                     row.createCell(1).setCellValue(bill.getBillDeptId() != null ? bill.getBillDeptId() : "");
                 }
 
+                double qty = safeDouble(item.getQty());
+                double costRate = safeDouble(item.getCostRate());
+                double purchaseRate = safeDouble(item.getPurchaseRate());
+                double retailRate = safeDouble(item.getRetailRate());
+
                 row.createCell(2).setCellValue(item.getItemName() != null ? item.getItemName() : "");
                 row.createCell(3).setCellValue(item.getItemCode() != null ? item.getItemCode() : "");
                 row.createCell(4).setCellValue(item.getBatchNo() != null ? item.getBatchNo() : "");
-                row.createCell(5).setCellValue(item.getQty());
-                row.createCell(6).setCellValue(item.getCostRate());
-                row.createCell(7).setCellValue(item.getQty() * item.getCostRate());
-                row.createCell(8).setCellValue(item.getRetailRate());
-                row.createCell(9).setCellValue(item.getQty() * item.getRetailRate());
+                row.createCell(5).setCellValue(qty);
+                row.createCell(6).setCellValue(costRate);
+                row.createCell(7).setCellValue(qty * costRate);
+                row.createCell(8).setCellValue(purchaseRate);
+                row.createCell(9).setCellValue(qty * purchaseRate);
+                row.createCell(12).setCellValue(retailRate);
+                row.createCell(13).setCellValue(qty * retailRate);
 
                 if (i == 0) {
-                    row.createCell(10).setCellValue(bill.getNetTotal());
-                    String paymentModes = formatPaymentMethods(bill.getPaymentMethod().toString(), bill);
+                    row.createCell(10).setCellValue(safeDouble(bill.getNetTotal()));
+                    String paymentModes = bill.getPaymentMethod() != null
+                            ? formatPaymentMethods(bill.getPaymentMethod().toString(), bill) : "";
                     row.createCell(11).setCellValue(paymentModes);
-                    row.createCell(14).setCellValue(bill.getDiscount());
+                    row.createCell(14).setCellValue(safeDouble(bill.getDiscount()));
                 }
             }
         }
+        return rowNum.get();
+    }
+
+    /**
+     * Totals row for the cost-of-goods-sold bill exports. The values come from
+     * the controller totals accumulated while the report was processed, not
+     * from re-summing the exported rows, so the spreadsheet always matches the
+     * on-screen footer.
+     * <p>
+     * Those two are deliberately not the same thing. A reference bill settled
+     * outside the period is added to {@code cogsBillDtos} by
+     * {@link #retrieveNegativeReferenceBills}, so it appears as ordinary rows,
+     * but only its bill total is flipped negative - the item quantities and
+     * rates stay positive while the accumulated totals subtract them. Bills
+     * with no items are skipped by {@link #populateDataRows} yet still counted
+     * in the net total. Summing a value column in the spreadsheet can therefore
+     * disagree with this row; the accumulated figure is the report's answer,
+     * and it is the one shown on screen.
+     */
+    private void createTotalRow(Sheet sheet, int rowIndex) {
+        Row totalRow = sheet.createRow(rowIndex);
+        totalRow.createCell(0).setCellValue("Total");
+        totalRow.createCell(7).setCellValue(totalCostValue);
+        totalRow.createCell(9).setCellValue(totalPurchaseValue);
+        totalRow.createCell(10).setCellValue(safeDouble(netTotal));
+        totalRow.createCell(13).setCellValue(totalRetailValue);
+    }
+
+    private double safeDouble(Double value) {
+        return value != null ? value : 0.0;
     }
 
     private String formatPaymentMethods(String paymentMethod, CostOfGoodSoldBillDTO bill) {
@@ -18482,7 +18578,7 @@ public class PharmacyReportController implements Serializable {
             document.add(titlePara);
             document.add(new Paragraph(" "));
 
-            int columnCount = 6;
+            int columnCount = 8;
 
             Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
@@ -18496,8 +18592,8 @@ public class PharmacyReportController implements Serializable {
             float[] columnWidths;
             String[] headers;
 
-            columnWidths = new float[]{2f, 3f, 5f, 4f, 3f, 5f};
-            headers = new String[]{"Sl No", "Item Code", "Item Name", "Drug Form", "Dosage Form", "Supplier (Last Purchase)"};
+            columnWidths = new float[]{2f, 3f, 5f, 4f, 3f, 5f, 4f, 4f};
+            headers = new String[]{"Sl No", "Item Code", "Item Name", "Drug Form", "Dosage Form", "Supplier (Last Purchase)", "Value of QIH", "QIH"};
 
             table.setWidths(columnWidths);
 
@@ -18515,6 +18611,12 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getCategoryName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getDosageFormName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getLastSupplierName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                PdfPCell stockQtyCell = new PdfPCell(new Phrase(df.format(deptEntry.getStockQty()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                stockQtyCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(stockQtyCell);
+                PdfPCell stockOnHandCell = new PdfPCell(new Phrase(df.format(deptEntry.getStockOnHand()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                stockOnHandCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(stockOnHandCell);
             }
 
             document.add(table);
@@ -18681,6 +18783,8 @@ public class PharmacyReportController implements Serializable {
             headerRow.createCell(3).setCellValue("Drug Form");
             headerRow.createCell(4).setCellValue("Dosage Form");
             headerRow.createCell(5).setCellValue("Supplier (Last Purchase)");
+            headerRow.createCell(6).setCellValue("Value of QIH");
+            headerRow.createCell(7).setCellValue("QIH");
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
 
@@ -18695,6 +18799,8 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getCategoryName());
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getDosageFormName());
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getLastSupplierName());
+                dataRow.createCell(colIndex++).setCellValue(deptEntry.getStockQty());
+                dataRow.createCell(colIndex++).setCellValue(deptEntry.getStockOnHand());
             }
 
             // Footer: reported by and printed time

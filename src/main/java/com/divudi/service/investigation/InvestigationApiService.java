@@ -2,12 +2,14 @@ package com.divudi.service.investigation;
 
 import com.divudi.core.data.InvestigationReportType;
 import com.divudi.core.data.dto.investigation.*;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.lab.InvestigationTube;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.InvestigationCategoryFacade;
 import com.divudi.core.facade.InvestigationFacade;
 import com.divudi.core.facade.InvestigationTubeFacade;
@@ -25,6 +27,7 @@ import java.util.*;
 public class InvestigationApiService implements Serializable {
     @EJB private InvestigationFacade investigationFacade;
     @EJB private InvestigationCategoryFacade investigationCategoryFacade;
+    @EJB private CategoryFacade categoryFacade;
     @EJB private SampleFacade sampleFacade;
     @EJB private InvestigationTubeFacade investigationTubeFacade;
     @EJB private MachineFacade machineFacade;
@@ -58,10 +61,11 @@ public class InvestigationApiService implements Serializable {
         i.setInactive(Boolean.TRUE.equals(req.getInactive()));
         i.setBypassSampleWorkflow(Boolean.TRUE.equals(req.getBypassSampleWorkflow()));
         i.setVatable(Boolean.TRUE.equals(req.getVatable()));
+        i.setDiscountAllowed(Boolean.TRUE.equals(req.getDiscountAllowed()));
         validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
-        InvestigationCategory category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
+        Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
         if (category != null) i.setCategory(category);
         Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
         if (sample != null) i.setSample(sample);
@@ -83,11 +87,12 @@ public class InvestigationApiService implements Serializable {
         if (req.getInactive() != null) i.setInactive(req.getInactive());
         if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
         if (req.getVatable() != null) i.setVatable(req.getVatable());
+        if (req.getDiscountAllowed() != null) i.setDiscountAllowed(req.getDiscountAllowed());
         validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
         if (req.getCategoryId() != null || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
-            InvestigationCategory category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
+            Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
             if (category != null) i.setCategory(category);
         }
         if (req.getSampleId() != null || (req.getSampleName() != null && !req.getSampleName().trim().isEmpty())) {
@@ -113,9 +118,16 @@ public class InvestigationApiService implements Serializable {
 
     private Investigation load(Long id) throws Exception { Investigation i = investigationFacade.find(id); if (i == null || i.isRetired()) throw new Exception("Investigation not found with ID: " + id); return i; }
 
-    private InvestigationCategory resolveCategory(Long id, String name, WebUser user) throws Exception {
+    /**
+     * Looks up a category by ID or name across all category subtypes (Category,
+     * ServiceCategory, InvestigationCategory, ...), since lab investigations in this
+     * database are grouped under categories imported from multiple sources and not
+     * exclusively under the InvestigationCategory subtype. Only falls back to creating
+     * a new InvestigationCategory when no category with that name exists at all.
+     */
+    private Category resolveCategory(Long id, String name, WebUser user) throws Exception {
         if (id != null) {
-            InvestigationCategory c = investigationCategoryFacade.find(id);
+            Category c = categoryFacade.find(id);
             if (c == null || c.isRetired()) throw new Exception("Category not found with ID: " + id);
             return c;
         }
@@ -123,14 +135,15 @@ public class InvestigationApiService implements Serializable {
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
             m.put("name", name.trim().toLowerCase());
-            InvestigationCategory c = investigationCategoryFacade.findFirstByJpql(
-                    "select c from InvestigationCategory c where c.retired=:ret and lower(c.name)=:name order by c.name", m);
+            Category c = categoryFacade.findFirstByJpql(
+                    "select c from Category c where c.retired=:ret and lower(c.name)=:name order by c.name", m);
             if (c == null) {
-                c = new InvestigationCategory();
-                c.setName(name.trim());
-                c.setCreatedAt(new Date());
-                c.setCreater(user);
-                investigationCategoryFacade.createAndFlush(c);
+                InvestigationCategory nc = new InvestigationCategory();
+                nc.setName(name.trim());
+                nc.setCreatedAt(new Date());
+                nc.setCreater(user);
+                investigationCategoryFacade.createAndFlush(nc);
+                c = nc;
             }
             return c;
         }
@@ -218,6 +231,7 @@ public class InvestigationApiService implements Serializable {
         InvestigationSearchResultDTO dto = new InvestigationSearchResultDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow());
         dto.setVatable(i.isVatable());
         dto.setVatPercentage(i.getVatPercentage());
+        dto.setDiscountAllowed(i.isDiscountAllowed());
         populateLinks(dto, i);
         return dto;
     }
@@ -225,6 +239,7 @@ public class InvestigationApiService implements Serializable {
         InvestigationResponseDTO dto = new InvestigationResponseDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow(), m);
         dto.setVatable(i.isVatable());
         dto.setVatPercentage(i.getVatPercentage());
+        dto.setDiscountAllowed(i.isDiscountAllowed());
         populateLinks(dto, i);
         return dto;
     }

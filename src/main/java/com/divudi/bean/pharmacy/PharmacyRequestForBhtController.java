@@ -1073,8 +1073,13 @@ public class PharmacyRequestForBhtController implements Serializable {
         // From: ward (patient's current room department)
         Department fromDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
 
-        getPreBill().setDepartment(sessionController.getDepartment());
-        getPreBill().setInstitution(sessionController.getInstitution());
+        if (fromDept == null || fromDept.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please set the department and institution for the patient's current room.");
+            return false;
+        }
+
+        getPreBill().setDepartment(fromDept);
+        getPreBill().setInstitution(fromDept.getInstitution());
 
         getPreBill().setFromDepartment(fromDept);
         getPreBill().setFromInstitution(fromDept.getInstitution());
@@ -1085,7 +1090,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         getPreBill().setBillTypeAtomic(bta);
         getPreBill().setBillType(bt);
         getPreBill().setComments(comment);
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), bta);
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(fromDept, bta);
         getPreBill().setDeptId(deptId);
         getPreBill().setInsId(deptId);
         if (getPreBill().getId() == null) {
@@ -1731,6 +1736,9 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (wardDept == null || wardDept.getId() == null || pharmacy == null || pharmacy.getId() == null) {
             return;
         }
+        if (pharmacy.getDepartmentType() != DepartmentType.Pharmacy) {
+            return;
+        }
         String pharmacyId = String.valueOf(pharmacy.getId());
         configOptionApplicationController.saveShortTextOption(lastPharmacyKey(wardDept), pharmacyId);
 
@@ -1767,7 +1775,11 @@ public class PharmacyRequestForBhtController implements Serializable {
             return null;
         }
         String id = configOptionApplicationController.getShortTextValueByKey(lastPharmacyKey(wardDept), "");
-        return findDepartmentById(id);
+        Department d = findDepartmentById(id);
+        if (d == null || d.getDepartmentType() != DepartmentType.Pharmacy) {
+            return null;
+        }
+        return d;
     }
 
     /**
@@ -1785,7 +1797,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         // Default first, if any.
         Department defaultPharmacy = getDefaultRequestedPharmacy();
-        if (defaultPharmacy != null) {
+        if (defaultPharmacy != null && defaultPharmacy.getDepartmentType() == DepartmentType.Pharmacy) {
             result.add(defaultPharmacy);
         }
 
@@ -1793,7 +1805,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (csv != null && !csv.trim().isEmpty()) {
             for (String token : csv.split(",")) {
                 Department d = findDepartmentById(token.trim());
-                if (d != null && !result.contains(d)) {
+                if (d != null && d.getDepartmentType() == DepartmentType.Pharmacy && !result.contains(d)) {
                     result.add(d);
                 }
                 if (result.size() >= MAX_RECENT_PHARMACIES) {

@@ -212,6 +212,13 @@
                                 ajax="false"
                                 action="#{pharmacyController.generateGrnReport()}"/>
                             <p:commandButton
+                                value="Print"
+                                icon="fas fa-print"
+                                class="ui-button mx-1"
+                                ajax="false"
+                                action="grn_summary_view?faces-redirect=true"
+                                rendered="#{not empty pharmacyController.bills}"/>
+                            <p:commandButton
                                 value="Download"
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-1"
@@ -227,7 +234,7 @@
                                 icon="fas fa-file-pdf"
                                 class="ui-button-danger mx-1"
                                 ajax="false"
-                                action="#{pharmacyController.exportGRNAndDirectPurchaseSummaryReportToPDF()}"
+                                action="#{pharmacyController.exportGRNSummaryReportToPDF()}"
                                 rendered="#{not empty pharmacyController.bills}"/>
                         </h:panelGroup>
 
@@ -286,7 +293,7 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Stock Amount" styleClass="text-end">
-                                    <h:outputText value="#{bill.billFinanceDetails != null ? bill.billFinanceDetails.totalPurchaseValue : 0}">
+                                    <h:outputText value="#{pharmacyController.getGrnStockAmount(bill)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>

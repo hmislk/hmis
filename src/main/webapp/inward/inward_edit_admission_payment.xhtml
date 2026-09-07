@@ -64,13 +64,13 @@
                                     <h:outputLabel value="Select Payment Method" />
                                     <p:selectOneMenu class="w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                        <p:ajax event="change" listener="#{bhtEditController.listnerForPaymentMethodChange()}" update="cmbClaimable" />
+                                        <p:ajax event="change" listener="#{bhtEditController.listnerForPaymentMethodChange()}" update="cmbClaimable cmbDiscountScheme" />
                                     </p:selectOneMenu>
 
                                     <h:outputLabel value="Discount Scheme" />
-                                    <p:selectOneMenu class="w-100" value="#{bhtEditController.paymentScheme}">
+                                    <p:selectOneMenu class="w-100" id="cmbDiscountScheme" value="#{bhtEditController.paymentScheme}">
                                         <f:selectItem itemLabel="No Discount Scheme" itemValue="#{null}" />
-                                        <f:selectItems value="#{paymentSchemeController.paymentSchemesForInward}"
+                                        <f:selectItems value="#{paymentSchemeController.getPaymentSchemesForInward(bhtEditController.current.paymentMethod)}"
                                                        var="ps" itemLabel="#{ps.name}" itemValue="#{ps}" />
                                     </p:selectOneMenu>
 

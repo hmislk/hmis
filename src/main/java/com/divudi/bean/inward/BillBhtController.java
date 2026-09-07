@@ -12,6 +12,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
@@ -103,6 +104,17 @@ import org.json.JSONObject;
 public class BillBhtController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // Pre-existing application-wide print format keys for this page. The
+    // "Servise" misspelling is live in customer databases - do not correct it.
+    private static final String KEY_FIVE_FIVE_PRINTED = "Inward Servise Bill size is FiveFivePrinted paper";
+    private static final String KEY_POS = "Inward Servise Bill size is POS Paper";
+    private static final String KEY_A4 = "Inward Servise Bill size is A4 Paper";
+    private static final String KEY_A4_PRINTED = "Inward Servise Bill size is A4Printed Paper";
+    private static final String KEY_FIVE_FIVE_CUSTOM_3 = "Inward Servise Bill size is FiveFiveCustom3 Paper";
+    private static final String KEY_FIVE_EIGHT_INCH = "Inward Servise Bill size is 5x8 inch Paper";
+    // New, department-scoped (ConfigOptionController) - correctly spelled.
+    private static final String KEY_FIVE_FIVE_CUSTOM_1 = "Inward Service Bill - Show Custom 1 Format";
     @Inject
     SessionController sessionController;
     @Inject
@@ -123,6 +135,8 @@ public class BillBhtController implements Serializable {
     DepartmentController departmentController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
     /////////////////
@@ -183,6 +197,132 @@ public class BillBhtController implements Serializable {
     private List<BillItem> lstBillItems;
     private List<BillEntry> lstBillEntries;
     private boolean printPreview;
+
+    // <editor-fold defaultstate="collapsed" desc="Print format settings dialog (inward_bill_service.xhtml)">
+    /**
+     * Backing values for the Print Settings dialog on
+     * {@code inward_bill_service.xhtml}, so a department can switch a print
+     * format on or off from the page itself instead of going to Config
+     * Options. See
+     * developer_docs/configuration/printer-configuration-system.md.
+     *
+     * The first six mirror the pre-existing, APPLICATION-WIDE keys the page
+     * already reads (typo "Servise" and all - the keys are live in customer
+     * databases and must not be renamed). Only the Custom 1 key is new, and
+     * it is department-scoped via {@link ConfigOptionController}, as the
+     * printer-configuration doc prescribes for new print settings.
+     */
+    private boolean printFormatFiveFivePrinted;
+    private boolean printFormatPos;
+    private boolean printFormatA4;
+    private boolean printFormatA4Printed;
+    private boolean printFormatFiveFiveCustom3;
+    private boolean printFormatFiveEightInch;
+    private boolean printFormatFiveFiveCustom1;
+
+    public void loadInwardServiceBillPrintConfig() {
+        printFormatFiveFivePrinted = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_FIVE_PRINTED, true);
+        printFormatPos = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_POS, false);
+        printFormatA4 = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_A4, false);
+        printFormatA4Printed = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_A4_PRINTED, false);
+        printFormatFiveFiveCustom3 = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_FIVE_CUSTOM_3, false);
+        printFormatFiveEightInch = configOptionApplicationController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_EIGHT_INCH, false);
+        printFormatFiveFiveCustom1 = configOptionController
+                .getBooleanValueByKeyReadOnly(KEY_FIVE_FIVE_CUSTOM_1, false);
+    }
+
+    public void saveInwardServiceBillPrintConfig() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change print format settings");
+            return;
+        }
+        // The Custom 1 key is meant to be department-scoped. With no department
+        // selected (SessionController.loginActionWithoutDepartment()),
+        // ConfigOptionController.setBooleanValueByKey falls back to the plain
+        // application key, which every department without an override inherits
+        // - so one unscoped save would silently change the format for the whole
+        // application. Refuse rather than write the wrong scope.
+        if (sessionController.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Select a department before changing print format settings");
+            return;
+        }
+        try {
+            configOptionApplicationController.setBooleanValueByKey(KEY_FIVE_FIVE_PRINTED, printFormatFiveFivePrinted);
+            configOptionApplicationController.setBooleanValueByKey(KEY_POS, printFormatPos);
+            configOptionApplicationController.setBooleanValueByKey(KEY_A4, printFormatA4);
+            configOptionApplicationController.setBooleanValueByKey(KEY_A4_PRINTED, printFormatA4Printed);
+            configOptionApplicationController.setBooleanValueByKey(KEY_FIVE_FIVE_CUSTOM_3, printFormatFiveFiveCustom3);
+            configOptionApplicationController.setBooleanValueByKey(KEY_FIVE_EIGHT_INCH, printFormatFiveEightInch);
+            configOptionController.setBooleanValueByKey(KEY_FIVE_FIVE_CUSTOM_1, printFormatFiveFiveCustom1);
+            JsfUtil.addSuccessMessage("Print format settings saved successfully");
+            loadInwardServiceBillPrintConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
+    public boolean isPrintFormatFiveFivePrinted() {
+        return printFormatFiveFivePrinted;
+    }
+
+    public void setPrintFormatFiveFivePrinted(boolean printFormatFiveFivePrinted) {
+        this.printFormatFiveFivePrinted = printFormatFiveFivePrinted;
+    }
+
+    public boolean isPrintFormatPos() {
+        return printFormatPos;
+    }
+
+    public void setPrintFormatPos(boolean printFormatPos) {
+        this.printFormatPos = printFormatPos;
+    }
+
+    public boolean isPrintFormatA4() {
+        return printFormatA4;
+    }
+
+    public void setPrintFormatA4(boolean printFormatA4) {
+        this.printFormatA4 = printFormatA4;
+    }
+
+    public boolean isPrintFormatA4Printed() {
+        return printFormatA4Printed;
+    }
+
+    public void setPrintFormatA4Printed(boolean printFormatA4Printed) {
+        this.printFormatA4Printed = printFormatA4Printed;
+    }
+
+    public boolean isPrintFormatFiveFiveCustom3() {
+        return printFormatFiveFiveCustom3;
+    }
+
+    public void setPrintFormatFiveFiveCustom3(boolean printFormatFiveFiveCustom3) {
+        this.printFormatFiveFiveCustom3 = printFormatFiveFiveCustom3;
+    }
+
+    public boolean isPrintFormatFiveEightInch() {
+        return printFormatFiveEightInch;
+    }
+
+    public void setPrintFormatFiveEightInch(boolean printFormatFiveEightInch) {
+        this.printFormatFiveEightInch = printFormatFiveEightInch;
+    }
+
+    public boolean isPrintFormatFiveFiveCustom1() {
+        return printFormatFiveFiveCustom1;
+    }
+
+    public void setPrintFormatFiveFiveCustom1(boolean printFormatFiveFiveCustom1) {
+        this.printFormatFiveFiveCustom1 = printFormatFiveFiveCustom1;
+    }
+    // </editor-fold>
     private List<Bill> bills;
     private Doctor referredBy;
     Date date;
@@ -846,9 +986,11 @@ public class BillBhtController implements Serializable {
             return;
         }
         paymentMethod = null;
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
         } else {
+            // Baby admissions may have no room of their own (they stay in the
+            // mother's room), so fall back to the encounter's department. (Issue #23509)
             settleBill(getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod());
         }
     }
@@ -981,6 +1123,11 @@ public class BillBhtController implements Serializable {
     }
 
     public void logicalDischage() {
+        // A room-less baby admission has nothing to discharge from. (Issue #23509)
+        if (getPatientEncounter().getCurrentPatientRoom() == null) {
+            JsfUtil.addSuccessMessage("No room assigned to discharge");
+            return;
+        }
         getPatientEncounter().getCurrentPatientRoom().setDischarged(true);
         getPatientEncounter().getCurrentPatientRoom().setDischargedBy(getSessionController().getLoggedUser());
         JsfUtil.addSuccessMessage("Logically Dischaged Success");
@@ -1016,7 +1163,9 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        // Room is optional for baby admissions (they stay in the mother's room), so
+        // this gate only fires for babies when a room was actually assigned. (Issue #23509)
+        if ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 return true;
             }
@@ -1051,6 +1200,16 @@ public class BillBhtController implements Serializable {
         }
 
         return false;
+    }
+
+    /**
+     * @return {@code true} when the current encounter is a baby admission
+     * (i.e. it has a parent encounter). Babies stay in the mother's room, so
+     * room selection is optional for them, mirroring AdmissionController's
+     * isBabyAdmission(). (Issue #23509)
+     */
+    private boolean isBabyAdmission() {
+        return getPatientEncounter() != null && getPatientEncounter().getParentEncounter() != null;
     }
 
     private boolean errorCheckForPatientRoomDepartment() {
@@ -1124,7 +1283,8 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || patientEncounter.getCurrentPatientRoom() != null) {
+        // Room is optional for baby admissions (they stay in the mother's room). (Issue #23509)
+        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || patientEncounter.getCurrentPatientRoom() != null) {
             if (errorCheckForPatientRoomDepartment()) {
                 return;
             }
@@ -1174,9 +1334,10 @@ public class BillBhtController implements Serializable {
         }
         addingEntry.setBillItem(bItem);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
-        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
+        if ((patientEncounter.getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null) {
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod()));
         } else {
+            // Room-less baby admissions fall back to the encounter's department. (Issue #23509)
             addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));
         }
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
@@ -1336,7 +1497,12 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (errorCheckForPatientRoomDepartment()) {
+        // Room is optional for baby admissions (they stay in the mother's room), so
+        // skip the room-required check entirely for a room-less baby — same gate as
+        // addToBill()/settleBill()/errorCheck() use. (Issue #23509)
+        if (((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission())
+                || getPatientEncounter().getCurrentPatientRoom() != null)
+                && errorCheckForPatientRoomDepartment()) {
             return;
         }
 
@@ -1349,9 +1515,15 @@ public class BillBhtController implements Serializable {
                 ? bf.getBillItem().getQty() : 1.0;
         bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
+        // Room-less baby admissions fall back to the encounter's department for the
+        // matrix/margin lookups, matching addToBill()'s pattern. (Issue #23509)
+        Department feeDepartment = ((getPatientEncounter().getAdmissionType().isRoomChargesAllowed() && !isBabyAdmission()) || getPatientEncounter().getCurrentPatientRoom() != null)
+                ? getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment()
+                : getPatientEncounter().getDepartment();
 
-        getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), feeDepartment, getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
+
+        getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), feeDepartment, priceMatrix);
 
         recalculateFeeVat(bf);
 
