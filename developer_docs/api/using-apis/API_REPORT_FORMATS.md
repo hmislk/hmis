@@ -174,7 +174,7 @@ rewrite a form layout by passing the wrong category id. A non-`ReportFormat` cat
 
 | | Investigation Format API | Report Formats API (this one) |
 |---|---|---|
-| Path | `/api/investigations/{id}/format` | `/api/report-formats/{categoryId}` |
+| Path | `/api/investigations/{id}/format` | `/api/report-formats/{categoryId}/items` |
 | Entity | `InvestigationItem` | `CommonReportItem` |
 | Keyed on | the investigation (`item_id`) | the report-format category (`category_id`) |
 | Covers | the result table for one test | the header/signature/footer shared by every report of the format |
@@ -215,4 +215,5 @@ substring, not on the start of the string.
 | Row belongs to another format | 500 | `Item {itemId} does not belong to report format {categoryId}` |
 | POST without a name | 500 | `Item name is required` |
 | PUT with an empty body | 500 | `Valid update request is required` |
+| PUT with a blank `name` | 500 | `Item name cannot be blank` |
 | Bad enum value | 500 | `Invalid {field}: {value}. Valid values: [...]` |

@@ -5018,7 +5018,8 @@ public class AnthropicApiService implements Serializable {
 
     private String sendReportFormatRequest(String url, String method, String body, String key) throws Exception {
         HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
-        HttpRequest.Builder rb = HttpRequest.newBuilder().uri(URI.create(url));
+        HttpRequest.Builder rb = HttpRequest.newBuilder().uri(URI.create(url))
+                .timeout(Duration.ofSeconds(15));
         if ("DELETE".equals(method)) {
             rb.DELETE();
         } else if (body != null) {

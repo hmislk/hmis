@@ -116,8 +116,13 @@ public class ReportFormatApiService implements Serializable {
         if (req == null || !req.isValid()) {
             throw new Exception("Valid update request is required");
         }
+        // A name that is present but blank is a mistake, not "leave it alone" -
+        // silently skipping it would report success without changing anything.
+        if (req.getName() != null && req.getName().trim().isEmpty()) {
+            throw new Exception("Item name cannot be blank");
+        }
         CommonReportItem item = loadItem(itemId, categoryId);
-        if (req.getName() != null && !req.getName().trim().isEmpty()) {
+        if (req.getName() != null) {
             item.setName(req.getName().trim());
         }
         if (req.getCode() != null) {

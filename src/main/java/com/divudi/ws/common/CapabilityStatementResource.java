@@ -450,7 +450,7 @@ public class CapabilityStatementResource {
                         + "rendered value, not the stored one: riWidth/riHeight/riFontSize fall back to 30/2/12 when "
                         + "unset (see #23528). Scoped to ReportFormat categories only — the HR/clinical form templates "
                         + "that reuse CommonReportItem under other categories are deliberately not reachable here.",
-                        "API Key",
+                        "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
                         "Manage InvestigationComponent groupings used to organize report items within an investigation's format "
