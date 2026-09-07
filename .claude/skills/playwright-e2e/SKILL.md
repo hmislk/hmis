@@ -66,17 +66,34 @@ Instead, **immediately and without asking the user**, run:
 claude mcp list
 ```
 This performs a fresh, independent health check outside the current session's
-stale connection state. If it reports `playwright: ... - ✔ Connected`, the
-server is actually reachable — the failure was specific to this session's
-startup timing, not a real outage. In that case, tell the user briefly that
-the initial connection attempt timed out but the server is confirmed healthy,
-then fall back to `claude-in-chrome` for *this* session (per
-[[feedback-prefer-playwright-over-claude-in-chrome]] project memory) and
-recommend starting a fresh session next time to pick up the working
-connection. If `claude mcp list` also reports it unhealthy, it's a genuine
-outage — say so explicitly and ask the user how to proceed (fix the server,
-proceed with `claude-in-chrome`, or skip live browser testing) rather than
-silently substituting one tool for the other.
+stale connection state. `claude mcp list` reports one of several distinct
+statuses per server — treat each differently rather than collapsing them into
+a binary "healthy or not":
+
+- **`✔ Connected`** — the server is actually reachable; the earlier failure
+  was specific to this session's startup timing, not a real outage. Tell the
+  user briefly that the initial connection attempt timed out but the server
+  is confirmed healthy, then fall back to `claude-in-chrome` for *this*
+  session (per [[feedback-prefer-playwright-over-claude-in-chrome]] project
+  memory) and recommend starting a fresh session next time to pick up the
+  working connection.
+- **`! Needs authentication`** — not an outage; the server needs a sign-in or
+  header the current session hasn't provided. Tell the user it needs
+  re-authentication (`/mcp` panel or `claude mcp login`) rather than treating
+  it as down.
+- **`⏸ Pending approval`** — project-scoped server awaiting manual approval;
+  tell the user to run `claude` interactively to approve it, not a real
+  outage either.
+- **`! Connected · tools fetch failed`** — the connection itself works but
+  tool listing errored; this is a real (if partial) problem worth surfacing,
+  distinct from a clean outage.
+- **`✘ Failed to connect` / `✘ Connection error`** — only *these* two count
+  as a genuine outage. Say so explicitly and ask the user how to proceed (fix
+  the server, proceed with `claude-in-chrome`, or skip live browser testing)
+  rather than silently substituting one tool for the other.
+
+(Statuses per the Claude Code MCP docs as of this writing — reconfirm against
+current documentation if `claude mcp list`'s output format has changed.)
 
 Never silently swap in `claude-in-chrome` without first running this check and
 telling the user which case applies — `claude-in-chrome` cannot handle native
