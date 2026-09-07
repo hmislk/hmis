@@ -211,6 +211,10 @@ public class InwardServiceRefundController implements Serializable {
             JsfUtil.addErrorMessage("No bill to refund");
             return null;
         }
+        if (b.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill's services cannot be returned.");
+            return null;
+        }
         inwardSearch.setBill(billFacade.find(b.getId()));
         return "/inward/inward_bill_service_refund?faces-redirect=true";
     }
@@ -257,6 +261,10 @@ public class InwardServiceRefundController implements Serializable {
         Bill bill = billFacade.find(sessionBill.getId());
         if (bill == null || bill.isRetired()) {
             JsfUtil.addErrorMessage("Bill not available");
+            return null;
+        }
+        if (bill.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Checked Bill. Can not return");
             return null;
         }
         if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
