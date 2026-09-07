@@ -12,6 +12,131 @@ waste a session.
 > This document is the *runtime* workflow; that section is the *authoring*
 > rule.
 
+## Contents
+
+111 sections. **The workflow is §0-§8; everything from §9 on is an independent
+gotcha** — jump straight to the one you need rather than reading the file.
+
+**Workflow**
+
+- [0. Before you start](#0-before-you-start)
+- [0a. Rebuild and redeploy local code changes before testing](#0a-rebuild-and-redeploy-local-code-changes-before-testing)
+- [1. Login and department selection](#1-login-and-department-selection)
+- [2. Navigating menus](#2-navigating-menus)
+- [3. Committing PrimeFaces inputs (the #1 gotcha)](#3-committing-primefaces-inputs-the-1-gotcha)
+- [4. Confirmations and double-click protection](#4-confirmations-and-double-click-protection)
+- [5. Required fields block non-AJAX actions](#5-required-fields-block-non-ajax-actions)
+- [5a. Waiting for AJAX without hard timeouts](#5a-waiting-for-ajax-without-hard-timeouts)
+- [5b. Pending-list pages may need an explicit "Refresh" click](#5b-pending-list-pages-may-need-an-explicit-refresh-click)
+- [6. Verify against the database](#6-verify-against-the-database)
+- [7. When Playwright can't find an element — fix the page, not the test](#7-when-playwright-cant-find-an-element--fix-the-page-not-the-test)
+- [8. Publishing screenshot evidence](#8-publishing-screenshot-evidence)
+
+**Gotchas and findings**
+
+- [9. Interacting with non-accessible canvas widgets (e.g. `p:timeline` / vis-timeline)](#9-interacting-with-non-accessible-canvas-widgets-eg-ptimeline--vis-timeline)
+- [10. `browser_click` / `browser_type` parameter name](#10-browser_click--browser_type-parameter-name)
+- [11. Session is lost on redeploy and on stale snapshots](#11-session-is-lost-on-redeploy-and-on-stale-snapshots)
+- [12. JSF form validation blocks navigation buttons](#12-jsf-form-validation-blocks-navigation-buttons)
+- [13. PrimeFaces `p:selectOneMenu` is not a native `<select>`](#13-primefaces-pselectonemenu-is-not-a-native-select)
+- [14. Non-AJAX search buttons can timeout on click](#14-non-ajax-search-buttons-can-timeout-on-click)
+- [15. Always generate test data — never fall back to code-only verification](#15-always-generate-test-data--never-fall-back-to-code-only-verification)
+- [16. List pages that filter by `toDepartment = session department`](#16-list-pages-that-filter-by-todepartment--session-department)
+- [17. Switching session department mid-test (no redeploy)](#17-switching-session-department-mid-test-no-redeploy)
+- [18. `p:datePicker` — changing the date via the calendar grid](#18-pdatepicker--changing-the-date-via-the-calendar-grid)
+- [19. Some `confirm()`-guarded `type="submit"` buttons never reach the server — prefer existing data](#19-some-confirm-guarded-typesubmit-buttons-never-reach-the-server--prefer-existing-data)
+- [20. A privilege-gated button that never renders may be a missing DB row, not a session issue](#20-a-privilege-gated-button-that-never-renders-may-be-a-missing-db-row-not-a-session-issue)
+- [21. Inward "Add Services" item picker — the Filter box does not load other departments' items](#21-inward-add-services-item-picker--the-filter-box-does-not-load-other-departments-items)
+- [22. Inward pharmacy margin lookup uses the *inpatient* department, not the issuing pharmacy](#22-inward-pharmacy-margin-lookup-uses-the-inpatient-department-not-the-issuing-pharmacy)
+- [23. Three authoring gotchas found via E2E on the role-template pages (issue #22023)](#23-three-authoring-gotchas-found-via-e2e-on-the-role-template-pages-issue-22023)
+- [24. Granting a privilege that doesn't exist on the checked-out branch silently blanks ALL privileges for that department](#24-granting-a-privilege-that-doesnt-exist-on-the-checked-out-branch-silently-blanks-all-privileges-for-that-department)
+- [25. A JPQL path expression through a nullable relationship silently INNER-JOINs and drops rows](#25-a-jpql-path-expression-through-a-nullable-relationship-silently-inner-joins-and-drops-rows)
+- [26. Editing a `ConfigOption` via raw SQL is invisible to the running app — use the admin UI](#26-editing-a-configoption-via-raw-sql-is-invisible-to-the-running-app--use-the-admin-ui)
+- [27. Multi-Payara machines: `asadmin` without `--port` may hit ANOTHER USER'S domain](#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)
+- [28. Claude-in-Chrome on heavy non-AJAX report pages (full-submit + long query)](#28-claude-in-chrome-on-heavy-non-ajax-report-pages-full-submit--long-query)
+- [29. GRN costing Save→Finalize→Approve: `Difference` guard needs a real keyup on Invoice Total at EVERY step](#29-grn-costing-savefinalizeapprove-difference-guard-needs-a-real-keyup-on-invoice-total-at-every-step)
+- [30. `ward_pharmacy_bht_issue_request_bill.xhtml` — "New Bill" silently discards unsaved items](#30-ward_pharmacy_bht_issue_request_billxhtml--new-bill-silently-discards-unsaved-items)
+- [31. `ward_pharmacy_bht_issue_request_bill.xhtml`'s "Add Dispense Only" path sets `department`/`toDepartment` backwards](#31-ward_pharmacy_bht_issue_request_billxhtmls-add-dispense-only-path-sets-departmenttodepartment-backwards)
+- [32. A `FacesMessage` can be server-confirmed even when the browser never shows it](#32-a-facesmessage-can-be-server-confirmed-even-when-the-browser-never-shows-it)
+- [33. Binding a `p:inputText` through a nullable session-scoped entity property crashes on first submit](#33-binding-a-pinputtext-through-a-nullable-session-scoped-entity-property-crashes-on-first-submit)
+- [34. Local dev DB can silently drift behind the entity model — watch for `Unknown column` on unrelated pages](#34-local-dev-db-can-silently-drift-behind-the-entity-model--watch-for-unknown-column-on-unrelated-pages)
+- [97. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain](#97-dont-disable--enable-the-app-to-clear-the-l2-cache--restart-the-domain)
+- [35. Department-scoped dashboards need the department actually switched, not just full privileges](#35-department-scoped-dashboards-need-the-department-actually-switched-not-just-full-privileges)
+- [36. `@SessionScoped` bean data can go stale after a direct URL hit — navigate through the real action chain](#36-sessionscoped-bean-data-can-go-stale-after-a-direct-url-hit--navigate-through-the-real-action-chain)
+- [37. A required `p:selectOneMenu` with no default silently swallows an entire non-AJAX submit — no network request, no error](#37-a-required-pselectonemenu-with-no-default-silently-swallows-an-entire-non-ajax-submit--no-network-request-no-error)
+- [38. A local dev DB missing columns for an already-shipped entity field surfaces as a hung page, and `ALTER TABLE` alone doesn't fix it — the pool needs a flush](#38-a-local-dev-db-missing-columns-for-an-already-shipped-entity-field-surfaces-as-a-hung-page-and-alter-table-alone-doesnt-fix-it--the-pool-needs-a-flush)
+- [39. Local dev DB has no `FrequencyUnit`/`DurationUnit`/`DoseUnit` seed rows — the prescription "Calculate & Add" path is untestable locally](#39-local-dev-db-has-no-frequencyunitdurationunitdoseunit-seed-rows--the-prescription-calculate--add-path-is-untestable-locally)
+- [40. Auto-substitution can silently turn a "zero stock" test case into "issued in full"](#40-auto-substitution-can-silently-turn-a-zero-stock-test-case-into-issued-in-full)
+- [41. A local dev DB with an empty `TRIGGERSUBSCRIPTION` table means notification-generating actions silently produce zero `UserNotification` rows](#41-a-local-dev-db-with-an-empty-triggersubscription-table-means-notification-generating-actions-silently-produce-zero-usernotification-rows)
+- [98. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity](#98-local-payara-can-come-up-with-a-dead-mysql-connection-pool-after-any-host-sleeprestart--every-page-hangs-not-just-one-touching-a-stale-entity)
+- [99. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows](#99-a-leftover-playwright-mcp-chrome-profile-can-lock-out-browser_navigate-with-no-relation-to-the-users-real-browser-windows)
+- [42. PrimeFaces bare `update="someId"` can 500 from inside a `p:dataTable`/`ui:repeat` row even though the id exists on the page](#42-primefaces-bare-updatesomeid-can-500-from-inside-a-pdatatableuirepeat-row-even-though-the-id-exists-on-the-page)
+- [43. Clicking a `p:printer` button hangs the whole browser session — verify with print-media emulation instead](#43-clicking-a-pprinter-button-hangs-the-whole-browser-session--verify-with-print-media-emulation-instead)
+- [44. A freshly-created test user needs a `WebUserDepartment` row, not just a `Department` field, to log in at all](#44-a-freshly-created-test-user-needs-a-webuserdepartment-row-not-just-a-department-field-to-log-in-at-all)
+- [45. `&&` written as `&amp;&amp;` inside a `<script><!CDATA...>` block parses as valid XML but throws a JS `SyntaxError` at runtime, silently breaking every function in that script](#45--written-as-ampamp-inside-a-scriptcdata-block-parses-as-valid-xml-but-throws-a-js-syntaxerror-at-runtime-silently-breaking-every-function-in-that-script)
+- [46. A fixed-position status banner (e.g. "Database Migration Pending") can silently swallow every click on the page below it](#46-a-fixed-position-status-banner-eg-database-migration-pending-can-silently-swallow-every-click-on-the-page-below-it)
+- [47. Any JSF page under a plain (non-`/faces/`) webapp path must still be loaded through `/faces/` — otherwise the raw `.xhtml` source is served unprocessed](#47-any-jsf-page-under-a-plain-non-faces-webapp-path-must-still-be-loaded-through-faces--otherwise-the-raw-xhtml-source-is-served-unprocessed)
+- [48. Raw SQL `UPDATE` on an already-cached EclipseLink-mapped entity (not just `ConfigOption`) can be invisible to the running app — the shared L2 cache is general, not `ConfigOption`-specific](#48-raw-sql-update-on-an-already-cached-eclipselink-mapped-entity-not-just-configoption-can-be-invisible-to-the-running-app--the-shared-l2-cache-is-general-not-configoption-specific)
+- [49. Pharmacy Transfer Issue: "Request From" is the requester, not the issuer — and the entity-based `TransferIssueForRequestsController` "Issue" button is commented out in favor of the native-SQL path](#49-pharmacy-transfer-issue-request-from-is-the-requester-not-the-issuer--and-the-entity-based-transferissueforrequestscontroller-issue-button-is-commented-out-in-favor-of-the-native-sql-path)
+- [50. `p:calendar`/`p:selectOneMenu` widgets can silently ignore a plain Playwright `fill()`/`click()` — drive the PrimeFaces widget JS API directly when the visible value won't stick](#50-pcalendarpselectonemenu-widgets-can-silently-ignore-a-plain-playwright-fillclick--drive-the-primefaces-widget-js-api-directly-when-the-visible-value-wont-stick)
+- [51. `p:dialog appendTo="@(body)"` silently drops that dialog's own bound inputs from every AJAX submission](#51-pdialog-appendtobody-silently-drops-that-dialogs-own-bound-inputs-from-every-ajax-submission)
+- [52. A non-AJAX search that looks "hung" in Playwright may actually be a real, still-running N+1 query — check a Payara thread dump before assuming the button is broken](#52-a-non-ajax-search-that-looks-hung-in-playwright-may-actually-be-a-real-still-running-n1-query--check-a-payara-thread-dump-before-assuming-the-button-is-broken)
+- [53. "Pharmacy Bill Search by Bill Type" has two different pages — pick the one keyed on `billType`, not `billTypeAtomic`](#53-pharmacy-bill-search-by-bill-type-has-two-different-pages--pick-the-one-keyed-on-billtype-not-billtypeatomic)
+- [54. `pharmacy_fast_retail_sale_for_cashier.xhtml` "Settle Bill At Cashier" 500s with a Patient cascade error if the Patient Name field is left blank](#54-pharmacy_fast_retail_sale_for_cashierxhtml-settle-bill-at-cashier-500s-with-a-patient-cascade-error-if-the-patient-name-field-is-left-blank)
+- [55. `inward_bill_professional.xhtml` "Add Professional Fee" silently no-ops if the Speciality autocomplete is left empty](#55-inward_bill_professionalxhtml-add-professional-fee-silently-no-ops-if-the-speciality-autocomplete-is-left-empty)
+- [56. `p:datePicker timeInput="true"` — typing into the input does not commit; use the PrimeFaces widget API for non-AJAX forms](#56-pdatepicker-timeinputtrue--typing-into-the-input-does-not-commit-use-the-primefaces-widget-api-for-non-ajax-forms)
+- [57. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link](#57-nurseindexxhtml-nursing-workbench-roomsbht-tabs-render-empty-on-a-plain-browser_navigate--must-click-through-the-actual-menu-link)
+- [58. `inward_admission.xhtml` Room No autocomplete excludes the room already reserved by the very appointment being admitted; a required-config error can look like a blocked flow](#58-inward_admissionxhtml-room-no-autocomplete-excludes-the-room-already-reserved-by-the-very-appointment-being-admitted-a-required-config-error-can-look-like-a-blocked-flow)
+- [59. `CreditCompanyBillSearch.printPreview` is a single shared flag reused for two different meanings — viewing a bill before cancelling can make the cancel form permanently unreachable via normal navigation](#59-creditcompanybillsearchprintpreview-is-a-single-shared-flag-reused-for-two-different-meanings--viewing-a-bill-before-cancelling-can-make-the-cancel-form-permanently-unreachable-via-normal-navigation)
+- [60. GRN receive/approve `Invoice Total` resets to 0.00 on every page (re)load and needs a *real* blur, not just `fill()`, to pass the "invoice does not match" check](#60-grn-receiveapprove-invoice-total-resets-to-000-on-every-page-reload-and-needs-a-real-blur-not-just-fill-to-pass-the-invoice-does-not-match-check)
+- [61. "Generate Supplier Payments" only lists Credit-payment-method GRNs — a Cash GRN's return never shows up there, by design](#61-generate-supplier-payments-only-lists-credit-payment-method-grns--a-cash-grns-return-never-shows-up-there-by-design)
+- [62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback](#62-direct-browser_navigate-to-a-fund-bill-page-depositwithdrawaletc-leaves-currentbill-null--the-add-button-then-silently-no-ops-with-zero-visible-feedback)
+- [63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name](#63-staffid-is-not-personid--joining-billfeestaff_id-straight-to-personid-silently-returns-the-wrong-persons-name)
+- [64. A slow, unfiltered `p:dataTable` search can make *every* subsequent Playwright tool call time out — don't `browser_navigate` away to "recover", just wait longer](#64-a-slow-unfiltered-pdatatable-search-can-make-every-subsequent-playwright-tool-call-time-out--dont-browser_navigate-away-to-recover-just-wait-longer)
+- [65. Theatre "Add New Surgery" — the Surgery Name autocomplete is `Item` rows (`DTYPE='ClinicalEntity'`), not a dedicated table](#65-theatre-add-new-surgery--the-surgery-name-autocomplete-is-item-rows-dtypeclinicalentity-not-a-dedicated-table)
+- [66. PrimeFaces `p:tree` privilege picker (`admin/users/user_privileges.xhtml`) — clicking a toggler icon directly does nothing; use the Search box instead, and re-login after any privilege change](#66-primefaces-ptree-privilege-picker-adminusersuser_privilegesxhtml--clicking-a-toggler-icon-directly-does-nothing-use-the-search-box-instead-and-re-login-after-any-privilege-change)
+- [67. `inpatient_search.xhtml` / `inward_search.xhtml` date filter defaults to "last 7 days" and silently returns "No records found" for older admissions — even when searching by exact BHT No](#67-inpatient_searchxhtml--inward_searchxhtml-date-filter-defaults-to-last-7-days-and-silently-returns-no-records-found-for-older-admissions--even-when-searching-by-exact-bht-no)
+- [68. PrimeFaces `p:growl` error/success messages fade before a subsequent `browser_snapshot`/`wait_for` — snapshot immediately after the triggering action, not after a delay](#68-primefaces-pgrowl-errorsuccess-messages-fade-before-a-subsequent-browser_snapshotwait_for--snapshot-immediately-after-the-triggering-action-not-after-a-delay)
+- [69. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it](#69-an-earlier-pajax-event-mutating-the-field-a-later-buttons-enclosing-rendered-depends-on-silently-skips-that-buttons-action--canary-test-with-a-throw-to-prove-it)
+- [70. `inward/inward_bill_service.xhtml`'s "Settle" button silently returns to the edit screen — with the same items still loaded — when a fee row needs a Staff pick](#70-inwardinward_bill_servicexhtmls-settle-button-silently-returns-to-the-edit-screen--with-the-same-items-still-loaded--when-a-fee-row-needs-a-staff-pick)
+- [71. A fresh `p:selectOneMenu` visually shows its first `<option>` as selected even when the bound model value is still `null` — clicking that same-looking option fires no `change` event](#71-a-fresh-pselectonemenu-visually-shows-its-first-option-as-selected-even-when-the-bound-model-value-is-still-null--clicking-that-same-looking-option-fires-no-change-event)
+- [72. `p:calendar`'s `pattern` attribute can differ from the usual `dd/mm/yyyy` — type in the exact server-side pattern, not a guessed format](#72-pcalendars-pattern-attribute-can-differ-from-the-usual-ddmmyyyy--type-in-the-exact-server-side-pattern-not-a-guessed-format)
+- [73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`](#73-asadmin-deploy---contextroot--from-git-bash-gets-mangled-by-msys-path-conversion--set-msys_no_pathconv1)
+- [74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit](#74-exploded-payara-deployment-lets-you-hot-swap-a-single-xhtml-file-for-a-fast-testfix-loop--real-redeploy-still-required-before-commit)
+- [75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist](#75-inpatient-discharge-chain-has-a-strict-undocumented-order--and-physical-discharge-requires-the-final-bill-to-already-exist)
+- [76. `isXxx(arg)` boolean methods with a parameter don't resolve via the JSF EL property-getter convention — drop the `is` prefix](#76-isxxxarg-boolean-methods-with-a-parameter-dont-resolve-via-the-jsf-el-property-getter-convention--drop-the-is-prefix)
+- [77. `p:autoComplete` with `<p:column>` children renders suggestions as a `<table>` of `<tr data-item-label>`, not `<li>` — a `li`-only selector reports "no matches" on a working autocomplete](#77-pautocomplete-with-pcolumn-children-renders-suggestions-as-a-table-of-tr-data-item-label-not-li--a-li-only-selector-reports-no-matches-on-a-working-autocomplete)
+- [78. Typing into an input that a `p:ajax` just re-rendered prepends to the restored model value — set the dropdown first, then the numbers, and always confirm in the DB](#78-typing-into-an-input-that-a-pajax-just-re-rendered-prepends-to-the-restored-model-value--set-the-dropdown-first-then-the-numbers-and-always-confirm-in-the-db)
+- [79. Capturing a `p:growl` message in a screenshot: suppress its auto-hide timer, don't race it](#79-capturing-a-pgrowl-message-in-a-screenshot-suppress-its-auto-hide-timer-dont-race-it)
+- [80. A `p:dataTable` column present in `browser_snapshot` can still be 0px wide and invisible to the user — measure `offsetWidth`](#80-a-pdatatable-column-present-in-browser_snapshot-can-still-be-0px-wide-and-invisible-to-the-user--measure-offsetwidth)
+- [81. `theater/inward_search_surgery.xhtml`'s "Search All" checkbox does not widen the date filter](#81-theaterinward_search_surgeryxhtmls-search-all-checkbox-does-not-widen-the-date-filter)
+- [82. Any AJAX call from inside an editable `p:dataTable`'s row scope has its `update` target silently constrained to the table itself — extra ids you add are dropped, even on a plain `p:commandButton`](#82-any-ajax-call-from-inside-an-editable-pdatatables-row-scope-has-its-update-target-silently-constrained-to-the-table-itself--extra-ids-you-add-are-dropped-even-on-a-plain-pcommandbutton)
+- [83. A page-local `<style>` rule can silently lose to the PrimeFaces theme — verify with a computed-style probe, not a screenshot](#83-a-page-local-style-rule-can-silently-lose-to-the-primefaces-theme--verify-with-a-computed-style-probe-not-a-screenshot)
+- [84. A markup-less PrimeFaces component (`p:defaultCommand`, `p:focus`, …) cannot be confirmed by searching the rendered HTML — look for its event handler instead](#84-a-markup-less-primefaces-component-pdefaultcommand-pfocus--cannot-be-confirmed-by-searching-the-rendered-html--look-for-its-event-handler-instead)
+- [85. `inward_bill_service.xhtml`'s patient search auto-selects on an exact BHT match — no suggestion click needed](#85-inward_bill_servicexhtmls-patient-search-auto-selects-on-an-exact-bht-match--no-suggestion-click-needed)
+- [86. A `p:inputText`/`p:inputNumber` bound to a `Map<String, Integer>` entry silently stores the raw `String` — the write is lost with no error until you read it back](#86-a-pinputtextpinputnumber-bound-to-a-mapstring-integer-entry-silently-stores-the-raw-string--the-write-is-lost-with-no-error-until-you-read-it-back)
+- [87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect](#87-the-local-coop-dbs-webuser-rows-carry-stale-password-hashes-from-whatever-environment-they-were-synced-from--production-login-credentials-will-not-work-locally-and-even-a-direct-sql-password-reset-needs-a-domain-restart-to-take-effect)
+- [88. `pharmacy_search_pre_bill_for_return_item_only.xhtml`'s "Return Item Only" button can fail completely silently — no `p:messages`/growl update, plus `Bill` is L2-cached](#88-pharmacy_search_pre_bill_for_return_item_onlyxhtmls-return-item-only-button-can-fail-completely-silently--no-pmessagesgrowl-update-plus-bill-is-l2-cached)
+- [89. A missing `/faces/` prefix can also hang the Playwright tab itself, not just serve broken markup — don't assume item 47's symptom is the only failure mode](#89-a-missing-faces-prefix-can-also-hang-the-playwright-tab-itself-not-just-serve-broken-markup--dont-assume-item-47s-symptom-is-the-only-failure-mode)
+- [90. Simulating a barcode scan with `browser_type(..., submit: true)` on a `p:autoComplete` can submit the wrong button — use `slowly: true` and wait, don't press Enter](#90-simulating-a-barcode-scan-with-browser_type-submit-true-on-a-pautocomplete-can-submit-the-wrong-button--use-slowly-true-and-wait-dont-press-enter)
+- [91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" rejects (with a growl message, easy to miss in a scripted run) until a Porter/Staff is picked](#91-wardward_pharmacy_bht_issue_request_billxhtmls-new-bill-button-discards-the-current-draft-instead-of-saving-it-and-ward_pharmacy_bht_issuexhtmls-issue-to-bht-rejects-with-a-growl-message-easy-to-miss-in-a-scripted-run-until-a-porterstaff-is-picked)
+- [92. A `p:commandButton` save that does nothing — no growl, no error, no DB row, a clean `server.log` — is usually a required field whose message went to a `<p:messages>` you never looked at](#92-a-pcommandbutton-save-that-does-nothing--no-growl-no-error-no-db-row-a-clean-serverlog--is-usually-a-required-field-whose-message-went-to-a-pmessages-you-never-looked-at)
+- [93. Privileges are scoped per-department — a rendered button check can fail under the "wrong" department even though the user genuinely has the privilege](#93-privileges-are-scoped-per-department--a-rendered-button-check-can-fail-under-the-wrong-department-even-though-the-user-genuinely-has-the-privilege)
+- [94. PrimeFaces `p:datePicker` popups don't always close on their own — the previous field's panel can intercept clicks meant for the next field](#94-primefaces-pdatepicker-popups-dont-always-close-on-their-own--the-previous-fields-panel-can-intercept-clicks-meant-for-the-next-field)
+- [95. Theatre's "+ Add New Surgery" briefly lands on a generic, blank-looking `admission_profile.xhtml` — the surgery Bill is already created; go through "Surgeries for BHT" to reach it](#95-theatres--add-new-surgery-briefly-lands-on-a-generic-blank-looking-admission_profilexhtml--the-surgery-bill-is-already-created-go-through-surgeries-for-bht-to-reach-it)
+- [100. `PrimeFaces.current().executeScript(...)` silently no-ops on an `ajax="false"` button — use `p:dialog visible="#{bean.flag}"` instead](#100-primefacescurrentexecutescript-silently-no-ops-on-an-ajaxfalse-button--use-pdialog-visiblebeanflag-instead)
+- [101. Some PrimeFaces buttons need a jQuery-triggered click](#101-some-primefaces-buttons-need-a-jquery-triggered-click)
+- [102. A local "Unknown column" 500 is schema drift — use the app's own migration page](#102-a-local-unknown-column-500-is-schema-drift--use-the-apps-own-migration-page)
+- [103. An unchanged database does NOT prove a server-side guard ran](#103-an-unchanged-database-does-not-prove-a-server-side-guard-ran)
+- [104. A department/room created by direct SQL needs more than the FK columns](#104-a-departmentroom-created-by-direct-sql-needs-more-than-the-fk-columns)
+- [105. A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API](#105-a-pcalendar-bound-to-date-of-birth-can-ignore-real-keystrokes--use-the-widgets-setdate-api)
+- [106. A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation](#106-a-third-level-menu-item-cant-be-clicked-directly--fire-its-own-onclick-which-is-still-the-menu-path-not-url-navigation)
+- [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
+- [Quick checklist](#quick-checklist)
+
+---
+
+
 ---
 
 ## 0. Before you start
@@ -963,7 +1088,7 @@ gap, not a schema change accompanying a code change). If a fresh
 `SHOW COLUMNS FROM <table>` against the entity's fields before assuming the
 feature under test is broken.
 
-## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
+## 97. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
 
 The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
 earlier sessions) loads the whole application a **second time in the same JVM**, and on
@@ -1154,7 +1279,7 @@ test-fixture data, not a bug.
   silently toggle the wrong control if the page has more than one:
   `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
 
-## 47. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
+## 98. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
 
 Unlike §38 (a pool holding connections from *before* an `ALTER TABLE`), this is
 the pool holding connections to a MySQL instance that was itself restarted or
@@ -1188,7 +1313,7 @@ immediately after the flush. Verified while testing issue #22423 (itself a
 stale-audit-pool-connection bug), where the local dev machine's own audit
 pool had gone stale exactly the way the issue described.
 
-## 48. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
+## 99. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
 
 `mcp__playwright__browser_navigate`/`browser_snapshot` can fail with `Browser
 is already in use for <profile-dir>, use --isolated to run multiple instances
@@ -2570,7 +2695,7 @@ which lists every `SurgeryBill` for the current `patientEncounter` and has a
 **Surgery Dashboard** button per row that loads it into
 `surgeryBillController.surgeryBill` correctly.
 
-## 96. `PrimeFaces.current().executeScript(...)` silently no-ops on an `ajax="false"` button — use `p:dialog visible="#{bean.flag}"` instead
+## 100. `PrimeFaces.current().executeScript(...)` silently no-ops on an `ajax="false"` button — use `p:dialog visible="#{bean.flag}"` instead
 
 Seen fixing issue #23514. `inward_admission.xhtml`'s "Admit" button is
 `ajax="false"` (a full postback, deliberately, per issue #21175's foreigner-
@@ -2596,7 +2721,7 @@ event="close"`, separate from any button) — a client-only `PF('dlg').hide()`
 leaves the session-scoped flag `true`, and it will reappear on the next
 unrelated full postback of that form.
 
-## Some PrimeFaces buttons need a jQuery-triggered click
+## 101. Some PrimeFaces buttons need a jQuery-triggered click
 
 Most `p:commandButton`s submit fine with a normal Playwright click — including
 `ajax="false"` text-valued buttons such as `form:btnNursingDischarge` on
@@ -2619,7 +2744,7 @@ Inspect `$._data(el, 'events')` if unsure — the absence of a `click` key along
 expected element on the destination page) rather than assuming the click worked.
 Verified while testing issue #23222.
 
-## A local "Unknown column" 500 is schema drift — use the app's own migration page
+## 102. A local "Unknown column" 500 is schema drift — use the app's own migration page
 
 A restored/older local DB can lag the entity model (e.g. `Unknown column 'DURATIONUNIT' in 'field list'`
 loading a `TimedItemFee`), producing a 500 on pages that are otherwise unrelated to what you're testing.
@@ -2628,7 +2753,7 @@ navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update B
 than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
 Verified while testing issue #23222.
 
-## An unchanged database does NOT prove a server-side guard ran
+## 103. An unchanged database does NOT prove a server-side guard ran
 
 When a fix disables a button via `disabled="#{bean.someCheck()}"`, it is tempting to strip the
 attribute, submit, observe the DB unchanged, and call the server-side guard proven. **That
@@ -2666,7 +2791,7 @@ otherwise you have not distinguished "correctly blocks" from "blocks everything"
 negative test creates through the app's own Cancel action, never with an `UPDATE`.
 Verified while testing issue #23222.
 
-## A department/room created by direct SQL needs more than the FK columns
+## 104. A department/room created by direct SQL needs more than the FK columns
 
 When a test scenario needs a *new* Department or RoomFacilityCharge that doesn't already exist
 locally (e.g. to simulate a patient's room belonging to a different department than the one they
@@ -2705,7 +2830,7 @@ brand new login/HTTP session is used. A plain redeploy is not enough; use
 
 Verified while testing issue #23377.
 
-## A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API
+## 105. A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API
 
 On `inward_admission_child.xhtml`'s "Admit a Baby" form, the DOB field (`dpDob`, a `p:calendar`
 with `timeInput="true"`) rejected even a real slow-typed keystroke sequence
@@ -2727,7 +2852,7 @@ from the component's full client id, not the plain `id` attribute, so don't gues
 commit by reading `document.getElementById('<formId>:<fieldId>:dpDob_input').value` before
 submitting. Verified while testing issue #23509 (baby admission with no NIC/phone).
 
-## A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation
+## 106. A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation
 
 `Inpatient → Billing → Interim Bill` is three levels deep. Clicking the top-level item opens the
 second level, but the third-level flyout closes again before Playwright can reach the item:
@@ -2835,31 +2960,6 @@ Two things that cost time here:
 Verified while testing issue #23570 (day-case admissions billed without a room), reaching
 *Inpatient → Services & Items → Add Services & Investigations*.
 
-## Quick checklist
-
-- [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
-- [ ] Logged in, selected a department, reached an inner page (menu visible).
-- [ ] Checked for stale department pre-selection — the app remembers the last department; always re-select explicitly.
-- [ ] Clicked **Search** on every date-filtered list before expecting rows.
-- [ ] Used real key events (slow type + wait) for autocompletes; for qty fields with blur AJAX, used slow type + Tab (not jQuery-blur — see §3).
-- [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
-- [ ] Filled required fields before non-AJAX actions.
-- [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.
-- [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
-- [ ] Filed/fixed any accessibility gap that blocked the test.
-- [ ] Published only non-sensitive screenshot evidence and removed temporary files.
-- [ ] For canvas-based widgets (vis-timeline etc.), used `page.$`/bounding-box
-      clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
-- [ ] Re-logged in and re-selected department after any redeploy before continuing.
-- [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
-- [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
-- [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
-- [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
-- [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
-- [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
-- [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
-- [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
-
 ## 96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade
 
 Tried to reproduce issue #23523 (`BillBhtController.errorCheck()` silently
@@ -2910,3 +3010,30 @@ EclipseLink cache has bitten targeted-refresh attempts before (see the
 "Native settle poisons the Bill entity" gotcha).
 
 Found while verifying issue #23523.
+
+---
+
+## Quick checklist
+
+- [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
+- [ ] Logged in, selected a department, reached an inner page (menu visible).
+- [ ] Checked for stale department pre-selection — the app remembers the last department; always re-select explicitly.
+- [ ] Clicked **Search** on every date-filtered list before expecting rows.
+- [ ] Used real key events (slow type + wait) for autocompletes; for qty fields with blur AJAX, used slow type + Tab (not jQuery-blur — see §3).
+- [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
+- [ ] Filled required fields before non-AJAX actions.
+- [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.
+- [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
+- [ ] Filed/fixed any accessibility gap that blocked the test.
+- [ ] Published only non-sensitive screenshot evidence and removed temporary files.
+- [ ] For canvas-based widgets (vis-timeline etc.), used `page.$`/bounding-box
+      clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
+- [ ] Re-logged in and re-selected department after any redeploy before continuing.
+- [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
+- [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
+- [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
+- [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
+- [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
+- [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
+- [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
