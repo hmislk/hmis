@@ -1079,7 +1079,7 @@
                         </p:tab>
 
 
-                        <p:tab id="tabDoc" title="Assisting Fee"  >
+                        <p:tab id="tabDoc" title="Assisting Fee" rendered="#{not configOptionApplicationController.professionalAndAssistingFeesMerged}" >
                             <p:commandButton value="Export Excel" ajax="false"
                                              styleClass="noPrintButton"
                                              >

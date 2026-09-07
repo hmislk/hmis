@@ -22,7 +22,6 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
-import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Fee;
 import com.divudi.core.entity.Institution;
@@ -134,6 +133,8 @@ public class InwardBeanController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     com.divudi.bean.common.PriceMatrixController priceMatrixController;
+    @Inject
+    com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     private Long lastGeneratedBhtLong;
 
@@ -650,10 +651,9 @@ public class InwardBeanController implements Serializable {
         String sql = "SELECT sum(bt.feeValue)"
                 + " FROM BillFee bt"
                 + " WHERE bt.retired=false"
-                + " and type(bt.staff)=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " and bt.fee.feeType=:ftp  "
                 + " and bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //  hm.put("btp", BillType.InwardBill);
 
@@ -855,15 +855,19 @@ public class InwardBeanController implements Serializable {
     }
 
     public List<BillFee> createDoctorAndNurseFee(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            // Merged hospital: there are no assisting fees — every fee is already
+            // returned by createProfesionallFee().
+            return new ArrayList<>();
+        }
 
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
-                + " and type(bt.staff)!=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.DoctorAndNurses, hm)
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
                 + " and bt.bill.patientEncounter IN :pe ";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         List<PatientEncounter> pts = new ArrayList<>();
@@ -881,12 +885,11 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
-                + " and type(bt.staff)=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
                 + " and bt.bill.patientEncounter IN :pe "
                 + " order by bt.feeAdjusted desc ";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         List<PatientEncounter> pts = new ArrayList<>();
@@ -905,12 +908,11 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
-                + " and type(bt.staff)=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
                 + " and bt.bill.patientEncounter=:pe "
                 + " order by bt.feeAdjusted desc ";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessionalEstimates);
         hm.put("pe", patientEncounter);
@@ -929,11 +931,10 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
                 + " WHERE bt.retired=false"
-                + " AND type(bt.staff)=:class"
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.ProfessionalCharge, hm)
                 + " AND bt.fee.feeType=:ftp"
                 + " AND bt.bill.billType=:btp"
                 + " AND bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
@@ -947,6 +948,10 @@ public class InwardBeanController implements Serializable {
      * Adjusted Fee columns always match - exactly as they do for consultants.
      */
     public void setAssistingFeeAdjusted(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            // Merged hospital: setProfesionallFeeAdjusted() already covers every fee.
+            return;
+        }
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
@@ -955,11 +960,10 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
                 + " WHERE bt.retired=false"
-                + " AND type(bt.staff)!=:class"
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.DoctorAndNurses, hm)
                 + " AND bt.fee.feeType=:ftp"
                 + " AND bt.bill.billType=:btp"
                 + " AND bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
@@ -1336,16 +1340,19 @@ public class InwardBeanController implements Serializable {
     }
 
     public double calculateDoctorAndNurseCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        if (professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            // Merged hospital: calculateProfessionalCharges() already includes these fees.
+            return 0.0;
+        }
 
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
                 + " FROM BillFee bt"
                 + " WHERE bt.retired=false"
-                + " and type(bt.staff)!=:class "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.DoctorAndNurses, hm)
                 + " and bt.fee.feeType=:ftp  "
                 + " and (bt.bill.billType=:btp2) "
                 + " and bt.bill.patientEncounter IN :pe";
-        hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //     hm.put("btp", BillType.InwardBill);
         hm.put("btp2", BillType.InwardProfessional);

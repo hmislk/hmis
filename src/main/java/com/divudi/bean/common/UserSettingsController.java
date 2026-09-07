@@ -3031,16 +3031,38 @@ public class UserSettingsController implements Serializable {
     // existing admin ConfigOption "Inpatient Reports - Show Gross Value,
     // Discount and Service Charge" (not user-toggleable here), and the
     // dynamic per-InwardChargeType columns keep their existing
-    // auto-hide-when-zero behavior - neither is part of this panel.
+    // auto-hide-when-zero behavior - neither is part of this panel. Net
+    // Total is also always-visible (no checkbox), so it is not in this list.
+
+    // Issue #23515 review (CodeRabbit) - same "at least one column stays
+    // visible" guard as inward_bht_payment_detail below, for the same reason:
+    // clearing every checkbox would leave tblReport with zero columns,
+    // breaking the screen table and its Print/Excel/PDF exports.
+    private static final java.util.List<String> INWARD_INVOICE_JOURNAL_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "patientName", "admitted", "discharged", "finalBillNo", "admissionType",
+            "totalFinalPayment", "totalDeposit", "creditSettlement", "creditCompanyDue", "creditCompanyName");
+
+    private void setInvoiceJournalColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
+        if (!visible) {
+            long stillVisible = INWARD_INVOICE_JOURNAL_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_invoice_journal", settings);
+    }
 
     public boolean isInwardInvoiceJournalBhtNoVisible() {
         return isColumnVisible("inward_invoice_journal", "bhtNo");
     }
 
     public void setInwardInvoiceJournalBhtNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("bhtNo", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("bhtNo", visible);
     }
 
     public boolean isInwardInvoiceJournalPatientNameVisible() {
@@ -3048,9 +3070,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalPatientNameVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("patientName", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("patientName", visible);
     }
 
     public boolean isInwardInvoiceJournalAdmittedVisible() {
@@ -3058,9 +3078,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalAdmittedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("admitted", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("admitted", visible);
     }
 
     public boolean isInwardInvoiceJournalDischargedVisible() {
@@ -3068,9 +3086,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalDischargedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("discharged", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("discharged", visible);
     }
 
     public boolean isInwardInvoiceJournalFinalBillNoVisible() {
@@ -3078,9 +3094,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalFinalBillNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("finalBillNo", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("finalBillNo", visible);
     }
 
     public boolean isInwardInvoiceJournalAdmissionTypeVisible() {
@@ -3088,9 +3102,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalAdmissionTypeVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("admissionType", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("admissionType", visible);
     }
 
     public boolean isInwardInvoiceJournalTotalFinalPaymentVisible() {
@@ -3098,9 +3110,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalTotalFinalPaymentVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("totalFinalPayment", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("totalFinalPayment", visible);
     }
 
     public boolean isInwardInvoiceJournalTotalDepositVisible() {
@@ -3108,9 +3118,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalTotalDepositVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("totalDeposit", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("totalDeposit", visible);
     }
 
     public boolean isInwardInvoiceJournalCreditSettlementVisible() {
@@ -3118,9 +3126,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalCreditSettlementVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("creditSettlement", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("creditSettlement", visible);
     }
 
     public boolean isInwardInvoiceJournalCreditCompanyDueVisible() {
@@ -3128,9 +3134,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalCreditCompanyDueVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("creditCompanyDue", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("creditCompanyDue", visible);
     }
 
     public boolean isInwardInvoiceJournalCreditCompanyNameVisible() {
@@ -3138,22 +3142,52 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardInvoiceJournalCreditCompanyNameVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
-        settings.setColumnVisible("creditCompanyName", visible);
-        saveColumnVisibility("inward_invoice_journal", settings);
+        setInvoiceJournalColumnVisible("creditCompanyName", visible);
     }
 
     // Page: inward_bht_payment_detail (Issue #23515)
     // Backs inward_report_bht_payment_detail.xhtml (bhtPaymentSummaryReportController - see #23258).
+
+    // Issue #23515 review (CodeRabbit) - full ordered key list for this page,
+    // used only to enforce "at least one column stays visible" below. Unlike
+    // the Professional Payment Report, this page's exports go through
+    // p:dataExporter (reads the same rendered p:dataTable), so this list
+    // isn't needed for export logic - just for the guard.
+    private static final java.util.List<String> INWARD_BHT_PAYMENT_DETAIL_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "patientName", "admissionType", "admitted", "discharged",
+            "depositCash", "depositCard", "depositOther", "totalDeposits",
+            "paymentCash", "paymentCard", "paymentCredit", "paymentOther", "totalPayments",
+            "postPaymentCash", "postPaymentCard", "postPaymentCredit", "postPaymentOther", "totalPostPayments",
+            "grandTotal", "totalCreditBilled", "creditSettled", "creditBalance", "creditCompany",
+            "finalBillNo", "totalBillValue", "totalBalance");
+
+    /**
+     * Shared setter for every inward_bht_payment_detail column checkbox.
+     * Refuses to hide the last remaining visible column - unchecking it would
+     * leave tblReport with zero columns, breaking the screen table and its
+     * Print/Excel/PDF exports (Issue #23515 review, CodeRabbit).
+     */
+    private void setBhtPaymentDetailColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
+        if (!visible) {
+            long stillVisible = INWARD_BHT_PAYMENT_DETAIL_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_payment_detail", settings);
+    }
 
     public boolean isInwardBhtPaymentDetailBhtNoVisible() {
         return isColumnVisible("inward_bht_payment_detail", "bhtNo");
     }
 
     public void setInwardBhtPaymentDetailBhtNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("bhtNo", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("bhtNo", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPatientNameVisible() {
@@ -3161,9 +3195,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPatientNameVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("patientName", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("patientName", visible);
     }
 
     public boolean isInwardBhtPaymentDetailAdmissionTypeVisible() {
@@ -3171,9 +3203,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailAdmissionTypeVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("admissionType", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("admissionType", visible);
     }
 
     public boolean isInwardBhtPaymentDetailAdmittedVisible() {
@@ -3181,9 +3211,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailAdmittedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("admitted", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("admitted", visible);
     }
 
     public boolean isInwardBhtPaymentDetailDischargedVisible() {
@@ -3191,9 +3219,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailDischargedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("discharged", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("discharged", visible);
     }
 
     public boolean isInwardBhtPaymentDetailDepositCashVisible() {
@@ -3201,9 +3227,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailDepositCashVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("depositCash", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("depositCash", visible);
     }
 
     public boolean isInwardBhtPaymentDetailDepositCardVisible() {
@@ -3211,9 +3235,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailDepositCardVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("depositCard", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("depositCard", visible);
     }
 
     public boolean isInwardBhtPaymentDetailDepositOtherVisible() {
@@ -3221,9 +3243,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailDepositOtherVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("depositOther", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("depositOther", visible);
     }
 
     public boolean isInwardBhtPaymentDetailTotalDepositsVisible() {
@@ -3231,9 +3251,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailTotalDepositsVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("totalDeposits", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("totalDeposits", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPaymentCashVisible() {
@@ -3241,9 +3259,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPaymentCashVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("paymentCash", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("paymentCash", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPaymentCardVisible() {
@@ -3251,9 +3267,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPaymentCardVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("paymentCard", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("paymentCard", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPaymentCreditVisible() {
@@ -3261,9 +3275,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPaymentCreditVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("paymentCredit", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("paymentCredit", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPaymentOtherVisible() {
@@ -3271,9 +3283,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPaymentOtherVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("paymentOther", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("paymentOther", visible);
     }
 
     public boolean isInwardBhtPaymentDetailTotalPaymentsVisible() {
@@ -3281,9 +3291,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailTotalPaymentsVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("totalPayments", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("totalPayments", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPostPaymentCashVisible() {
@@ -3291,9 +3299,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPostPaymentCashVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("postPaymentCash", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("postPaymentCash", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPostPaymentCardVisible() {
@@ -3301,9 +3307,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPostPaymentCardVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("postPaymentCard", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("postPaymentCard", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPostPaymentCreditVisible() {
@@ -3311,9 +3315,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPostPaymentCreditVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("postPaymentCredit", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("postPaymentCredit", visible);
     }
 
     public boolean isInwardBhtPaymentDetailPostPaymentOtherVisible() {
@@ -3321,9 +3323,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailPostPaymentOtherVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("postPaymentOther", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("postPaymentOther", visible);
     }
 
     public boolean isInwardBhtPaymentDetailTotalPostPaymentsVisible() {
@@ -3331,9 +3331,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailTotalPostPaymentsVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("totalPostPayments", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("totalPostPayments", visible);
     }
 
     public boolean isInwardBhtPaymentDetailGrandTotalVisible() {
@@ -3341,9 +3339,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailGrandTotalVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("grandTotal", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("grandTotal", visible);
     }
 
     public boolean isInwardBhtPaymentDetailTotalCreditBilledVisible() {
@@ -3351,9 +3347,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailTotalCreditBilledVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("totalCreditBilled", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("totalCreditBilled", visible);
     }
 
     public boolean isInwardBhtPaymentDetailCreditSettledVisible() {
@@ -3361,9 +3355,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailCreditSettledVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("creditSettled", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("creditSettled", visible);
     }
 
     public boolean isInwardBhtPaymentDetailCreditBalanceVisible() {
@@ -3371,9 +3363,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailCreditBalanceVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("creditBalance", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("creditBalance", visible);
     }
 
     public boolean isInwardBhtPaymentDetailCreditCompanyVisible() {
@@ -3381,9 +3371,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailCreditCompanyVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("creditCompany", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("creditCompany", visible);
     }
 
     public boolean isInwardBhtPaymentDetailFinalBillNoVisible() {
@@ -3391,9 +3379,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailFinalBillNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("finalBillNo", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("finalBillNo", visible);
     }
 
     public boolean isInwardBhtPaymentDetailTotalBillValueVisible() {
@@ -3401,9 +3387,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailTotalBillValueVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("totalBillValue", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("totalBillValue", visible);
     }
 
     public boolean isInwardBhtPaymentDetailTotalBalanceVisible() {
@@ -3411,9 +3395,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardBhtPaymentDetailTotalBalanceVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
-        settings.setColumnVisible("totalBalance", visible);
-        saveColumnVisibility("inward_bht_payment_detail", settings);
+        setBhtPaymentDetailColumnVisible("totalBalance", visible);
     }
 
     // Page: inward_professional_payment_summary (Issue #23515)
@@ -3422,14 +3404,37 @@ public class UserSettingsController implements Serializable {
     // InwardReportControllerBht.visibleSummaryColumnKeys() to keep the
     // hand-built Excel/PDF exports in sync with the on-screen table.
 
+    // Issue #23515 review (CodeRabbit) - same "at least one column stays
+    // visible" guard as the other two reports. Clearing every checkbox here
+    // would also make downloadProfessionalPaymentSummaryPdf() pass 0 to
+    // PdfPTable's constructor, which OpenPDF rejects - guarded again at that
+    // call site too (belt and suspenders, since the two enforcement points
+    // are independent).
+    private static final java.util.List<String> INWARD_PROFESSIONAL_PAYMENT_SUMMARY_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "admitted", "discharged", "finalBillNo",
+            "consultant", "speciality", "sumAddedFee", "sumPaidFee", "balanceToPay");
+
+    private void setProfessionalPaymentSummaryColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
+        if (!visible) {
+            long stillVisible = INWARD_PROFESSIONAL_PAYMENT_SUMMARY_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_professional_payment_summary", settings);
+    }
+
     public boolean isInwardProfessionalPaymentSummaryBhtNoVisible() {
         return isColumnVisible("inward_professional_payment_summary", "bhtNo");
     }
 
     public void setInwardProfessionalPaymentSummaryBhtNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("bhtNo", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("bhtNo", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummaryAdmittedVisible() {
@@ -3437,9 +3442,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummaryAdmittedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("admitted", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("admitted", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummaryDischargedVisible() {
@@ -3447,9 +3450,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummaryDischargedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("discharged", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("discharged", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummaryFinalBillNoVisible() {
@@ -3457,9 +3458,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummaryFinalBillNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("finalBillNo", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("finalBillNo", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummaryConsultantVisible() {
@@ -3467,9 +3466,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummaryConsultantVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("consultant", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("consultant", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummarySpecialityVisible() {
@@ -3477,9 +3474,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummarySpecialityVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("speciality", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("speciality", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummarySumAddedFeeVisible() {
@@ -3487,9 +3482,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummarySumAddedFeeVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("sumAddedFee", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("sumAddedFee", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummarySumPaidFeeVisible() {
@@ -3497,9 +3490,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummarySumPaidFeeVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("sumPaidFee", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("sumPaidFee", visible);
     }
 
     public boolean isInwardProfessionalPaymentSummaryBalanceToPayVisible() {
@@ -3507,9 +3498,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentSummaryBalanceToPayVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
-        settings.setColumnVisible("balanceToPay", visible);
-        saveColumnVisibility("inward_professional_payment_summary", settings);
+        setProfessionalPaymentSummaryColumnVisible("balanceToPay", visible);
     }
 
     // Page: inward_professional_payment_detailed (Issue #23515)
@@ -3518,14 +3507,34 @@ public class UserSettingsController implements Serializable {
     // InwardReportControllerBht.visibleDetailedColumnKeys() to keep the
     // hand-built Excel/PDF exports in sync with the on-screen table.
 
+    // Issue #23515 review (CodeRabbit) - same "at least one column stays
+    // visible" guard as the Summary block above.
+    private static final java.util.List<String> INWARD_PROFESSIONAL_PAYMENT_DETAILED_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
+            "speciality", "addedFeeDate", "addedFeeValue", "paidDate",
+            "paidBillNumber", "comments", "paidFeeValue");
+
+    private void setProfessionalPaymentDetailedColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
+        if (!visible) {
+            long stillVisible = INWARD_PROFESSIONAL_PAYMENT_DETAILED_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_professional_payment_detailed", settings);
+    }
+
     public boolean isInwardProfessionalPaymentDetailedBhtNoVisible() {
         return isColumnVisible("inward_professional_payment_detailed", "bhtNo");
     }
 
     public void setInwardProfessionalPaymentDetailedBhtNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("bhtNo", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("bhtNo", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedAdmittedVisible() {
@@ -3533,9 +3542,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedAdmittedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("admitted", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("admitted", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedDischargedVisible() {
@@ -3543,9 +3550,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedDischargedVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("discharged", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("discharged", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedFinalBillNoVisible() {
@@ -3553,9 +3558,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedFinalBillNoVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("finalBillNo", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("finalBillNo", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedConsultantVisible() {
@@ -3563,9 +3566,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedConsultantVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("consultant", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("consultant", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedSpecialityVisible() {
@@ -3573,9 +3574,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedSpecialityVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("speciality", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("speciality", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedAddedFeeDateVisible() {
@@ -3583,9 +3582,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedAddedFeeDateVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("addedFeeDate", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("addedFeeDate", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedAddedFeeValueVisible() {
@@ -3593,9 +3590,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedAddedFeeValueVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("addedFeeValue", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("addedFeeValue", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedPaidDateVisible() {
@@ -3603,9 +3598,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedPaidDateVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("paidDate", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("paidDate", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedPaidBillNumberVisible() {
@@ -3613,9 +3606,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedPaidBillNumberVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("paidBillNumber", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("paidBillNumber", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedCommentsVisible() {
@@ -3623,9 +3614,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedCommentsVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("comments", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("comments", visible);
     }
 
     public boolean isInwardProfessionalPaymentDetailedPaidFeeValueVisible() {
@@ -3633,9 +3622,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setInwardProfessionalPaymentDetailedPaidFeeValueVisible(boolean visible) {
-        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
-        settings.setColumnVisible("paidFeeValue", visible);
-        saveColumnVisibility("inward_professional_payment_detailed", settings);
+        setProfessionalPaymentDetailedColumnVisible("paidFeeValue", visible);
     }
 
     /**

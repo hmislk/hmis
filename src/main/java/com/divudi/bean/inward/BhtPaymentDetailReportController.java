@@ -120,12 +120,14 @@ public class BhtPaymentDetailReportController implements Serializable {
                 row.setBillNo(p.getBill() != null ? p.getBill().getDeptId() : "");
                 row.setCreatedAt(p.getCreatedAt());
                 row.setPaymentMethod(p.getPaymentMethod());
-                row.setAmount(Math.abs(p.getPaidValue()));
+                // Signed, not abs() - see fetchDepositPayments() javadoc: cancellations
+                // arrive as separate negative-amount rows that must net out.
+                row.setAmount(p.getPaidValue());
                 row.setReferenceNo(p.getReferenceNo());
                 row.setCreditCompanyName("");
                 row.setPaymentCategory("Deposit");
                 reportRows.add(row);
-                double depositAmt = Math.abs(p.getPaidValue());
+                double depositAmt = p.getPaidValue();
                 grandTotal += depositAmt;
                 if (p.getPaymentMethod() != null) {
                     depositTotalByMethod.merge(p.getPaymentMethod(), depositAmt, Double::sum);
@@ -146,12 +148,14 @@ public class BhtPaymentDetailReportController implements Serializable {
                 row.setBillNo(p.getBill() != null ? p.getBill().getDeptId() : "");
                 row.setCreatedAt(p.getCreatedAt());
                 row.setPaymentMethod(p.getPaymentMethod());
-                row.setAmount(Math.abs(p.getPaidValue()));
+                // Signed, not abs() - see fetchPayments() javadoc: cancellations
+                // arrive as separate negative-amount rows that must net out.
+                row.setAmount(p.getPaidValue());
                 row.setReferenceNo(p.getReferenceNo());
                 row.setCreditCompanyName("");
                 row.setPaymentCategory("Payment");
                 reportRows.add(row);
-                double paymentAmt = Math.abs(p.getPaidValue());
+                double paymentAmt = p.getPaidValue();
                 grandTotal += paymentAmt;
                 grandTotalPayments += paymentAmt;
                 if (p.getPaymentMethod() != null) {
@@ -292,16 +296,32 @@ public class BhtPaymentDetailReportController implements Serializable {
         return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * Fetch "Make a Deposit" (INWARD_DEPOSIT) payments for this encounter.
+     *
+     * Matches BOTH {@code BillTypeAtomic.INWARD_DEPOSIT} and
+     * {@code BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION}, and deliberately does
+     * NOT filter on {@code p.cancelled} / {@code p.bill.cancelled}: when a
+     * deposit is cancelled, HMIS sets {@code cancelled=true} on the original
+     * bill and creates a companion reversal Bill+Payment with an inverted
+     * (negative) amount under the CANCELLATION billTypeAtomic, rather than
+     * flagging the original row. Filtering to a single billTypeAtomic and
+     * excluding cancelled bills would make a cancelled deposit vanish from
+     * this report with no trace it ever happened. Including both rows and
+     * keeping each row's natural sign (no {@code Math.abs()} in the caller)
+     * lets the per-method totals net out correctly. Mirrors
+     * {@link #fetchPostFinalPayments} and {@link #fetchCreditSettlementItems}.
+     */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " where p.retired = false"
-                + " and p.cancelled = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter = :enc");
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("btas", Arrays.asList(
+                BillTypeAtomic.INWARD_DEPOSIT,
+                BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION));
         params.put("enc", enc);
         if (paymentMethod != null) {
             jpql.append(" and p.paymentMethod = :pm");
@@ -316,17 +336,30 @@ public class BhtPaymentDetailReportController implements Serializable {
      * payments toward the bill made any time during the stay. Kept separate
      * from deposits (INWARD_DEPOSIT) and post-final-bill payments
      * (BillType.PostFinalBillInwardPayment). Issue #23262.
+     *
+     * Matches BOTH {@code BillTypeAtomic.INWARD_PAYMENT} and
+     * {@code BillTypeAtomic.INWARD_PAYMENT_CANCELLATION}, and deliberately does
+     * NOT filter on {@code p.cancelled} / {@code p.bill.cancelled}: when a
+     * payment is cancelled, HMIS sets {@code cancelled=true} on the original
+     * bill and creates a companion reversal Bill+Payment with an inverted
+     * (negative) amount under the CANCELLATION billTypeAtomic, rather than
+     * flagging the original row. Filtering to a single billTypeAtomic and
+     * excluding cancelled bills would make a cancelled payment vanish from
+     * this report with no trace it ever happened. Including both rows and
+     * keeping each row's natural sign (no {@code Math.abs()} in the caller)
+     * lets the per-method totals net out correctly. Mirrors
+     * {@link #fetchPostFinalPayments} and {@link #fetchCreditSettlementItems}.
      */
     private List<Payment> fetchPayments(PatientEncounter enc) {
         StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " where p.retired = false"
-                + " and p.cancelled = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter = :enc");
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_PAYMENT);
+        params.put("btas", Arrays.asList(
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_CANCELLATION));
         params.put("enc", enc);
         if (paymentMethod != null) {
             jpql.append(" and p.paymentMethod = :pm");
