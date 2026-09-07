@@ -65,6 +65,8 @@ public class InwardInvoiceJournalController implements Serializable {
     private com.divudi.ejb.CreditBean creditBean;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @EJB
+    private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -122,7 +124,7 @@ public class InwardInvoiceJournalController implements Serializable {
         // Recompute the column order from the admin-configurable Report Order
         // ConfigOption for each InwardChargeType (issue #23340). A stable
         // sort keeps ordinal order among types the admin has not reordered.
-        allChargeTypes = new ArrayList<>(Arrays.asList(InwardChargeType.values()));
+        allChargeTypes = professionalFeeClassificationService.visible(Arrays.asList(InwardChargeType.values()));
         allChargeTypes.sort(Comparator.comparingInt(configOptionApplicationController::getInwardChargeTypeReportOrder));
 
         reportRows               = new ArrayList<>();
