@@ -64,6 +64,8 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private BillBeanController billBeanController;
+    @EJB
+    private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -617,14 +619,22 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
 
     private void buildFromBillFees() {
+        if (professionalFeeClassificationService.isSuppressed(selectedChargeType)) {
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+
         StringBuilder jpql = new StringBuilder(
                 "select bf from BillFee bf join bf.bill b join b.patientEncounter enc"
                 + " where bf.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
-                + " and b.billType = :btp");
+                + " and b.billType = :btp"
+                // Without this both professional charge types pivoted the same full set
+                // of fees, so either selection produced an identical table (issue #23543).
+                + professionalFeeClassificationService.staffCondition("bf", selectedChargeType, params));
 
-        Map<String, Object> params = new HashMap<>();
         params.put("btp", BillType.InwardProfessional);
         appendEncounterFilters(jpql, params, "enc");
 
@@ -783,13 +793,13 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
 
     public List<InwardChargeType> getAllChargeTypes() {
-        return Arrays.asList(InwardChargeType.values());
+        return professionalFeeClassificationService.visible(Arrays.asList(InwardChargeType.values()));
     }
 
     public List<InwardChargeType> completeInwardChargeType(String query) {
         String lower = query == null ? "" : query.toLowerCase();
         List<InwardChargeType> results = new ArrayList<>();
-        for (InwardChargeType ct : InwardChargeType.values()) {
+        for (InwardChargeType ct : professionalFeeClassificationService.visible(InwardChargeType.values())) {
             String label = configOptionApplicationController.getInwardChargeTypeLabel(ct);
             if (label == null) {
                 label = "";

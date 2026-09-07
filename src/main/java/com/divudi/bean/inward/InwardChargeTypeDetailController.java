@@ -58,6 +58,8 @@ public class InwardChargeTypeDetailController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @EJB
+    private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -362,13 +364,20 @@ public class InwardChargeTypeDetailController implements Serializable {
         if (selectedChargeType.getCalculationMethod() != CalculationMethod.BILL_FEE) {
             return new ArrayList<>();
         }
+        if (professionalFeeClassificationService.isSuppressed(selectedChargeType)) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder(
                 "select bf from BillFee bf join bf.bill b join b.patientEncounter enc"
                 + " where bf.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
-                + " and b.billType = :btp");
-        Map<String, Object> params = new HashMap<>();
+                + " and b.billType = :btp"
+                // Without this the professional and assisting charge types each returned
+                // every professional fee on the bill, so both drilled down to the same
+                // full list (issue #23543).
+                + professionalFeeClassificationService.staffCondition("bf", selectedChargeType, params));
         params.put("btp", BillType.InwardProfessional);
         appendEncounterFilters(jpql, params, "enc");
 
@@ -506,13 +515,13 @@ public class InwardChargeTypeDetailController implements Serializable {
     // -------------------------------------------------------------------------
 
     public List<InwardChargeType> getAllChargeTypes() {
-        return java.util.Arrays.asList(InwardChargeType.values());
+        return professionalFeeClassificationService.visible(java.util.Arrays.asList(InwardChargeType.values()));
     }
 
     public List<InwardChargeType> completeInwardChargeType(String query) {
         String lower = query == null ? "" : query.toLowerCase();
         List<InwardChargeType> results = new ArrayList<>();
-        for (InwardChargeType ct : InwardChargeType.values()) {
+        for (InwardChargeType ct : professionalFeeClassificationService.visible(InwardChargeType.values())) {
             String label = configOptionApplicationController.getInwardChargeTypeLabel(ct);
             if (label.toLowerCase().contains(lower) || ct.name().toLowerCase().contains(lower)) {
                 results.add(ct);

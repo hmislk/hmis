@@ -1563,6 +1563,27 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     /**
+     * Key of the option that makes a hospital treat assisting (non-Consultant)
+     * professional fees as ordinary professional charges.
+     */
+    public static final String PROFESSIONAL_AND_ASSISTING_FEES_MERGED
+            = "Professional Fee and Assisting Fees are shown as one charge type on the final bill.";
+
+    /**
+     * True when professional and assisting fees are a single professional
+     * charge for this hospital, i.e. {@code InwardChargeType.DoctorAndNurses}
+     * should not appear anywhere — not as a bill row, a report column, or a
+     * selectable charge type.
+     *
+     * <p>Read-only on purpose: this is consulted from {@code rendered="..."}
+     * gates and from charge-type list building, neither of which should create
+     * a ConfigOption row just because a page was viewed.
+     */
+    public boolean isProfessionalAndAssistingFeesMerged() {
+        return getBooleanValueByKeyReadOnly(PROFESSIONAL_AND_ASSISTING_FEES_MERGED, false);
+    }
+
+    /**
      * Read-only variant of {@link #getBooleanValueByKey(String, boolean)} —
      * returns {@code defaultValue} without persisting a new ConfigOption row
      * when the key does not yet exist. Use this for {@code rendered="..."}
