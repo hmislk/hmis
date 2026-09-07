@@ -61,6 +61,7 @@ public class InvestigationApiService implements Serializable {
         i.setInactive(Boolean.TRUE.equals(req.getInactive()));
         i.setBypassSampleWorkflow(Boolean.TRUE.equals(req.getBypassSampleWorkflow()));
         i.setVatable(Boolean.TRUE.equals(req.getVatable()));
+        i.setDiscountAllowed(Boolean.TRUE.equals(req.getDiscountAllowed()));
         validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
@@ -86,6 +87,7 @@ public class InvestigationApiService implements Serializable {
         if (req.getInactive() != null) i.setInactive(req.getInactive());
         if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
         if (req.getVatable() != null) i.setVatable(req.getVatable());
+        if (req.getDiscountAllowed() != null) i.setDiscountAllowed(req.getDiscountAllowed());
         validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
@@ -229,6 +231,7 @@ public class InvestigationApiService implements Serializable {
         InvestigationSearchResultDTO dto = new InvestigationSearchResultDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow());
         dto.setVatable(i.isVatable());
         dto.setVatPercentage(i.getVatPercentage());
+        dto.setDiscountAllowed(i.isDiscountAllowed());
         populateLinks(dto, i);
         return dto;
     }
@@ -236,6 +239,7 @@ public class InvestigationApiService implements Serializable {
         InvestigationResponseDTO dto = new InvestigationResponseDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow(), m);
         dto.setVatable(i.isVatable());
         dto.setVatPercentage(i.getVatPercentage());
+        dto.setDiscountAllowed(i.isDiscountAllowed());
         populateLinks(dto, i);
         return dto;
     }

@@ -36,6 +36,8 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private List<ReportTemplateRowBundle> bundles;
     List<DenominationTransaction> denominationTransactions;
+    private List<DenominationTransaction> paymentMethodHandoverTransactions;
+    private double paymentMethodHandoverActualTotal;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
     private Map<String, List<BillItem>> groupedBillItems;
@@ -165,6 +167,103 @@ public class ReportTemplateRowBundle implements Serializable {
     private boolean cashierExcludedTotalComputed;
     private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
     private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+    
+    private Date fromDate;
+    private Date toDate;
+    private Institution filterInstitution;
+    private Institution filterSite;
+    private Department filterDepartment;
+    private WebUser filterWebUser;
+    
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getFilterInstitution() {
+        return filterInstitution;
+    }
+
+    public void setFilterInstitution(Institution filterInstitution) {
+        this.filterInstitution = filterInstitution;
+    }
+
+    public Institution getFilterSite() {
+        return filterSite;
+    }
+
+    public void setFilterSite(Institution filterSite) {
+        this.filterSite = filterSite;
+    }
+
+    public Department getFilterDepartment() {
+        return filterDepartment;
+    }
+
+    public void setFilterDepartment(Department filterDepartment) {
+        this.filterDepartment = filterDepartment;
+    }
+
+    public WebUser getFilterWebUser() {
+        return filterWebUser;
+    }
+
+    public void setFilterWebUser(WebUser filterWebUser) {
+        this.filterWebUser = filterWebUser;
+    }
+
+    /**
+     * True once a report generator has snapshotted the filters it actually ran
+     * with. Exporters gate the filter summary block on this: a bundle that
+     * never set them must not get "All Institutions / All Users" printed
+     * against it, because that asserts a scope the report never applied.
+     */
+    public boolean hasFilterSummary() {
+        return fromDate != null
+                || toDate != null
+                || filterInstitution != null
+                || filterSite != null
+                || filterDepartment != null
+                || filterWebUser != null;
+    }
+
+    /**
+     * The report title to print, or null when no generator ever named this
+     * bundle. Unlike {@link #getName()} this does not lazily assign a
+     * "BundleName&lt;uuid&gt;" placeholder - that placeholder exists to keep
+     * download file names unique, and printing it as a report heading shows
+     * the user a raw UUID.
+     */
+    public String getPrintableName() {
+        return (name == null || name.trim().isEmpty()) ? null : name;
+    }
+
+    /**
+     * Name to show for the filtered user. WebUser.getName() is the login name,
+     * not the person's name, so prefer the person and fall back to the login.
+     */
+    public String getFilterWebUserDisplayName() {
+        if (filterWebUser == null) {
+            return null;
+        }
+        if (filterWebUser.getWebUserPerson() != null
+                && filterWebUser.getWebUserPerson().getName() != null
+                && !filterWebUser.getWebUserPerson().getName().trim().isEmpty()) {
+            return filterWebUser.getWebUserPerson().getName();
+        }
+        return filterWebUser.getName();
+    }
 
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
@@ -3072,13 +3171,40 @@ public class ReportTemplateRowBundle implements Serializable {
         this.denominationTransactions = denominationTransactions;
     }
 
+    public List<DenominationTransaction> getPaymentMethodHandoverTransactions() {
+        return paymentMethodHandoverTransactions;
+    }
+
+    public void setPaymentMethodHandoverTransactions(List<DenominationTransaction> paymentMethodHandoverTransactions) {
+        this.paymentMethodHandoverTransactions = paymentMethodHandoverTransactions;
+    }
+
+    public double getPaymentMethodHandoverActualTotal() {
+        return paymentMethodHandoverActualTotal;
+    }
+
+    public void setPaymentMethodHandoverActualTotal(double paymentMethodHandoverActualTotal) {
+        this.paymentMethodHandoverActualTotal = paymentMethodHandoverActualTotal;
+    }
+
     public void calculateTotalHandoverByDenominationQuantities() {
         denominatorValue = 0.0;
         if (denominationTransactions == null || denominationTransactions.isEmpty()) {
             return;
         }
         for (DenominationTransaction dt : denominationTransactions) {
-            if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null) {
+            if (dt == null) {
+                continue;
+            }
+            if (dt.getDenomination() == null) {
+                // Lump-sum cash entry (denomination breakdown disabled) — the
+                // cashier types the total directly, there is no qty to derive it from.
+                if (dt.getDenominationValue() != null) {
+                    denominatorValue += dt.getDenominationValue();
+                }
+                continue;
+            }
+            if (dt.getDenomination().getDenominationValue() == null) {
                 continue;
             }
             if (dt.getDenominationQty() == null) {
@@ -3090,6 +3216,32 @@ public class ReportTemplateRowBundle implements Serializable {
                 denominatorValue += dv;
             }
         }
+    }
+
+    /**
+     * Sums the cashier-entered actual amounts for non-cash payment methods
+     * ({@link #paymentMethodHandoverTransactions}). Mirrors
+     * {@link #calculateTotalHandoverByDenominationQuantities()} for cash.
+     */
+    public void calculateTotalHandoverByPaymentMethodTransactions() {
+        paymentMethodHandoverActualTotal = 0.0;
+        if (paymentMethodHandoverTransactions == null) {
+            return;
+        }
+        for (DenominationTransaction dt : paymentMethodHandoverTransactions) {
+            if (dt != null && dt.getDenominationValue() != null) {
+                paymentMethodHandoverActualTotal += dt.getDenominationValue();
+            }
+        }
+    }
+
+    /**
+     * Combined actual handover total across cash (denomination or lump-sum)
+     * and every other payment method row. Bound to the "Total Collected
+     * Value" figure on the Shift Handover screen.
+     */
+    public double getGrandHandoverActualTotal() {
+        return denominatorValue + paymentMethodHandoverActualTotal;
     }
 
     private List<DenominationTransaction> createDefaultDenominationTransaction(PaymentMethod pm) {
@@ -3105,6 +3257,112 @@ public class ReportTemplateRowBundle implements Serializable {
             dts.add(dt);
         }
         return dts;
+    }
+
+    /**
+     * A single editable row representing the cashier's total cash handover
+     * as a lump sum, used when the "Shift End Cash Handover - Require
+     * Denomination Breakdown" config option is off. No {@link Denomination}
+     * is attached — {@link DenominationTransaction#getDenominationValue()}
+     * is typed directly by the cashier.
+     */
+    public List<DenominationTransaction> createLumpSumCashHandoverTransaction() {
+        List<DenominationTransaction> dts = new ArrayList<>();
+        DenominationTransaction dt = new DenominationTransaction();
+        dt.setPaymentMethod(Cash);
+        dt.setExpectedValue(cashHandoverValue);
+        dts.add(dt);
+        return dts;
+    }
+
+    /**
+     * The payment methods, other than cash, that a shift handover can
+     * reconcile against — mirrors the *HandoverValue fields this bundle
+     * already computes per shift.
+     */
+    private static final List<PaymentMethod> NON_CASH_HANDOVER_PAYMENT_METHODS = Collections.unmodifiableList(Arrays.asList(
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.Voucher,
+            PaymentMethod.Credit,
+            PaymentMethod.Staff,
+            PaymentMethod.IOU,
+            PaymentMethod.Agent,
+            PaymentMethod.OnlineSettlement,
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.Staff_Welfare,
+            PaymentMethod.MultiplePaymentMethods,
+            PaymentMethod.PatientPoints,
+            PaymentMethod.OnCall
+    ));
+
+    /**
+     * The system-expected handover value already computed on this bundle for
+     * the given payment method (see {@code resetTotals()} / the
+     * *HandoverValue fields).
+     */
+    public double getHandoverValueByPaymentMethod(PaymentMethod pm) {
+        if (pm == null) {
+            return 0.0;
+        }
+        switch (pm) {
+            case Cash:
+                return cashHandoverValue;
+            case Card:
+                return cardHandoverValue;
+            case Cheque:
+                return chequeHandoverValue;
+            case Slip:
+                return slipHandoverValue;
+            case ewallet:
+                return eWalletHandoverValue;
+            case Voucher:
+                return voucherHandoverValue;
+            case Credit:
+                return creditHandoverValue;
+            case Staff:
+                return staffHandoverValue;
+            case IOU:
+                return iouHandoverValue;
+            case Agent:
+                return agentHandoverValue;
+            case OnlineSettlement:
+                return onlineSettlementHandoverValue;
+            case PatientDeposit:
+                return patientDepositHandoverValue;
+            case Staff_Welfare:
+                return staffWelfareHandoverValue;
+            case MultiplePaymentMethods:
+                return multiplePaymentMethodsHandoverValue;
+            case PatientPoints:
+                return patientPointsHandoverValue;
+            case OnCall:
+                return onCallHandoverValue;
+            default:
+                return 0.0;
+        }
+    }
+
+    /**
+     * One editable row per non-cash payment method that was actually used
+     * during the shift (non-zero expected handover value), for the cashier
+     * to confirm/enter what they are handing over for it.
+     */
+    public List<DenominationTransaction> createPaymentMethodHandoverTransactions() {
+        List<DenominationTransaction> rows = new ArrayList<>();
+        for (PaymentMethod pm : NON_CASH_HANDOVER_PAYMENT_METHODS) {
+            double expected = getHandoverValueByPaymentMethod(pm);
+            if (Math.abs(expected) < 0.001) {
+                continue;
+            }
+            DenominationTransaction dt = new DenominationTransaction();
+            dt.setPaymentMethod(pm);
+            dt.setExpectedValue(expected);
+            rows.add(dt);
+        }
+        return rows;
     }
 
     public PaymentMethod getPaymentMethod() {

@@ -1736,16 +1736,15 @@ public class PriceMatrixController implements Serializable {
      * room-charge-type rows.
      */
     /**
-     * NOTE (2026-08, issue #23220): this JPQL calculation path filters
-     * `department` as an exact match only — unlike paymentMethod/admissionType
-     * in this same query, it does NOT wildcard-match rows where the matrix
-     * entry's department is null. This is a known gap, tracked separately in
-     * issue #23237 (https://github.com/hmislk/hmis/issues/23237). It is
-     * intentionally NOT fixed here: the equivalent native-SQL calculation path
-     * (PriceMatrixNativeSqlService.fetchDiscountPct), which is what inpatient
-     * pharmacy issuing actually uses in production, received the fix instead.
-     * This JPQL path is considered legacy/soon-to-be-superseded and should not
-     * be extended further — see #23237 before making changes here.
+     * NOTE (2026-08-31, issue #23237): department now wildcard-matches like
+     * paymentMethod/admissionType do in this same query, mirroring the fix
+     * already applied to the native-SQL path (PriceMatrixNativeSqlService.
+     * fetchDiscountPct) in #23220. This method has a live caller —
+     * InwardBeanController.applyInwardDiscountToBillFee, used by inpatient
+     * service/investigation billing — so the department-exact-match gap was
+     * silently dropping investigation discounts whenever a matrix row was
+     * saved without a department (meant as "any department") against an
+     * investigation that has its own department set. See issue #23308.
      */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,
@@ -1777,7 +1776,7 @@ public class PriceMatrixController implements Serializable {
             jpql.append(" and a.paymentScheme is null");
         }
         if (department != null) {
-            jpql.append(" and a.department = :dep");
+            jpql.append(" and (a.department = :dep or a.department is null)");
             params.put("dep", department);
         } else {
             jpql.append(" and a.department is null");

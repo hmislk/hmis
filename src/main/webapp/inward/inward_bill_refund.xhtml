@@ -8,14 +8,15 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill">
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
     <ui:define name="content">
 
         <h:panelGroup >
-            <h:form  >
-                <h:panelGroup  class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo eq null}"> 
+            <h:form id="frmInwardRefund">
+                <h:panelGroup  class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo eq null}">
                     <div class="col-12">
                         <h:panelGroup>
                             <p:panel >
@@ -25,29 +26,14 @@
                                 </f:facet>
                                 <h:outputLabel value="Type Patient Name or BHT : "/>
 
-                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                required="true" requiredMessage="Please select a patient"
-                                                value="#{inwardRefundController.current.patientEncounter}"
-                                                completeMethod="#{admissionController.completePatientAll}" 
-                                                var="myItem" itemValue="#{myItem}" 
-                                                itemLabel="#{myItem.bhtNo}" 
-                                                class="mx-2" size="30">
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.bhtNo}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                                    </p:column>
-                                </p:autoComplete> 
+                                <admcc:admission_search
+                                    widgetVar="aPt"
+                                    inputId="acPt"
+                                    value="#{inwardRefundController.current.patientEncounter}"
+                                    completeMethod="#{admissionController.completePatientAll}"
+                                    continueClientId="frmInwardRefund:btnSelect"
+                                    required="true"
+                                    requiredMessage="Please select a patient" />
 
                                 <p:commandButton
                                     id="btnSelect"

@@ -1,0 +1,227 @@
+# ===========================================================================
+#  suwani - shared1 - new Azure estate (East Asia)
+#
+#  Copy to  hmis/.github/workflows/suwani_prod_migrated_ci_cd.yml
+#  Branch:  suwani-prod-migrated
+#  Serves:  https://suwani.carecode.org/suwani
+#
+#  Suwani had no CI pipeline on the old estate - it was deployed by
+#  hand-copied WAR. This is its first pipeline. The JNDI names match the
+#  Payara resources on vm-hmis-shared1-prod:
+#    jdbc/suwani       -> poolSuwani       -> db1 / suwani
+#    jdbc/suwaniAudit  -> poolSuwaniAudit  -> db1 / suwaniaudit  (created 2026-09-03)
+#  The audit schema is empty on first deploy; the application creates its
+#  own audit tables on start-up.
+# ===========================================================================
+name: "suwani shared1 migrated CI/CD"
+
+on:
+  push:
+    branches: [suwani-prod-migrated]
+  workflow_dispatch:
+
+# Least privilege: this workflow only reads the repo and talks to an
+# external host over SSH; it never writes back to GitHub.
+permissions:
+  contents: read
+
+concurrency:
+  # One Payara domain per VM. Two asadmin deploys at once against the same
+  # domain gives you a half-deployed app and a confusing 404.
+  group: payara-shared1-migrated
+  cancel-in-progress: false
+
+env:
+  APP:        suwani
+  JNDI_MAIN:  jdbc/suwani
+  JNDI_AUDIT: jdbc/suwaniAudit
+  HEALTH_URL: https://suwani.carecode.org/suwani/faces/index1.xhtml
+  # Bounded SSH transport for every rsync/ssh below: fail fast on a dead
+  # route instead of holding the payara-shared1-migrated concurrency lock
+  # (which would stall asiripharmacy / southernlanka / digasiri / horizon
+  # deploys on the same VM) until the job's own timeout fires.
+  SSH_OPTS: "-o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=8 -o BatchMode=yes"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      # JDBC pools live in Payara, not in the WAR. These names must match
+      # the resources on vm-hmis-shared1-prod exactly.
+      - name: Substitute datasource JNDI names
+        run: |
+          set -euo pipefail
+          PU=src/main/resources/META-INF/persistence.xml
+          test -f "$PU" || { echo "::error::$PU not found"; exit 1; }
+
+          sed -i "s|[$][{]JDBC_DATASOURCE[}]|${JNDI_MAIN}|g"        "$PU"
+          sed -i "s|[$][{]JDBC_AUDIT_DATASOURCE[}]|${JNDI_AUDIT}|g" "$PU"
+
+          echo "--- resolved ---"; grep -E 'jta-data-source' "$PU"
+
+          if grep -q 'JDBC_DATASOURCE\|JDBC_AUDIT_DATASOURCE' "$PU"; then
+            echo "::error::unsubstituted placeholder remains"; exit 1; fi
+          for want in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            grep -q "<[a-z-]*jta-data-source>${want}</" "$PU" || {
+              echo "::error::$PU does not reference ${want} - branch may have a hardcoded datasource"
+              grep -E 'jta-data-source' "$PU"; exit 1; }
+          done
+
+      - name: Build
+        run: mvn -B -ntp clean package -DskipTests
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          war=$(find target -maxdepth 1 -name '*.war' | head -1)
+          test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
+          mv "$war" "target/${APP}.war"; ls -la "target/${APP}.war"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suwani-war
+          path: target/suwani.war
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only ever deploy from the branch this pipeline belongs to - a manual
+    # workflow_dispatch from any other ref must not reach production.
+    # (Also configure the prod-migrated environment with required reviewers
+    # and a deployment-branch rule for suwani-prod-migrated in repo settings.)
+    if: github.ref == 'refs/heads/suwani-prod-migrated'
+    # Longer than the intended 30-minute Payara deployment window
+    # (AS_ADMIN_READTIMEOUT below is 30 min) so a genuinely slow first
+    # deploy still completes, but a wedged step cannot run forever.
+    timeout-minutes: 45
+    environment: prod-migrated        # add a required reviewer here to gate it
+    env:
+      APP:        suwani
+      JNDI_MAIN:  jdbc/suwani
+      JNDI_AUDIT: jdbc/suwaniAudit
+      HEALTH_URL: https://suwani.carecode.org/suwani/faces/index1.xhtml
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: suwani-war
+          path: ./artifact
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          # Prefer a pinned host key when PROD_SHARED1_HOST_KEY is configured
+          # (recommended - removes the TOFU window); fall back to ssh-keyscan,
+          # which is what every other *_prod_migrated_ci_cd.yml on this estate
+          # currently does.
+          if [ -n "${{ secrets.PROD_SHARED1_HOST_KEY }}" ]; then
+            printf '%s\n' "${{ secrets.PROD_SHARED1_HOST_KEY }}" >> ~/.ssh/known_hosts
+            echo "known_hosts: pinned host key"
+          else
+            ssh-keyscan -T 15 -H "${{ secrets.PROD_SHARED1_IP }}" >> ~/.ssh/known_hosts
+            echo "known_hosts: ssh-keyscan (no PROD_SHARED1_HOST_KEY secret set)"
+          fi
+
+      - name: Upload WAR
+        run: |
+          set -euo pipefail
+          rsync -az --timeout=60 -e "ssh $SSH_OPTS -i ~/.ssh/id_deploy" "./artifact/suwani.war" \
+            "${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ secrets.PROD_SHARED1_IP }}:/home/appuser/app/latest/"
+
+      - name: Deploy to Payara and verify health
+        env:
+          TARGET: ${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ secrets.PROD_SHARED1_IP }}
+        run: |
+          set -euo pipefail
+          ssh $SSH_OPTS -i ~/.ssh/id_deploy "$TARGET" \
+              APP="suwani" JNDI_MAIN="jdbc/suwani" JNDI_AUDIT="jdbc/suwaniAudit" \
+              HEALTH_URL="${HEALTH_URL}" \
+              'bash -euo pipefail -s' <<'REMOTE'
+          PAYARA=/opt/payara5
+          WAR="/home/appuser/app/latest/${APP}.war"
+          # $DEPLOYED is the last KNOWN-GOOD WAR: it is written only AFTER a
+          # health check passed (end of this script), so it is always safe to
+          # roll back to.
+          DEPLOYED="/home/appuser/app/latest/${APP}.war.deployed"
+          ASADMIN="sudo -u appuser $PAYARA/glassfish/bin/asadmin --user admin --passwordfile $PAYARA/.asadminpass"
+
+          # A first deploy runs EclipseLink metadata build and schema migration
+          # against a large production schema. asadmin gives up after 600 s by
+          # default and the job goes red while the server carries on deploying.
+          export AS_ADMIN_READTIMEOUT=1800000
+
+          test -f "$WAR" || { echo "WAR missing: $WAR"; exit 1; }
+
+          # Verify the datasources resolve BEFORE undeploying the working copy.
+          # Failing here leaves the hospital running.
+          for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            $ASADMIN list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
+              echo "JNDI resource $j not found."
+              exit 1; }
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$($ASADMIN get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "could not resolve the pool behind $j"; exit 1; }
+            $ASADMIN ping-connection-pool "$pool" || {
+              echo "pool $pool (behind $j) is not reachable"; exit 1; }
+          done
+
+          # undeploy drops the running app, so any failure from here on - a
+          # failed asadmin deploy OR a deployed-but-unhealthy app - must
+          # restore the last known-good WAR. A rollback failure is reported
+          # with ::error:: but must not mask the failure that triggered it.
+          rollback() {
+            echo "::error::${1:-deploy failed} - rolling back to the last known-good WAR"
+            $ASADMIN undeploy "$APP" 2>/dev/null || true
+            if [ -f "$DEPLOYED" ]; then
+              if $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true "$DEPLOYED"; then
+                echo "rollback: redeployed the last known-good WAR"
+              else
+                echo "::error::ROLLBACK FAILED - $APP is DOWN, manual intervention required"
+              fi
+            else
+              echo "::error::no known-good ${APP}.war.deployed to roll back to - $APP is DOWN"
+            fi
+          }
+
+          $ASADMIN undeploy "$APP" 2>/dev/null || echo "not previously deployed"
+          if ! $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true "$WAR"; then
+            rollback "asadmin deploy failed"
+            exit 1
+          fi
+
+          # Health check ON THE SERVER, before promoting the rollback target.
+          healthy=0
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
+            echo "health attempt $i: HTTP $code"
+            [ "$code" = "200" ] && { healthy=1; break; }
+            sleep 10
+          done
+          if [ "$healthy" -ne 1 ]; then
+            rollback "new WAR deployed but never became healthy at $HEALTH_URL"
+            exit 1
+          fi
+
+          # Only now is the new WAR proven good - promote it to the rollback target.
+          sudo cp "$WAR" "$DEPLOYED"
+          echo "healthy - promoted new WAR to ${APP}.war.deployed"
+          $ASADMIN list-applications
+          REMOTE
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy

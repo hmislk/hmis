@@ -46,6 +46,9 @@ public class EnumController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
+    @EJB
+    com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
+
     // PaymentScheme removed from instance field to avoid cross-user state in ApplicationScoped bean
     // Use local variables or session-scoped beans for user-specific state
     private List<Class<? extends Enum<?>>> enumList;
@@ -772,14 +775,20 @@ public class EnumController implements Serializable {
         return tmp;
     }
 
+    /**
+     * Every inward charge type the hospital actually uses. A hospital that merges
+     * assisting fees into professional fees does not have an Assisting Charge at
+     * all, so it is filtered out here rather than at each call site (issue #23543).
+     */
     public InwardChargeType[] getInwardChargeTypes() {
-        return InwardChargeType.values();
+        return professionalFeeClassificationService.visible(InwardChargeType.values());
     }
 
     public InwardChargeType[] getInwardChargeTypesForSetting() {
-        return Arrays.stream(InwardChargeType.values())
+        InwardChargeType[] settable = Arrays.stream(InwardChargeType.values())
                 .filter(InwardChargeType::isAllowToSetItems)
                 .toArray(InwardChargeType[]::new);
+        return professionalFeeClassificationService.visible(settable);
     }
 
     public PatientEncounterComponentType[] getPatientEncounterComponentTypes() {

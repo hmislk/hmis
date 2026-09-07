@@ -700,7 +700,7 @@
                             </p:tab>
 
 
-                            <p:tab id="tabDoc" title="Assisting Fee"  >
+                            <p:tab id="tabDoc" title="Assisting Fee" rendered="#{not configOptionApplicationController.professionalAndAssistingFeesMerged}" >
                                 <p:dataTable  scrollable="true" scrollHeight="300"  value="#{bhtSummeryController.doctorAndNurseFee}" var="pf"
                                               rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
                                     <p:column headerText="Name">

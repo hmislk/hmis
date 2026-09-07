@@ -113,6 +113,32 @@ public class ConfigOptionApplicationController implements Serializable {
         return option;
     }
 
+    /**
+     * Runs {@code seeding} with the same reentrancy guard {@link #loadApplicationOptions()}
+     * uses internally, so any {@code getXxxValueByKey}/{@code createApplicationOptionIfAbsent}
+     * calls inside it that lazily create a missing row do NOT each trigger their own
+     * synchronized full cache reload — at most one reload happens, after {@code seeding}
+     * finishes. Use this around any loop that may touch many keys that could all be
+     * missing at once (e.g. seeding every {@code InwardChargeType}'s rows on a hospital's
+     * first visit to an admin/discovery page) — without it, such a loop could trigger one
+     * full, synchronized, application-wide cache reload per missing key (found in review
+     * of issue #23340's charge-type ordering/grouping follow-up).
+     */
+    public void seedInBatch(Runnable seeding) {
+        boolean alreadyBatching = isLoadingApplicationOptions;
+        if (!alreadyBatching) {
+            isLoadingApplicationOptions = true;
+        }
+        try {
+            seeding.run();
+        } finally {
+            if (!alreadyBatching) {
+                isLoadingApplicationOptions = false;
+                loadApplicationOptions();
+            }
+        }
+    }
+
     @PostConstruct
     public void init() {
         loadApplicationOptions();
@@ -1405,6 +1431,43 @@ public class ConfigOptionApplicationController implements Serializable {
         saveShortTextOption(key, customLabel == null ? "" : customLabel.trim());
     }
 
+    public int getInwardChargeTypeReportOrder(InwardChargeType type) {
+        String key = "Inward Charge Type Report Order - " + type.name();
+        Integer v = getIntegerValueByKey(key, (type.ordinal() + 1) * 10);
+        return v == null ? (type.ordinal() + 1) * 10 : v;
+    }
+
+    public void saveInwardChargeTypeReportOrder(InwardChargeType type, int order) {
+        setIntegerValueByKey("Inward Charge Type Report Order - " + type.name(), order);
+    }
+
+    public int getInwardChargeTypeFinalBillOrder(InwardChargeType type) {
+        String key = "Inward Charge Type Final Bill Order - " + type.name();
+        Integer v = getIntegerValueByKey(key, (type.ordinal() + 1) * 10);
+        return v == null ? (type.ordinal() + 1) * 10 : v;
+    }
+
+    public void saveInwardChargeTypeFinalBillOrder(InwardChargeType type, int order) {
+        setIntegerValueByKey("Inward Charge Type Final Bill Order - " + type.name(), order);
+    }
+
+    /**
+     * Free-text grouping key for the "Bundled Custom 1" Final Bill print
+     * format: charge types sharing the same non-blank group text print as
+     * one summed line (see BhtSummeryController#buildBundledRows). Default
+     * empty — every charge type prints on its own line until an admin sets
+     * this, so no hospital is affected until it opts in.
+     */
+    public String getInwardChargeTypeFinalBillGroup(InwardChargeType type) {
+        String key = "Inward Charge Type Final Bill Group - " + type.name();
+        return getShortTextValueByKey(key, "");
+    }
+
+    public void saveInwardChargeTypeFinalBillGroup(InwardChargeType type, String group) {
+        String key = "Inward Charge Type Final Bill Group - " + type.name();
+        saveShortTextOption(key, group == null ? "" : group.trim());
+    }
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -1497,6 +1560,27 @@ public class ConfigOptionApplicationController implements Serializable {
             option = createApplicationOptionIfAbsent(key, OptionValueType.BOOLEAN, dv);
         }
         return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    /**
+     * Key of the option that makes a hospital treat assisting (non-Consultant)
+     * professional fees as ordinary professional charges.
+     */
+    public static final String PROFESSIONAL_AND_ASSISTING_FEES_MERGED
+            = "Professional Fee and Assisting Fees are shown as one charge type on the final bill.";
+
+    /**
+     * True when professional and assisting fees are a single professional
+     * charge for this hospital, i.e. {@code InwardChargeType.DoctorAndNurses}
+     * should not appear anywhere — not as a bill row, a report column, or a
+     * selectable charge type.
+     *
+     * <p>Read-only on purpose: this is consulted from {@code rendered="..."}
+     * gates and from charge-type list building, neither of which should create
+     * a ConfigOption row just because a page was viewed.
+     */
+    public boolean isProfessionalAndAssistingFeesMerged() {
+        return getBooleanValueByKeyReadOnly(PROFESSIONAL_AND_ASSISTING_FEES_MERGED, false);
     }
 
     /**

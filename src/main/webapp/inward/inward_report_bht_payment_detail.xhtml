@@ -9,14 +9,18 @@
     <!--
         Issue #23258: this page's title/URL/menu entry is "...Detail", but its
         results table is intentionally bound to bhtPaymentSummaryReportController
-        (one row per PatientEncounter/BHT, with the full deposit/post-final/
-        credit-settlement/final-bill breakdown) - not a typo. Related issues
-        #23260/#23262/#23263 (filed against "the Detail report") describe
-        exactly this controller's column set (Deposit Cash, Post-Final columns,
-        Total Balance, post-payment-only patients), confirming the reporter's
-        mental model: "Detail" = the full per-BHT financial breakdown, "Summary"
-        = the plain payment log now shown on inward_report_bht_payment_summary.xhtml.
-        See BhtPaymentSummaryReportController's javadoc for the underlying data.
+        (one row per PatientEncounter/BHT, with the full deposit / payment /
+        post-payment / credit-settlement / final-bill breakdown) - not a typo.
+        Related issues #23260/#23262/#23263 (filed against "the Detail report")
+        describe exactly this controller's column set (Deposit / Payment / Post
+        Payment column groups, Total Balance, post-payment-only patients),
+        confirming the reporter's mental model: "Detail" = the full per-BHT
+        financial breakdown, "Summary" = the plain payment log now shown on
+        inward_report_bht_payment_summary.xhtml. Issue #23262 further split the
+        one-time "Payments" bucket into three: "Make a Deposit" (INWARD_DEPOSIT),
+        "Make a Payment" (INWARD_PAYMENT) and "Post Final Payment"
+        (BillType.PostFinalBillInwardPayment). See BhtPaymentSummaryReportController's
+        javadoc for the underlying data.
     -->
     <h:body>
         <ui:composition template="/inward/inward_reports.xhtml">
@@ -242,6 +246,101 @@
                             </div>
                         </f:facet>
 
+                        <!-- Column Visibility Settings - Subtle placement, same pattern as pharmacy_grn_return_request.xhtml -->
+                        <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
+                            <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Configure Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailBhtNoVisible}" itemLabel="BHT No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPatientNameVisible}" itemLabel="Patient Name">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailAdmissionTypeVisible}" itemLabel="Admission Type">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailAdmittedVisible}" itemLabel="Admitted">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailDischargedVisible}" itemLabel="Discharged">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailDepositCashVisible}" itemLabel="Deposit Cash">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailDepositCardVisible}" itemLabel="Deposit Card">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailDepositOtherVisible}" itemLabel="Deposit Other">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailTotalDepositsVisible}" itemLabel="Total Deposits">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPaymentCashVisible}" itemLabel="Payment Cash">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPaymentCardVisible}" itemLabel="Payment Card">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPaymentCreditVisible}" itemLabel="Payment Credit">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPaymentOtherVisible}" itemLabel="Payment Other">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailTotalPaymentsVisible}" itemLabel="Total Payments">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCashVisible}" itemLabel="Post Payment Cash">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCardVisible}" itemLabel="Post Payment Card">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCreditVisible}" itemLabel="Post Payment Credit">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailPostPaymentOtherVisible}" itemLabel="Post Payment Other">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailTotalPostPaymentsVisible}" itemLabel="Total Post Payments">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailGrandTotalVisible}" itemLabel="Grand Total">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailTotalCreditBilledVisible}" itemLabel="Total Credit Billed">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailCreditSettledVisible}" itemLabel="Credit Settled">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailCreditBalanceVisible}" itemLabel="Credit Balance">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailCreditCompanyVisible}" itemLabel="Credit Company">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailFinalBillNoVisible}" itemLabel="Final Bill No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailTotalBillValueVisible}" itemLabel="Total Bill Value">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentDetailTotalBalanceVisible}" itemLabel="Total Balance">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                </div>
+                            </p:panel>
+                        </div>
+
                         <p:dataTable
                             id="tblReport"
                             value="#{bhtPaymentSummaryReportController.reportRows}"
@@ -256,31 +355,37 @@
                             rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                             styleClass="w-100">
 
-                            <p:column headerText="BHT No" style="white-space:nowrap;">
+                            <p:column headerText="BHT No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailBhtNoVisible}">
                                 <h:outputText value="#{row.bhtNo}" />
                             </p:column>
 
-                            <p:column headerText="Patient Name">
+                            <p:column headerText="Patient Name"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPatientNameVisible}">
                                 <h:outputText value="#{row.patientName}" />
                             </p:column>
 
-                            <p:column headerText="Admission Type" style="white-space:nowrap;">
+                            <p:column headerText="Admission Type" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailAdmissionTypeVisible}">
                                 <h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" />
                             </p:column>
 
-                            <p:column headerText="Admitted" style="white-space:nowrap;">
+                            <p:column headerText="Admitted" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailAdmittedVisible}">
                                 <h:outputText value="#{row.dateOfAdmission}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Discharged" style="white-space:nowrap;">
+                            <p:column headerText="Discharged" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailDischargedVisible}">
                                 <h:outputText value="#{row.dateOfDischarge}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Deposit Cash" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Deposit Cash" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailDepositCashVisible}">
                                 <h:outputText value="#{row.depositCash}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -291,7 +396,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Deposit Card" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Deposit Card" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailDepositCardVisible}">
                                 <h:outputText value="#{row.depositCard}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -302,7 +408,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Deposit Other" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Deposit Other" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailDepositOtherVisible}">
                                 <h:outputText value="#{row.depositOther}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -313,7 +420,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Deposits" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                            <p:column headerText="Total Deposits" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailTotalDepositsVisible}">
                                 <h:outputText value="#{row.totalDeposits}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -324,7 +432,68 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Final Cash" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Payment Cash" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentCashVisible}">
+                                <h:outputText value="#{row.paymentCash}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPaymentCash}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Payment Card" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentCardVisible}">
+                                <h:outputText value="#{row.paymentCard}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPaymentCard}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Payment Credit" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentCreditVisible}">
+                                <h:outputText value="#{row.paymentCredit}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPaymentCredit}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Payment Other" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentOtherVisible}">
+                                <h:outputText value="#{row.paymentOther}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPaymentOther}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total Payments" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailTotalPaymentsVisible}">
+                                <h:outputText value="#{row.totalPayments}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalPayments}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Post Payment Cash" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCashVisible}">
                                 <h:outputText value="#{row.postFinalCash}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -335,7 +504,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Final Card" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Post Payment Card" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCardVisible}">
                                 <h:outputText value="#{row.postFinalCard}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -346,7 +516,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Final Credit" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Post Payment Credit" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCreditVisible}">
                                 <h:outputText value="#{row.postFinalCredit}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -357,7 +528,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Final Other" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Post Payment Other" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentOtherVisible}">
                                 <h:outputText value="#{row.postFinalOther}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -368,7 +540,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Final" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                            <p:column headerText="Total Post Payments" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailTotalPostPaymentsVisible}">
                                 <h:outputText value="#{row.totalPostFinalPayments}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -379,7 +552,20 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Credit Billed" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Grand Total" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailGrandTotalVisible}">
+                                <h:outputText value="#{row.totalAllMoneyIn}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalAllMoneyIn}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total Credit Billed" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailTotalCreditBilledVisible}">
                                 <h:outputText value="#{row.creditBilledTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -390,7 +576,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Settled" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Credit Settled" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailCreditSettledVisible}">
                                 <h:outputText value="#{row.creditSettlementTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -401,7 +588,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                            <p:column headerText="Credit Balance" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailCreditBalanceVisible}">
                                 <h:outputText value="#{row.creditBalance}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -412,15 +600,18 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Company">
+                            <p:column headerText="Credit Company"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailCreditCompanyVisible}">
                                 <h:outputText value="#{row.creditCompanyNames}" />
                             </p:column>
 
-                            <p:column headerText="Final Bill No" style="white-space:nowrap;">
+                            <p:column headerText="Final Bill No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailFinalBillNoVisible}">
                                 <h:outputText value="#{row.finalBillNumber}" />
                             </p:column>
 
-                            <p:column headerText="Total Bill Value" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Total Bill Value" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailTotalBillValueVisible}">
                                 <h:outputText value="#{row.finalBillTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -431,7 +622,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Balance" style="text-align:right; white-space:nowrap; font-weight:bold;">
+                            <p:column headerText="Total Balance" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentDetailTotalBalanceVisible}">
                                 <h:outputText value="#{row.totalBalance}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -441,20 +633,6 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-
-                            <f:facet name="footer">
-                                <div class="text-end">
-                                    <strong>Grand Total Deposits: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalDeposits}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                    &#160;&#160;&#160;
-                                    <strong>Grand Total Credit Settlements: </strong>
-                                    <h:outputText value="#{bhtPaymentSummaryReportController.grandTotalCreditSettlement}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </div>
-                            </f:facet>
 
                         </p:dataTable>
 

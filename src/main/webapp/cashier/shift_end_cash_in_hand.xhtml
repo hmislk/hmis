@@ -99,7 +99,7 @@
                                             <p:outputLabel value="Total Collected Value" />
                                         </h:panelGroup>
                                         <h:panelGroup id="tblCashier">
-                                            <h:outputText value="#{financialTransactionController.bundle.denominatorValue}">
+                                            <h:outputText value="#{financialTransactionController.bundle.grandHandoverActualTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </h:panelGroup>
@@ -109,11 +109,7 @@
 
                                 <div class="col-6" >
 
-
-
-
-
-                                    <h:panelGroup id="gpDenominations" >
+                                    <h:panelGroup id="gpCash" rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift End Cash Handover - Require Denomination Breakdown', false)}">
                                         <p:dataTable   value="#{financialTransactionController.bundle.denominationTransactions}" var="deno"  >
                                             <p:column title="Denomination">
                                                 <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
@@ -133,7 +129,7 @@
                                                         event="blur"
                                                         process="txtDenoQtyHandover"
                                                         listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
-                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :growl" ></p:ajax>
+                                                        update="txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :growl" ></p:ajax>
                                                 </p:inputText>
                                             </p:column>
                                             <p:column >
@@ -145,6 +141,66 @@
                                             </p:column>
                                         </p:dataTable>
                                     </h:panelGroup>
+
+                                    <h:panelGroup id="gpCashLumpSum" rendered="#{not configOptionApplicationController.getBooleanValueByKey('Shift End Cash Handover - Require Denomination Breakdown', false)}">
+                                        <p:dataTable value="#{financialTransactionController.bundle.denominationTransactions}" var="cashRow" >
+                                            <p:column title="Payment Method">
+                                                <p:outputLabel value="Cash" ></p:outputLabel>
+                                            </p:column>
+                                            <p:column title="Expected">
+                                                <p:outputLabel class="text-end w-100" value="#{cashRow.expectedValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column title="Actual Handover">
+                                                <p:inputText
+                                                    class="text-end w-100"
+                                                    id="txtCashLumpSum"
+                                                    value="#{cashRow.denominationValue}"
+                                                    style="width: 100%;"
+                                                    label="Cash Handover"
+                                                    onfocus="this.select()">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <p:ajax
+                                                        event="blur"
+                                                        async="true"
+                                                        process="txtCashLumpSum"
+                                                        listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
+                                                        update=":#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :growl" ></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:panelGroup>
+
+                                    <p:panel header="Other Payment Methods" class="mt-3" rendered="#{not empty financialTransactionController.bundle.paymentMethodHandoverTransactions}">
+                                        <p:dataTable value="#{financialTransactionController.bundle.paymentMethodHandoverTransactions}" var="pmRow" >
+                                            <p:column title="Payment Method">
+                                                <p:outputLabel value="#{pmRow.paymentMethod.label}" ></p:outputLabel>
+                                            </p:column>
+                                            <p:column title="Expected">
+                                                <p:outputLabel class="text-end w-100" value="#{pmRow.expectedValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column title="Actual Handover">
+                                                <p:inputText
+                                                    class="text-end w-100"
+                                                    id="txtPaymentMethodHandover"
+                                                    value="#{pmRow.denominationValue}"
+                                                    style="width: 100%;"
+                                                    label="#{pmRow.paymentMethod.label} Handover"
+                                                    onfocus="this.select()">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                    <p:ajax
+                                                        event="blur"
+                                                        async="true"
+                                                        process="txtPaymentMethodHandover"
+                                                        listener="#{financialTransactionController.bundle.calculateTotalHandoverByPaymentMethodTransactions()}"
+                                                        update=":#{p:resolveFirstComponentWithId('tblCashier',view).clientId} :growl" ></p:ajax>
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
                                 </div>
                             </div>
 

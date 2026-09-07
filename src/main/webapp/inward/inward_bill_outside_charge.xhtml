@@ -225,6 +225,7 @@
                                                 class="ui-button-success"
                                                 icon="fa fa-plus"
                                                 ajax="false"
+                                                immediate="true"
                                                 action="#{inwardAdditionalChargeController.makeNull()}" />
                                         </div>
                                     </h:panelGroup>
@@ -232,6 +233,7 @@
                                     <p:commandButton
                                         value="Inpatient Dashboard"
                                         ajax="false"
+                                        immediate="true"
                                         icon="fa fa-id-card"
                                         class="ui-button-info ui-button-outlined"
                                         action="#{admissionController.navigateToAdmissionProfilePage}">
@@ -244,12 +246,14 @@
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 ajax="false"
+                                                immediate="true"
                                                 icon="fa fa-search"
                                                 class="ui-button-info ui-button-outlined"
                                                 action="#{patientController.navigateToSearchPatients()}">
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
+                                                immediate="true"
                                                 icon="fa fa-user"
                                                 class="ui-button-info ui-button-outlined"
                                                 action="#{patientController.navigateToOpdPatientProfile()}">
@@ -260,6 +264,7 @@
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
+                                                immediate="true"
                                                 icon="fa fa-id-card"
                                                 class="ui-button-info ui-button-outlined"
                                                 action="#{bhtSummeryController.navigateToInpatientProfile()}">
@@ -276,6 +281,7 @@
                                             value="Nursing WorkBench"
                                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                             ajax="false"
+                                            immediate="true"
                                             class="ui-button-info ui-button-outlined"
                                             icon="fa fa-arrow-left">
                                         </p:commandButton>
@@ -291,6 +297,7 @@
                                         value="Clear"
                                         icon="fa fa-ban"
                                         ajax="false"
+                                        immediate="true"
                                         rendered="#{!inwardAdditionalChargeController.printPreview}"
                                         action="#{inwardAdditionalChargeController.reset()}" >
                                     </p:commandButton>
@@ -301,6 +308,7 @@
                                         icon="fa fa-plus"
                                         value="New Bill"
                                         ajax="false"
+                                        immediate="true"
                                         rendered="#{!inwardAdditionalChargeController.printPreview}"
                                         action="#{inwardAdditionalChargeController.makeNull()}">
                                     </p:commandButton>
@@ -310,6 +318,7 @@
                                         value="To Add Services"
                                         icon ="fa fa-wrench"
                                         ajax="false"
+                                        immediate="true"
                                         action="/inward/inward_bill_service?faces-redirect=true" >
                                     </p:commandButton>
 

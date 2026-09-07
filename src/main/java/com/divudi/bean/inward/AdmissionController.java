@@ -898,13 +898,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         List<com.divudi.core.entity.inward.PatientRoom> activeRooms = new java.util.ArrayList<>();
         try {
+            // Theatre rooms tied to a specific surgery point at that
+            // surgery's procedure encounter (a child of this admission), not
+            // the admission itself - include children so an active theatre
+            // stay still shows on this panel.
+            List<PatientEncounter> encounters = new java.util.ArrayList<>();
+            encounters.add(current);
+            List<PatientEncounter> children = inwardBean.fetchChildPatientEncounter(current);
+            if (children != null) {
+                encounters.addAll(children);
+            }
             String jpql = "SELECT pr FROM PatientRoom pr "
                     + "WHERE pr.retired = false "
                     + "AND pr.discharged = false "
-                    + "AND pr.patientEncounter = :enc "
+                    + "AND pr.patientEncounter IN :encs "
                     + "ORDER BY pr.createdAt";
             java.util.HashMap<String, Object> params = new java.util.HashMap<>();
-            params.put("enc", current);
+            params.put("encs", encounters);
             activeRooms = patientRoomFacade.findByJpql(jpql, params);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to load active rooms for admission ID: "
@@ -2214,7 +2224,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
+            // Baby admissions typically have no phone number of their own yet either
+            // (staff use the "Copy Address & Phone to Baby" button when one is needed),
+            // so this admission-specific phone-required check is skipped for them too,
+            // matching the NIC exemption above. (Issue #23509)
+            if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getPhone() == null || getCurrent().getPatient().getPerson().getPhone().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Phone Number is Required");
                     return true;

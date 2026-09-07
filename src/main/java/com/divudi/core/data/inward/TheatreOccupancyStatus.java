@@ -23,4 +23,21 @@ public enum TheatreOccupancyStatus {
             default: return 0;
         }
     }
+
+    // Single source of truth for the display label - previously duplicated
+    // (and drifted, e.g. SENT_TO_THEATRE) between SurgeryCostReportController
+    // and TheatreRoomCard.
+    public String getLabel() {
+        switch (this) {
+            case SCHEDULED: return "Scheduled";
+            case SENT_TO_THEATRE: return "Sent to Theatre";
+            case RECEIVED_IN_THEATRE: return "Received in Theatre";
+            case IN_THEATRE: return "In Theatre";
+            case PROCEDURE_COMPLETED: return "Procedure Completed";
+            case IN_RECOVERY: return "In Recovery";
+            case RETURNED_TO_WARD: return "Returned to Ward";
+            case CANCELLED: return "Cancelled";
+            default: return name();
+        }
+    }
 }

@@ -2684,7 +2684,11 @@ public class InwardSearch implements Serializable {
             }
             if (paymentMethod == PaymentMethod.Cash) {
                 Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
-                double drawerBalance = userDrawer.getCashInHandValue();
+                if (userDrawer == null) {
+                    JsfUtil.addErrorMessage("Your drawer could not be found. Please contact your administrator.");
+                    return;
+                }
+                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
                 double paymentAmount = getBill().getNetTotal();
                 if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
                     if (drawerBalance < paymentAmount) {

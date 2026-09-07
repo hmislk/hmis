@@ -45,8 +45,11 @@ picture of each one is understood.
 
 - [Playwright E2E Testing Workflow](../../../developer_docs/testing/playwright-e2e-workflow.md) —
   PrimeFaces widget commit patterns, dialog handling, the §1 login/department
-  gate, and the §8/§8a screenshot-privacy-check convention this skill reuses
-  for evidence capture.
+  gate, the §2 **never-navigate-by-URL** rule (the user drives here, so follow
+  their menu path and record it — never "shortcut" to a page by URL when
+  reproducing later; a URL-loaded page renders against uninitialised session
+  state and yields a bug report that isn't real), and the §8/§8a
+  screenshot-privacy-check convention this skill reuses for evidence capture.
 - [Playwright MCP Guide](../../../developer_docs/tools/playwright-mcp-guide.md) —
   generic MCP tool mechanics (clicking, dropdowns, common errors).
 

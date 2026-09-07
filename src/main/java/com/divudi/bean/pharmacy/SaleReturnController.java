@@ -343,6 +343,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
+        if (tmp.getQty() < 0) {
+            tmp.setQty(0.0);
+            JsfUtil.addErrorMessage("Returning quantity cannot be negative. The returning quantity was set to 0.");
+        }
+
         double remainingQty = getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem());
         if (tmp.getQty() > remainingQty) {
             tmp.setQty(0.0);
@@ -763,6 +768,15 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     public void settle() {
+        // Reject negative returning quantities before any other check, so a
+        // negative-qty row can never be masked by a coincidental zero total
+        for (BillItem bi : getBillItems()) {
+            if (bi.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning quantity cannot be negative.");
+                return;
+            }
+        }
+
         String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
         if (returnBlockReason != null) {
             JsfUtil.addErrorMessage(returnBlockReason);

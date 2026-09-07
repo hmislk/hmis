@@ -10,6 +10,8 @@ public class NonMovementReportDto implements Serializable {
     private String categoryName;
     private String dosageFormName;
     private String lastSupplierName;
+    private Double stockQty;
+    private Double stockOnHand;
 
     public NonMovementReportDto() {
     }
@@ -60,5 +62,21 @@ public class NonMovementReportDto implements Serializable {
 
     public void setLastSupplierName(String lastSupplierName) {
         this.lastSupplierName = lastSupplierName;
+    }
+
+    public Double getStockQty() {
+        return stockQty != null ? stockQty : 0.0;
+    }
+
+    public void setStockQty(Double stockQty) {
+        this.stockQty = stockQty;
+    }
+
+    public Double getStockOnHand() {
+        return stockOnHand != null ? stockOnHand : 0.0;
+    }
+
+    public void setStockOnHand(Double stockOnHand) {
+        this.stockOnHand = stockOnHand;
     }
 }
