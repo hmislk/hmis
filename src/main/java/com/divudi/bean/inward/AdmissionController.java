@@ -96,7 +96,6 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.primefaces.PrimeFaces;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -238,6 +237,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Reservation currentReservation;
     
     private boolean patientForiegner;
+
+    /**
+     * Drives the {@code dlgActiveAdmission} dialog's server-side {@code visible}
+     * attribute. The "Admit" button is a non-ajax ({@code ajax="false"}) full
+     * postback (see Issue #21175), so {@code PrimeFaces.current().executeScript()}
+     * — which only queues JS into an ajax partial response — never reaches the
+     * browser; binding {@code visible} to this flag instead makes the dialog show
+     * on the resulting full page render. (Issue #23514)
+     */
+    private boolean showActiveAdmissionWarning;
 
     @PostConstruct
     public void init() {
@@ -1900,6 +1909,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         printPreview = false;
         encounterCreditCompanies = new ArrayList<>();
         encounterCreditCompany = new EncounterCreditCompany();
+        showActiveAdmissionWarning = false;
         bhtNumberCalculation();
     }
 
@@ -1916,6 +1926,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patient = null;
         yearMonthDay = null;
         printPreview = false;
+        showActiveAdmissionWarning = false;
         bhtNumberCalculation();
         return "/inward/inward_admission";
     }
@@ -2167,6 +2178,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         if (getCurrent().getPatient() == null) {
             JsfUtil.addErrorMessage("Select Patient");
+            return true;
+        }
+
+        // Hard block on duplicate active admissions (Issue #23514). Runs
+        // unconditionally here — not just from the main "Admit" button's
+        // pre-check — so it also covers baby admission and OPD->Inward
+        // conversion (both call saveSelected()/saveConvertSelected() directly,
+        // skipping proceedWithAdmissionCheck()), and so there is no UI path
+        // (including the soft-warning dialog's own "Yes, Proceed" button) that
+        // can override it once the config option is enabled.
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Enforce Hard Block on Duplicate Active Admission", false)
+                && isPatientAlreadyAdmitted()) {
+            JsfUtil.addErrorMessage("This patient already has an active (undischarged) admission. "
+                    + "Discharge the existing admission before admitting again.");
             return true;
         }
 
@@ -2728,8 +2754,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + "AND a.discharged = false";
         HashMap<String, Object> params = new HashMap<>();
         params.put("patient", getCurrent().getPatient());
+        // Editing/re-saving an admission that is itself the active one must not
+        // flag itself as a duplicate of itself. (Issue #23514)
+        if (getCurrent().getId() != null) {
+            jpql += " AND a.id != :currentAdmissionId";
+            params.put("currentAdmissionId", getCurrent().getId());
+        }
         long count = getFacade().findLongByJpql(jpql, params);
         return count > 0;
+    }
+
+    public boolean isShowActiveAdmissionWarning() {
+        return showActiveAdmissionWarning;
+    }
+
+    /**
+     * Server round-trip for the {@code dlgActiveAdmission} "Cancel" button so the
+     * session-scoped {@link #showActiveAdmissionWarning} flag is actually cleared
+     * — a purely client-side {@code hide()} would leave it {@code true} and the
+     * dialog would reappear on the next unrelated full postback of this form.
+     * (Issue #23514)
+     */
+    public void cancelActiveAdmissionWarning() {
+        showActiveAdmissionWarning = false;
     }
 
     /**
@@ -2887,8 +2934,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     private void proceedWithAdmissionCheck() {
-        if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
-            PrimeFaces.current().executeScript("PF('dlgActiveAdmission').show();");
+        showActiveAdmissionWarning = false;
+        // Hard block (Issue #23514): errorCheck() enforces this unconditionally
+        // on every save path (including the dialog's own "Yes, Proceed" button),
+        // so when it's on there's no need for — and no correct way to show — the
+        // soft-warning dialog first. Let saveSelected() -> errorCheck() reject it
+        // with a proper error message instead.
+        boolean hardBlockEnabled = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Enforce Hard Block on Duplicate Active Admission", false);
+        if (!hardBlockEnabled && getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
+            showActiveAdmissionWarning = true;
         } else {
             saveSelected();
         }
@@ -3116,6 +3171,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         admittingProcessStarted = false;
         currentReservation = null;
         patientForiegner = false;
+        showActiveAdmissionWarning = false;
         printPreview = true;
     }
 
