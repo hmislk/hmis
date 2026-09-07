@@ -2767,3 +2767,55 @@ Verified while testing issue #23543 (professional/assisting fee merge).
 - [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
 - [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL.
+- [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
+
+## 96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade
+
+Tried to reproduce issue #23523 (`BillBhtController.errorCheck()` silently
+no-opping Settle when the admission's current room becomes invalid) by: (1)
+adding a service on `inward_bill_service.xhtml` while the room was valid so
+an item was staged in `lstBillEntries`, then (2) in a second tab of the same
+login session, using `inward_patient_room_details.xhtml`'s "Remove Room" —
+a real UI action, going through `RoomChangeController.removeRoom()` and
+`patientEncounterFacade.edit(encounter)`, not raw SQL — to null the
+encounter's `currentPatientRoom`, then (3) going back to tab one and
+clicking **Settle**.
+
+Expected the new guard message; got `Bill Saved` instead, and confirmed via
+`BILL` table that Settle fully succeeded, using the *old* room. The DB
+correctly showed `CURRENTPATIENTROOM_ID = NULL` before the Settle click.
+`BillBhtController`'s `patientEncounter` field — set once when tab one
+searched for the BHT — is a Java object this session-scoped bean has held
+onto since; `RoomChangeController`'s edit in tab two updates its own
+(different) reference to the same row and, evidently, does not force tab
+one's already-held reference to see the new field values. Confirmed the fix
+itself was genuinely deployed first (`strings` on the compiled `.class` in
+`applications/<app>/WEB-INF/classes/...` showed the new message text) before
+concluding this was a test-setup limitation, not a dead code path.
+
+**Takeaway for testing this kind of thing:** a same-request-lifecycle race
+like this cannot be reliably staged from *outside* the request (a second
+tab, a second session, or raw SQL) once the first controller has already
+loaded and cached the entity — only an interruption inside the *same*
+request/thread (a debugger, a breakpoint, or an actual concurrent user
+hitting the exact same in-flight transaction) would show it happening.
+Don't spend a long session trying to force this kind of window through the
+UI; verify instead via the code path itself (confirm the guarded condition
+and message are correct, and that an analogous guard with the identical
+condition and message idiom already fires correctly elsewhere in the same
+controller/page) and say so plainly in the PR rather than claiming a live
+repro that didn't happen.
+
+**This is not only a testing-methodology footnote, though** — CodeRabbit
+correctly flagged on PR #23567 that the same staleness is a real
+production correctness risk, not just a Playwright limitation: any actual
+concurrent use (two staff members on the same admission, or one user in
+two tabs) can hit this exact window, silently letting `settleBill()` go
+through on stale room data instead of hitting the guard added in #23523.
+Tracked separately as issue #23568 rather than fixed inline in #23523's
+PR, since the right fix (refreshing `patientEncounter`/`currentPatientRoom`
+before validation) needs its own design discussion — this codebase's
+EclipseLink cache has bitten targeted-refresh attempts before (see the
+"Native settle poisons the Bill entity" gotcha).
+
+Found while verifying issue #23523.
