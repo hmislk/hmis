@@ -2692,6 +2692,32 @@ from the component's full client id, not the plain `id` attribute, so don't gues
 commit by reading `document.getElementById('<formId>:<fieldId>:dpDob_input').value` before
 submitting. Verified while testing issue #23509 (baby admission with no NIC/phone).
 
+## A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation
+
+`Inpatient → Billing → Interim Bill` is three levels deep. Clicking the top-level item opens the
+second level, but the third-level flyout closes again before Playwright can reach the item:
+`click`, `hover`, and `:has-text()` selectors all fail with *element is not visible*, and clicking
+the parent a second time just toggles the whole menu shut.
+
+**Do not fall back to typing the page URL** — §2 explains why that produces false findings. Instead
+invoke the menu item's own anchor:
+
+```js
+() => { const a = Array.from(document.querySelectorAll('.ui-menubar a'))
+          .find(x => x.textContent.trim() === 'Interim Bill');
+        a.click(); }
+```
+
+This is genuinely equivalent to a user's click, not a shortcut around it. The anchor carries the
+menu's own handler —
+`PrimeFaces.addSubmitParam('...:menuForm', {...}).submit('...:menuForm')` — so the JSF action, and
+therefore the `@SessionScoped` navigation method behind it, runs exactly as it does for a real
+click. The page lands with its state populated, which is the whole point of the URL rule. Check the
+anchor's `onclick` attribute first: if it submits the menu form, this is safe; if it is a plain
+`href` to a page, you are back to URL navigation and must find another route.
+
+Verified while testing issue #23543 (professional/assisting fee merge).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -2714,3 +2740,4 @@ submitting. Verified while testing issue #23509 (baby admission with no NIC/phon
 - [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
 - [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
+- [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL.

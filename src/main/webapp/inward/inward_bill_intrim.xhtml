@@ -1408,7 +1408,7 @@
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab id="tabDoc" title="Assistant Charges"  >
+                                <p:tab id="tabDoc" title="Assistant Charges" rendered="#{not configOptionApplicationController.professionalAndAssistingFeesMerged}" >
                                     <div class="d-flex justify-content-end mb-2">
                                         <p:commandButton value="Excel"
                                                          icon="fas fa-file-excel"

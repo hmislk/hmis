@@ -15,8 +15,11 @@ argument-hint: "<issue-number>"
 
 Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
-non-repro case, 3, 4's environment choice only, 14) are the points where you
-pause for the user.
+non-repro case and any state-changing reproduction step, 3, 4's environment
+choice only, 14) are the points where you pause for the user. Everything
+else in 2a and 4 (which department/record to use against local test data)
+is a local-testing-environment choice, not a product decision — decide it
+yourself and say what you picked, rather than pausing.
 
 This authorization also covers `superpowers:writing-plans`' Execution
 Handoff question, if that chain gets invoked anywhere in this flow (e.g.
@@ -50,10 +53,14 @@ Run it when the issue is a bug and step 2 left the cause unconfirmed or
 unfound:
 
 - Prefer reproducing against existing data first (read-only navigation or
-  API `GET`s). If reproduction requires creating or modifying a record,
-  confirm the target department/record with the user first
-  (`AskUserQuestion`, same pattern as step 4) rather than picking one
-  unilaterally.
+  API `GET`s) — picking which department/record to *read* is the same
+  no-need-to-ask judgment call as step 4. If reproduction requires a
+  state-changing step (creating, modifying, or deleting a record, or running
+  direct SQL), that's a different risk category: confirm with the user
+  first (`AskUserQuestion`) before creating a disposable record,
+  modifying/deleting an existing record, or running direct SQL — don't
+  extend the "don't ask" judgment call to writes. If the user approves a
+  disposable record, clean it up in the same session where possible.
 - Reproduce live against local Payara — the `playwright-e2e` skill for
   UI-facing bugs, or direct REST calls (per `api-development`) for API-only
   ones.
