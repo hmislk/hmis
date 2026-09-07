@@ -145,6 +145,14 @@ public class InwardChargeTypeBreakdownController implements Serializable {
             return;
         }
 
+        // Only reachable with a selection made before the merge setting was turned
+        // on — the picker does not offer a suppressed charge type (issue #23543).
+        if (professionalFeeClassificationService.isSuppressed(selectedChargeType)) {
+            errorMessage = "This hospital bills professional and assisting fees as one charge type,"
+                    + " so there are no separate assisting charges. Select Professional Charge instead.";
+            return;
+        }
+
         if ("dischargeDate".equals(dateBasis)
                 && admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED) {
             errorMessage = "Cannot filter by discharge date for patients not yet discharged.";
@@ -619,10 +627,6 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
 
     private void buildFromBillFees() {
-        if (professionalFeeClassificationService.isSuppressed(selectedChargeType)) {
-            return;
-        }
-
         Map<String, Object> params = new HashMap<>();
 
         StringBuilder jpql = new StringBuilder(

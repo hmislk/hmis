@@ -90,13 +90,25 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
      *
      * <p>Callers must not ask for {@code DoctorAndNurses} while merged — check
      * {@link #isSuppressed} and skip the query, which is cheaper than running one
-     * that cannot match.
+     * that cannot match. Both that and an unrelated charge type throw rather than
+     * returning a predicate: silently answering with the assisting bucket would
+     * put real money under the wrong heading.
      *
      * @param feeAlias the BillFee alias used in the query, e.g. {@code "bf"}
      * @param target   the charge type being queried
      * @param params   the query's parameter map, added to when required
+     * @throws IllegalArgumentException if {@code target} is not a professional fee
+     *         charge type, or is one this hospital does not use
      */
     public String staffCondition(String feeAlias, InwardChargeType target, Map<String, Object> params) {
+        if (target != InwardChargeType.ProfessionalCharge && target != InwardChargeType.DoctorAndNurses) {
+            throw new IllegalArgumentException(
+                    "Not a professional fee charge type: " + target);
+        }
+        if (isSuppressed(target)) {
+            throw new IllegalArgumentException(
+                    target + " does not exist for this hospital - check isSuppressed() and skip the query");
+        }
         if (isMerged()) {
             return " and " + feeAlias + ".staff is not null ";
         }
