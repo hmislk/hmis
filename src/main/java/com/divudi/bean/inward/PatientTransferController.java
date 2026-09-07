@@ -693,6 +693,20 @@ public class PatientTransferController implements Serializable {
                     : "This patient already has an active theatre transfer in progress.");
             return;
         }
+        // findActiveSendToTheatreRequestForReturn resolves a return request's
+        // matching SEND_TO_THEATRE row by surgery bill alone, not by the exact
+        // originating request - so if this surgery already has a pending
+        // (not yet accepted) return-to-ward, a new send now would create a
+        // second SEND_TO_THEATRE row for the same surgery bill, and accepting
+        // that pending return afterwards could resolve to the wrong (new) row
+        // instead of the one it actually belongs to. Block re-sending until
+        // the pending return is accepted.
+        if (hasPendingReturnRequest(current, selectedSurgeryBill)) {
+            JsfUtil.addErrorMessage(selectedSurgeryBill != null
+                    ? "This surgery has a return-to-ward request awaiting acceptance. Please accept it before sending to theatre again."
+                    : "This patient has a return-to-ward request awaiting acceptance. Please accept it before sending to theatre again.");
+            return;
+        }
         PatientTransferRequest req = new PatientTransferRequest();
         req.setAdmission(current);
         req.setFromPatientRoom(current.getCurrentPatientRoom());
@@ -1006,6 +1020,36 @@ public class PatientTransferController implements Serializable {
                 + "ORDER BY r.createdAt DESC";
         List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
         return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    /**
+     * True when this admission (optionally scoped to one surgery bill) has a
+     * RETURN_TO_WARD request that is still PENDING (not yet accepted). Used
+     * by sendToTheatre() to block a second theatre trip for the same surgery
+     * while its prior trip's return hasn't been accepted yet -
+     * findActiveSendToTheatreRequestForReturn resolves by surgery bill alone,
+     * so a second SEND_TO_THEATRE row for that same surgery could otherwise
+     * let acceptReturnToWard() resolve to the wrong (newer) row.
+     */
+    private boolean hasPendingReturnRequest(Admission admission, Bill surgeryBill) {
+        if (admission == null) {
+            return false;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("type", TheatreTransferType.RETURN_TO_WARD);
+        params.put("pending", TransferRequestStatus.PENDING);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status = :pending "
+                + "AND r.retired = false ";
+        if (surgeryBill != null) {
+            jpql += "AND (r.surgeryBill = :surgeryBill OR r.surgeryBill IS NULL) ";
+            params.put("surgeryBill", surgeryBill);
+        }
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return results != null && !results.isEmpty();
     }
 
     private PatientTransferRequest findActiveSendToTheatreRequestForReturn(PatientTransferRequest returnReq) {
